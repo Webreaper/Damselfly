@@ -163,6 +163,7 @@ namespace Damselfly.Core.Services
                 }
 
                 Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms.");
+                StatusService.Instance.StatusText = $"Found at least {results.Count()} images that match the search query.";
 
                 // Now save the results in our stored dataset
                 SearchResults.AddRange(results);

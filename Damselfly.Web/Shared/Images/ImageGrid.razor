@@ -13,177 +13,179 @@
 <div class="damselfly-imagegrid" id="list-end">
     @if (!gridImages.Any())
     {
-        if (endOfImages)
-        {
-            <p><em>@NoResultsMessage</em></p>
-        }
-        else
-        {
-            <p><em>Loading images...</em></p>
-        }
+        <div class="damselfly-searchmsg">
+            @if (endOfImages)
+            {
+                <span>@NoResultsMessage</span>
+            }
+            else
+            {
+                <span> Loading images...</span>
+            }
+        </div>
     }
     else
     {
         @foreach (var image in gridImages)
         {
-                <div class="damselfly-gridimage @WrapStyle">
-                    <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
-                </div>
-                }
-
-                @if (IsLoading && !endOfImages)
-                {
-                    <Spinner />
-                }
-                }
+            <div class="damselfly-gridimage @WrapStyle">
+                <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
             </div>
-
-            <div class="damselfly-imagetools">
-                <div class="damselfly-browsetool">
-                    @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
-                    {
-                        <label>
-                            <input name="thumbSize" type="radio"
-                                   value="@choice"
-                                   checked="@(CurrentThumbSize == choice)"
-                                   @onchange="@(() => { ChangeThumbSize( choice ); })" />
-                            @choice.ToString()
-                        </label>
-                    }
-                </div>
-                <div class="damselfly-browsetool">
-                    <button @onclick="AddSelectedToBasket">Add Selected To Basket</button>
-                </div>
-                <div class="damselfly-browsetool">
-                    <p>Add Tag: <input placeholder="Add a keyword" class="tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" /></p>
-                </div>
-            </div>
-
-            @code {
-                const int imagesPerPage = 250;
-
-                bool IsLoading { get; set; } = false;
-                bool endOfImages = false;
-                readonly List<SelectableImage> gridImages = new List<SelectableImage>();
-                public string NewTag { get; set; }
-
-        ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
-
-        string WrapStyle { get; set; } = "wrapping-table-small";
-
-        protected void ChangeThumbSize(ThumbSize newSize)
-        {
-            CurrentThumbSize = newSize;
-
-            switch (newSize)
-            {
-                case ThumbSize.Medium: WrapStyle = "wrapping-table-medium"; break;
-                case ThumbSize.Large: WrapStyle = "wrapping-table-large"; break;
-                case ThumbSize.ExtraLarge: WrapStyle = "wrapping-table-x-large"; break;
-                case ThumbSize.Small: WrapStyle = "wrapping-table-small"; break;
-                default: WrapStyle = "wrapping-table-small"; break;
-            }
-
-            ConfigService.Instance.Set("ThumbSize", newSize.ToString());
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        @if (IsLoading && !endOfImages)
         {
-            if (firstRender)
-            {
-                searchService.OnChange += SearchQueryChanged;
-                await InitJsListenerAsync();
-                await LoadData();
-            }
+            <Spinner />
+        }
+    }
+</div>
+
+<div class="damselfly-imagetools">
+    <div class="damselfly-browsetool">
+        @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
+        {
+            <label>
+                <input name="thumbSize" type="radio"
+                       value="@choice"
+                       checked="@(CurrentThumbSize == choice)"
+                       @onchange="@(() => { ChangeThumbSize( choice ); })" />
+                @choice.ToString()
+            </label>
+        }
+    </div>
+    <div class="damselfly-browsetool">
+        <button @onclick="AddSelectedToBasket">Add Selected To Basket</button>
+    </div>
+    <div class="damselfly-browsetool">
+        <p>Add Tag: <input placeholder="Add a keyword" class="tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" /></p>
+    </div>
+</div>
+
+@code {
+    const int imagesPerPage = 250;
+
+    bool IsLoading { get; set; } = false;
+    bool endOfImages = false;
+    readonly List<SelectableImage> gridImages = new List<SelectableImage>();
+    public string NewTag { get; set; }
+
+    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
+
+    string WrapStyle { get; set; } = "wrapping-table-small";
+
+    protected void ChangeThumbSize(ThumbSize newSize)
+    {
+        CurrentThumbSize = newSize;
+
+        switch (newSize)
+        {
+            case ThumbSize.Medium: WrapStyle = "wrapping-table-medium"; break;
+            case ThumbSize.Large: WrapStyle = "wrapping-table-large"; break;
+            case ThumbSize.ExtraLarge: WrapStyle = "wrapping-table-x-large"; break;
+            case ThumbSize.Small: WrapStyle = "wrapping-table-small"; break;
+            default: WrapStyle = "wrapping-table-small"; break;
         }
 
-        public void Dispose()
+        ConfigService.Instance.Set("ThumbSize", newSize.ToString());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            searchService.OnChange -= SearchQueryChanged;
-        }
-
-
-        private void ProcessTagEnter(KeyboardEventArgs eventArgs)
-        {
-            if (eventArgs.Key == "Enter")        // fire on enter
-            {
-                var selected = gridImages.Where(x => x.Selected)
-                                         .Select(x => x.Image)
-                                         .ToArray();
-
-                Logging.Log("Saving tag: " + NewTag);
-
-                InvokeAsync(() => { _ = keywordService.AddTagAsync(selected, NewTag); });
-
-                NewTag = string.Empty;
-            }
-        }
-
-        public string NoResultsMessage
-        {
-            get
-            {
-                if (searchService.Folder != null)
-                {
-                    return $"No images were found in folder '{searchService.Folder.Name}' that match the current filter.";
-                }
-
-                return "No images were found that match the current filter.";
-            }
-        }
-
-        protected void SearchQueryChanged()
-        {
-            gridImages.Clear();
-            endOfImages = false;
-
-            InvokeAsync(() => { _ = LoadData(); });
-        }
-
-        void AddSelectedToBasket()
-        {
-            var selected = gridImages.Where(x => x.Selected).ToList();
-            selected.ForEach(x => BasketService.Instance.SetBasketState(x.Image, true));
-
-            StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
-        }
-
-
-        protected async Task InitJsListenerAsync()
-        {
-            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "list-end", DotNetObjectReference.Create(this));
-        }
-
-        [JSInvokable]
-        // Debugging assistant to help us differentiate between JS calls and other data loads
-        public async Task LoadMore()
-        {
+            searchService.OnChange += SearchQueryChanged;
             await LoadData();
+            await InitJsListenerAsync();
         }
+    }
 
-        public async Task LoadData()
+    public void Dispose()
+    {
+        searchService.OnChange -= SearchQueryChanged;
+    }
+
+
+    private void ProcessTagEnter(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key == "Enter")        // fire on enter
         {
-            if (!IsLoading)
-            {
-                IsLoading = true;
+            var selected = gridImages.Where(x => x.Selected)
+                                     .Select(x => x.Image)
+                                     .ToArray();
 
-                ChangeThumbSize( CurrentThumbSize );
-                var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesPerPage);
+            Logging.Log("Saving tag: " + NewTag);
 
-                if (newImages.Any())
-                {
-                    var newSelectableImages = newImages.Select(x => new SelectableImage(x))
-                                                   .ToArray();
+            InvokeAsync(() => { _ = keywordService.AddTagAsync(selected, NewTag); });
 
-                    gridImages.AddRange(newSelectableImages);
-                }
-
-                if (newImages.Count() < imagesPerPage)
-                    endOfImages = true;
-
-                StateHasChanged();
-            }
-
-            IsLoading = false;
+            NewTag = string.Empty;
         }
+    }
+
+    public string NoResultsMessage
+    {
+        get
+        {
+            if (searchService.Folder != null)
+            {
+                return $"No images were found in folder '{searchService.Folder.Name}' that match the current filter.";
             }
+
+            return "No images were found that match the current filter.";
+        }
+    }
+
+    protected void SearchQueryChanged()
+    {
+        gridImages.Clear();
+        endOfImages = false;
+
+        InvokeAsync(() => { _ = LoadData(); });
+    }
+
+    void AddSelectedToBasket()
+    {
+        var selected = gridImages.Where(x => x.Selected).ToList();
+        selected.ForEach(x => BasketService.Instance.SetBasketState(x.Image, true));
+
+        StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
+    }
+
+
+    protected async Task InitJsListenerAsync()
+    {
+        await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "list-end", DotNetObjectReference.Create(this));
+    }
+
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public async Task LoadMore()
+    {
+        await LoadData();
+    }
+
+    public async Task LoadData()
+    {
+        if (!IsLoading)
+        {
+            IsLoading = true;
+
+            ChangeThumbSize(CurrentThumbSize);
+            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesPerPage);
+
+            if (newImages.Any())
+            {
+                var newSelectableImages = newImages.Select(x => new SelectableImage(x))
+                                               .ToArray();
+
+                gridImages.AddRange(newSelectableImages);
+            }
+
+            if (newImages.Count() < imagesPerPage)
+                endOfImages = true;
+
+            StateHasChanged();
+        }
+
+        IsLoading = false;
+    }
+}

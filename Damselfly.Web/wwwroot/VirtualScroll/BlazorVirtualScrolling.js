@@ -2,14 +2,15 @@ var blazorVirtualScrolling = {
     init: function(eleId, cmp) {
 
         var ref = document.getElementById(eleId);
+        if (ref !== null) {
+            ref.scrollTop = 0;
 
-        ref.scrollTop = 0;
+            ref.addEventListener("scroll",
+                (e) => {
+                    cmp.invokeMethodAsync("VirtualScrollingSetView", blazorVirtualScrolling.getScrollView(ref));
 
-        ref.addEventListener("scroll",
-            (e) => {
-                cmp.invokeMethodAsync("VirtualScrollingSetView", blazorVirtualScrolling.getScrollView(ref));
-
-            });
+                });
+        }
 
         window.addEventListener("resize",
             (e) => {

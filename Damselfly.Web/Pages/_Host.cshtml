@@ -58,12 +58,15 @@
         }
 
         function checkDesktopUpgrade(desktopVersion, cb) {
-            console.log("Checking server version");
-            DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then( upgradeVersion => {
+            try {
+                DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
                     if (upgradeVersion !== '') {
                         cb(upgradeVersion);
                     }
                 })
+            } catch (err) {
+                console.log("Error: " + err);
+            }
         }
 
         /* END EXTERNAL SOURCE */
