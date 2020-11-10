@@ -132,7 +132,8 @@
             await LoadConfigs();
 
             // Probe for a js function which indicates we're in the electron container
-            isDesktopHosted = await JsRuntime.InvokeAsync<bool>("isDesktopHosted");
+            var version = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
+            isDesktopHosted = !string.IsNullOrEmpty( version );
 
             StateHasChanged();
         }
