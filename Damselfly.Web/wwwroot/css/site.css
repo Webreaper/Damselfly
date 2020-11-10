@@ -617,14 +617,15 @@ app {
     flex: 6;
 }
 
-.damselfly-navleft{
+.damselfly-navleft {
     display: flex;
     width: 20px;
-    max-height: 200px;
+    height: calc( 100vh - 100px);
     order: 1;
 }
 
 .damselfly-imagedisplay{
+    background-color: pink;
     display: flex;
     width: 100%;
     align-content: center;
@@ -636,17 +637,15 @@ app {
 .damselfly-navright {
     display: flex;
     width: 20px;
-    max-height: 200px;
+    height: calc( 100vh - 100px);
     order: 3;
 }
 
 .image-fill {
-    animation: fadeIn ease 1s;
-    display: flex;
     height: calc( 100vh - 100px);
-    width: auto;
+    width: calc( 100vh - 100px);
+    object-fit: cover;
 }
-
 
 .damselfly-tasks {
     display: flex;
