@@ -16,12 +16,19 @@ namespace Damselfly.Core.Models
     {
         public void Configure(DbContextOptionsBuilder options)
         {
+#if USE_MYSQL
+            // To support MySQL, add a refernece to Pomelo.EntityFrameworkCore.MySql
+            // and remove this #if section. But some of this isn't implemented yet.
+
             string connString = "Server=127.0.0.1;Database=damselfly;User=damsel;Password=distress123;";
             int batchSize = 20;
 
             options.UseMySql(connString, mysqlOptions => mysqlOptions.MaxBatchSize(batchSize));
+#else
+            throw new NotSupportedException("MySQL not currently supported");
+#endif
         }
-        
+
         public void Init(BaseDBModel db)
         {
             try

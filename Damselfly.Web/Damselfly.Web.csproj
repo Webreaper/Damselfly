@@ -19,6 +19,7 @@
     <Content Remove="wwwroot\js\BlazorVirtualScrolling.js" />
     <Content Remove="Properties\launchSettings.json" />
     <Content Remove="Pages\UploadPage.razor" />
+    <Content Remove="wwwroot\desktop\damselfly-macos.zip" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\Images\" />
@@ -53,13 +54,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.9" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
-    <PackageReference Include="Blazored.Typeahead" Version="4.4.0" />
+    <PackageReference Include="Blazored.Typeahead" Version="4.4.1" />
     <PackageReference Include="Blazored.Modal" Version="5.1.0" />
     <PackageReference Include="Blazor.ContextMenu" Version="1.8.0" />
-    <PackageReference Include="BlazorDateRangePicker" Version="2.11.0" />
+    <PackageReference Include="BlazorDateRangePicker" Version="2.12.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="LoreSoft.Blazor.Controls" Version="3.5.0.27" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="2.1.0.20274" />
