@@ -23,7 +23,7 @@ namespace Damselfly.Web.Data
         /// </summary>
         /// <param name="keyword"></param>
         /// <returns></returns>
-        public Task<Image[]> GetTagImagesAsync(string keyword)
+        public static Task<Image[]> GetTagImagesAsync(string keyword)
         {
             using var db = new ImageContext();
             var watch = new Stopwatch("GetTagImages");
@@ -52,7 +52,7 @@ namespace Damselfly.Web.Data
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public Task<string[]> GetAllTagsAsync(string filter)
+        public static Task<string[]> GetAllTagsAsync(string filter)
         {
             using var db = new ImageContext();
             var watch = new Stopwatch("GetAllTags");
@@ -79,19 +79,25 @@ namespace Damselfly.Web.Data
         /// </summary>
         /// <param name="imageId"></param>
         /// <returns></returns>
-        public Task<Image> GetImage(int imageId)
+        public static Task<Image> GetImage(int imageId, bool includeMetadata = true )
         {
             using var db = new ImageContext();
             var watch = new Stopwatch("GetImage");
             Image image = null;
             try
             {
-                image = db.Images.Where(x => x.ImageId == imageId)
-                            .Include(x => x.Folder)
-                            .Include(x => x.MetaData.Camera)
-                            .Include(x => x.MetaData.Lens)
-                            .Include(x => x.BasketEntry)
-                            .FirstOrDefault();
+                IQueryable<Image> query = db.Images.Where(x => x.ImageId == imageId)
+                            .Include(x => x.Folder);
+
+                if (includeMetadata)
+                {
+                    query = query.Include(x => x.MetaData.Camera)
+                                 .Include(x => x.MetaData.Lens)
+                                 .Include(x => x.BasketEntry);
+                }
+
+                // Now execute the actual query
+                image = query.FirstOrDefault();
             }
 
             catch (Exception ex)
@@ -108,7 +114,7 @@ namespace Damselfly.Web.Data
             return Task.FromResult(image);
         }
 
-        public string GetImageThumbUrl(Image image, ThumbSize size)
+        public static string GetImageThumbUrl(Image image, ThumbSize size)
         {
             string url = "/no-image.jpg";
 

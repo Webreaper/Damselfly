@@ -5,7 +5,6 @@
 @using System.IO;
 @using Damselfly.Web.Shared.Images;
 @using Damselfly.Core.Services;
-@inject ImageService imageService
 @inject ThumbnailService thumbService
 
 @if (images == null)
@@ -47,7 +46,7 @@ else
     {
         if( ! string.IsNullOrEmpty( TagName ) )
         {
-            var imgs = await imageService.GetTagImagesAsync( TagName );
+            var imgs = await ImageService.GetTagImagesAsync( TagName );
             images = imgs.Select( x => new SelectableImage( x ) ).ToArray();
             tags = null;
         }
@@ -60,7 +59,7 @@ else
         // TODO: Called twice?
         if( string.IsNullOrEmpty( TagName ) ) 
         {
-            tags = await imageService.GetAllTagsAsync( null );
+            tags = await ImageService.GetAllTagsAsync( null );
             images = null;
         }
     }

@@ -3,7 +3,6 @@
 
 @using Damselfly.Core.ImageProcessing
 
-@inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
@@ -39,7 +38,7 @@
                 <div class="damselfly-navleft"></div>
             }
             <div class="damselfly-imagedisplay">
-                <img @key="image.ImageId" id="theImage" class="image-fill" src="@imageService.GetImageThumbUrl(image, ThumbSize.Large)">
+                <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageService.GetImageThumbUrl(image, ThumbSize.Large)">
             </div>
             @if (nextImage != null && nextImage.ImageId != image.ImageId)
             {
@@ -94,7 +93,7 @@
         int imageId = 0;
         if (Int32.TryParse(ImageName, out imageId))
         {
-            image = await imageService.GetImage(imageId);
+            image = await ImageService.GetImage(imageId);
             navContext.CurrentImage = image;
 
             nextImage = await navContext.GetNextImageAsync(true);

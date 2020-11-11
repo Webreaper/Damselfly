@@ -15,16 +15,12 @@ namespace Damselfly.Web.Controllers
     public class ImageController : Controller
     {   
         [HttpGet("~/rawimage/{imageId}")]
-        public async Task<IActionResult> Image(string imageId, CancellationToken cancel)
+        public static async Task<IActionResult> Image(string imageId, CancellationToken cancel)
         {
             if (int.TryParse(imageId, out var id))
             {
 
-                using var db = new ImageContext();
-
-                var image = db.Images.Where(x => x.ImageId == id)
-                                     .Include(x => x.Folder)
-                                     .FirstOrDefault();
+                var image = await ImageService.GetImage(id, false);
 
                 if (image != null)
                 {
@@ -39,18 +35,14 @@ namespace Damselfly.Web.Controllers
         }
 
         [HttpGet("~/thumb/{thumbSize}/{imageId}")]
-        public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel)
+        public static async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel)
         {
             if (Enum.TryParse<ThumbSize>( thumbSize, true, out var size))
             {
 
                 if (int.TryParse(imageId, out var id))
                 {
-                    using var db = new ImageContext();
-
-                    var image = db.Images.Where(x => x.ImageId == id)
-                                         .Include(x => x.Folder)
-                                         .FirstOrDefault();
+                    var image = await ImageService.GetImage(id, false);
 
                     if (image != null)
                     {

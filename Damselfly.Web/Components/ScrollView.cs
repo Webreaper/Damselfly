@@ -24,6 +24,11 @@ namespace Damselfly.Web.Components
 
             return true;
         }
+
+        public override int GetHashCode()
+        {
+            return ClientHeight.GetHashCode() ^ ScrollTop.GetHashCode();
+        }
     }
 
     public class ScrollViewResult
@@ -45,6 +50,11 @@ namespace Damselfly.Web.Components
         public override string ToString()
         {
             return $"Height: {Height}, Skip: {SkipItems}, Take: {TakeItems}";
+        }
+
+        public override int GetHashCode()
+        {
+            return Height.GetHashCode() ^ SkipItems.GetHashCode() ^ TakeItems.GetHashCode();
         }
     }
 }

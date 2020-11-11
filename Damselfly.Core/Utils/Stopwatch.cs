@@ -89,7 +89,7 @@ namespace Damselfly.Core.Utils
                 foreach (var kvp in maximums.OrderBy(x => x.Key))
                     Logging.LogVerbose("  Max {0}: {1}ms", kvp.Key, kvp.Value);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Logging.LogVerbose("Unable to write stopwatch totals.");
             }

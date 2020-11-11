@@ -1,7 +1,6 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
 
-@inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
 @inject NavigationService navContext
@@ -70,7 +69,7 @@
     {
         get
         {
-            var url = "http://localhost:6363" + @imageService.GetImageThumbUrl(CurrentImage, ThumbSize.Large);
+            var url = "http://localhost:6363" + @ImageService.GetImageThumbUrl(CurrentImage, ThumbSize.Large);
             var imageUrl = System.Net.WebUtility.UrlEncode(url);
             return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
         }
