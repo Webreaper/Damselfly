@@ -1,0 +1,17 @@
+﻿@using Damselfly.Web.Shared
+@using Damselfly.Web.Shared.Images
+
+@if(PrevImage == null || CurrentImage.Image.MetaData.DateTaken.Date != PrevImage.Image.MetaData.DateTaken.Date )
+{
+    <div class="damselfly-imageseparator">
+        @string.Format("{0:dddd, dd MMMM yyyy}", CurrentImage.Image.MetaData.DateTaken.Date)
+    </div>
+}
+
+@code {
+    [Parameter]
+    public SelectableImage CurrentImage { get; set; }
+
+    [Parameter]
+    public SelectableImage PrevImage { get; set; }
+}

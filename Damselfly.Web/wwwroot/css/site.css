@@ -794,3 +794,12 @@ app {
     transform: rotate(180deg);
   
   }
+
+.damselfly-imageseparator {
+    width: 100%;
+    border: 1px;
+    margin-top: 5px;
+    padding: 5px;
+    font-size: 14px;
+    border-top: 1px solid rgba(230,255,230,0.75);
+}

@@ -28,9 +28,15 @@
     {
         @foreach (var image in gridImages)
         {
+            if (ShowDateSeparators)
+            {
+                <GridSeparator CurrentImage="@image" PrevImage="@prevImage"/>
+            }
             <div class="damselfly-gridimage @WrapStyle">
                 <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
             </div>
+
+            {  prevImage = image; }
         }
 
         @if (IsLoading && !endOfImages)
@@ -54,6 +60,10 @@
         }
     </div>
     <div class="damselfly-browsetool">
+        <label for="DateSep">Group by Date</label>
+        <input id="DateSep" type="checkbox" @bind="@ShowDateSeparators">
+    </div>
+    <div class="damselfly-browsetool">
         <button @onclick="AddSelectedToBasket">Add Selected To Basket</button>
     </div>
     <div class="damselfly-browsetool">
@@ -63,13 +73,29 @@
 
 @code {
     const int imagesPerPage = 250;
+    private SelectableImage prevImage = null;
+    private bool showDateSeparators = ConfigService.Instance.Get<bool>( "DateSeparator", false );
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
     readonly List<SelectableImage> gridImages = new List<SelectableImage>();
     public string NewTag { get; set; }
-
+    public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
+
+    private void StoreImage( SelectableImage image )
+    {
+        // Todo - save an image to local storage
+    }
+
+    private void SetDateSeparatorState( bool showSeparator )
+    {
+        showDateSeparators = showSeparator;
+
+        ConfigService.Instance.Set("DateSeparators", showSeparator.ToString() );
+
+        StateHasChanged();
+    }
 
     string WrapStyle { get; set; } = "wrapping-table-small";
 
