@@ -799,7 +799,10 @@ app {
     width: 100%;
     border: 1px;
     margin-top: 5px;
-    padding: 5px;
+    margin-left: 3px;
+    padding: 3px;
+    padding-left: 15px;
     font-size: 14px;
-    border-top: 1px solid rgba(230,255,230,0.75);
+    border-top: 1px solid rgba(130,155,130,0.75);
+    background-image: linear-gradient(90deg, rgb(50, 103, 64) 0%, rgb(10, 10, 10) 90%);
 }

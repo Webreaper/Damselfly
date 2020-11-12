@@ -89,5 +89,20 @@ namespace Damselfly.Core.Services
 
             return resultInputType;
         }
+
+        public bool GetBool(string name, bool defaultIfNotExists = default)
+        {
+            bool result = defaultIfNotExists;
+
+            string value = Get(name);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!bool.TryParse(value, out result))
+                    result = defaultIfNotExists;
+            }
+
+            return result;
+        }
     }
 }
