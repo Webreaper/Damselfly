@@ -127,7 +127,6 @@ namespace Damselfly.Web
             Logging.Log("Preloading complete");
 
             StartTaskScheduler();
-
         }
 
         /// <summary>

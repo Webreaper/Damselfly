@@ -16,11 +16,13 @@
     {
         <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@selectableImage.InBasket" /></div>
         <div>Filename: @CurrentImage.FileName</div>
-        <div>Folder: <a href="/folder/@CurrentImage.Folder.FolderId">@CurrentImage.Folder.Path</a></div>
+        <div>Folder: <a href="/folder/@CurrentImage.Folder.FolderId">@CurrentImage.Folder.Name</a></div>
         <div>Thumbs Generated: @ThumbnailUpdate</div>
         <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
         @if (CurrentImage.MetaData != null)
         {
+            <div>Description: @CurrentImage.MetaData.Description</div>
+            <div>Caption: @CurrentImage.MetaData.Caption</div>
             <div>Date Taken: @CurrentImage.MetaData.DateTaken.Display()</div>
             @if (CurrentImage.MetaData.Camera != null)
             {

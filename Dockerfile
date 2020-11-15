@@ -1,11 +1,11 @@
 ARG SDKVERSION=5.0-alpine
 ARG RUNTIMEVERSION=5.0-alpine
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:$RUNTIMEVERSION AS base
+FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS base
 WORKDIR /app
 EXPOSE 6363
 
-FROM mcr.microsoft.com/dotnet/core/sdk:$SDKVERSION AS build
+FROM mcr.microsoft.com/dotnet/sdk:$SDKVERSION AS build
 ARG DAMSELFLY_VERSION
 RUN echo Damselfly version ${DAMSELFLY_VERSION}
 WORKDIR /src

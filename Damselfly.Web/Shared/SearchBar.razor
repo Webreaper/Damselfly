@@ -14,7 +14,7 @@
     </div>
     <div class="damselfly-searchfilter">
         <label for="dateRangeBox"><i class="fa fa-calendar" /></label>
-        <DateRangePicker id="dateRangeBox" MinDate="DateTimeOffset.Now.AddYears(-10)" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnRangeSelect" />
+        <DateRangePicker id="dateRangeBox" placeholder="Date Range" ApplyLabel="Search" Ranges="@DateRanges" AutoApply="true" MinDate="DateTimeOffset.Now.AddYears(-10)" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnRangeSelect" />
     </div>
     <div class="damselfly-searchfilter">
         <label for="minSizeBox"><i class="fa fa-file" /></label>
@@ -26,6 +26,24 @@
 
     public string SearchText { get { return searchService.SearchText; } }
     public string MinSize { get { return searchService.MinSizeKB.ToString(); } }
+    public Dictionary<string, DateRange> DateRanges { get; } = new Dictionary<string, DateRange>();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // TODO: Add more here
+            var Jan1ThisYear = new DateTime(DateTime.UtcNow.Year, 1, 1);
+
+            DateRanges.Add("This year", new DateRange { Start = Jan1ThisYear, End = DateTime.UtcNow });
+            DateRanges.Add("Last year", new DateRange { Start = Jan1ThisYear.AddYears( -1 ), End = Jan1ThisYear.AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears( -1 ).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-1), End = Jan1ThisYear.AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-2).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-2), End = Jan1ThisYear.AddYears(-1).AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-3).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-3), End = Jan1ThisYear.AddYears(-2).AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-4).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-4), End = Jan1ThisYear.AddYears(-3).AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-5 ).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-5), End = Jan1ThisYear.AddYears(-4).AddSeconds(-1) });
+        }
+    }
 
     public void OnRangeSelect(DateRange range)
     {

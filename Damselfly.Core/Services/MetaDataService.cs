@@ -54,19 +54,20 @@ namespace Damselfly.Core.Services
             var changeDesc = string.Empty;
 
             using var db = new ImageContext();
-            var keywordOps = new List<KeywordOperation>();
+            var keywordOps = new List<ExifOperation>();
 
             if (tagsToAdd != null)
             {
                 foreach (var image in images)
                 {
-                    keywordOps.AddRange(tagsToAdd.Select(keyword => new KeywordOperation
+                    keywordOps.AddRange(tagsToAdd.Select(keyword => new ExifOperation
                     {
                         ImageId = image.ImageId,
-                        Keyword = keyword,
-                        Operation = KeywordOperation.OperationType.Add,
+                        Text = keyword,
+                        Type = ExifOperation.ExifType.Keyword,
+                        Operation = ExifOperation.OperationType.Add,
                         TimeStamp = timestamp
-                    }));
+                    }));;
                 }
 
                 changeDesc += $"added: {string.Join(',', tagsToAdd)}";
@@ -77,11 +78,12 @@ namespace Damselfly.Core.Services
                 foreach (var image in images)
                 {
                     keywordOps.AddRange( tagsToRemove.Select(keyword => 
-                        new KeywordOperation
+                        new ExifOperation
                         {
                             ImageId = image.ImageId,
-                            Keyword = keyword,
-                            Operation = KeywordOperation.OperationType.Remove,
+                            Text = keyword,
+                            Type = ExifOperation.ExifType.Keyword,
+                            Operation = ExifOperation.OperationType.Remove,
                             TimeStamp = timestamp
                         } ) );
                 }
@@ -101,7 +103,7 @@ namespace Damselfly.Core.Services
                 await Task.Run(() =>
                             {
                                 // Temp
-                                return Task.FromResult<bool>(PerformKeywordOpScan());
+                                return Task.FromResult<bool>(PerformExifOpScan());
                             });
             }
             catch (Exception ex)
@@ -117,7 +119,7 @@ namespace Damselfly.Core.Services
         /// <param name="tagsToAdd"></param>
         /// <param name="tagsToRemove"></param>
         /// <returns></returns>
-        private bool UpdateTags(string imagePath, List<KeywordOperation> keywordOps )
+        private bool ProcessExifOperations(string imagePath, List<ExifOperation> exifOperations )
         {
             bool success = false;
             if (File.Exists(imagePath))
@@ -125,18 +127,24 @@ namespace Damselfly.Core.Services
                 Logging.LogVerbose("Updating tags for file {0}", imagePath);
 
                 string args = string.Empty;
+                List<ExifOperation> processedOps = new List<ExifOperation>();
 
-                foreach (var op in keywordOps)
+                foreach (var op in exifOperations)
                 {
-                    if (op.Operation == KeywordOperation.OperationType.Add)
+                    if (op.Type == ExifOperation.ExifType.Keyword)
                     {
-                        Logging.Log($" Adding keyword {op.Keyword} to {op.Image.FileName}");
-                        args += $" -keywords+=\"{op.Keyword}\" ";
-                    }
-                    else
-                    {
-                        Logging.Log($" Removing keyword {op.Keyword} from {op.Image.FileName}");
-                        args += $" -keywords-=\"{op.Keyword}\" ";
+                        if (op.Operation == ExifOperation.OperationType.Add)
+                        {
+                            Logging.Log($" Adding keyword {op.Text} to {op.Image.FileName}");
+                            args += $" -keywords+=\"{op.Text}\" ";
+                            processedOps.Add(op);
+                        }
+                        else
+                        {
+                            Logging.Log($" Removing keyword {op.Text} from {op.Image.FileName}");
+                            args += $" -keywords-=\"{op.Text}\" ";
+                            processedOps.Add(op);
+                        }
                     }
                 }
 
@@ -155,12 +163,12 @@ namespace Damselfly.Core.Services
 
                 if (!success)
                 {
-                    keywordOps.ForEach(x => x.State = KeywordOperation.FileWriteState.Failed);
+                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
                     Logging.LogWarning("ExifTool Tag update failed for image: {0}", imagePath);
                 }
                 else
                 {
-                    keywordOps.ForEach(x => x.State = KeywordOperation.FileWriteState.Written);
+                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
                 }
             }
 
@@ -180,7 +188,7 @@ namespace Damselfly.Core.Services
 
             try
             {
-                int cleanedUp = db.KeywordOperations.Where(op => op.State == KeywordOperation.FileWriteState.Written
+                int cleanedUp = db.KeywordOperations.Where(op => op.State == ExifOperation.FileWriteState.Written
                                                                           && op.TimeStamp < cutOff )
                                     .BatchDelete();
 
@@ -195,9 +203,9 @@ namespace Damselfly.Core.Services
         /// <summary>
         /// Process a batch of pending keyword tag operations.
         /// </summary>
-        public bool PerformKeywordOpScan()
+        public bool PerformExifOpScan()
         {
-            Logging.LogVerbose("Processing pending keyword operations");
+            Logging.LogVerbose("Processing pending exif operations");
 
             try
             {
@@ -209,12 +217,12 @@ namespace Damselfly.Core.Services
 
                 while (!complete)
                 {
-                    var queueQueryWatch = new Stopwatch("KeywordOpsQuery", -1);
+                    var queueQueryWatch = new Stopwatch("ExifOpsQuery", -1);
 
                     // Find all images where there's either no metadata, or where the image
                     // was updated more recently than the image metadata
-                    var tagsToProcess = db.KeywordOperations.AsQueryable()
-                                            .Where( x => x.State == KeywordOperation.FileWriteState.Pending )
+                    var opsToProcess = db.KeywordOperations.AsQueryable()
+                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending )
                                             .OrderByDescending(x => x.TimeStamp)
                                             .Take(100)
                                             .Include( x => x.Image )
@@ -223,20 +231,20 @@ namespace Damselfly.Core.Services
 
                     queueQueryWatch.Stop();
 
-                    complete = !tagsToProcess.Any();
+                    complete = !opsToProcess.Any();
 
                     if (!complete)
                     {
-                        var conflatedOps = ConflateOperations(tagsToProcess);
+                        var conflatedOps = ConflateOperations(opsToProcess);
 
-                        var batchWatch = new Stopwatch("KeywordOpBatch", 100000);
+                        var batchWatch = new Stopwatch("ExifOpBatch", 100000);
 
                         foreach (var imageOpList in conflatedOps)
                         {
                             var image = imageOpList.Key;
 
                             // Write the actual tags to the image file on disk
-                            if (UpdateTags(image.FullPath, imageOpList.Value))
+                            if (ProcessExifOperations(image.FullPath, imageOpList.Value))
                             {
                                 // Updating the timestamp on the image to newer than its metadata will
                                 // trigger its metadata and tags to be refreshed during the next scan
@@ -244,15 +252,15 @@ namespace Damselfly.Core.Services
                             }
                         }
 
-                        var totals = string.Join(",", tagsToProcess.GroupBy(x => x.State)
+                        var totals = string.Join(",", opsToProcess.GroupBy(x => x.State)
                                         .Select(x => $"{x.Key}: {x.Count()}" )
                                         .ToList() );
 
                         Logging.Log($"Tag update complete: {string.Join(",", totals )}");
 
-                        foreach( var op in tagsToProcess )
+                        foreach( var op in opsToProcess)
                         {
-                            if (op.State == KeywordOperation.FileWriteState.Pending)
+                            if (op.State == ExifOperation.FileWriteState.Pending)
                             {
                                 Logging.Log("Logic exception - pending tag after processing.");
                                 continue;
@@ -268,7 +276,7 @@ namespace Damselfly.Core.Services
 
                         batchWatch.Stop();
 
-                        Logging.Log($"Completed keyword op batch ({tagsToProcess.Count()} operations on {conflatedOps.Count()} images in {batchWatch.HumanElapsedTime}).");
+                        Logging.Log($"Completed keyword op batch ({opsToProcess.Count()} operations on {conflatedOps.Count()} images in {batchWatch.HumanElapsedTime}).");
 
                         StatusService.Instance.StatusText = $"Keywords processed. {totals}";
                     }
@@ -303,21 +311,24 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="tagsToProcess"></param>
         /// <returns></returns>
-        private IDictionary<Image, List<KeywordOperation>> ConflateOperations(List<KeywordOperation> tagsToProcess )
+        private IDictionary<Image, List<ExifOperation>> ConflateOperations(List<ExifOperation> opsToProcess )
         {
-            var result = new Dictionary<Image, List<KeywordOperation>>();
+            var result = new Dictionary<Image, List<ExifOperation>>();
 
-            var imageKeywords = tagsToProcess.GroupBy(x => x.Image);
+            // First, conflate the keywords.
+            var imageKeywords = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Keyword )
+                                            .GroupBy(x => x.Image);
 
             foreach( var imageOpList in imageKeywords )
             {
                 var theImage = imageOpList.Key;
-                var keywordOps = imageOpList.GroupBy(x => x.Keyword );
+                var keywordOps = imageOpList.GroupBy(x => x.Text );
 
-                // Now, for each keyword for this image, collect up the most recent
-                // operation and store it in a dictionary. Note, keywords are
-                // case-sensitive
-                var keywordOpDict = new Dictionary<string, KeywordOperation>();
+                // Now, for each exif change for this image, collect up the most
+                // recent operation and store it in a dictionary. Note, text in
+                // operations are case-sensitive (so ops for tag 'Cat' do not
+                // conflate with ops for tag 'cat'
+                var exifOpDict = new Dictionary<string, ExifOperation>();
 
                 foreach( var op in keywordOps )
                 {
@@ -325,21 +336,40 @@ namespace Damselfly.Core.Services
 
                     foreach( var imageKeywordOp in orderedOps )
                     {
-                        // Store the most recent op for each image/keyword,
+                        // Store the most recent op for each operation,
                         // over-writing the previous
-                        if( keywordOpDict.TryGetValue( imageKeywordOp.Keyword, out var existing ) )
+                        if( exifOpDict.TryGetValue( imageKeywordOp.Text, out var existing ) )
                         {
                             // Update the state before it's replaced in the dict.
-                            existing.State = KeywordOperation.FileWriteState.Discarded; 
+                            existing.State = ExifOperation.FileWriteState.Discarded; 
                         }
 
-                        keywordOpDict[imageKeywordOp.Keyword] = imageKeywordOp;
+                        exifOpDict[imageKeywordOp.Text] = imageKeywordOp;
                     }
                 }
 
                 // By now we've got a dictionary of keywords/operations. Now we just
                 // add them into the final result.
-                result[theImage] = keywordOpDict.Values.ToList();
+                result[theImage] = exifOpDict.Values.ToList();
+            }
+
+            // Now the captions. Group by image + list of ops, sorted newest first, and then the
+            // one we want is the most recent.
+            var imageCaptions = opsToProcess.Where(x => x.Type == ExifOperation.ExifType.Caption)
+                                            .GroupBy( x => x.Image )
+                                            .Select(x => new { Image = x.Key, NewestFirst = x.OrderByDescending(d => d.TimeStamp) } )
+                                            .Select( x => new {
+                                                   Image = x.Image,
+                                                   Newest = x.NewestFirst.Take(1).ToList(),
+                                                   Discarded = x.NewestFirst.Skip(1).ToList() })
+                                            .ToList();
+
+            // Now collect up the caption updates, and mark the rest as discarded.
+            foreach( var pair in imageCaptions )
+            {
+                // Add the most recent to the result
+                result[pair.Image] = pair.Newest;
+                pair.Discarded.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
             }
 
             return result;

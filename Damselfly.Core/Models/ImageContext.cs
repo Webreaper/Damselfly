@@ -26,7 +26,7 @@ namespace Damselfly.Core.Models
         public DbSet<FTSTag> FTSTags { get; set; }
         public DbSet<ExportConfig> DownloadConfigs { get; set; }
         public DbSet<ConfigSetting> ConfigSettings { get; set; }
-        public DbSet<KeywordOperation> KeywordOperations { get; set; }
+        public DbSet<ExifOperation> KeywordOperations { get; set; }
 
         public IQueryable<Image> ImageSearch(string query)
         {
@@ -68,8 +68,8 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
-            modelBuilder.Entity<KeywordOperation>().HasIndex(x => new { x.ImageId, x.Keyword });
-            modelBuilder.Entity<KeywordOperation>().HasIndex(x => x.TimeStamp);
+            modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
+            modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
         }
     }
 
@@ -326,12 +326,18 @@ namespace Damselfly.Core.Models
     /// <summary>
     /// Represents a pending operation to add or remove a keyword on an image
     /// </summary>
-    public class KeywordOperation
+    public class ExifOperation
     {
         public enum OperationType
         {
             Add,
             Remove
+        };
+
+        public enum ExifType
+        {
+            Keyword = 0,
+            Caption = 1
         };
 
         public enum FileWriteState
@@ -343,17 +349,21 @@ namespace Damselfly.Core.Models
         };
 
         [Key]
-        public int KeywordOperationId { get; set; }
+        public int ExifOperationId { get; set; }
 
         [Required]
         public virtual Image Image { get; set; }
         public int ImageId { get; set; }
 
         [Required]
-        public string Keyword { get; set; }
+        public string Text { get; set; }
+
+        [Required]
+        public ExifType Type { get; set; }
 
         [Required]
         public OperationType Operation { get; set; } = OperationType.Add;
+
         public DateTime TimeStamp { get; internal set; }
         public FileWriteState State { get; set; } = FileWriteState.Pending;
     }

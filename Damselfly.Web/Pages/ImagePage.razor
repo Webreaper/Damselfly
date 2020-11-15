@@ -13,46 +13,41 @@
 <div class="damselfly-imageview" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
     @if (image == null)
     {
-        <div class="col">
-            <p><em>Error. Image not found!</em></p>
-        </div>
-    }
-    else
-    {
-        <div class="damselfly-imagetitle">
-            <div class="damselfly-imagenavitem"
-                 ><a href="/"><i class="clickable-icon fa fa-reply" /></a>
-            </div>
-            <div class="damselfly-imagetitle">
-                Image: @image.FileName
-            </div>
-        </div>
-
-        <div class="damselfly-imagenav">
-            @if (prevImage != null && prevImage.ImageId != image.ImageId)
-            {
-                <a class="damselfly-navleft chevron flipchevron" href="/image/@prevImage.ImageId" />
-            }
+<div class="col">
+    <p><em>Error. Image not found!</em></p>
+</div> }
             else
             {
-                <div class="damselfly-navleft"></div>
-            }
-            <div class="damselfly-imagedisplay">
-                <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageService.GetImageThumbUrl(image, ThumbSize.Large)">
-            </div>
-            @if (nextImage != null && nextImage.ImageId != image.ImageId)
-            {
-                <a class="damselfly-navright chevron" href="/image/@nextImage.ImageId"/>
-            }
-            else
-            {
-                <div class="damselfly-navright"></div>
-            }
-        </div>
-    }
+<div class="damselfly-imagetitle">
+    <div class="damselfly-imagenavitem">
+        <a href="/"><i class="clickable-icon fa fa-reply" /></a>
+    </div>
+    <div class="damselfly-imagetitle">
+        Image: @image.FileName
+    </div>
 </div>
 
-@code { [Parameter]
+                <div class="damselfly-imagenav">
+                    @if (prevImage != null && prevImage.ImageId != image.ImageId)
+                    {
+    <a class="damselfly-navleft chevron flipchevron" href="/image/@prevImage.ImageId" /> }
+                    else
+                    {
+    <div class="damselfly-navleft"></div>}
+                    <div class="damselfly-imagedisplay">
+                        <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageService.GetImageThumbUrl(image, ThumbSize.Large)">
+                    </div>
+                    @if (nextImage != null && nextImage.ImageId != image.ImageId)
+                    {
+    <a class="damselfly-navright chevron" href="/image/@nextImage.ImageId" /> }
+                    else
+                    {
+    <div class="damselfly-navright"></div>}
+                </div>}
+</div>
+
+@code {
+    [Parameter]
     public string ImageName { get; set; }
 
     Image image;

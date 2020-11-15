@@ -1,4 +1,5 @@
 ﻿@page "/"
+@page "/folder/{FolderId}"
 
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services;
@@ -16,6 +17,25 @@
 </div>
 
 @code {
+        [Parameter]
+        public string FolderId { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        using var db = new ImageContext();
+
+        if (int.TryParse(FolderId, out var fID))
+        {
+            var folder = db.Folders.Where(x => x.FolderId.Equals(fID)).FirstOrDefault();
+
+            if (folder != null)
+            {
+                StatusService.Instance.StatusText = $"Selected folder {folder.Name}";
+                SearchService.Instance.Folder = folder;
+            }
+        }
+    }
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -25,11 +45,12 @@
         ViewDataService.ShowExport = false;
     }
 
+    // TODO: Don't think we need this
     [JSInvokable]
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public void GetUpdateState(string clientVersion)
     {
         Logging.Log($"Checking for update: {clientVersion}");
-    }
 
+    }
 }
