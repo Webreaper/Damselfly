@@ -589,6 +589,14 @@ app {
     align-content: center;
 }
 
+.damselfly-imagetitlebar {
+    display: flex;
+    flex: 1;
+    max-height: 30px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .damselfly-about{
     padding: 10px;
     display: flex;
@@ -615,21 +623,23 @@ app {
     flex-direction: row;
     justify-content: space-between;
     align-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .damselfly-imagenavitem{
     display: flex;
     flex: 1;
+    max-height: 30px;
 }
 
 .damselfly-imagetitle{
     display: flex;
-    flex: 6;
+    flex: 8;
 }
 
 .damselfly-navleft {
     display: flex;
+    top: 150px;
     width: 20px;
     height: calc( 100vh - 100px);
     order: 1;
@@ -646,6 +656,7 @@ app {
 
 .damselfly-navright {
     display: flex;
+    top: 150px;
     width: 20px;
     height: calc( 100vh - 100px);
     order: 3;
