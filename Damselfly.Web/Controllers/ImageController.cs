@@ -1,20 +1,19 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.ImageProcessing;
-using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Web.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Damselfly.Web.Controllers
 {
     [Produces("image/jpeg")]
     [Route("images")]
     [ApiController]
+    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller methods cannot be static")]
     public class ImageController : Controller
     {   
         [HttpGet("/rawimage/{imageId}")]
@@ -61,8 +60,10 @@ namespace Damselfly.Web.Controllers
                             path = "/no-image.png";
 
                         var stream = new FileStream(path, FileMode.Open);
-                        var result = new FileStreamResult(stream, "image/jpeg");
-                        result.FileDownloadName = image.FileName;
+                        var result = new FileStreamResult(stream, "image/jpeg")
+                        {
+                            FileDownloadName = image.FileName
+                        };
                         return result;
                     }
                 }
