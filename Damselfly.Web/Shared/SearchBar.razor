@@ -2,7 +2,6 @@
 @using Damselfly.Core.Services;
 @using BlazorDateRangePicker
 
-
 @inject ImageService imageService
 @inject SearchService searchService
 
@@ -15,7 +14,7 @@
     </div>
     <div class="damselfly-searchfilter">
         <label for="dateRangeBox"><i class="fa fa-calendar" /></label>
-        <DatePickerEx OnRangeSelect="@OnRangeSelect"/>
+        <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate"/>
     </div>
     <div class="damselfly-searchfilter">
         <label for="minSizeBox"><i class="fa fa-file" /></label>

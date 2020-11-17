@@ -4,8 +4,7 @@
 <div class="InputAddOn">
     <DateRangePicker @bind-StartDate="StartDate" @bind-EndDate="EndDate" id="dateRangeBox" placeholder="Date Range"
                      ApplyLabel="Search" Ranges="@DateRanges" AutoApply="true"
-                     MinDate="DateTimeOffset.MinValue"
-                     MaxDate="DateTimeOffset.MaxValue"
+                     MinDate="@StartDate" MaxDate="@EndDate"
                      OnRangeSelect="@OnRangeSelect">
         <PickerTemplate>
             <div class="InputAddOn">
@@ -21,8 +20,14 @@
 
 @code {
     public Dictionary<string, DateRange> DateRanges { get; } = new Dictionary<string, DateRange>();
-    DateTimeOffset? StartDate { get; set; }
-    DateTimeOffset? EndDate { get; set; }
+
+    DateTimeOffset? startDate, endDate;
+
+    [Parameter]
+    public DateTimeOffset? StartDate { get { return startDate; } set { if (value.HasValue && value.Value.Year > 1000) startDate = value.Value; else startDate = null; } }
+
+    [Parameter]
+    public DateTimeOffset? EndDate { get { return endDate; } set { if (value.HasValue && value.Value.Year < 9000) endDate = value.Value; else endDate = null; } }
 
     [Parameter]
     public EventCallback<DateRange> OnRangeSelect { get; set; }

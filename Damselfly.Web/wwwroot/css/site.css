@@ -835,8 +835,8 @@ app {
 }
 
 .InputAddOn-item {
-background-color: rgba(127, 158, 108, 0.1);
-color: #668866;
+background-color: rgba(225, 245, 225, 0.9);
+color: #338833;
 font: inherit;
 font-weight: normal;
 }
@@ -844,7 +844,7 @@ font-weight: normal;
 .InputAddOn-field,
 .InputAddOn-item {
 border: 1px solid rgba(147, 128, 108, 0.25);
-padding: 0.5em 0.75em;
+padding: 0.4em 0.65em;
 }
 
 .InputAddOn-field:first-child,
