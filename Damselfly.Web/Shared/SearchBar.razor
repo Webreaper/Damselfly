@@ -7,18 +7,15 @@
 
 <div class="damselfly-searchbar">
     <div class="damselfly-searchfilter">
-        <label for="searchBox"><i class="fa fa-search" /></label>
-        <ConflatedTextBox id="searchBox" placeholder="Enter a search term" OnKeyPressed="@KeyChanged" OnValueChanged="@DoSearch" TextValue="@SearchText" />
+        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnKeyPressed="@KeyChanged" OnValueChanged="@DoSearch" TextValue="@SearchText" />
         <input id="tags" title="Search tags only (ignore filename)" type="checkbox" @bind="@searchService.TagsOnly" />
         <label for="tags"><i class="fa fa-tags" /></label>
     </div>
     <div class="damselfly-searchfilter">
-        <label for="dateRangeBox"><i class="fa fa-calendar" /></label>
         <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate"/>
     </div>
     <div class="damselfly-searchfilter">
-        <label for="minSizeBox"><i class="fa fa-file" /></label>
-        <ConflatedTextBox placeholder="Minimum file size" OnKeyPressed="@KeyChangedMinSize" OnValueChanged="@DoSearch" TextValue="@MinSize" />
+        <ConflatedTextBox IconClass="fa-file" placeholder="Minimum file size" OnKeyPressed="@KeyChangedMinSize" OnValueChanged="@DoSearch" TextValue="@MinSize" />
     </div>
 </div>
 

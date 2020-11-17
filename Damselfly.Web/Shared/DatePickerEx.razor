@@ -8,6 +8,7 @@
                      OnRangeSelect="@OnRangeSelect">
         <PickerTemplate>
             <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Date Filter"><i class="fa fa-calendar" /></div>
                 <input id="@context.ParentId" type="text" class="InputAddOn-field" value="@context.FormattedRange"
                        @oninput="context.OnTextInput"
                        @onfocusin="context.Open"

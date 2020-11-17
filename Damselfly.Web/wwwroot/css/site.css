@@ -822,6 +822,7 @@ app {
     display: flex;
 }
 
+/* TODO: Rename these */
 .InputAddOn-field {
     flex: 1;
 }
