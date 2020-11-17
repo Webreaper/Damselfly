@@ -2,7 +2,7 @@
 
 <div class="InputAddOn">
     <input class="InputAddOn-field" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
-    <button class="InputAddOn-item" @onclick="@(() => ClearText())"><i class="fa fa-times-circle"/></button>
+    <button class="InputAddOn-item" title="Clear Filter" @onclick="@(() => ClearText())"><i class="fa fa-times-circle"/></button>
 </div>
 
 @code {
@@ -41,11 +41,8 @@
         if (OnKeyPressed != null)
             OnKeyPressed(newValue);
 
-        if (!tempValue.Equals(newValue))
-        {
-            tempValue = newValue;
-            conflator.HandleKeyPress(SearchCallback);
-        }
+        tempValue = newValue;
+        conflator.HandleKeyPress(SearchCallback);
     }
 
     private void SearchCallback(object state)

@@ -4,8 +4,8 @@
 <div class="InputAddOn">
     <DateRangePicker @bind-StartDate="StartDate" @bind-EndDate="EndDate" id="dateRangeBox" placeholder="Date Range"
                      ApplyLabel="Search" Ranges="@DateRanges" AutoApply="true"
-                     MinDate="DateTimeOffset.Now.AddYears(-10)"
-                     MaxDate="DateTimeOffset.Now"
+                     MinDate="DateTimeOffset.MinValue"
+                     MaxDate="DateTimeOffset.MaxValue"
                      OnRangeSelect="@OnRangeSelect">
         <PickerTemplate>
             <div class="InputAddOn">
@@ -13,7 +13,7 @@
                        @oninput="context.OnTextInput"
                        @onfocusin="context.Open"
                        @onfocusout="@context.LostFocus" />
-                <button class="InputAddOn-item" type="button" @onclick="@(e => ResetClick(e, context))"><i class="fa fa-times-circle" /></button>
+                <button class="InputAddOn-item" title="Reset Filter" type="button" @onclick="@(e => ResetClick(e, context))"><i class="fa fa-times-circle" /></button>
             </div>
         </PickerTemplate>
     </DateRangePicker>
@@ -51,5 +51,5 @@
         // Close the picker
         picker.Close();
         // Fire OnRangeSelectEvent
-        picker.OnRangeSelect.InvokeAsync(new DateRange());
+        picker.OnRangeSelect.InvokeAsync(new DateRange { Start = DateTime.MinValue, End = DateTime.MaxValue } );
     }}
