@@ -1,0 +1,55 @@
+﻿@using Damselfly.Web.Data
+@using BlazorDateRangePicker
+
+<div class="InputAddOn">
+    <DateRangePicker @bind-StartDate="StartDate" @bind-EndDate="EndDate" id="dateRangeBox" placeholder="Date Range"
+                     ApplyLabel="Search" Ranges="@DateRanges" AutoApply="true"
+                     MinDate="DateTimeOffset.Now.AddYears(-10)"
+                     MaxDate="DateTimeOffset.Now"
+                     OnRangeSelect="@OnRangeSelect">
+        <PickerTemplate>
+            <div class="InputAddOn">
+                <input id="@context.ParentId" type="text" class="InputAddOn-field" value="@context.FormattedRange"
+                       @oninput="context.OnTextInput"
+                       @onfocusin="context.Open"
+                       @onfocusout="@context.LostFocus" />
+                <button class="InputAddOn-item" type="button" @onclick="@(e => ResetClick(e, context))"><i class="fa fa-times-circle" /></button>
+            </div>
+        </PickerTemplate>
+    </DateRangePicker>
+</div>
+
+@code {
+    public Dictionary<string, DateRange> DateRanges { get; } = new Dictionary<string, DateRange>();
+    DateTimeOffset? StartDate { get; set; }
+    DateTimeOffset? EndDate { get; set; }
+
+    [Parameter]
+    public EventCallback<DateRange> OnRangeSelect { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // TODO: Add more here
+            var Jan1ThisYear = new DateTime(DateTime.UtcNow.Year, 1, 1);
+
+            DateRanges.Add("This year", new DateRange { Start = Jan1ThisYear, End = DateTime.UtcNow });
+            DateRanges.Add("Last year", new DateRange { Start = Jan1ThisYear.AddYears(-1), End = Jan1ThisYear.AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-1).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-1), End = Jan1ThisYear.AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-2).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-2), End = Jan1ThisYear.AddYears(-1).AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-3).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-3), End = Jan1ThisYear.AddYears(-2).AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-4).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-4), End = Jan1ThisYear.AddYears(-3).AddSeconds(-1) });
+            DateRanges.Add($"{Jan1ThisYear.AddYears(-5).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-5), End = Jan1ThisYear.AddYears(-4).AddSeconds(-1) });
+        }
+    }
+
+    void ResetClick(MouseEventArgs e, DateRangePicker picker)
+    {
+        StartDate = null;
+        EndDate = null;
+        // Close the picker
+        picker.Close();
+        // Fire OnRangeSelectEvent
+        picker.OnRangeSelect.InvokeAsync(new DateRange());
+    }}

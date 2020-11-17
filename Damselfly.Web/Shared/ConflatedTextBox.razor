@@ -1,6 +1,9 @@
 ﻿@using Damselfly.Web.Data
 
-<input placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput"/>
+<div class="InputAddOn">
+    <input class="InputAddOn-field" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
+    <button class="InputAddOn-item" @onclick="@(() => ClearText())"><i class="fa fa-times-circle"/></button>
+</div>
 
 @code {
     [Parameter]
@@ -21,11 +24,16 @@
     private KeyPressConflator conflator = new KeyPressConflator();
     private string tempValue;
 
+    private void ClearText()
+    {
+        HandleChange(string.Empty);
+    }
+
     // Used as a proxy to the underlying input box
     private string ProxyValue
     {
-        get {return tempValue; } // TODO - don't think we need this
-        set { HandleChange( value ); }
+        get { return tempValue; } // TODO - don't think we need this
+        set { HandleChange(value); }
     }
 
     private void HandleChange(string newValue)
@@ -33,12 +41,14 @@
         if (OnKeyPressed != null)
             OnKeyPressed(newValue);
 
-        tempValue = newValue;
-
-        conflator.HandleKeyPress( SearchCallback );
+        if (!tempValue.Equals(newValue))
+        {
+            tempValue = newValue;
+            conflator.HandleKeyPress(SearchCallback);
+        }
     }
 
-    private void SearchCallback( object state )
+    private void SearchCallback(object state)
     {
         if (OnValueChanged != null)
             OnValueChanged(tempValue);

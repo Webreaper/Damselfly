@@ -19,6 +19,7 @@
     <Content Remove="wwwroot\js\BlazorVirtualScrolling.js" />
     <Content Remove="Properties\launchSettings.json" />
     <Content Remove="Pages\UploadPage.razor" />
+    <Content Remove="wwwroot\desktop\damselfly-macos.zip" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\Images\" />
