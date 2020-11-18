@@ -47,6 +47,7 @@ namespace Damselfly.Core.Services
         /// which has a summary of the number of images in each folder
         /// and the most recent modified date of any image in the folder.
         /// </summary>
+        /// TODO: Make this async
         public void LoadFolders()
         {
             using (var db = new ImageContext())
@@ -63,8 +64,8 @@ namespace Damselfly.Core.Services
                 var results = folderQuery.Select(x =>
                             new FolderListItem {
                                     Folder = x,
-                                    ImageCount = x.Images.Count(),
-                                    MaxImageDate = x.Images.Max(i => i.MetaData.DateTaken)
+                                    ImageCount = x.Images.Count,
+                                    MaxImageDate = x.Images.Max(i => i.MetaData != null ? i.MetaData.DateTaken : DateTime.MinValue)
                                 })
                             .OrderByDescending(x => x.MaxImageDate)
                             .ToArray();

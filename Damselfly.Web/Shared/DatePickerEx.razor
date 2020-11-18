@@ -5,7 +5,8 @@
     <DateRangePicker @bind-StartDate="StartDate" @bind-EndDate="EndDate" id="dateRangeBox" placeholder="Date Range"
                      ApplyLabel="Search" Ranges="@DateRanges" AutoApply="true"
                      MinDate="@StartDate" MaxDate="@EndDate"
-                     OnRangeSelect="@OnRangeSelect">
+                     OnRangeSelect="@OnRangeSelect"
+                     DateFormat="dd-MMM-yy">
         <PickerTemplate>
             <div class="InputAddOn">
                 <div class="InputAddOn-item" title="Date Filter"><i class="fa fa-calendar" /></div>

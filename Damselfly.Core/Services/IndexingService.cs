@@ -426,27 +426,8 @@ namespace Damselfly.Core.Services
                         foldersChanged = true;
                     }
 
-                    // Now query the DB for child folders of our current folder
-                    var dbChildDirs = db.Folders.Where(x => x.ParentFolderId == folderToScan.FolderId).ToList();
-
-                    // ...and then look for any DB folders that aren't included in the list of sub-folders.
-                    // That means they've been removed from the disk, and should be removed from the DB.
-                    var missingDirs = dbChildDirs.Where(f => !subFolders.Select(x => x.FullName)
-                                                                        .Contains(f.Path, StringComparer.OrdinalIgnoreCase))
-                                                                        .ToList();
-
-                    if (missingDirs.Any())
-                    {
-                        missingDirs.ForEach(x => Logging.LogVerbose("Deleting folder {0}", x.Path));
-                        missingDirs.ForEach(x => RemoveFileWatcher(x.Path));
-
-                        db.RemoveRange(missingDirs);
-
-                        Logging.Log("Removing {0} deleted folders...", missingDirs.Count());
-                        // TODO: Use bulk delete?
-                        db.SaveChanges("DeleteFolders");
-                        foldersChanged = true;
-                    }
+                    // Now, check for missing folders, and clean up if appropriate.
+                    foldersChanged = RemoveMissingChildDirs(db, folderToScan) || foldersChanged;
 
                     if (foldersChanged)
                         NotifyFolderChanged();
@@ -460,6 +441,8 @@ namespace Damselfly.Core.Services
             catch (Exception ex)
             {
                 Logging.LogError($"Unexpected exception scanning folder {folderToScan.Name}: {ex.Message}");
+                if( ex.InnerException != null )
+                    Logging.LogError($" Inner exception: {ex.InnerException.Message}");
             }
 
             // Scan subdirs recursively.
@@ -467,6 +450,58 @@ namespace Damselfly.Core.Services
             {
                 IndexFolder(sub, folderToScan);
             }
+        }
+
+        /// <summary>
+        /// Checks the folder, and any recursive children, to ensure it still exists
+        /// on the disk. If it doesn't, removes the child folders from the databas.
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="folderToScan"></param>
+        /// <returns>True if any folders were updated/changed</returns>
+        private bool RemoveMissingChildDirs(ImageContext db, Folder folderToScan)
+        {
+            bool foldersChanged = false;
+
+            try
+            {
+                // Now query the DB for child folders of our current folder
+                var dbChildDirs = db.Folders.Where(x => x.ParentFolderId == folderToScan.FolderId).ToList();
+
+                foreach (var childFolder in dbChildDirs)
+                {
+                    // Depth-first removal of child folders
+                    foldersChanged = RemoveMissingChildDirs(db, childFolder);
+                }
+
+                // ...and then look for any DB folders that aren't included in the list of sub-folders.
+                // That means they've been removed from the disk, and should be removed from the DB.
+                var missingDirs = dbChildDirs.Where(f => !System.IO.Directory.Exists(f.Path)).ToList();
+
+                if (missingDirs.Any())
+                {
+                    missingDirs.ForEach(x =>
+                    {
+                        Logging.LogVerbose("Deleting folder {0}", x.Path);
+                        RemoveFileWatcher(x.Path);
+                    });
+
+                    db.RemoveRange(missingDirs);
+
+                    Logging.Log("Removing {0} deleted folders...", missingDirs.Count());
+                    // Don't use bulk delete; we want EFCore to remove the linked images
+                    db.SaveChanges("DeleteFolders");
+                    foldersChanged = true;
+                }
+
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Unexpected exception scanning for removed folders {folderToScan.Name}: {ex.Message}");
+                if (ex.InnerException != null)
+                    Logging.LogError($" Inner exception: {ex.InnerException.Message}");
+            }
+            return foldersChanged;
         }
 
         /// <summary>
