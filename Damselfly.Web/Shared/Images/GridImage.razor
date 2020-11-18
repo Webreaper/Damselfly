@@ -60,15 +60,18 @@ else
     {
         if (firstRender)
         {
+            // Could use the following:
+            //   ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
+            // but it's an order of magnitude slower (probably because the controller
+            // has to hit the DB etc)
             ImageUrl = await Task.FromResult<string>(ImageService.GetImageThumbUrl(CurrentImage.Image, ThumbnailSize));
-            // ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
+
         }
     }
 
     protected override async Task OnParametersSetAsync()
     {
         ImageUrl = await Task.FromResult<string>(ImageService.GetImageThumbUrl(CurrentImage.Image, ThumbnailSize));
-        // ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
     }
 
     void OnClick(ItemClickEventArgs e)
