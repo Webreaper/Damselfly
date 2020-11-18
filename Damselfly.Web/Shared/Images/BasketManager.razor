@@ -67,14 +67,14 @@ else
 
     public async Task LoadData()
     {
-        var watch = new Stopwatch("LoadBaskets");
+        await InvokeAsync(() => {
+            var watch = new Stopwatch("LoadBaskets");
+            using var db = new ImageContext();
+            this.baskets.Clear();
+            this.baskets.AddRange(db.Baskets);
 
-        using var db = new ImageContext();
-        // TODO: Do we need to load this every time?
-        this.baskets.Clear();
-        this.baskets.AddRange(db.Baskets);
-
-        watch.Stop();
+            watch.Stop();
+        });
 
         StateHasChanged();
     }

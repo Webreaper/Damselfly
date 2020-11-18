@@ -17,7 +17,6 @@ namespace Damselfly.Web.Controllers
     public class ImageController : Controller
     {   
         [HttpGet("/rawimage/{imageId}")]
-        [ResponseCache(CacheProfile = "Test")]
         public async Task<IActionResult> Image(string imageId, CancellationToken cancel)
         {
             if (int.TryParse(imageId, out var id))

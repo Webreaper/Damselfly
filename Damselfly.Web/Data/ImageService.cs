@@ -47,6 +47,15 @@ namespace Damselfly.Web.Data
             return Task.FromResult(images);
         }
 
+        public static Task<Folder> GetFolderAsync( int folderId )
+        {
+            using var db = new ImageContext();
+
+            var folder = db.Folders.Where(x => x.FolderId.Equals(folderId)).FirstOrDefault();
+
+            return Task.FromResult( folder );
+        }
+
         /// <summary>
         /// TODO: Move to a dedicated TagService
         /// </summary>

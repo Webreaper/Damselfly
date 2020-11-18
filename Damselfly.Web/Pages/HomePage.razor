@@ -17,16 +17,14 @@
 </div>
 
 @code {
-        [Parameter]
-        public string FolderId { get; set; }
+    [Parameter]
+    public string FolderId { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        using var db = new ImageContext();
-
         if (int.TryParse(FolderId, out var fID))
         {
-            var folder = db.Folders.Where(x => x.FolderId.Equals(fID)).FirstOrDefault();
+            var folder = await ImageService.GetFolderAsync(fID);
 
             if (folder != null)
             {

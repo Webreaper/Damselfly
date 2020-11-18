@@ -76,14 +76,14 @@
 
     public async Task LoadData()
     {
-        var watch = new Stopwatch("LoadConfigs");
-
-        using var db = new ImageContext();
-        // TODO: Do we need to load this every time?
-        this.configs.Clear();
-        this.configs.AddRange(db.DownloadConfigs);
-
-        watch.Stop();
+        await InvokeAsync(() =>
+        {
+            var watch = new Stopwatch("LoadConfigs");
+            using var db = new ImageContext();
+            this.configs.Clear();
+            this.configs.AddRange(db.DownloadConfigs);
+            watch.Stop();
+        });
 
         StateHasChanged();
     }
