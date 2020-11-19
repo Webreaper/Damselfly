@@ -8,17 +8,18 @@ EXPOSE 6363
 # First, build the desktop app
 FROM node as desktop
 ARG DAMSELFLY_VERSION
-RUN echo Damselfly version ${DAMSELFLY_VERSION}
+RUN echo Damselfly Desktop version ${DAMSELFLY_VERSION}
 RUN apt-get update && apt-get install -y zip
 COPY Damselfly.Desktop Damselfly.Desktop
 WORKDIR "/Damselfly.Desktop"
 RUN yarn install &&  yarn version --new-version ${DAMSELFLY_VERSION} && yarn dist
-RUN zip /damselfly-macos.zip ./dist/*.dmg
+WORKDIR "/Damselfly.Desktop/dist"
+RUN zip /damselfly-macos.zip *.dmg
 
 # Now build the app itself
 FROM mcr.microsoft.com/dotnet/sdk:$SDKVERSION AS build
 ARG DAMSELFLY_VERSION
-RUN echo Damselfly version ${DAMSELFLY_VERSION}
+RUN echo Damselfly Server version ${DAMSELFLY_VERSION}
 WORKDIR /src
 COPY Damselfly.Web/Damselfly.Web.csproj Damselfly.Web/
 COPY Damselfly.Core/Damselfly.Core.csproj Damselfly.Core/
