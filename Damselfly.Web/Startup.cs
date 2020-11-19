@@ -118,11 +118,11 @@ namespace Damselfly.Web
             SearchService.Instance.PreLoadSearchData();
             BasketService.Instance.Initialise();
 
-            if (IndexingService.EnableIndexing)
-                IndexingService.Instance.StartService();
+            //if (IndexingService.EnableIndexing)
+            //    IndexingService.Instance.StartService();
 
-            if (IndexingService.EnableThumbnailGeneration)
-                ThumbnailService.Instance.StartService();
+            //if (IndexingService.EnableThumbnailGeneration)
+            //    ThumbnailService.Instance.StartService();
 
             Logging.Log("Preloading complete");
 

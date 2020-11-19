@@ -58,9 +58,15 @@ namespace Damselfly.Core.Models
                 .WithOne(b => b.BasketEntry)
                 .HasForeignKey<BasketEntry>(e => e.ImageId);
 
+            modelBuilder.Entity<Image>()
+                .HasOne(img => img.MetaData)
+                .WithOne(meta => meta.Image)
+                .HasForeignKey<ImageMetaData>(i => i.ImageId);
+
             modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
             modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });
             modelBuilder.Entity<Image>().HasIndex(x => x.LastUpdated);
+            modelBuilder.Entity<Image>().HasIndex(x => x.FileName);
             modelBuilder.Entity<Image>().HasIndex(x => x.FileLastModDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.FolderScanDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.Path);

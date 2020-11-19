@@ -4,13 +4,6 @@ ARG RUNTIMEVERSION=5.0-alpine
 FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS base
 WORKDIR /app
 EXPOSE 6363
-RUN mkdir -p ./Damselfly.Web/wwwroot/desktop
-# Copy the mac desktop app into the image (this will be built outside docker)
-COPY ./Damselfly.Web/wwwroot/desktop/damselfly-macos.zip /Damselfly.Web/wwwroot/desktop
-# Copy the entrypoint script
-COPY ./damselfly-entrypoint.sh /
-RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
-ADD VERSION .
 
 # First, build the Windows desktop app
 # FROM electronuserland/builder:wine as desktop
@@ -23,7 +16,6 @@ ADD VERSION .
 # RUN yarn version --new-version ${DAMSELFLY_VERSION} 
 # RUN yarn distwin
 # WORKDIR "/Damselfly.Desktop/dist"
-# RUN ls
 # RUN zip /damselfly-win.zip *.*
 
 # Now build the app itself
@@ -50,11 +42,20 @@ WORKDIR /app
 # This may re-copy the desktop/* apps, but who cares.
 COPY --from=publish /app/publish .
 
+# Copy the mac desktop app into the image (this will be built outside docker)
+# TODO: Maybe do this in the publish step?
+RUN mkdir -p ./wwwroot/desktop
+COPY ./Damselfly.Web/wwwroot/desktop/damselfly-macos.zip ./wwwroot/desktop
+# Copy the entrypoint script
+COPY ./damselfly-entrypoint.sh /
+RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
+ADD VERSION .
+
 
 # Add Microsoft fonts that'll be used for watermarking
-RUN apk add --no-cache msttcorefonts-installer fontconfig
-RUN update-ms-fonts
+RUN apk add --no-cache msttcorefonts-installer fontconfig && update-ms-fonts
 
+# Add ExifTool
 RUN apk --update add exiftool && rm -rf /var/cache/apk/*
 
 # Make and install exiftool if we want a newer version

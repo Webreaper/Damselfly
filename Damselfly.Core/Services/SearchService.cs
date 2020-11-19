@@ -128,11 +128,14 @@ namespace Damselfly.Core.Services
 
                     images = images.Include(x => x.MetaData);
 
-                    // Always filter by date - because if there's no filter
-                    // set then they'll be set to min/max date.
-                    images = images.Where(x => x.MetaData == null ||
-                                              (x.MetaData.DateTaken >= query.MinDate &&
-                                               x.MetaData.DateTaken <= query.MaxDate ));
+                    if (query.MinDate > DateTime.MinValue || query.MaxDate < DateTime.MaxValue)
+                    {
+                        // Always filter by date - because if there's no filter
+                        // set then they'll be set to min/max date.
+                        images = images.Where(x => x.MetaData == null ||
+                                                  (x.MetaData.DateTaken >= query.MinDate &&
+                                                   x.MetaData.DateTaken <= query.MaxDate));
+                    }
 
                     if( query.MinSizeKB > ulong.MinValue )
                     {

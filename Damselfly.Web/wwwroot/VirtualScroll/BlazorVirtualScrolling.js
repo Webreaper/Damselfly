@@ -9,6 +9,7 @@ var blazorVirtualScrolling = {
                 (e) => {
                     cmp.invokeMethodAsync("VirtualScrollingSetView", blazorVirtualScrolling.getScrollView(ref));
 
+
                 });
         }
 
