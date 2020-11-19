@@ -1,12 +1,14 @@
 {
   "name": "Damselfly",
-  "version": "1.0.52",
+  "version": "1.0.81",
   "description": "Damselfy Desktop App",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "distmac": "electron-builder --mac",
+    "distwin": "electron-builder --win"
   },
   "repository": "https://github.com/webreaper/Damselfly",
   "keywords": [

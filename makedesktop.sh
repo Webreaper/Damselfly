@@ -2,7 +2,7 @@ cd Damselfly.Desktop
 npm install
 npm version $1
 rm -rf ./dist
-yarn dist
+yarn distmac
 mkdir -p ../Damselfly.Web/wwwroot/desktop
 cd dist 
 rm ../../Damselfly.Web/wwwroot/desktop/damselfly-macos.zip
