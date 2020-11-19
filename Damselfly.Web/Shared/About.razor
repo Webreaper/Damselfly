@@ -4,17 +4,18 @@
 
 <div>
     <img src="damselfly-logo.png" title="Damselfly" />
-    <h2>Damselfly v<span/>@Version</h2>
+    <h2>Damselfly v<span />@Version</h2>
     <h4>Server-based Digital Asset Management system</h4>
     <p>&copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</p>
+    <p>ExifTool version: v<span />@MetaDataService.ExifToolVer</p>
     <Stats />
     <h4>Damselfly Desktop</h4>
     @if (isDesktopHosted)
     {
-        <p>Running in the Damselfly Desktop container, v<span/>@DesktopVersion.</p>
+        <p>Running in the Damselfly Desktop container, v<span />@DesktopVersion.</p>
     }
     <p>
-        Download v<span/>@Version of the Desktop App here:
+        Download v<span />@Version of the Desktop App here:
         &nbsp;
         @if (DownloadService.DesktopAppInfo.MacOSApp != null)
         {

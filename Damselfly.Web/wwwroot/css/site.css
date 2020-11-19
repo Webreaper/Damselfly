@@ -277,6 +277,7 @@ app {
 .damselfly-checkbox:checked {
     background-color: #aaffaa;
     border: 2px solid #779977;
+    content: '\2713';
 }
 
 .damselfly-checkbox:checked:hover {

@@ -22,10 +22,30 @@ namespace Damselfly.Core.Services
     public class MetaDataService
     {
         public static MetaDataService Instance { get; private set; }
+        public static string ExifToolVer { get; private set; }
 
         public MetaDataService()
         {
             Instance = this;
+
+            GetExifToolVersion();
+        }
+
+        /// <summary>
+        /// Check the ExifTool at startup
+        /// </summary>
+        private void GetExifToolVersion()
+        {
+            var process = new ProcessStarter();
+            if (process.StartProcess("exiftool", "-ver") )
+            {
+                ExifToolVer = process.OutputText;
+            }
+
+            if (string.IsNullOrEmpty(ExifToolVer))
+                ExifToolVer = "Unavailable";
+
+            Logging.Log($"ExifVersion: {ExifToolVer}");
         }
 
         /// <summary>
@@ -153,7 +173,7 @@ namespace Damselfly.Core.Services
 
                 var process = new ProcessStarter();
 
-                // Fix perl local/env issues for exiftoola
+                // Fix perl local/env issues for exiftool
                 var env = new Dictionary<string, string>();
                 env["LANGUAGE"] = "en_US.UTF-8";
                 env["LANG"] = "en_US.UTF-8";
