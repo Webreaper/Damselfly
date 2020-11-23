@@ -10,7 +10,7 @@
         <PickerTemplate>
             <div class="InputAddOn">
                 <div class="InputAddOn-item" title="Date Filter"><i class="fa fa-calendar" /></div>
-                <input id="@context.ParentId" type="text" class="InputAddOn-field" value="@context.FormattedRange"
+                <input id="@context.ParentId" placeholder="Date Filter" type="text" class="InputAddOn-field" value="@context.FormattedRange"
                        @oninput="context.OnTextInput"
                        @onfocusin="context.Open"
                        @onfocusout="@context.LostFocus" />
