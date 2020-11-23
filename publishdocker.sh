@@ -15,3 +15,8 @@ docker tag damselfly 192.168.1.120:7575/damselfly:$version
 docker push 192.168.1.120:7575/damselfly:latest
 docker push 192.168.1.120:7575/damselfly:$version
 
+docker tag damselfly webreaper/damselfly:latest
+docker tag damselfly webreaper/damselfly:$version-beta
+# docker push webreaper/damselfly:latest
+# docker push webreaper/damselfly:$version-beta
+
