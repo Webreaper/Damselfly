@@ -135,7 +135,7 @@ In order to find and retrieve photographs efficiently when writing about a parti
   * Con: Search ignores IPTC tags
   * Con: Only supports Amazon's native apps. No support for _any_ third party clients.
 
-## What is the Damelfly Architecture?
+## What is the Damselfly Architecture?
 
 Damselfly is written using C#/.Net Core and Blazor Server. The data model and DB access is using Entity Framework Core. Currently the server supports Sqlite, but a future enhancement may be to add support for PostGres, MySql or MariaDB.
 
