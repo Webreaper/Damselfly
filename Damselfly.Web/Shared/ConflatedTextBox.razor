@@ -1,0 +1,46 @@
+﻿@using Damselfly.Web.Data
+
+<input placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput"/>
+
+@code {
+    [Parameter]
+    public Action<string> OnKeyPressed { get; set; }
+    [Parameter]
+    public Action<string> OnValueChanged { get; set; }
+    [Parameter]
+    public string placeholder { get; set; }
+    [Parameter]
+    public string id { get; set; }
+
+    // TODO: Hacky. Must be a better way than this.
+    [Parameter]
+    public string TextValue { set { if (!initialValueSet) { tempValue = value; initialValueSet = true; } } }
+
+    bool initialValueSet = false;
+
+    private KeyPressConflator conflator = new KeyPressConflator();
+    private string tempValue;
+
+    // Used as a proxy to the underlying input box
+    private string ProxyValue
+    {
+        get {return tempValue; } // TODO - don't think we need this
+        set { HandleChange( value ); }
+    }
+
+    private void HandleChange(string newValue)
+    {
+        if (OnKeyPressed != null)
+            OnKeyPressed(newValue);
+
+        tempValue = newValue;
+
+        conflator.HandleKeyPress( SearchCallback );
+    }
+
+    private void SearchCallback( object state )
+    {
+        if (OnValueChanged != null)
+            OnValueChanged(tempValue);
+    }
+}

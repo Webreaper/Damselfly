@@ -1,0 +1,134 @@
+﻿@page "/logs"
+
+@using Damselfly
+
+<div class="row">
+    <div class="col">
+        <label for="logLevel">Log Level: </label>
+        <select name="logLevel" value="@LogLevel">
+            @foreach (var choice in logLevels)
+            {
+                <option value="@choice">
+                    @choice.ToString()
+                </option>
+            }
+        </select>
+    </div>
+</div>
+<div class="row">
+    <div class="col image-scroll-area">
+        <h4>@LogFileName</h4>
+        <table class="tasklist-table">
+            <tr>
+                <th>Timestamp</th>
+                <th>Log Level</th>
+                <th>Thread</th>
+                <th>Entry</th>
+            </tr>
+            @foreach (var line in logLines)
+            {
+                <tr>
+                    <td>@line.date</td>
+                    <td>@line.level</td>
+                    <td>@line.thread</td>
+                    <td>@line.entry</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+@code {
+
+    class LogEntry
+    {
+        public string date { get; set; }
+        public string level { get; set; }
+        public string entry { get; set; }
+        public string thread { get; set; }
+    }
+
+    List<LogEntry> logLines = new List<LogEntry>();
+    List<string> logLevels = new List<string> { "Normal", "Verbose", "Trace" };
+    private string LogFileName { get; set; }
+
+    public string LogLevel { get { return logLevel; } set { ChangeLogLevel(value); } }
+    private string logLevel = "Normal";
+    // TODO: Move to AfterRender
+    protected override async Task OnInitializedAsync()
+    {
+        var lines = await GetLogLines();
+        logLines.AddRange(lines);
+        StateHasChanged();
+    }
+
+    private void ChangeLogLevel( string newLevel )
+    {
+        logLevel = newLevel;
+
+        if( logLevel == "Normal")
+        {
+            Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Information);
+        }
+        else if( logLevel == "Verbose" )
+        {
+            Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Verbose);
+        }
+        else if (logLevel == "Trace")
+        {
+            Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Debug);
+        }
+
+        // TODO: Persist config setting here
+    }
+
+    private Task<LogEntry[]> GetLogLines()
+    {
+        LogEntry[] result = new LogEntry[0];
+
+        // TODO: Called twice?
+        var logDir = new DirectoryInfo(Logging.LogFolder);
+        var file = logDir.GetFiles("*.log")
+                         .OrderByDescending(x => x.LastWriteTimeUtc)
+                         .FirstOrDefault();
+
+        if (file != null)
+        {
+            LogFileName = file.Name;
+            result = File.ReadAllLines(file.FullName)
+                         .Reverse()
+                         .Select( x => CreateLogEntry( x ))
+                         .ToArray();
+        }
+
+        return Task.FromResult(result);
+    }
+
+    // TODO: Use a regex here
+    private LogEntry CreateLogEntry( string s )
+    {
+        var e = new LogEntry();
+        if (!string.IsNullOrWhiteSpace(s) && s.StartsWith( '[') )
+        {
+            try
+            {
+                string[] parts = s.Split(']');
+                if (parts.Length > 1)
+                {
+                    e.entry = parts[1];
+
+                    string[] parts2 = parts[0].Substring(1).Split('-');
+                    e.date = parts2[0];
+                    e.thread = parts2[1];
+                    e.level = parts2[2];
+                }
+            }
+            catch( Exception )
+            {
+                // Don't log - we'll get an infinite loop!
+            }
+        }
+
+        return e;
+    }
+}

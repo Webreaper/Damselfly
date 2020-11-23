@@ -1,0 +1,67 @@
+﻿@page "/tag"
+@page "/tag/{TagName}"
+
+@using Damselfly.Web.Data
+@using System.IO;
+@using Damselfly.Web.Shared.Images;
+@using Damselfly.Core.Services;
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+
+@if (images == null)
+{
+    if( tags == null )
+    {
+        <p><em>Loading tags...</em></p>
+    }
+    else
+    {
+        @foreach (var tag in tags)
+        {
+            <p><a href="/tag/@tag">@tag</a></p>
+        }
+    }
+}
+else
+{
+        <div class="top-row">
+            <h4>Tag: @TagName</h4>
+        </div>
+        <div class="wrapping_table">
+            @foreach (var image in images)
+            {
+                <GridImage CurrentImage=@image/>
+            }
+        </div>
+        <SelectedImages/>
+}
+
+@code {
+    [Parameter]
+    public string TagName { get; set; }
+        
+    SelectableImage[] images;
+    string[] tags;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if( ! string.IsNullOrEmpty( TagName ) )
+        {
+            var imgs = await imageService.GetTagImagesAsync( TagName );
+            images = imgs.Select( x => new SelectableImage( x ) ).ToArray();
+            tags = null;
+        }
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Called twice?
+        if( string.IsNullOrEmpty( TagName ) ) 
+        {
+            tags = await imageService.GetAllTagsAsync( null );
+            images = null;
+        }
+    }
+}

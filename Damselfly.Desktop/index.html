@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="date" content="09/03/2001">
+    <meta name="description" content="Damselfly Desktop Introduction Page">
+    <link rel="stylesheet" type="text/css" href="desktop.css">
+    <title>Damselfly Desktop</title>
+</head>
+
+<body vlink=#CB5022 alink=#FFA052 text="#abdac9" link=#CB5022 topmargin=0 leftmargin=0 marginwidth=0 marginheight=0>
+
+    <script type="text/javascript">
+
+        function validate() {
+            urlVal = document.getElementById("url").value;
+            document.getElementById('saveBtn').disabled = invalidUrl(urlVal);
+        }
+
+        function saveSettings() {
+            urlVal = document.getElementById("url").value;
+            folderVal = document.getElementById("folder").value;
+            saveConfig(urlVal, folderVal);
+        }
+    </script>
+
+    <p align=center><img title="Damselfly Desktop" src="DesktopLogo.png" style="width: 600px;"></p>
+    <p style="text-align: center; font-weight: bold; font-size: 16pt;""
+        >Please specify the settings for the Damselfly Desktop app.
+    </p>
+    <p style=" text-align: center; font-size: 16pt;">
+        URL for Damselfly: <input id="url" style="width: 350px;" autofocus onkeyup="validate()">
+    </p>
+    <p style="text-align: center; font-size: 16pt;">
+        Local Images Folder: <input id="folder" style="width: 350px;">
+    </p>
+    <p style="text-align: center; font-weight: bold; font-size: 16pt;">
+        <button id="saveBtn" type="submit" disabled onclick="saveSettings();">Save</button>
+    </p>
+
+    <br>
+
+    <p class=foot>&copy; Copyright Mark Otway</p>
+
+    <script>
+        function initialise() {
+            cfg = initConfig();
+            document.getElementById("url").value = cfg.url;
+            document.getElementById("folder").value = cfg.folder;
+            validate();
+        }
+
+        initialise();
+    </script>
+</body>
+
+</HTML>

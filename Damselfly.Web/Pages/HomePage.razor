@@ -1,0 +1,35 @@
+﻿@page "/"
+
+@using Damselfly.Web.Data
+@using Damselfly.Core.Services;
+@using Damselfly.Web.Shared.Images;
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject ViewDataService ViewDataService
+@inject NavigationService navContext
+@inject IModalService Modal
+
+<div class="damselfly-imagebrowser">
+    <SearchBar />
+    <ImageGrid />
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        navContext.CurrentImage = null;
+        ViewDataService.ShowBasket = true;
+        ViewDataService.ShowFolderList = true;
+        ViewDataService.ShowExport = false;
+    }
+
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public void GetUpdateState(string clientVersion)
+    {
+        Logging.Log($"Checking for update: {clientVersion}");
+    }
+
+}

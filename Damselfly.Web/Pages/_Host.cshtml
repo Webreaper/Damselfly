@@ -1,0 +1,80 @@
+﻿@page "/"
+@namespace Damselfly.Web.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!-- TODO: Clean up these dependencies once we've decided what we actually need. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Damselfly - Digital Asset Management</title>
+    <base href="~/" />
+    <link href="_content/Blazored.Typeahead/blazored-typeahead.css" rel="stylesheet" />
+    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
+    <link href="_content/Blazor.ContextMenu/blazorContextMenu.min.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link rel="stylesheet" href="_content/BlazorDateRangePicker/daterangepicker.min.css" />
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="VirtualScroll/BlazorVirtualScrolling.css" />
+    <link rel="stylesheet" href="_content/LoreSoft.Blazor.Controls/BlazorControls.css" />
+    <link rel="stylesheet" href="Cropper/cropper.css" />
+</head>
+<body>
+    <app>
+        @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
+    </app>
+
+    <script>window.InfiniteScroll = {
+            Init: function (eleId, DotNetRef) {
+                var el = document.getElementById(eleId);
+                el.addEventListener('scroll', function () {
+                    if ((el.scrollHeight - el.clientHeight - el.clientTop) - el.scrollTop < 5) {
+                        DotNetRef.invokeMethodAsync("LoadMore");
+                    }
+                });
+            }
+        }
+
+        function writeFileLocally(sourceUrl, localFilename) {
+            window.downloadUrl(sourceUrl, localFilename);
+        }
+
+        function downloadFile(filename) {
+            location.href = filename;
+        }
+
+        function doImageCrop(elementId, DotNetRef) {
+            var image = document.getElementById(elementId);
+            new Cropper(image, {
+                update: function (coords) {
+                    DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
+                }
+            });
+        }
+
+        function getDesktopVersion() {
+            return window.desktopVersion;
+        }
+
+        function checkDesktopUpgrade(desktopVersion, cb) {
+            console.log("Checking server version");
+            DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then( upgradeVersion => {
+                    if (upgradeVersion !== '') {
+                        cb(upgradeVersion);
+                    }
+                })
+        }
+
+        /* END EXTERNAL SOURCE */
+        /* BEGIN EXTERNAL SOURCE */</script>
+
+    <script src="_framework/blazor.server.js"></script>
+    <script src="_content/Blazor.ContextMenu/blazorContextMenu.min.js"></script>
+    <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
+    <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
+    <script src="VirtualScroll/BlazorVirtualScrolling.js"></script>
+    <script src="_content/LoreSoft.Blazor.Controls/BlazorControls.js"></script>
+    <script src="Cropper/cropper.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+﻿<div>
+    <div>
+        <h3>Stats:</h3>
+    </div>
+</div>
+<div>
+    <div>
+        @if (StatsReady)
+        {
+        <table>
+            <tr><td>Indexed Folders:</td><td>@TotalFolders</td></tr>
+            <tr><td>Indexed Images:</td><td>@TotalImages</td></tr>
+            <tr><td>Indexed Tags/Keywords:</td><td>@TotalTags</td></tr>
+            <tr><td>Pending MetaData Scans:</td><td>@PendingImages</td></tr>
+            <tr><td>Pending Thumbnails:</td><td>@PendingThumbs</td></tr>
+        </table>
+        }
+        else
+        {
+            <p>Preparing stats... please wait.</p>
+        }
+    </div>
+</div>
+
+@code {
+    bool StatsReady { get; set; } = false;
+    int TotalImages { get; set; }
+    int TotalFolders { get; set; }
+    int TotalTags { get; set; }
+    int PendingThumbs { get; set; }
+    int PendingImages { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Run(() => GetStatsSync());
+        }
+    }
+
+    protected void GetStatsSync()
+    {
+        using (var db = new ImageContext())
+        {
+            TotalImages = db.Images.Count();
+            TotalTags = db.Tags.Count();
+            TotalFolders = db.Folders.Count();
+            PendingThumbs = db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).Count();
+            PendingImages = db.Images.Where(x => x.MetaData == null ).Count();
+            StatsReady = true;
+            InvokeAsync(() => { StateHasChanged(); });
+        };
+    }
+}

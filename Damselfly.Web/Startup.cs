@@ -1,0 +1,181 @@
+using System;
+using System.IO;
+using Serilog;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
+using Blazored.Modal;
+using Damselfly.Web.Data;
+using Damselfly.Core.Services;
+using System.Collections.Generic;
+using Damselfly.Core.Models;
+using Tewr.Blazor.FileReader;
+
+namespace Damselfly.Web
+{
+    /// <summary>
+    /// Core initialisation and management of the startup of the app.
+    /// Responsible for bootstrapping all the services, and setting
+    /// up the scheduled tasks that we'll want to run.
+    /// </summary>
+    public class Startup
+    {
+        private static TaskService taskScheduler;
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        /// <summary>
+        /// Called by the Blazor runtime. We set up our services here.
+        /// </summary>
+        /// <param name="services"></param>
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddLogging();
+            services.AddRazorPages();
+            services.AddBlazoredModal();
+            services.AddBlazorContextMenu();
+            services.AddServerSideBlazor();
+            services.AddFileReaderService();
+            services.AddSingleton<ImageService>();
+            services.AddSingleton(StatusService.Instance);
+            services.AddSingleton(SearchService.Instance);
+            services.AddSingleton(ThumbnailService.Instance);
+            services.AddSingleton(FolderService.Instance);
+            services.AddSingleton(TaskService.Instance);
+            services.AddSingleton(DownloadService.Instance);
+            services.AddSingleton(IndexingService.Instance);
+            services.AddSingleton(BasketService.Instance);
+            services.AddSingleton(MetaDataService.Instance);
+            services.AddSingleton(ImageProcessService.Instance);
+            services.AddSingleton(WordpressService.Instance);
+            services.AddSingleton<NavigationService>();
+            services.AddSingleton<ViewDataService>();
+            services.AddSingleton<ConfigService>();
+        }
+
+        /// <summary>
+        /// Called by the Blazor runtime - this is where we setup the HTTP request pipeline and
+        /// initialise all the bits and pieces we need to run.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="env"></param>
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            if( Logging.Verbose )
+                app.UseSerilogRequestLogging(); // <-- Add this line
+
+            // Disable this for now
+            // app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
+                RequestPath = ThumbnailService.RequestRoot
+            });
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute("default", "{controller}/{action}");
+                endpoints.MapControllers();
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
+            });
+
+            string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
+
+            DownloadService.Instance.SetDownloadPath(contentRootPath);
+
+            // TODO: Fix this, or not if Skia doesn't need it
+            ImageProcessService.Instance.SetContentPath( contentRootPath );
+
+            Logging.Log("Preloading config, folders, images and selection...");
+
+            // TODO: Make all this async?
+            ConfigService.Instance.InitialiseCache();
+            FolderService.Instance.LoadFolders();
+            SearchService.Instance.PreLoadSearchData();
+            BasketService.Instance.Initialise();
+
+            if (IndexingService.EnableIndexing)
+                IndexingService.Instance.StartService();
+
+            if (IndexingService.EnableThumbnailGeneration)
+                ThumbnailService.Instance.StartService();
+
+            Logging.Log("Preloading complete");
+
+            StartTaskScheduler();
+
+        }
+
+        /// <summary>
+        /// Bootstrap the task scheduler - configuring all the background scheduled tasks
+        /// that we'll want to run periodically, such as indexing, thumbnail generation,
+        /// cleanup of temporary download files, etc., etc.
+        /// </summary>
+        private static void StartTaskScheduler()
+        {
+            taskScheduler = TaskService.Instance;
+
+            var tasks = new List<ScheduledTask>();
+
+            var cleanupFreq = new TimeSpan(1, 0, 0);
+            tasks.Add(new ScheduledTask
+            {
+                Type = ScheduledTask.TaskType.CleanupJobs,
+                ExecutionFrequency = cleanupFreq,
+                WorkMethod = () => {
+                        DownloadService.Instance.CleanUpOldDownloads(cleanupFreq);
+                        MetaDataService.Instance.CleanUpKeywordOperations(cleanupFreq);
+                   },
+                ImmediateStart = true
+            });
+
+            if( true )
+            {
+                var walCheckpoint = new ScheduledTask
+                {
+                    Type = ScheduledTask.TaskType.WALCheckpoint,
+                    ExecutionFrequency = new TimeSpan(2, 0, 0),
+                    WorkMethod = () =>
+                    {
+                        using (var db = new ImageContext())
+                        {
+                            db.FlushDBWriteCache();
+                        }
+                    }
+                };
+
+            }
+
+            foreach (var task in tasks)
+            {
+                taskScheduler.AddTaskDefinition(task);
+            }
+
+            taskScheduler.Start();
+        }
+    }
+}

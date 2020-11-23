@@ -1,0 +1,39 @@
+
+html *
+{
+   color: #33AA77 !important;
+   font-family: Arial !important;
+}
+
+A 
+{ 
+    color: #5588CC; 
+    font-weight: bold; 
+    text-decoration: none; 
+}
+
+A:hover 
+{ 
+    color: #77CC; 
+    text-decoration: underline; 
+}
+
+h1, h2, h3, h4, h5, h6 
+{ 
+    font-family: 'arial', 'helvetica', 'sans-serif'; 
+    color: #77CCAA 
+}
+
+body 
+{  
+    background-color: black; 
+    margin-bottom: 5px
+}
+
+p.foot 
+{
+    color: #338855; 
+    font: 10pt Arial; 
+    line-height: 100%; 
+    text-align: center 
+}

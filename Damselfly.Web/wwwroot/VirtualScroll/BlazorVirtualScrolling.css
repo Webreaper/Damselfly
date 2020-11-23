@@ -1,0 +1,13 @@
+﻿.blazor-virtual-scroll {
+    overflow-y: auto;
+    height: 90%;
+}
+
+.blazor-virtual-scroll-content {
+    position: relative;
+}
+
+.blazor-virtual-scroll-item {
+    position: absolute;
+    overflow: hidden;
+}

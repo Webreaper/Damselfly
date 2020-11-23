@@ -1,0 +1,162 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Damselfly.Core.Interfaces;
+using Damselfly.Core.Utils;
+
+namespace Damselfly.Core.ImageProcessing
+{
+    public class GraphicsMagicProcessor : IImageProcessor
+    {
+        // TODO: Add check that GM exists
+
+        // SkiaSharp doesn't handle .heic files... yet
+        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp" };
+
+        public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
+
+        const string imageMagickExe = "convert";
+        const string graphicsMagickExe = "gm";
+        private bool s_useGraphicsMagick = true;
+
+        public GraphicsMagicProcessor()
+        {
+            CheckToolStatus();
+        }
+
+        /// <summary>
+        /// Check which command-line processor stuff.
+        /// </summary>
+        private void CheckToolStatus()
+        {
+            ProcessStarter gmprocess = new ProcessStarter();
+            bool gmAvailable = gmprocess.StartProcess("gm", "-version");
+
+            if (!gmAvailable)
+            {
+                ProcessStarter improcess = new ProcessStarter();
+                bool imAvailable = improcess.StartProcess("convert", "--version");
+
+                if (imAvailable)
+                {
+                    var verString = gmprocess.OutputText?.Split('\n').FirstOrDefault();
+                    Logging.Log($"ImageMagick found: {verString}");
+                }
+                else
+                    throw new ApplicationException("Neither ImageMagick or GraphicsMagick were found.");
+            }
+            else
+            {
+                s_useGraphicsMagick = true;
+                var verString = gmprocess.OutputText?.Split('\n').FirstOrDefault();
+                Logging.Log($"GraphicsMagick found: {verString}");
+            }
+        }
+
+        /// <summary>
+        /// Convert the files to thumbnails by shelling out to either ImageMagick
+        /// or the faster GraphicsMagick.
+        /// </summary>
+        /// <param name="source">Source.</param>
+        /// <param name="sizes">Sizes.</param>
+        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        {
+            // Some useful unsharp and quality settings, plus by defining the max size of the JPEG, it 
+            // makes imagemagic more efficient with its memory allocation, so significantly faster. 
+            string args;
+            string exeToUse = s_useGraphicsMagick ? graphicsMagickExe : imageMagickExe;
+            int maxHeight = destFiles.Max(x => x.Value.height);
+            int maxWidth = destFiles.Max(x => x.Value.width);
+
+            if ( s_useGraphicsMagick )
+                args = string.Format(" convert -size {0}x{1} \"{2}\" -quality 90  -unsharp 0.5x0.5+1.25+0.0 ", maxHeight, maxWidth, source.FullName);
+            else
+                args = string.Format(" -define jpeg:size={0}x{1} \"{2}\" -quality 90 -unsharp 0.5x0.5+1.25+0.0 ", maxHeight, maxWidth, source.FullName);
+
+            FileInfo altSource = null;
+
+            List<string> argsList = new List<string>();
+
+            // First pre-check whether the thumbs exist - don't want to create them if they don't.
+            foreach (var pair in destFiles.OrderByDescending(x => x.Value.width))
+            {
+                var dest = pair.Key;
+                var config = pair.Value;
+
+                // File didn't exist, so add it to the command-line. 
+                if( s_useGraphicsMagick )
+                    argsList.Add( string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height, config.width, dest.FullName) );
+                else
+                    argsList.Add( string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height, config.width, dest.FullName) );
+            }
+
+            if( argsList.Any() )
+            {
+                var lastArg = argsList.Last();
+                lastArg = lastArg.Replace(" -write ", " ");
+                argsList[argsList.Count() - 1] = lastArg;
+
+                args += string.Join(" ", argsList);
+
+                if (altSource != null)
+                {
+                    source = altSource;
+                    Logging.LogVerbose("File {0} exists - using it as source for smaller thumbs.", altSource.Name);
+                }
+
+                Logging.LogVerbose("Converting file {0}", source);
+
+                Process process = new Process();
+
+                process.StartInfo.FileName = exeToUse;
+                process.StartInfo.Arguments = args;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.UseShellExecute = false;
+                process.OutputDataReceived += Process_OutputDataReceived;
+                process.ErrorDataReceived += Process_OutputDataReceived;
+
+                try
+                {
+                    Logging.LogVerbose("  Executing: {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+                    bool success = process.Start();
+
+                    if (success)
+                    {
+                        process.BeginErrorReadLine();
+                        process.BeginOutputReadLine();
+                        process.WaitForExit();
+
+                        if (process.ExitCode != 0)
+                            throw new Exception("Failed");
+                        else
+                            Logging.LogVerbose("Execution complete.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError("Conversion failed. Unable to start process: {0}", ex.Message);
+                }
+            }
+            else
+                Logging.LogVerbose("Thumbs already exist in all resolutions. Skipping...");
+        }
+
+        private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (!Logging.Verbose)
+                return;
+
+            if (!string.IsNullOrEmpty(e.Data))
+                Logging.LogVerbose(e.Data);
+        }
+
+        public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

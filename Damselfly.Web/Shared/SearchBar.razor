@@ -1,0 +1,51 @@
+﻿@using Damselfly.Web.Data
+@using Damselfly.Core.Services;
+@using BlazorDateRangePicker
+
+@inject ImageService imageService
+@inject SearchService searchService
+
+<div class="damselfly-searchbar">
+    <div class="damselfly-searchfilter">
+        <label for="searchBox"><i class="fa fa-search" /></label>
+        <ConflatedTextBox id="searchBox" placeholder="Enter a search term" OnKeyPressed="@KeyChanged" OnValueChanged="@DoSearch" TextValue="@SearchText" />
+        <input id="tags" title="Search tags only (ignore filename)" type="checkbox" @bind="@searchService.TagsOnly" />
+        <label for="tags"><i class="fa fa-tags" /></label>
+    </div>
+    <div class="damselfly-searchfilter">
+        <label for="dateRangeBox"><i class="fa fa-calendar" /></label>
+        <DateRangePicker id="dateRangeBox" MinDate="DateTimeOffset.Now.AddYears(-10)" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnRangeSelect" />
+    </div>
+    <div class="damselfly-searchfilter">
+        <label for="minSizeBox"><i class="fa fa-file" /></label>
+        <ConflatedTextBox placeholder="Minimum file size" OnKeyPressed="@KeyChangedMinSize" OnValueChanged="@DoSearch" TextValue="@MinSize" />
+    </div>
+</div>
+
+@code {
+
+    public string SearchText { get { return searchService.SearchText; } }
+    public string MinSize { get { return searchService.MinSizeKB.ToString(); } }
+
+    public void OnRangeSelect(DateRange range)
+    {
+        searchService.SetDateRange(range.Start.Date, range.End.Date);
+    }
+
+    private void KeyChanged(string newText)
+    {
+        if (!string.IsNullOrEmpty(newText))
+            StatusService.Instance.StatusText = $"Searching for keyword: {newText}...";
+    }
+
+    private void KeyChangedMinSize(string newText)
+    {
+        if (!string.IsNullOrEmpty(newText))
+            StatusService.Instance.StatusText = $"Searching for images larger than {newText}...";
+    }
+
+    private void DoSearch(string searchTerm)
+    {
+        searchService.SearchText = searchTerm;
+    }
+}

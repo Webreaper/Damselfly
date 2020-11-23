@@ -1,0 +1,20 @@
+﻿@page "/about"
+
+@inject ViewDataService ViewDataService
+
+<div class="damselfly-about">
+
+    <About />
+</div>
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.ShowFolderList = true;
+            ViewDataService.ShowExport = false;
+            ViewDataService.ShowBasket = true;
+        }
+    }
+}

@@ -1,0 +1,41 @@
+﻿
+@inherits LayoutComponentBase
+@inject ViewDataService ViewDataService
+@inject NavigationService navContext
+
+
+<div class="damselfly-sidebar">
+    <div>
+        <div>
+            <DamselflyLogo />
+
+            @if (navContext.CurrentImage != null)
+            {
+                <ImageProperties />
+            }
+            @if (ViewDataService.ShowBasket)
+            {
+                <SelectedImages />
+            }
+            @if (ViewDataService.ShowFolderList)
+            {
+                <FolderList />
+            }
+            @if (ViewDataService.ShowExport)
+            {
+                <ExportSettings />
+            }
+        </div>
+    </div>
+</div>
+
+@code { protected override void OnInitialized()
+{
+    base.OnInitialized();
+    ViewDataService.PropertyChanged += OnPropertyChanged;
+}
+
+private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+{
+    InvokeAsync(() => { StateHasChanged(); });
+} }

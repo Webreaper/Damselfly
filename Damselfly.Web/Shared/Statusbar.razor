@@ -1,0 +1,36 @@
+﻿@using Damselfly
+
+@inject StatusService StatService
+
+<div class="damselfly-statusbar">
+    <Toolbar />
+    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
+</div>
+
+@code
+{
+    private string StatusText { get; set; }
+
+    private void UpdateStatus(string newText)
+    {
+        InvokeAsync(() =>
+        {
+            StatusText = newText;
+            StateHasChanged();
+        });
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StatusService.Instance.OnChange += UpdateStatus;
+        }
+    }
+
+    public void Dispose()
+    {
+        StatusService.Instance.OnChange -= UpdateStatus;
+    }
+
+}

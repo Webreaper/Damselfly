@@ -1,0 +1,91 @@
+﻿
+@using Damselfly.Core.ImageProcessing
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject NavigationManager NavigationManager
+@inject WordpressService wpService;
+
+<div>
+    @if (!AddingConfig)
+    {
+        <select @onchange="ConfigChanged">
+            @foreach (var config in configs)
+            {
+                <option value="@config.Name">@config.Name</option>
+            }
+        </select>
+        <button title="Add Basket" @onclick="@(() => AddBasket())" class="btn btn-primary"><i class="fa fa-plus-circle" /></button>
+    }
+    else
+    {
+        <input placeholder="Config Name" class="tagEditor" @bind-value="NewConfigName" @bind-value:event="oninput" />
+        <button title="Save Config" @onclick="@(() => SaveConfig())" class="btn btn-primary"><i class="fa fa-save" /></button>
+        <button title="Cancel Adding" @onclick="@(() => CancelAdding())" class="btn btn-primary"><i class="fa fa-times-circle" /></button>
+    }
+</div>
+
+@code {
+    readonly List<ExportConfig> configs = new List<ExportConfig>();
+    bool AddingConfig { get; set; }
+    string NewConfigName { get; set; }
+
+    [Parameter]
+    public ExportConfig CurrentConfig { get; set; }
+
+    private void SaveConfig()
+    {
+        AddingConfig = false;
+
+        using var db = new ImageContext();
+
+        if( CurrentConfig.ExportConfigId == -1 )
+            db.DownloadConfigs.Add(CurrentConfig);
+        else
+            db.DownloadConfigs.Update(CurrentConfig);
+        db.SaveChanges("AddExportConfig");
+
+        StateHasChanged();
+    }
+
+    private void CancelAdding()
+    {
+        AddingConfig = false;
+        StateHasChanged();
+    }
+
+    private void AddBasket()
+    {
+        AddingConfig = true;
+        StateHasChanged();
+    }
+
+    private void ConfigChanged(ChangeEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadData();
+        }
+    }
+
+    public async Task LoadData()
+    {
+        var watch = new Stopwatch("LoadConfigs");
+
+        using var db = new ImageContext();
+        // TODO: Do we need to load this every time?
+        this.configs.Clear();
+        this.configs.AddRange(db.DownloadConfigs);
+
+        watch.Stop();
+
+        StateHasChanged();
+    }
+}
+

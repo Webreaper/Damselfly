@@ -1,0 +1,72 @@
+﻿@using System
+@using Damselfly.Web.Shared
+@inject IJSRuntime JsRuntime
+
+<div>
+    <img src="damselfly-logo.png" title="Damselfly" />
+    <h2>Damselfly v<span/>@Version</h2>
+    <h4>Server-based Digital Asset Management system</h4>
+    <p>&copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</p>
+    <Stats />
+    <h4>Damselfly Desktop</h4>
+    @if (isDesktopHosted)
+    {
+        <p>Running in the Damselfly Desktop container, v<span/>@DesktopVersion.</p>
+    }
+    <p>
+        Download v<span/>@Version of the Desktop App here:
+        &nbsp;
+        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
+        {
+            <a href="@DownloadService.DesktopAppInfo.MacOSApp">MacOS</a>
+        }
+        &nbsp;
+        @if (DownloadService.DesktopAppInfo.WindowsApp != null)
+        {
+            <a href="@DownloadService.DesktopAppInfo.WindowsApp">Windows</a>
+        }
+        &nbsp;
+        @if (DownloadService.DesktopAppInfo.LinuxApp != null)
+        {
+            <a href="@DownloadService.DesktopAppInfo.LinuxApp">Linux</a>
+        }
+    </p>
+    <h4>Credits/Thanks</h4>
+    <p>
+        Powered by <a href="http://blazor.net" target="_blank">Blazor</a>.
+        Icons by <a href="https://fontawesome.com/" target="_blank">Font-Awesome</a>.
+        Image Processing by <a href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</a> and <a href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</a>.
+        Virtual Scroll by <a href="https://github.com/wisne/InfiniteScroll-BlazorServer" target="_blank">Wisne</a>.
+    </p>
+</div>
+
+@code {
+    public bool isDesktopHosted { get; set; }
+    public string DesktopVersion { get; set; }
+
+    public string Version
+    {
+        get
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Probe for a js function which indicates we're in the electron container
+            DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
+
+            isDesktopHosted = !string.IsNullOrEmpty(DesktopVersion);
+
+            if( isDesktopHosted )
+            {
+                Logging.Log($"Desktop version: {DesktopVersion}");
+            }
+
+            StateHasChanged();
+        }
+    }
+}

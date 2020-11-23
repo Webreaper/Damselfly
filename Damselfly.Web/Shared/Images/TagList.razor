@@ -1,0 +1,139 @@
+﻿@using System.Linq
+@using Damselfly.Web.Data
+@using Damselfly.Core.Services
+@using LoreSoft.Blazor.Controls
+@using System.Collections.ObjectModel
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject MetaDataService iptcService
+@inject IndexingService indexService
+
+@if (CurrentImages != null && CurrentImages.Any())
+{
+    <div class="damselfly-taglist">
+        <div class="damselfly-addtag">
+            <div>
+                Add Tag:
+            </div>
+            <div>
+                <input placeholder="Add a keyword" class="tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
+            </div>
+        </div>
+        <div class="damselfly-addtag">
+            <div>
+                Tags:
+            </div>
+            <div>
+                <textarea placeholder="Add keywords" name="AllTags" class="tagEditor-multiline" @bind-value="AllTagsCSV" @bind-value:event="oninput" @onkeyup="ProcessTagEnterAll" />
+            </div>
+        </div>
+    </div>
+    }
+
+    @code {
+
+        [Parameter]
+        public Image[] CurrentImages { get; set; }
+        public string NewTag { get; set; }
+        public string AllTagsCSV { get; set; }
+
+        private IList<string> theImageTags;
+
+        private async Task<IList<string>> LoadImageTagsAsync()
+        {
+            return await Task.FromResult( GetImageTags().Select( x => x.Keyword ).ToList() );
+        }
+
+        private IList<Tag> GetImageTags()
+        {
+            try
+            {
+                var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
+
+                if (tagLists.Count() > 1)
+                {
+                    return tagLists.Aggregate((x, y) => x.Intersect(y))
+                               .OrderBy(x => x.Keyword)
+                               .ToList();
+                }
+                else if (tagLists.Count() == 1)
+                {
+                    return tagLists.FirstOrDefault().ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.Log($"Unable to get common tags: {ex}");
+            }
+
+            return new Tag[0];
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            theImageTags = await LoadImageTagsAsync();
+            AllTagsCSV = string.Join(", ", theImageTags);
+            StateHasChanged();
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            theImageTags = await LoadImageTagsAsync();
+            AllTagsCSV = string.Join(", ", theImageTags);
+            StateHasChanged();
+        }
+
+        void OnClick(ItemClickEventArgs e)
+        {
+            Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
+        }
+
+        private void SaveTheTag()
+        {
+        }
+
+        private void ProcessTagEnter(KeyboardEventArgs eventArgs)
+        {
+            if (eventArgs.Key == "Enter")        // fire on enter
+            {
+                Logging.Log("Saving new tag: " + NewTag);
+
+                InvokeAsync(() => { _ = iptcService.AddTagAsync(CurrentImages, NewTag); });
+
+                NewTag = string.Empty;
+            }
+
+        }
+
+        private void ProcessTagEnterAll(KeyboardEventArgs eventArgs)
+        {
+            if (eventArgs.Key == "Enter")        // fire on enter
+            {
+                Logging.Log("Saving tags: " + string.Join(", ", AllTagsCSV));
+
+                var updatedTags = AllTagsCSV.Split(',').Select( x => x.Trim() ).ToList();
+
+                // Now calculate the delta
+                var newTags = updatedTags.Except(theImageTags).ToList();
+                var removedTags = theImageTags.Except( updatedTags ).ToList();
+
+                InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, newTags, removedTags); });
+
+                // Now store the state
+                theImageTags = updatedTags;
+
+                // Hack until Blazor supports conditional preventDefault:
+                // https://github.com/dotnet/aspnetcore/issues/14517#issuecomment-559184498
+                AllTagsCSV = AllTagsCSV.Replace("\n", "");
+                StateHasChanged();
+            }
+        }
+
+        private async Task<IEnumerable<Tag>> SearchTags(string searchText)
+        {
+            using var db = new ImageContext();
+
+            return await Task.FromResult(indexService.CachedTags.Where(x => x.Keyword.StartsWith(searchText)));
+        }
+    }

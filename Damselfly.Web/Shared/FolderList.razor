@@ -1,0 +1,101 @@
+﻿
+@inject ImageService ImgService
+@inject SearchService searchService
+@inject FolderService folderService
+@implements IDisposable
+
+<div class="damselfly-folderlist toolwindow">
+    <div class="folder-search">
+        <label for="searchBox">
+            <i class="fa fa-search" />
+            <ConflatedTextBox placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
+        </label>
+    </div>
+    <div class="folder-scroll-area">
+        @if (folderItems == null)
+        {
+            <p>Loading...</p>
+            <Spinner />
+        }
+        else
+        {
+            <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
+                <i class="fa fa-folder-open folder-icon" /> All Folders
+            </div>
+            <VirtualScroll ItemType="FolderListItem" Items="@folderItems" ItemHeight="15">
+                <div class="folder-entry @FolderStyle(context.Folder.FolderId)" @onclick="@(() => SetFilterFolder(context.Folder))">
+                    <i class="fa fa-folder-open folder-icon" /> @context.Folder.Name (@context.ImageCount)
+                </div>
+            </VirtualScroll>
+        }
+    </div>
+</div>
+
+@code {
+    private string filterTerm;
+    public string FilterTerm { get { return filterTerm; } }
+
+    private List<FolderListItem> folderItems;
+
+    Folder SelectedItem { get; set; }
+    protected void SelectionChanged( Folder f )
+    {
+        //Logging.Log($"Selected folder {f.FolderId}");
+    }
+
+    string FolderStyle( int folderId )
+    {
+        if (folderId == -1 && searchService.Folder == null)
+            return "folder-entry-selected";
+
+        if( searchService.Folder?.FolderId == folderId )
+            return "folder-entry-selected";
+
+        return string.Empty;
+    }
+
+    private void DoFilter(string searchTerm)
+    {
+        filterTerm = searchTerm;
+        OnFoldersChanged();
+    }
+
+    void ResetFilterFolder()
+    {
+        searchService.Folder = null;
+        StateHasChanged();
+    }
+
+    void SetFilterFolder( Folder folder )
+    {
+        searchService.Folder = folder;
+        StateHasChanged();
+    }
+
+    protected async Task ProcessUpdatedFilter()
+    {
+        folderItems = await folderService.GetFilteredFolders( filterTerm );
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            FolderService.Instance.OnChange += OnFoldersChanged;
+            // Kick off the data load
+            await ProcessUpdatedFilter();
+        }
+    }
+
+    public void Dispose()
+    {
+        FolderService.Instance.OnChange -= OnFoldersChanged;
+    }
+
+    private void OnFoldersChanged()
+    {
+        // Be careful of threading - we may get called from anywhere
+        InvokeAsync(() => { _ = ProcessUpdatedFilter(); } );
+    }
+}

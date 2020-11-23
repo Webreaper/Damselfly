@@ -1,0 +1,82 @@
+﻿
+@using Damselfly.Core.ImageProcessing
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject BasketService basketService
+@inject NavigationManager NavigationManager
+@inject WordpressService wpService;
+
+@if (!AddingBasket)
+{
+    <select @onchange="BasketChanged">
+        @foreach (var basket in baskets)
+        {
+            <option value="@basket.Name">@basket.Name</option>
+        }
+    </select>
+    <button title="Add Basket" @onclick="@(() => AddBasket())" class="btn btn-primary"><i class="fa fa-plus-circle" /></button>
+}
+else
+{
+    <input placeholder="Basket Name" class="tagEditor" @bind-value="NewBasketName" @bind-value:event="oninput" />
+    <button title="Save Basket" @onclick="@(() => SaveBasket())" class="btn btn-primary"><i class="fa fa-save" /></button>
+    <button title="Cancel Adding" @onclick="@(() => CancelAdding())" class="btn btn-primary"><i class="fa fa-times-circle" /></button>
+}
+
+
+@code {
+    readonly List<Basket> baskets = new List<Basket>();
+    bool AddingBasket { get; set; }
+    string NewBasketName { get; set; }
+
+    private void SaveBasket()
+    {
+        basketService.CreateAndSelectNewBasket(NewBasketName);
+
+        AddingBasket = false;
+        StateHasChanged();
+    }
+
+    private void CancelAdding()
+    {
+        AddingBasket = false;
+        StateHasChanged();
+    }
+
+    private void AddBasket()
+    {
+        AddingBasket = true;
+        StateHasChanged();
+    }
+
+    private void BasketChanged(ChangeEventArgs e)
+    {
+        basketService.LoadBasket(e.Value.ToString());
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadData();
+        }
+    }
+
+
+    public async Task LoadData()
+    {
+        var watch = new Stopwatch("LoadBaskets");
+
+        using var db = new ImageContext();
+        // TODO: Do we need to load this every time?
+        this.baskets.Clear();
+        this.baskets.AddRange(db.Baskets);
+
+        watch.Stop();
+
+        StateHasChanged();
+    }
+}
+

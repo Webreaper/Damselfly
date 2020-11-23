@@ -1,0 +1,137 @@
+﻿
+@using Damselfly.Core.ImageProcessing
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject IndexingService indexService
+@inject NavigationService navContext
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<div class="damselfly-imageproperties toolwindow">
+    @if (CurrentImage == null)
+    {
+        <p><em>Loading image properties...</em></p>
+    }
+    else
+    {
+        <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@selectableImage.InBasket" /></div>
+        <div>Filename: @CurrentImage.FileName</div>
+        <div>Folder: <a href="/folder/@CurrentImage.Folder.FolderId">@CurrentImage.Folder.Path</a></div>
+        <div>Thumbs Generated: @ThumbnailUpdate</div>
+        <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
+        @if (CurrentImage.MetaData != null)
+        {
+            <div>Date Taken: @CurrentImage.MetaData.DateTaken.Display()</div>
+            @if (CurrentImage.MetaData.Camera != null)
+            {
+                <div>
+                    Camera:
+                    @CurrentImage.MetaData.Camera.Make
+                    @CurrentImage.MetaData.Camera.Model
+                </div>
+            }
+            @if (CurrentImage.MetaData.Lens != null)
+            {
+                <div>
+                    Lens:
+                    @CurrentImage.MetaData.Lens.Make
+                    @CurrentImage.MetaData.Lens.Model
+                </div>
+            }
+        }
+        else
+        {
+            <div>No metadata available yet.</div>
+        }
+        <TagList CurrentImages=SingleImage() />
+        <div>
+            <button title="Refresh Folder" type="submit" @onclick="RefreshFolder"><i class="fa fa-refresh" /></button>
+            <button title="Download Image" type="submit" @onclick="DownloadImage"><i class="fa fa-download" /></button>
+            <button class="fa fa-facebook" title="Share on Facebook"
+                    onclick="
+                    window.open(
+                      '@FaceBookShareUrl',
+                      'facebook-share-dialog',
+                      'width=626,height=436');
+                    return false;">
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private Image theImage;
+    private SelectableImage selectableImage;
+
+    public Image CurrentImage { get { return theImage; } set { theImage = value; selectableImage = new SelectableImage(value); } }
+
+    public string FaceBookShareUrl
+    {
+        get
+        {
+            var url = "http://localhost:6363" + @imageService.GetImageThumbUrl(CurrentImage, ThumbSize.Large);
+            var imageUrl = System.Net.WebUtility.UrlEncode(url);
+            return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
+        }
+    }
+    protected override void OnInitialized()
+    {
+        navContext.OnChange += NavigationChanged;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+        }
+    }
+
+    protected void NavigationChanged(Image image)
+    {
+        if (CurrentImage == null || image == null || image.ImageId != CurrentImage.ImageId)
+        {
+            CurrentImage = image;
+            InvokeAsync(() => { StateHasChanged(); });
+            if (CurrentImage != null)
+                Logging.LogVerbose($"ImageProperties: Set current image to {CurrentImage.ImageId} ({CurrentImage.FileName})");
+        }
+    }
+
+    public string ThumbnailUpdate
+    {
+        get
+        {
+            if (CurrentImage != null && CurrentImage.MetaData != null && CurrentImage.MetaData.ThumbLastUpdated.HasValue)
+            {
+                var age = DateTime.UtcNow - CurrentImage.MetaData.ThumbLastUpdated;
+
+                return age.Value.ToHumanReadableString() + " ago";
+            }
+
+            return "Never";
+        }
+    }
+    private Image[] SingleImage()
+    {
+        return new[] { theImage };
+    }
+
+    public void RefreshFolder()
+    {
+        indexService.IndexFolder(CurrentImage.Folder);
+    }
+
+    public async Task DownloadImage()
+    {
+        try
+        {
+            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.RawImageUrl);
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
+
+    }
+}

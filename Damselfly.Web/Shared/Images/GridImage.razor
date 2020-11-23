@@ -1,0 +1,90 @@
+﻿
+@using Damselfly.Core.ImageProcessing
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject NavigationManager NavigationManager
+@inject NavigationService navContext
+
+<ContextMenu Id="ImageMenu">
+    <Item OnClick="@OnClick">View</Item>
+    <Seperator />
+    <Item OnClick="@OnClick">Add to Basket</Item>
+    <Item OnClick="@OnClick">Download</Item>
+    <Seperator />
+    <Item OnClick="@OnClick">Refresh Thumbnail</Item>
+</ContextMenu>
+
+
+@if (CurrentImage == null)
+{
+    <p><em>Loading image...</em></p>
+}
+else
+{
+        <ContextMenuTrigger MenuId="ImageMenu">
+        <div class="grid-image" @onclick="ToggleSelected" @ondblclick="NavigateToImage">
+            @if (!string.IsNullOrEmpty(ImageUrl))
+            {
+                <img @key="CurrentImage.Image.ImageId" class="@SelectStyle" title="@CurrentImage.Image.FileName" src="@ImageUrl">
+                <input class="grid-checkbox damselfly-checkbox" type="checkbox" @bind="@CurrentImage.InBasket">
+            }
+        </div>
+        @if (DisplayFileName)
+        {
+            <div class="grid-text">
+                @CurrentImage.Image.FileName
+            </div>
+        }
+
+        </ContextMenuTrigger>
+}
+
+@code
+{
+    [Parameter]
+    public NavigationContexts NavContext { get; set; }
+
+    [Parameter]
+    public SelectableImage CurrentImage { get; set; }
+
+    [Parameter]
+    public bool DisplayFileName { get; set; } = false;
+
+    [Parameter]
+    public ThumbSize ThumbnailSize { get; set; } = ThumbSize.Small;
+
+    string ImageUrl { get; set; } = null;
+    string SelectStyle { get { return CurrentImage.Selected ? "grid-image-selected" : "grid-image-unselected"; } }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ImageUrl = await Task.FromResult<string>(imageService.GetImageThumbUrl(CurrentImage.Image, ThumbnailSize));
+//            ImageUrl = $"thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+                ImageUrl = await Task.FromResult<string>(imageService.GetImageThumbUrl(CurrentImage.Image, ThumbnailSize));
+        //ImageUrl = $"thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
+    }
+
+    void OnClick(ItemClickEventArgs e)
+    {
+        Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
+    }
+
+    void ToggleSelected()
+    {
+        CurrentImage.Selected = !CurrentImage.Selected;
+    }
+
+    void NavigateToImage()
+    {
+        navContext.Context = NavContext;
+        NavigationManager.NavigateTo("/image/" + CurrentImage.Image.ImageId);
+    }
+}

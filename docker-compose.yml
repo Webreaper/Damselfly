@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  damselfly.web:
+    image: ${DOCKER_REGISTRY-}damselfly
+    build:
+      context: .
+      dockerfile: Dockerfile

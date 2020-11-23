@@ -1,0 +1,73 @@
+﻿@using Damselfly
+
+@inject TaskService taskScheduler
+@inject IJSRuntime JsRuntime
+
+<div class="row">
+    <div class="col">
+        <h3>Task Statuses:</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        @if (tasks != null)
+        {
+            <table class="tasklist-table">
+                <tr>
+                    <th>Task</th>
+                    <th>Last Started</th>
+                    <th>Last Completed</th>
+                    <th>Time Taken</th>
+                    <th>Next Run</th>
+                    <th align="center">Run Task</th>
+                </tr>
+                @foreach (var task in tasks)
+                {
+                    <tr>
+                        <td>@task.Type.ToString()</td>
+                        <td>@task.LastStarted.ToHumanReadableString() ago</td>
+                        <td>@task.LastCompleted.ToHumanReadableString() ago</td>
+                        <td>@GetTimeTaken(task)</td>
+                        <td>In @task.NextRun.ToHumanReadableString()</td>
+                        <td align="center"><button class="btn btn-primary" type="submit" @onclick="@(() => RunTask(task))">Run</button></td>
+                    </tr>
+                }
+            </table>
+        }
+        else
+        {
+            <p>Loading task status list</p>
+        }
+    </div>
+</div>
+
+@code {
+    ScheduledTask[] tasks;
+
+    private string GetTimeTaken(ScheduledTask task)
+    {
+        if (task.LastStarted > task.LastCompleted)
+        {
+            var running = DateTime.UtcNow.ToHumanReadableString(task.LastStarted);
+            return $"Running for {running}";
+        }
+        else
+        {
+            return task.LastCompleted.ToHumanReadableString(task.LastStarted);
+        }
+    }
+
+    // TODO: Move to AfterRender
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Called twice?
+        var result = await taskScheduler.GetTasksAsync();
+
+        tasks = result;
+    }
+
+    private void RunTask(ScheduledTask task)
+    {
+        taskScheduler.EnqueueTaskAsync(task);
+    }
+}
