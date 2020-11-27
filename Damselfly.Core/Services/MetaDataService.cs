@@ -142,54 +142,51 @@ namespace Damselfly.Core.Services
         private bool ProcessExifOperations(string imagePath, List<ExifOperation> exifOperations )
         {
             bool success = false;
-            if (File.Exists(imagePath))
+            Logging.LogVerbose("Updating tags for file {0}", imagePath);
+
+            string args = string.Empty;
+            List<ExifOperation> processedOps = new List<ExifOperation>();
+
+            foreach (var op in exifOperations)
             {
-                Logging.LogVerbose("Updating tags for file {0}", imagePath);
-
-                string args = string.Empty;
-                List<ExifOperation> processedOps = new List<ExifOperation>();
-
-                foreach (var op in exifOperations)
+                if (op.Type == ExifOperation.ExifType.Keyword)
                 {
-                    if (op.Type == ExifOperation.ExifType.Keyword)
+                    if (op.Operation == ExifOperation.OperationType.Add)
                     {
-                        if (op.Operation == ExifOperation.OperationType.Add)
-                        {
-                            Logging.Log($" Adding keyword {op.Text} to {op.Image.FileName}");
-                            args += $" -keywords+=\"{op.Text}\" ";
-                            processedOps.Add(op);
-                        }
-                        else
-                        {
-                            Logging.Log($" Removing keyword {op.Text} from {op.Image.FileName}");
-                            args += $" -keywords-=\"{op.Text}\" ";
-                            processedOps.Add(op);
-                        }
+                        Logging.Log($" Adding keyword {op.Text} to {op.Image.FileName}");
+                        args += $" -keywords+=\"{op.Text}\" ";
+                        processedOps.Add(op);
+                    }
+                    else
+                    {
+                        Logging.Log($" Removing keyword {op.Text} from {op.Image.FileName}");
+                        args += $" -keywords-=\"{op.Text}\" ";
+                        processedOps.Add(op);
                     }
                 }
+            }
 
-                args += " -overwrite_original";
-                args += " \"" + imagePath + "\"";
+            args += " -overwrite_original";
+            args += " \"" + imagePath + "\"";
 
-                var process = new ProcessStarter();
+            var process = new ProcessStarter();
 
-                // Fix perl local/env issues for exiftool
-                var env = new Dictionary<string, string>();
-                env["LANGUAGE"] = "en_US.UTF-8";
-                env["LANG"] = "en_US.UTF-8";
-                env["LC_ALL"] = "en_US.UTF-8";
+            // Fix perl local/env issues for exiftool
+            var env = new Dictionary<string, string>();
+            env["LANGUAGE"] = "en_US.UTF-8";
+            env["LANG"] = "en_US.UTF-8";
+            env["LC_ALL"] = "en_US.UTF-8";
 
-                success = process.StartProcess("exiftool", args, env);
+            success = process.StartProcess("exiftool", args, env);
 
-                if (!success)
-                {
-                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
-                    Logging.LogWarning("ExifTool Tag update failed for image: {0}", imagePath);
-                }
-                else
-                {
-                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
-                }
+            if (!success)
+            {
+                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
+                Logging.LogWarning("ExifTool Tag update failed for image: {0}", imagePath);
+            }
+            else
+            {
+                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
             }
 
             return success;
@@ -262,9 +259,17 @@ namespace Damselfly.Core.Services
                         foreach (var imageOpList in conflatedOps)
                         {
                             var image = imageOpList.Key;
+                            var operations = imageOpList.Value;
+
+                            if( ! File.Exists( image.FullPath ))
+                            { 
+                                Logging.LogWarning($"Unable to process pending tag operations for {image.FullPath} - image not found. Pending tag operation will be discarded.");
+                                operations.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
+                                continue;
+                            }
 
                             // Write the actual tags to the image file on disk
-                            if (ProcessExifOperations(image.FullPath, imageOpList.Value))
+                            if (ProcessExifOperations(image.FullPath, operations))
                             {
                                 // Updating the timestamp on the image to newer than its metadata will
                                 // trigger its metadata and tags to be refreshed during the next scan

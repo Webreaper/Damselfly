@@ -56,6 +56,7 @@ namespace Damselfly.Web
             services.AddSingleton(MetaDataService.Instance);
             services.AddSingleton(ImageProcessService.Instance);
             services.AddSingleton(WordpressService.Instance);
+            services.AddSingleton(SelectionService.Instance);
             services.AddSingleton<NavigationService>();
             services.AddSingleton<ViewDataService>();
             services.AddSingleton<ConfigService>();
@@ -118,11 +119,11 @@ namespace Damselfly.Web
             SearchService.Instance.PreLoadSearchData();
             BasketService.Instance.Initialise();
 
-            //if (IndexingService.EnableIndexing)
-            //    IndexingService.Instance.StartService();
+            if (IndexingService.EnableIndexing)
+                IndexingService.Instance.StartService();
 
-            //if (IndexingService.EnableThumbnailGeneration)
-            //    ThumbnailService.Instance.StartService();
+            if (IndexingService.EnableThumbnailGeneration)
+                ThumbnailService.Instance.StartService();
 
             Logging.Log("Preloading complete");
 

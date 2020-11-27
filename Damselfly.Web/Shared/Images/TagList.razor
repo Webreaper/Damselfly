@@ -1,8 +1,6 @@
 ﻿@using System.Linq
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services
-@using LoreSoft.Blazor.Controls
-@using System.Collections.ObjectModel
 
 @inject ImageService imageService
 @inject ThumbnailService thumbService
@@ -11,24 +9,23 @@
 
 @if (CurrentImages != null && CurrentImages.Any())
 {
-    <div class="damselfly-taglist">
-        <div class="damselfly-addtag">
-            <div>
-                Add Tag:
-            </div>
-            <div>
-                <input placeholder="Add a keyword" class="tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
-            </div>
-        </div>
-        <div class="damselfly-addtag">
-            <div>
-                Tags:
-            </div>
-            <div>
-                <textarea placeholder="Add keywords" name="AllTags" class="tagEditor-multiline" @bind-value="AllTagsCSV" @bind-value:event="oninput" @onkeyup="ProcessTagEnterAll" />
-            </div>
-        </div>
+<div class="damselfly-taglist">
+    <div class="InputAddOn">
+        <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+        <input placeholder="Add a keyword" class="InputAddOn-field tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
+        <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
     </div>
+
+    <div class="damselfly-keywordlist">
+        @foreach (var tag in theImageTags)
+        {
+            <div class="damselfly-keyword">
+                <div class="damselfly-keywordtext">@tag</div>
+                <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
+            </div>
+        }
+    </div>
+</div>
     }
 
     @code {
@@ -37,12 +34,23 @@
         public Image[] CurrentImages { get; set; }
         public string NewTag { get; set; }
         public string AllTagsCSV { get; set; }
-
-        private IList<string> theImageTags;
+        private IList<string> theImageTags { get; set; }
 
         private async Task<IList<string>> LoadImageTagsAsync()
         {
             return await Task.FromResult( GetImageTags().Select( x => x.Keyword ).ToList() );
+        }
+
+        private void DeleteTag(string tag)
+        {
+            Logging.Log($"Tag {tag} removed");
+
+            InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, new List<string> { tag } ); });
+
+            // Now store the state
+            theImageTags.Remove( tag );
+
+            StateHasChanged();
         }
 
         private IList<Tag> GetImageTags()
@@ -99,11 +107,16 @@
             {
                 Logging.Log("Saving new tag: " + NewTag);
 
-                InvokeAsync(() => { _ = iptcService.AddTagAsync(CurrentImages, NewTag); });
-
-                NewTag = string.Empty;
+                AddTags();
             }
 
+        }
+
+        private void AddTags()
+        {
+            InvokeAsync(() => { _ = iptcService.AddTagAsync(CurrentImages, NewTag); });
+
+            NewTag = string.Empty;
         }
 
         private void ProcessTagEnterAll(KeyboardEventArgs eventArgs)

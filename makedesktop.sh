@@ -1,6 +1,14 @@
+
+if [ -n "$1" ]; then
+    version=$1;
+else
+    # Read the version from disk.
+    version=`cat VERSION`
+fi
+
 cd Damselfly.Desktop
 npm install
-npm version $1
+npm version $version
 rm -rf ./dist
 yarn distmac
 mkdir -p ../Damselfly.Web/wwwroot/desktop

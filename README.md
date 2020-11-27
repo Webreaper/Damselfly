@@ -50,7 +50,7 @@ docker run \
   webreaper/damselfly
 ```
 
-The default port is 6363. The /pictures volume is mapped to the root directory of your photographs.
+The default port is 6363. The /pictures volume is mapped to the root directory of your photographs. By 
 
 Note that in order to set up inotify watchers on your folders, Damselfly will increase the number of inotify instances as follows:
 

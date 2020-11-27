@@ -168,6 +168,7 @@ namespace Damselfly.Web
                 var meta = new MetaDataService();
                 var wp = new WordpressService();
                 var proc = new ImageProcessService();
+                var select = new SelectionService();
 
                 Logging.Log("Starting Damselfly Webserver");
 

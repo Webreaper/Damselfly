@@ -462,7 +462,6 @@ app {
     display: flex;
     padding-top: 5px;
     padding-bottom: 5px;
-    font-size: 14px;
 }
 
 .damselfly-exportpanel {
@@ -854,7 +853,56 @@ padding: 0.4em 0.65em;
     border-radius: 2px 0 0 2px;
 }
 
-.InputAddOn-field:last-child,
-.InputAddOn-item:last-child {
+.damselfly-keywordlist {
+    display: flex;
+    margin: 3px;
+    flex-flow: row wrap;
+    align-content: flex-start;
+}
+
+/* Masonary Keywords */
+.damselfly-keyword {
+    flex: 0 1 auto;
+    display: flex;
+    align-items: center;
+    margin: 2px;
+    padding: 1px;
+    flex-wrap: nowrap;
+    font-size: 9pt;
+    border: 0.5px solid rgba(55, 125, 55, 0.6);
+    border-radius: 3px;
+    background-color: rgba(25, 95, 25, 0.9);
+}
+
+.damselfly-deletetag {
+    flex: 0 1 auto;
+    font-size: 10pt;
+}
+
+.damselfly-keywordtext {
+    text-wrap: none;
+    flex: 0 1 auto;
+}
+
+
+.damselfly-keyword :not(:first-child) {
+    border-left: 0;
+}
+
+.damselfly-keyword :not(:last-child) {
+    border-right: 0;
+}
+
+.damselfly-keyword,
+.damselfly-deletetag {
+    padding: 0.2em 0.35em;
+}
+
+.damselfly-keyword :first-child,
+.damselfly-deletetag:first-child {
+    border-radius: 2px 0 0 2px;
+}
+.damselfly-keyword:last-child,
+.damselfly-deletetag:last-child {
     border-radius: 0 2px 2px 0;
 }

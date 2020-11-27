@@ -7,44 +7,46 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 
-<div class="damselfly-imageproperties toolwindow">
+<div class="toolwindow">
     @if (CurrentImage == null)
     {
         <p><em>Loading image properties...</em></p>
     }
     else
     {
-        <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@selectableImage.InBasket" /></div>
-        <div>Filename: @CurrentImage.FileName</div>
-        <div>Folder: <a href="/folder/@CurrentImage.Folder.FolderId">@CurrentImage.Folder.Name</a></div>
-        <div>Thumbs Generated: @ThumbnailUpdate</div>
-        <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
-        @if (CurrentImage.MetaData != null)
-        {
-            <div>Description: @CurrentImage.MetaData.Description</div>
-            <div>Caption: @CurrentImage.MetaData.Caption</div>
-            <div>Date Taken: @CurrentImage.MetaData.DateTaken.Display()</div>
-            @if (CurrentImage.MetaData.Camera != null)
+        <div class="damselfly-imageproperties">
+            <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@selectableImage.InBasket" /></div>
+            <div>Filename: @CurrentImage.FileName</div>
+            <div>Folder:&nbsp;<a href="/folder/@CurrentImage.Folder.FolderId">@CurrentImage.Folder.Name</a></div>
+            <div>Thumbs Generated: @ThumbnailUpdate</div>
+            <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
+            @if (CurrentImage.MetaData != null)
             {
-                <div>
-                    Camera:
-                    @CurrentImage.MetaData.Camera.Make
-                    @CurrentImage.MetaData.Camera.Model
-                </div>
+                <div>Description: @CurrentImage.MetaData.Description</div>
+                <div>Caption: @CurrentImage.MetaData.Caption</div>
+                <div>Date Taken: @CurrentImage.MetaData.DateTaken.Display()</div>
+                @if (CurrentImage.MetaData.Camera != null)
+                {
+                    <div>
+                        Camera:
+                        @CurrentImage.MetaData.Camera.Make
+                        @CurrentImage.MetaData.Camera.Model
+                    </div>
+                }
+                @if (CurrentImage.MetaData.Lens != null)
+                {
+                    <div>
+                        Lens:
+                        @CurrentImage.MetaData.Lens.Make
+                        @CurrentImage.MetaData.Lens.Model
+                    </div>
+                }
             }
-            @if (CurrentImage.MetaData.Lens != null)
+            else
             {
-                <div>
-                    Lens:
-                    @CurrentImage.MetaData.Lens.Make
-                    @CurrentImage.MetaData.Lens.Model
-                </div>
+                <div>No metadata available yet.</div>
             }
-        }
-        else
-        {
-            <div>No metadata available yet.</div>
-        }
+        </div>
         <TagList CurrentImages=SingleImage() />
         <div>
             <button title="Refresh Folder" type="submit" @onclick="RefreshFolder"><i class="fas fa-refresh" /></button>
