@@ -114,7 +114,10 @@
 
         private void AddTags()
         {
-            InvokeAsync(() => { _ = iptcService.AddTagAsync(CurrentImages, NewTag); });
+            // If multiple tags have been added, split them and add individually.
+            var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
+
+            InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
 
             NewTag = string.Empty;
         }
