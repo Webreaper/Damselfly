@@ -30,8 +30,9 @@
 
     @code {
 
-        [Parameter]
-        public Image[] CurrentImages { get; set; }
+            [Parameter]
+            public Image[] CurrentImages { get; set; }
+
         public string NewTag { get; set; }
         public string AllTagsCSV { get; set; }
         private IList<string> theImageTags { get; set; }
@@ -55,24 +56,27 @@
 
         private IList<Tag> GetImageTags()
         {
-            try
+            if (CurrentImages != null)
             {
-                var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
+                try
+                {
+                    var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
 
-                if (tagLists.Count() > 1)
-                {
-                    return tagLists.Aggregate((x, y) => x.Intersect(y))
-                               .OrderBy(x => x.Keyword)
-                               .ToList();
+                    if (tagLists.Count() > 1)
+                    {
+                        return tagLists.Aggregate((x, y) => x.Intersect(y))
+                                   .OrderBy(x => x.Keyword)
+                                   .ToList();
+                    }
+                    else if (tagLists.Count() == 1)
+                    {
+                        return tagLists.FirstOrDefault().ToList();
+                    }
                 }
-                else if (tagLists.Count() == 1)
+                catch (Exception ex)
                 {
-                    return tagLists.FirstOrDefault().ToList();
+                    Logging.Log($"Unable to get common tags: {ex}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Logging.Log($"Unable to get common tags: {ex}");
             }
 
             return new Tag[0];

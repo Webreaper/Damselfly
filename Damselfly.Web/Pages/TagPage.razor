@@ -39,15 +39,14 @@ else
     [Parameter]
     public string TagName { get; set; }
         
-    SelectableImage[] images;
+    Image[] images;
     string[] tags;
 
     protected override async Task OnParametersSetAsync()
     {
         if( ! string.IsNullOrEmpty( TagName ) )
         {
-            var imgs = await ImageService.GetTagImagesAsync( TagName );
-            images = imgs.Select( x => new SelectableImage( x ) ).ToArray();
+            var images = await ImageService.GetTagImagesAsync( TagName );
             tags = null;
         }
 

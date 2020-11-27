@@ -36,7 +36,7 @@
         @if (ShowTags)
         {
             <div class="col-sm-8">
-                <TagList CurrentImages=@RawImages />
+                <TagList CurrentImages=@images />
             </div>
         }
     </div>
@@ -61,7 +61,7 @@
 </div>
 
 @code {
-    readonly List<SelectableImage> images = new List<SelectableImage>();
+    Image[] images = null;
     readonly List<Basket> baskets = new List<Basket>();
     bool AddingBasket { get; set; }
     string NewBasketName { get; set; }
@@ -120,11 +120,6 @@
         }
     }
 
-    private Image[] RawImages
-    {
-        get { return images.Select(x => x.Image).ToArray(); }
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -145,12 +140,10 @@
         InvokeAsync(() => { _ = LoadData(); });
     }
 
-    public Task<List<SelectableImage>> LoadData()
+    public Task LoadData()
     {
         var watch = new Stopwatch("SelectedLoadData");
-        images.Clear();
-        images.AddRange(basketService.SelectedImages
-                           .Select(x => new SelectableImage(x)));
+        images = basketService.SelectedImages.ToArray();
         watch.Stop();
 
         using var db = new ImageContext();

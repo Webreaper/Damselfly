@@ -11,6 +11,8 @@ namespace Damselfly.Core.Services
         public static SelectionService Instance { get; private set; }
         public event Action OnSelectionChanged;
 
+        // TODO: Remember last selected image and use it for range selections etc?
+
         public SelectionService()
         {
             Instance = this;
@@ -41,7 +43,7 @@ namespace Damselfly.Core.Services
         {
             bool added = false;
 
-            foreach( var img in images )
+            foreach (var img in images)
             {
                 if (selectedImages.TryAdd(img.ImageId, img))
                     added = true;
@@ -49,6 +51,23 @@ namespace Damselfly.Core.Services
 
             if (added)
                 NotifyStateChanged();
+        }
+
+        /// <summary>
+        /// Add images into the selection
+        /// </summary>
+        /// <param name="images"></param>
+        public void ToggleSelection(List<Image> images)
+        {
+            foreach( var img in images )
+            {
+                // Try and add it. If it wasn't there, it'll succeed.
+                // If it fails, we need to remove it.
+                if( ! selectedImages.TryAdd(img.ImageId, img) )
+                    selectedImages.Remove(img.ImageId);
+            }
+
+            NotifyStateChanged();
         }
 
         /// <summary>
@@ -78,5 +97,18 @@ namespace Damselfly.Core.Services
         }
 
         public int SelectionCount {  get { return selectedImages.Count;  } }
+
+        /// <summary>
+        /// Unordered set of selected images.
+        /// </summary>
+        public ICollection<Image> Selection
+        {
+            get { return selectedImages.Values; }
+        }
+
+        public bool IsSelected( Image image )
+        {
+            return selectedImages.ContainsKey(image.ImageId);
+        }
     }
 }

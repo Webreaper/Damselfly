@@ -32,7 +32,7 @@
             {
                 <GridSeparator CurrentImage="@image" PrevImage="@prevImage"/>
             }
-            <div class="damselfly-gridimage @WrapStyle">
+            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected( e, image ); })">
                 <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
             </div>
 
@@ -73,17 +73,17 @@
 
 @code {
     const int imagesPerPage = 250;
-    private SelectableImage prevImage = null;
+    private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
-    readonly List<SelectableImage> gridImages = new List<SelectableImage>();
+    readonly List<Image> gridImages = new List<Image>();
     public string NewTag { get; set; }
     public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
 
-    private void StoreImage( SelectableImage image )
+    private void StoreImage( Image image )
     {
         // Todo - save an image to local storage
     }
@@ -115,6 +115,62 @@
         ConfigService.Instance.Set("ThumbSize", newSize.ToString());
     }
 
+    /// <summary>
+    /// Manage the selection state for the grid images. 
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="image"></param>
+    private Image prevSelection = null;
+
+    private void ToggleSelected(MouseEventArgs e, Image image)
+    {
+        if (e.ShiftKey && prevSelection != null )
+        {
+            // Range selection. 
+            var first = gridImages.FindIndex(x => x.ImageId == prevSelection.ImageId);
+            var last = gridImages.FindIndex(x => x.ImageId == image.ImageId);
+
+            if( first > last )
+            {
+                var temp = last;
+                last = first;
+                first = temp;
+            }
+
+            Logging.Log($"Selecting images {first} ({prevImage.FileName}) to {last} ({image.FileName})");
+
+            for ( int i = first; i <= last; i++ )
+            {
+                var img = gridImages[i];
+                SelectionService.Instance.SelectImage(img);
+            }
+        }
+        else
+        {
+            if (e.MetaKey)
+            {
+                // Apple key was pressed - toggle the selection
+                SelectionService.Instance.ToggleSelection( new List<Image> { image });
+            }
+            else
+            {
+                // No keys pressed. Select if unselected, or deselect if selected - but
+                // clear any other selection at the same time. Store the last selection
+                // as it could be the beginning of a range selection
+                bool wasPreviouslySelected = SelectionService.Instance.IsSelected(image);
+                SelectionService.Instance.ClearSelection();
+                prevSelection = null;
+
+                if (!wasPreviouslySelected)
+                {
+                    SelectionService.Instance.SelectImage(image);
+                    prevSelection = image;
+                }
+            }
+        }
+    }
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -135,9 +191,7 @@
     {
         if (eventArgs.Key == "Enter")        // fire on enter
         {
-            var selected = gridImages.Where(x => x.Selected)
-                                     .Select(x => x.Image)
-                                     .ToArray();
+            var selected = SelectionService.Instance.Selection.ToArray();
 
             Logging.Log("Saving tag: " + NewTag);
 
@@ -170,8 +224,8 @@
 
     void AddSelectedToBasket()
     {
-        var selected = gridImages.Where(x => x.Selected).ToList();
-        selected.ForEach(x => BasketService.Instance.SetBasketState(x.Image, true));
+        var selected = SelectionService.Instance.Selection.ToList();
+        selected.ForEach(x => BasketService.Instance.SetBasketState(x, true));
 
         StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
     }
@@ -200,10 +254,7 @@
 
             if (newImages.Any())
             {
-                var newSelectableImages = newImages.Select(x => new SelectableImage(x))
-                                               .ToArray();
-
-                gridImages.AddRange(newSelectableImages);
+                gridImages.AddRange(newImages);
             }
 
             if (newImages.Count() < imagesPerPage)
