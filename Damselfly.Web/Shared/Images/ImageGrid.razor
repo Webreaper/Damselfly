@@ -216,6 +216,7 @@
 
     protected void SearchQueryChanged()
     {
+        SelectionService.Instance.ClearSelection();
         gridImages.Clear();
         endOfImages = false;
 

@@ -150,6 +150,8 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.BasketEntry);
+                    images = images.Include(x => x.ImageTags)
+                                   .ThenInclude(x => x.Tag);
 
                     results = images.OrderByDescending(x => x.MetaData.DateTaken)
                                     .Skip(first)
