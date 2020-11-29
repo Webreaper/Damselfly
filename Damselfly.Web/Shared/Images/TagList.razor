@@ -8,8 +8,6 @@
 @inject IndexingService indexService
 @implements IDisposable
 
-@if (CurrentImages != null && CurrentImages.Any())
-{
 <div class="damselfly-taglist">
     <div class="InputAddOn">
         <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
@@ -17,144 +15,146 @@
         <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
     </div>
 
-    <div class="damselfly-keywordlist">
-        @foreach (var tag in theImageTags)
-        {
-            <div class="damselfly-keyword">
-                <div class="damselfly-keywordtext">@tag</div>
-                <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
-            </div>
-        }
-    </div>
+    @if (CurrentImages != null && CurrentImages.Any())
+    {
+        <div class="damselfly-keywordlist">
+            @foreach (var tag in theImageTags)
+            {
+                <div class="damselfly-keyword">
+                    <div class="damselfly-keywordtext">@tag</div>
+                    <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
+                </div>
+            }
+        </div>
+    }
 </div>
+
+@code {
+
+    [Parameter]
+    public Image[] CurrentImages { get; set; }
+
+    [Parameter]
+    public bool TrackSelection { get; set; }
+
+    public string NewTag { get; set; }
+    private IList<string> theImageTags { get; set; }
+
+    public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
+
+    private async Task<IList<string>> LoadImageTagsAsync()
+    {
+        return await Task.FromResult(GetImageTags().Select(x => x.Keyword).ToList());
     }
 
-    @code {
+    private void DeleteTag(string tag)
+    {
+        Logging.Log($"Tag {tag} removed");
 
-        [Parameter]
-        public Image[] CurrentImages { get; set; }
+        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, new List<string> { tag }); });
 
-        [Parameter]
-        public bool TrackSelection { get; set; }
+        // Now store the state
+        theImageTags.Remove(tag);
 
-        public string NewTag { get; set; }
-        private IList<string> theImageTags { get; set; }
+        StateHasChanged();
+    }
 
-        public bool IsDisabled { get { return CurrentImages == null || ! CurrentImages.Any(); } }
-
-        private async Task<IList<string>> LoadImageTagsAsync()
+    private IList<Tag> GetImageTags()
+    {
+        if (CurrentImages != null)
         {
-            return await Task.FromResult( GetImageTags().Select( x => x.Keyword ).ToList() );
-        }
-
-        private void DeleteTag(string tag)
-        {
-            Logging.Log($"Tag {tag} removed");
-
-            InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, new List<string> { tag } ); });
-
-            // Now store the state
-            theImageTags.Remove( tag );
-
-            StateHasChanged();
-        }
-
-        private IList<Tag> GetImageTags()
-        {
-            if (CurrentImages != null)
+            try
             {
-                try
+                using var db = new ImageContext();
+
+                foreach (var img in CurrentImages)
+                    db.LoadTags(img);
+
+                var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
+
+                if (tagLists.Count() > 1)
                 {
-                    using var db = new ImageContext();
-
-                    foreach (var img in CurrentImages)
-                        db.LoadTags(img);
-
-                    var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
-
-                    if (tagLists.Count() > 1)
-                    {
-                        return tagLists.Aggregate((x, y) => x.Intersect(y))
-                                   .OrderBy(x => x.Keyword)
-                                   .ToList();
-                    }
-                    else if (tagLists.Count() == 1)
-                    {
-                        return tagLists.FirstOrDefault().ToList();
-                    }
+                    return tagLists.Aggregate((x, y) => x.Intersect(y))
+                               .OrderBy(x => x.Keyword)
+                               .ToList();
                 }
-                catch (Exception ex)
+                else if (tagLists.Count() == 1)
                 {
-                    Logging.Log($"Unable to get common tags: {ex}");
+                    return tagLists.FirstOrDefault().ToList();
                 }
             }
-
-            return new Tag[0];
-        }
-
-        protected override async Task OnInitializedAsync()
-        {
-            if (TrackSelection)
+            catch (Exception ex)
             {
-                // TODO: Dispose
-                SelectionService.Instance.OnSelectionChanged += SelectionChanged;
-                SelectionChanged();
-            }
-            else
-            {
-                theImageTags = await LoadImageTagsAsync();
-                StateHasChanged();
+                Logging.Log($"Unable to get common tags: {ex}");
             }
         }
 
-        public void Dispose()
+        return new Tag[0];
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (TrackSelection)
         {
-            SelectionService.Instance.OnSelectionChanged -= SelectionChanged;
+            // TODO: Dispose
+            SelectionService.Instance.OnSelectionChanged += SelectionChanged;
+            SelectionChanged();
         }
-
-        protected void SelectionChanged()
-        {
-            this.CurrentImages = SelectionService.Instance.Selection.ToArray();
-
-            InvokeAsync(() => { _ = OnParametersSetAsync(); });
-        }
-
-        protected override async Task OnParametersSetAsync()
+        else
         {
             theImageTags = await LoadImageTagsAsync();
             StateHasChanged();
         }
+    }
 
-        void OnClick(ItemClickEventArgs e)
+    public void Dispose()
+    {
+        SelectionService.Instance.OnSelectionChanged -= SelectionChanged;
+    }
+
+    protected void SelectionChanged()
+    {
+        this.CurrentImages = SelectionService.Instance.Selection.ToArray();
+
+        InvokeAsync(() => { _ = OnParametersSetAsync(); });
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        theImageTags = await LoadImageTagsAsync();
+        StateHasChanged();
+    }
+
+    void OnClick(ItemClickEventArgs e)
+    {
+        Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
+    }
+
+    private void ProcessTagEnter(KeyboardEventArgs eventArgs)
+    {
+        if (eventArgs.Key == "Enter")        // fire on enter
         {
-            Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
-        }
+            Logging.Log("Saving new tag: " + NewTag);
 
-        private void ProcessTagEnter(KeyboardEventArgs eventArgs)
-        {
-            if (eventArgs.Key == "Enter")        // fire on enter
-            {
-                Logging.Log("Saving new tag: " + NewTag);
-
-                AddTags();
-            }
-        }
-
-        private void AddTags()
-        {
-            // If multiple tags have been added, split them and add individually.
-            var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
-
-            InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
-
-            NewTag = string.Empty;
-            StateHasChanged();
-        }
-
-        private async Task<IEnumerable<Tag>> SearchTags(string searchText)
-        {
-            using var db = new ImageContext();
-
-            return await Task.FromResult(indexService.CachedTags.Where(x => x.Keyword.StartsWith(searchText)));
+            AddTags();
         }
     }
+
+    private void AddTags()
+    {
+        // If multiple tags have been added, split them and add individually.
+        var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
+
+        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
+
+        NewTag = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task<IEnumerable<Tag>> SearchTags(string searchText)
+    {
+        using var db = new ImageContext();
+
+        return await Task.FromResult(indexService.CachedTags.Where(x => x.Keyword.StartsWith(searchText)));
+    }
+}
