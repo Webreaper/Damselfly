@@ -31,6 +31,21 @@ namespace Damselfly.Core.Services
             }
         }
 
+        private bool _showTags = true;
+
+        public bool ShowTags
+        {
+            get => _showTags;
+            set
+            {
+                if (_showTags != value)
+                {
+                    _showTags = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         private bool _showBasket = true;
 
         public bool ShowBasket

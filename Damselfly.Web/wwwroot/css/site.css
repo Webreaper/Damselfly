@@ -704,7 +704,7 @@ app {
     background-color: rgba(100, 140, 100, 0.3);
     box-shadow: 1px 1px 0 rgba(225, 255, 225, 0.7) inset;
     border-radius: 6px;
-    padding: 5px;
+    padding: 3  px;
 }
 
 .folder-scroll-area {
@@ -835,6 +835,15 @@ app {
     border-right: 0;
 }
 
+.InputAddOn-item:last-child {
+    cursor: pointer;
+}
+
+.InputAddOn-item:last-child:hover {
+    color: rgba(100, 195, 100, 0.9);
+}
+
+
 .InputAddOn-item {
 background-color: rgba(225, 245, 225, 0.9);
 color: #338833;
@@ -855,7 +864,8 @@ padding: 0.4em 0.65em;
 
 .damselfly-keywordlist {
     display: flex;
-    margin: 3px;
+    margin: 0px;
+    padding: 2px;
     flex-flow: row wrap;
     align-content: flex-start;
 }
@@ -866,7 +876,7 @@ padding: 0.4em 0.65em;
     display: flex;
     align-items: center;
     margin: 2px;
-    padding: 1px;
+    padding: 2px 1px 1px 0px;
     flex-wrap: nowrap;
     font-size: 9pt;
     border: 0.5px solid rgba(55, 125, 55, 0.6);
@@ -877,6 +887,11 @@ padding: 0.4em 0.65em;
 .damselfly-deletetag {
     flex: 0 1 auto;
     font-size: 10pt;
+    cursor: pointer;
+}
+
+.damselfly-deletetag:hover {
+    color: rgba(200, 255, 200, 0.9);
 }
 
 .damselfly-keywordtext {
@@ -900,9 +915,13 @@ padding: 0.4em 0.65em;
 
 .damselfly-keyword :first-child,
 .damselfly-deletetag:first-child {
-    border-radius: 2px 0 0 2px;
+    border-radius: 3px 0 0 3px;
 }
 .damselfly-keyword:last-child,
 .damselfly-deletetag:last-child {
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 3px 3px 0;
+}
+
+.damselfly-keywordtool {
+    padding: 5px;
 }

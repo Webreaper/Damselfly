@@ -44,32 +44,33 @@
             </div>
 
 @code {
-        readonly List<ExportableImage> images = new List<ExportableImage>();
+    readonly List<ExportableImage> images = new List<ExportableImage>();
 
 
-        public Task<List<ExportableImage>> LoadData()
+    public Task<List<ExportableImage>> LoadData()
+    {
+        var watch = new Stopwatch("ExportLoadData");
+        images.Clear();
+        images.AddRange(basketService.SelectedImages.Select(x => new ExportableImage(x, ThumbSize.Small)));
+        watch.Stop();
+
+        return Task.FromResult(images);
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
         {
-            var watch = new Stopwatch("ExportLoadData");
-            images.Clear();
-            images.AddRange(basketService.SelectedImages.Select(x => new ExportableImage(x, ThumbSize.Small)));
-            watch.Stop();
+            ViewDataService.ShowFolderList = false;
+            ViewDataService.ShowBasket = false;
+            ViewDataService.ShowExport = true;
+            ViewDataService.ShowTags = false;
 
-            return Task.FromResult(images);
+            await LoadData();
+
+            StateHasChanged();
         }
-
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                ViewDataService.ShowFolderList = false;
-                ViewDataService.ShowBasket = false;
-                ViewDataService.ShowExport = true;
-
-                await LoadData();
-
-                StateHasChanged();
-            }
-        }
+    }
 
 }

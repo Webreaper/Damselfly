@@ -150,8 +150,9 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.BasketEntry);
-                    images = images.Include(x => x.ImageTags)
-                                   .ThenInclude(x => x.Tag);
+                    // Disable this for now - it's slow due to the EFCore subquery bug
+                    // images = images.Include(x => x.ImageTags)
+                    //               .ThenInclude(x => x.Tag);
 
                     results = images.OrderByDescending(x => x.MetaData.DateTaken)
                                     .Skip(first)

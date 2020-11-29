@@ -186,16 +186,17 @@
         searchService.OnChange -= SearchQueryChanged;
     }
 
-
     private void ProcessTagEnter(KeyboardEventArgs eventArgs)
     {
         if (eventArgs.Key == "Enter")        // fire on enter
         {
             var selected = SelectionService.Instance.Selection.ToArray();
 
-            Logging.Log("Saving tag: " + NewTag);
+            Logging.Log("Saving tags: " + NewTag);
 
-            InvokeAsync(() => { _ = keywordService.AddTagAsync(selected, NewTag); });
+            var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
+
+            InvokeAsync(() => { _ = keywordService.UpdateTagsAsync(selected, addedTags, null); });
 
             NewTag = string.Empty;
         }

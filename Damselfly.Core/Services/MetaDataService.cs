@@ -68,16 +68,19 @@ namespace Damselfly.Core.Services
         /// <param name="tagsToAdd"></param>
         /// <param name="tagsToRemove"></param>
         /// <returns></returns>
-        public async Task UpdateTagsAsync(Image[] images, List<string> tagsToAdd, List<string> tagsToRemove)
+        public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags)
         {
+            // TODO: Split tags with commas here?
             var timestamp = DateTime.UtcNow;
             var changeDesc = string.Empty;
 
             using var db = new ImageContext();
             var keywordOps = new List<ExifOperation>();
 
-            if (tagsToAdd != null)
+            if (addTags != null)
             {
+                var tagsToAdd = addTags.Where(x => !string.IsNullOrEmpty(x)).ToList();
+
                 foreach (var image in images)
                 {
                     keywordOps.AddRange(tagsToAdd.Select(keyword => new ExifOperation
@@ -93,8 +96,10 @@ namespace Damselfly.Core.Services
                 changeDesc += $"added: {string.Join(',', tagsToAdd)}";
             }
 
-            if (tagsToRemove != null)
+            if (removeTags != null)
             {
+                var tagsToRemove = removeTags.Where(x => !string.IsNullOrEmpty(x)).ToList();
+
                 foreach (var image in images)
                 {
                     keywordOps.AddRange( tagsToRemove.Select(keyword => 
@@ -149,11 +154,17 @@ namespace Damselfly.Core.Services
 
             foreach (var op in exifOperations)
             {
+                if( String.IsNullOrEmpty( op.Text) )
+                {
+                    Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
+                    continue;
+                }
+
                 if (op.Type == ExifOperation.ExifType.Keyword)
                 {
                     if (op.Operation == ExifOperation.OperationType.Add)
                     {
-                        Logging.Log($" Adding keyword {op.Text} to {op.Image.FileName}");
+                        Logging.Log($" Adding keyword '{op.Text}' to {op.Image.FileName}");
                         args += $" -keywords+=\"{op.Text}\" ";
                         processedOps.Add(op);
                     }
