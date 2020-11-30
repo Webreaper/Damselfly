@@ -6,6 +6,7 @@
 @inject ThumbnailService thumbService
 @inject MetaDataService iptcService
 @inject IndexingService indexService
+@inject NavigationService navContext
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -15,9 +16,9 @@
         <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
     </div>
 
-    @if (CurrentImages != null && CurrentImages.Any())
-    {
-        <div class="damselfly-keywordlist">
+    <div class="damselfly-keywordlist">
+        @if (CurrentImages != null && CurrentImages.Any())
+        {
             @foreach (var tag in theImageTags)
             {
                 <div class="damselfly-keyword">
@@ -25,8 +26,12 @@
                     <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
                 </div>
             }
-        </div>
-    }
+        }
+        else
+        {
+            <div>No Keywords</div>
+        }
+    </div>
 </div>
 
 @code {
@@ -68,6 +73,7 @@
             {
                 using var db = new ImageContext();
 
+                // Enrich all the images with their with their tags
                 foreach (var img in CurrentImages)
                     db.LoadTags(img);
 
@@ -108,9 +114,27 @@
         }
     }
 
+    protected override void OnInitialized()
+    {
+        navContext.OnChange += NavigationChanged;
+    }
+
+    protected void NavigationChanged(Image image)
+    {
+        var images = new Image[0];
+
+        if( image != null)
+            images = new [] { image };
+
+        CurrentImages = images;
+
+        InvokeAsync(() => { _ = OnParametersSetAsync(); });
+    }
+
     public void Dispose()
     {
         SelectionService.Instance.OnSelectionChanged -= SelectionChanged;
+        navContext.OnChange += NavigationChanged;
     }
 
     protected void SelectionChanged()

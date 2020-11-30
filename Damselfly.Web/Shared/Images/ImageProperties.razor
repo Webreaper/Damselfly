@@ -6,6 +6,7 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
+@implements IDisposable 
 
 <div class="toolwindow">
     @if (CurrentImage == null)
@@ -86,16 +87,15 @@
             return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
         }
     }
+
     protected override void OnInitialized()
     {
         navContext.OnChange += NavigationChanged;
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    public void Dispose()
     {
-        if (firstRender)
-        {
-        }
+        navContext.OnChange += NavigationChanged;
     }
 
     protected void NavigationChanged(Image image)

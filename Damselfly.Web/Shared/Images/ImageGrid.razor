@@ -78,7 +78,7 @@
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
-    readonly List<Image> gridImages = new List<Image>();
+        readonly List<Image> gridImages = new List<Image>();
     public string NewTag { get; set; }
     public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
@@ -138,7 +138,7 @@
                 first = temp;
             }
 
-            Logging.Log($"Selecting images {first} ({prevImage.FileName}) to {last} ({image.FileName})");
+            Logging.Log($"Selecting images {first} ({prevSelection.FileName}) to {last} ({image.FileName})");
 
             for ( int i = first; i <= last; i++ )
             {

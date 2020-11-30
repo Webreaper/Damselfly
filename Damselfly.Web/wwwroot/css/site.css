@@ -869,7 +869,10 @@ padding: 0.4em 0.65em;
     margin: 0px;
     padding: 2px;
     flex-flow: row wrap;
+    min-height: 100px;
+    max-height: 250px;
     align-content: flex-start;
+    overflow-y: auto; 
 }
 
 /* Masonary Keywords */

@@ -19,6 +19,9 @@
     {
         get
         {
+            if (PrevImage == null)
+                return true;
+
             if (PrevImage == null || PrevImage.MetaData == null || CurrentImage.MetaData == null)
                 return false;
 

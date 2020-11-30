@@ -18,13 +18,13 @@
         <div class="damselfly-selectedimages">
             @if (!images.Any())
             {
-                <p><em>No images selected.</em></p>
+                <p><em>No images in basket.</em></p>
             }
             else
             {
                 @foreach (var image in images)
                 {
-                <div class="damselfly-gridimage wrapping-table-mini">
+                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
                     <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
                 </div>
                 }
@@ -32,14 +32,6 @@
         </div>
     }
 
-    <div class="selection-toolbar">
-        @if (ShowTags)
-        {
-            <div class="col-sm-8">
-                <TagList CurrentImages=@images />
-            </div>
-        }
-    </div>
     <div class="selection-toolbar">
         @if (images != null && images.Any())
         {
@@ -61,7 +53,7 @@
 </div>
 
 @code {
-    Image[] images = null;
+    readonly List<Image> images = new List<Image>();
     readonly List<Basket> baskets = new List<Basket>();
     bool AddingBasket { get; set; }
     string NewBasketName { get; set; }
@@ -117,6 +109,64 @@
         }
     }
 
+    /// <summary>
+    /// Manage the selection state for the grid images. 
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="image"></param>
+    private Image prevSelection = null;
+
+    private void ToggleSelected(MouseEventArgs e, Image image)
+    {
+        var watch = new Stopwatch("ToggleSelection");
+        if (e.ShiftKey && prevSelection != null)
+        {
+            // Range selection. 
+            var first = images.FindIndex(x => x.ImageId == prevSelection.ImageId);
+            var last = images.FindIndex(x => x.ImageId == image.ImageId);
+
+            if (first > last)
+            {
+                var temp = last;
+                last = first;
+                first = temp;
+            }
+
+            Logging.Log($"Selecting images {first} ({prevSelection.FileName}) to {last} ({image.FileName})");
+
+            for (int i = first; i <= last; i++)
+            {
+                var img = images[i];
+                SelectionService.Instance.SelectImage(img);
+            }
+        }
+        else
+        {
+            if (e.MetaKey)
+            {
+                // Apple key was pressed - toggle the selection
+                SelectionService.Instance.ToggleSelection(new List<Image> { image });
+            }
+            else
+            {
+                // No keys pressed. Select if unselected, or deselect if selected - but
+                // clear any other selection at the same time. Store the last selection
+                // as it could be the beginning of a range selection
+                bool wasPreviouslySelected = SelectionService.Instance.IsSelected(image);
+                SelectionService.Instance.ClearSelection();
+                prevSelection = null;
+
+                if (!wasPreviouslySelected)
+                {
+                    SelectionService.Instance.SelectImage(image);
+                    prevSelection = image;
+                }
+            }
+        }
+
+        watch.Stop();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -140,7 +190,8 @@
     public async Task LoadData()
     {
         var watch = new Stopwatch("SelectedLoadData");
-        images = basketService.SelectedImages.ToArray();
+        images.Clear();
+        images.AddRange( basketService.SelectedImages );
         watch.Stop();
 
         using var db = new ImageContext();
