@@ -115,8 +115,8 @@ namespace Damselfly.Web
 
             // TODO: Make all this async?
             ConfigService.Instance.InitialiseCache();
-            FolderService.Instance.LoadFolders();
             SearchService.Instance.PreLoadSearchData();
+            FolderService.Instance.PreLoadFolderData();
             BasketService.Instance.Initialise();
 
             if (IndexingService.EnableIndexing)

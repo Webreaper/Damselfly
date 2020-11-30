@@ -74,7 +74,8 @@
     protected async Task ProcessUpdatedFilter()
     {
         folderItems = await folderService.GetFilteredFolders( filterTerm );
-        StateHasChanged();
+
+        await InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -95,6 +96,6 @@
     private void OnFoldersChanged()
     {
         // Be careful of threading - we may get called from anywhere
-        InvokeAsync(() => { _ = ProcessUpdatedFilter(); } );
+        _ = ProcessUpdatedFilter();
     }
 }

@@ -76,16 +76,13 @@
 
     public async Task LoadData()
     {
-        await InvokeAsync(() =>
-        {
-            var watch = new Stopwatch("LoadConfigs");
-            using var db = new ImageContext();
-            this.configs.Clear();
-            this.configs.AddRange(db.DownloadConfigs);
-            watch.Stop();
-        });
+        var watch = new Stopwatch("LoadConfigs");
+        using var db = new ImageContext();
+        this.configs.Clear();
+        this.configs.AddRange(db.DownloadConfigs);
+        watch.Stop();
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 }
 

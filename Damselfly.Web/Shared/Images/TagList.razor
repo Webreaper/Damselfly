@@ -51,6 +51,7 @@
     {
         Logging.Log($"Tag {tag} removed");
 
+        // TODO: Fix this async mess
         InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, new List<string> { tag }); });
 
         // Now store the state
@@ -145,6 +146,7 @@
         // If multiple tags have been added, split them and add individually.
         var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
 
+        // TODO: Fix this async mess
         InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
 
         NewTag = string.Empty;

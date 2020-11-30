@@ -124,6 +124,7 @@
 
     private void ToggleSelected(MouseEventArgs e, Image image)
     {
+        var watch = new Stopwatch("ToggleSelection");
         if (e.ShiftKey && prevSelection != null )
         {
             // Range selection. 
@@ -168,6 +169,8 @@
                 }
             }
         }
+
+        watch.Stop();
     }
 
 
@@ -196,7 +199,7 @@
 
             var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
 
-            InvokeAsync(() => { _ = keywordService.UpdateTagsAsync(selected, addedTags, null); });
+            _ = keywordService.UpdateTagsAsync(selected, addedTags, null);
 
             NewTag = string.Empty;
         }
@@ -221,7 +224,7 @@
         gridImages.Clear();
         endOfImages = false;
 
-        InvokeAsync(() => { _ = LoadData(); });
+        _ = LoadData();
     }
 
     void AddSelectedToBasket()
@@ -262,7 +265,7 @@
             if (newImages.Count() < imagesPerPage)
                 endOfImages = true;
 
-            StateHasChanged();
+            await InvokeAsync( StateHasChanged );
         }
 
         IsLoading = false;

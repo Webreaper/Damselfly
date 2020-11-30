@@ -102,10 +102,7 @@
 
     private void UploadToWordPress()
     {
-        InvokeAsync(() =>
-        {
-            _ = wpService.UploadBasketToWordpress();
-        });
+        _ = wpService.UploadBasketToWordpress();
     }
 
     private void ShowDownloads()
@@ -137,10 +134,10 @@
     protected void SelectedImagesChanged()
     {
         // Marshall onto the dispatcher thread
-        InvokeAsync(() => { _ = LoadData(); });
+        _ = LoadData();
     }
 
-    public Task LoadData()
+    public async Task LoadData()
     {
         var watch = new Stopwatch("SelectedLoadData");
         images = basketService.SelectedImages.ToArray();
@@ -151,9 +148,7 @@
         this.baskets.Clear();
         this.baskets.AddRange(db.Baskets);
 
-        StateHasChanged();
-
-        return Task.FromResult(images);
+        await InvokeAsync(StateHasChanged);
     }
 }
 

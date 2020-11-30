@@ -178,10 +178,8 @@ app {
     height: 220px;
 }
 
-
-
 .folder-entry {
-    animation: fadeIn ease 1s;
+    animation: fadeIn ease 0.5s;
     color: #ddffdd;
     padding-left: 5px;
     font-size: 0.8rem;
@@ -377,9 +375,13 @@ app {
 .tagEditor {
     border-color: darkgreen;
     color: #aaffaa;
-    background: black;
+    background: white;
     font-size: 13px;
     width: 170px;
+}
+
+.tagEditor:disabled {
+    background: rgb( 200, 200, 200 );
 }
 
 .tagEditor-multiline {

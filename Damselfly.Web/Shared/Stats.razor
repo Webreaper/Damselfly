@@ -1,4 +1,6 @@
-﻿<div>
+﻿@using Microsoft.EntityFrameworkCore 
+
+<div>
     <div>
         <h3>Stats:</h3>
     </div>
@@ -38,17 +40,17 @@
         }
     }
 
-    protected void GetStatsSync()
+    protected async Task GetStatsSync()
     {
         using (var db = new ImageContext())
         {
-            TotalImages = db.Images.Count();
-            TotalTags = db.Tags.Count();
-            TotalFolders = db.Folders.Count();
-            PendingThumbs = db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).Count();
-            PendingImages = db.Images.Where(x => x.MetaData == null ).Count();
+            TotalImages = await db.Images.CountAsync();
+            TotalTags = await db.Tags.CountAsync();
+            TotalFolders = await db.Folders.CountAsync();
+            PendingThumbs = await db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).CountAsync();
+            PendingImages = await db.Images.Where(x => x.MetaData == null ).CountAsync();
             StatsReady = true;
-            InvokeAsync(() => { StateHasChanged(); });
+            await InvokeAsync( StateHasChanged );
         };
     }
 }

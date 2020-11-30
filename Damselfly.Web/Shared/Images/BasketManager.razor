@@ -67,16 +67,13 @@ else
 
     public async Task LoadData()
     {
-        await InvokeAsync(() => {
-            var watch = new Stopwatch("LoadBaskets");
-            using var db = new ImageContext();
-            this.baskets.Clear();
-            this.baskets.AddRange(db.Baskets);
+        var watch = new Stopwatch("LoadBaskets");
+        using var db = new ImageContext();
+        this.baskets.Clear();
+        this.baskets.AddRange(db.Baskets);
+        watch.Stop();
 
-            watch.Stop();
-        });
-
-        StateHasChanged();
+        await InvokeAsync( StateHasChanged );
     }
 }
 

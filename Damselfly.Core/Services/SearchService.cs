@@ -69,7 +69,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="first"></param>
         /// <param name="count"></param>
-        private void LoadMoreData(int first, int count)
+        private async Task LoadMoreData(int first, int count)
         {
             if (first < SearchResults.Count() && first + count < SearchResults.Count())
             {
@@ -154,10 +154,10 @@ namespace Damselfly.Core.Services
                     // images = images.Include(x => x.ImageTags)
                     //               .ThenInclude(x => x.Tag);
 
-                    results = images.OrderByDescending(x => x.MetaData.DateTaken)
+                    results = await images.OrderByDescending(x => x.MetaData.DateTaken)
                                     .Skip(first)
                                     .Take(count)
-                                    .ToArray();
+                                    .ToArrayAsync();
                 }
                 catch (Exception ex)
                 {
@@ -181,15 +181,15 @@ namespace Damselfly.Core.Services
         /// </summary>
         public void PreLoadSearchData()
         {
-            LoadMoreData(0, 100);
+            _ = LoadMoreData(0, 100);
         }
 
-        public Task<Image[]> GetQueryImagesAsync(int first, int count)
+        public async Task<Image[]> GetQueryImagesAsync(int first, int count)
         {
             // Load more data if we need it.
-            LoadMoreData(first, count);
+            await LoadMoreData(first, count);
 
-            return Task.FromResult( SearchResults.Skip(first).Take(count).ToArray() );
+            return SearchResults.Skip(first).Take(count).ToArray();
         }
     }
 }

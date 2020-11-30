@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
@@ -29,10 +30,7 @@ namespace Damselfly.Core.Services
             Logging.Log("Folders added or removed - re-loading cached folder list...");
 
             // Do this async?
-            LoadFolders();
-
-            // Update the GUI
-            NotifyStateChanged();
+            _ = LoadFolders();
         }
 
         private void NotifyStateChanged()
@@ -47,37 +45,42 @@ namespace Damselfly.Core.Services
         /// which has a summary of the number of images in each folder
         /// and the most recent modified date of any image in the folder.
         /// </summary>
-        /// TODO: Make this async
-        public void LoadFolders()
+        public async Task LoadFolders()
         {
-            using (var db = new ImageContext())
+            using var db = new ImageContext();
+            var watch = new Stopwatch("GetFolders");
+
+            Folder[] folders = new Folder[0];
+
+            try
             {
-                var watch = new Stopwatch("GetFolders");
-
-                Folder[] folders = new Folder[0];
-
-                // TODO - groupby query here
-
                 // Only pull folders with images
-                var folderQuery = db.Folders.Where(x => x.Images.Any());
-
-                var results = folderQuery.Select(x =>
-                            new FolderListItem {
-                                    Folder = x,
-                                    ImageCount = x.Images.Count,
-                                    // Not all images may have metadata yet.
-                                    MaxImageDate = x.Images.Max(i => i.MetaData != null ? i.MetaData.DateTaken : i.FileLastModDate)
-                                })
-                            .OrderByDescending(x => x.MaxImageDate)
-                            .ToArray();
-
-                watch.Stop();
-
-                // Save the updated list
-                allFolderItems = results.ToList();
-
-                NotifyStateChanged();
+                allFolderItems = await db.Folders.Where(x => x.Images.Any())
+                                .Select(x =>
+                                    new FolderListItem
+                                    {
+                                        Folder = x,
+                                        ImageCount = x.Images.Count,
+                                        // Not all images may have metadata yet.
+                                        MaxImageDate = x.Images.Max(i => i.MetaData != null ? i.MetaData.DateTaken : i.FileLastModDate)
+                                    })
+                                .OrderByDescending(x => x.MaxImageDate)
+                                .ToListAsync();
             }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Error loading folders: {ex.Message}");
+            }
+
+            watch.Stop();
+
+            // Update the GUI
+            NotifyStateChanged();
+        }
+
+        public void PreLoadFolderData()
+        {
+            _ = LoadFolders();
         }
 
         /// <summary>

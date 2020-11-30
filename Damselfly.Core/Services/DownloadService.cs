@@ -178,7 +178,8 @@ namespace Damselfly.Core.Services
 
                         int percentComplete = (count++ * 100) / total;
 
-                        Thread.Sleep(50);
+                        // Yield a bit, otherwise 
+                        await Task.Delay(50);
 
                         StatusService.Instance.StatusText = $"Zipping image {imagePath.Name}... ({percentComplete}% complete)";
                     }

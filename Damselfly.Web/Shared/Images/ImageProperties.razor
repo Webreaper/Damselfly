@@ -103,7 +103,7 @@
         if (CurrentImage == null || image == null || image.ImageId != CurrentImage.ImageId)
         {
             CurrentImage = image;
-            InvokeAsync(() => { StateHasChanged(); });
+            InvokeAsync( StateHasChanged );
             if (CurrentImage != null)
                 Logging.LogVerbose($"ImageProperties: Set current image to {CurrentImage.ImageId} ({CurrentImage.FileName})");
         }

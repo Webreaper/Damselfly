@@ -12,6 +12,7 @@ using MetadataExtractor.Formats.Iptc;
 using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
 using EFCore.BulkExtensions;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
 {

@@ -34,12 +34,13 @@
 </div>
 
 @code { protected override void OnInitialized()
-{
-    base.OnInitialized();
-    ViewDataService.PropertyChanged += OnPropertyChanged;
-}
+    {
+        base.OnInitialized();
+        ViewDataService.PropertyChanged += OnPropertyChanged;
+    }
 
-private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-{
-    InvokeAsync(() => { StateHasChanged(); });
-} }
+    private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+}
