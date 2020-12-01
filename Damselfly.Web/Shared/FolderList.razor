@@ -4,6 +4,8 @@
 @inject FolderService folderService
 @implements IDisposable
 
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
 <div class="damselfly-folderlist">
     <div class="folder-search">
         <label for="searchBox">
@@ -21,11 +23,11 @@
             <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
                 <i class="fa fa-folder-open folder-icon" /> All Folders
             </div>
-            <VirtualScroll ItemType="FolderListItem" Items="@folderItems" ItemHeight="15">
+            <Virtualize Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.Folder.FolderId)" @onclick="@(() => SetFilterFolder(context.Folder))">
                     <i class="fa fa-folder-open folder-icon" /> @context.Folder.Name (@context.ImageCount)
                 </div>
-            </VirtualScroll>
+            </Virtualize>
         }
     </div>
 </div>
@@ -37,17 +39,17 @@
     private List<FolderListItem> folderItems;
 
     Folder SelectedItem { get; set; }
-    protected void SelectionChanged( Folder f )
+    protected void SelectionChanged(Folder f)
     {
         //Logging.Log($"Selected folder {f.FolderId}");
     }
 
-    string FolderStyle( int folderId )
+    string FolderStyle(int folderId)
     {
         if (folderId == -1 && searchService.Folder == null)
             return "folder-entry-selected";
 
-        if( searchService.Folder?.FolderId == folderId )
+        if (searchService.Folder?.FolderId == folderId)
             return "folder-entry-selected";
 
         return string.Empty;
@@ -65,7 +67,7 @@
         StateHasChanged();
     }
 
-    void SetFilterFolder( Folder folder )
+    void SetFilterFolder(Folder folder)
     {
         searchService.Folder = folder;
         StateHasChanged();
@@ -73,7 +75,7 @@
 
     protected async Task ProcessUpdatedFilter()
     {
-        folderItems = await folderService.GetFilteredFolders( filterTerm );
+        folderItems = await folderService.GetFilteredFolders(filterTerm);
 
         await InvokeAsync(StateHasChanged);
     }

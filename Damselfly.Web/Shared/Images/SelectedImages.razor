@@ -41,21 +41,21 @@
             {
                 <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary">
                     <i class="fa fa-download" />
-                    <div>&nbsp;Download</div>
+                    &nbsp;Downloa
                 </button>
             }
             @if (ShowDownLoadButton)
             {
                 <button title="Clear Basket" @onclick="@(() => basketService.Clear())" class="btn btn-primary">
                     <i class="fas fa-shopping-basket" />
-                    <div>&nbsp;Clear</div>
+                    &nbsp;Clear
                 </button>
             }
             @if (ShowDownLoadButton)
             {
                 <button title="Upload To Wordpress" @onclick="@(() => UploadToWordPress())" class="btn btn-primary">
                     <i class="fab fa-wordpress" />
-                    <div>&nbsp;Upload to WP</div>
+                    &nbsp;Upload to WP
                 </button>
             }
         }
