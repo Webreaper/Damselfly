@@ -433,7 +433,7 @@ f
 
 .damselfly-logo img {
     max-height: 60px;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 
@@ -481,7 +481,7 @@ f
 
 .damselfly-statusbar {
     display: flex;
-    flex: 1;
+    flex: 0 0 20%;
     flex-direction: row;
     align-items: center;
     min-height: 30px;
@@ -672,8 +672,8 @@ f
 .image-fill {
     animation: fadeIn ease 1s;
     height: calc( 100vh - 100px);
-    width: calc( 100vh - 100px);
-    object-fit: cover;
+    width: 100%;
+    object-fit: contain;
 }
 
 .damselfly-tasks {
