@@ -8,10 +8,11 @@
 @inject WordpressService wpService;
 @implements IDisposable
 
-<div class="toolwindow">
     @if (images == null)
     {
-        <p><em>Loading selection...</em></p>
+        <div class="damselfly-selectedimages">
+            <p><em>Loading selection...</em></p>
+        </div>
     }
     else
     {
@@ -24,33 +25,41 @@
             {
                 @foreach (var image in images)
                 {
-                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
-                    <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
-                </div>
+                    <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
+                        <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
+                    </div>
                 }
             }
         </div>
     }
 
+    <BasketManager />
     <div class="selection-toolbar">
         @if (images != null && images.Any())
         {
             @if (ShowDownLoadButton)
             {
-                <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary"><i class="fa fa-download" /></button>
+                <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary">
+                    <i class="fa fa-download" />
+                    <div>&nbsp;Download</div>
+                </button>
             }
             @if (ShowDownLoadButton)
             {
-                <button title="Clear Basket" @onclick="@(() => basketService.Clear())" class="btn btn-primary"><i class="fa fa-trash" /></button>
+                <button title="Clear Basket" @onclick="@(() => basketService.Clear())" class="btn btn-primary">
+                    <i class="fas fa-shopping-basket" />
+                    <div>&nbsp;Clear</div>
+                </button>
             }
             @if (ShowDownLoadButton)
             {
-                <button title="Upload To Wordpress" @onclick="@(() => UploadToWordPress())" class="btn btn-primary"><i class="fab fa-wordpress" /></button>
+                <button title="Upload To Wordpress" @onclick="@(() => UploadToWordPress())" class="btn btn-primary">
+                    <i class="fab fa-wordpress" />
+                    <div>&nbsp;Upload to WP</div>
+                </button>
             }
         }
-        <BasketManager />
     </div>
-</div>
 
 @code {
     readonly List<Image> images = new List<Image>();

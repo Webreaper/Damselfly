@@ -7,23 +7,25 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService;
 
-@if (!AddingBasket)
-{
-    <select @onchange="BasketChanged">
-        @foreach (var basket in baskets)
-        {
-            <option value="@basket.Name">@basket.Name</option>
-        }
-    </select>
-    <button title="Add Basket" @onclick="@(() => AddBasket())" class="btn btn-primary"><i class="fa fa-plus-circle" /></button>
-}
-else
-{
-    <input placeholder="Basket Name" class="tagEditor" @bind-value="NewBasketName" @bind-value:event="oninput" />
-    <button title="Save Basket" @onclick="@(() => SaveBasket())" class="btn btn-primary"><i class="fa fa-save" /></button>
-    <button title="Cancel Adding" @onclick="@(() => CancelAdding())" class="btn btn-primary"><i class="fa fa-times-circle" /></button>
-}
-
+<div class="InputAddOn">
+    <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
+    @if (!AddingBasket)
+    {
+        <select @onchange="BasketChanged" class="InputAddOn-field">
+            @foreach (var basket in baskets)
+            {
+                <option value="@basket.Name">@basket.Name</option>
+            }
+        </select>
+        <button title="Add Basket" @onclick="@(() => AddBasket())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
+    }
+    else
+    {
+        <input placeholder="Basket Name" class="InputAddOn-field" @bind-value="NewBasketName" @bind-value:event="oninput" />
+        <button class="InputAddOn-item" title="Save Basket" @onclick="@(() => SaveBasket())"><i class="fa fa-save" /></button>
+        <button class="InputAddOn-item" title="Cancel Adding" @onclick="@(() => CancelAdding())"><i class="fa fa-times-circle" /></button>
+    }
+</div>
 
 @code {
     readonly List<Basket> baskets = new List<Basket>();
@@ -73,7 +75,7 @@ else
         this.baskets.AddRange(db.Baskets);
         watch.Stop();
 
-        await InvokeAsync( StateHasChanged );
+        await InvokeAsync(StateHasChanged);
     }
 }
 

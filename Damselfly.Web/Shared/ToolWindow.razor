@@ -1,0 +1,15 @@
+﻿
+<div class="toolwindow">
+    <div class="toolwindow-title">@Title</div>
+    <div class="toolwindow-content">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

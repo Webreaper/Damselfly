@@ -11,23 +11,43 @@
 
             @if (navContext.CurrentImage != null)
             {
-                <ImageProperties />
+                <ToolWindow Title="Image Properties">
+                    <ChildContent>
+                        <ImageProperties />
+                    </ChildContent>
+                </ToolWindow>
             }
             @if (ViewDataService.ShowBasket)
             {
-                <SelectedImages />
+                <ToolWindow Title="Basket">
+                    <ChildContent>
+                        <SelectedImages />
+                    </ChildContent>
+                </ToolWindow>
             }
             @if (ViewDataService.ShowTags)
             {
-                <Keywords />
+                <ToolWindow Title="Keywords">
+                    <ChildContent>
+                        <Keywords />
+                    </ChildContent>
+                </ToolWindow>
             }
             @if (ViewDataService.ShowFolderList)
             {
-                <FolderList />
+                <ToolWindow Title="Folders">
+                    <ChildContent>
+                        <FolderList />
+                    </ChildContent>
+                </ToolWindow>
             }
             @if (ViewDataService.ShowExport)
             {
-                <ExportSettings />
+                <ToolWindow Title="Export">
+                    <ChildContent>
+                        <ExportSettings />
+                    </ChildContent>
+                </ToolWindow>
             }
         </div>
     </div>

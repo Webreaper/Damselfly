@@ -163,7 +163,7 @@ app {
 }
 
 .selection-toolbar button {
-    font-size: 18px;
+    font-size: 12px;
     padding: 2px;
 }
 
@@ -370,7 +370,7 @@ app {
 .validation-message {
     color: red;
 }
-
+f
 
 .tagEditor {
     border-color: darkgreen;
@@ -700,12 +700,21 @@ app {
 }
 
 .toolwindow {
-    background: #323232;
     color: #ddeddd;
     background-color: rgba(100, 140, 100, 0.3);
     box-shadow: 1px 1px 0 rgba(225, 255, 225, 0.7) inset;
-    border-radius: 6px;
-    padding: 3  px;
+}
+
+.toolwindow-title {
+    color: #92CF92;
+    background-color: rgba(160, 210, 160, 0.3);
+    padding: 3px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.toolwindow-content {
+    padding: 4px;
 }
 
 .folder-scroll-area {

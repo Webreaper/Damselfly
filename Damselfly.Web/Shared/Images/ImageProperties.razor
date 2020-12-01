@@ -8,10 +8,11 @@
 @inject IJSRuntime JsRuntime
 @implements IDisposable 
 
-<div class="toolwindow">
     @if (CurrentImage == null)
     {
-        <p><em>Loading image properties...</em></p>
+        <div class="damselfly-imageproperties">
+            <p><em>Loading image properties...</em></p>
+        </div>
     }
     else
     {
@@ -61,7 +62,6 @@
             </button>
         </div>
     }
-</div>
 
 @code {
     private Image theImage;
