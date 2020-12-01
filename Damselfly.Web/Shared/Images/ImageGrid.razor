@@ -63,12 +63,6 @@
         <label for="DateSep">Group by Date</label>
         <input id="DateSep" type="checkbox" @bind="@ShowDateSeparators">
     </div>
-    <div class="damselfly-browsetool">
-        <button @onclick="AddSelectedToBasket">Add Selected To Basket</button>
-    </div>
-    <div class="damselfly-browsetool">
-        <p>Add Tag: <input placeholder="Add a keyword" class="tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" /></p>
-    </div>
 </div>
 
 @code {
@@ -79,7 +73,6 @@
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
         readonly List<Image> gridImages = new List<Image>();
-    public string NewTag { get; set; }
     public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
 
@@ -189,22 +182,6 @@
         searchService.OnChange -= SearchQueryChanged;
     }
 
-    private void ProcessTagEnter(KeyboardEventArgs eventArgs)
-    {
-        if (eventArgs.Key == "Enter")        // fire on enter
-        {
-            var selected = SelectionService.Instance.Selection.ToArray();
-
-            Logging.Log("Saving tags: " + NewTag);
-
-            var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
-
-            _ = keywordService.UpdateTagsAsync(selected, addedTags, null);
-
-            NewTag = string.Empty;
-        }
-    }
-
     public string NoResultsMessage
     {
         get
@@ -227,13 +204,6 @@
         _ = LoadData();
     }
 
-    void AddSelectedToBasket()
-    {
-        var selected = SelectionService.Instance.Selection.ToList();
-        selected.ForEach(x => BasketService.Instance.SetBasketState(x, true));
-
-        StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
-    }
 
 
     protected async Task InitJsListenerAsync()

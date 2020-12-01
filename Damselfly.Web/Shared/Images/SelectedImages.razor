@@ -34,6 +34,7 @@
     }
 
     <BasketManager />
+
     <div class="selection-toolbar">
         @if (images != null && images.Any())
         {
@@ -59,6 +60,13 @@
                 </button>
             }
         }
+        @if (SelectionService.Instance.Selection.Any() )
+        {
+            <button @onclick="AddSelectedToBasket" class="btn btn-primary">
+                <i class="fas fa-shopping-basket" />
+                &nbsp;Add Selected To Basket
+            </button>
+        }
     </div>
 
 @code {
@@ -74,6 +82,14 @@
     public bool ShowTags { get; set; } = true;
 
     public bool ShowClearButton { get { return images.Any(); } set { } }
+
+    void AddSelectedToBasket()
+    {
+        var selected = SelectionService.Instance.Selection.ToList();
+        selected.ForEach(x => BasketService.Instance.SetBasketState(x, true));
+
+        StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
+    }
 
     private void SaveBasket()
     {
@@ -180,17 +196,24 @@
     {
         if (firstRender)
         {
-            basketService.OnChange += SelectedImagesChanged;
+            basketService.OnChange += BasketImagesChanged;
+            SelectionService.Instance.OnSelectionChanged += SelectedImagesChanged;
             await LoadData();
         }
     }
 
     public void Dispose()
     {
-        basketService.OnChange -= SelectedImagesChanged;
+        basketService.OnChange -= BasketImagesChanged;
+        SelectionService.Instance.OnSelectionChanged -= SelectedImagesChanged;
     }
 
     protected void SelectedImagesChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected void BasketImagesChanged()
     {
         // Marshall onto the dispatcher thread
         _ = LoadData();
