@@ -174,8 +174,13 @@ app {
     overflow-y: scroll;
 }
 
-.folderlist {
-    height: 220px;
+.folder-scroll-area {
+    max-height: 250px;
+    /* Yuk */
+    max-width: 300px;
+    top: 0px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .folder-entry {
@@ -185,8 +190,8 @@ app {
     font-size: 0.8rem;
     cursor: pointer;
     overflow-x: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
-    text-wrap: none;
     vertical-align: middle;
 }
 
@@ -434,8 +439,9 @@ f
 
 .damselfly-folderlist {
     display: flex;
+    max-width: 100%;
     flex-direction: column;
-    flex: 1 1 100%;
+    flex: 1 1 auto;
     order: 1;
 }
 
@@ -717,12 +723,6 @@ f
     padding: 4px;
 }
 
-.folder-scroll-area {
-    max-height: 200px;
-    width: 100%;
-    top: 0px;
-    overflow-y: auto;
-}
 
 .wrapping-table-mini img {
     width: 50px;
