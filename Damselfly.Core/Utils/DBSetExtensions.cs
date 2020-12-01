@@ -53,11 +53,10 @@ namespace Damselfly.Core.Utils
                             .Query()
                             .Include(e => e.Tag)
                             .Load();
-
             }
             catch (Exception ex)
             {
-                Logging.Log($"Exception retrieving image: {ex.Message}");
+                Logging.Log($"Exception retrieving image tags: {ex.Message}");
             }
             finally
             {

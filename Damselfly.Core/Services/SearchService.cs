@@ -158,6 +158,9 @@ namespace Damselfly.Core.Services
                                     .Skip(first)
                                     .Take(count)
                                     .ToArrayAsync();
+
+                    foreach (var img in results)
+                        db.LoadTags(img);
                 }
                 catch (Exception ex)
                 {

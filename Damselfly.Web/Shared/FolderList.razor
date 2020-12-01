@@ -12,24 +12,24 @@
             <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
         </label>
     </div>
-    <div class="folder-scroll-area">
-        @if (folderItems == null)
-        {
-            <p>Loading...</p>
-            <Spinner />
-        }
-        else
-        {
-            <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
-                <i class="fa fa-folder-open folder-icon" /> All Folders
-            </div>
+    @if (folderItems == null)
+    {
+        <p>Loading...</p>
+        <Spinner />
+    }
+    else
+    {
+        <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
+            <i class="fa fa-folder-open folder-icon" /> All Folders
+        </div>
+        <div class="folder-scroll-area">
             <Virtualize Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Name" @onclick="@(() => SetFilterFolder(context.Folder))">
                     <i class="fa fa-folder-open folder-icon" /> @context.Folder.Name (@context.ImageCount)
                 </div>
             </Virtualize>
-        }
-    </div>
+        </div>
+    }
 </div>
 
 @code {

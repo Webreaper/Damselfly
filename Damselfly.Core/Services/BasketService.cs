@@ -199,9 +199,6 @@ namespace Damselfly.Core.Services
                 SelectedImages.Add(image);
                 changed = true;
 
-                // TODO: Lazy load tags here?! Or in SelectionService?
-                db.LoadTags(image);
-
                 StatusService.Instance.StatusText = $"{image.FileName} added to the basket.";
             }
             else if (!newState && entry != null)

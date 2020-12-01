@@ -177,7 +177,7 @@ app {
 .folder-scroll-area {
     max-height: 250px;
     /* Yuk */
-    max-width: 300px;
+    max-width: 290px;
     top: 0px;
     overflow-y: auto;
     overflow-x: hidden;
