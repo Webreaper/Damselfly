@@ -112,6 +112,24 @@ Workflow is a little like distributed software development using Git. Photo mani
    * Export to a zip file to download and extract into the local image folder for additional editing
 6. Re-sync using RClone to push the images back to the collection [Future enhancement: Damselfly Desktop App will do this for you]
 
+### How does Damselfly manage EXIF data?
+
+Tagging images with IPTC keywords is a critical part of the Damselfly workflow. This is done using the excellent 
+[ExifTool](https://exiftool.org/) - which is the fastest, cleanest and most powerful way to manage ExifData. ExifTool
+makes the data changes losslessly, guaranteeing that your images will not be re-encoded when changing data, so no 
+data will be lost for images stored with lossy formats such as JPEG etc. 
+
+When you tag images in Damselfly, the EXIF data is not written immediately, but instead the keyword changes are written to a 
+'pending metadata operations' queue. Damselfly then processes this queue of pending operations in the background,
+conflating multiple EXIF operations (both addition and removal of keywords, and other metadata changes) and then running 
+ExifTool to apply those changes losslessly to the image files. 
+
+This means that the fewest disk operations necessary are carried out - reducing any risk of image file corruption, and making
+the process as fast as possible - all the while keeping the Damselfly UI super-fast and responsive, even if you are adding 
+many tags to hundreds of image. The other advantage of doing it this way is that if you happen to restart Damselfly or have 
+some other problem, the queue of pending operations can continue to be processed, guaranteeing that a tag added via the UI 
+will be written to the underlying image file. 
+
 ---
 
 ## Background/FAQ
