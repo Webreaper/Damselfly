@@ -222,4 +222,3 @@ I am a professional developer, but Damselfly is a side-project, written in my sp
 * Chris Sainty for [Blazored](https://github.com/Blazored) Modal and Typeahead, and all his excellent info on Blazor
 * [Serilog.Net](https://serilog.net/) for logging
 * Wisne for [Infinite Scroll](https://github.com/wisne/InfiniteScroll-BlazorServer) inspiration
-* SamProf for the [Virtual Scrolling](https://github.com/SamProf/BlazorVirtualScrolling) proof-of-concept
