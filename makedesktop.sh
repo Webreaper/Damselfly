@@ -19,4 +19,9 @@ docker run --rm  \
  -v ~/.cache/electron:/root/.cache/electron \
  -v ~/.cache/electron-builder:/root/.cache/electron-builder \
  electronuserland/builder:wine  \
-    yarn && yarn install && yarn dist
+    yarn && yarn install && yarn version --new-version $version && yarn dist
+
+cp dist/Damselfly-$version-mac.zip ../Damselfly.Web/wwwroot/desktop/damselfly-macos.zip
+cp dist/Damselfly-$version-win.zip ../Damselfly.Web/wwwroot/desktop/damselfly-win.zip
+cp dist/Damselfly-$version.AppImage ../Damselfly.Web/wwwroot/desktop/damselfly.AppImage
+

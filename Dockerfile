@@ -5,19 +5,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS base
 WORKDIR /app
 EXPOSE 6363
 
-# First, build the Windows desktop app
-# FROM electronuserland/builder:wine as desktop
-# ARG DAMSELFLY_VERSION
-# RUN echo Damselfly Desktop version ${DAMSELFLY_VERSION}
-# RUN apt-get update && apt-get install -y zip
-# COPY Damselfly.Desktop Damselfly.Desktop
-# WORKDIR "/Damselfly.Desktop"
-# RUN yarn install
-# RUN yarn version --new-version ${DAMSELFLY_VERSION} 
-# RUN yarn distwin
-# WORKDIR "/Damselfly.Desktop/dist"
-# RUN zip /damselfly-win.zip *.*
-
 # Now build the app itself
 FROM mcr.microsoft.com/dotnet/sdk:$SDKVERSION AS build
 ARG DAMSELFLY_VERSION
@@ -42,10 +29,12 @@ WORKDIR /app
 # This may re-copy the desktop/* apps, but who cares.
 COPY --from=publish /app/publish .
 
-# Copy the mac desktop app into the image (this will be built outside docker)
-# TODO: Maybe do this in the publish step?
+# Copy the desktop apps into the image (these are built outside docker at the moment)
 RUN mkdir -p ./wwwroot/desktop
-COPY ./Damselfly.Web/wwwroot/desktop/damselfly-macos.zip ./wwwroot/desktop
+COPY ./Damselfly.Desktop/dist/damselfly-$DAMSELFLY_VERSION-mac.zip ./wwwroot/desktop/damselfly-macos.zip
+COPY ./Damselfly.Desktop/dist/damselfly-$DAMSELFLY_VERSION-win.zip ./wwwroot/desktop/damselfly-win.zip
+COPY ./Damselfly.Desktop/dist/Damselfly-$DAMSELFLY_VERSION.AppImage ./wwwroot/desktop/Damselfly.AppImage
+
 # Copy the entrypoint script
 COPY ./damselfly-entrypoint.sh /
 RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
