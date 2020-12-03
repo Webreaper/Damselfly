@@ -19,4 +19,4 @@ docker run --rm  \
  -v ~/.cache/electron:/root/.cache/electron \
  -v ~/.cache/electron-builder:/root/.cache/electron-builder \
  electronuserland/builder:wine  \
-    yarn && yarn dist
+    yarn && yarn install && yarn dist
