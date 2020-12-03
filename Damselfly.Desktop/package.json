@@ -1,6 +1,6 @@
 {
   "name": "Damselfly",
-  "version": "1.2.11",
+  "version": "1.2.12",
   "description": "Damselfy Desktop App",
   "main": "main.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "mac": {
       "category": "public.app-category.photography",
       "icon": "build/icon.icns"
-        }
+    }
   },
   "dependencies": {
     "electron-dl": "^3.0.2",
