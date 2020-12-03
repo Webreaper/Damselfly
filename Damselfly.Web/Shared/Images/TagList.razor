@@ -1,6 +1,7 @@
 ﻿@using System.Linq
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services
+@using Blazored.Typeahead
 
 @inject ImageService imageService
 @inject ThumbnailService thumbService
@@ -12,6 +13,7 @@
 <div class="damselfly-taglist">
     <div class="InputAddOn">
         <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+        <!--BlazoredTypeahead SearchMethod="SearchTags" ConvertMethod="ConvertTag" @bind-value="NewTag" /-->
         <input placeholder="Add a keyword" disabled="@IsDisabled" class="InputAddOn-field tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
         <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
     </div>
@@ -179,8 +181,11 @@
 
     private async Task<IEnumerable<Tag>> SearchTags(string searchText)
     {
-        using var db = new ImageContext();
-
         return await Task.FromResult(indexService.CachedTags.Where(x => x.Keyword.StartsWith(searchText)));
+    }
+
+    public string ConvertTag(Tag tag)
+    {
+        return tag?.Keyword;
     }
 }

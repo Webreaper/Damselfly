@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
+    "dist": "electron-builder --mac --win",
     "distmac": "electron-builder --mac",
     "distwin": "electron-builder --win"
   },
@@ -26,11 +26,13 @@
     "appId": "damselfly-desktop",
     "win": {
       "target": "msi",
-      "legalTrademarks": "(C) Mark Otway 2020)"
+      "legalTrademarks": "(C) Mark Otway 2020)",
+      "icon": "build/icon.png"
     },
     "mac": {
-      "category": "public.app-category.photography"
-    }
+      "category": "public.app-category.photography",
+      "icon": "build/icon.icns"
+        }
   },
   "dependencies": {
     "electron-dl": "^3.0.2",
