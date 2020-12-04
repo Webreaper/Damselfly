@@ -80,7 +80,7 @@ namespace Damselfly.Core.Services
 
             // TODO: We should inject the json config that the app uses,
             // with the endpoint pre-configured, into the zip here.
-            var macAppPath = desktopPath.GetFiles("damselfly-macos.zip").FirstOrDefault();
+            var macAppPath = desktopPath.GetFiles("damselfly-mac.zip").FirstOrDefault();
 
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
