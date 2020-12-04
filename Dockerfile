@@ -2,6 +2,7 @@ ARG SDKVERSION=5.0-alpine
 ARG RUNTIMEVERSION=5.0-alpine
 
 FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS base
+ARG DAMSELFLY_VERSION
 WORKDIR /app
 EXPOSE 6363
 
@@ -34,21 +35,22 @@ RUN dotnet publish "Damselfly.Web.csproj" -c Release -o /app/publish  -r alpine-
 
 # Assemble the final image
 FROM base AS final
+ARG DAMSELFLY_VERSION
+
+# Copy the desktop apps into the image (these are built outside docker at the moment)
+WORKDIR /wwwroot/desktop
+COPY ./Damselfly.Web/wwwroot/desktop/damselfly-mac.zip .
+COPY ./Damselfly.Web/wwwroot/desktop/damselfly-win.zip .
+COPY ./Damselfly.Web/wwwroot/desktop/damselfly-linux.appimage .
+
 WORKDIR /app
 # This may re-copy the desktop/* apps, but who cares.
 COPY --from=publish /app/publish .
-
-# Copy the desktop apps into the image (these are built outside docker at the moment)
-RUN mkdir -p ./wwwroot/desktop
-COPY ./Damselfly.Desktop/dist/damselfly-$DAMSELFLY_VERSION-mac.zip ./wwwroot/desktop/damselfly-macos.zip
-COPY ./Damselfly.Desktop/dist/damselfly-$DAMSELFLY_VERSION-win.zip ./wwwroot/desktop/damselfly-win.zip
-COPY ./Damselfly.Desktop/dist/Damselfly-$DAMSELFLY_VERSION.AppImage ./wwwroot/desktop/Damselfly.AppImage
 
 # Copy the entrypoint script
 COPY ./damselfly-entrypoint.sh /
 RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
 ADD VERSION .
-
 
 # Add Microsoft fonts that'll be used for watermarking
 RUN apk add --no-cache msttcorefonts-installer fontconfig && update-ms-fonts

@@ -18,8 +18,10 @@ sh makedesktop.sh $version
 # Create the non-docker versions
 sh publish.sh $version
 
+echo "**************************** Building Docker Damselfly ****************************"
 docker build --build-arg DAMSELFLY_VERSION=$version -t damselfly . 
 
+echo "**************************** Tagging and pushing Image ****************************"
 docker tag damselfly 192.168.1.120:7575/damselfly:latest
 docker tag damselfly 192.168.1.120:7575/damselfly:$version
 docker push 192.168.1.120:7575/damselfly:latest
@@ -31,3 +33,4 @@ if [ $RELEASE == "release" ]; then
     docker push webreaper/damselfly:latest
     docker push webreaper/damselfly:$version-beta
 fi
+echo "Damselfly build complete."

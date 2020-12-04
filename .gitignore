@@ -427,4 +427,5 @@ ts-gen
 .depshash
 .depshash-target
 yarn.lock
+/desktop/
 Damselfly.Desktop/docker_env

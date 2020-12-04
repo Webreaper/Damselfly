@@ -85,12 +85,12 @@ namespace Damselfly.Core.Services
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
 
-            var winAppPath = desktopPath.GetFiles("damselfly-windows.zip").FirstOrDefault();
+            var winAppPath = desktopPath.GetFiles("damselfly-win.zip").FirstOrDefault();
 
             if (winAppPath != null)
                 DesktopAppInfo.WindowsApp = Path.Combine(s_appVPath, winAppPath.Name);
 
-            var linuxAppPath = desktopPath.GetFiles("damselfly-linux.zip").FirstOrDefault();
+            var linuxAppPath = desktopPath.GetFiles("damselfly-linux.appimage").FirstOrDefault();
 
             if (linuxAppPath != null)
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
