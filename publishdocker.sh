@@ -12,8 +12,9 @@ docker run --rm -v "$PWD":/app treeder/bump $RELEASE
 version=`cat VERSION`
 echo "\nGenerating new version: $version"
 
-# Make the desktop Electron app
+# Make the desktop Electron app (now done in the dockerfile)
 sh makedesktop.sh $version
+
 # Create the non-docker versions
 sh publish.sh $version
 

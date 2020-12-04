@@ -5,6 +5,15 @@ FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS base
 WORKDIR /app
 EXPOSE 6363
 
+# First, build the desktop apps
+# FROM electronuserland/builder:wine as desktop
+# ARG DAMSELFLY_VERSION
+# RUN echo Damselfly Desktop version ${DAMSELFLY_VERSION}
+# RUN apt-get update && apt-get install -y zip
+# COPY ./Damselfly.Desktop /src
+# WORKDIR "/src"
+# RUN yarn && yarn install && yarn version --new-version ${DAMSELFLY_VERSION} && yarn dist
+
 # Now build the app itself
 FROM mcr.microsoft.com/dotnet/sdk:$SDKVERSION AS build
 ARG DAMSELFLY_VERSION
