@@ -10,6 +10,7 @@
 
 # Downloads folder
 wwwroot/[Dd]ownloads
+server/
 
 # User-specific files
 *.rsuser
