@@ -43,6 +43,8 @@ namespace Damselfly.Core.Services
         public ulong MinSizeKB { get { return query.MinSizeKB; } set { if (query.MinSizeKB != value) { query.MinSizeKB = value; QueryChanged(); } } }
         public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
+        public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
+        public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
 
         public void SetDateRange( DateTime min, DateTime max )
         {
@@ -147,6 +149,16 @@ namespace Damselfly.Core.Services
                     {
                         ulong maxSizeBytes = query.MaxSizeKB / 1024;
                         images = images.Where(x => x.FileSizeBytes <= maxSizeBytes);
+                    }
+
+                    if( query.CameraId != -1 )
+                    {
+                        images = images.Where(x => x.MetaData.CameraId == query.CameraId);
+                    }
+
+                    if (query.LensId != -1)
+                    {
+                        images = images.Where(x => x.MetaData.LensId == query.LensId);
                     }
 
                     images = images.Include(x => x.BasketEntry);

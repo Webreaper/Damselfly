@@ -498,7 +498,7 @@ f
 .damselfly-searchbar {
     display: flex;
     align-items: stretch;
-    flex: 0 0 40px;
+    flex: 0 0 auto;
     flex-flow: row wrap;
 }
 
@@ -571,8 +571,7 @@ f
 .damselfly-searchfilter {
     flex: 1;
     display: flex;
-    min-width: 200px;
-    flex-flow: row;
+    flex-flow: row wrap;
     align-items: center;
 }
 
@@ -854,6 +853,9 @@ f
     color: rgba(100, 195, 100, 0.9);
 }
 
+.damselfly-camerafilter {
+    max-width: 100px;
+}
 
 .InputAddOn-item {
 background-color: rgba(225, 245, 225, 0.9);

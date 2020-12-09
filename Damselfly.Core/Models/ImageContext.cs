@@ -387,6 +387,8 @@ namespace Damselfly.Core.Models
         public ulong MinSizeKB { get; set; } = ulong.MinValue;
         public Folder Folder { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
+        public int CameraId { get; set; } = -1;
+        public int LensId { get; set; } = -1;
 
         public override string ToString()
         {

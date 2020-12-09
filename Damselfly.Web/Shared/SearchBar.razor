@@ -12,10 +12,13 @@
         <label for="tags"><i class="fa fa-tags" /></label>
     </div>
     <div class="damselfly-searchfilter">
-        <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate"/>
+        <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate" />
     </div>
     <div class="damselfly-searchfilter">
         <ConflatedTextBox IconClass="fa-file" placeholder="Minimum file size" OnKeyPressed="@KeyChangedMinSize" OnValueChanged="@DoSearch" TextValue="@MinSize" />
+    </div>
+    <div class="damselfly-searchfilter">
+        <CameraFilter />
     </div>
 </div>
 

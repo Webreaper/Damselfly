@@ -13,23 +13,23 @@ dotnet publish Damselfly.Web -r linux-x64 -c Release --self-contained true /p:Pu
 dotnet publish Damselfly.Web -r win-x64 -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
 
 mkdir server
-rm damselfly-for-mac.zip
-rm damselfly-for-windows*.zip
-rm damselfly-for-linux*.zip
+rm damselfly-server-mac.zip
+rm damselfly-server-windows*.zip
+rm damselfly-server-linux*.zip
 
 pushd .
 cd Damselfly.Web/bin/Release/net5.0/osx-x64/publish
-zip -r ../../../../../../server/damselfly-for-mac-$version.zip *.*
+zip -r ../../../../../../server/damselfly-server-mac-$version.zip *.*
 popd 
 
 pushd .
 cd Damselfly.Web/bin/Release/net5.0/win-x64/publish
-zip -r ../../../../../../server/damselfly-for-windows-$version.zip *.*
+zip -r ../../../../../../server/damselfly-server-windows-$version.zip *.*
 popd
 
 pushd .
 cd Damselfly.Web/bin/Release/net5.0/linux-x64/publish
-zip -r ../../../../../../server/damselfly-for-linux-$version.zip *.* 
+zip -r ../../../../../../server/damselfly-server-linux-$version.zip *.* 
 popd
 
 echo "Non-docker Damselfly build complete."
