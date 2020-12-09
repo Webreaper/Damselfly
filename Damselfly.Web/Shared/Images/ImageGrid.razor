@@ -66,15 +66,17 @@
 </div>
 
 @code {
-    const int imagesPerPage = 250;
+        const int imagesPerPage = 250;
     private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
-        readonly List<Image> gridImages = new List<Image>();
+    readonly List<Image> gridImages = new List<Image>();
     public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
+
+    private EventConflator conflator = new EventConflator(5000);
 
     private void StoreImage( Image image )
     {
@@ -171,9 +173,17 @@
     {
         if (firstRender)
         {
+            int initialLoadCount, scrollPos;
+
+            if ( !int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
+                initialLoadCount = imagesPerPage;
+
+            if ( !int.TryParse(ConfigService.Instance.Get("ImageScrollTop"), out scrollPos))
+                scrollPos = 0;
+
             searchService.OnChange += SearchQueryChanged;
-            await LoadData();
-            await InitJsListenerAsync();
+            await LoadData( initialLoadCount );
+            await InitJsListenerAsync( scrollPos );
         }
     }
 
@@ -201,38 +211,50 @@
         gridImages.Clear();
         endOfImages = false;
 
-        _ = LoadData();
+        _ = LoadData(imagesPerPage);
     }
 
-
-
-    protected async Task InitJsListenerAsync()
+    protected async Task InitJsListenerAsync( int initialScrollPos )
     {
-        await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "list-end", DotNetObjectReference.Create(this));
+        await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "list-end", DotNetObjectReference.Create(this), initialScrollPos);
+    }
+
+    private void SaveScrollState( int scrollTop )
+    {
+        ConfigService.Instance.Set("ImageScrollTop", scrollTop.ToString() );
+        ConfigService.Instance.Set("LoadedImages", gridImages.Count.ToString());
     }
 
     [JSInvokable]
     // Debugging assistant to help us differentiate between JS calls and other data loads
-    public async Task LoadMore()
+    public async Task ViewScrolled(int scrollHeight, int elementHeight, int scrollTop )
     {
-        await LoadData();
+        conflator.HandleEvent( (x) => { SaveScrollState(scrollTop); } );
+
+        if ( (scrollHeight - elementHeight) - scrollTop < 5)
+        {
+            Logging.LogTrace($"Scroll: {scrollHeight}, {elementHeight}, {scrollTop} [LoadMore]");
+            await LoadData(imagesPerPage);
+        }
+        else
+            Logging.LogTrace($"Scroll: {scrollHeight}, {elementHeight}, {scrollTop}");
     }
 
-    public async Task LoadData()
+    public async Task LoadData( int imagesToLoad )
     {
         if (!IsLoading)
         {
             IsLoading = true;
 
             ChangeThumbSize(CurrentThumbSize);
-            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesPerPage);
+            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
             if (newImages.Any())
             {
                 gridImages.AddRange(newImages);
             }
 
-            if (newImages.Count() < imagesPerPage)
+            if (newImages.Count() < imagesToLoad)
                 endOfImages = true;
 
             await InvokeAsync( StateHasChanged );

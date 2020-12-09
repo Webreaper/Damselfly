@@ -3,20 +3,25 @@
 namespace Damselfly.Web.Data
 {
     /// <summary>
-    /// Key press conflator. Ensures we don't call methods many times for
-    /// a series of keypresses when somebody is typing.
-    /// For every keypress, we start a timer; if another keypress is made
+    /// Event conflator. Ensures we don't call methods many times for
+    /// a series of events, such as keypresses when somebody is typing.
+    /// For every event, we start a timer; if another event is handled
     /// within that time, we cancel it and start again. If we get to the
     /// end of the timer without another key being pressed, only then do
     /// we call the callback passed into us.
     /// </summary>
-    public class KeyPressConflator
+    public class EventConflator
     {
-        private const long interval = 500;
+        private readonly long interval;
         private Timer searchTimer;
         private TimerCallback theCallback;
 
-        public void HandleKeyPress(TimerCallback callback)
+        public EventConflator( int delay = 500 )
+        {
+            interval = delay;
+        }
+
+        public void HandleEvent(TimerCallback callback)
         {
             theCallback = callback;
 

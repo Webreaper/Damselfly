@@ -24,7 +24,7 @@
 
     bool initialValueSet = false;
 
-    private KeyPressConflator conflator = new KeyPressConflator();
+    private EventConflator conflator = new EventConflator();
     private string tempValue;
 
     private void ClearText()
@@ -45,7 +45,7 @@
             OnKeyPressed(newValue);
 
         tempValue = newValue;
-        conflator.HandleKeyPress(SearchCallback);
+        conflator.HandleEvent(SearchCallback);
     }
 
     private void SearchCallback(object state)

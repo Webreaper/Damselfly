@@ -26,12 +26,12 @@
     </app>
 
     <script>window.InfiniteScroll = {
-            Init: function (eleId, DotNetRef) {
+            Init: function (eleId, DotNetRef, initialScrollPos) {
                 var el = document.getElementById(eleId);
+                el.scrollTop = initialScrollPos;
+
                 el.addEventListener('scroll', function () {
-                    if ((el.scrollHeight - el.clientHeight - el.clientTop) - el.scrollTop < 5) {
-                        DotNetRef.invokeMethodAsync("LoadMore");
-                    }
+                    DotNetRef.invokeMethodAsync("ViewScrolled", el.scrollHeight, el.clientHeight, el.scrollTop);
                 });
             }
         }
