@@ -941,3 +941,9 @@ padding: 0.4em 0.65em;
 .damselfly-keywordtool {
     padding: 5px;
 }
+
+.desktop-download-icons {
+    font-size: 16pt;
+    padding: 10px;
+    display: flex;
+}

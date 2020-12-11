@@ -76,7 +76,7 @@
     public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
 
-    private EventConflator conflator = new EventConflator(5000);
+    private EventConflator conflator = new EventConflator(2000);
 
     private void StoreImage( Image image )
     {

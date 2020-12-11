@@ -14,24 +14,36 @@
     {
         <p>Running in the Damselfly Desktop container, v<span />@DesktopVersion.</p>
     }
-    <p>
-        Download v<span />@Version of the Desktop App here:
-        &nbsp;
+    <p>Download v<span />@Version of the Desktop App here:</p>
+    <div class="desktop-download-icons">
         @if (DownloadService.DesktopAppInfo.MacOSApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.MacOSApp">MacOS</a>
+            <a href="@DownloadService.DesktopAppInfo.MacOSApp" >
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                    <div class="InputAddOn-field">MacOS</div>
+                </div>
+            </a>
         }
-        &nbsp;
         @if (DownloadService.DesktopAppInfo.WindowsApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.WindowsApp">Windows</a>
+            <a href="@DownloadService.DesktopAppInfo.WindowsApp" >
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                    <div class="InputAddOn-field">Windows</div>
+                </div>
+            </a>
         }
-        &nbsp;
         @if (DownloadService.DesktopAppInfo.LinuxApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.LinuxApp">Linux</a>
+            <a href="@DownloadService.DesktopAppInfo.LinuxApp">
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                    <div class="InputAddOn-field">Linux</div>
+                </div>
+            </a>
         }
-    </p>
+    </div>
     <h4>Credits/Thanks</h4>
     <p>
         Powered by <a href="http://blazor.net" target="_blank">Blazor</a>.
