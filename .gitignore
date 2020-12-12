@@ -427,6 +427,6 @@ ts-gen
 # Used to accelerate CI builds
 .depshash
 .depshash-target
-yarn.lock
+**/yarn.lock
 /desktop/
 Damselfly.Desktop/docker_env
