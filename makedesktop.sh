@@ -7,6 +7,7 @@ else
 fi
 
 cd Damselfly.Desktop
+rm -rf ./dist
 
 echo "**************************** Building Desktop Electron Apps ****************************"
 
@@ -24,7 +25,9 @@ docker run --rm  \
     yarn && yarn install && yarn version --new-version $version && yarn dist
 
 cd dist
+
 mkdir ../../desktop
+rm ../../desktop/*.*
 
 echo "Zipping up Mac DMG..."
 zip ../../desktop/damselfly-mac.zip Damselfly-$version.dmg
@@ -34,6 +37,7 @@ cp Damselfly-$version-win.zip ../../desktop/damselfly-win.zip
 cp Damselfly-$version.AppImage ../../desktop/damselfly-linux.appimage
 
 echo "Copying Mac, Windows and Linux desktop apps to Damselfly.Web/wwwroot/desktop..."
+rm ../../Damselfly.Web/wwwroot/desktop/*.*
 cp ../../desktop/*.* ../../Damselfly.Web/wwwroot/desktop
 
 echo "Desktop build complete."
