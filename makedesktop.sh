@@ -23,9 +23,18 @@ docker run --rm  \
  electronuserland/builder:wine  \
     yarn && yarn install && yarn version --new-version $version && yarn dist
 
+cd dist
+mkdir ../../desktop
+
+echo "Zipping up Mac DMG..."
+zip ../../desktop/damselfly-mac.zip Damselfly-$version.dmg
+
+echo "Copying Mac, Windows and Linux desktop apps to /desktop..."
+cp dist/Damselfly-$version-mac.zip ../../desktop/damselfly-mac.zip
+cp dist/Damselfly-$version-win.zip ../../desktop/damselfly-win.zip
+cp dist/Damselfly-$version.AppImage ../../desktop/damselfly-linux.appimage
+
 echo "Copying Mac, Windows and Linux desktop apps to Damselfly.Web/wwwroot/desktop..."
-cp dist/Damselfly-$version-mac.zip ../Damselfly.Web/wwwroot/desktop/damselfly-mac.zip
-cp dist/Damselfly-$version-win.zip ../Damselfly.Web/wwwroot/desktop/damselfly-win.zip
-cp dist/Damselfly-$version.AppImage ../Damselfly.Web/wwwroot/desktop/damselfly-linux.appimage
+cp ../../desktop/*.* ../../Damselfly.Web/wwwroot/desktop
 
 echo "Desktop build complete."
