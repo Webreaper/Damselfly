@@ -30,8 +30,8 @@ echo "Zipping up Mac DMG..."
 zip ../../desktop/damselfly-mac.zip Damselfly-$version.dmg
 
 echo "Copying Mac, Windows and Linux desktop apps to /desktop..."
-cp dist/Damselfly-$version-win.zip ../../desktop/damselfly-win.zip
-cp dist/Damselfly-$version.AppImage ../../desktop/damselfly-linux.appimage
+cp Damselfly-$version-win.zip ../../desktop/damselfly-win.zip
+cp Damselfly-$version.AppImage ../../desktop/damselfly-linux.appimage
 
 echo "Copying Mac, Windows and Linux desktop apps to Damselfly.Web/wwwroot/desktop..."
 cp ../../desktop/*.* ../../Damselfly.Web/wwwroot/desktop
