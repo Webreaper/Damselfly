@@ -13,9 +13,7 @@ dotnet publish Damselfly.Web -r linux-x64 -c Release --self-contained true /p:Pu
 dotnet publish Damselfly.Web -r win-x64 -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
 
 mkdir server
-rm damselfly-server-mac.zip
-rm damselfly-server-windows*.zip
-rm damselfly-server-linux*.zip
+rm server/*.*
 
 pushd .
 cd Damselfly.Web/bin/Release/net5.0/osx-x64/publish
