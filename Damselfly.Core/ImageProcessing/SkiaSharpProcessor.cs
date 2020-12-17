@@ -16,7 +16,7 @@ namespace Damselfly.Core.ImageProcessing
         public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
         /// <summary>
-        /// Resize using SkiaSharp - this can do 100 images in about 57s.
+        /// Resize using SkiaSharp - this can do 100 images in about 30s (2020 i5 MacBook Air).
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>

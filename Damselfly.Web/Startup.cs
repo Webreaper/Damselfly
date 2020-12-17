@@ -41,7 +41,7 @@ namespace Damselfly.Web
             services.AddLogging();
             services.AddRazorPages();
             services.AddBlazoredModal();
-            services.AddBlazorContextMenu();
+            //services.AddBlazorContextMenu();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
             services.AddSingleton<ImageService>();

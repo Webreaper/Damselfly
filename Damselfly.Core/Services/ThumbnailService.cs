@@ -369,41 +369,46 @@ namespace Damselfly.Core.Services
 
             try
             {
-
-                var destFiles = GetThumbConfigs(source, forceRegeneration, out FileInfo altSource);
-
-                if (altSource != null)
+                if (source.Exists)
                 {
-                    Logging.LogTrace("File {0} exists - using it as source for smaller thumbs.", altSource.Name);
-                    source = altSource;
-                }
+                    var destFiles = GetThumbConfigs(source, forceRegeneration, out FileInfo altSource);
 
-                // See if there's any conversions to do
-                if (destFiles.Any())
-                {
-                    Logging.LogVerbose("Generating thumbnails for {0}", source);
-
-                    var watch = new Stopwatch("ConvertNative", 60000);
-                    try
+                    if (altSource != null)
                     {
-                        ImageProcessService.Instance.CreateThumbs(source, destFiles);
+                        Logging.LogTrace("File {0} exists - using it as source for smaller thumbs.", altSource.Name);
+                        source = altSource;
+                    }
 
+                    // See if there's any conversions to do
+                    if (destFiles.Any())
+                    {
+                        Logging.LogVerbose("Generating thumbnails for {0}", source);
+
+                        var watch = new Stopwatch("ConvertNative", 60000);
+                        try
+                        {
+                            ImageProcessService.Instance.CreateThumbs(source, destFiles);
+
+                            success = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logging.LogError("Thumbnail conversion failed for {0}: {1}", source, ex.Message);
+                        }
+                        finally
+                        {
+                            watch.Stop();
+                        }
+                    }
+                    else
+                    {
+                        Logging.LogTrace("Thumbs already exist in all resolutions. Skipping...");
                         success = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError("Thumbnail conversion failed for {0}: {1}", source, ex.Message);
-                    }
-                    finally
-                    {
-                        watch.Stop();
                     }
                 }
                 else
-                {
-                    Logging.LogTrace("Thumbs already exist in all resolutions. Skipping...");
-                    success = true;
-                }
+                    Logging.LogWarning("Skipping thumb generation for missing file...");
+
             }
             catch (Exception ex)
             {

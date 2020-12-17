@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using SixLabors.Fonts;
@@ -8,6 +11,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
 namespace Damselfly.Core.ImageProcessing
@@ -54,7 +58,46 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         /// <summary>
-        /// Resize using SixLabors ImageSharp, which can do 100 images in about 2 mins
+        /// Resize using SixLabors ImageSharp, which can do 100 images in about 59s (2020 MacBook Air i5)
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns>String hash of the image data</returns>
+        public static string GetHash(FileInfo source)
+        {
+            string result = null;
+
+            try
+            {
+                var watch = new Stopwatch("LoadHashImage");
+                // Image.Load(string path) is a shortcut for our default type. 
+                // Other pixel formats use Image.Load<TPixel>(string path))
+                using var image = Image.Load<Rgba32>(source.FullName);
+                watch.Stop();
+                var hashWatch = new Stopwatch("HashImage");
+
+                var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+
+                for (int y = 0; y < image.Height; y++)
+                {
+                    Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
+
+                    byte[] rgbaBytes = MemoryMarshal.AsBytes(pixelRowSpan).ToArray();
+                    hash.AppendData(rgbaBytes);
+                }
+
+                result = hash.GetHashAndReset().ToHex(true);
+                hashWatch.Stop();
+                Logging.Log($"Hashed {source.Name} to {hash} in {hashWatch.HumanElapsedTime} (Load: {watch.HumanElapsedTime})");
+            }
+            catch ( Exception ex )
+            {
+                Logging.LogError($"Exception while calculating hash: {ex.Message}");
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Resize using SixLabors ImageSharp, which can do 100 images in about 59s (2020 MacBook Air i5)
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>

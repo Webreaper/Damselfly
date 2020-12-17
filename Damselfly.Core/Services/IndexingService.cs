@@ -13,6 +13,8 @@ using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
 using EFCore.BulkExtensions;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
+using Damselfly.Core.ImageProcessing;
 
 namespace Damselfly.Core.Services
 {
@@ -61,19 +63,22 @@ namespace Damselfly.Core.Services
         {
             IReadOnlyList<MetadataExtractor.Directory> metadata = null;
 
-            try
+            if (File.Exists(imagePath))
             {
-                metadata = ImageMetadataReader.ReadMetadata(imagePath);
-            }
-            catch( ImageProcessingException ex )
-            {
-                Logging.Log("Metadata read for image {0}: {1}", imagePath, ex.Message);
+                try
+                {
+                    metadata = ImageMetadataReader.ReadMetadata(imagePath);
+                }
+                catch (ImageProcessingException ex)
+                {
+                    Logging.Log("Metadata read for image {0}: {1}", imagePath, ex.Message);
 
-            }
-            catch (IOException ex)
-            {
-                Logging.Log("File error reading metadata for {0}: {1}", imagePath, ex.Message);
+                }
+                catch (IOException ex)
+                {
+                    Logging.Log("File error reading metadata for {0}: {1}", imagePath, ex.Message);
 
+                }
             }
 
             return metadata;
@@ -175,7 +180,10 @@ namespace Damselfly.Core.Services
                             imgMetaData.CameraId = GetCamera(camMake, camModel, camSerial).CameraId;
                         }
                     }
+
+                    imgMetaData.Hash = GetImageDataHash(imgMetaData.Image.FullPath);
                 }
+
             }
             catch (Exception ex)
             {
@@ -385,7 +393,7 @@ namespace Damselfly.Core.Services
         /// <param name="folder"></param>
         /// <param name="threshold"></param>
         /// <param name="parent"></param>
-        public void IndexFolder(DirectoryInfo folder, Folder parent )
+        public void IndexFolder(DirectoryInfo folder, Folder parent, bool isFullIndex )
         {
             Folder folderToScan = null;
 
@@ -435,7 +443,7 @@ namespace Damselfly.Core.Services
                 }
 
                 // Now scan the images:
-                ScanFolderImages( folderToScan );
+                ScanFolderImages( folderToScan, isFullIndex);
 
                 CreateFileWatcher(folder);
             }
@@ -449,7 +457,7 @@ namespace Damselfly.Core.Services
             // Scan subdirs recursively.
             foreach (var sub in subFolders)
             {
-                IndexFolder(sub, folderToScan);
+                IndexFolder(sub, folderToScan, isFullIndex);
             }
         }
 
@@ -518,11 +526,6 @@ namespace Damselfly.Core.Services
         {
             int folderImageCount = 0;
 
-            if( folderToScan.FolderScanDate != null && ! force )
-            {
-                return true;
-            }
-
             var folder = new DirectoryInfo(folderToScan.Path);
             var allImageFiles = folder.SafeGetImageFiles();
 
@@ -531,6 +534,22 @@ namespace Damselfly.Core.Services
                 // Null here means we weren't able to read the contents of the directory.
                 // So bail, and give up on this folder altogether.
                 return false;
+            }
+
+            // First, see if images have been added or removed since we last indexed.
+            // If so, we disregard the last scan date of the folder and force the
+            // update. 
+            int knownDBImages = folderToScan.Images.Count();
+
+            if( knownDBImages != allImageFiles.Count() )
+            {
+                Logging.Log($"New or removed images in folder {folderToScan.Name}.");
+                force = true;
+            }
+
+            if (folderToScan.FolderScanDate != null && !force)
+            {
+                return true;
             }
 
             using (var db = new ImageContext())
@@ -617,9 +636,14 @@ namespace Damselfly.Core.Services
             return true;
         }
 
+        /// <summary>
+        /// Index an individual folder
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
         public bool IndexFolder(Folder folder)
         {
-            return ScanFolderImages(folder);
+            return ScanFolderImages(folder, true);
         }
 
         public void PerformMetaDataScan()
@@ -687,8 +711,6 @@ namespace Damselfly.Core.Services
                         var saveWatch = new Stopwatch("MetaDataSave");
                         Logging.LogTrace($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
 
-                        // TODO: For some reason BulkInsertOrUpdate re-inserts the
-                        // same record every time with a key of zero. 
                         db.BulkInsert( newMetadataEntries );
                         db.BulkUpdate( updatedEntries );
 
@@ -715,6 +737,18 @@ namespace Damselfly.Core.Services
             }
 
             Logging.LogVerbose("Metadata Scan Complete.");
+        }
+
+        /// <summary>
+        /// Calculate the hash of the key parts of the imagedata
+        /// Based on https://stackoverflow.com/questions/40324515/how-do-i-obtain-a-hash-of-the-payload-of-a-digital-photo-container-ideally-in-j/40333475#40333475
+        /// </summary>
+        /// <param name="img"></param>
+        private string GetImageDataHash(string filePath )
+        {
+            // TODO: Do this better. 
+            string ipHash = ImageSharpProcessor.GetHash(new FileInfo( filePath ));
+            return ipHash;
         }
 
         public void StartService()
@@ -746,7 +780,7 @@ namespace Damselfly.Core.Services
 
             var watch = new Stopwatch("CompleteIndex", -1);
 
-            IndexFolder(root, null);
+            IndexFolder(root, null, false);
 
             watch.Stop();
 
@@ -798,7 +832,7 @@ namespace Damselfly.Core.Services
                     {
                         var dir = new DirectoryInfo(folder.Path);
                         // Scan the folder for subdirs
-                        IndexFolder(dir, null);
+                        IndexFolder(dir, null, false);
                     }
                 }
 

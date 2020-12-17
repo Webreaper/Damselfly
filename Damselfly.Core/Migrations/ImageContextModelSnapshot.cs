@@ -14,7 +14,7 @@ namespace Damselfly.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.0");
+                .HasAnnotation("ProductVersion", "5.0.1");
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
@@ -253,6 +253,9 @@ namespace Damselfly.Core.Migrations
 
                     b.Property<bool>("FlashFired")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Hash")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");

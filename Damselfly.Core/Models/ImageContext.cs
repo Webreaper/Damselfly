@@ -171,6 +171,7 @@ namespace Damselfly.Core.Models
         public string Exposure { get; set; }
         public bool FlashFired { get; set; }
         public DateTime DateTaken { get; set; }
+        public string Hash { get; set; }
 
         public int? CameraId { get; set; }
         public virtual Camera Camera { get; set; }

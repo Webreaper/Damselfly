@@ -152,10 +152,11 @@
         StateHasChanged();
     }
 
-    void OnClick(ItemClickEventArgs e)
-    {
-        Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
-    }
+    // BlazorContextMenu
+    //void OnClick(ItemClickEventArgs e)
+    //{
+    //    Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
+    //}
 
     private void ProcessTagEnter(KeyboardEventArgs eventArgs)
     {

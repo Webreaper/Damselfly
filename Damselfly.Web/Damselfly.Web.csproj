@@ -58,10 +58,10 @@
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
     <PackageReference Include="Blazored.Typeahead" Version="4.4.1" />
     <PackageReference Include="Blazored.Modal" Version="5.1.0" />
-    <PackageReference Include="Blazor.ContextMenu" Version="1.8.0" />
+    <PackageReference Include="Blazor.ContextMenu" Version="1.9.0" />
     <PackageReference Include="BlazorDateRangePicker" Version="3.3.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="LoreSoft.Blazor.Controls" Version="4.0.0.84" />
-    <PackageReference Include="Tewr.Blazor.FileReader" Version="2.1.0.20274" />
+    <PackageReference Include="Tewr.Blazor.FileReader" Version="3.0.0.20340" />
   </ItemGroup>
 </Project>

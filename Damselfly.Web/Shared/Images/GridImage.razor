@@ -21,7 +21,7 @@
 }
 else
 {
-        <ContextMenuTrigger MenuId="ImageMenu">
+        <!--ContextMenuTrigger MenuId="ImageMenu"-->
         <div class="grid-image" @ondblclick="NavigateToImage">
             @if (!string.IsNullOrEmpty(ImageUrl))
             {
@@ -36,7 +36,7 @@ else
             </div>
         }
 
-        </ContextMenuTrigger>
+        <!--/ContextMenuTrigger-->
 }
 
 @code
@@ -85,10 +85,11 @@ else
         ImageUrl = await Task.FromResult<string>(ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
     }
 
-    void OnClick(ItemClickEventArgs e)
-    {
-        Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
-    }
+// BlazorContextMenu
+//    void OnClick(ItemClickEventArgs e)
+//    {
+//        Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
+//    }
 
     void NavigateToImage()
     {
