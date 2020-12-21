@@ -62,17 +62,12 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <returns>String hash of the image data</returns>
-        public static string GetHash(FileInfo source)
+        public static string GetHash(Image<Rgba32> image)
         {
             string result = null;
 
             try
             {
-                var watch = new Stopwatch("LoadHashImage");
-                // Image.Load(string path) is a shortcut for our default type. 
-                // Other pixel formats use Image.Load<TPixel>(string path))
-                using var image = Image.Load<Rgba32>(source.FullName);
-                watch.Stop();
                 var hashWatch = new Stopwatch("HashImage");
 
                 var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
@@ -87,7 +82,7 @@ namespace Damselfly.Core.ImageProcessing
 
                 result = hash.GetHashAndReset().ToHex(true);
                 hashWatch.Stop();
-                Logging.Log($"Hashed {source.Name} to {hash} in {hashWatch.HumanElapsedTime} (Load: {watch.HumanElapsedTime})");
+                Logging.Log($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
             }
             catch ( Exception ex )
             {
@@ -101,13 +96,16 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash)
         {
             Stopwatch load = new Stopwatch("ImageSharpLoad");
 
             // Image.Load(string path) is a shortcut for our default type. 
             // Other pixel formats use Image.Load<TPixel>(string path))
-            using var image = Image.Load(source.FullName);
+            using var image = Image.Load<Rgba32>(source.FullName);
+
+            // We've got the image in memory. Create the hash. 
+            imageHash = GetHash(image);
 
             load.Stop();
 

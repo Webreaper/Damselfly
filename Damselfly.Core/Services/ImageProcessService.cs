@@ -41,9 +41,9 @@ namespace Damselfly.Core.Services
                 imageSharp.SetFontPath(Path.Combine(path, "fonts"));
         }
 
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash)
         {
-            processor.CreateThumbs(source, destFiles);
+            processor.CreateThumbs(source, destFiles, out imageHash);
         }
 
         public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)

@@ -61,8 +61,11 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source">Source.</param>
         /// <param name="sizes">Sizes.</param>
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash )
         {
+            // This processor doesn't support hash creation
+            imageHash = string.Empty;
+
             // Some useful unsharp and quality settings, plus by defining the max size of the JPEG, it 
             // makes imagemagic more efficient with its memory allocation, so significantly faster. 
             string args;

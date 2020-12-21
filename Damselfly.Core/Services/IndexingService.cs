@@ -180,8 +180,6 @@ namespace Damselfly.Core.Services
                             imgMetaData.CameraId = GetCamera(camMake, camModel, camSerial).CameraId;
                         }
                     }
-
-                    imgMetaData.Hash = GetImageDataHash(imgMetaData.Image.FullPath);
                 }
 
             }
@@ -737,18 +735,6 @@ namespace Damselfly.Core.Services
             }
 
             Logging.LogVerbose("Metadata Scan Complete.");
-        }
-
-        /// <summary>
-        /// Calculate the hash of the key parts of the imagedata
-        /// Based on https://stackoverflow.com/questions/40324515/how-do-i-obtain-a-hash-of-the-payload-of-a-digital-photo-container-ideally-in-j/40333475#40333475
-        /// </summary>
-        /// <param name="img"></param>
-        private string GetImageDataHash(string filePath )
-        {
-            // TODO: Do this better. 
-            string ipHash = ImageSharpProcessor.GetHash(new FileInfo( filePath ));
-            return ipHash;
         }
 
         public void StartService()

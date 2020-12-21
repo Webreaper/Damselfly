@@ -315,7 +315,7 @@ namespace Damselfly.Core.Services
                     const bool forceRegeneration = false;
 
                     // Process the conversions on a threadpool
-                    if (!imagesToScan.ProcessOnThreadPool((img) => { ConvertFile(img, forceRegeneration); }, s_maxThreads))
+                    if (!imagesToScan.ProcessOnThreadPool((img) => { CreateThumbs(img, forceRegeneration); }, s_maxThreads))
                         Logging.LogWarning($"Thumbnail generation failed for image queue.");
 
                     var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
@@ -332,27 +332,19 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
-        /// Generates thumbnails for a path.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="forceRegeneration"></param>
-        /// <returns></returns>
-        public bool ConvertFile(string path, bool forceRegeneration)
-        {
-            return ConvertFile(new FileInfo(path), forceRegeneration);
-        }
-
-        /// <summary>
         /// Generates thumbnails for an image.
         /// </summary>
         /// <param name="sourceImage"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public bool ConvertFile(Models.ImageMetaData sourceImage, bool forceRegeneration)
+        public bool CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration)
         {
-            bool success = ConvertFile(sourceImage.Image.FullPath, forceRegeneration);
+            var imageHash = string.Empty;
+            var imageFileInfo = new FileInfo(sourceImage.Image.FullPath);
+            bool success = ConvertFile(imageFileInfo, forceRegeneration, out imageHash);
 
             sourceImage.ThumbLastUpdated = DateTime.UtcNow;
+            sourceImage.Hash = imageHash;
 
             return success;
         }
@@ -363,9 +355,10 @@ namespace Damselfly.Core.Services
         /// <param name="source"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public bool ConvertFile(FileInfo source, bool forceRegeneration)
+        public bool ConvertFile(FileInfo source, bool forceRegeneration, out string imageHash )
         {
             bool success = false;
+            imageHash = string.Empty;
 
             try
             {
@@ -387,7 +380,7 @@ namespace Damselfly.Core.Services
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
                         {
-                            ImageProcessService.Instance.CreateThumbs(source, destFiles);
+                            ImageProcessService.Instance.CreateThumbs(source, destFiles, out imageHash);
 
                             success = true;
                         }

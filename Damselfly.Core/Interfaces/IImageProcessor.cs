@@ -11,7 +11,7 @@ namespace Damselfly.Core.Interfaces
     /// </summary>
     public interface IImageProcessor
     {
-        void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles);
+        void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash);
         void TransformDownloadImage(string input, Stream output, string waterMarkText = null);
         ICollection<string> SupportedFileExtensions { get; }
     }

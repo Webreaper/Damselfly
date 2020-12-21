@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Damselfly.Core.Interfaces;
 using SkiaSharp;
 using Damselfly.Core.Utils;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -15,18 +17,53 @@ namespace Damselfly.Core.ImageProcessing
 
         public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
+
+        public static string GetHash( SKBitmap sourceBitmap )
+        {
+            string result = null;
+
+            try
+            {
+                var hashWatch = new Stopwatch("HashImage");
+
+                var pixels = sourceBitmap.GetPixelSpan();
+
+                var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+
+                for ( int row = 0; row < sourceBitmap.Height; row++ )
+                {
+                    var rowPixels = pixels.Slice(row * sourceBitmap.RowBytes, sourceBitmap.RowBytes);
+
+                    byte[] rgbaBytes = MemoryMarshal.AsBytes(rowPixels).ToArray();
+                    hash.AppendData(rgbaBytes);
+                }
+
+                result = hash.GetHashAndReset().ToHex(true);
+                hashWatch.Stop();
+                Logging.Log($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception while calculating hash: {ex.Message}");
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Resize using SkiaSharp - this can do 100 images in about 30s (2020 i5 MacBook Air).
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash )
         {
             try
             {
                 int desiredWidth = destFiles.Max(x => x.Value.width);
 
                 using var sourceBitmap = LoadOrientedBitmap(source, desiredWidth);
+
+                imageHash = GetHash( sourceBitmap );
 
                 Stopwatch thumbs = new Stopwatch("SkiaSharpThumbs");
 
