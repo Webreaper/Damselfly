@@ -162,7 +162,9 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.BasketEntry);
-                    // Disable this for now - it's slow due to the EFCore subquery bug
+
+                    // Disable this for now - it's slow due to the EFCore subquery bug.
+                    // We mitigate it by loading the tags in a separate query below.
                     // images = images.Include(x => x.ImageTags)
                     //               .ThenInclude(x => x.Tag);
 
@@ -171,6 +173,7 @@ namespace Damselfly.Core.Services
                                     .Take(count)
                                     .ToArrayAsync();
 
+                    // Now load the tags....
                     foreach (var img in results)
                         db.LoadTags(img);
                 }
@@ -183,8 +186,8 @@ namespace Damselfly.Core.Services
                     watch.Stop();
                 }
 
-                Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms.");
-                StatusService.Instance.StatusText = $"Found at least {results.Count()} images that match the search query.";
+                Logging.LogVerbose($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms.");
+                StatusService.Instance.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
 
                 // Now save the results in our stored dataset
                 SearchResults.AddRange(results);

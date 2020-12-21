@@ -66,7 +66,7 @@
 </div>
 
 @code {
-        const int imagesPerPage = 250;
+    const int imagesPerPage = 100;
     private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
 
@@ -231,7 +231,12 @@
     {
         conflator.HandleEvent( (x) => { SaveScrollState(scrollTop); } );
 
-        if ( (scrollHeight - elementHeight) - scrollTop < 5)
+        // This is the threshold at which we start to load more data.
+        // So basically when we get within n pixels from the bottom of
+        // the scroll area, start to load more data.
+        const int scrollThreshold = 300;
+
+        if ( (scrollHeight - elementHeight) - scrollTop < scrollThreshold)
         {
             Logging.LogTrace($"Scroll: {scrollHeight}, {elementHeight}, {scrollTop} [LoadMore]");
             await LoadData(imagesPerPage);
@@ -258,8 +263,8 @@
                 endOfImages = true;
 
             await InvokeAsync( StateHasChanged );
-        }
 
-        IsLoading = false;
+            IsLoading = false;
+        }
     }
 }
