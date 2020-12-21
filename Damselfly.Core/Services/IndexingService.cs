@@ -541,7 +541,7 @@ namespace Damselfly.Core.Services
 
             if( knownDBImages != allImageFiles.Count() )
             {
-                Logging.Log($"New or removed images in folder {folderToScan.Name}.");
+                Logging.LogVerbose($"New or removed images in folder {folderToScan.Name}.");
                 force = true;
             }
 

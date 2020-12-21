@@ -58,7 +58,9 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         /// <summary>
-        /// Resize using SixLabors ImageSharp, which can do 100 images in about 59s (2020 MacBook Air i5)
+        /// Create an SH1 hash from the image data (pixels only) to allow us to find
+        /// duplicate images. Note that this ignores EXIF metadata, so the hash will
+        /// find duplicate images even if the metadata is different.
         /// </summary>
         /// <param name="source"></param>
         /// <returns>String hash of the image data</returns>
@@ -82,7 +84,7 @@ namespace Damselfly.Core.ImageProcessing
 
                 result = hash.GetHashAndReset().ToHex(true);
                 hashWatch.Stop();
-                Logging.Log($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
+                Logging.LogVerbose($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
             }
             catch ( Exception ex )
             {
