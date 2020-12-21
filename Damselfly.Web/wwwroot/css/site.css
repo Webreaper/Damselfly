@@ -610,18 +610,6 @@ f
     flex: 1;
 }
 
-.damselfly-config{
-    padding: 10px;
-    display: flex;
-    order: 3;
-    flex: 1;
-    flex-direction: column;
-}
-
-.damselfly-configform {
-    display: flex;
-    flex: 1;
-}
 
 .damselfly-imagenav {
     display: flex;
@@ -677,6 +665,9 @@ f
 
 .damselfly-tasks {
     display: flex;
+}
+
+.damselfly-taskitem {
     flex: 1;
 }
 
@@ -853,10 +844,6 @@ f
     color: rgba(100, 195, 100, 0.9);
 }
 
-.damselfly-camerafilter {
-    max-width: 100px;
-}
-
 .InputAddOn-item {
 background-color: rgba(225, 245, 225, 0.9);
 color: #338833;
@@ -873,6 +860,10 @@ padding: 0.4em 0.65em;
 .InputAddOn-field:first-child,
 .InputAddOn-item:first-child {
     border-radius: 2px 0 0 2px;
+}
+
+.damselfly-camerafilter {
+    max-width: 100px;
 }
 
 .damselfly-keywordlist {
@@ -946,4 +937,27 @@ padding: 0.4em 0.65em;
     font-size: 16pt;
     padding: 10px;
     display: flex;
+}
+
+.damselfly-config {
+    padding: 10px;
+    order: 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.damselfly-configsection {
+    flex: 1;
+}
+
+.damselfly-configsetting {
+    display: flex;
+}
+
+.damselfly-configfield {
+    flex: 1;
+}
+
+.damselfly-configlabel {
+    flex: 1;
 }

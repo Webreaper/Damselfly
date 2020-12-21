@@ -4,46 +4,49 @@
 @inject TaskService taskScheduler
 
 <div class="damselfly-config">
-    <div>
+    <div class="damselfly-configsection">
         <h1>Damselfly Configuration Settings</h1>
     </div>
-    <div class="damselfly-configform">
+    <div class="damselfly-configsection">
         <h2>Wordpress Upload</h2>
 
         <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div>
-                <div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configlabel">
                     <label>URL:</label>
                 </div>
-                <div>
+                <div class="damselfly-configfield">
                     <InputText placeholder="Wordpress URL" @bind-Value="wpSettings.URL" />
                 </div>
             </div>
-            <div>
-                <div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configlabel">
                     <label>User Name:</label>
                 </div>
-                <div>
+                <div class="damselfly-configfield">
                     <InputText placeholder="User Name" @bind-Value="wpSettings.UserName" />
                 </div>
             </div>
-            <div>
-                <div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configlabel">
                     <label>Password:</label>
                 </div>
-                <div>
+                <div class="damselfly-configfield">
                     <InputText type="password" placeholder="Password" @bind-Value="wpSettings.Password" />
                 </div>
             </div>
 
-            <button class="btn btn-primary" type="submit">Save</button>
+            <button class="btn btn-primary" type="submit">Save Config</button>
         </EditForm>
     </div>
 
-    <div class="damselfly-tasks">
+    <div class="damselfly-configsection">
+        <h2>Task Statuses:</h2>
+    </div>
+    <div class="damselfly-configsection">
         <TaskList />
     </div>
 </div>
@@ -51,7 +54,6 @@
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
 
-    // Banana54321!!
     private void HandleValidSubmit()
     {
         if (!string.IsNullOrEmpty(wpSettings.UserName) &&

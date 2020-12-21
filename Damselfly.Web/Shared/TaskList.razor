@@ -3,13 +3,8 @@
 @inject TaskService taskScheduler
 @inject IJSRuntime JsRuntime
 
-<div class="row">
-    <div class="col">
-        <h3>Task Statuses:</h3>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
+<div class="damselfly-tasks">
+    <div class="damselfly-taskitem">
         @if (tasks != null)
         {
             <table class="tasklist-table">
