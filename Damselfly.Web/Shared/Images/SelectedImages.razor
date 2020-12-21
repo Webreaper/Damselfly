@@ -7,70 +7,70 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService;
 @implements IDisposable
+@inherits ImageGridBase
 
-    @if (images == null)
-    {
-        <div class="damselfly-selectedimages">
-            <p><em>Loading selection...</em></p>
-        </div>
-    }
-    else
-    {
-        <div class="damselfly-selectedimages">
-            @if (!images.Any())
-            {
-                <p><em>No images in basket.</em></p>
-            }
-            else
-            {
-                @foreach (var image in images)
-                {
-                    <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
-                        <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
-                    </div>
-                }
-            }
-        </div>
-    }
-
-    <BasketManager />
-
-    <div class="selection-toolbar">
-        @if (images != null && images.Any())
+@if (gridImages == null)
+{
+    <div class="damselfly-selectedimages">
+        <p><em>Loading selection...</em></p>
+    </div>
+}
+else
+{
+    <div class="damselfly-selectedimages">
+        @if (!gridImages.Any())
         {
-            @if (ShowDownLoadButton)
-            {
-                <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary">
-                    <i class="fa fa-download" />
-                    &nbsp;Download
-                </button>
-            }
-            @if (ShowDownLoadButton)
-            {
-                <button title="Clear Basket" @onclick="@(() => basketService.Clear())" class="btn btn-primary">
-                    <i class="fas fa-shopping-basket" />
-                    &nbsp;Clear
-                </button>
-            }
-            @if (ShowDownLoadButton)
-            {
-                <button title="Upload To Wordpress" @onclick="@(() => UploadToWordPress())" class="btn btn-primary">
-                    <i class="fab fa-wordpress" />
-                    &nbsp;Upload to WP
-                </button>
-            }
+            <p><em>No images in basket.</em></p>
         }
-        @if (SelectionService.Instance.Selection.Any() )
+        else
         {
-            <button @onclick="AddSelectedToBasket" class="btn btn-primary">
-                <i class="fas fa-shopping-basket" />
-                &nbsp;Add Images
-            </button>
+            @foreach (var image in gridImages)
+            {
+                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
+                    <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
+                </div>
+            }
         }
     </div>
+}
+
+<BasketManager />
+
+<div class="selection-toolbar">
+    @if (gridImages != null && gridImages.Any())
+    {
+        @if (ShowDownLoadButton)
+        {
+            <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary">
+                <i class="fa fa-download" />
+                &nbsp;Download
+            </button>
+        }
+        @if (ShowDownLoadButton)
+        {
+            <button title="Clear Basket" @onclick="@(() => basketService.Clear())" class="btn btn-primary">
+                <i class="fas fa-shopping-basket" />
+                &nbsp;Clear
+            </button>
+        }
+        @if (ShowDownLoadButton)
+        {
+            <button title="Upload To Wordpress" @onclick="@(() => UploadToWordPress())" class="btn btn-primary">
+                <i class="fab fa-wordpress" />
+                &nbsp;Upload to WP
+            </button>
+        }
+    }
+    @if (SelectionService.Instance.Selection.Any())
+    {
+        <button @onclick="AddSelectedToBasket" class="btn btn-primary">
+            <i class="fas fa-shopping-basket" />
+            &nbsp;Add Images
+        </button>
+    }
+</div>
 
 @code {
-    readonly List<Image> images = new List<Image>();
     readonly List<Basket> baskets = new List<Basket>();
     bool AddingBasket { get; set; }
     string NewBasketName { get; set; }
@@ -81,7 +81,7 @@
     [Parameter]
     public bool ShowTags { get; set; } = true;
 
-    public bool ShowClearButton { get { return images.Any(); } set { } }
+    public bool ShowClearButton { get { return gridImages.Any(); } set { } }
 
     void AddSelectedToBasket()
     {
@@ -134,64 +134,6 @@
         }
     }
 
-    /// <summary>
-    /// Manage the selection state for the grid images. 
-    /// </summary>
-    /// <param name="e"></param>
-    /// <param name="image"></param>
-    private Image prevSelection = null;
-
-    private void ToggleSelected(MouseEventArgs e, Image image)
-    {
-        var watch = new Stopwatch("ToggleSelection");
-        if (e.ShiftKey && prevSelection != null)
-        {
-            // Range selection. 
-            var first = images.FindIndex(x => x.ImageId == prevSelection.ImageId);
-            var last = images.FindIndex(x => x.ImageId == image.ImageId);
-
-            if (first > last)
-            {
-                var temp = last;
-                last = first;
-                first = temp;
-            }
-
-            Logging.Log($"Selecting images {first} ({prevSelection.FileName}) to {last} ({image.FileName})");
-
-            for (int i = first; i <= last; i++)
-            {
-                var img = images[i];
-                SelectionService.Instance.SelectImage(img);
-            }
-        }
-        else
-        {
-            if (e.MetaKey)
-            {
-                // Apple key was pressed - toggle the selection
-                SelectionService.Instance.ToggleSelection(new List<Image> { image });
-            }
-            else
-            {
-                // No keys pressed. Select if unselected, or deselect if selected - but
-                // clear any other selection at the same time. Store the last selection
-                // as it could be the beginning of a range selection
-                bool wasPreviouslySelected = SelectionService.Instance.IsSelected(image);
-                SelectionService.Instance.ClearSelection();
-                prevSelection = null;
-
-                if (!wasPreviouslySelected)
-                {
-                    SelectionService.Instance.SelectImage(image);
-                    prevSelection = image;
-                }
-            }
-        }
-
-        watch.Stop();
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -222,8 +164,8 @@
     public async Task LoadData()
     {
         var watch = new Stopwatch("SelectedLoadData");
-        images.Clear();
-        images.AddRange( basketService.SelectedImages );
+        gridImages.Clear();
+        gridImages.AddRange(basketService.SelectedImages);
         watch.Stop();
 
         using var db = new ImageContext();
