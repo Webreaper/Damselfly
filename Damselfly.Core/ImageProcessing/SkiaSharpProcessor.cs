@@ -18,7 +18,7 @@ namespace Damselfly.Core.ImageProcessing
         public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
         /// <summary>
-        /// Create an SH1 hash from the image data (pixels only) to allow us to find
+        /// Create an SHA1 hash from the image data (pixels only) to allow us to find
         /// duplicate images. Note that this ignores EXIF metadata, so the hash will
         /// find duplicate images even if the metadata is different.
         /// </summary>
