@@ -25,14 +25,30 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>window.InfiniteScroll = {
-            Init: function (eleId, DotNetRef, initialScrollPos) {
-                var el = document.getElementById(eleId);
-                el.scrollTop = initialScrollPos;
+    <script>
+        function isInViewPort(element) {
+            var bounding = element.getBoundingClientRect();
+            return (
+                bounding.top >= 0 &&
+                bounding.left >= 0 &&
+                bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+                bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+            );
+        };
 
-                el.addEventListener('scroll', function () {
-                    DotNetRef.invokeMethodAsync("ViewScrolled", el.scrollHeight, el.clientHeight, el.scrollTop);
-                });
+        window.InfiniteScroll =
+        {
+            Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos)
+            {
+                var scrollArea = document.getElementById(scrollAreaID);
+                var endMarker = document.getElementById(endMarkerId);
+                scrollArea.scrollTop = initialScrollPos;
+
+                scrollArea.addEventListener('scroll', function ()
+                {
+                    var needMoreData = isInViewPort(endMarker);
+                    DotNetRef.invokeMethodAsync("HandleScroll", needMoreData, scrollArea.scrollTop);
+                 });
             }
         }
 
