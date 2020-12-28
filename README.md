@@ -1,4 +1,4 @@
-![Damselfly Screenshot](Damselfly.Web/wwwroot/damselfly-logo.png)
+![Damselfly Screenshot](docs/cropped-Damselfly-Logo.webp)
 
 # Damselfly
 Damselfly is a server-based Digital Asset Management system. The goal of Damselfly is to index an extremely large collection of images, and allow easy search and retrieval of those images, using metadata such as the IPTC keyword tags, as well as the folder and file names. 
