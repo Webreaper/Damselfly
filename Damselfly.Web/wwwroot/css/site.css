@@ -64,6 +64,7 @@ div::-webkit-scrollbar-thumb {
     float: right;
     margin: 0;
     width: 100%;
+    max-height: calc( 100vh - 100px );
     overflow-y: auto;
 }
 
