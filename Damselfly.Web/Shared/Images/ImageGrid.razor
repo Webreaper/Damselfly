@@ -33,21 +33,16 @@
             {
                 <GridSeparator CurrentImage="@image" PrevImage="@prevImage" />
             }
-            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected( e, image ); })">
+            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, image); })">
                 <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
             </div>
 
             { prevImage = image; }
         }
 
-        @if (!endOfImages)
+        @if (gridImages.Any() && !endOfImages)
         {
             <div id="list-end">More...</div>
-        }
-
-        @if (IsLoading && !endOfImages)
-        {
-            <Spinner />
         }
     }
 </div>
@@ -173,18 +168,16 @@
 
     [JSInvokable]
     // Debugging assistant to help us differentiate between JS calls and other data loads
-    public async Task HandleScroll( bool needMoreData, int scrollTop )
+    public async Task HandleScroll( int scrollTop )
     {
-        if (IsLoading)
-            return;
-
         conflator.HandleEvent( (x) => { SaveScrollState(scrollTop); } );
+    }
 
-        if (needMoreData)
-        {
-            Logging.Log("End market visible - loading more data");
-            await LoadData(imagesPerPage);
-        }
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public async Task LoadMoreData()
+    {
+        await LoadData(imagesPerPage);
     }
 
     public async Task LoadData( int imagesToLoad )
@@ -204,9 +197,9 @@
             if (newImages.Count() < imagesToLoad)
                 endOfImages = true;
 
-            StateHasChanged();
-
             IsLoading = false;
+
+            StateHasChanged();
         }
     }
 }

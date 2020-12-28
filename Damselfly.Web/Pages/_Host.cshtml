@@ -26,29 +26,37 @@
     </app>
 
     <script>
-        function isInViewPort(element) {
-            var bounding = element.getBoundingClientRect();
-            return (
-                bounding.top >= 0 &&
-                bounding.left >= 0 &&
-                bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
-                bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight)
-            );
-        };
-
         window.InfiniteScroll =
         {
             Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos)
             {
                 var scrollArea = document.getElementById(scrollAreaID);
-                var endMarker = document.getElementById(endMarkerId);
                 scrollArea.scrollTop = initialScrollPos;
+
+                var markerVisibleState = null;
+
+                var markerIsVisible = function () {
+                    var element = document.getElementById(endMarkerId);
+                    var bounding = element.getBoundingClientRect();
+
+                    return (bounding.top >= 0 && bounding.left >= 0 &&
+                        bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+                        bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
+                }
 
                 scrollArea.addEventListener('scroll', function ()
                 {
-                    var needMoreData = isInViewPort(endMarker);
-                    DotNetRef.invokeMethodAsync("HandleScroll", needMoreData, scrollArea.scrollTop);
-                 });
+                    DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
+
+                    var visible = markerIsVisible();
+
+                    if (markerVisibleState != visible )
+                    {
+                        markerVisibleState = visible;
+                        if (visible)
+                            DotNetRef.invokeMethodAsync("LoadMoreData");
+                    }
+                });
             }
         }
 
