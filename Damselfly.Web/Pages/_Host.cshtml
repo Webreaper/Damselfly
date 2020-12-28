@@ -33,16 +33,20 @@
                 var scrollArea = document.getElementById(scrollAreaID);
                 scrollArea.scrollTop = initialScrollPos;
 
-                var markerVisibleState = null;
-
                 var markerIsVisible = function () {
-                    var element = document.getElementById(endMarkerId);
-                    var bounding = element.getBoundingClientRect();
+                    var endMarker = document.getElementById(endMarkerId);
+
+                    if (endMarker === null)
+                        return false;
+
+                    var bounding = endMarker.getBoundingClientRect();
 
                     return (bounding.top >= 0 && bounding.left >= 0 &&
                         bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
                         bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
                 }
+
+                var markerVisibleState = null;
 
                 scrollArea.addEventListener('scroll', function ()
                 {
