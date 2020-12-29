@@ -62,7 +62,7 @@ namespace Damselfly.Core.Services
                                         Folder = x,
                                         ImageCount = x.Images.Count,
                                         // Not all images may have metadata yet.
-                                        MaxImageDate = x.Images.Max(i => i.MetaData != null ? i.MetaData.DateTaken : i.FileLastModDate)
+                                        MaxImageDate = x.Images.Max(i => i.SortDate)
                                     })
                                 .OrderByDescending(x => x.MaxImageDate)
                                 .ToListAsync();

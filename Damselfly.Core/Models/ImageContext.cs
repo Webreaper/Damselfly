@@ -68,6 +68,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<Image>().HasIndex(x => x.LastUpdated);
             modelBuilder.Entity<Image>().HasIndex(x => x.FileName);
             modelBuilder.Entity<Image>().HasIndex(x => x.FileLastModDate);
+            modelBuilder.Entity<Image>().HasIndex(x => x.SortDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.FolderScanDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.Path);
             modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
@@ -119,6 +120,9 @@ namespace Damselfly.Core.Models
         public ulong FileSizeBytes { get; set; }
         public DateTime FileCreationDate { get; set; }
         public DateTime FileLastModDate { get; set; }
+
+        // Date used for search query orderby
+        public DateTime SortDate { get; set; }
 
         // Damselfy state metadata
         public DateTime LastUpdated { get; set; }

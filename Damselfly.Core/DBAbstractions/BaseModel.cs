@@ -19,7 +19,12 @@ namespace Damselfly.Core.Models
         public static readonly ILoggerFactory SqlLoggerFactory
             = LoggerFactory.Create(builder => { builder.AddConsole(); });
 
+#if DEBUG
         static bool traceSQL = false;
+#else
+        static bool traceSQL = false;
+#endif
+
         static bool lazyLoad = false;
 
         public static bool ReadOnly { get; private set; }

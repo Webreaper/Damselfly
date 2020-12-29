@@ -586,6 +586,11 @@ namespace Damselfly.Core.Services
                         image.FileSizeBytes = (ulong)file.Length;
                         image.FileCreationDate = file.CreationTimeUtc;
                         image.FileLastModDate = file.LastWriteTimeUtc;
+
+                        // Default the sort date to the last write time. It'll get updated
+                        // later during indexing to set it to the date-taken date.
+                        image.SortDate = file.LastWriteTimeUtc;
+
                         image.Folder = folderToScan;
                         image.LastUpdated = DateTime.UtcNow;
 
@@ -687,6 +692,7 @@ namespace Damselfly.Core.Services
 
                         var newMetadataEntries = new List<ImageMetaData>();
                         var updatedEntries = new List<ImageMetaData>();
+                        var updatedImages = new List<Image>();
 
                         foreach (var img in imagesToScan)
                         {
@@ -703,6 +709,13 @@ namespace Damselfly.Core.Services
 
                             GetImageMetaData(ref imgMetaData, out var keywords);
 
+                            if (img.SortDate != imgMetaData.DateTaken)
+                            {
+                                // Update the image sort date with the date taken
+                                img.SortDate = imgMetaData.DateTaken;
+                                updatedImages.Add(img);
+                            }
+
                             if (keywords.Any())
                                 imageKeywords[img] = keywords;
 
@@ -717,6 +730,7 @@ namespace Damselfly.Core.Services
                         {
                             db.BulkInsert(newMetadataEntries);
                             db.BulkUpdate(updatedEntries);
+                            db.BulkUpdate(updatedImages);
                         }
 
                         saveWatch.Stop();

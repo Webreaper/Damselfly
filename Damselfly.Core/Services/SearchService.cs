@@ -90,6 +90,7 @@ namespace Damselfly.Core.Services
             {
                 using var db = new ImageContext();
                 var watch = new Stopwatch("ImagesLoadData");
+                Stopwatch tagwatch = null;
                 Image[] results = new Image[0];
 
                 try
@@ -134,9 +135,8 @@ namespace Damselfly.Core.Services
                     {
                         // Always filter by date - because if there's no filter
                         // set then they'll be set to min/max date.
-                        images = images.Where(x => x.MetaData == null ||
-                                                  (x.MetaData.DateTaken >= query.MinDate &&
-                                                   x.MetaData.DateTaken <= query.MaxDate));
+                        images = images.Where(x => x.SortDate >= query.MinDate &&
+                                                   x.SortDate <= query.MaxDate);
                     }
 
                     if( query.MinSizeKB > ulong.MinValue )
@@ -168,14 +168,17 @@ namespace Damselfly.Core.Services
                     // images = images.Include(x => x.ImageTags)
                     //               .ThenInclude(x => x.Tag);
 
-                    results = await images.OrderByDescending(x => x.MetaData.DateTaken)
+                    results = await images.OrderByDescending(x => x.SortDate)
                                     .Skip(first)
                                     .Take(count)
                                     .ToArrayAsync();
 
+                    tagwatch = new Stopwatch("SearchLoadTags");
                     // Now load the tags....
                     foreach (var img in results)
                         db.LoadTags(img);
+
+                    tagwatch.Stop();
                 }
                 catch (Exception ex)
                 {
@@ -186,7 +189,7 @@ namespace Damselfly.Core.Services
                     watch.Stop();
                 }
 
-                Logging.LogVerbose($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms.");
+                Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms (Tags: {tagwatch.ElapsedTime}ms)");
                 StatusService.Instance.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
 
                 // Now save the results in our stored dataset
