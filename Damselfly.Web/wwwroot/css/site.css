@@ -706,10 +706,19 @@ f
     box-shadow: 1px 1px 0 rgba(225, 255, 225, 0.7) inset;
 }
 
-.toolwindow-title {
-    color: #92CF92;
+.toolwindow-titlebar {
+    display: flex;
     background-color: rgba(160, 210, 160, 0.3);
+    color: #92CF92;
     padding: 3px;
+}
+
+.toolwindow-visibletoggle {
+    flex-basis: 20px;
+}
+
+.toolwindow-title {
+    flex: 1;
     font-weight: bold;
     text-align: center;
 }
@@ -811,6 +820,13 @@ f
     transform: rotate(180deg);
   
   }
+
+.damselfly-moreimages {
+    width: 100%;
+    padding: 3px;
+    text-align: center;
+    font-size: 12px;
+}
 
 .damselfly-imageseparator {
     width: 100%;
@@ -965,4 +981,8 @@ padding: 0.4em 0.65em;
 
 .damselfly-configlabel {
     flex: 1;
+}
+
+.toolbar-hidden {
+    display: none;
 }

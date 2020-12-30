@@ -1,7 +1,12 @@
 ﻿
 <div class="toolwindow">
-    <div class="toolwindow-title">@Title</div>
-    <div class="toolwindow-content">
+    <div class="toolwindow-titlebar">
+        <div class="toolwindow-title">@Title</div>
+        <div class="toolwindow-visibletoggle">
+            <i class="fas fa-chevron-@IconDirection" @onclick="@(() => ToggleDisplay())" />
+        </div>
+    </div>
+    <div class="toolwindow-content @DisplayClass">
         @ChildContent
     </div>
 </div>
@@ -12,4 +17,21 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    public string DisplayClass { get; set; } = string.Empty;
+    public string IconDirection { get; set; } = "up";
+
+    private void ToggleDisplay()
+    {
+        if (DisplayClass == string.Empty)
+        {
+            DisplayClass = "toolbar-hidden";
+            IconDirection = "down";
+        }
+        else
+        {
+            DisplayClass = string.Empty;
+            IconDirection = "up";
+        }
+    }
 }

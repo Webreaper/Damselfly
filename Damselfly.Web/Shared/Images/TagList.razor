@@ -51,7 +51,10 @@
 
     private async Task<IList<string>> LoadImageTagsAsync()
     {
-        return await Task.FromResult(GetImageTags().Select(x => x.Keyword).ToList());
+        return await Task.FromResult(GetImageTags()
+                                        .Select( x => x.Keyword)
+                                        .OrderBy( x => x )
+                                        .ToList());
     }
 
     private void DeleteTag(string tag)
