@@ -496,7 +496,7 @@ f
 
 .damselfly-statusitem {
     display: flex;
-    flex: 0 0 content;
+    flex: 0 0 auto;
     padding: 5px;
 }
 
@@ -715,6 +715,7 @@ f
 
 .toolwindow-visibletoggle {
     flex-basis: 20px;
+    cursor: pointer;
 }
 
 .toolwindow-title {
