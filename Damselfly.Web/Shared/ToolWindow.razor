@@ -3,7 +3,14 @@
     <div class="toolwindow-titlebar">
         <div class="toolwindow-title">@Title</div>
         <div class="toolwindow-visibletoggle">
-            <i class="fas fa-chevron-@IconDirection" @onclick="@(() => ToggleDisplay())" />
+            @if (Collapsed)
+            {
+                <i class="fas fa-chevron-down" @onclick="@(() => ExpandDisplay())" />
+            }
+            else
+            {
+                <i class="fas fa-chevron-up" @onclick="@(() => CollapseDisplay())" />
+            }
         </div>
     </div>
     <div class="toolwindow-content @DisplayClass">
@@ -19,19 +26,32 @@
     public RenderFragment ChildContent { get; set; }
 
     public string DisplayClass { get; set; } = string.Empty;
-    public string IconDirection { get; set; } = "up";
+    public bool Collapsed { get; set; } = false;
 
-    private void ToggleDisplay()
+    private string ConfigName
     {
-        if (DisplayClass == string.Empty)
-        {
-            DisplayClass = "toolbar-hidden";
-            IconDirection = "down";
-        }
-        else
-        {
-            DisplayClass = string.Empty;
-            IconDirection = "up";
-        }
+        get { return $"{Title}Visible";  }
+    }
+
+    protected override void OnInitialized()
+    {
+        var visible = ConfigService.Instance.Get(ConfigName, "True");
+
+        if (visible == "False")
+            CollapseDisplay();
+    }
+
+    private void ExpandDisplay()
+    {
+        Collapsed = false;
+        DisplayClass = string.Empty;
+        ConfigService.Instance.Set(ConfigName, "True");
+    }
+
+    private void CollapseDisplay()
+    {
+        Collapsed = true;
+        DisplayClass = "toolbar-hidden";
+        ConfigService.Instance.Set(ConfigName, "False");
     }
 }
