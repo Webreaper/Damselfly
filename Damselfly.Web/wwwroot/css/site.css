@@ -987,3 +987,14 @@ padding: 0.4em 0.65em;
 .toolbar-hidden {
     display: none;
 }
+
+.blazored-typeahead__input {
+    border-radius: unset;
+}
+.blazored-typeahead__selected-item-highlighted {
+    background-color: #d3f2e2;
+}
+
+.blazored-typeahead__result:focus {
+    background-color: #00ff7b;
+}

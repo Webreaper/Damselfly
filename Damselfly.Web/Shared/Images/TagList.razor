@@ -14,8 +14,28 @@
     <div class="InputAddOn">
         <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
         <!--BlazoredTypeahead SearchMethod="SearchTags" ConvertMethod="ConvertTag" @bind-value="NewTag" /-->
-        <input placeholder="Add a keyword" disabled="@IsDisabled" class="InputAddOn-field tagEditor" @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
+        <input placeholder="Add a keyword" disabled="@IsDisabled" class="InputAddOn-field tagEditor"
+               @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
         <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
+    </div>
+
+    <div class="InputAddOn">
+        <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+        <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
+                           placeholder="Select Tag" Debounce="300"
+                           @bind-Value="@TypeAheadTag">
+            <SelectedTemplate>
+                @{
+                    CreateNewTag(context);
+                }
+            </SelectedTemplate>
+            <ResultTemplate>
+                @context
+            </ResultTemplate>
+            <NotFoundTemplate>
+                @tagSearchText
+            </NotFoundTemplate>
+        </BlazoredTypeahead>
     </div>
 
     <div class="damselfly-keywordlist">
@@ -37,6 +57,8 @@
 </div>
 
 @code {
+    public string TypeAheadTag { get; set; }
+    private string tagSearchText { get; set; }
 
     [Parameter]
     public Image[] CurrentImages { get; set; }
@@ -52,9 +74,18 @@
     private async Task<IList<string>> LoadImageTagsAsync()
     {
         return await Task.FromResult(GetImageTags()
-                                        .Select( x => x.Keyword)
-                                        .OrderBy( x => x )
+                                        .Select(x => x.Keyword)
+                                        .OrderBy(x => x)
                                         .ToList());
+    }
+
+    private void CreateNewTag(string tagToAdd)
+    {
+        Logging.Log($"Creating tag for {tagToAdd}...");
+        var addedTags = new List<string> { tagToAdd };
+        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
+        TypeAheadTag = null;
+        StateHasChanged();
     }
 
     private void DeleteTag(string tag)
@@ -128,8 +159,8 @@
     {
         var images = new Image[0];
 
-        if( image != null)
-            images = new [] { image };
+        if (image != null)
+            images = new[] { image };
 
         CurrentImages = images;
 
@@ -183,9 +214,21 @@
         StateHasChanged();
     }
 
-    private async Task<IEnumerable<Tag>> SearchTags(string searchText)
+    private async Task<IEnumerable<string>> SearchTags(string searchText)
     {
-        return await Task.FromResult(indexService.CachedTags.Where(x => x.Keyword.StartsWith(searchText)));
+        tagSearchText = searchText;
+
+        var searchList = new List<string>();
+
+        if (searchText.Length > 1)
+            searchList.Add(searchText);
+
+        var results = await Task.FromResult(indexService.CachedTags
+                                                .Where(x => x.Keyword.StartsWith(searchText, StringComparison.OrdinalIgnoreCase))
+                                                .Select(t => t.Keyword )
+                                                .ToList());
+        return searchList.Union(results, StringComparer.OrdinalIgnoreCase);
+
     }
 
     public string ConvertTag(Tag tag)

@@ -64,6 +64,10 @@
             }
         }
 
+        window.setSelection = (element, start, end) => {
+            return element.setSelectionRange( start, end );
+        }
+
         function writeFileLocally(sourceUrl, localFilename) {
             window.downloadUrl(sourceUrl, localFilename);
         }
