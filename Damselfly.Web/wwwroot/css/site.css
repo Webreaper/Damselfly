@@ -1021,7 +1021,7 @@ padding: 0.4em 0.65em;
 
 .blazored-typeahead__input-mask-wrapper--disabled {
     border-radius: 0px;
-    background-color: darkgray;
+    background: rgb( 200, 200, 200 );
     color: grey;
     height: 28px;
 }
