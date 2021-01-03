@@ -988,13 +988,50 @@ padding: 0.4em 0.65em;
     display: none;
 }
 
-.blazored-typeahead__input {
-    border-radius: unset;
-}
-.blazored-typeahead__selected-item-highlighted {
-    background-color: #d3f2e2;
+.blazored-typeahead__results {
+    background: #fff;
+    color: #004400;
 }
 
+.blazored-typeahead {
+    border-radius: 0px;
+}
+
+.blazored-typeahead__input {
+    border-radius: 0px;
+}
+
+.blazored-typeahead__selected-item {
+    background-color: #006600;
+    font-weight: bold;
+}
+
+.blazored-typeahead__selected-item-highlighted {
+    background-color: #006600;
+}
+
+.blazored-typeahead__active-item,
+.blazored-typeahead__result:hover,
 .blazored-typeahead__result:focus {
-    background-color: #00ff7b;
+    color: #efe;
+    background-color: #006600;
+    border-top: 1px solid #007600;
+    border-bottom: 1px solid #007600;
+}
+
+.blazored-typeahead__input-mask-wrapper--disabled {
+    border-radius: 0px;
+    background-color: darkgray;
+    color: grey;
+    height: 28px;
+}
+
+.blazored-typeahead__input-mask {
+    border-radius: 0px;
+    padding: 0;
+}
+
+.blazored-typeahead__input-icon--disabled ,
+.blazored-typeahead__input-icon--disabled:hover {
+    display: none;
 }

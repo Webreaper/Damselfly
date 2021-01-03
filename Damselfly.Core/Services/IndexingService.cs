@@ -567,7 +567,7 @@ namespace Damselfly.Core.Services
                 {
                     try
                     {
-                        var existingImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name));
+                        var existingImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
 
                         if (existingImage != null && file.WriteTimesMatch(existingImage.FileLastModDate))
                         {
@@ -587,15 +587,15 @@ namespace Damselfly.Core.Services
                         image.FileCreationDate = file.CreationTimeUtc;
                         image.FileLastModDate = file.LastWriteTimeUtc;
 
-                        // Default the sort date to the last write time. It'll get updated
-                        // later during indexing to set it to the date-taken date.
-                        image.SortDate = file.LastWriteTimeUtc;
-
                         image.Folder = folderToScan;
                         image.LastUpdated = DateTime.UtcNow;
 
                         if (existingImage == null)
                         {
+                            // Default the sort date to the last write time. It'll get updated
+                            // later during indexing to set it to the date-taken date.
+                            image.SortDate = file.LastWriteTimeUtc;
+
                             Logging.LogTrace("Adding new image {0}", image.FileName);
                             folderToScan.Images.Add(image);
                             newImages++;
@@ -713,6 +713,7 @@ namespace Damselfly.Core.Services
                             {
                                 // Update the image sort date with the date taken
                                 img.SortDate = imgMetaData.DateTaken;
+                                img.LastUpdated = DateTime.UtcNow;
                                 updatedImages.Add(img);
                             }
 
