@@ -11,14 +11,16 @@
 @implements IDisposable
 
 <div class="damselfly-taglist">
-    <div class="InputAddOn">
-        <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-        <!--BlazoredTypeahead SearchMethod="SearchTags" ConvertMethod="ConvertTag" @bind-value="NewTag" /-->
-        <input placeholder="Add a keyword" disabled="@IsDisabled" class="InputAddOn-field tagEditor"
-               @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
-        <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
-    </div>
-
+    @if (false)
+    {
+        <div class="InputAddOn">
+            <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+            <!--BlazoredTypeahead SearchMethod="SearchTags" ConvertMethod="ConvertTag" @bind-value="NewTag" /-->
+            <input placeholder="Add a keyword" disabled="@IsDisabled" class="InputAddOn-field tagEditor"
+                   @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
+            <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
+        </div>
+    }
     <div class="InputAddOn">
         <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
         <BlazoredTypeahead disabled="@IsDisabled"   class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
