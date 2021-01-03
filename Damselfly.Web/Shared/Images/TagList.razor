@@ -227,6 +227,7 @@
 
         var results = await Task.FromResult(indexService.CachedTags
                                                 .Where(x => x.Keyword.StartsWith(searchText, StringComparison.OrdinalIgnoreCase))
+                                                .OrderBy(t => t.Keyword)
                                                 .Select(t => t.Keyword )
                                                 .ToList());
         return searchList.Union(results, StringComparer.OrdinalIgnoreCase);
