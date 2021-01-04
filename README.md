@@ -38,7 +38,7 @@ Damselfly is a server-based Digital Asset Management system. The goal of Damself
 ---
 ## Installation
 
-The easiest way to install Damselfly is via Docker.
+The easiest way to install Damselfly is via Docker (note the `SYNO_THUMBS` env var is optional, and specific to Synology NASes).
 
 ```
 docker run \
@@ -50,6 +50,18 @@ docker run \
   -p 6363:6363 \
   -d \
   webreaper/damselfly
+```
+Docker-Compose: 
+```
+ damselfly: 
+        container_name: damselfly
+        image: webreaper/damselfly
+        ports:
+            - 6363:6363/tcp
+        volumes:
+            - /volume1/dockerdata/damselfly:/config
+            - /volume1/photo:/pictures 
+        restart: unless-stopped
 ```
 
 The default port is 6363. The /pictures volume is mapped to the root directory of your photographs. By 
