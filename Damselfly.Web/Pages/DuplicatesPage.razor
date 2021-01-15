@@ -1,0 +1,72 @@
+﻿@page "/image/duplicates"
+
+@inject NavigationService navContext
+@inject ViewDataService ViewDataService
+
+@using Damselfly.Core.ImageProcessing
+
+<div class="damselfly-export">
+    <div>
+        <div class="damselfly-imagenavitem">
+            <a href="/"><i class="clickable-icon fa fa-reply" /></a>
+            <h4 class="image-title">
+                Images with Duplicates
+            </h4>
+        </div>
+    </div>
+    <div class="damselfly-exportlist">
+        @if (imageLists != null)
+        {
+            @foreach (var list in imageLists)
+            {
+
+                @foreach (var img in list)
+                {
+                    <div>
+                        @img.FileName
+                    </div>
+                }
+
+                <hr/>
+            }
+        }
+        else
+        {
+            <p>Loading selection...</p>
+        }
+    </div>
+</div>
+
+@code {
+    public Image CurrentImage { get; set; }
+
+    List<List<Image>> imageLists = new List<List<Image>>();
+
+    public Task<List<List<Image>>> LoadData()
+    {
+        var watch = new Stopwatch("DupesLoadData");
+        imageLists.Clear();
+
+        imageLists = ImageService.GetImagesWithDuplicates();
+        watch.Stop();
+
+        return Task.FromResult(imageLists);
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.ShowFolderList = false;
+            ViewDataService.ShowBasket = false;
+            ViewDataService.ShowExport = true;
+            ViewDataService.ShowTags = false;
+
+            await LoadData();
+
+            StateHasChanged();
+        }
+    }
+
+}

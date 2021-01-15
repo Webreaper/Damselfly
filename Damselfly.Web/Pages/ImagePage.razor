@@ -1,5 +1,5 @@
 ﻿@page "/image"
-@page "/image/{ImageName}"
+@page "/image/{ImageID}"
 
 @using Damselfly.Core.ImageProcessing
 
@@ -48,7 +48,7 @@
 
 @code {
     [Parameter]
-    public string ImageName { get; set; }
+    public string ImageID { get; set; }
 
     Image image;
     Image nextImage;
@@ -86,8 +86,7 @@
 
     protected async Task SetUpNavigation()
     {
-        int imageId = 0;
-        if (Int32.TryParse(ImageName, out imageId))
+        if (Int32.TryParse(ImageID, out var imageId))
         {
             image = await ImageService.GetImage(imageId);
             navContext.CurrentImage = image;

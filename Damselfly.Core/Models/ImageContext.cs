@@ -74,6 +74,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
+            modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Hash);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);

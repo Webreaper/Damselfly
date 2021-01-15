@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -121,6 +122,43 @@ namespace Damselfly.Web.Data
             db.LoadTags(image);
 
             return Task.FromResult(image);
+        }
+
+        public static List<List<Image>> GetImagesWithDuplicates()
+        {
+            using var db = new ImageContext();
+            var watch = new Stopwatch("GetImagesWithDupes");
+
+            // Craft the SQL manually as server-side groupby isn't supported by EF Core.
+            var sql = "SELECT im.* from ImageMetaData im where im.hash in (SELECT hash from ImageMetaData where hash is not null group by hash having count( distinct ImageID ) > 1)";
+
+            var dupeImageMetaData = db.ImageMetaData.FromSqlRaw(sql)
+                                      .Include(x => x.Image)
+                                      .ThenInclude(x => x.Folder)
+                                      .Select( x => x.Image )
+                                      .ToList();
+
+            var listOfLists = dupeImageMetaData.Where( x => x.MetaData != null )
+                                      .GroupBy(x => x.MetaData.Hash)
+                                      .Where( x => x != null )
+                                      .Select( x => x.ToList() )
+                                      .ToList();
+
+            return listOfLists;
+        }
+
+        public static List<Image> GetImageDuplicates(Image image)
+        {
+            using var db = new ImageContext();
+            var watch = new Stopwatch("GetImageDupes");
+
+            var dupes = db.ImageMetaData
+                            .Where(x => x.Hash.Equals(image.MetaData.Hash) && x.ImageId != image.ImageId)
+                            .Include( x => x.Image )
+                            .ThenInclude( x => x.Folder )
+                            .Select( x => x.Image );
+
+            return dupes.ToList();
         }
 
         public static string GetImageThumbUrl(Image image, ThumbSize size)

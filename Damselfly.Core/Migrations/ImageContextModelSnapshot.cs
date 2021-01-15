@@ -14,7 +14,7 @@ namespace Damselfly.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.1");
+                .HasAnnotation("ProductVersion", "5.0.2");
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
@@ -291,6 +291,8 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("CameraId");
 
                     b.HasIndex("DateTaken");
+
+                    b.HasIndex("Hash");
 
                     b.HasIndex("ImageId")
                         .IsUnique();

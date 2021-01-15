@@ -1,0 +1,88 @@
+﻿@page "/image/duplicates/{ImageID}"
+
+@inject NavigationService navContext
+@inject ViewDataService ViewDataService
+
+@using Damselfly.Core.ImageProcessing
+
+<div class="damselfly-export">
+    <div>
+        <div class="damselfly-imagenavitem">
+            <a href="/"><i class="clickable-icon fa fa-reply" /></a>
+            <h4 class="image-title">
+                Duplicate Images for @CurrentImage.FileName
+            </h4>
+        </div>
+    </div>
+    <div class="damselfly-exportlist">
+        @if (images != null)
+        {
+            @foreach (var img in images)
+            {
+                <div class="damselfly-exportitem">
+                    <div>
+                        <img title="@img.Image.FileName" src="@img.ThumbURL" style="max-width:100px;">
+                    </div>
+                    <div>
+                        @img.Image.FileName
+                    </div>
+                    <div>
+                        @img.Image.Folder.Name
+                    </div>
+                </div>
+
+            }
+        }
+        else
+        {
+            <p>Loading selection...</p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string ImageID { get; set; }
+
+    public Image CurrentImage { get; set; }
+
+    readonly List<ListableImage> images = new List<ListableImage>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Int32.TryParse(ImageID, out var imageId))
+        {
+            CurrentImage = await ImageService.GetImage(imageId);
+            navContext.CurrentImage = CurrentImage;
+        }
+    }
+
+
+    public Task<List<ListableImage>> LoadData()
+    {
+        var watch = new Stopwatch("DupesLoadData");
+        images.Clear();
+
+        images.AddRange( ImageService.GetImageDuplicates(CurrentImage).Select( x => new ListableImage( x, ThumbSize.Small ) ) );
+        watch.Stop();
+
+        return Task.FromResult(images);
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.ShowFolderList = false;
+            ViewDataService.ShowBasket = false;
+            ViewDataService.ShowExport = true;
+            ViewDataService.ShowTags = false;
+
+            await LoadData();
+
+            StateHasChanged();
+        }
+    }
+
+}

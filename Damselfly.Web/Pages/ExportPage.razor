@@ -44,14 +44,14 @@
             </div>
 
 @code {
-    readonly List<ExportableImage> images = new List<ExportableImage>();
+    readonly List<ListableImage> images = new List<ListableImage>();
 
 
-    public Task<List<ExportableImage>> LoadData()
+    public Task<List<ListableImage>> LoadData()
     {
         var watch = new Stopwatch("ExportLoadData");
         images.Clear();
-        images.AddRange(basketService.SelectedImages.Select(x => new ExportableImage(x, ThumbSize.Small)));
+        images.AddRange(basketService.SelectedImages.Select(x => new ListableImage(x, ThumbSize.Small)));
         watch.Stop();
 
         return Task.FromResult(images);
