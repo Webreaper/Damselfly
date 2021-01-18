@@ -130,19 +130,26 @@ namespace Damselfly.Web.Data
             var watch = new Stopwatch("GetImagesWithDupes");
 
             // Craft the SQL manually as server-side groupby isn't supported by EF Core.
-            var sql = "SELECT im.* from ImageMetaData im where im.hash in (SELECT hash from ImageMetaData where hash is not null group by hash having count( distinct ImageID ) > 1)";
+            // Select all images that have the same hash as more than one image.
+            var subQuery = "SELECT hash from ImageMetaData where hash is not null and hash <> \"\" group by hash having count( distinct ImageID ) > 1";
+            var sql = $"SELECT im.* from ImageMetaData im where im.hash in ({subQuery})";
 
-            var dupeImageMetaData = db.ImageMetaData.FromSqlRaw(sql)
-                                      .Include(x => x.Image)
-                                      .ThenInclude(x => x.Folder)
-                                      .Select( x => x.Image )
-                                      .ToList();
+            var dupes = db.ImageMetaData.FromSqlRaw(sql)
+                                    .Where(x => x.Hash != null)
+                                    .Include(x => x.Image)
+                                    .ThenInclude(x => x.Folder)
+                                    .ToList();
 
-            var listOfLists = dupeImageMetaData.Where( x => x.MetaData != null )
+            // Backfill the metadata for the child image object, so we can select it.
+            dupes.ForEach(x => x.Image.MetaData = x );
+
+            // Group by the hash and pick all of the images for each one.
+            var listOfLists = dupes.Select( x => x.Image )
                                       .GroupBy(x => x.MetaData.Hash)
-                                      .Where( x => x != null )
-                                      .Select( x => x.ToList() )
+                                      .Select( x => x.OrderBy( x => x.SortDate ).ToList() )
                                       .ToList();
+
+            watch.Stop();
 
             return listOfLists;
         }

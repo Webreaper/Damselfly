@@ -23,7 +23,8 @@
                 @foreach (var img in list)
                 {
                     <div>
-                        @img.FileName
+                        @img.FullPath
+                        <img src="@GetImgUrl( img )" />;
                     </div>
                 }
 
@@ -41,6 +42,11 @@
     public Image CurrentImage { get; set; }
 
     List<List<Image>> imageLists = new List<List<Image>>();
+
+    private string GetImgUrl( Image image )
+    {
+        return $"/thumb/{ThumbSize.Small}/{image.ImageId}";
+    }
 
     public Task<List<List<Image>>> LoadData()
     {
