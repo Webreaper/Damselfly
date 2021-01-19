@@ -1035,3 +1035,42 @@ padding: 0.4em 0.65em;
 .blazored-typeahead__input-icon--disabled:hover {
     display: none;
 }
+
+
+.damselfly-dupelist {
+    display: flex;
+    flex: 1 0 auto;
+    flex-flow: column;
+    align-content: flex-start;
+    padding: 5px;
+}
+
+.damselfly-duplicate {
+    display: flex;
+    border: 2px solid #669966;
+    flex: 1 0 auto;
+    max-height: 150px;
+    flex-flow: row;
+    padding: 5px;
+    margin: 5px;
+}
+
+.damselfly-dupeimage {
+    flex: 1 0 auto;
+    max-width: 200px;
+    padding: 5px;
+}
+
+.damselfly-dupeimage img {
+    border: 2px solid #88aa88;
+}
+
+.damselfly-dupe-entries {
+    flex: 1 0 auto;
+    display: flex;
+    flex-flow: column;
+}
+
+.damselfly-dupe-entry {
+    flex: 1 0 auto;
+}

@@ -14,21 +14,25 @@
             </h4>
         </div>
     </div>
-    <div class="damselfly-exportlist">
+    <div class="damselfly-dupelist">
         @if (imageLists != null)
         {
             @foreach (var list in imageLists)
             {
-
-                @foreach (var img in list)
-                {
-                    <div>
-                        @img.FullPath
-                        <img src="@GetImgUrl( img )" />;
+                <div class="damselfly-duplicate">
+                    <div class="damselfly-dupeimage">
+                        <img src="@GetImgUrl(list[0])" />
                     </div>
-                }
 
-                <hr/>
+                    <div class="damselfly-dupe-entries">
+                        @foreach( var img in list )
+                        {
+                            <div class="damselfly-dupe-entry">
+                                @img.FullPath, Date Taken: @img.SortDate.Display()
+                            </div>
+                        }
+                    </div>
+              </div>
             }
         }
         else
