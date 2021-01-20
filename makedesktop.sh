@@ -13,7 +13,6 @@ echo "**************************** Building Desktop Electron Apps **************
 
 env | grep -iE 'DEBUG|NODE_|ELECTRON_|YARN_|NPM_|CI|CIRCLE|TRAVIS_TAG|TRAVIS|TRAVIS_REPO_|TRAVIS_BUILD_|TRAVIS_BRANCH|TRAVIS_PULL_REQUEST_|APPVEYOR_|CSC_|GH_|GITHUB_|BT_|AWS_|STRIP|BUILD_' > docker_env
 
-# -v ${PWD##*/}-node-modules:/project/node_modules \
 
 docker run --rm  \
  --env-file docker_env \
@@ -22,6 +21,7 @@ docker run --rm  \
  -v ${PWD}:/project \
  -v ~/.cache/electron:/root/.cache/electron \
  -v ~/.cache/electron-builder:/root/.cache/electron-builder \
+ -v ${PWD##*/}-node-modules:/project/node_modules \
  electronuserland/builder:wine  \
     yarn && yarn install && yarn version --new-version $version && yarn dist
 
