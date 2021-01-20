@@ -45,7 +45,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [mac, windows, linux]
+        target: [mac, windows, linux, alpine]
         include: 
           - target: windows
             platform: win-x64
@@ -55,6 +55,10 @@ jobs:
             platform: linux-x64
             os: ubuntu-latest
             zipname: damselfly-server-linux
+          - target: alpine
+            platform: alpine-x64
+            os: ubuntu-latest
+            zipname: damselfly-server-alpine
           - target: mac
             platform: osx-x64
             os: macos-latest
@@ -92,5 +96,24 @@ jobs:
           name: Desktop-Dist
           path: Damselfly.Web/wwwroot/desktop
 
-      - name: Build docker package
-        run: sh makedocker.sh
+      - name: Download Server Build
+        uses: actions/download-artifact@v2
+        with:
+          name: Server-Dist
+          path: servers
+
+      - name: Unzip server into publish folder
+        run: |
+             cd publish
+             unzip $GITHUB_WORKSPACE/damselfly-server-alpine.zip
+             ls
+             cd ..
+
+      - name: Build Docker
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/386
+          push: false
+          tags: webreaper/damselfly:dev
