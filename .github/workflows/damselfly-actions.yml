@@ -40,10 +40,20 @@ jobs:
           if-no-files-found: warn
 
   build-server:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        platform: [linux-x64, win-x64, osx-x64]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        include: 
+          - os: windows-latest
+            platform: osx-x64
+            zipname: damselfly-server-mac
+          - os: ubuntu-latest
+            platform: win-x64
+            zipname: damselfly-server-win
+          - os: macos-latest
+            platform: linux-x64
+            zipname: damselfly-server-linux
 
     steps:
       - name: Checkout Source
@@ -59,7 +69,7 @@ jobs:
              version=`cat VERSION`
              dotnet publish Damselfly.Web -r ${{ platform }} -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
              cd Damselfly.Web/bin/Release/net5.0/${{ platform }}/publish
-             zip -r ../../../../../../server/damselfly-server-${{ platform }}-$version.zip *.* -x "*.pdb" 
+             zip -r ../../../../../../server/${{ zipname }}-$version.zip *.* -x "*.pdb" 
              cd ../../../../../..
 
       - name: Upload server builds to artifacts
