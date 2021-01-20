@@ -59,15 +59,6 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v2
 
-      - name: Run Dotnet Build
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.x'
-      - run: |
-             dotnet publish Damselfly.Web -r ${{ platform }} -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
-             cd Damselfly.Web/bin/Release/net5.0/${{ platform }}/publish
-             zip -r ../../../../../../server/${{ zipname }}-$version.zip *.* -x "*.pdb" 
-             cd ../../../../../..
 
       - name: Upload server builds to artifacts
         uses: actions/upload-artifact@v2
