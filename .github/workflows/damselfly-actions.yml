@@ -25,11 +25,9 @@ jobs:
       
       - name: Run Electron build
         run: | 
-             version=`cat VERSION`
              cd Damselfly.Desktop
              yarn install 
              yarn ${{ matrix.command }}
-             ls dist
 
       - name: Upload desktop builds for Docker build
         uses: actions/upload-artifact@v2
@@ -65,10 +63,10 @@ jobs:
         with:
           dotnet-version: '5.0.x'
       - run: |
+             sh setversion.sh
              dotnet publish Damselfly.Web -r ${{ matrix.platform }} -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
-             cd Damselfly.Web/bin/Release/net5.0/${{ matrix.platform }}/publish
-             zip -r ../../../../../../server/${{ matrix.zipname }}-$version.zip *.* -x "*.pdb" 
-             cd ../../../../../..
+             cd $GITHUB_WORKSPACE/Damselfly.Web/bin/Release/net5.0/${{ matrix.platform }}/publish
+             zip -r $GITHUB_WORKSPACE/server/${{ matrix.zipname }}-$version.zip *.* -x "*.pdb" 
 
       - name: Upload server builds to artifacts
         uses: actions/upload-artifact@v2
