@@ -8,7 +8,8 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder -mwl",
     "distmac": "electron-builder --mac",
-    "distwin": "electron-builder --win"
+    "distwin": "electron-builder --win",
+    "distlinux": "electron-builder --linux"
   },
   "repository": "https://github.com/webreaper/Damselfly",
   "keywords": [
