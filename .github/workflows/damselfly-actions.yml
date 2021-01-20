@@ -2,16 +2,19 @@ name: damselfly-actions
 on: [push]
 jobs:
   build-desktop:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        platform: [mac, windows, linux]
         include: 
-          - os: windows-latest
+          - platform: windows
+            os: ubuntu-latest
             command: distwin
-          - os: ubuntu-latest
+          - platform: linux
+            os: ubuntu-latest
             command: distlinux
-          - os: macos-latest
+          - platform: mac:
+            os: macos-latest
             command: distmac
 
     steps:
