@@ -6,12 +6,13 @@ jobs:
     strategy: 
       matrix: 
         os: [macos-latest, ubuntu-latest, windows-latest]
-        - os: windows-latest
-          command: distwin
-        - os: ubuntu-latest
-          command: distlinux
-        - os: macos-latest
-          command: distmac
+        include: 
+          - os: windows-latest
+            command: distwin
+          - os: ubuntu-latest
+            command: distlinux
+          - os: macos-latest
+            command: distmac
 
     steps:
       - name: Checkout Source
