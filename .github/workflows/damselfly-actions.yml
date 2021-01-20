@@ -62,7 +62,7 @@ jobs:
       - name: Run Dotnet Build
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.x'
+          dotnet-version: '3.1.x'
       - run: |
              dotnet publish Damselfly.Web -r ${{ matrix.platform }} -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
              cd Damselfly.Web/bin/Release/net5.0/${{ matrix.platform }}/publish
