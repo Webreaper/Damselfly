@@ -84,8 +84,18 @@ jobs:
     needs: [build-server, build-desktop]
     runs-on: ${{ matrix.os }}
     strategy: 
-      matrix: 
-        os: [macos-latest, ubuntu-latest, windows-latest]
+      target: [mac, linux, windows]
+        include: 
+          - target: windows
+            os: windows-latest
+            serverzip: damselfly-server-linux
+          - target: linux
+            os: ubuntu-latest
+            serverzip: damselfly-server-windows
+          - target: mac
+            os: macos-latest
+            serverzip: damselfly-server-mac
+
     steps:
       - name: Checkout Source
         uses: actions/checkout@v2
@@ -104,8 +114,9 @@ jobs:
 
       - name: Unzip server into publish folder
         run: |
+             mkdir publish
              cd publish
-             unzip $GITHUB_WORKSPACE/damselfly-server-alpine.zip
+             unzip $GITHUB_WORKSPACE/${{ serverzip }}-*.zip
              ls
              cd ..
 
