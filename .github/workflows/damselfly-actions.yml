@@ -13,7 +13,7 @@ jobs:
           - platform: linux
             os: ubuntu-latest
             command: distlinux
-          - platform: mac:
+          - platform: mac
             os: macos-latest
             command: distmac
 
