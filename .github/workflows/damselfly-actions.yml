@@ -42,15 +42,18 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        platform: [mac, windows, linux]
+        target: [mac, windows, linux]
         include: 
-          - platform: windows
+          - target: windows
+            platform: win-x64
             os: ubuntu-latest
             zipname: damselfly-server-win
-          - platform: linux
+          - target: linux
+            platform: linux-x64
             os: ubuntu-latest
             zipname: damselfly-server-linux
-          - platform: mac
+          - target: mac
+            platform: osx-x64
             os: macos-latest
             zipname: damselfly-server-mac
 
