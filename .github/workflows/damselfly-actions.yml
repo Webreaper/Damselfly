@@ -44,7 +44,8 @@ jobs:
     strategy: 
       matrix: 
         platform: [linux-x64, win-x64, osx-x64]
-      steps:
+
+    steps:
       - name: Checkout Source
       - uses: actions/checkout@v2
 
