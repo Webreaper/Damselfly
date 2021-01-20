@@ -26,6 +26,7 @@ jobs:
       - name: Run Electron build
         run: | 
              cd Damselfly.Desktop
+             yarn install 
              yarn ${{ matrix.command }} 
 
       - name: Upload desktop builds for Docker build
