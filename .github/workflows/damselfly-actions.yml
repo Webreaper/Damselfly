@@ -1,0 +1,9 @@
+name: damselfly-actions
+on: [push]
+jobs:
+  build-desktop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sh makedesktop.sh
+      
