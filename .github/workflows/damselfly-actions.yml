@@ -85,17 +85,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [mac, linux, windows]
+        target: alpine
         include: 
-          - target: windows
-            os: windows-latest
-            serverzip: damselfly-server-linux
-          - target: linux
+          - target: alpine
             os: ubuntu-latest
-            serverzip: damselfly-server-windows
-          - target: mac
-            os: macos-latest
-            serverzip: damselfly-server-mac
+            serverzip: damselfly-server-alpine
 
     steps:
       - name: Checkout Source
