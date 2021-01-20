@@ -25,6 +25,7 @@ jobs:
       
       - name: Run Electron build
         run: | 
+             version=`cat VERSION`
              cd Damselfly.Desktop
              yarn install 
              yarn ${{ matrix.command }}
