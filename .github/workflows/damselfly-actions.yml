@@ -51,6 +51,7 @@ jobs:
           path: Damselfly.Web/server/*.zip     
 
   build-docker:
+    needs: [build-server, build-desktop]
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
