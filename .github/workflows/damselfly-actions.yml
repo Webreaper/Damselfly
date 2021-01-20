@@ -34,7 +34,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Desktop-Dist
-          path: Damselfly.Desktop/dist/*.*
+          path: |
+                Damselfly.Desktop/dist/*.zip
+                Damselfly.Desktop/dist/*.AppImage
           if-no-files-found: warn
 
   build-server:
