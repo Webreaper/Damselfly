@@ -68,13 +68,14 @@ jobs:
       - run: |
              sh buildserver.sh ${{ matrix.platform }}
              cd $GITHUB_WORKSPACE/Damselfly.Web/bin/Release/net5.0/${{ matrix.platform }}/publish
+             mkdir $GITHUB_WORKSPACE/server
              zip -r $GITHUB_WORKSPACE/server/${{ matrix.zipname }}-$version.zip *.* -x "*.pdb" 
 
       - name: Upload server builds to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Server-Dist
-          path: Damselfly.Web/server/*.zip     
+          path: $GITHUB_WORKSPACE/server/*.zip     
 
   build-docker:
     needs: [build-server, build-desktop]
