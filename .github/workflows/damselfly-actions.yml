@@ -2,7 +2,7 @@ name: damselfly-actions
 on: [push]
 jobs:
   build-desktop:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy: 
       matrix: 
         os: [macos-latest, ubuntu-latest, windows-latest]
