@@ -24,7 +24,6 @@ jobs:
           node-version: 10
       
       - name: Run Electron build
-        run: cd Damselfly.Desktop
         run: | 
              cd Damselfly.Desktop
              yarn ${{ matrix.command }} 
