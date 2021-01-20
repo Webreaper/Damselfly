@@ -42,13 +42,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: sh makeserver.sh
+      - name: Build non-docker Server
+        run: sh makeserver.sh
+
+      - name: Upload server builds to artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: Server-Dist
+          path: Damselfly.Desktop/dist/*.zip      
+
   build-docker:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      matrix: 
+        os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v2
       - name: Download Desktop Builds
         uses: actions/download-artifact@v2
         with:
           name: Desktop-Dist
-      - run: sh makedocker.sh
+      - name: Build docker package
+        run: sh makedocker.sh
