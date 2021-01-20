@@ -9,7 +9,7 @@ jobs:
         - os: windows-latest
           command: distwin
         - os: ubuntu-latest
-          command: distlinu
+          command: distlinux
         - os: macos-latest
           command: distmac
 
@@ -24,7 +24,7 @@ jobs:
       
       - name: Run Electron build
         run: yarn ${{ matrix.command }} 
-        
+
       - name: Upload desktop builds for Docker build
         uses: actions/upload-artifact@v1
         with:
