@@ -24,6 +24,7 @@ jobs:
           node-version: 10
       
       - name: Run Electron build
+        run: cd Damselfly.Desktop
         run: yarn ${{ matrix.command }} 
 
       - name: Upload desktop builds for Docker build
