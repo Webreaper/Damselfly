@@ -31,7 +31,7 @@ jobs:
              ls dist
 
       - name: Upload desktop builds for Docker build
-        uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v2
         with:
           name: Desktop-Dist
           path: |
@@ -57,15 +57,13 @@ jobs:
 
     steps:
       - name: Checkout Source
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
-      - name: Setup .NET Core
+      - name: Run Dotnet Build
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.x
-      
-      - name: Build .Net Server
-        run: |
+          dotnet-version: '5.x'
+      - run: |
              version=`cat VERSION`
              dotnet publish Damselfly.Web -r ${{ platform }} -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
              cd Damselfly.Web/bin/Release/net5.0/${{ platform }}/publish
