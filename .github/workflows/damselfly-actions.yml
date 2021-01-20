@@ -5,16 +5,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        platform: [mac, windows, linux]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         include: 
-          - platform: windows
-            os: ubuntu-latest
+          - os: windows-latest
             command: distwin
-          - platform: linux
-            os: ubuntu-latest
+          - os: ubuntu-latest
             command: distlinux
-          - platform: mac
-            os: macos-latest
+          - os: macos-latest
             command: distmac
 
     steps:
@@ -45,17 +42,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        platform: [mac, windows, linux]
         include: 
-          - os: macos-latest
-            platform: osx-x64
-            zipname: damselfly-server-mac
-          - os: windows-latest
-            platform: win-x64
+          - platform: windows
+            os: ubuntu-latest
             zipname: damselfly-server-win
-          - os: ubuntu-latest
-            platform: linux-x64
+          - platform: linux
+            os: ubuntu-latest
             zipname: damselfly-server-linux
+          - platform: mac
+            os: macos-latest
+            zipname: damselfly-server-mac
 
     steps:
       - name: Checkout Source
