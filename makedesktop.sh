@@ -8,7 +8,6 @@ fi
 
 cd Damselfly.Desktop
 rm -rf ./dist
-mkdir ./dist
 
 echo "**************************** Building Desktop Electron Apps ****************************"
 
@@ -26,6 +25,7 @@ docker run --rm  \
     yarn && yarn install && yarn version --new-version $version && yarn dist
 
 cd dist
+ls dist 
 
 mkdir ../../desktop
 rm ../../desktop/*.*
