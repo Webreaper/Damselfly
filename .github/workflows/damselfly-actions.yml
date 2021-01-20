@@ -29,12 +29,11 @@ jobs:
              yarn install 
              yarn ${{ matrix.command }} 
 
-
       - name: Upload desktop builds for Docker build
         uses: actions/upload-artifact@v1
         with:
           name: Desktop-Dist
-          path: Damselfly.Desktop/dist/*.zip
+          path: Damselfly.Desktop/dist/*.*
 
   build-server:
     runs-on: ubuntu-latest
@@ -47,7 +46,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: Server-Dist
-          path: Damselfly.Desktop/dist/*.zip      
+          path: Damselfly.Web/server/*.zip      
 
   build-docker:
     runs-on: ${{ matrix.os }}
