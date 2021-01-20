@@ -6,4 +6,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: sh makedesktop.sh
-      
+  build-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sh makeserver.sh
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sh makedocker.sh
