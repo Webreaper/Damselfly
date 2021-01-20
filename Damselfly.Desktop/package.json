@@ -7,9 +7,9 @@
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder -mwl",
-    "distmac": "electron-builder --mac",
-    "distwin": "electron-builder --win",
-    "distlinux": "electron-builder --linux"
+    "distmac": "electron-builder --mac --publish=never",
+    "distwin": "electron-builder --win --publish=never",
+    "distlinux": "electron-builder --linux --publish=never"
   },
   "repository": "https://github.com/webreaper/Damselfly",
   "keywords": [
