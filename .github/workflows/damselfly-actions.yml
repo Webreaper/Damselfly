@@ -84,7 +84,8 @@ jobs:
     needs: [build-server, build-desktop]
     runs-on: ${{ matrix.os }}
     strategy: 
-      target: [mac, linux, windows]
+      matrix: 
+        target: [mac, linux, windows]
         include: 
           - target: windows
             os: windows-latest
