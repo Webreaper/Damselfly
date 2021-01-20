@@ -6,6 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: sh makedesktop.sh
+      - name: Upload desktop builds
+        uses: actions/upload-artifact@v1
+        with:
+          name: Desktop-Dist
+          path: ./dist/*.zip
   build-server:
     runs-on: ubuntu-latest
     steps:
@@ -15,4 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Download Desktop Builds
+        uses: actions/download-artifact@v2
+        with:
+          name: Desktop-Dist
       - run: sh makedocker.sh

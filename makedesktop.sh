@@ -8,6 +8,7 @@ fi
 
 cd Damselfly.Desktop
 rm -rf ./dist
+mkdir ./dist
 
 echo "**************************** Building Desktop Electron Apps ****************************"
 
