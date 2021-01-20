@@ -63,8 +63,7 @@ jobs:
         with:
           dotnet-version: '5.0.x'
       - run: |
-             sh setversion.sh
-             dotnet publish Damselfly.Web -r ${{ matrix.platform }} -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
+             sh buildserver.sh ${{ matrix.platform }}
              cd $GITHUB_WORKSPACE/Damselfly.Web/bin/Release/net5.0/${{ matrix.platform }}/publish
              zip -r $GITHUB_WORKSPACE/server/${{ matrix.zipname }}-$version.zip *.* -x "*.pdb" 
 
