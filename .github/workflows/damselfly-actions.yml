@@ -44,16 +44,7 @@ jobs:
     strategy: 
       matrix: 
         os: [macos-latest, ubuntu-latest, windows-latest]
-        include: 
-          - os: windows-latest
-            netplatform: osx-x64
-            zipname: damselfly-server-mac
-          - os: ubuntu-latest
-            netplatform: win-x64
-            zipname: damselfly-server-win
-          - os: macos-latest
-            netplatform: linux-x64
-            zipname: damselfly-server-linux
+        
 
     steps:
       - name: Checkout Source
