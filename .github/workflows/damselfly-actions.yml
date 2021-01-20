@@ -65,11 +65,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
-      - run: |
-             sh buildserver.sh ${{ matrix.platform }}
-             cd $GITHUB_WORKSPACE/Damselfly.Web/bin/Release/net5.0/${{ matrix.platform }}/publish
-             mkdir $GITHUB_WORKSPACE/server
-             zip -r $GITHUB_WORKSPACE/server/${{ matrix.zipname }}-$version.zip *.* -x "*.pdb" 
+      - run: sh buildserver.sh ${{ matrix.platform }} ${{ matrix.zipname }}
 
       - name: Upload server builds to artifacts
         uses: actions/upload-artifact@v2
