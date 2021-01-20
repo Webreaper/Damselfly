@@ -39,33 +39,7 @@ jobs:
                 Damselfly.Desktop/dist/*.AppImage
           if-no-files-found: warn
 
-  build-server:
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix: 
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        include: 
-          - os: windows-latest
-            platform: osx-x64
-            zipname: damselfly-server-mac
-          - os: ubuntu-latest
-            platform: win-x64
-            zipname: damselfly-server-win
-          - os: macos-latest
-            platform: linux-x64
-            zipname: damselfly-server-linux
-
-    steps:
-      - name: Checkout Source
-        uses: actions/checkout@v2
-
-
-      - name: Upload server builds to artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: Server-Dist
-          path: Damselfly.Web/server/*.zip     
-
+  
   build-docker:
     needs: [build-server, build-desktop]
     runs-on: ${{ matrix.os }}
@@ -73,7 +47,9 @@ jobs:
       matrix: 
         os: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Source
+        uses: actions/checkout@v2
+
       - name: Download Desktop Builds
         uses: actions/download-artifact@v2
         with:
