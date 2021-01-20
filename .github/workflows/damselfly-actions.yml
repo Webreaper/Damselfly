@@ -5,13 +5,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        target: [mac, linux, windows]
         include: 
-          - os: windows-latest
+          - target: windows
+            os: windows-latest
             command: distwin
-          - os: ubuntu-latest
+          - target: linux
+            os: ubuntu-latest
             command: distlinux
-          - os: macos-latest
+          - target: mac
+            os: macos-latest
             command: distmac
 
     steps:
@@ -71,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Server-Dist
-          path: $GITHUB_WORKSPACE/server/*.zip     
+          path: server/*.zip     
 
   build-docker:
     needs: [build-server, build-desktop]
