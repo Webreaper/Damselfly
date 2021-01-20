@@ -20,7 +20,10 @@ jobs:
         with:
           skip_release: true
           package_root: Damselfly.Desktop
-
+          # GitHub token, automatically provided to the action
+          # (No need to define this secret in the repo settings)
+          github_token: ${{ secrets.github_token }}
+          
       - name: Upload desktop builds for Docker build
         uses: actions/upload-artifact@v1
         with:
