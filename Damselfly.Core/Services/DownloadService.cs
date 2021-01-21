@@ -95,7 +95,7 @@ namespace Damselfly.Core.Services
             if (winAppPath != null)
                 DesktopAppInfo.WindowsApp = Path.Combine(s_appVPath, winAppPath.Name);
 
-            var linuxAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-linux.appimage", StringComparison.OrdinalIgnoreCase));
+            var linuxAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith(".appimage", StringComparison.OrdinalIgnoreCase));
 
             if (linuxAppPath != null)
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
