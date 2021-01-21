@@ -113,7 +113,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: Desktop-Dist
-          path: publish/Damselfly.Web/wwwroot/desktop
+          path: publish/wwwroot/desktop
 
       - name: Build Docker
         uses: docker/build-push-action@v2
