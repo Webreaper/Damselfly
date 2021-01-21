@@ -6,6 +6,9 @@ if ! [ -z "$SYNO_THUMBS" ]; then
   cmdlineargs="--syno"
 fi;
 
+echo "Listing contents:"
+ls -Rl
+
 echo "Increasing inotify watch limit..."
 echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
