@@ -4,8 +4,8 @@ ARG RUNTIMEVERSION=5.0-alpine
 # Assemble the final image
 FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS final
 ARG DAMSELFLY_VERSION
-EXPOSE 6363
 
+RUN echo "Copying data..."
 WORKDIR /app
 COPY --from=publish /app/publish .
 
@@ -33,4 +33,5 @@ RUN apk --update add exiftool && rm -rf /var/cache/apk/*
 # 	&& cd .. \
 # 	&& rm -rf Image-ExifTool-${EXIFTOOL_VERSION}
 
+EXPOSE 6363
 ENTRYPOINT ["sh","/damselfly-entrypoint.sh"]

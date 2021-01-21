@@ -133,5 +133,5 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
-          push: false
+          push: true
           tags: webreaper/damselfly:dev
