@@ -7,6 +7,7 @@ ARG DAMSELFLY_VERSION
 
 WORKDIR /app
 COPY /publish .
+RUN chmod +x Damselfly.Web 
 
 # Copy the entrypoint script
 COPY ./damselfly-entrypoint.sh /
