@@ -115,6 +115,9 @@ jobs:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
 
+      - name: Check publish contents
+        run: find publish -type f
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 

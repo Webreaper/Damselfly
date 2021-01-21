@@ -7,6 +7,7 @@ ARG DAMSELFLY_VERSION
 
 WORKDIR /app
 COPY /publish .
+RUN find publish -type f
 RUN chmod +x Damselfly.Web 
 
 # Copy the entrypoint script
