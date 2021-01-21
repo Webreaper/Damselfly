@@ -78,19 +78,24 @@ namespace Damselfly.Core.Services
 
             // Now, see if we have a desktop app
 
+            // Get the files in the desktop folder
+            var desktopFiles = desktopPath.GetFiles("*.*")
+                                          .Where( x => x.Name.StartsWith("Damselfly-", StringComparison.OrdinalIgnoreCase) )
+                                          .ToList();
+
             // TODO: We should inject the json config that the app uses,
             // with the endpoint pre-configured, into the zip here.
-            var macAppPath = desktopPath.GetFiles("damselfly-mac.zip").FirstOrDefault();
+            var macAppPath = desktopFiles.FirstOrDefault( x => x.Name.EndsWith( "-mac.zip", StringComparison.OrdinalIgnoreCase ) );
 
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
 
-            var winAppPath = desktopPath.GetFiles("damselfly-win.zip").FirstOrDefault();
+            var winAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-win.zip", StringComparison.OrdinalIgnoreCase));
 
             if (winAppPath != null)
                 DesktopAppInfo.WindowsApp = Path.Combine(s_appVPath, winAppPath.Name);
 
-            var linuxAppPath = desktopPath.GetFiles("damselfly-linux.appimage").FirstOrDefault();
+            var linuxAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-linux.appimage", StringComparison.OrdinalIgnoreCase));
 
             if (linuxAppPath != null)
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
