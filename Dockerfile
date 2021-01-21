@@ -6,14 +6,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS final
 ARG DAMSELFLY_VERSION
 EXPOSE 6363
 
-# Copy the desktop apps into the image (these are built outside docker at the moment)
-WORKDIR /wwwroot/desktop
-COPY ./Damselfly.Web/wwwroot/desktop/damselfly-mac.zip .
-COPY ./Damselfly.Web/wwwroot/desktop/damselfly-win.zip .
-COPY ./Damselfly.Web/wwwroot/desktop/damselfly-linux.appimage .
-
 WORKDIR /app
-# This may re-copy the desktop/* apps, but who cares.
 COPY --from=publish /app/publish .
 
 # Copy the entrypoint script
