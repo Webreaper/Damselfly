@@ -106,7 +106,6 @@ jobs:
              mkdir publish
              cd publish
              unzip $GITHUB_WORKSPACE/servers/${{ matrix.serverzip }}-*.zip
-             ls
              cd ..
 
       - name: Download Desktop Builds into wwwroot folder
