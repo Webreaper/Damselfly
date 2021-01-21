@@ -5,9 +5,8 @@ ARG RUNTIMEVERSION=5.0-alpine
 FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS final
 ARG DAMSELFLY_VERSION
 
-RUN echo "Copying data..."
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY /app/publish .
 
 # Copy the entrypoint script
 COPY ./damselfly-entrypoint.sh /

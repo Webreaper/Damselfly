@@ -12,10 +12,4 @@ echo "**************************** Tagging and pushing Image *******************
 docker tag damselfly webreaper/damselfly:dev
 docker push webreaper/damselfly:dev
 
-if [ $RELEASE == "release" ]; then 
-    docker tag damselfly webreaper/damselfly:latest
-    docker tag damselfly webreaper/damselfly:$version-beta
-    docker push webreaper/damselfly:latest
-    docker push webreaper/damselfly:$version-beta
-fi
 echo "Damselfly docker build complete."
