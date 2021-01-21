@@ -85,7 +85,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: alpine
+        target: [alpine]
         include: 
           - target: alpine
             os: ubuntu-latest
@@ -95,25 +95,25 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v2
 
-      - name: Download Desktop Builds
-        uses: actions/download-artifact@v2
-        with:
-          name: Desktop-Dist
-          path: Damselfly.Web/wwwroot/desktop
-
       - name: Download Server Build
         uses: actions/download-artifact@v2
         with:
           name: Server-Dist
-          path: servers
+          path: servers/${{ serverzip }}
 
       - name: Unzip server into publish folder
         run: |
              mkdir publish
              cd publish
-             unzip $GITHUB_WORKSPACE/${{ serverzip }}-*.zip
+             unzip $GITHUB_WORKSPACE/servers/${{ serverzip }}-*.zip
              ls
              cd ..
+
+      - name: Download Desktop Builds into wwwroot folder
+        uses: actions/download-artifact@v2
+        with:
+          name: Desktop-Dist
+          path: publish/Damselfly.Web/wwwroot/desktop
 
       - name: Build Docker
         uses: docker/build-push-action@v2
