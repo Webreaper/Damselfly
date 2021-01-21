@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS final
 ARG DAMSELFLY_VERSION
 
 WORKDIR /app
-COPY /app/publish .
+COPY /publish .
 
 # Copy the entrypoint script
 COPY ./damselfly-entrypoint.sh /
