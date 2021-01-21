@@ -99,13 +99,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: Server-Dist
-          path: servers/${{ serverzip }}
+          path: servers
 
       - name: Unzip server into publish folder
         run: |
              mkdir publish
              cd publish
-             unzip $GITHUB_WORKSPACE/servers/${{ serverzip }}-*.zip
+             unzip $GITHUB_WORKSPACE/servers/${{ matrix.serverzip }}-*.zip
              ls
              cd ..
 
