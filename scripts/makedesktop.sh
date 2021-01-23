@@ -12,12 +12,15 @@ fi
 case $PLATFORM in
   mac)
     yarncommand='distmac'
+    copyfiles="dist/*.zip"
     ;;
   windows)
     yarncommand='distwin'
+    copyfiles="dist/*.zip"
     ;;
   linux)
     yarncommand='distlinux'
+    copyfiles="dist/*.AppImage"
     ;;
 esac
 
@@ -32,9 +35,9 @@ yarn install
 yarn version --new-version $version 
 yarn $yarncommand
 
-echo "Desktop build complete. Copying to ${destfolder}..."
+echo "Desktop build complete. Copying ${copyfiles} to ${destfolder}..."
 
 mkdir -p $destfolder
-cp dist/*.zip $destfolder
-cp dist/*.AppImage $destfolder
+cp $copyfiles $destfolder
 
+echo "Desktop build complete"
