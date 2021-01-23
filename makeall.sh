@@ -1,24 +1,29 @@
 
-RELEASE='patch'
-if [ "$1" == "release" ]; then
-    RELEASE='minor'
+
+if [ -n "$1" ]; then
+    PLATFORM=$1
+else
+    echo 'No platform specified. Defaulting to mac.'
+    PLATFORM='mac'
 fi
 
-echo Creating $RELEASE release.
-echo "Don't forget to run EF migrations..."
+echo "Building Damselfly for ${PLATFORM}..."
 
 # bump version
 docker run --rm -v "$PWD":/app treeder/bump $RELEASE
 version=`cat VERSION`
 echo "\nGenerating new version: $version"
 
+rm Damselfly.Web/wwwroot/desktop/*.*
+rm server/*.*
+
 # Make the desktop Electron app (now done in the dockerfile)
-sh makedesktop.sh $version
+sh scripts/makedesktop.sh $PLATFORM
 
 # Create the non-docker versions
-sh makeserver.sh $version
+sh scripts/makeserver.sh $PLATFORM
 
 # Create the docker versions
-sh makedocker.sh $version
+sh scripts/makedocker.sh $PLATFORM
 
 echo "Damselfly build complete."
