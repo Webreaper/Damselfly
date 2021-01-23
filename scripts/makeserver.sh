@@ -27,9 +27,16 @@ echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname
 
 dotnet publish Damselfly.Web -r $runtime -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
 
-echo Zipping build to [server/$zipname]...
-cd Damselfly.Web/bin/Release/net5.0/$1/publish
-mkdir $serverdist
-zip $zipname . -rx "*.pdb" 
+outputdir="Damselfly.Web/bin/Release/net5.0/${runtime}/publish"
 
-echo Build complete.
+if [ -d "$outputdir" ]; then
+  echo "Zipping build to ${zipname}..."
+  mkdir $serverdist
+
+  cd $outputdir
+  zip $zipname . -rx "*.pdb" 
+  echo "Build complete."
+else
+  echo "ERROR: Output folder ${outputdir} did not exist."
+fi
+
