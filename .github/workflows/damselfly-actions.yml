@@ -74,11 +74,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [alpine]
+        target: [alpine, windows, mac]
         include: 
           - target: alpine
             os: ubuntu-latest
-            serverzip: damselfly-server-alpine
+          - target: windows
+            os: windows-latest
+          - target: mac
+            os: macos-latest
 
     steps:
       - name: Checkout Source
@@ -94,7 +97,7 @@ jobs:
         run: |
              mkdir publish
              cd publish
-             unzip $GITHUB_WORKSPACE/server/${{ matrix.serverzip }}-*.zip
+             unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
              cd ..
 
       - name: Download Desktop Builds into wwwroot folder

@@ -15,6 +15,9 @@ case $PLATFORM in
   windows)
     runtime='win-x64'
     ;;
+  alpine)
+    runtime='alpine-x64'
+    ;;
   linux)
     runtime='linux-x64'
     ;;
