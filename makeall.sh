@@ -1,5 +1,5 @@
 
-
+# Valid platforms are 'mac', 'windows' and 'linux'
 if [ -n "$1" ]; then
     PLATFORM=$1
 else

@@ -12,7 +12,7 @@ case $PLATFORM in
   mac)
     runtime='osx-x64'
     ;;
-  win)
+  windows)
     runtime='win-x64'
     ;;
   linux)

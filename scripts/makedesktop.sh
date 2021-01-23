@@ -9,7 +9,18 @@ else
     PLATFORM='mac'
 fi
 
-yarncommand="dist${PLATFORM}"
+case $PLATFORM in
+  mac)
+    yarncommand='distmac'
+    ;;
+  windows)
+    yarncommand='distwin'
+    ;;
+  linux)
+    yarncommand='distlinux'
+    ;;
+esac
+
 destfolder="${PWD}/Damselfly.Web/wwwroot/desktop"
 
 cd Damselfly.Desktop
