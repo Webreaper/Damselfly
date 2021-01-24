@@ -1,7 +1,5 @@
-ARG RUNTIMEVERSION=5.0-alpine
 
-FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS final
-ARG DAMSELFLY_VERSION
+FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine AS final
 
 WORKDIR /app
 COPY /publish .
