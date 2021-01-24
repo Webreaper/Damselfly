@@ -78,10 +78,6 @@ jobs:
         include: 
           - target: alpine
             os: ubuntu-latest
-          - target: windows
-            os: windows-latest
-          - target: mac
-            os: macos-latest
 
     steps:
       - name: Checkout Source
