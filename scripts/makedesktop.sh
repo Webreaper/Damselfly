@@ -42,10 +42,10 @@ case $PLATFORM in
     zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}.dmg"
     ;;
   windows)
-    cp "dist/Damselfly-*-win.zip" $destfolder
+    cp "dist/Damselfly-${version}-win.zip" $destfolder
     ;;
   linux)
-    cp "dist/Damselfly-*.AppImage" $destfolder
+    cp "dist/Damselfly-${version}.AppImage" $destfolder
     ;;
 esac
 
