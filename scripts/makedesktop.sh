@@ -12,15 +12,12 @@ fi
 case $PLATFORM in
   mac)
     yarncommand='distmac'
-    copyfiles="dist/*.zip"
     ;;
   windows)
     yarncommand='distwin'
-    copyfiles="dist/*.zip"
     ;;
   linux)
     yarncommand='distlinux'
-    copyfiles="dist/*.AppImage"
     ;;
 esac
 
@@ -35,9 +32,21 @@ yarn install
 yarn version --new-version $version 
 yarn $yarncommand
 
-echo "Desktop build complete. Copying ${copyfiles} to ${destfolder}..."
+echo "Desktop build complete. Copying output to ${destfolder}..."
 
 mkdir -p $destfolder
-cp $copyfiles $destfolder
+
+case $PLATFORM in
+  mac)
+    cd dist
+    zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}.dmg"
+    ;;
+  windows)
+    cp "dist/Damselfly-*-win.zip" $destfolder
+    ;;
+  linux)
+    cp "dist/Damselfly-*.AppImage" $destfolder
+    ;;
+esac
 
 echo "Desktop build complete"

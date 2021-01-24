@@ -30,9 +30,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Desktop-Dist
-          path: |
-                Damselfly.Desktop/dist/*.zip
-                Damselfly.Desktop/dist/*.AppImage
+          path: Damselfly.Web/wwwroot/desktop/*.*
           retention-days: 5
 
   build-server:
