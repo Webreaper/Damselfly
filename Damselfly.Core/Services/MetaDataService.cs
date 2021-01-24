@@ -192,7 +192,9 @@ namespace Damselfly.Core.Services
             if (!success)
             {
                 processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
-                Logging.LogWarning("ExifTool Tag update failed for image: {0}", imagePath);
+                Logging.LogError("ExifTool Tag update failed for image: {0}", imagePath);
+
+                RestoreTempExifImage(imagePath);
             }
             else
             {
@@ -200,6 +202,32 @@ namespace Damselfly.Core.Services
             }
 
             return success;
+        }
+
+        /// <summary>
+        /// If ExifTool fails, sometimes it can leave the temp file in place, meaning our image
+        /// will go missing. So try and put it back.
+        /// See: https://stackoverflow.com/questions/65870251/make-exiftool-overwrite-original-is-transactional-and-atomic
+        /// </summary>
+        /// <param name="imagePath"></param>
+        private void RestoreTempExifImage(string imagePath)
+        {
+            FileInfo path = new FileInfo(imagePath);
+            var newExtension = path.Extension + "_exiftool_tmp";
+            var tempPath = new FileInfo( Path.ChangeExtension(imagePath, newExtension) );
+
+            if (!path.Exists && tempPath.Exists)
+            {
+                Logging.Log($"Moving {tempPath.FullName} to {path.Name}...");
+                try
+                {
+                    File.Move(tempPath.FullName, path.FullName);
+                }
+                catch( Exception ex )
+                {
+                    Logging.LogWarning($"Unable to move file: {ex.Message}");
+                }
+            }
         }
 
         /// <summary>
