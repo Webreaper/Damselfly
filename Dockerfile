@@ -1,5 +1,6 @@
+ARG RUNTIMEVERSION=5.0-alpine
 
-FROM alpine:latest AS final
+FROM mcr.microsoft.com/dotnet/aspnet:$RUNTIMEVERSION AS final
 ARG DAMSELFLY_VERSION
 
 WORKDIR /app
@@ -19,7 +20,6 @@ RUN apk add --no-cache msttcorefonts-installer fontconfig && update-ms-fonts
 
 # Add ExifTool
 RUN apk --update add exiftool && rm -rf /var/cache/apk/*
-
 
 EXPOSE 6363
 ENTRYPOINT ["sh","/damselfly-entrypoint.sh"]
