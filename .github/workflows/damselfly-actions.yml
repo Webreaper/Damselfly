@@ -74,7 +74,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [alpine, windows, mac]
+        target: [alpine]
         include: 
           - target: alpine
             os: ubuntu-latest
