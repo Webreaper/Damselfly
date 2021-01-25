@@ -15,9 +15,6 @@ jobs:
             os: macos-latest
 
     steps:
-      - name: Show current tag
-        run: echo "Tag ${{ github.ref }}"
-
       - name: Checkout Source
         uses: actions/checkout@v2
 
@@ -115,6 +112,33 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      - name: Build Docker
+      - name: Build Docker for Dev
+        if: ! startsWith(github.ref, 'ref/heads/develop')
+        run: sh scripts/makedocker.sh dev
+      
+      - name: Build Docker for Release
+        if: ! startsWith(github.ref, 'ref/heads/master')
         run: sh scripts/makedocker.sh
 
+      - name: Create Release
+        id: create_release
+        if: ! startsWith(github.ref, 'ref/heads/master')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: true
+          prerelease: true
+
+      - uses: alexellis/upload-assets@0.2.3   
+        if: ! startsWith(github.ref, 'ref/heads/master')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_paths: '["./server/*", "./publish/wwwroot/desktop"]'  
