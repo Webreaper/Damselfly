@@ -113,16 +113,16 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
       - name: Build Docker for Dev
-        if: ! startsWith(github.ref, 'ref/heads/develop')
+        if: github.ref == 'refs/heads/develop'
         run: sh scripts/makedocker.sh dev
       
       - name: Build Docker for Release
-        if: ! startsWith(github.ref, 'ref/heads/master')
+        if: github.ref == 'refs/heads/master'
         run: sh scripts/makedocker.sh
 
       - name: Create Release
         id: create_release
-        if: ! startsWith(github.ref, 'ref/heads/master')
+        if: github.ref == 'refs/heads/master'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
@@ -137,7 +137,7 @@ jobs:
           prerelease: true
 
       - uses: alexellis/upload-assets@0.2.3   
-        if: ! startsWith(github.ref, 'ref/heads/master')
+        if: github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
