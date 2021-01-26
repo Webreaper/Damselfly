@@ -81,6 +81,10 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v2
 
+      - name: Read VERSION file
+        id: getversion
+        run: echo "::set-output name=version::$(cat VERSION)"
+
       - name: Download Server Build
         uses: actions/download-artifact@v2
         with:
@@ -128,12 +132,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          release_name: Release v${{ steps.getversion.outputs.version }}
           body: |
             Changes in this Release
             - First Change
             - Second Change
-          draft: true
+          draft: false
           prerelease: true
 
       - name: Upload assets to Release (master only)
