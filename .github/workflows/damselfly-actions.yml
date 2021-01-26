@@ -112,15 +112,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      - name: Build Docker for Dev
+      - name: Build Docker for Dev (develop only)
         if: github.ref == 'refs/heads/develop'
         run: sh scripts/makedocker.sh dev
       
-      - name: Build Docker for Release
+      - name: Build Docker for Release (master only)
         if: github.ref == 'refs/heads/master'
         run: sh scripts/makedocker.sh
 
-      - name: Create Release
+      - name: Create Release (master only)
         id: create_release
         if: github.ref == 'refs/heads/master'
         uses: actions/create-release@v1
@@ -136,9 +136,10 @@ jobs:
           draft: true
           prerelease: true
 
-      - uses: alexellis/upload-assets@0.2.3   
+      - name: Upload assets to Release (master only)
+        uses: alexellis/upload-assets@0.2.3   
         if: github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["./server/*", "./publish/wwwroot/desktop"]'  
+          asset_paths: '["./server/*", "./publish/wwwroot/desktop/*"]'  
