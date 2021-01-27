@@ -10,6 +10,9 @@ else
 fi
 
 case $PLATFORM in
+  m1)
+    yarncommand='distm1'
+    ;;
   mac)
     yarncommand='distmac'
     ;;
@@ -37,6 +40,10 @@ echo "Desktop build complete. Copying output to ${destfolder}..."
 mkdir -p $destfolder
 
 case $PLATFORM in
+  m1)
+    cd dist
+    zip "${destfolder}/Damselfly-${version}-arm64.zip" "Damselfly-${version}-arm64.dmg"
+    ;;
   mac)
     cd dist
     zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}.dmg"

@@ -18,16 +18,25 @@
     <div class="desktop-download-icons">
         @if (DownloadService.DesktopAppInfo.MacOSApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.MacOSApp" >
+            <a href="@DownloadService.DesktopAppInfo.MacOSApp">
                 <div class="InputAddOn">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
                     <div class="InputAddOn-field">MacOS</div>
                 </div>
             </a>
         }
+        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
+        {
+            <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS (M1)"><i class="fab fa-apple" /></div>
+                    <div class="InputAddOn-field">MacOS (M1)</div>
+                </div>
+            </a>
+        }
         @if (DownloadService.DesktopAppInfo.WindowsApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.WindowsApp" >
+            <a href="@DownloadService.DesktopAppInfo.WindowsApp">
                 <div class="InputAddOn">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
                     <div class="InputAddOn-field">Windows</div>

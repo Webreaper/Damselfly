@@ -118,11 +118,11 @@ jobs:
           
       - name: Build Docker for Dev (develop only)
         if: github.ref == 'refs/heads/develop'
-        run: sh scripts/makedocker.sh dev
+        run: sh scripts/makedocker.sh
       
       - name: Build Docker for Release (master only)
         if: github.ref == 'refs/heads/master'
-        run: sh scripts/makedocker.sh
+        run: sh scripts/makedocker.sh master
 
       - name: Create Release (master only)
         id: create_release
@@ -131,12 +131,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
-          tag_name: ${{ github.ref }}
+          tag_name: ${{ steps.getversion.outputs.version }}-beta
           release_name: Release v${{ steps.getversion.outputs.version }}
           body: |
-            Changes in this Release
-            - First Change
-            - Second Change
+            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}-beta
           draft: false
           prerelease: true
 

@@ -1,11 +1,11 @@
 
-if [ -n "$1" ]; then
+if [ -z "$1" ]; then
     echo 'No docker tag specified. Pushing to dev'
     DOCKERTAG='dev'
 else
     version=`cat VERSION`
     DOCKERTAG="${version}-beta"
-    echo "Pushing to docker tag: ${DOCKERTAG}"
+    echo "Master specified - creating tag: ${DOCKERTAG}"
 fi
 
 echo "**** Building Docker Damselfly"
