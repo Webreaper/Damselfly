@@ -18,39 +18,36 @@
     <div class="desktop-download-icons">
         @if (DownloadService.DesktopAppInfo.MacOSApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.MacOSApp">
-                <div class="InputAddOn">
+            <div class="InputAddOn">
+                <a href="@DownloadService.DesktopAppInfo.MacOSApp">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
                     <div class="InputAddOn-field">MacOS</div>
-                </div>
-            </a>
-        }
-        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
-        {
-            <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS (M1)"><i class="fab fa-apple" /></div>
-                    <div class="InputAddOn-field">MacOS (M1)</div>
-                </div>
-            </a>
+                </a>
+                @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+                {
+                    <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                        <div class="InputAddOn-field">(M1)</div>
+                    </a>
+                }
+            </div>
         }
         @if (DownloadService.DesktopAppInfo.WindowsApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.WindowsApp">
-                <div class="InputAddOn">
+            <div class="InputAddOn">
+                <a href="@DownloadService.DesktopAppInfo.WindowsApp">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
                     <div class="InputAddOn-field">Windows</div>
-                </div>
-            </a>
+                </a>
+            </div>
         }
         @if (DownloadService.DesktopAppInfo.LinuxApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.LinuxApp">
-                <div class="InputAddOn">
+            <div class="InputAddOn">
+                <a href="@DownloadService.DesktopAppInfo.LinuxApp">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
                     <div class="InputAddOn-field">Linux</div>
-                </div>
-            </a>
+                </a>
+            </div>
         }
     </div>
     <h4>Credits/Thanks</h4>

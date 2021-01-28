@@ -42,7 +42,7 @@ mkdir -p $destfolder
 case $PLATFORM in
   m1)
     cd dist
-    zip "${destfolder}/Damselfly-${version}-arm64.zip" "Damselfly-${version}-arm64.dmg"
+    zip "${destfolder}/Damselfly-${version}-mac-arm64.zip" "Damselfly-${version}-arm64.dmg"
     ;;
   mac)
     cd dist
