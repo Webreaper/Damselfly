@@ -105,6 +105,13 @@ jobs:
         with:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
+      
+      - name: Validate Desktop and server artifacts
+        run: |
+             echo "Desktop artifacts:"
+             ls publish/wwwroot/desktop
+             echo "Server artifacts:"
+             ls server
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
