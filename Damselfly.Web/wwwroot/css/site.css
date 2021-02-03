@@ -908,6 +908,7 @@ padding: 0.4em 0.65em;
     padding: 2px 1px 1px 0px;
     flex-wrap: nowrap;
     font-size: 9pt;
+    cursor: default;
     border: 0.5px solid rgba(55, 125, 55, 0.6);
     border-radius: 3px;
     background-color: rgba(25, 95, 25, 0.9);
@@ -1081,4 +1082,10 @@ padding: 0.4em 0.65em;
 
 .rz-menu:not(.rz-profile-menu) .rz-navigation-item-wrapper {
     padding: 2px 5px;
+}
+
+hr.separator {
+    width: 99%;
+    margin: 1px;
+    border-top: 1px solid #999999;
 }

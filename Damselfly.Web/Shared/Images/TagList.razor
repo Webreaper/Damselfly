@@ -8,6 +8,8 @@
 @inject MetaDataService iptcService
 @inject IndexingService indexService
 @inject NavigationService navContext
+@inject NavigationManager NavigationManager
+@inject ContextMenuService contextMenuService;
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -22,7 +24,7 @@
     }
     <div class="InputAddOn">
         <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-        <BlazoredTypeahead disabled="@IsDisabled"   class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
+        <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
                            placeholder="Add a keyword" Debounce="300"
                            @bind-Value="@TypeAheadTag">
             <SelectedTemplate>
@@ -44,7 +46,7 @@
         {
             @foreach (var tag in theImageTags)
             {
-                <div class="damselfly-keyword">
+                <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag)) @oncontextmenu:preventDefault="true">
                     <div class="damselfly-keywordtext">@tag</div>
                     <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
                 </div>
@@ -215,6 +217,22 @@
         StateHasChanged();
     }
 
+
+    void ShowContextMenu(MouseEventArgs args, string tag)
+    {
+        contextMenuService.Open(args,
+        new List<ContextMenuItem>() {
+                new ContextMenuItem(){ Text = "View Tag", Value = 0 }
+        }, (args) =>
+    {
+        switch (args.Value)
+        {
+            case 0: NavigationManager.NavigateTo("/tag/" + tag); break;
+        }
+        contextMenuService.Close();
+    });
+    }
+
     private async Task<IEnumerable<string>> SearchTags(string searchText)
     {
         tagSearchText = searchText;
@@ -225,11 +243,10 @@
             searchList.Add(searchText);
 
         var results = await Task.FromResult(indexService.CachedTags
-                                                .Where(x => x.Keyword.StartsWith(searchText, StringComparison.OrdinalIgnoreCase))
-                                                .OrderBy(t => t.Keyword)
-                                                .Select(t => t.Keyword )
-                                                .ToList());
+                                .Where(x => x.Keyword.StartsWith(searchText, StringComparison.OrdinalIgnoreCase))
+                                .OrderBy(t => t.Keyword)
+                                .Select(t => t.Keyword)
+                                .ToList());
         return searchList.Union(results, StringComparer.OrdinalIgnoreCase);
-
     }
 }
