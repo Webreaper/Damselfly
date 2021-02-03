@@ -38,11 +38,13 @@ namespace Damselfly.Core.Services
             var process = new ProcessStarter();
             if (process.StartProcess("exiftool", "-ver") )
             {
-                ExifToolVer = process.OutputText;
+                ExifToolVer = $"v{process.OutputText}";
             }
 
             if (string.IsNullOrEmpty(ExifToolVer))
-                ExifToolVer = "Unavailable";
+            {
+                ExifToolVer = "Unavailable - ExifTool Not found";
+            }
 
             Logging.Log($"ExifVersion: {ExifToolVer}");
         }

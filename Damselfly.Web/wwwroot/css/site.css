@@ -1074,3 +1074,11 @@ padding: 0.4em 0.65em;
 .damselfly-dupe-entry {
     flex: 1 0 auto;
 }
+
+.rz-navigation-item-wrapper {
+    padding: 2px;
+}
+
+.rz-menu:not(.rz-profile-menu) .rz-navigation-item-wrapper {
+    padding: 2px 5px;
+}

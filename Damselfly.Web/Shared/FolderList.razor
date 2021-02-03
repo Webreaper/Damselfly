@@ -2,6 +2,7 @@
 @inject ImageService ImgService
 @inject SearchService searchService
 @inject FolderService folderService
+@inject ContextMenuService ContextMenuService
 @implements IDisposable
 
 @using Microsoft.AspNetCore.Components.Web.Virtualization
@@ -24,7 +25,9 @@
         </div>
         <div class="folder-scroll-area">
             <Virtualize Items="@folderItems" ItemSize="15">
-                <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Name" @onclick="@(() => SetFilterFolder(context.Folder))">
+                <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Name"
+                     @onclick="@(() => SetFilterFolder(context.Folder))"
+                     @oncontextmenu=@(args => ShowContextMenu(args, context.Folder)) @oncontextmenu:preventDefault="true">
                     <i class="fa fa-folder-open folder-icon" /> @context.Folder.Name (@context.ImageCount)
                 </div>
             </Virtualize>
@@ -35,6 +38,21 @@
 @code {
     private string filterTerm;
     public string FilterTerm { get { return filterTerm; } }
+
+    void ShowContextMenu(MouseEventArgs args, Folder folder)
+    {
+        ContextMenuService.Open(args,
+        new List<ContextMenuItem>() {
+                new ContextMenuItem(){ Text = "Select Folder", Value = 0 }
+     }, (args) =>
+     {
+         switch( args.Value )
+         {
+             case 0: SetFilterFolder(folder); break;
+         }
+         ContextMenuService.Close();
+     });
+    }
 
     private List<FolderListItem> folderItems;
 
@@ -100,4 +118,4 @@
         // Be careful of threading - we may get called from anywhere
         _ = ProcessUpdatedFilter();
     }
-}
+    }

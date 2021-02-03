@@ -13,6 +13,7 @@ using Damselfly.Core.Services;
 using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Tewr.Blazor.FileReader;
+using Radzen;
 
 namespace Damselfly.Web
 {
@@ -41,7 +42,6 @@ namespace Damselfly.Web
             services.AddLogging();
             services.AddRazorPages();
             services.AddBlazoredModal();
-            //services.AddBlazorContextMenu();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
             services.AddSingleton<ImageService>();
@@ -60,6 +60,7 @@ namespace Damselfly.Web
             services.AddSingleton<NavigationService>();
             services.AddSingleton<ViewDataService>();
             services.AddSingleton<ConfigService>();
+            services.AddScoped<ContextMenuService>();
         }
 
         /// <summary>
