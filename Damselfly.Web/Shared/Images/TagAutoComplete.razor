@@ -37,10 +37,19 @@
     private string tagSearchText { get; set; }
 
     [Parameter]
-    public bool IsDisabled { get; set; }
+    public bool IsDisabled { get; set; } = false;
 
     [Parameter]
     public Action<string> OnAddNewtag { private get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (OnAddNewtag == null)
+            throw new ArgumentException("No callback specified for OnAddNewTag!");
+
+        base.OnParametersSet();
+    }
+
 
     private void CreateNewTags( string tag )
     {
