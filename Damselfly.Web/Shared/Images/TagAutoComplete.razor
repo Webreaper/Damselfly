@@ -1,0 +1,79 @@
+﻿@using System.Linq
+@using Damselfly.Web.Data
+@using Damselfly.Core.Services
+@using Blazored.Typeahead
+
+@inject ImageService imageService
+@inject ThumbnailService thumbService
+@inject MetaDataService iptcService
+@inject IndexingService indexService
+@inject NavigationService navContext
+@inject NavigationManager NavigationManager
+@inject ContextMenuService contextMenuService
+
+<div class="damselfly-taglist">
+    <div class="InputAddOn">
+        <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+        <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
+                           placeholder="Add a keyword" Debounce="300"
+                           @bind-Value="@TypeAheadTag">
+            <SelectedTemplate>
+                @{
+                    CreateNewTags(context);
+                }
+            </SelectedTemplate>
+            <ResultTemplate>
+                @context
+            </ResultTemplate>
+            <NotFoundTemplate>
+                @tagSearchText
+            </NotFoundTemplate>
+        </BlazoredTypeahead>
+    </div>
+</div>
+
+@code {
+    private string TypeAheadTag { get; set; }
+    private string tagSearchText { get; set; }
+
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    [Parameter]
+    public Action<string> OnAddNewtag { private get; set; }
+
+    private void CreateNewTags( string tag )
+    {
+        Logging.Log("Saving new tag: " + tag);
+
+        // Reset the tag
+        TypeAheadTag = null;
+        StateHasChanged();
+
+        // Call the callback
+        OnAddNewtag(tag);
+    }
+
+    private async Task<IEnumerable<string>> SearchTags(string text)
+    {
+        var searchText = text.Trim();
+
+        // Store the search text which is used in the NotFound template
+        tagSearchText = searchText;
+
+        // Only query the DB if we have more than 2 chars.
+        if (searchText.Length > 1)
+        {
+            var results = await Task.FromResult(indexService.CachedTags
+                                    .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                                    .OrderBy(t => t.Keyword)
+                                    .Select(t => t.Keyword)
+                                    .ToList());
+
+            // Union the search term with the results from the DB.
+            return results.Union(new List<string> { searchText }, StringComparer.OrdinalIgnoreCase);
+        }
+
+        return new List<string>();
+    }
+}

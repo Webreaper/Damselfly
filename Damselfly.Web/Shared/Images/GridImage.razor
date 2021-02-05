@@ -66,52 +66,52 @@ else
             </RadzenMenu>);
     }
 
-void OnMenuItemClick(MenuItemEventArgs args)
-{
-    switch (args.Value)
+    void OnMenuItemClick(MenuItemEventArgs args)
     {
-        case 0: NavigateToImage(); break;
-        case 1: InBasket = !InBasket; break;
-        case 2: _ = DownloadImage(); break;
+        contextMenuService.Close();
+        switch (args.Value)
+        {
+            case 0: NavigateToImage(); break;
+                // TODO: Async?
+            case 1: InBasket = !InBasket; break;
+            case 2: _ = DownloadImage(); break;
+        }
     }
 
-    contextMenuService.Close();
-}
+    public async Task DownloadImage()
+    {
+        try
+        {
+            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.RawImageUrl);
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
+    }
 
-public async Task DownloadImage()
-{
-try
-{
-    await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.RawImageUrl);
-}
-catch (Exception ex)
-{
-    Logging.LogError("Exception: " + ex.Message);
-}
-}
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Could use the following:
+            //   ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
+            // but it's an order of magnitude slower (probably because the controller
+            // has to hit the DB etc)
+            ImageUrl = await Task.FromResult<string>
+                (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
 
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-if (firstRender)
-{
-    // Could use the following:
-    //   ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
-    // but it's an order of magnitude slower (probably because the controller
-    // has to hit the DB etc)
-    ImageUrl = await Task.FromResult<string>
-        (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
+        }
+    }
 
-}
-}
+    protected override async Task OnParametersSetAsync()
+    {
+        ImageUrl = await Task.FromResult<string>
+            (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
+    }
 
-protected override async Task OnParametersSetAsync()
-{
-ImageUrl = await Task.FromResult<string>
-    (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
-}
-
-void NavigateToImage()
-{
-navContext.Context = NavContext;
-NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
-}}
+    void NavigateToImage()
+    {
+        navContext.Context = NavContext;
+        NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
+    }}

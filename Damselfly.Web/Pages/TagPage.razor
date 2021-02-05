@@ -15,10 +15,14 @@
     }
     else
     {
-        @foreach (var tag in tags)
-        {
-            <p><a href="/tag/@tag">@tag</a></p>
-        }
+        <div class="damselfly-alltags">
+            @foreach (var tag in tags)
+            {
+                <div class="damselfly-singletag">
+                    <a href="/tag/@tag">@tag</a>
+                </div>
+            }
+        </div>
     }
 }
 else
@@ -46,7 +50,7 @@ else
     {
         if( ! string.IsNullOrEmpty( TagName ) )
         {
-            var images = await ImageService.GetTagImagesAsync( TagName );
+            images = await ImageService.GetTagImagesAsync( TagName );
             tags = null;
         }
 

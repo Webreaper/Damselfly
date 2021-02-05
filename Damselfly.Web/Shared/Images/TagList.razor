@@ -9,37 +9,11 @@
 @inject IndexingService indexService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
-@inject ContextMenuService contextMenuService;
+@inject ContextMenuService contextMenuService
 @implements IDisposable
 
 <div class="damselfly-taglist">
-    @if (false)
-    {
-        <div class="InputAddOn">
-            <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-            <input placeholder="Add a keyword" disabled="@IsDisabled" class="InputAddOn-field tagEditor"
-                   @bind-value="NewTag" @bind-value:event="oninput" @onkeyup="ProcessTagEnter" />
-            <button class="InputAddOn-item" title="Save Tags" @onclick="@(() => AddTags())"><i class="fa fa-plus-circle" /></button>
-        </div>
-    }
-    <div class="InputAddOn">
-        <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-        <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
-                           placeholder="Add a keyword" Debounce="300"
-                           @bind-Value="@TypeAheadTag">
-            <SelectedTemplate>
-                @{
-                    CreateNewTag(context);
-                }
-            </SelectedTemplate>
-            <ResultTemplate>
-                @context
-            </ResultTemplate>
-            <NotFoundTemplate>
-                @tagSearchText
-            </NotFoundTemplate>
-        </BlazoredTypeahead>
-    </div>
+    <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled" />
 
     <div class="damselfly-keywordlist">
         @if (CurrentImages != null && CurrentImages.Any())
@@ -60,18 +34,13 @@
 </div>
 
 @code {
-    public string TypeAheadTag { get; set; }
-    private string tagSearchText { get; set; }
-
     [Parameter]
     public Image[] CurrentImages { get; set; }
 
     [Parameter]
     public bool TrackSelection { get; set; }
 
-    public string NewTag { get; set; }
     private IList<string> theImageTags { get; set; }
-
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
     private async Task<IList<string>> LoadImageTagsAsync()
@@ -85,9 +54,10 @@
     private void CreateNewTag(string tagToAdd)
     {
         Logging.Log($"Creating tag for {tagToAdd}...");
-        var addedTags = new List<string> { tagToAdd };
+
+        // If multiple tags have been added, split them and add individually.
+        var addedTags = tagToAdd.Split(',').Select(x => x.Trim()).ToList();
         InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
-        TypeAheadTag = null;
         StateHasChanged();
     }
 
@@ -189,64 +159,18 @@
         StateHasChanged();
     }
 
-    // BlazorContextMenu
-    //void OnClick(ItemClickEventArgs e)
-    //{
-    //    Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
-    //}
-
-    private void ProcessTagEnter(KeyboardEventArgs eventArgs)
-    {
-        if (eventArgs.Key == "Enter")        // fire on enter
-        {
-            Logging.Log("Saving new tag: " + NewTag);
-
-            AddTags();
-        }
-    }
-
-    private void AddTags()
-    {
-        // If multiple tags have been added, split them and add individually.
-        var addedTags = NewTag.Split(',').Select(x => x.Trim()).ToList();
-
-        // TODO: Fix this async mess
-        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
-
-        NewTag = string.Empty;
-        StateHasChanged();
-    }
-
-
     void ShowContextMenu(MouseEventArgs args, string tag)
     {
         contextMenuService.Open(args,
         new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = "View Tag", Value = 0 }
         }, (args) =>
-    {
-        switch (args.Value)
         {
-            case 0: NavigationManager.NavigateTo("/tag/" + tag); break;
-        }
-        contextMenuService.Close();
-    });
-    }
-
-    private async Task<IEnumerable<string>> SearchTags(string searchText)
-    {
-        tagSearchText = searchText;
-
-        var searchList = new List<string>();
-
-        if (searchText.Length > 1)
-            searchList.Add(searchText);
-
-        var results = await Task.FromResult(indexService.CachedTags
-                                .Where(x => x.Keyword.StartsWith(searchText, StringComparison.OrdinalIgnoreCase))
-                                .OrderBy(t => t.Keyword)
-                                .Select(t => t.Keyword)
-                                .ToList());
-        return searchList.Union(results, StringComparer.OrdinalIgnoreCase);
+            contextMenuService.Close();
+            switch (args.Value)
+            {
+                case 0: NavigationManager.NavigateTo("/tag/" + tag); break;
+            }
+        });
     }
 }

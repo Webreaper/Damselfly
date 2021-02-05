@@ -13,7 +13,7 @@ a, .btn-link {
 }
 
 a:hover {
-    color: #23ff86;
+    color: #23ff23;
 }
 
 .blazored-modal {
@@ -1078,6 +1078,19 @@ padding: 0.4em 0.65em;
 
 .rz-navigation-item-wrapper {
     padding: 2px;
+    font-size: 10pt;
+    color: #006600;
+    background-color: #ffffff;
+}
+
+.rz-navigation-item-text:hover {
+    background-color: #006600;
+    color: #88DD88;
+}
+
+.rz-navigation-item-wrapper:hover {
+    background-color: #006600;
+    color: #88DD88;
 }
 
 .rz-menu:not(.rz-profile-menu) .rz-navigation-item-wrapper {
@@ -1088,4 +1101,25 @@ hr.separator {
     width: 99%;
     margin: 1px;
     border-top: 1px solid #999999;
+}
+
+.damselfly-alltags {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    align-items: flex-start;
+}
+
+.damselfly-singletag {
+    flex: 0 1 auto;
+    display: flex;
+    align-items: center;
+    margin: 2px;
+    padding: 2px 1px 1px 0px;
+    flex-wrap: nowrap;
+    font-size: 9pt;
+    cursor: default;
+    border: 0.5px solid rgba(55, 125, 55, 0.6);
+    border-radius: 3px;
+    background-color: rgba(25, 95, 25, 0.9);
 }

@@ -2,7 +2,7 @@
 @inject ImageService ImgService
 @inject SearchService searchService
 @inject FolderService folderService
-@inject ContextMenuService ContextMenuService
+@inject ContextMenuService contextMenuService
 @implements IDisposable
 
 @using Microsoft.AspNetCore.Components.Web.Virtualization
@@ -41,16 +41,16 @@
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
     {
-        ContextMenuService.Open(args,
+        contextMenuService.Open(args,
         new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = "Select Folder", Value = 0 }
      }, (args) =>
      {
-         switch( args.Value )
+         contextMenuService.Close();
+         switch ( args.Value )
          {
              case 0: SetFilterFolder(folder); break;
          }
-         ContextMenuService.Close();
      });
     }
 
