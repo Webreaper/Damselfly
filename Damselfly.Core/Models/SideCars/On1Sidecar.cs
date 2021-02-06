@@ -28,37 +28,33 @@ namespace Damselfly.Core.Models.SideCars
         /// </summary>
         /// <param name="image"></param>
         /// <returns>Metadata, with keywords etc</returns>
-        public static MetaData LoadMetadata(Image image)
+        public static MetaData LoadMetadata(FileInfo sidecarPath)
         {
             MetaData result = null;
-            var sideCarPath = Path.ChangeExtension(image.FullPath, "on1");
 
             try
             {
-                if (File.Exists(sideCarPath))
+                string json = File.ReadAllText( sidecarPath.FullName );
+
+                // Deserialize.
+                var list = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+
+                if (list.TryGetValue("photos", out var photos))
                 {
-                    string json = File.ReadAllText( sideCarPath );
+                    // Unfortunately, On1 uses the slightly crazy method of a GUID as the field identifier,
+                    // which means we have to deserialise as a dictionary, and then just pick the first kvp. <sigh>
+                    var guid = JsonSerializer.Deserialize<Dictionary<string, object>>(photos.ToString()).First();
 
-                    // Deserialize.
-                    var list = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                    // Now we can deserialise the actual object, and get the metadata.
+                    var data = JsonSerializer.Deserialize<Guid>(guid.Value.ToString());
 
-                    if (list.TryGetValue("photos", out var photos))
-                    {
-                        // Unfortunately, On1 uses the slightly crazy method of a GUID as the field identifier,
-                        // which means we have to deserialise as a dictionary, and then just pick the first kvp. <sigh>
-                        var guid = JsonSerializer.Deserialize<Dictionary<string, object>>(photos.ToString()).First();
-
-                        // Now we can deserialise the actual object, and get the metadata.
-                        var data = JsonSerializer.Deserialize<Guid>(guid.Value.ToString());
-
-                        Logging.LogVerbose($"Successfully loaded on1 sidecar for {sideCarPath}");
-                        result = data.metadata;
-                    }
+                    Logging.LogVerbose($"Successfully loaded on1 sidecar for {sidecarPath.FullName}");
+                    result = data.metadata;
                 }
             }
             catch( Exception ex )
             {
-                Logging.LogWarning($"Unable to load On1 Sidecar data from {sideCarPath}: {ex.Message}");
+                Logging.LogWarning($"Unable to load On1 Sidecar data from {sidecarPath.FullName}: {ex.Message}");
             }
             return result;
         }

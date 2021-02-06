@@ -776,30 +776,44 @@ namespace Damselfly.Core.Services
         /// <param name="keywords"></param>
         private void ProcessSideCarKeywords( Image img, string[] keywords )
         {
-            // TODO: Case-insensitive file extensions
+            var sidecarSearch = Path.ChangeExtension(img.FileName, "*");
+            DirectoryInfo dir = new DirectoryInfo(img.Folder.Path);
+            var files = dir.GetFiles(sidecarSearch);
 
-            var on1MetaData = On1Sidecar.LoadMetadata( img );
+            var on1Sidecar = files.FirstOrDefault(x => x.Extension.Equals(".on1", StringComparison.OrdinalIgnoreCase));
 
-            if( on1MetaData != null )
+            if (on1Sidecar != null)
             {
-                var missingKeywords = on1MetaData.Keywords.Except(keywords, StringComparer.OrdinalIgnoreCase).ToList();
-                if ( missingKeywords.Any() )
+                var on1MetaData = On1Sidecar.LoadMetadata(on1Sidecar);
+
+                if (on1MetaData != null)
                 {
-                    Logging.LogWarning($"Image {img.FileName} is missing keywords present in the On1 Sidecar.");
+                    var missingKeywords = on1MetaData.Keywords.Except(keywords, StringComparer.OrdinalIgnoreCase).ToList();
+                    if (missingKeywords.Any())
+                    {
+                        Logging.LogWarning($"Image {img.FileName} is missing keywords present in the On1 Sidecar.");
+                    }
                 }
             }
 
-            // Use the XMPCore library to read files
-            var xmpSideCarPath = Path.ChangeExtension(img.FullPath, "xmp");
+            var xmpSidecar = files.FirstOrDefault(x => x.Extension.Equals(".xmp", StringComparison.OrdinalIgnoreCase));
 
-            if (File.Exists(xmpSideCarPath))
-            {
-                IXmpMeta xmp;
-                using (var stream = File.OpenRead(xmpSideCarPath))
-                    xmp = XmpMetaFactory.Parse(stream);
+            if( xmpSidecar != null )
+            { 
+                using var stream = File.OpenRead(xmpSidecar.FullName);
+                IXmpMeta xmp = XmpMetaFactory.Parse(stream);
 
-                foreach (var property in xmp.Properties)
-                    Logging.Log($"XMP: Path={property.Path} Namespace={property.Namespace} Value={property.Value}");
+                var xmpKeywords = xmp.Properties.FirstOrDefault(x => x.Path == "pdf:Keywords");
+
+                if( xmpKeywords != null )
+                {
+                    var missingKeywords = xmpKeywords.Value.Split(",").Select( x => x.Trim() ).Except( keywords );
+
+                    if (missingKeywords.Any())
+                    {
+                        Logging.LogWarning($"Image {img.FileName} is missing keywords present in the XMP Sidecar.");
+                    }
+                }
             }
         }
 
