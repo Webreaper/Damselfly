@@ -44,6 +44,7 @@
 
     protected override void OnParametersSet()
     {
+        // TODO https://github.com/dotnet/aspnetcore/issues/11815
         if (OnAddNewtag == null)
             throw new ArgumentException("No callback specified for OnAddNewTag!");
 

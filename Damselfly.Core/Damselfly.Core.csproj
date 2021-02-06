@@ -33,6 +33,7 @@
     </PackageReference>
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-pr.1518.1" />
     <PackageReference Include="SkiaSharp" Version="2.80.3-pr.1518.1" />
+    <PackageReference Include="System.Text.Json" Version="5.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogHandler.cs" />
@@ -44,6 +45,7 @@
     <Folder Include="Interfaces\" />
     <Folder Include="DBAbstractions\" />
     <Folder Include="ImageProcessing\" />
+    <Folder Include="Models\SideCars\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="mono_crash.a7f6ef992.0.json" />

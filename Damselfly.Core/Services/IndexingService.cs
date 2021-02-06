@@ -12,6 +12,9 @@ using MetadataExtractor.Formats.Iptc;
 using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
 using EFCore.BulkExtensions;
+using Damselfly.Core.Models.SideCars;
+using XmpCore.Impl;
+using XmpCore;
 
 namespace Damselfly.Core.Services
 {
@@ -720,6 +723,8 @@ namespace Damselfly.Core.Services
                             if (keywords.Any())
                                 imageKeywords[img] = keywords;
 
+                            ProcessSideCarKeywords( img, keywords );
+
                             // Yield a bit. TODO: must be a better way of doing this
                             Thread.Sleep(50);
                         }
@@ -757,6 +762,45 @@ namespace Damselfly.Core.Services
             }
 
             Logging.LogVerbose("Metadata Scan Complete.");
+        }
+
+        /// <summary>
+        /// Some image editing apps such as Lightroom, On1, etc., do not persist the keyword metadata
+        /// in the images by default. This can mean you keyword-tag them, but those keywords are only
+        /// stored in the sidecars. Damselfly only scans keyword metadata from the EXIF image data
+        /// itself.
+        /// So to rectify this, we can either read the sidecar files for those keywords, and optionally
+        /// write the missing keywords to the Exif Metadata as we index them.
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="keywords"></param>
+        private void ProcessSideCarKeywords( Image img, string[] keywords )
+        {
+            // TODO: Case-insensitive file extensions
+
+            var on1MetaData = On1Sidecar.LoadMetadata( img );
+
+            if( on1MetaData != null )
+            {
+                var missingKeywords = on1MetaData.Keywords.Except(keywords, StringComparer.OrdinalIgnoreCase).ToList();
+                if ( missingKeywords.Any() )
+                {
+                    Logging.LogWarning($"Image {img.FileName} is missing keywords present in the On1 Sidecar.");
+                }
+            }
+
+            // Use the XMPCore library to read files
+            var xmpSideCarPath = Path.ChangeExtension(img.FullPath, "xmp");
+
+            if (File.Exists(xmpSideCarPath))
+            {
+                IXmpMeta xmp;
+                using (var stream = File.OpenRead(xmpSideCarPath))
+                    xmp = XmpMetaFactory.Parse(stream);
+
+                foreach (var property in xmp.Properties)
+                    Logging.Log($"XMP: Path={property.Path} Namespace={property.Namespace} Value={property.Value}");
+            }
         }
 
         public void StartService()
