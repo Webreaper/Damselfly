@@ -788,7 +788,10 @@ namespace Damselfly.Core.Services
 
                 if (on1MetaData != null)
                 {
-                    var missingKeywords = on1MetaData.Keywords.Except(keywords, StringComparer.OrdinalIgnoreCase).ToList();
+                    var missingKeywords = on1MetaData.Keywords
+                                            .Except(keywords, StringComparer.OrdinalIgnoreCase)
+                                            .ToList();
+
                     if (missingKeywords.Any())
                     {
                         Logging.LogWarning($"Image {img.FileName} is missing keywords present in the On1 Sidecar.");
@@ -807,7 +810,11 @@ namespace Damselfly.Core.Services
 
                 if( xmpKeywords != null )
                 {
-                    var missingKeywords = xmpKeywords.Value.Split(",").Select( x => x.Trim() ).Except( keywords );
+                    var missingKeywords = xmpKeywords.Value
+                                                .Split(",")
+                                                .Select( x => x.Trim() )
+                                                .Except( keywords )
+                                                .ToList();
 
                     if (missingKeywords.Any())
                     {
