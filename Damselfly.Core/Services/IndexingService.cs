@@ -724,7 +724,7 @@ namespace Damselfly.Core.Services
                             if (keywords.Any())
                                 imageKeywords[img] = keywords;
 
-                            if (isNewMetadata)
+                            if (isNewMetadata && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
                             {
                                 // If it's new metadata, that means a new image - in which
                                 // case we should scan for sidecar files and ingest their
