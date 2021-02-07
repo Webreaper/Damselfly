@@ -167,10 +167,10 @@
     }
 
     [JSInvokable]
-    // Debugging assistant to help us differentiate between JS calls and other data loads
-    public async Task HandleScroll( int scrollTop )
+    // Debugging method to help us differentiate between JS calls and other data loads
+    public void HandleScroll( int scrollTop )
     {
-        conflator.HandleEvent( (x) => { SaveScrollState(scrollTop); } );
+        conflator.HandleEvent( (x) => { SaveScrollState( scrollTop ); } );
     }
 
     [JSInvokable]

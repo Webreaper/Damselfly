@@ -776,6 +776,8 @@ namespace Damselfly.Core.Services
         /// <param name="keywords"></param>
         private void ProcessSideCarKeywords( Image img, string[] keywords )
         {
+            var sideCarTags = new List<string>();
+
             var sidecarSearch = Path.ChangeExtension(img.FileName, "*");
             DirectoryInfo dir = new DirectoryInfo(img.Folder.Path);
             var files = dir.GetFiles(sidecarSearch);
@@ -794,7 +796,8 @@ namespace Damselfly.Core.Services
 
                     if (missingKeywords.Any())
                     {
-                        Logging.LogWarning($"Image {img.FileName} is missing keywords present in the On1 Sidecar.");
+                        Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the On1 Sidecar.");
+                        sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                     }
                 }
             }
@@ -818,10 +821,16 @@ namespace Damselfly.Core.Services
 
                     if (missingKeywords.Any())
                     {
-                        Logging.LogWarning($"Image {img.FileName} is missing keywords present in the XMP Sidecar.");
+                        Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the XMP Sidecar.");
+                        sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                     }
                 }
             }
+
+            // Now, submit the tags; note they won't get created immediately, but in batch.
+            Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+            _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+
         }
 
         public void StartService()
