@@ -15,6 +15,7 @@ using EFCore.BulkExtensions;
 using Damselfly.Core.Models.SideCars;
 using XmpCore.Impl;
 using XmpCore;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
 {
@@ -656,20 +657,18 @@ namespace Damselfly.Core.Services
             return ScanFolderImages(folder, true);
         }
 
-        public void PerformMetaDataScan()
+        public void RunMetaDataScans()
         {
-            Logging.LogVerbose("Full Metadata scan starting...");
+            Logging.LogVerbose("Metadata scan thread starting...");
 
             try
             {
-                var watch = new Stopwatch("FullMetaDataScan", -1);
-
                 using var db = new ImageContext();
 
                 const int batchSize = 100;
                 bool complete = false;
 
-                while (!complete)
+                while( true )
                 {
                     var queueQueryWatch = new Stopwatch("MetaDataQueueQuery", -1);
 
@@ -700,12 +699,14 @@ namespace Damselfly.Core.Services
                         foreach (var img in imagesToScan)
                         {
                             ImageMetaData imgMetaData = img.MetaData;
+                            bool isNewMetadata = false;
 
                             if (imgMetaData == null)
                             {
                                 // New metadata
                                 imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
                                 newMetadataEntries.Add(imgMetaData);
+                                isNewMetadata = true;
                             }
                             else
                                 updatedEntries.Add(imgMetaData);
@@ -723,7 +724,13 @@ namespace Damselfly.Core.Services
                             if (keywords.Any())
                                 imageKeywords[img] = keywords;
 
-                            ProcessSideCarKeywords( img, keywords );
+                            if (isNewMetadata)
+                            {
+                                // If it's new metadata, that means a new image - in which
+                                // case we should scan for sidecar files and ingest their
+                                // keywords
+                                ProcessSideCarKeywords(img, keywords);
+                            }
 
                             // Yield a bit. TODO: must be a better way of doing this
                             Thread.Sleep(50);
@@ -752,16 +759,14 @@ namespace Damselfly.Core.Services
 
                         Logging.Log($"Completed metadata scan batch ({imagesToScan.Length} images in {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tags: {tagWatch.HumanElapsedTime}).");
                     }
-                }
 
-                watch.Stop();
+                    Thread.Sleep(28 * 1000);
+                }
             }
             catch( Exception ex )
             {
                 Logging.LogError($"Exception caught during metadata scan: {ex}");
             }
-
-            Logging.LogVerbose("Metadata Scan Complete.");
         }
 
         /// <summary>
@@ -835,12 +840,8 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            Logging.Log("Started indexing service.");
-            StartIndexingThread();
-        }
+            Logging.Log("Starting indexing service.");
 
-        private void StartIndexingThread()
-        {
             var indexthread = new Thread( new ThreadStart(() => { RunIndexing(); } ));
             indexthread.Name = "IndexingThread";
             indexthread.IsBackground = true;
@@ -918,18 +919,7 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                Thread.Sleep(1000 * 30);
-            }
-        }
-
-        private void RunMetaDataScans()
-        {
-            while (true)
-            {
-                // This should have its own thread. 
-                PerformMetaDataScan();
-                // TODO: Shouldn't need this
-                Thread.Sleep(1000 * 60);
+                Thread.Sleep(30 * 1000);
             }
         }
 

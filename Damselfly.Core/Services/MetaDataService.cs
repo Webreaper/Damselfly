@@ -7,6 +7,7 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
+using System.Threading;
 
 namespace Damselfly.Core.Services
 {
@@ -123,14 +124,9 @@ namespace Damselfly.Core.Services
 
             try
             {
-                db.BulkInsert(keywordOps);
+                await db.BulkInsertAsync(keywordOps);
 
                 StatusService.Instance.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
-                await Task.Run(() =>
-                            {
-                                // Temp
-                                return Task.FromResult<bool>(PerformExifOpScan());
-                            });
             }
             catch (Exception ex)
             {
@@ -260,26 +256,27 @@ namespace Damselfly.Core.Services
         /// <summary>
         /// Process a batch of pending keyword tag operations.
         /// </summary>
-        public bool PerformExifOpScan()
+        public void RunExifOpProcessing()
         {
             Logging.LogVerbose("Processing pending exif operations");
 
             try
             {
-                var watch = new Stopwatch("KeywordOps", -1);
-
-                using var db = new ImageContext();
-
-                bool complete = false;
-
-                while (!complete)
+                while (true)
                 {
+                    Thread.Sleep(27 * 1000);
+
+                    using var db = new ImageContext();
+
                     var queueQueryWatch = new Stopwatch("ExifOpsQuery", -1);
+
+                    // We skip any operations where the timestamp is more recent than 30s
+                    var timeThreshold = DateTime.UtcNow.AddSeconds( -30 );
 
                     // Find all images where there's either no metadata, or where the image
                     // was updated more recently than the image metadata
                     var opsToProcess = db.KeywordOperations.AsQueryable()
-                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending )
+                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending && x.TimeStamp < timeThreshold )
                                             .OrderByDescending(x => x.TimeStamp)
                                             .Take(100)
                                             .Include( x => x.Image )
@@ -288,9 +285,7 @@ namespace Damselfly.Core.Services
 
                     queueQueryWatch.Stop();
 
-                    complete = !opsToProcess.Any();
-
-                    if (!complete)
+                    if( opsToProcess.Any() )
                     {
                         var conflatedOps = ConflateOperations(opsToProcess);
 
@@ -347,16 +342,11 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                watch.Stop();
             }
             catch (Exception ex)
             {
                 Logging.LogError($"Exception caught during keyword op scan: {ex}");
-                return false;
             }
-
-            Logging.LogVerbose("Keyword op scan Complete.");
-            return true;
         }
 
         /// <summary>
@@ -439,5 +429,17 @@ namespace Damselfly.Core.Services
 
             return result;
         }
+
+        public void StartService()
+        {
+            Logging.Log("Starting Exif Operation service.");
+
+            var indexthread = new Thread(new ThreadStart(() => { RunExifOpProcessing(); }));
+            indexthread.Name = "ExifOpThread";
+            indexthread.IsBackground = true;
+            indexthread.Priority = ThreadPriority.Lowest;
+            indexthread.Start();
+        }
+
     }
 }

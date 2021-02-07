@@ -119,6 +119,7 @@ namespace Damselfly.Web
             SearchService.Instance.PreLoadSearchData();
             FolderService.Instance.PreLoadFolderData();
             BasketService.Instance.Initialise();
+            MetaDataService.Instance.StartService();
 
             if (IndexingService.EnableIndexing)
                 IndexingService.Instance.StartService();
