@@ -225,6 +225,7 @@ namespace Damselfly.Core.Models
         [Required]
         public string Keyword { get; set; }
         public string Type { get; set; }
+        public bool Favourite { get; set; }
         public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();

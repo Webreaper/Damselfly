@@ -12,15 +12,36 @@
 @implements IDisposable
 
 <div class="damselfly-taglist">
+    <div class="damselfly-keywordlist">
+        @if (favouriteTags != null && favouriteTags.Any())
+        {
+            @foreach (var tag in favouriteTags)
+            {
+                <div class="damselfly-keyword">
+                    <div class="damselfly-favouritetag" title="Remove favourite" @onclick="@(async () => await ToggleFavourite(tag))"><i class="fas fa-star" /></div>
+                    <div @onclick="@(() => QuickAddTag(tag))" title="Add @tag.Keyword to image"class="damselfly-keywordtext">@tag.Keyword</div>
+                </div>
+            }
+        }
+    </div>
     <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled" />
-
     <div class="damselfly-keywordlist">
         @if (CurrentImages != null && CurrentImages.Any())
         {
             @foreach (var tag in theImageTags)
             {
                 <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag)) @oncontextmenu:preventDefault="true">
-                    <div class="damselfly-keywordtext">@tag</div>
+                    <div class="damselfly-favouritetag" title="Favourite" @onclick="@(() => ToggleFavourite(tag))">
+                        @if (tag.Favourite)
+                        {
+                            <i class="fas fa-star" />
+                        }
+                        else
+                        {
+                            <i class="far fa-star" />
+                        }
+                    </div>
+                    <div class="damselfly-keywordtext">@tag.Keyword</div>
                     <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
                 </div>
             }
@@ -39,15 +60,22 @@
     [Parameter]
     public bool TrackSelection { get; set; }
 
-    private IList<string> theImageTags { get; set; }
+    private IList<Tag> theImageTags { get; set; }
+    private IList<Tag> favouriteTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
-    private async Task<IList<string>> LoadImageTagsAsync()
+    private async Task<IList<Tag>> LoadImageTagsAsync()
     {
         return await Task.FromResult(GetImageTags()
-                                        .Select(x => x.Keyword)
-                                        .OrderBy(x => x)
+                                        .OrderBy(x => x.Keyword)
                                         .ToList());
+    }
+
+    private async Task<IList<Tag>> LoadFavouriteTagsAsync()
+    {
+        using var db = new ImageContext();
+
+        return await Task.FromResult( db.Tags.Where(x => x.Favourite).ToList() );
     }
 
     private void CreateNewTag(string tagToAdd)
@@ -61,12 +89,33 @@
         StateHasChanged();
     }
 
-    private void DeleteTag(string tag)
+    private void QuickAddTag(Tag tag)
+    {
+        var tagsToAdd = new List<string> { tag.Keyword };
+        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, tagsToAdd, null); });
+        StateHasChanged();
+    }
+
+    private async Task ToggleFavourite(Tag tag)
+    {
+        using var db = new ImageContext();
+        // TODO: Async - use BulkUpdateAsync?
+        tag.Favourite = !tag.Favourite;
+
+        db.Tags.Update(tag);
+        db.SaveChanges("Tag favourite");
+
+        favouriteTags = await LoadFavouriteTagsAsync();
+        await OnParametersSetAsync();
+    }
+
+    private void DeleteTag(Tag tag)
     {
         Logging.Log($"Tag {tag} removed");
 
         // TODO: Fix this async mess
-        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, new List<string> { tag }); });
+        var tagToDelete = new List<string> { tag.Keyword };
+        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, tagToDelete); });
 
         // Now store the state
         theImageTags.Remove(tag);
@@ -128,6 +177,14 @@
         navContext.OnChange += NavigationChanged;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            favouriteTags = await LoadFavouriteTagsAsync();
+        }
+    }
+
     protected void NavigationChanged(Image image)
     {
         var images = new Image[0];
@@ -159,7 +216,7 @@
         StateHasChanged();
     }
 
-    void ShowContextMenu(MouseEventArgs args, string tag)
+    void ShowContextMenu(MouseEventArgs args, Tag tag)
     {
         contextMenuService.Open(args,
         new List<ContextMenuItem>() {
@@ -169,7 +226,7 @@
             contextMenuService.Close();
             switch (args.Value)
             {
-                case 0: NavigationManager.NavigateTo("/tag/" + tag); break;
+                case 0: NavigationManager.NavigateTo("/tag/" + tag.Keyword); break;
             }
         });
     }

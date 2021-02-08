@@ -914,6 +914,17 @@ padding: 0.4em 0.65em;
     background-color: rgba(25, 95, 25, 0.9);
 }
 
+.damselfly-favouritetag {
+    flex: 0 1 auto;
+    font-size: 10pt;
+    margin: 0 2px 0 0;
+    cursor: pointer;
+}
+
+.damselfly-favouritetag:hover {
+    color: rgba(200, 255, 200, 0.9);
+}
+
 .damselfly-deletetag {
     flex: 0 1 auto;
     font-size: 10pt;

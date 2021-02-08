@@ -46,9 +46,6 @@
     <Content Update="Shared\FolderList.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
-    <Content Update="Shared\Images\SingleTag.razor">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>
     <Content Update="Shared\SearchBar.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
