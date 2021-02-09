@@ -896,10 +896,21 @@ namespace Damselfly.Core.Services
 
                 if( folders.Any() )
                 {
+#if false
                     // Now, update any folders to set their scan date to null
                     var pendingFolders = db.Folders
                                            .Where(f => folders.Contains(f.Path))
                                            .BatchUpdate( f => new Folder { FolderScanDate = null } );
+#else
+                    var pendingFolders = db.Folders.Where(f => folders.Contains(f.Path));
+                    foreach (var f in pendingFolders)
+                    {
+                        f.FolderScanDate = null;
+                        db.Update(f);
+                    }
+
+                    db.SaveChanges("PendingFolders");
+#endif
                 }
 
                 // Now, see if there's any folders that have a null scan date.
