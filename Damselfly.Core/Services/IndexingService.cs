@@ -896,7 +896,7 @@ namespace Damselfly.Core.Services
 
                 if( folders.Any() )
                 {
-#if false
+#if false // TODO: See https://github.com/Webreaper/Damselfly/issues/96
                     // Now, update any folders to set their scan date to null
                     var pendingFolders = db.Folders
                                            .Where(f => folders.Contains(f.Path))
