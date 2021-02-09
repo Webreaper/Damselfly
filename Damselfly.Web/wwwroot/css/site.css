@@ -893,7 +893,7 @@ padding: 0.4em 0.65em;
     margin: 0px;
     padding: 2px;
     flex-flow: row wrap;
-    min-height: 100px;
+    min-height: auto;
     max-height: 250px;
     align-content: flex-start;
     overflow-y: auto; 
@@ -935,8 +935,9 @@ padding: 0.4em 0.65em;
     color: rgba(200, 255, 200, 0.9);
 }
 
-.damselfly-keywordtext {
+.damselfly-keywordtext-disabled {
     text-wrap: none;
+    color: #999999;
     flex: 0 1 auto;
 }
 

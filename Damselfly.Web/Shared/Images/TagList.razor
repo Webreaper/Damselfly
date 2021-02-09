@@ -12,48 +12,75 @@
 @implements IDisposable
 
 <div class="damselfly-taglist">
-    <div class="damselfly-keywordlist">
-        @if (favouriteTags != null && favouriteTags.Any())
-        {
-            @foreach (var tag in favouriteTags)
+    @if (ShowAddKeywords)
+    {
+        <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled" />
+    }
+
+    @if (ShowFavourites)
+    {
+        <div class="damselfly-keywordlist">
+            @if (iptcService.FavouriteTags != null && iptcService.FavouriteTags.Any())
             {
-                <div class="damselfly-keyword">
-                    <div class="damselfly-favouritetag" title="Remove favourite" @onclick="@(async () => await ToggleFavourite(tag))"><i class="fas fa-star" /></div>
-                    <div @onclick="@(() => QuickAddTag(tag))" title="Add @tag.Keyword to image"class="damselfly-keywordtext">@tag.Keyword</div>
-                </div>
-            }
-        }
-    </div>
-    <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled" />
-    <div class="damselfly-keywordlist">
-        @if (CurrentImages != null && CurrentImages.Any())
-        {
-            @foreach (var tag in theImageTags)
-            {
-                <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag)) @oncontextmenu:preventDefault="true">
-                    <div class="damselfly-favouritetag" title="Favourite" @onclick="@(() => ToggleFavourite(tag))">
-                        @if (tag.Favourite)
+                @foreach (var tag in iptcService.FavouriteTags)
+                {
+                    <div class="damselfly-keyword">
+                        <div class="damselfly-favouritetag" title="Remove favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))"><i class="fas fa-star" /></div>
+                        @if (CurrentImages != null && CurrentImages.Any())
                         {
-                            <i class="fas fa-star" />
+                            <div @onclick="@(() => QuickAddTag(tag))" title="Add @tag.Keyword to image" class="damselfly-keywordtext">@tag.Keyword</div>
                         }
                         else
                         {
-                            <i class="far fa-star" />
+                            <div title="Add @tag.Keyword to image" class="damselfly-keywordtext-disabled">@tag.Keyword</div>
                         }
                     </div>
-                    <div class="damselfly-keywordtext">@tag.Keyword</div>
-                    <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
-                </div>
+                }
             }
-        }
-        else
-        {
-            <div>No Keywords</div>
-        }
-    </div>
+        </div>
+    }
+
+    @if (ShowImageKeywords)
+    {
+        <div class="damselfly-keywordlist">
+            @if (CurrentImages != null && CurrentImages.Any())
+            {
+                @foreach (var tag in theImageTags)
+                {
+                    <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag)) @oncontextmenu:preventDefault="true">
+                        <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
+                            @if (tag.Favourite)
+                            {
+                                <i class="fas fa-star" />
+                            }
+                            else
+                            {
+                                <i class="far fa-star" />
+                            }
+                        </div>
+                        <div class="damselfly-keywordtext">@tag.Keyword</div>
+                        <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div>No Keywords</div>
+            }
+        </div>
+    }
 </div>
 
 @code {
+    [Parameter]
+    public bool ShowFavourites { get; set; }
+
+    [Parameter]
+    public bool ShowAddKeywords { get; set; }
+
+    [Parameter]
+    public bool ShowImageKeywords { get; set; }
+
     [Parameter]
     public Image[] CurrentImages { get; set; }
 
@@ -61,7 +88,6 @@
     public bool TrackSelection { get; set; }
 
     private IList<Tag> theImageTags { get; set; }
-    private IList<Tag> favouriteTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
     private async Task<IList<Tag>> LoadImageTagsAsync()
@@ -69,13 +95,6 @@
         return await Task.FromResult(GetImageTags()
                                         .OrderBy(x => x.Keyword)
                                         .ToList());
-    }
-
-    private async Task<IList<Tag>> LoadFavouriteTagsAsync()
-    {
-        using var db = new ImageContext();
-
-        return await Task.FromResult( db.Tags.Where(x => x.Favourite).ToList() );
     }
 
     private void CreateNewTag(string tagToAdd)
@@ -94,19 +113,6 @@
         var tagsToAdd = new List<string> { tag.Keyword };
         InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, tagsToAdd, null); });
         StateHasChanged();
-    }
-
-    private async Task ToggleFavourite(Tag tag)
-    {
-        using var db = new ImageContext();
-        // TODO: Async - use BulkUpdateAsync?
-        tag.Favourite = !tag.Favourite;
-
-        db.Tags.Update(tag);
-        db.SaveChanges("Tag favourite");
-
-        favouriteTags = await LoadFavouriteTagsAsync();
-        await OnParametersSetAsync();
     }
 
     private void DeleteTag(Tag tag)
@@ -163,6 +169,7 @@
         {
             // TODO: Dispose
             SelectionService.Instance.OnSelectionChanged += SelectionChanged;
+            MetaDataService.Instance.OnFavouritesChanged += FavouritesChanged;
             SelectionChanged();
         }
         else
@@ -175,14 +182,6 @@
     protected override void OnInitialized()
     {
         navContext.OnChange += NavigationChanged;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            favouriteTags = await LoadFavouriteTagsAsync();
-        }
     }
 
     protected void NavigationChanged(Image image)
@@ -200,6 +199,7 @@
     public void Dispose()
     {
         SelectionService.Instance.OnSelectionChanged -= SelectionChanged;
+        MetaDataService.Instance.OnFavouritesChanged -= FavouritesChanged;
         navContext.OnChange += NavigationChanged;
     }
 
@@ -208,6 +208,11 @@
         this.CurrentImages = SelectionService.Instance.Selection.ToArray();
 
         InvokeAsync(() => { _ = OnParametersSetAsync(); });
+    }
+
+    protected void FavouritesChanged()
+    {
+        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()

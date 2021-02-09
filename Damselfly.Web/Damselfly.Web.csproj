@@ -59,7 +59,7 @@
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="LoreSoft.Blazor.Controls" Version="4.0.0.84" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.0.0.20340" />
-    <PackageReference Include="Radzen.Blazor" Version="3.0.7" />
+    <PackageReference Include="Radzen.Blazor" Version="3.0.8" />
     <PackageReference Include="Blazored.FluentValidation" Version="1.3.2" />
   </ItemGroup>
 </Project>

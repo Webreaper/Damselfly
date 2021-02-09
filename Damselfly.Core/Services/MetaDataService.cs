@@ -24,6 +24,14 @@ namespace Damselfly.Core.Services
         public static MetaDataService Instance { get; private set; }
         public static string ExifToolVer { get; private set; }
 
+        public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
+        public event Action OnFavouritesChanged;
+
+        private void NotifyFavouritesChanged()
+        {
+            OnFavouritesChanged?.Invoke();
+        }
+
         public MetaDataService()
         {
             Instance = this;
@@ -430,9 +438,51 @@ namespace Damselfly.Core.Services
             return result;
         }
 
+        /// <summary>
+        /// Switches a tag from favourite, to not favourite, or back
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
+        public async Task ToggleFavourite( Tag tag )
+        {
+            using var db = new ImageContext();
+            // TODO: Async - use BulkUpdateAsync?
+            tag.Favourite = !tag.Favourite;
+
+            db.Tags.Update(tag);
+            db.SaveChanges("Tag favourite");
+
+            await LoadFavouriteTagsAsync();
+        }
+
+        /// <summary>
+        /// Loads the favourite tags from the DB.
+        /// </summary>
+        /// <returns></returns>
+        private async Task LoadFavouriteTagsAsync()
+        {
+            using var db = new ImageContext();
+
+            var faves = await Task.FromResult(db.Tags
+                                        .Where(x => x.Favourite)
+                                        .OrderBy(x => x.Keyword)
+                                        .ToList());
+
+            if (!faves.SequenceEqual(FavouriteTags))
+            {
+                FavouriteTags.Clear();
+                FavouriteTags.AddRange(faves);
+
+                NotifyFavouritesChanged();
+            }
+        }
+
         public void StartService()
         {
             Logging.Log("Starting Exif Operation service.");
+
+            // Load the favourites 
+            _ = LoadFavouriteTagsAsync();
 
             var indexthread = new Thread(new ThreadStart(() => { RunExifOpProcessing(); }));
             indexthread.Name = "ExifOpThread";
@@ -440,6 +490,5 @@ namespace Damselfly.Core.Services
             indexthread.Priority = ThreadPriority.Lowest;
             indexthread.Start();
         }
-
     }
 }

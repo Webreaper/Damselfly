@@ -11,25 +11,23 @@
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
-<div class="damselfly-taglist">
-    <div class="InputAddOn">
-        <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-        <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
-                           placeholder="Add a keyword" Debounce="300"
-                           @bind-Value="@TypeAheadTag">
-            <SelectedTemplate>
-                @{
-                    CreateNewTags(context);
-                }
-            </SelectedTemplate>
-            <ResultTemplate>
-                @context
-            </ResultTemplate>
-            <NotFoundTemplate>
-                @tagSearchText
-            </NotFoundTemplate>
-        </BlazoredTypeahead>
-    </div>
+<div class="InputAddOn">
+    <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+    <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
+                        placeholder="Add a keyword" Debounce="300"
+                        @bind-Value="@TypeAheadTag">
+        <SelectedTemplate>
+            @{
+                CreateNewTags(context);
+            }
+        </SelectedTemplate>
+        <ResultTemplate>
+            @context
+        </ResultTemplate>
+        <NotFoundTemplate>
+            @tagSearchText
+        </NotFoundTemplate>
+    </BlazoredTypeahead>
 </div>
 
 @code {
