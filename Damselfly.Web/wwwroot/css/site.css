@@ -910,7 +910,7 @@ padding: 0.4em 0.65em;
     font-size: 9pt;
     cursor: default;
     border: 0.5px solid rgba(55, 125, 55, 0.6);
-    border-radius: 3px;
+    border-radius: 6px;
     background-color: rgba(25, 95, 25, 0.9);
 }
 
@@ -930,6 +930,16 @@ padding: 0.4em 0.65em;
     font-size: 10pt;
     cursor: pointer;
 }
+
+.damselfly-addfavekeyword {
+    cursor: pointer;
+}
+
+    .damselfly-addfavekeyword:hover {
+        cursor: pointer;
+        color: rgba(220, 255, 220, 0.9);
+        background-color: rgba(85, 135, 85, 0.9);
+    }
 
 .damselfly-deletetag:hover {
     color: rgba(200, 255, 200, 0.9);

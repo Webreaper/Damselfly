@@ -24,7 +24,7 @@
             {
                 @foreach (var tag in iptcService.FavouriteTags)
                 {
-                    <div class="damselfly-keyword">
+                    <div class="damselfly-keyword damselfly-addfavekeyword">
                         <div class="damselfly-favouritetag" title="Remove favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))"><i class="fas fa-star" /></div>
                         @if (CurrentImages != null && CurrentImages.Any())
                         {
