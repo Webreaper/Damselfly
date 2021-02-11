@@ -945,7 +945,14 @@ padding: 0.4em 0.65em;
     color: rgba(200, 255, 200, 0.9);
 }
 
+.damselfly-keywordtext {
+    margin: 0 2px 0 2px;
+    text-wrap: none;
+    flex: 0 1 auto;
+}
+
 .damselfly-keywordtext-disabled {
+    margin: 0 2px 0 2px;
     text-wrap: none;
     color: #999999;
     flex: 0 1 auto;
