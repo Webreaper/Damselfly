@@ -418,6 +418,20 @@ f
     flex: 0 0 20%;
 }
 
+.damselfly-logview {
+    order: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.log-scroll-area {
+    width: 100%;
+    top: 0px;
+    height: calc(100vh - 160px);
+    float: left;
+}
+
 .damselfly-imagebrowser {
     order: 2;
     display: flex;
@@ -1151,4 +1165,60 @@ hr.separator {
     border: 0.5px solid rgba(55, 125, 55, 0.6);
     border-radius: 3px;
     background-color: rgba(25, 95, 25, 0.9);
+}
+
+.loglist-table {
+    position: relative;
+}
+
+.loglist-table th {
+    padding: 5px, 20px, 5px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    font-weight: bold;
+    background-color: #004400;
+}
+
+.loglist-table td {
+    padding: 5px, 20px, 5px;
+    width: 100%;
+}
+
+.loglist-table th.timestamp {
+    width: 10%;
+}
+
+.loglist-table th.level {
+    width: 10%;
+}
+
+.loglist-table th.thread {
+    width: 10%;
+}
+
+.loglist-table td.timestamp {
+    width: 10%;
+}
+
+.loglist-table td.level {
+    width: 10%;
+}
+
+.log-level-WRN {
+    color: orange;
+}
+
+.log-level-ERR {
+    color: red;
+}
+
+.loglist-table td.thread {
+    width: 10%;
+}
+
+.log-table {
+    margin: 5px;
+    max-height: 100%;
+    overflow: auto;
 }

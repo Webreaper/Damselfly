@@ -54,6 +54,14 @@
                     </ChildContent>
                 </ToolWindow>
             }
+            @if (ViewDataService.ShowLogs)
+            {
+                <ToolWindow Title="Logs">
+                    <ChildContent>
+                        <LogSettings />
+                    </ChildContent>
+                </ToolWindow>
+            }
         </div>
     </div>
 </div>
