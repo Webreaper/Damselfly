@@ -398,8 +398,6 @@ f
     height: 60px;
 }
 
-
-
 .damsefly-container {
     display: flex;
     flex-direction: column;
@@ -408,7 +406,8 @@ f
 .damselfly-application {
     display: flex;
     flex-direction: row;
-    min-height: calc( 100vh - 58px);
+    min-height: calc( 100vh - 40px);
+    max-height: calc( 100vh - 40px);
 }
 
 .damselfly-sidebar {
@@ -416,6 +415,7 @@ f
     display: flex;
     flex-direction: column;
     flex: 0 0 20%;
+    overflow-y: auto;
 }
 
 .damselfly-logview {
@@ -538,7 +538,7 @@ f
     align-items: center;
     flex-flow: row wrap;
     overflow-y: auto;
-    max-height: calc( 100vh - 150px);
+    max-height: calc( 100vh - 100px);
 }
 
 .damselfly-searchmsg {
@@ -566,16 +566,21 @@ f
     align-items: center;
     flex: 0 0 40px;
     flex-flow: row wrap;
+    max-height: 40px;
 }
 
 .damselfly-browsetool {
     flex: 1;
+    margin: 10px;
     display: flex;
     min-width: 200px;
     flex-flow: row;
     align-items: center;
 }
 
+.damselfly-browsetoollabel {
+    margin: 5px;
+}
 .damselfly-gridimage {
     display: flex;
     padding: 3px;
