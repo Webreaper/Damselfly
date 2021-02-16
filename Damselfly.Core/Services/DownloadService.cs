@@ -41,6 +41,7 @@ namespace Damselfly.Core.Services
         public class DesktopAppPaths
         {
             public string MacOSApp { get; set; }
+            public string MacOSArmApp { get; set; }
             public string WindowsApp { get; set; }
             public string LinuxApp { get; set; }
         }
@@ -89,6 +90,11 @@ namespace Damselfly.Core.Services
 
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
+
+            var m1AppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac-arm64.zip", StringComparison.OrdinalIgnoreCase));
+
+            if (m1AppPath != null)
+                DesktopAppInfo.MacOSArmApp = Path.Combine(s_appVPath, m1AppPath.Name);
 
             var winAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-win.zip", StringComparison.OrdinalIgnoreCase));
 

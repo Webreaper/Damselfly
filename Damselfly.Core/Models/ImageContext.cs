@@ -225,6 +225,7 @@ namespace Damselfly.Core.Models
         [Required]
         public string Keyword { get; set; }
         public string Type { get; set; }
+        public bool Favourite { get; set; }
         public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
@@ -394,6 +395,7 @@ namespace Damselfly.Core.Models
         public Folder Folder { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
         public int CameraId { get; set; } = -1;
+        public int TagId { get; set; } = -1;
         public int LensId { get; set; } = -1;
 
         public override string ToString()

@@ -93,9 +93,11 @@
         {
             var imageUrl = new Uri(baseUrl, image.RawImageUrl);
 
+            // TODO: Save XMP and On1 sidecars with the images here.
+
             // Image folder is fully qualified, so we need to make it relative to the pictures folder
             // The electron container will use its local settings to create the full path of where
-            // the image will be written locally.
+            // the image will be written locally on the client-side
             string localPath = image.FullPath.MakePathRelativeTo(IndexingService.RootFolder);
 
             StatusService.Instance.StatusText = $"Writing {image.FileName} to {localPath}...";

@@ -7,7 +7,8 @@
     <h2>Damselfly v<span />@Version</h2>
     <h4>Server-based Digital Asset Management system</h4>
     <p>&copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</p>
-    <p>ExifTool version: v<span />@MetaDataService.ExifToolVer</p>
+    <p>ExifTool version: <span />@MetaDataService.ExifToolVer</p>
+    <NavLink href="/logs">View Server Logs</NavLink>
     <Stats />
     <h4>Damselfly Desktop</h4>
     @if (isDesktopHosted)
@@ -18,30 +19,36 @@
     <div class="desktop-download-icons">
         @if (DownloadService.DesktopAppInfo.MacOSApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.MacOSApp" >
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-                    <div class="InputAddOn-field">MacOS</div>
-                </div>
+        <div class="InputAddOn">
+            <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+            <a href="@DownloadService.DesktopAppInfo.MacOSApp">
+                <div class="InputAddOn-field">MacOS</div>
             </a>
+            @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+            {
+                <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                    <div class="InputAddOn-field">(M1)</div>
+                </a>
+            }
+        </div>
         }
         @if (DownloadService.DesktopAppInfo.WindowsApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.WindowsApp" >
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+            <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                <a href="@DownloadService.DesktopAppInfo.WindowsApp">
                     <div class="InputAddOn-field">Windows</div>
-                </div>
-            </a>
+                </a>
+            </div>
         }
         @if (DownloadService.DesktopAppInfo.LinuxApp != null)
         {
-            <a href="@DownloadService.DesktopAppInfo.LinuxApp">
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+            <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                <a href="@DownloadService.DesktopAppInfo.LinuxApp">
                     <div class="InputAddOn-field">Linux</div>
-                </div>
-            </a>
+                </a>
+            </div>
         }
     </div>
     <h4>Credits/Thanks</h4>

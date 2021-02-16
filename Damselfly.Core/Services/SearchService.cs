@@ -44,6 +44,7 @@ namespace Damselfly.Core.Services
         public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
         public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
+        public int TagId { get { return query.TagId; } set { if (query.TagId != value) { query.TagId = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
 
         public void SetDateRange( DateTime min, DateTime max )
@@ -109,6 +110,11 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.Folder);
+
+                    if( query.TagId != -1 )
+                    {
+                        images = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
+                    }
 
                     // If selected, filter by the image filename/foldername
                     if (hasTextSearch && ! query.TagsOnly )

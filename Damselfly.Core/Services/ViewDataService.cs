@@ -75,5 +75,20 @@ namespace Damselfly.Core.Services
                 }
             }
         }
+
+        private bool _showLogs = false;
+
+        public bool ShowLogs
+        {
+            get => _showLogs;
+            set
+            {
+                if (_showLogs != value)
+                {
+                    _showLogs = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
     }
 }

@@ -51,7 +51,7 @@
     <div class="damselfly-browsetool">
         @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
         {
-            <label>
+            <label class="damselfly-browsetoollabel">
                 <input name="thumbSize" type="radio"
                        value="@choice"
                        checked="@(CurrentThumbSize == choice)"
@@ -61,7 +61,7 @@
         }
     </div>
     <div class="damselfly-browsetool">
-        <label for="DateSep">Group by Date</label>
+        <label class="damselfly-browsetoollabel" for="DateSep">Group by Date</label>
         <input id="DateSep" type="checkbox" @bind="@ShowDateSeparators">
     </div>
 </div>
@@ -167,10 +167,10 @@
     }
 
     [JSInvokable]
-    // Debugging assistant to help us differentiate between JS calls and other data loads
-    public async Task HandleScroll( int scrollTop )
+    // Debugging method to help us differentiate between JS calls and other data loads
+    public void HandleScroll( int scrollTop )
     {
-        conflator.HandleEvent( (x) => { SaveScrollState(scrollTop); } );
+        conflator.HandleEvent( (x) => { SaveScrollState( scrollTop ); } );
     }
 
     [JSInvokable]
