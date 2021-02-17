@@ -842,10 +842,9 @@ f
   }
 
 .damselfly-moreimages {
-    width: 100%;
-    padding: 3px;
-    text-align: center;
-    font-size: 12px;
+    width: 0px;
+    padding: 0px;
+    margin: 0px;
 }
 
 .damselfly-imageseparator {

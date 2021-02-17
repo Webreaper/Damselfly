@@ -41,7 +41,7 @@
 
             { prevImage = image; }
 
-            if (!endOfImages && i == gridImages.Count / 2 )
+            if (!endOfImages && i == (gridImages.Count() - (imagesPerPage / 2)))
             {
                 <div class="damselfly-moreimages" id="list-end"/>
             }
@@ -80,6 +80,7 @@
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
 
     private EventConflator conflator = new EventConflator(2000);
+
 
     private void StoreImage( Image image )
     {
