@@ -832,10 +832,12 @@ namespace Damselfly.Core.Services
                 }
             }
 
-            // Now, submit the tags; note they won't get created immediately, but in batch.
-            Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-            _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
-
+            if (sideCarTags.Any())
+            {
+                // Now, submit the tags; note they won't get created immediately, but in batch.
+                Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+                _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+            }
         }
 
         public void StartService()

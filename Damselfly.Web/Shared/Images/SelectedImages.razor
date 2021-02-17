@@ -86,7 +86,7 @@ else
     void AddSelectedToBasket()
     {
         var selected = SelectionService.Instance.Selection.ToList();
-        selected.ForEach(x => BasketService.Instance.SetBasketState(x, true));
+        BasketService.Instance.SetBasketState(selected, true);
 
         StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
     }

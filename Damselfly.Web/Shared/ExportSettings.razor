@@ -125,9 +125,7 @@
     {
         if (firstRender)
         {
-            ViewDataService.ShowFolderList = false;
-            ViewDataService.ShowBasket = false;
-            ViewDataService.ShowExport = true;
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 
             exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
             exportSizes = (ExportSize[])Enum.GetValues(typeof(ExportSize));

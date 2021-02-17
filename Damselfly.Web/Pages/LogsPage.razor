@@ -49,11 +49,7 @@
     {
         if (firstRender)
         {
-            ViewDataService.ShowFolderList = false;
-            ViewDataService.ShowBasket = false;
-            ViewDataService.ShowExport = false;
-            ViewDataService.ShowTags = false;
-            ViewDataService.ShowLogs = true;
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowLogs = true });
 
             var lines = await GetLogLines();
             logLines.AddRange(lines);

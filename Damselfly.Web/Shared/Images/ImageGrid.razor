@@ -27,8 +27,10 @@
     }
     else
     {
-        @foreach (var image in gridImages)
+        @for(int i = 0; i < gridImages.Count; i++ )
         {
+            var image = gridImages[i];
+
             if (ShowDateSeparators)
             {
                 <GridSeparator CurrentImage="@image" PrevImage="@prevImage" />
@@ -38,12 +40,13 @@
             </div>
 
             { prevImage = image; }
+
+            if (!endOfImages && i == gridImages.Count / 2 )
+            {
+                <div class="damselfly-moreimages" id="list-end"/>
+            }
         }
 
-        @if (gridImages.Any() && !endOfImages)
-        {
-            <div class="damselfly-moreimages" id="list-end">More...</div>
-        }
     }
 </div>
 
@@ -67,7 +70,7 @@
 </div>
 
 @code {
-    const int imagesPerPage = 100;
+    const int imagesPerPage = 250;
     private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
 
