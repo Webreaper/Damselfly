@@ -45,16 +45,17 @@ namespace Damselfly.Core.Services
             SideBarStateChanged?.Invoke(state);
         }
 
-        public void SetSideBarState( SideBarState state )
+        public void SetSideBarState(SideBarState state)
         {
-            sidebarState = state;
-
-            if( ! state.Equals( sidebarState ))
-                OnStateChanged( state );
+            if (!state.Equals(sidebarState))
+            {
+                sidebarState = state;
+                OnStateChanged(state);
+            }
         }
 
         public bool ShowFolderList { get => sidebarState.ShowFolderList; }
-        public bool ShowTags { get => sidebarState.ShowFolderList; }
+        public bool ShowTags { get => sidebarState.ShowTags; }
         public bool ShowBasket { get => sidebarState.ShowBasket; }
         public bool ShowExport { get => sidebarState.ShowExport; }
         public bool ShowImageProps { get => sidebarState.ShowImageProps; }

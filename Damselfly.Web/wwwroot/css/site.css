@@ -418,6 +418,14 @@ f
     overflow-y: auto;
 }
 
+.damselfly-tagview {
+    order: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
 .damselfly-logview {
     order: 2;
     display: flex;
@@ -695,11 +703,12 @@ f
     flex: 1;
 }
 
-.damselfly-export {
+.damselfly-exportview {
     display: flex;
     flex: 1;
     order: 3;
     flex-flow: column;
+    overflow-y: auto;
 }
 
 .damselfly-exportlist {
