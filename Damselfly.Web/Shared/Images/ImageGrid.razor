@@ -27,19 +27,19 @@
     }
     else
     {
-        @for(int i = 0; i < gridImages.Count; i++ )
+        @for(Int16 i = 0; i < gridImages.Count; i++ )
         {
-            var image = gridImages[i];
+            var info = new SelectionInfo { image = gridImages[i], index = i };
 
             if (ShowDateSeparators)
             {
-                <GridSeparator CurrentImage="@image" PrevImage="@prevImage" />
+                <GridSeparator CurrentImage="@info.image" PrevImage="@prevImage" />
             }
-            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, image); })">
-                <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
+            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected( e, info ); })">
+                <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
             </div>
 
-            { prevImage = image; }
+            { prevImage = info.image; }
 
             if (!endOfImages && i == (gridImages.Count() - (imagesPerPage / 2)))
             {

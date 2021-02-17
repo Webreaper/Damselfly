@@ -24,10 +24,11 @@ else
         }
         else
         {
-            @foreach (var image in gridImages)
+            @for(int i = 0; i < gridImages.Count; i++ )
             {
-                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
-                    <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
+                var info = new SelectionInfo { image = gridImages[i], index = i };
+                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, info ); })">
+                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
                 </div>
             }
         }
