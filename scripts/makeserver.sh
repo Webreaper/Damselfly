@@ -34,7 +34,7 @@ echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname
 
 dotnet publish Damselfly.Web -r $runtime -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
 
-outputdir="Damselfly.Web/bin/Release/net5.0/${runtime}/publish"
+outputdir="Damselfly.Web/bin/Release/net6.0/${runtime}/publish"
 
 if [ -d "$outputdir" ]; then
   echo "Zipping build to ${zipname}..."
