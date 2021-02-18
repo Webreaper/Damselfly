@@ -11,7 +11,7 @@ fi
 case $PLATFORM in
   m1)
     # No M1 runtime for .Net yet.
-    runtime='osx-x64' 
+    runtime='osx-arm64' 
     ;;
   mac)
     runtime='osx-x64'

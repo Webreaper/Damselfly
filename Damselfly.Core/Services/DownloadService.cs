@@ -64,10 +64,10 @@ namespace Damselfly.Core.Services
         /// be a subfolder of the wwwroot content folder.
         /// </summary>
         /// <param name="contentRootPath"></param>
-        public void SetDownloadPath( string contentRootPath )
+        public void SetDownloadPath(string contentRootPath)
         {
             desktopPath = new DirectoryInfo(Path.Combine(contentRootPath, s_appVPath));
-            downloadsPath = new DirectoryInfo( Path.Combine(contentRootPath, s_downloadVPath) );
+            downloadsPath = new DirectoryInfo(Path.Combine(contentRootPath, s_downloadVPath));
 
             if (!downloadsPath.Exists)
             {
@@ -77,16 +77,27 @@ namespace Damselfly.Core.Services
             else
                 Logging.Log($"Downloads folder: {downloadsPath}");
 
-            // Now, see if we have a desktop app
+            if (desktopPath.Exists)
+            {
+                // Now, see if we have a desktop app
+                CheckDesktopAppPaths(desktopPath);
+            }
+        }
 
+        /// <summary>
+        /// Get the paths of the various desktop apps
+        /// </summary>
+        /// <param name="desktopPath"></param>
+        private void CheckDesktopAppPaths( DirectoryInfo desktopPath)
+        {
             // Get the files in the desktop folder
             var desktopFiles = desktopPath.GetFiles("*.*")
-                                          .Where( x => x.Name.StartsWith("Damselfly-", StringComparison.OrdinalIgnoreCase) )
+                                          .Where(x => x.Name.StartsWith("Damselfly-", StringComparison.OrdinalIgnoreCase))
                                           .ToList();
 
             // TODO: We should inject the json config that the app uses,
             // with the endpoint pre-configured, into the zip here.
-            var macAppPath = desktopFiles.FirstOrDefault( x => x.Name.EndsWith( "-mac.zip", StringComparison.OrdinalIgnoreCase ) );
+            var macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac.zip", StringComparison.OrdinalIgnoreCase));
 
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
@@ -105,8 +116,8 @@ namespace Damselfly.Core.Services
 
             if (linuxAppPath != null)
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
-        }
 
+        }
         /// <summary>
         /// Async method to create a download zip file, given a set of files on disk. Optionally
         /// pass a watermark to stamp all images as they're written into the zip file. 
