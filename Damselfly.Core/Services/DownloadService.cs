@@ -64,10 +64,10 @@ namespace Damselfly.Core.Services
         /// be a subfolder of the wwwroot content folder.
         /// </summary>
         /// <param name="contentRootPath"></param>
-        public void SetDownloadPath( string contentRootPath )
+        public void SetDownloadPath(string contentRootPath)
         {
             desktopPath = new DirectoryInfo(Path.Combine(contentRootPath, s_appVPath));
-            downloadsPath = new DirectoryInfo( Path.Combine(contentRootPath, s_downloadVPath) );
+            downloadsPath = new DirectoryInfo(Path.Combine(contentRootPath, s_downloadVPath));
 
             if (!downloadsPath.Exists)
             {
@@ -77,16 +77,27 @@ namespace Damselfly.Core.Services
             else
                 Logging.Log($"Downloads folder: {downloadsPath}");
 
-            // Now, see if we have a desktop app
+            if (desktopPath.Exists)
+            {
+                // Now, see if we have a desktop app
+                CheckDesktopAppPaths(desktopPath);
+            }
+        }
 
+        /// <summary>
+        /// Get the paths of the various desktop apps
+        /// </summary>
+        /// <param name="desktopPath"></param>
+        private void CheckDesktopAppPaths(DirectoryInfo desktopPath)
+        {
             // Get the files in the desktop folder
             var desktopFiles = desktopPath.GetFiles("*.*")
-                                          .Where( x => x.Name.StartsWith("Damselfly-", StringComparison.OrdinalIgnoreCase) )
+                                          .Where(x => x.Name.StartsWith("Damselfly-", StringComparison.OrdinalIgnoreCase))
                                           .ToList();
 
             // TODO: We should inject the json config that the app uses,
             // with the endpoint pre-configured, into the zip here.
-            var macAppPath = desktopFiles.FirstOrDefault( x => x.Name.EndsWith( "-mac.zip", StringComparison.OrdinalIgnoreCase ) );
+            var macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac.zip", StringComparison.OrdinalIgnoreCase));
 
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
@@ -105,8 +116,8 @@ namespace Damselfly.Core.Services
 
             if (linuxAppPath != null)
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
-        }
 
+        }
         /// <summary>
         /// Async method to create a download zip file, given a set of files on disk. Optionally
         /// pass a watermark to stamp all images as they're written into the zip file. 
@@ -118,7 +129,7 @@ namespace Damselfly.Core.Services
         /// <param name="OnProgress">Callback to report progress.</param>
         /// <returns></returns>
         // TODO: If only one file selected, download directly instead of zipping
-        public async Task<string> CreateDownloadZipAsync( FileInfo[] filesToZip, ExportConfig config, bool keepPaths )
+        public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config, bool keepPaths)
         {
             Logging.Log($"Preparing zip file from {filesToZip.Length} files.");
 
@@ -156,7 +167,7 @@ namespace Damselfly.Core.Services
                             string internalZipPath = imagePath.Name;
 
                             // If we're altering the file at all, postfix the name with _export
-                            if (! String.IsNullOrEmpty(config.WatermarkText) || config.Size != ExportSize.FullRes )
+                            if (!String.IsNullOrEmpty(config.WatermarkText) || config.Size != ExportSize.FullRes)
                             {
                                 internalZipPath = Path.GetFileNameWithoutExtension(imagePath.Name) + "_export" + imagePath.Extension;
                                 exportUnchanged = false;
@@ -180,7 +191,7 @@ namespace Damselfly.Core.Services
                                     // Run the transform - note we do this in-memory and directly on the stream so the
                                     // transformed file is never actually written to disk other than in the zip.
                                     await Task.Run(() => ImageProcessService.Instance.TransformDownloadImage(imagePath.FullName,
-                                                            zipStream, config.WatermarkText ));
+                                                            zipStream, config.WatermarkText));
                                 }
                             }
                         }
@@ -200,7 +211,7 @@ namespace Damselfly.Core.Services
 
                 return virtualZipPath;
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogError($"Exception while creating zip file {serverZipPath}: {ex.Message}");
                 return null;
@@ -213,7 +224,7 @@ namespace Damselfly.Core.Services
         /// task.
         /// </summary>
         /// <param name="timeSpan"></param>
-        public void CleanUpOldDownloads( TimeSpan timeSpan)
+        public void CleanUpOldDownloads(TimeSpan timeSpan)
         {
             if (downloadsPath.Exists)
             {
@@ -239,7 +250,7 @@ namespace Damselfly.Core.Services
         /// if an entry with that name already exists
         /// </summary>
         /// <param name="config"></param>
-        public async Task SaveDownloadConfig( ExportConfig config )
+        public async Task SaveDownloadConfig(ExportConfig config)
         {
             using var db = new ImageContext();
 
@@ -255,7 +266,7 @@ namespace Damselfly.Core.Services
                 db.DownloadConfigs.Add(config);
             }
 
-            await Task.FromResult( db.SaveChanges("SaveExportConfig") );
+            await Task.FromResult(db.SaveChanges("SaveExportConfig"));
         }
     }
 }

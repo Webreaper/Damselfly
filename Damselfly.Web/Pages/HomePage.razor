@@ -38,10 +38,8 @@
     {
         base.OnInitialized();
         navContext.CurrentImage = null;
-        ViewDataService.ShowBasket = true;
-        ViewDataService.ShowTags = true;
-        ViewDataService.ShowFolderList = true;
-        ViewDataService.ShowExport = false;
+
+        ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true});
     }
 
     // TODO: Don't think we need this

@@ -6,52 +6,54 @@
 @using Damselfly.Web.Shared.Images;
 @using Damselfly.Core.Services;
 @inject ThumbnailService thumbService
+@inject ViewDataService ViewDataService
 
-@if (images == null)
-{
-    if( tags == null )
+<div class="damselfly-tagview">
+    @if (images == null)
     {
-        <p><em>Loading tags...</em></p>
+        if (tags == null)
+        {
+            <p><em>Loading tags...</em></p>
+        }
+        else
+        {
+            <div class="damselfly-alltags">
+                @foreach (var tag in tags)
+                {
+                    <div class="damselfly-singletag">
+                        <a href="/tag/@tag">@tag</a>
+                    </div>
+                }
+            </div>
+        }
     }
     else
     {
-        <div class="damselfly-alltags">
-            @foreach (var tag in tags)
-            {
-                <div class="damselfly-singletag">
-                    <a href="/tag/@tag">@tag</a>
-                </div>
-            }
-        </div>
-    }
-}
-else
-{
         <div class="top-row">
             <h4>Tag: @TagName</h4>
         </div>
         <div class="wrapping_table">
             @foreach (var image in images)
             {
-                <GridImage CurrentImage=@image/>
+                <GridImage CurrentImage=@image />
             }
         </div>
-        <SelectedImages/>
-}
-
+    }
+</div>
 @code {
     [Parameter]
     public string TagName { get; set; }
-        
+
     Image[] images;
     string[] tags;
 
     protected override async Task OnParametersSetAsync()
     {
-        if( ! string.IsNullOrEmpty( TagName ) )
+        if (!string.IsNullOrEmpty(TagName))
         {
-            images = await ImageService.GetTagImagesAsync( TagName );
+            images = await ImageService.GetTagImagesAsync(TagName);
             tags = null;
+            StateHasChanged();
         }
 
         StateHasChanged();
@@ -60,9 +62,10 @@ else
     protected override async Task OnInitializedAsync()
     {
         // TODO: Called twice?
-        if( string.IsNullOrEmpty( TagName ) ) 
+        if (string.IsNullOrEmpty(TagName))
         {
-            tags = await ImageService.GetAllTagsAsync( null );
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true });
+            tags = await ImageService.GetAllTagsAsync(null);
             images = null;
         }
     }

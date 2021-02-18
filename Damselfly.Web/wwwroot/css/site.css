@@ -418,6 +418,14 @@ f
     overflow-y: auto;
 }
 
+.damselfly-tagview {
+    order: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
 .damselfly-logview {
     order: 2;
     display: flex;
@@ -695,11 +703,12 @@ f
     flex: 1;
 }
 
-.damselfly-export {
+.damselfly-exportview {
     display: flex;
     flex: 1;
     order: 3;
     flex-flow: column;
+    overflow-y: auto;
 }
 
 .damselfly-exportlist {
@@ -842,10 +851,9 @@ f
   }
 
 .damselfly-moreimages {
-    width: 100%;
-    padding: 3px;
-    text-align: center;
-    font-size: 12px;
+    width: 0px;
+    padding: 0px;
+    margin: 0px;
 }
 
 .damselfly-imageseparator {

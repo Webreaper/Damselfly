@@ -27,23 +27,26 @@
     }
     else
     {
-        @foreach (var image in gridImages)
+        @for(Int16 i = 0; i < gridImages.Count; i++ )
         {
+            var info = new SelectionInfo { image = gridImages[i], index = i };
+
             if (ShowDateSeparators)
             {
-                <GridSeparator CurrentImage="@image" PrevImage="@prevImage" />
+                <GridSeparator CurrentImage="@info.image" PrevImage="@prevImage" />
             }
-            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, image); })">
-                <GridImage CurrentImage=@image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
+            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected( e, info ); })">
+                <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
             </div>
 
-            { prevImage = image; }
+            { prevImage = info.image; }
+
+            if (!endOfImages && i == (gridImages.Count() - (imagesPerPage / 2)))
+            {
+                <div class="damselfly-moreimages" id="list-end"/>
+            }
         }
 
-        @if (gridImages.Any() && !endOfImages)
-        {
-            <div class="damselfly-moreimages" id="list-end">More...</div>
-        }
     }
 </div>
 
@@ -67,7 +70,7 @@
 </div>
 
 @code {
-    const int imagesPerPage = 100;
+    const int imagesPerPage = 250;
     private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
 
@@ -77,6 +80,7 @@
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
 
     private EventConflator conflator = new EventConflator(2000);
+
 
     private void StoreImage( Image image )
     {

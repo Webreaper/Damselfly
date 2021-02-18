@@ -9,7 +9,7 @@
         <div>
             <DamselflyLogo />
 
-            @if (navContext.CurrentImage != null)
+            @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
             {
                 <ToolWindow Title="Image Properties">
                     <ChildContent>
@@ -69,10 +69,10 @@
 @code { protected override void OnInitialized()
     {
         base.OnInitialized();
-        ViewDataService.PropertyChanged += OnPropertyChanged;
+        ViewDataService.SideBarStateChanged += OnSideBarStateChanged;
     }
 
-    private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnSideBarStateChanged(ViewDataService.SideBarState state)
     {
         InvokeAsync(StateHasChanged);
     }

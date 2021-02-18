@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Damselfly.Core.Services
@@ -7,88 +8,57 @@ namespace Damselfly.Core.Services
     /// Service to maintain state around the toolbars - such as whether
     /// we show the folder list or not.
     /// </summary>
-    public class ViewDataService : INotifyPropertyChanged
+    public class ViewDataService 
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+        public class SideBarState
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            public bool ShowFolderList { get; set; } = false;
+            public bool ShowTags { get; set; } = false;
+            public bool ShowBasket { get; set; } = false;
+            public bool ShowExport { get; set; } = false;
+            public bool ShowImageProps { get; set; } = false;
+            public bool ShowLogs { get; set; } = false;
+
+            public override bool Equals(object obj)
+            {
+                var other = obj as SideBarState;
+                if( other != null )
+                {
+                    return ShowBasket == other.ShowBasket &&
+                           ShowFolderList == other.ShowFolderList &&
+                           ShowExport == other.ShowExport &&
+                           ShowTags == other.ShowTags &&
+                           ShowImageProps == other.ShowImageProps &&
+                           ShowLogs == other.ShowLogs;
+                }
+
+                return false;
+            }
+        }
+        private SideBarState sidebarState = new SideBarState();
+        public event Action<SideBarState> SideBarStateChanged;
+
+        protected void OnStateChanged(SideBarState state)
+        {
+            SideBarStateChanged?.Invoke(state);
         }
 
-        private bool _showfolder = true;
-
-        public bool ShowFolderList
+        public void SetSideBarState(SideBarState state)
         {
-            get => _showfolder;
-            set
+            if (!state.Equals(sidebarState))
             {
-                if (_showfolder != value)
-                {
-                    _showfolder = value;
-                    OnPropertyChanged();
-                }
+                sidebarState = state;
+                OnStateChanged(state);
             }
         }
 
-        private bool _showTags = true;
-
-        public bool ShowTags
-        {
-            get => _showTags;
-            set
-            {
-                if (_showTags != value)
-                {
-                    _showTags = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private bool _showBasket = true;
-
-        public bool ShowBasket
-        {
-            get => _showBasket;
-            set
-            {
-                if (_showBasket != value)
-                {
-                    _showBasket = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private bool _showExport = true;
-
-        public bool ShowExport
-        {
-            get => _showExport;
-            set
-            {
-                if (_showExport != value)
-                {
-                    _showExport = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        private bool _showLogs = false;
-
-        public bool ShowLogs
-        {
-            get => _showLogs;
-            set
-            {
-                if (_showLogs != value)
-                {
-                    _showLogs = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public bool ShowFolderList { get => sidebarState.ShowFolderList; }
+        public bool ShowTags { get => sidebarState.ShowTags; }
+        public bool ShowBasket { get => sidebarState.ShowBasket; }
+        public bool ShowExport { get => sidebarState.ShowExport; }
+        public bool ShowImageProps { get => sidebarState.ShowImageProps; }
+        public bool ShowLogs { get => sidebarState.ShowLogs; }
     }
 }
