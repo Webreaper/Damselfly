@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>d09fa775-aa27-45c8-a743-5b27d054d4dd</UserSecretsId>
   </PropertyGroup>
@@ -55,7 +55,7 @@
     <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
     <PackageReference Include="Blazored.Typeahead" Version="4.5.1" />
     <PackageReference Include="Blazored.Modal" Version="6.0.1" />
-    <PackageReference Include="BlazorDateRangePicker" Version="3.3.0" />
+    <PackageReference Include="BlazorDateRangePicker" Version="3.4.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.0.0.20340" />
     <PackageReference Include="Radzen.Blazor" Version="3.1.0" />

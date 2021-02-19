@@ -41,12 +41,11 @@
 
             { prevImage = info.image; }
 
-            if (!endOfImages && i == (gridImages.Count() - (imagesPerPage / 2)))
+            if (!endOfImages && i == (gridImages.Count() - scrollTriggerImages))
             {
                 <div class="damselfly-moreimages" id="list-end"/>
             }
         }
-
     }
 </div>
 
@@ -70,6 +69,7 @@
 </div>
 
 @code {
+    const int scrollTriggerImages = 30;
     const int imagesPerPage = 250;
     private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
