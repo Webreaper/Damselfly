@@ -88,7 +88,7 @@ namespace Damselfly.Core.Services
         /// Get the paths of the various desktop apps
         /// </summary>
         /// <param name="desktopPath"></param>
-        private void CheckDesktopAppPaths(DirectoryInfo desktopPath)
+        private void CheckDesktopAppPaths( DirectoryInfo desktopPath)
         {
             // Get the files in the desktop folder
             var desktopFiles = desktopPath.GetFiles("*.*")

@@ -57,7 +57,7 @@ jobs:
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x'
+          dotnet-version: '6.0.100-preview.1.21103.13'
 
       - name: Run Dotnet Server Build
         run: sh scripts/makeserver.sh ${{ matrix.target }} 
@@ -128,7 +128,11 @@ jobs:
       - name: Build Docker for Dev (develop only)
         if: github.ref == 'refs/heads/develop'
         run: sh scripts/makedocker.sh
-      
+
+      - name: Build Docker for Dev (dotnet6 only)
+        if: github.ref == 'refs/heads/dotnet6'
+        run: sh scripts/makedocker.sh
+
       - name: Build Docker for Release (master only)
         if: github.ref == 'refs/heads/master'
         run: sh scripts/makedocker.sh master
@@ -153,4 +157,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["./server/*", "./publish/wwwroot/desktop/*"]'  
+          asset_paths: '["server/*", "publish/wwwroot/desktop/*"]'  
