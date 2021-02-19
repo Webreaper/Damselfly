@@ -84,10 +84,10 @@ namespace Damselfly.Core.Utils
             {
                 Logging.LogVerbose("Performance Summary:");
                 foreach (var kvp in averages.OrderBy(x => x.Key))
-                    Logging.LogVerbose("  Avg {0}: {1}ms", kvp.Key, kvp.Value.AverageTime);
+                    Logging.Log("  Avg {0}: {1}ms", kvp.Key, kvp.Value.AverageTime);
 
                 foreach (var kvp in maximums.OrderBy(x => x.Key))
-                    Logging.LogVerbose("  Max {0}: {1}ms", kvp.Key, kvp.Value);
+                    Logging.Log("  Max {0}: {1}ms", kvp.Key, kvp.Value);
             }
             catch (Exception)
             {
