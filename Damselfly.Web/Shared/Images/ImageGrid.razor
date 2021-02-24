@@ -27,23 +27,33 @@
     }
     else
     {
-        @for(Int16 i = 0; i < gridImages.Count; i++ )
+        int allImages = 0;
+        foreach (var grouping in GroupedImages)
         {
-            var info = new SelectionInfo { image = gridImages[i], index = i };
-
-            if (ShowDateSeparators)
+            if (!string.IsNullOrEmpty(grouping.Key))
             {
-                <GridSeparator CurrentImage="@info.image" PrevImage="@prevImage" />
+                <div class="damselfly-imageseparator">
+                    @grouping.Key
+                    <button @onclick="() => { AddGroupToBasket(grouping); }" class="btn btn-primary">
+                        <i class="fas fa-shopping-basket" />
+                        &nbsp;Add
+                    </button>
+
+                </div>
             }
-            <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected( e, info ); })">
-                <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
-            </div>
 
-            { prevImage = info.image; }
-
-            if (!endOfImages && i == (gridImages.Count() - scrollTriggerImages))
+            foreach( var image in grouping.Images )
             {
-                <div class="damselfly-moreimages" id="list-end"/>
+                var info = new SelectionInfo { image = image, index = allImages++ };
+
+                <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
+                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
+                </div>
+
+                if (!endOfImages && allImages == (gridImages.Count() - scrollTriggerImages))
+                {
+                    <div class="damselfly-moreimages" id="list-end" />
+                }
             }
         }
     }
@@ -63,37 +73,76 @@
         }
     </div>
     <div class="damselfly-browsetool">
-        <label class="damselfly-browsetoollabel" for="DateSep">Group by Date</label>
-        <input id="DateSep" type="checkbox" @bind="@ShowDateSeparators">
+        <label class="damselfly-browsetoollabel">
+            Group By:
+            @foreach (var choice in new[] { GroupingType.None, GroupingType.Date, GroupingType.Folder })
+            {
+                <label class="damselfly-browsetoollabel">
+                    <input name="thumbSize" type="radio"
+                           value="@choice"
+                           checked="@(CurrentGroupType == choice)"
+                           @onchange="@(() => { ChangeGroupType( choice ); })" />
+                    @choice.ToString()
+                </label>
+            }
+        </label>
     </div>
 </div>
 
 @code {
     const int scrollTriggerImages = 30;
     const int imagesPerPage = 250;
-    private Image prevImage = null;
     private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
-    public bool ShowDateSeparators {  get { return showDateSeparators; } set { SetDateSeparatorState(value); } }
-    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
-
     private EventConflator conflator = new EventConflator(2000);
 
+    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
+    GroupingType CurrentGroupType = ConfigService.Instance.Get<GroupingType>("GridGrouping", GroupingType.None);
 
     private void StoreImage( Image image )
     {
         // Todo - save an image to local storage
     }
 
-    private void SetDateSeparatorState( bool showSeparator )
+    void AddGroupToBasket(ImageGrouping grouping)
     {
-        showDateSeparators = showSeparator;
+        BasketService.Instance.SetBasketState(grouping.Images, true);
+        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
+    }
 
-        ConfigService.Instance.Set("DateSeparators", showSeparator.ToString() );
 
-        StateHasChanged();
+    private List<ImageGrouping> GroupedImages
+    {
+        get
+        {
+            // TODO: Order by
+            if (CurrentGroupType == GroupingType.Folder)
+            {
+                return gridImages.GroupBy(x => x.Folder)
+                            .OrderBy(x => x.Key.Path)
+                            .Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
+                            .ToList();
+            }
+            else if (CurrentGroupType == GroupingType.Date)
+            {
+                return gridImages.GroupBy(x => x.SortDate.Date)
+                            .OrderByDescending( x => x.Key )
+                            .Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
+                            .ToList();
+            }
+
+            return new List<ImageGrouping> { new ImageGrouping { Key = null, Images = gridImages } };
+        }
+
+    }
+
+    private void ChangeGroupType( GroupingType newType )
+    {
+        CurrentGroupType = newType;
+
+        ConfigService.Instance.Set("GridGrouping", newType.ToString() );
     }
 
     string WrapStyle { get; set; } = "wrapping-table-small";

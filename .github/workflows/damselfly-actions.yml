@@ -153,4 +153,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["server/*", "publish/wwwroot/desktop/*"]'  
+          asset_paths: '["$GITHUB_WORKSPACE/server/*", "$GITHUB_WORKSPACE/publish/wwwroot/desktop/*"]'  
