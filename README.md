@@ -9,7 +9,8 @@ Damselfly is a server-based Digital Asset Management system. The goal of Damself
 
 ## Features
 
-* Server-based deployment, with a web UI, so the image library can be accessed via multiple devices without having to copy catalogues or other DBs to local device storage. 
+* Server-based deployment, with a web UI, so the image library can be accessed via multiple devices without having to copy catalogues or other DBs to local device storage.   
+* Support for JPG, PNG, Webp, BMP and DNG (RAW) files. 
 * Focus on extremely fast performance - searching a 500,000-image catalogue returns results in around a second.
 * Full-text search with multi-phrase partial-word searches
 * Fast keyword tagging workflow addition, with non-destructive tagging (JPEG images are not re-encoded)
@@ -28,7 +29,9 @@ Damselfly is a server-based Digital Asset Management system. The goal of Damself
 
 ## Planned Features/Enhancements
 
+* Currently Damselfly has no concept of user identity, so there are no user-specific sessions (for things like selection, baskets and access control). 
 * Direct upload to CMS platforms
+* Support for more image formats (e.g., HEIC).
 * Direct sharing to social media (Twitter, Facebook etc)
 * Support for selection and upload to Alamy Stock Image photo service
 * Simple non-destructive editing/manipulation - cropping, colour adjustment etc
