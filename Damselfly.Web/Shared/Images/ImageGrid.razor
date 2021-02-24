@@ -1,4 +1,5 @@
 ﻿
+@using Damselfly.Core.Services
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService keywordService
@@ -78,7 +79,7 @@
     <div class="damselfly-browsetool">
         <label class="damselfly-browsetoollabel">
             Group By:
-            @foreach (var choice in new[] { GroupingType.None, GroupingType.Date, GroupingType.Folder })
+            @foreach (var choice in new[] { SearchService.GroupingType.None, SearchService.GroupingType.Date, SearchService.GroupingType.Folder })
             {
                 <label class="damselfly-browsetoollabel">
                     <input name="thumbSize" type="radio"
@@ -102,7 +103,7 @@
     private EventConflator conflator = new EventConflator(2000);
 
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
-    GroupingType CurrentGroupType = ConfigService.Instance.Get<GroupingType>("GridGrouping", GroupingType.None);
+    SearchService.GroupingType CurrentGroupType = ConfigService.Instance.Get<SearchService.GroupingType>("GridGrouping", SearchService.GroupingType.None);
 
     private void StoreImage( Image image )
     {
@@ -126,14 +127,14 @@
         get
         {
             // TODO: Order by
-            if (CurrentGroupType == GroupingType.Folder)
+            if (CurrentGroupType == SearchService.GroupingType.Folder)
             {
                 return gridImages.GroupBy(x => x.Folder)
                             .OrderBy(x => x.Key.Path)
                             .Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
                             .ToList();
             }
-            else if (CurrentGroupType == GroupingType.Date)
+            else if (CurrentGroupType == SearchService.GroupingType.Date)
             {
                 return gridImages.GroupBy(x => x.SortDate.Date)
                             .OrderByDescending( x => x.Key )
@@ -146,7 +147,7 @@
 
     }
 
-    private void ChangeGroupType( GroupingType newType )
+    private void ChangeGroupType(SearchService.GroupingType newType )
     {
         CurrentGroupType = newType;
 
@@ -248,7 +249,7 @@
             IsLoading = true;
 
             ChangeThumbSize(CurrentThumbSize);
-            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad, CurrentGroupType);
 
             if (newImages.Any())
             {

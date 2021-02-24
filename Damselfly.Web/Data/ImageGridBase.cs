@@ -20,13 +20,6 @@ namespace Damselfly.Web.Data
             public int index;
         }
 
-        public enum GroupingType
-        {
-            None,
-            Folder,
-            Date
-        };
-
         protected class ImageGrouping
         {
             public string Key { get; set; }

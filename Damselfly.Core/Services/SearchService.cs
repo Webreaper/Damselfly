@@ -17,6 +17,13 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class SearchService
     {
+        public enum GroupingType
+        {
+            None,
+            Folder,
+            Date
+        };
+
         public SearchService()
         {
             Instance = this;
@@ -72,7 +79,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="first"></param>
         /// <param name="count"></param>
-        private async Task LoadMoreData(int first, int count)
+        private async Task LoadMoreData(int first, int count, GroupingType grouping )
         {
             if (first < SearchResults.Count() && first + count < SearchResults.Count())
             {
@@ -169,13 +176,27 @@ namespace Damselfly.Core.Services
 
                     images = images.Include(x => x.BasketEntry);
 
+                    // Add in the ordering for the group by
+                    switch( grouping )
+                    {
+                        case GroupingType.None:
+                        case GroupingType.Date:
+                            images = images.OrderByDescending(x => x.SortDate);
+                            break;
+                        case GroupingType.Folder:
+                            images = images.OrderBy(x => x.Folder.Path)
+                                           .ThenByDescending(x => x.SortDate);
+                            break;
+                        default:
+                            throw new ArgumentException("Unexpected grouping type.");
+                    }
+
                     // Disable this for now - it's slow due to the EFCore subquery bug.
                     // We mitigate it by loading the tags in a separate query below.
                     // images = images.Include(x => x.ImageTags)
                     //               .ThenInclude(x => x.Tag);
 
-                    results = await images.OrderByDescending(x => x.SortDate)
-                                    .Skip(first)
+                    results = await images.Skip(first)
                                     .Take(count)
                                     .ToArrayAsync();
 
@@ -208,13 +229,13 @@ namespace Damselfly.Core.Services
         /// </summary>
         public void PreLoadSearchData()
         {
-            _ = LoadMoreData(0, 100);
+            _ = LoadMoreData(0, 100, SearchService.GroupingType.None);
         }
 
-        public async Task<Image[]> GetQueryImagesAsync(int first, int count)
+        public async Task<Image[]> GetQueryImagesAsync(int first, int count, GroupingType grouping)
         {
             // Load more data if we need it.
-            await LoadMoreData(first, count);
+            await LoadMoreData(first, count, grouping);
 
             return SearchResults.Skip(first).Take(count).ToArray();
         }
