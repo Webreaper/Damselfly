@@ -1,5 +1,5 @@
 ﻿
-@using Damselfly.Core.Services
+@using Damselfly.Core.Models
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService keywordService
@@ -79,13 +79,12 @@
     <div class="damselfly-browsetool">
         <label class="damselfly-browsetoollabel">
             Group By:
-            @foreach (var choice in new[] { SearchService.GroupingType.None, SearchService.GroupingType.Date, SearchService.GroupingType.Folder })
+            @foreach (var choice in new[] { SearchQuery.GroupingType.None, SearchQuery.GroupingType.Date, SearchQuery.GroupingType.Folder })
             {
                 <label class="damselfly-browsetoollabel">
-                    <input name="thumbSize" type="radio"
-                           value="@choice"
-                           checked="@(CurrentGroupType == choice)"
-                           @onchange="@(() => { ChangeGroupType( choice ); })" />
+                    <input name="thumbSize" value="@choice" type="radio"
+                       checked="@(SearchService.Instance.Grouping == choice)"
+                       @onchange="@(() => { ChangeGroupType( choice ); })" />
                     @choice.ToString()
                 </label>
             }
@@ -103,7 +102,6 @@
     private EventConflator conflator = new EventConflator(2000);
 
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
-    SearchService.GroupingType CurrentGroupType = ConfigService.Instance.Get<SearchService.GroupingType>("GridGrouping", SearchService.GroupingType.None);
 
     private void StoreImage( Image image )
     {
@@ -127,14 +125,14 @@
         get
         {
             // TODO: Order by
-            if (CurrentGroupType == SearchService.GroupingType.Folder)
+            if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Folder)
             {
                 return gridImages.GroupBy(x => x.Folder)
                             .OrderBy(x => x.Key.Path)
                             .Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
                             .ToList();
             }
-            else if (CurrentGroupType == SearchService.GroupingType.Date)
+            else if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Date)
             {
                 return gridImages.GroupBy(x => x.SortDate.Date)
                             .OrderByDescending( x => x.Key )
@@ -147,11 +145,9 @@
 
     }
 
-    private void ChangeGroupType(SearchService.GroupingType newType )
+    private void ChangeGroupType(SearchQuery.GroupingType newType )
     {
-        CurrentGroupType = newType;
-
-        ConfigService.Instance.Set("GridGrouping", newType.ToString() );
+        SearchService.Instance.Grouping = newType;
     }
 
     string WrapStyle { get; set; } = "wrapping-table-small";
@@ -249,7 +245,7 @@
             IsLoading = true;
 
             ChangeThumbSize(CurrentThumbSize);
-            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad, CurrentGroupType);
+            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
             if (newImages.Any())
             {

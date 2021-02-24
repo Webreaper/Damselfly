@@ -389,6 +389,13 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class SearchQuery
     {
+        public enum GroupingType
+        {
+            None,
+            Folder,
+            Date
+        };
+
         public string SearchText { get; set; }
         public DateTime MaxDate { get; set; } = DateTime.MaxValue;
         public DateTime MinDate { get; set; } = DateTime.MinValue;
@@ -399,10 +406,11 @@ namespace Damselfly.Core.Models
         public int CameraId { get; set; } = -1;
         public int TagId { get; set; } = -1;
         public int LensId { get; set; } = -1;
+        public GroupingType Grouping { get; set; } = GroupingType.None;
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}";
         }
     }
 

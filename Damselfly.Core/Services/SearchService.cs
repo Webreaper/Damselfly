@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
+using static Damselfly.Core.Models.SearchQuery;
 
 namespace Damselfly.Core.Services
 {
@@ -17,13 +18,6 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class SearchService
     {
-        public enum GroupingType
-        {
-            None,
-            Folder,
-            Date
-        };
-
         public SearchService()
         {
             Instance = this;
@@ -53,6 +47,7 @@ namespace Damselfly.Core.Services
         public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
         public int TagId { get { return query.TagId; } set { if (query.TagId != value) { query.TagId = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
 
         public void SetDateRange( DateTime min, DateTime max )
         {
@@ -79,7 +74,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="first"></param>
         /// <param name="count"></param>
-        private async Task LoadMoreData(int first, int count, GroupingType grouping )
+        private async Task LoadMoreData(int first, int count)
         {
             if (first < SearchResults.Count() && first + count < SearchResults.Count())
             {
@@ -177,7 +172,7 @@ namespace Damselfly.Core.Services
                     images = images.Include(x => x.BasketEntry);
 
                     // Add in the ordering for the group by
-                    switch( grouping )
+                    switch( query.Grouping )
                     {
                         case GroupingType.None:
                         case GroupingType.Date:
@@ -229,13 +224,13 @@ namespace Damselfly.Core.Services
         /// </summary>
         public void PreLoadSearchData()
         {
-            _ = LoadMoreData(0, 100, SearchService.GroupingType.None);
+            _ = LoadMoreData(0, 100);
         }
 
-        public async Task<Image[]> GetQueryImagesAsync(int first, int count, GroupingType grouping)
+        public async Task<Image[]> GetQueryImagesAsync(int first, int count)
         {
             // Load more data if we need it.
-            await LoadMoreData(first, count, grouping);
+            await LoadMoreData(first, count);
 
             return SearchResults.Skip(first).Take(count).ToArray();
         }
