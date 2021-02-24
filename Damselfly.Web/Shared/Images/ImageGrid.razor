@@ -38,7 +38,10 @@
                         <i class="fas fa-shopping-basket" />
                         &nbsp;Add
                     </button>
-
+                    <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary">
+                        <i class="fas fa-shopping-basket" />
+                        &nbsp;Select
+                    </button>
                 </div>
             }
 
@@ -112,6 +115,11 @@
         StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
     }
 
+    void SelectGroup(ImageGrouping grouping)
+    {
+        SelectionService.Instance.SelectImages(grouping.Images);
+        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
+    }
 
     private List<ImageGrouping> GroupedImages
     {
