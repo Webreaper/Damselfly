@@ -83,9 +83,10 @@ div::-webkit-scrollbar-thumb {
 
 .btn-primary {
     color: #fff;
-    background-color: #1bc26e;
+    background-color: #1ba96e;
     border-color: #18ac61;
-    min-height: 30px;
+    height: 30px;
+    border-radius: 4px;
 }
 
 .image-grid-controls {
@@ -861,11 +862,32 @@ f
     border: 1px;
     margin-top: 5px;
     margin-left: 3px;
-    padding: 3px;
-    padding-left: 15px;
-    font-size: 14px;
+    max-height: 28px;
     border-top: 1px solid rgba(130,155,130,0.75);
     background-image: linear-gradient(90deg, rgb(50, 103, 64) 0%, rgb(10, 10, 10) 90%);
+    display: flex;
+}
+
+.damselfly-imageseparatortitle {
+    padding: 3px;
+    flex: 1 1 60%;
+    padding-left: 15px;
+    font-size: 14px;
+    text-wrap: none;
+}
+
+.damselfly-imageseparatorbuttons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 12px;
+}
+
+.damselfly-imageseparatorbutton button {
+    max-height: 22px;
+    height: 22px;
+    margin: 1px;
 }
 
 .InputAddOn {

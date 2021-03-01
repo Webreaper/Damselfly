@@ -12,6 +12,7 @@
 @using Damselfly.Web.Shared.Images
 @using Damselfly.Core.ImageProcessing
 
+<LocalFileExporter @ref="FileExporter" />
 <div class="damselfly-imagegrid" id="scroll-area">
     @if (!gridImages.Any())
     {
@@ -34,19 +35,36 @@
             if (!string.IsNullOrEmpty(grouping.Key))
             {
                 <div class="damselfly-imageseparator">
-                    @grouping.Key
-                    <button @onclick="() => { AddGroupToBasket(grouping); }" class="btn btn-primary">
-                        <i class="fas fa-shopping-basket" />
-                        &nbsp;Add
-                    </button>
-                    <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary">
-                        <i class="fas fa-shopping-basket" />
-                        &nbsp;Select
-                    </button>
+                    <div class="damselfly-imageseparatortitle">
+                        @grouping.Key
+                    </div>
+                    <div class="damselfly-imageseparatorbuttons">
+                        <button @onclick="() => { AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            <i class="fas fa-shopping-basket" />
+                            &nbsp;Add
+                        </button>
+                        <button @onclick="() => { RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            <i class="fas fa-shopping-basket" />
+                            &nbsp;Remove
+                        </button>
+                        <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            &nbsp;Select
+                        </button>
+                        <button @onclick="() => { DeselectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            &nbsp;De-select
+                        </button>
+                        @if (FileExporter.IsDesktopHosted)
+                        {
+                            <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
+                                <i class="fas fa-shopping-basket" />
+                                &nbsp;Save Locally
+                            </button>
+                        }
+                    </div>
                 </div>
             }
 
-            foreach( var image in grouping.Images )
+            foreach (var image in grouping.Images)
             {
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
@@ -83,8 +101,8 @@
             {
                 <label class="damselfly-browsetoollabel">
                     <input name="thumbSize" value="@choice" type="radio"
-                       checked="@(SearchService.Instance.Grouping == choice)"
-                       @onchange="@(() => { ChangeGroupType( choice ); })" />
+                           checked="@(SearchService.Instance.Grouping == choice)"
+                           @onchange="@(() => { ChangeGroupType( choice ); })" />
                     @choice.ToString()
                 </label>
             }
@@ -93,9 +111,10 @@
 </div>
 
 @code {
+    private LocalFileExporter FileExporter;
     const int scrollTriggerImages = 30;
     const int imagesPerPage = 250;
-    private bool showDateSeparators = ConfigService.Instance.GetBool( "DateSeparators", false );
+    private bool showDateSeparators = ConfigService.Instance.GetBool("DateSeparators", false);
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
@@ -103,7 +122,7 @@
 
     ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
 
-    private void StoreImage( Image image )
+    private void StoreImage(Image image)
     {
         // Todo - save an image to local storage
     }
@@ -114,10 +133,20 @@
         StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
     }
 
+    void RemoveGroupFromBasket(ImageGrouping grouping)
+    {
+        BasketService.Instance.SetBasketState(grouping.Images, false);
+        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+    }
+
     void SelectGroup(ImageGrouping grouping)
     {
         SelectionService.Instance.SelectImages(grouping.Images);
-        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
+    }
+
+    void DeselectGroup(ImageGrouping grouping)
+    {
+        SelectionService.Instance.DeselectImages(grouping.Images);
     }
 
     private List<ImageGrouping> GroupedImages
@@ -135,7 +164,7 @@
             else if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Date)
             {
                 return gridImages.GroupBy(x => x.SortDate.Date)
-                            .OrderByDescending( x => x.Key )
+                            .OrderByDescending(x => x.Key)
                             .Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
                             .ToList();
             }
@@ -145,7 +174,7 @@
 
     }
 
-    private void ChangeGroupType(SearchQuery.GroupingType newType )
+    private void ChangeGroupType(SearchQuery.GroupingType newType)
     {
         SearchService.Instance.Grouping = newType;
     }
@@ -174,15 +203,15 @@
         {
             int initialLoadCount, scrollPos;
 
-            if ( !int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
+            if (!int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
                 initialLoadCount = imagesPerPage;
 
-            if ( !int.TryParse(ConfigService.Instance.Get("ImageScrollTop"), out scrollPos))
+            if (!int.TryParse(ConfigService.Instance.Get("ImageScrollTop"), out scrollPos))
                 scrollPos = 0;
 
             searchService.OnChange += SearchQueryChanged;
-            await LoadData( initialLoadCount );
-            await InitJsListenerAsync( scrollPos );
+            await LoadData(initialLoadCount);
+            await InitJsListenerAsync(scrollPos);
         }
     }
 
@@ -213,22 +242,22 @@
         _ = LoadData(imagesPerPage);
     }
 
-    protected async Task InitJsListenerAsync( int initialScrollPos )
+    protected async Task InitJsListenerAsync(int initialScrollPos)
     {
         await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this), initialScrollPos);
     }
 
-    private void SaveScrollState( int scrollTop )
+    private void SaveScrollState(int scrollTop)
     {
-        ConfigService.Instance.Set("ImageScrollTop", scrollTop.ToString() );
+        ConfigService.Instance.Set("ImageScrollTop", scrollTop.ToString());
         ConfigService.Instance.Set("LoadedImages", gridImages.Count.ToString());
     }
 
     [JSInvokable]
     // Debugging method to help us differentiate between JS calls and other data loads
-    public void HandleScroll( int scrollTop )
+    public void HandleScroll(int scrollTop)
     {
-        conflator.HandleEvent( (x) => { SaveScrollState( scrollTop ); } );
+        conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
     }
 
     [JSInvokable]
@@ -238,7 +267,7 @@
         await LoadData(imagesPerPage);
     }
 
-    public async Task LoadData( int imagesToLoad )
+    public async Task LoadData(int imagesToLoad)
     {
         if (!IsLoading)
         {

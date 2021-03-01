@@ -76,7 +76,7 @@
         if (firstRender)
         {
             // Probe for a js function which indicates we're in the electron container
-            DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
+            DesktopVersion = await JsRuntime.InvokeAsync<string>(JsMethods.JSGetDesktopVersion);
 
             isDesktopHosted = !string.IsNullOrEmpty(DesktopVersion);
 

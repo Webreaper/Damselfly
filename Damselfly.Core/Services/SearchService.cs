@@ -113,7 +113,22 @@ namespace Damselfly.Core.Services
 
                     images = images.Include(x => x.Folder);
 
-                    if( query.TagId != -1 )
+                    // Add in the ordering for the group by
+                    switch (query.Grouping)
+                    {
+                        case GroupingType.None:
+                        case GroupingType.Date:
+                            images = images.OrderByDescending(x => x.SortDate);
+                            break;
+                        case GroupingType.Folder:
+                            images = images.OrderBy(x => x.Folder.Path)
+                                           .ThenByDescending(x => x.SortDate);
+                            break;
+                        default:
+                            throw new ArgumentException("Unexpected grouping type.");
+                    }
+
+                    if ( query.TagId != -1 )
                     {
                         images = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
                     }
@@ -170,21 +185,6 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.BasketEntry);
-
-                    // Add in the ordering for the group by
-                    switch( query.Grouping )
-                    {
-                        case GroupingType.None:
-                        case GroupingType.Date:
-                            images = images.OrderByDescending(x => x.SortDate);
-                            break;
-                        case GroupingType.Folder:
-                            images = images.OrderBy(x => x.Folder.Path)
-                                           .ThenByDescending(x => x.SortDate);
-                            break;
-                        default:
-                            throw new ArgumentException("Unexpected grouping type.");
-                    }
 
                     // Disable this for now - it's slow due to the EFCore subquery bug.
                     // We mitigate it by loading the tags in a separate query below.

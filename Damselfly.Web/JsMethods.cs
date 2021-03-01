@@ -6,6 +6,8 @@ namespace Damselfly.Web
 {
     public static class JsMethods
     {
+        public const string JSGetDesktopVersion = "getDesktopVersion";
+
         /// <summary>
         /// Called from the Javascript in the Desktop App. The Electron Node code
         /// calls the checkDesktopUpgrade in _Host.cshtml, passing in its version
