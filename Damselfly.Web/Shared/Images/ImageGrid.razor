@@ -53,7 +53,7 @@
                         <button @onclick="() => { DeselectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
                             &nbsp;De-select
                         </button>
-                        @if (FileExporter.IsDesktopHosted)
+                        @if (FileExporter != null && FileExporter.IsDesktopHosted)
                         {
                             <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
                                 <i class="fas fa-shopping-basket" />

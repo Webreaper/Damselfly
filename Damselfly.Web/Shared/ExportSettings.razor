@@ -4,9 +4,10 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
 
+<LocalFileExporter @ref="FileExporter" />
+
 <div class="damselfly-exportpanel">
-    <LocalFileExporter @ref="FileExporter"/>
-    <ExportConfigManager CurrentConfig="@selectedConfig"/>
+    <ExportConfigManager CurrentConfig="@selectedConfig" />
     <div class="damselfly-exportsettings">
         <div>
             <h4>Export Settings</h4>
@@ -42,15 +43,15 @@
             <input id="watermarkText" @bind-value="selectedConfig.WatermarkText" />
         </div>
         <div>
-                @if( FileExporter.IsDesktopHosted )
-                {
-                    <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
-                }
-                <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
-            </div>
+            @if( FileExporter != null && FileExporter.IsDesktopHosted )
+            {
+                <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
+            }
+            <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
         </div>
-
     </div>
+
+</div>
 
 @code {
     private LocalFileExporter FileExporter;
