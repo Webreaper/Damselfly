@@ -798,7 +798,7 @@ namespace Damselfly.Core.Services
                     {
                         var on1MetaData = On1Sidecar.LoadMetadata(on1Sidecar);
 
-                        if (on1MetaData != null)
+                        if( on1MetaData != null && on1MetaData.Keywords != null && on1MetaData.Keywords.Any() )
                         {
                             var missingKeywords = on1MetaData.Keywords
                                                     .Except(keywords, StringComparer.OrdinalIgnoreCase)
