@@ -698,42 +698,46 @@ namespace Damselfly.Core.Services
 
                         foreach (var img in imagesToScan)
                         {
-                            ImageMetaData imgMetaData = img.MetaData;
-                            bool isNewMetadata = false;
-
-                            if (imgMetaData == null)
+                            try
                             {
-                                // New metadata
-                                imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
-                                newMetadataEntries.Add(imgMetaData);
-                                isNewMetadata = true;
+                                ImageMetaData imgMetaData = img.MetaData;
+                                bool isNewMetadata = false;
+
+                                if (imgMetaData == null)
+                                {
+                                    // New metadata
+                                    imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
+                                    newMetadataEntries.Add(imgMetaData);
+                                    isNewMetadata = true;
+                                }
+                                else
+                                    updatedEntries.Add(imgMetaData);
+
+                                GetImageMetaData(ref imgMetaData, out var keywords);
+
+                                if (img.SortDate != imgMetaData.DateTaken)
+                                {
+                                    // Update the image sort date with the date taken
+                                    img.SortDate = imgMetaData.DateTaken;
+                                    img.LastUpdated = DateTime.UtcNow;
+                                    updatedImages.Add(img);
+                                }
+
+                                if (keywords.Any())
+                                    imageKeywords[img] = keywords;
+
+                                if (isNewMetadata && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
+                                {
+                                    // If it's new metadata, that means a new image - in which
+                                    // case we should scan for sidecar files and ingest their
+                                    // keywords
+                                    ProcessSideCarKeywords(img, keywords);
+                                }
                             }
-                            else
-                                updatedEntries.Add(imgMetaData);
-
-                            GetImageMetaData(ref imgMetaData, out var keywords);
-
-                            if (img.SortDate != imgMetaData.DateTaken)
+                            catch( Exception ex )
                             {
-                                // Update the image sort date with the date taken
-                                img.SortDate = imgMetaData.DateTaken;
-                                img.LastUpdated = DateTime.UtcNow;
-                                updatedImages.Add(img);
+                                Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
                             }
-
-                            if (keywords.Any())
-                                imageKeywords[img] = keywords;
-
-                            if (isNewMetadata && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
-                            {
-                                // If it's new metadata, that means a new image - in which
-                                // case we should scan for sidecar files and ingest their
-                                // keywords
-                                ProcessSideCarKeywords(img, keywords);
-                            }
-
-                            // Yield a bit. TODO: must be a better way of doing this
-                            Thread.Sleep(50);
                         }
 
                         var saveWatch = new Stopwatch("MetaDataSave");
