@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using Serilog;
 using System.IO;
-using System.Runtime.InteropServices;
 using CommandLine;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -104,7 +103,6 @@ namespace Damselfly.Web
                                 Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
                                 Logging.Log($" CLR Ver: {Environment.Version}");
                                 Logging.Log($" OS: {Environment.OSVersion}");
-                                Logging.Log($" CPU Arch: {RuntimeInformation.ProcessArchitecture}");
                                 Logging.Log($" Processor Count: {Environment.ProcessorCount}");
                                 Logging.Log($" Read-only mode: {o.ReadOnly}");
                                 Logging.Log($" Synology = {o.Synology}");

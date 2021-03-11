@@ -7,7 +7,6 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using EFCore.BulkExtensions;
-using System.Threading;
 
 namespace Damselfly.Core.Services
 {
@@ -24,14 +23,6 @@ namespace Damselfly.Core.Services
         public static MetaDataService Instance { get; private set; }
         public static string ExifToolVer { get; private set; }
 
-        public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
-        public event Action OnFavouritesChanged;
-
-        private void NotifyFavouritesChanged()
-        {
-            OnFavouritesChanged?.Invoke();
-        }
-
         public MetaDataService()
         {
             Instance = this;
@@ -47,13 +38,11 @@ namespace Damselfly.Core.Services
             var process = new ProcessStarter();
             if (process.StartProcess("exiftool", "-ver") )
             {
-                ExifToolVer = $"v{process.OutputText}";
+                ExifToolVer = process.OutputText;
             }
 
             if (string.IsNullOrEmpty(ExifToolVer))
-            {
-                ExifToolVer = "Unavailable - ExifTool Not found";
-            }
+                ExifToolVer = "Unavailable";
 
             Logging.Log($"ExifVersion: {ExifToolVer}");
         }
@@ -132,9 +121,14 @@ namespace Damselfly.Core.Services
 
             try
             {
-                await db.BulkInsertAsync(keywordOps);
+                db.BulkInsert(keywordOps);
 
                 StatusService.Instance.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
+                await Task.Run(() =>
+                            {
+                                // Temp
+                                return Task.FromResult<bool>(PerformExifOpScan());
+                            });
             }
             catch (Exception ex)
             {
@@ -264,27 +258,26 @@ namespace Damselfly.Core.Services
         /// <summary>
         /// Process a batch of pending keyword tag operations.
         /// </summary>
-        public void RunExifOpProcessing()
+        public bool PerformExifOpScan()
         {
             Logging.LogVerbose("Processing pending exif operations");
 
             try
             {
-                while (true)
+                var watch = new Stopwatch("KeywordOps", -1);
+
+                using var db = new ImageContext();
+
+                bool complete = false;
+
+                while (!complete)
                 {
-                    Thread.Sleep(27 * 1000);
-
-                    using var db = new ImageContext();
-
                     var queueQueryWatch = new Stopwatch("ExifOpsQuery", -1);
-
-                    // We skip any operations where the timestamp is more recent than 30s
-                    var timeThreshold = DateTime.UtcNow.AddSeconds( -30 );
 
                     // Find all images where there's either no metadata, or where the image
                     // was updated more recently than the image metadata
                     var opsToProcess = db.KeywordOperations.AsQueryable()
-                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending && x.TimeStamp < timeThreshold )
+                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending )
                                             .OrderByDescending(x => x.TimeStamp)
                                             .Take(100)
                                             .Include( x => x.Image )
@@ -293,7 +286,9 @@ namespace Damselfly.Core.Services
 
                     queueQueryWatch.Stop();
 
-                    if( opsToProcess.Any() )
+                    complete = !opsToProcess.Any();
+
+                    if (!complete)
                     {
                         var conflatedOps = ConflateOperations(opsToProcess);
 
@@ -350,11 +345,16 @@ namespace Damselfly.Core.Services
                     }
                 }
 
+                watch.Stop();
             }
             catch (Exception ex)
             {
                 Logging.LogError($"Exception caught during keyword op scan: {ex}");
+                return false;
             }
+
+            Logging.LogVerbose("Keyword op scan Complete.");
+            return true;
         }
 
         /// <summary>
@@ -436,59 +436,6 @@ namespace Damselfly.Core.Services
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Switches a tag from favourite, to not favourite, or back
-        /// </summary>
-        /// <param name="tag"></param>
-        /// <returns></returns>
-        public async Task ToggleFavourite( Tag tag )
-        {
-            using var db = new ImageContext();
-            // TODO: Async - use BulkUpdateAsync?
-            tag.Favourite = !tag.Favourite;
-
-            db.Tags.Update(tag);
-            db.SaveChanges("Tag favourite");
-
-            await LoadFavouriteTagsAsync();
-        }
-
-        /// <summary>
-        /// Loads the favourite tags from the DB.
-        /// </summary>
-        /// <returns></returns>
-        private async Task LoadFavouriteTagsAsync()
-        {
-            using var db = new ImageContext();
-
-            var faves = await Task.FromResult(db.Tags
-                                        .Where(x => x.Favourite)
-                                        .OrderBy(x => x.Keyword)
-                                        .ToList());
-
-            if (!faves.SequenceEqual(FavouriteTags))
-            {
-                FavouriteTags.Clear();
-                FavouriteTags.AddRange(faves);
-
-                NotifyFavouritesChanged();
-            }
-        }
-
-        public void StartService()
-        {
-            Logging.Log("Starting Exif Operation service.");
-
-            // Load the favourites 
-            _ = LoadFavouriteTagsAsync();
-
-            var indexthread = new Thread(new ThreadStart(() => { RunExifOpProcessing(); }));
-            indexthread.Name = "ExifOpThread";
-            indexthread.IsBackground = true;
-            indexthread.Priority = ThreadPriority.Lowest;
-            indexthread.Start();
         }
     }
 }

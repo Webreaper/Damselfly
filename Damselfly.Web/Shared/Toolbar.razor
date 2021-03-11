@@ -8,9 +8,27 @@
 <div>
     <button title="About Damselfly..." @onclick="@(() => ShowAboutDialog())" class="btn btn-primary"><i class="fa fa-info-circle" /></button>
 </div>
+@if (false)
+{
+<div>
+    <button title="Upload Images" @onclick="@(() => ShowUploadDialog())" class="btn btn-primary"><i class="fa fa-upload" /></button>
+</div>
+}
 
 @code
 {
+    private void ShowUploadDialog()
+    {
+        try
+        {
+            NavigationManager.NavigateTo("/Upload");
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
+    }
+
     private void ShowConfigDialog()
     {
         try

@@ -12,7 +12,10 @@
     {
         if (firstRender)
         {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true });
+            ViewDataService.ShowFolderList = true;
+            ViewDataService.ShowExport = false;
+            ViewDataService.ShowBasket = true;
+            ViewDataService.ShowTags = false;
         }
     }
 }

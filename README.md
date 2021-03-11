@@ -24,7 +24,7 @@ Damselfly is a server-based Digital Asset Management system. The goal of Damself
  * Other integrations coming in future
 * Direct upload to Wordpress 
 * Persistable named basket selections
-* Built with Microsoft .Net 6, so runs cross-platform on MacOS, Linux and Windows. 
+* Built with Microsoft .Net 5, so runs cross-platform on MacOS, Linux and Windows. 
 
 ## Planned Features/Enhancements
 
@@ -159,7 +159,7 @@ Etymology of the name: DAM-_sel_-fly - **D**igital **A**sset **M**anagement that
 
 ### What is the Damselfly Architecture?
 
-Damselfly is written using C#/.Net 6 and Blazor Server. The data model and DB access is using Entity Framework Core. Currently the server supports Sqlite, but a future enhancement may be to add support for PostGres, MySql or MariaDB.
+Damselfly is written using C#/.Net 5 (Core) and Blazor Server. The data model and DB access is using Entity Framework Core. Currently the server supports Sqlite, but a future enhancement may be to add support for PostGres, MySql or MariaDB.
 
 ### How do I set up the Wordpress Integration?
 

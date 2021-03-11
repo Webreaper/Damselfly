@@ -4,10 +4,8 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
 
-<LocalFileExporter @ref="FileExporter" />
-
 <div class="damselfly-exportpanel">
-    <ExportConfigManager CurrentConfig="@selectedConfig" />
+    <ExportConfigManager CurrentConfig="@selectedConfig"/>
     <div class="damselfly-exportsettings">
         <div>
             <h4>Export Settings</h4>
@@ -43,18 +41,17 @@
             <input id="watermarkText" @bind-value="selectedConfig.WatermarkText" />
         </div>
         <div>
-            @if( FileExporter != null && FileExporter.IsDesktopHosted )
-            {
-                <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
-            }
-            <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
+                @if (isDesktopHosted)
+                {
+                    <button @onclick="@ExportToLocalFS" class="btn btn-primary">Save Locally</button>
+                }
+                <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
+            </div>
         </div>
+
     </div>
 
-</div>
-
 @code {
-    private LocalFileExporter FileExporter;
     public ExportType[] exportTypes { get; private set; } = new ExportType[0];
     public ExportSize[] exportSizes { get; private set; } = new ExportSize[0];
 
@@ -64,6 +61,7 @@
     public ExportConfig selectedConfig = new ExportConfig { Name = "Default" };
     public string StatusMessage { get; set; }
     public bool KeepFolders { get; set; }
+    public bool isDesktopHosted { get; set; }
 
     private void ChangeConfig(string name)
     {
@@ -87,6 +85,28 @@
         StateHasChanged();
     }
 
+    private async Task ExportToLocalFS()
+    {
+        var baseUrl = new Uri(navManager.BaseUri);
+
+        foreach (var image in basketService.SelectedImages)
+        {
+            var imageUrl = new Uri(baseUrl, image.RawImageUrl);
+
+            // Image folder is fully qualified, so we need to make it relative to the pictures folder
+            // The electron container will use its local settings to create the full path of where
+            // the image will be written locally.
+            string localPath = image.FullPath.MakePathRelativeTo(IndexingService.RootFolder);
+
+            StatusService.Instance.StatusText = $"Writing {image.FileName} to {localPath}...";
+
+            // Now, shell out to Javascript, which will trigger the download in the Electron container
+            await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
+        }
+
+        StatusService.Instance.StatusText = "Selected images saved locally.";
+    }
+
     private void Export()
     {
         InvokeAsync(() => { _ = ProcessExport(); });
@@ -103,11 +123,17 @@
     {
         if (firstRender)
         {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
+            ViewDataService.ShowFolderList = false;
+            ViewDataService.ShowBasket = false;
+            ViewDataService.ShowExport = true;
 
             exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
             exportSizes = (ExportSize[])Enum.GetValues(typeof(ExportSize));
             await LoadConfigs();
+
+            // Probe for a js function which indicates we're in the electron container
+            var version = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
+            isDesktopHosted = !string.IsNullOrEmpty( version );
 
             StateHasChanged();
         }

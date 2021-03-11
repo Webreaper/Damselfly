@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
@@ -14,37 +13,22 @@ namespace Damselfly.Web.Data
     /// </summary>
     public class ImageGridBase : ComponentBase 
     {
-        public class SelectionInfo
-        {
-            public Image image;
-            public int index;
-        }
-
-        protected class ImageGrouping
-        {
-            public string Key { get; set; }
-            public List<Image> Images { get; set; }
-        }
-
-
-        // Grid images is a list of lists of images.
         protected readonly List<Image> gridImages = new List<Image>();
-
-        private SelectionInfo prevSelection = null;
+        private Image prevSelection = null;
 
         /// <summary>
         /// Manage the selection state for the grid images.
         /// </summary>
         /// <param name="e"></param>
         /// <param name="image"></param>
-        protected void ToggleSelected(MouseEventArgs e, SelectionInfo selectionInfo)
+        protected void ToggleSelected(MouseEventArgs e, Image image)
         {
             var watch = new Stopwatch("ToggleSelection");
             if (e.ShiftKey && prevSelection != null)
             {
                 // Range selection.
-                var first = prevSelection.index;
-                var last = selectionInfo.index;
+                var first = gridImages.FindIndex(x => x.ImageId == prevSelection.ImageId);
+                var last = gridImages.FindIndex(x => x.ImageId == image.ImageId);
 
                 if (first > last)
                 {
@@ -53,31 +37,34 @@ namespace Damselfly.Web.Data
                     first = temp;
                 }
 
-                Logging.LogVerbose($"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");
+                Logging.LogVerbose($"Selecting images {first} ({prevSelection.FileName}) to {last} ({image.FileName})");
 
-                var selectedImages = gridImages.Skip(first).Take(last - (first - 1)).ToList();
-                SelectionService.Instance.SelectImages(selectedImages);
+                for (int i = first; i <= last; i++)
+                {
+                    var img = gridImages[i];
+                    SelectionService.Instance.SelectImage(img);
+                }
             }
             else
             {
                 if (e.MetaKey)
                 {
                     // Apple key was pressed - toggle the selection
-                    SelectionService.Instance.ToggleSelection(new List<Image> { selectionInfo.image });
+                    SelectionService.Instance.ToggleSelection(new List<Image> { image });
                 }
                 else
                 {
                     // No keys pressed. Select if unselected, or deselect if selected - but
                     // clear any other selection at the same time. Store the last selection
                     // as it could be the beginning of a range selection
-                    bool wasPreviouslySelected = SelectionService.Instance.IsSelected(selectionInfo.image);
+                    bool wasPreviouslySelected = SelectionService.Instance.IsSelected(image);
                     SelectionService.Instance.ClearSelection();
                     prevSelection = null;
 
                     if (!wasPreviouslySelected)
                     {
-                        SelectionService.Instance.SelectImage(selectionInfo.image);
-                        prevSelection = selectionInfo;
+                        SelectionService.Instance.SelectImage(image);
+                        prevSelection = image;
                     }
                 }
             }

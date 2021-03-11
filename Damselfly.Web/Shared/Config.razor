@@ -8,20 +8,11 @@
         <h1>Damselfly Configuration Settings</h1>
     </div>
     <div class="damselfly-configsection">
+        <h2>Wordpress Upload</h2>
+
         <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-            <FluentValidationValidator />
+            <DataAnnotationsValidator />
             <ValidationSummary />
-
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>Embed Sidecar (XMP/OM1) keywords during indexing:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputCheckbox @bind-Value="importSidecarKeywords" />
-                </div>
-            </div>
-
-            <h2>Wordpress Upload</h2>
 
             <div class="damselfly-configsetting">
                 <div class="damselfly-configlabel">
@@ -50,11 +41,9 @@
 
             <button class="btn btn-primary" type="submit">Save Config</button>
         </EditForm>
-
     </div>
 
     <div class="damselfly-configsection">
-        <hr/>
         <h2>Task Statuses:</h2>
     </div>
     <div class="damselfly-configsection">
@@ -64,20 +53,21 @@
 
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
-    private bool importSidecarKeywords = false;
 
     private void HandleValidSubmit()
     {
-        ConfigService.Instance.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
+        if (!string.IsNullOrEmpty(wpSettings.UserName) &&
+            !string.IsNullOrEmpty(wpSettings.Password))
+        {
+            ConfigService.Instance.Set(ConfigSettings.WordpressURL, wpSettings.URL);
+            ConfigService.Instance.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
+            ConfigService.Instance.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
 
-        ConfigService.Instance.Set(ConfigSettings.WordpressURL, wpSettings.URL);
-        ConfigService.Instance.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
-        ConfigService.Instance.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
+            // Settings have changed, so reset the client and token
+            WordpressService.Instance.ResetClient();
 
-        // WP Settings have changed, so reset the client and token
-        WordpressService.Instance.ResetClient();
-
-        StatusService.Instance.StatusText = "Settings saved.";
+            StatusService.Instance.StatusText = "Settings saved.";
+        }
     }
 
     protected override void OnInitialized()
@@ -85,7 +75,7 @@
         wpSettings.URL = ConfigService.Instance.Get(ConfigSettings.WordpressURL);
         wpSettings.UserName = ConfigService.Instance.Get(ConfigSettings.WordpressUser);
         wpSettings.Password = ConfigService.Instance.Get(ConfigSettings.WordpressPassword);
-        importSidecarKeywords = ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords);
+
         base.OnInitialized();
     }
 

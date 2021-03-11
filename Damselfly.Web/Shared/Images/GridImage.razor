@@ -4,26 +4,40 @@
 @inject ThumbnailService thumbService
 @inject NavigationManager NavigationManager
 @inject NavigationService navContext
-@inject ContextMenuService contextMenuService
-@inject IJSRuntime JsRuntime
+
+<!--ContextMenu Id="ImageMenu">
+    <Item OnClick="@OnClick">View</Item>
+    <Seperator />
+    <Item OnClick="@OnClick">Add to Basket</Item>
+    <Item OnClick="@OnClick">Download</Item>
+    <Seperator />
+    <Item OnClick="@OnClick">Refresh Thumbnail</Item>
+</ContextMenu-->
+
 
 @if (CurrentImage == null)
 {
-<p><em>Loading image...</em></p> }
+    <p><em>Loading image...</em></p>
+}
 else
 {
-<div class="grid-image" @ondblclick="NavigateToImage">
-    @if (!string.IsNullOrEmpty(ImageUrl))
-    {
-<img @key="CurrentImage.ImageId" class="@SelectStyle" title="@CurrentImage.FileName" src="@ImageUrl"
-     @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
-                    <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">}
-</div>
-                @if (DisplayFileName)
-                {
-<div class="grid-text">
-    @CurrentImage.FileName
-</div>}}
+        <!--ContextMenuTrigger MenuId="ImageMenu"-->
+        <div class="grid-image" @ondblclick="NavigateToImage">
+            @if (!string.IsNullOrEmpty(ImageUrl))
+            {
+                <img @key="CurrentImage.ImageId" class="@SelectStyle" title="@CurrentImage.FileName" src="@ImageUrl">
+                <input class="grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
+            }
+        </div>
+        @if (DisplayFileName)
+        {
+            <div class="grid-text">
+                @CurrentImage.FileName
+            </div>
+        }
+
+        <!--/ContextMenuTrigger-->
+}
 
 @code
 {
@@ -44,51 +58,14 @@ else
         get { return BasketService.Instance.IsSelected(CurrentImage); }
         set
         {
-            BasketService.Instance.SetBasketState(new[] { CurrentImage }, value);
+            BasketService.Instance.SetBasketState(CurrentImage, value);
             // Notify the image list that the selection has changed
             SearchService.Instance.NotifyStateChanged();
-            StateHasChanged();
         }
     }
 
     string ImageUrl { get; set; } = null;
-    string SelectStyle { get { return SelectionService.Instance.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
-
-    void ShowContextMenu(MouseEventArgs args)
-    {
-        var basketEntry = (InBasket ? "Remove from" : "Add to") + " Basket";
-        contextMenuService.Open(args, ds =>
-           @<RadzenMenu Click="OnMenuItemClick">
-            <RadzenMenuItem Text="View Image" Value="0" />
-            <hr class="separator">
-            <RadzenMenuItem Text="@basketEntry" Value="1" />
-            <RadzenMenuItem Text="Download" Value="2" />
-            </RadzenMenu>);
-    }
-
-    void OnMenuItemClick(MenuItemEventArgs args)
-    {
-        contextMenuService.Close();
-        switch (args.Value)
-        {
-            case 0: NavigateToImage(); break;
-                // TODO: Async?
-            case 1: InBasket = !InBasket; break;
-            case 2: _ = DownloadImage(); break;
-        }
-    }
-
-    public async Task DownloadImage()
-    {
-        try
-        {
-            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.RawImageUrl);
-        }
-        catch (Exception ex)
-        {
-            Logging.LogError("Exception: " + ex.Message);
-        }
-    }
+    string SelectStyle { get { return SelectionService.Instance.IsSelected( CurrentImage ) ? "grid-image-selected" : "grid-image-unselected"; } }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -98,20 +75,25 @@ else
             //   ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
             // but it's an order of magnitude slower (probably because the controller
             // has to hit the DB etc)
-            ImageUrl = await Task.FromResult<string>
-                (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
+            ImageUrl = await Task.FromResult<string>(ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
 
         }
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        ImageUrl = await Task.FromResult<string>
-            (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
+        ImageUrl = await Task.FromResult<string>(ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
     }
+
+// BlazorContextMenu
+//    void OnClick(ItemClickEventArgs e)
+//    {
+//        Logging.Log($"Item Clicked => Menu: {e.ContextMenuId}, MenuTarget: {e.ContextMenuTargetId}, IsCanceled: {e.IsCanceled}, MenuItem: {e.MenuItemElement}, MouseEvent: {e.MouseEvent}");
+//    }
 
     void NavigateToImage()
     {
         navContext.Context = NavContext;
         NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
-    }}
+    }
+}

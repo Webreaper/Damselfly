@@ -8,7 +8,7 @@
 @using Damselfly.Core.ImageProcessing
 
 
-<div class="damselfly-exportview">
+<div class="damselfly-export">
     <div>
         <div class="damselfly-imagenavitem">
             <a href="/"><i class="clickable-icon fa fa-reply" /></a>
@@ -62,7 +62,10 @@
     {
         if (firstRender)
         {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
+            ViewDataService.ShowFolderList = false;
+            ViewDataService.ShowBasket = false;
+            ViewDataService.ShowExport = true;
+            ViewDataService.ShowTags = false;
 
             await LoadData();
 

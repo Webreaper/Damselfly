@@ -14,7 +14,7 @@ namespace Damselfly.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.3");
+                .HasAnnotation("ProductVersion", "5.0.2");
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
@@ -53,9 +53,6 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("BasketId");
 
                     b.HasIndex("ImageId")
-                        .IsUnique();
-
-                    b.HasIndex("ImageId", "BasketId")
                         .IsUnique();
 
                     b.ToTable("BasketEntries");
@@ -349,9 +346,6 @@ namespace Damselfly.Core.Migrations
                 {
                     b.Property<int>("TagId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("Favourite")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Keyword")

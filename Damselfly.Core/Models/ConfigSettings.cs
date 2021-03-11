@@ -6,6 +6,5 @@ namespace Damselfly.Core.Models
         public const string WordpressURL = "WordpressURL";
         public const string WordpressUser = "WordpressUser";
         public const string WordpressPassword = "WordpressPassword";
-        public const string ImportSidecarKeywords = "ImportSidecarKeywords";
     }
 }

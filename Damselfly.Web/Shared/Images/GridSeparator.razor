@@ -1,0 +1,36 @@
+﻿@using Damselfly.Web.Shared
+@using Damselfly.Web.Shared.Images
+
+@if( IsBoundary )
+{
+    <div class="damselfly-imageseparator">
+        @string.Format("{0:dddd, dd MMMM yyyy}", CurrentImage.MetaData.DateTaken.Date)
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Image CurrentImage { get; set; }
+
+    [Parameter]
+    public Image PrevImage { get; set; }
+
+    private bool IsBoundary
+    {
+        get
+        {
+            if (PrevImage == null)
+                return true;
+
+            if (PrevImage == null || PrevImage.MetaData == null || CurrentImage.MetaData == null)
+                return false;
+
+            if( CurrentImage.MetaData.DateTaken.Date != PrevImage.MetaData.DateTaken.Date )
+            {
+                return true;
+            }
+
+            return false;
+        }
+    }
+}

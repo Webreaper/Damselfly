@@ -23,13 +23,7 @@ sh scripts/makedesktop.sh $PLATFORM
 # Create the non-docker versions
 sh scripts/makeserver.sh $PLATFORM
 
-mkdir publish
-cd publish
-rm *.*
-unzip -o ../server/*.zip
-cd ..
-
-# Create the docker versions. Pass 'master' here to build a real version
-sh scripts/makedocker.sh 
+# Create the docker versions
+sh scripts/makedocker.sh $PLATFORM
 
 echo "Damselfly build complete."

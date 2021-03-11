@@ -24,11 +24,10 @@ else
         }
         else
         {
-            @for(int i = 0; i < gridImages.Count; i++ )
+            @foreach (var image in gridImages)
             {
-                var info = new SelectionInfo { image = gridImages[i], index = i };
-                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, info ); })">
-                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
+                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, image ); })">
+                    <GridImage CurrentImage=@image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
                 </div>
             }
         }
@@ -87,7 +86,7 @@ else
     void AddSelectedToBasket()
     {
         var selected = SelectionService.Instance.Selection.ToList();
-        BasketService.Instance.SetBasketState(selected, true);
+        selected.ForEach(x => BasketService.Instance.SetBasketState(x, true));
 
         StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
     }

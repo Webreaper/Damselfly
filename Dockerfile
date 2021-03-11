@@ -1,5 +1,5 @@
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-alpine AS final
+FROM mcr.microsoft.com/dotnet/aspnet:5.0-alpine AS final
 
 WORKDIR /app
 COPY /publish .

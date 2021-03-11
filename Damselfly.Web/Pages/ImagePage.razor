@@ -47,12 +47,12 @@
 </div>
 
 @code {
-        [Parameter]
-        public string ImageID { get; set; }
+    [Parameter]
+    public string ImageID { get; set; }
 
-        Image image;
-        Image nextImage;
-        Image prevImage;
+    Image image;
+    Image nextImage;
+    Image prevImage;
 
     public CropJsHelper JsHelper { get; set; }
 
@@ -60,7 +60,9 @@
     {
         if (firstRender)
         {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowImageProps = true, ShowTags = true });
+            ViewDataService.ShowFolderList = false;
+            ViewDataService.ShowExport = false;
+            ViewDataService.ShowTags = true;
 
             //this.JsHelper = new CropJsHelper(this);
             //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));

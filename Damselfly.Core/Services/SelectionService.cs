@@ -57,24 +57,6 @@ namespace Damselfly.Core.Services
         /// Add images into the selection
         /// </summary>
         /// <param name="images"></param>
-        public void DeselectImages(List<Image> images)
-        {
-            bool removed = false;
-
-            foreach (var img in images)
-            {
-                if (selectedImages.Remove(img.ImageId))
-                    removed = true;
-            }
-
-            if (removed)
-                NotifyStateChanged();
-        }
-
-        /// <summary>
-        /// Add images into the selection
-        /// </summary>
-        /// <param name="images"></param>
         public void ToggleSelection(List<Image> images)
         {
             foreach( var img in images )
@@ -92,14 +74,27 @@ namespace Damselfly.Core.Services
         /// Add a single image into the selection
         /// </summary>
         /// <param name="img"></param>
-        public void SelectImage(Image img) => SelectImages(new List<Image> { img });
+        public void SelectImage(Image img)
+        {
+            if (selectedImages.TryAdd(img.ImageId, img) )
+                NotifyStateChanged(); 
+        }
 
         /// <summary>
         /// Remove an image from the selection
         /// </summary>
         /// <param name="img"></param>
         /// <returns></returns>
-        public void DeselectImage(Image img) => DeselectImages(new List<Image> { img });
+        public bool DeselectImage(Image img)
+        {
+            if( selectedImages.Remove( img.ImageId ) )
+            {
+                NotifyStateChanged();
+                return true;
+            }
+
+            return false;
+        }
 
         public int SelectionCount {  get { return selectedImages.Count;  } }
 
