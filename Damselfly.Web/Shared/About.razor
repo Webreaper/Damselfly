@@ -3,6 +3,7 @@
 @inject IJSRuntime JsRuntime
 
 <div>
+    <LocalFileExporter @ref="FileExporter" />
     <img src="damselfly-logo.png" title="Damselfly" />
     <h2>Damselfly v<span />@Version</h2>
     <h4>Server-based Digital Asset Management system</h4>
@@ -11,26 +12,26 @@
     <NavLink href="/logs">View Server Logs</NavLink>
     <Stats />
     <h4>Damselfly Desktop</h4>
-    @if (isDesktopHosted)
+    @if (FileExporter != null && FileExporter.IsDesktopHosted)
     {
-        <p>Running in the Damselfly Desktop container, v<span />@DesktopVersion.</p>
+        <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion.</p>
     }
     <p>Download v<span />@Version of the Desktop App here:</p>
     <div class="desktop-download-icons">
         @if (DownloadService.DesktopAppInfo.MacOSApp != null)
         {
-        <div class="InputAddOn">
-            <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-            <a href="@DownloadService.DesktopAppInfo.MacOSApp">
-                <div class="InputAddOn-field">MacOS</div>
-            </a>
-            @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
-            {
-                <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
-                    <div class="InputAddOn-field">(M1)</div>
+            <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                <a href="@DownloadService.DesktopAppInfo.MacOSApp">
+                    <div class="InputAddOn-field">MacOS</div>
                 </a>
-            }
-        </div>
+                @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+                {
+                    <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                        <div class="InputAddOn-field">(M1)</div>
+                    </a>
+                }
+            </div>
         }
         @if (DownloadService.DesktopAppInfo.WindowsApp != null)
         {
@@ -60,32 +61,13 @@
 </div>
 
 @code {
-    public bool isDesktopHosted { get; set; }
-    public string DesktopVersion { get; set; }
+    private LocalFileExporter FileExporter;
 
     public string Version
     {
         get
         {
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Probe for a js function which indicates we're in the electron container
-            DesktopVersion = await JsRuntime.InvokeAsync<string>(JsMethods.JSGetDesktopVersion);
-
-            isDesktopHosted = !string.IsNullOrEmpty(DesktopVersion);
-
-            if( isDesktopHosted )
-            {
-                Logging.Log($"Desktop version: {DesktopVersion}");
-            }
-
-            StateHasChanged();
         }
     }
 }

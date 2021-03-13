@@ -5,7 +5,8 @@
 @inject NavigationManager navManager
 
 @code {
-    public bool IsDesktopHosted { get; set; }
+    public bool IsDesktopHosted => !string.IsNullOrEmpty(DesktopVersion);
+    public string DesktopVersion { get; set; }
 
     public async Task ExportBasketToLocalFilesystem()
     {
@@ -60,10 +61,8 @@
         if (firstRender)
         {
             // Probe for a js function which indicates we're in the electron container
-            var version = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
-            IsDesktopHosted = !string.IsNullOrEmpty( version );
-
-            StateHasChanged();
+            DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
+            _ = InvokeAsync(() => { StateHasChanged(); });
         }
     }
 }
