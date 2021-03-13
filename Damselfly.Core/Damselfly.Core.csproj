@@ -2,37 +2,38 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0-preview.1.21102.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.0-preview.1.21102.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.1.21102.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.0-preview.1.21102.2" />
     <PackageReference Include="MetadataExtractor" Version="2.4.3" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="WordPressPCL" Version="1.8.5" />
-    <PackageReference Include="EFCore.BulkExtensions" Version="3.2.7" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.2" />
+    <PackageReference Include="EFCore.BulkExtensions" Version="3.3.5" />
     <PackageReference Include="NExifTool" Version="0.9.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00839" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.2">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-preview.1.21102.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.2">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-preview.1.21102.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-pr.1518.1" />
-    <PackageReference Include="SkiaSharp" Version="2.80.3-pr.1518.1" />
+    <PackageReference Include="FluentValidation" Version="9.5.2" />
+    <PackageReference Include="SkiaSharp" Version="2.80.3-preview.40" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
+    <PackageReference Include="System.Text.Json" Version="6.0.0-preview.1.21102.12" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogHandler.cs" />
@@ -44,6 +45,7 @@
     <Folder Include="Interfaces\" />
     <Folder Include="DBAbstractions\" />
     <Folder Include="ImageProcessing\" />
+    <Folder Include="Models\SideCars\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="mono_crash.a7f6ef992.0.json" />

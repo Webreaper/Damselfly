@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
+using static Damselfly.Core.Models.SearchQuery;
 
 namespace Damselfly.Core.Services
 {
@@ -44,7 +45,9 @@ namespace Damselfly.Core.Services
         public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
         public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
+        public int TagId { get { return query.TagId; } set { if (query.TagId != value) { query.TagId = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
 
         public void SetDateRange( DateTime min, DateTime max )
         {
@@ -110,6 +113,26 @@ namespace Damselfly.Core.Services
 
                     images = images.Include(x => x.Folder);
 
+                    // Add in the ordering for the group by
+                    switch (query.Grouping)
+                    {
+                        case GroupingType.None:
+                        case GroupingType.Date:
+                            images = images.OrderByDescending(x => x.SortDate);
+                            break;
+                        case GroupingType.Folder:
+                            images = images.OrderBy(x => x.Folder.Path)
+                                           .ThenByDescending(x => x.SortDate);
+                            break;
+                        default:
+                            throw new ArgumentException("Unexpected grouping type.");
+                    }
+
+                    if ( query.TagId != -1 )
+                    {
+                        images = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
+                    }
+
                     // If selected, filter by the image filename/foldername
                     if (hasTextSearch && ! query.TagsOnly )
                     {
@@ -168,8 +191,7 @@ namespace Damselfly.Core.Services
                     // images = images.Include(x => x.ImageTags)
                     //               .ThenInclude(x => x.Tag);
 
-                    results = await images.OrderByDescending(x => x.SortDate)
-                                    .Skip(first)
+                    results = await images.Skip(first)
                                     .Take(count)
                                     .ToArrayAsync();
 

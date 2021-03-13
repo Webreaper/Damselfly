@@ -1,40 +1,33 @@
 ﻿@page "/logs"
 
-@using Damselfly
+@inject ViewDataService ViewDataService
 
-<div class="row">
-    <div class="col">
-        <label for="logLevel">Log Level: </label>
-        <select name="logLevel" value="@LogLevel">
-            @foreach (var choice in logLevels)
-            {
-                <option value="@choice">
-                    @choice.ToString()
-                </option>
-            }
-        </select>
-    </div>
-</div>
-<div class="row">
-    <div class="col image-scroll-area">
+<div class="damselfly-logview">
+    <div class="log-scroll-area">
         <h4>@LogFileName</h4>
-        <table class="tasklist-table">
-            <tr>
-                <th>Timestamp</th>
-                <th>Log Level</th>
-                <th>Thread</th>
-                <th>Entry</th>
-            </tr>
-            @foreach (var line in logLines)
-            {
-                <tr>
-                    <td>@line.date</td>
-                    <td>@line.level</td>
-                    <td>@line.thread</td>
-                    <td>@line.entry</td>
-                </tr>
-            }
-        </table>
+        <div class="log-table">
+            <table class="loglist-table">
+                <thead>
+                    <tr>
+                        <th class="timestamp">Timestamp</th>
+                        <th class="level">Log Level</th>
+                        <th class="entry">Entry</th>
+                        <th class="thread">Thread</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in logLines)
+                    {
+                    <tr>
+                        <td class="timestamp">@line.date</td>
+                        <td class="level log-level-@line.level">@line.level</td>
+                        <td class="entry">@line.entry</td>
+                        <td class="thread">@line.thread</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -49,44 +42,25 @@
     }
 
     List<LogEntry> logLines = new List<LogEntry>();
-    List<string> logLevels = new List<string> { "Normal", "Verbose", "Trace" };
     private string LogFileName { get; set; }
 
-    public string LogLevel { get { return logLevel; } set { ChangeLogLevel(value); } }
-    private string logLevel = "Normal";
-    // TODO: Move to AfterRender
-    protected override async Task OnInitializedAsync()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var lines = await GetLogLines();
-        logLines.AddRange(lines);
-        StateHasChanged();
-    }
-
-    private void ChangeLogLevel( string newLevel )
-    {
-        logLevel = newLevel;
-
-        if( logLevel == "Normal")
+        if (firstRender)
         {
-            Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Information);
-        }
-        else if( logLevel == "Verbose" )
-        {
-            Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Verbose);
-        }
-        else if (logLevel == "Trace")
-        {
-            Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Debug);
-        }
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowLogs = true });
 
-        // TODO: Persist config setting here
+            var lines = await GetLogLines();
+            logLines.AddRange(lines);
+            StateHasChanged();
+        }
     }
 
     private Task<LogEntry[]> GetLogLines()
     {
         LogEntry[] result = new LogEntry[0];
 
-        // TODO: Called twice?
         var logDir = new DirectoryInfo(Logging.LogFolder);
         var file = logDir.GetFiles("*.log")
                          .OrderByDescending(x => x.LastWriteTimeUtc)
@@ -95,9 +69,10 @@
         if (file != null)
         {
             LogFileName = file.Name;
+
             result = File.ReadAllLines(file.FullName)
                          .Reverse()
-                         .Select( x => CreateLogEntry( x ))
+                         .Select(x => CreateLogEntry(x))
                          .ToArray();
         }
 
@@ -105,10 +80,10 @@
     }
 
     // TODO: Use a regex here
-    private LogEntry CreateLogEntry( string s )
+    private LogEntry CreateLogEntry(string s)
     {
         var e = new LogEntry();
-        if (!string.IsNullOrWhiteSpace(s) && s.StartsWith( '[') )
+        if (!string.IsNullOrWhiteSpace(s) && s.StartsWith('['))
         {
             try
             {
@@ -123,7 +98,7 @@
                     e.level = parts2[2];
                 }
             }
-            catch( Exception )
+            catch (Exception)
             {
                 // Don't log - we'll get an infinite loop!
             }

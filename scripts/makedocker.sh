@@ -13,7 +13,7 @@ docker build -t damselfly .
 
 echo "*** Pushing docker image to webreaper/damselfly:${DOCKERTAG}"
 
-# docker tag damselfly webreaper/damselfly:$DOCKERTAG
-# docker push webreaper/damselfly:$DOCKERTAG
+docker tag damselfly webreaper/damselfly:$DOCKERTAG
+docker push webreaper/damselfly:$DOCKERTAG
 
 echo "Damselfly docker build complete."

@@ -78,6 +78,8 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
+            modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
+
         }
     }
 
@@ -225,6 +227,7 @@ namespace Damselfly.Core.Models
         [Required]
         public string Keyword { get; set; }
         public string Type { get; set; }
+        public bool Favourite { get; set; }
         public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
@@ -319,7 +322,7 @@ namespace Damselfly.Core.Models
     {
         [Key]
         public int BasketEntryId { get; set; }
-        public DateTime DateAdded { get; set; }
+        public DateTime DateAdded { get; set; } = DateTime.UtcNow;
 
         [Required]
         public virtual Image Image { get; set; }
@@ -386,6 +389,13 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class SearchQuery
     {
+        public enum GroupingType
+        {
+            None,
+            Folder,
+            Date
+        };
+
         public string SearchText { get; set; }
         public DateTime MaxDate { get; set; } = DateTime.MaxValue;
         public DateTime MinDate { get; set; } = DateTime.MinValue;
@@ -394,11 +404,13 @@ namespace Damselfly.Core.Models
         public Folder Folder { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
         public int CameraId { get; set; } = -1;
+        public int TagId { get; set; } = -1;
         public int LensId { get; set; } = -1;
+        public GroupingType Grouping { get; set; } = GroupingType.None;
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}";
         }
     }
 

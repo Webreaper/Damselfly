@@ -13,7 +13,7 @@ a, .btn-link {
 }
 
 a:hover {
-    color: #23ff86;
+    color: #23ff23;
 }
 
 .blazored-modal {
@@ -83,9 +83,10 @@ div::-webkit-scrollbar-thumb {
 
 .btn-primary {
     color: #fff;
-    background-color: #1bc26e;
+    background-color: #1ba96e;
     border-color: #18ac61;
-    min-height: 30px;
+    height: 30px;
+    border-radius: 4px;
 }
 
 .image-grid-controls {
@@ -398,8 +399,6 @@ f
     height: 60px;
 }
 
-
-
 .damsefly-container {
     display: flex;
     flex-direction: column;
@@ -408,7 +407,8 @@ f
 .damselfly-application {
     display: flex;
     flex-direction: row;
-    min-height: calc( 100vh - 58px);
+    min-height: calc( 100vh - 40px);
+    max-height: calc( 100vh - 40px);
 }
 
 .damselfly-sidebar {
@@ -416,6 +416,29 @@ f
     display: flex;
     flex-direction: column;
     flex: 0 0 20%;
+    overflow-y: auto;
+}
+
+.damselfly-tagview {
+    order: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.damselfly-logview {
+    order: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.log-scroll-area {
+    width: 100%;
+    top: 0px;
+    height: calc(100vh - 160px);
+    float: left;
 }
 
 .damselfly-imagebrowser {
@@ -524,7 +547,7 @@ f
     align-items: center;
     flex-flow: row wrap;
     overflow-y: auto;
-    max-height: calc( 100vh - 150px);
+    max-height: calc( 100vh - 100px);
 }
 
 .damselfly-searchmsg {
@@ -552,16 +575,21 @@ f
     align-items: center;
     flex: 0 0 40px;
     flex-flow: row wrap;
+    max-height: 40px;
 }
 
 .damselfly-browsetool {
     flex: 1;
+    margin: 10px;
     display: flex;
     min-width: 200px;
     flex-flow: row;
     align-items: center;
 }
 
+.damselfly-browsetoollabel {
+    margin: 5px;
+}
 .damselfly-gridimage {
     display: flex;
     padding: 3px;
@@ -676,11 +704,12 @@ f
     flex: 1;
 }
 
-.damselfly-export {
+.damselfly-exportview {
     display: flex;
     flex: 1;
     order: 3;
     flex-flow: column;
+    overflow-y: auto;
 }
 
 .damselfly-exportlist {
@@ -823,10 +852,9 @@ f
   }
 
 .damselfly-moreimages {
-    width: 100%;
-    padding: 3px;
-    text-align: center;
-    font-size: 12px;
+    width: 0px;
+    padding: 0px;
+    margin: 0px;
 }
 
 .damselfly-imageseparator {
@@ -834,11 +862,32 @@ f
     border: 1px;
     margin-top: 5px;
     margin-left: 3px;
-    padding: 3px;
-    padding-left: 15px;
-    font-size: 14px;
+    max-height: 28px;
     border-top: 1px solid rgba(130,155,130,0.75);
     background-image: linear-gradient(90deg, rgb(50, 103, 64) 0%, rgb(10, 10, 10) 90%);
+    display: flex;
+}
+
+.damselfly-imageseparatortitle {
+    padding: 3px;
+    flex: 1 1 60%;
+    padding-left: 15px;
+    font-size: 14px;
+    text-wrap: none;
+}
+
+.damselfly-imageseparatorbuttons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 12px;
+}
+
+.damselfly-imageseparatorbutton button {
+    max-height: 22px;
+    height: 22px;
+    margin: 1px;
 }
 
 .InputAddOn {
@@ -893,7 +942,7 @@ padding: 0.4em 0.65em;
     margin: 0px;
     padding: 2px;
     flex-flow: row wrap;
-    min-height: 100px;
+    min-height: auto;
     max-height: 250px;
     align-content: flex-start;
     overflow-y: auto; 
@@ -908,9 +957,21 @@ padding: 0.4em 0.65em;
     padding: 2px 1px 1px 0px;
     flex-wrap: nowrap;
     font-size: 9pt;
+    cursor: default;
     border: 0.5px solid rgba(55, 125, 55, 0.6);
-    border-radius: 3px;
+    border-radius: 6px;
     background-color: rgba(25, 95, 25, 0.9);
+}
+
+.damselfly-favouritetag {
+    flex: 0 1 auto;
+    font-size: 10pt;
+    margin: 0 2px 0 0;
+    cursor: pointer;
+}
+
+.damselfly-favouritetag:hover {
+    color: rgba(200, 255, 200, 0.9);
 }
 
 .damselfly-deletetag {
@@ -919,12 +980,30 @@ padding: 0.4em 0.65em;
     cursor: pointer;
 }
 
+.damselfly-addfavekeyword {
+    cursor: pointer;
+}
+
+    .damselfly-addfavekeyword:hover {
+        cursor: pointer;
+        color: rgba(220, 255, 220, 0.9);
+        background-color: rgba(85, 135, 85, 0.9);
+    }
+
 .damselfly-deletetag:hover {
     color: rgba(200, 255, 200, 0.9);
 }
 
 .damselfly-keywordtext {
+    margin: 0 2px 0 2px;
     text-wrap: none;
+    flex: 0 1 auto;
+}
+
+.damselfly-keywordtext-disabled {
+    margin: 0 2px 0 2px;
+    text-wrap: none;
+    color: #999999;
     flex: 0 1 auto;
 }
 
@@ -1073,4 +1152,108 @@ padding: 0.4em 0.65em;
 
 .damselfly-dupe-entry {
     flex: 1 0 auto;
+}
+
+.rz-navigation-item-wrapper {
+    padding: 2px;
+    font-size: 10pt;
+    color: #006600;
+    background-color: #ffffff;
+}
+
+.rz-navigation-item-text:hover {
+    background-color: #006600;
+    color: #88DD88;
+}
+
+.rz-navigation-item-wrapper:hover {
+    background-color: #006600;
+    color: #88DD88;
+}
+
+.rz-menu:not(.rz-profile-menu) .rz-navigation-item-wrapper {
+    padding: 2px 5px;
+}
+
+hr.separator {
+    width: 99%;
+    margin: 1px;
+    border-top: 1px solid #999999;
+}
+
+.damselfly-alltags {
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    align-items: flex-start;
+}
+
+.damselfly-singletag {
+    flex: 0 1 auto;
+    display: flex;
+    align-items: center;
+    margin: 2px;
+    padding: 2px 1px 1px 0px;
+    flex-wrap: nowrap;
+    font-size: 9pt;
+    cursor: default;
+    border: 0.5px solid rgba(55, 125, 55, 0.6);
+    border-radius: 3px;
+    background-color: rgba(25, 95, 25, 0.9);
+}
+
+.loglist-table {
+    position: relative;
+}
+
+.loglist-table th {
+    padding: 5px, 20px, 5px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    font-weight: bold;
+    background-color: #004400;
+}
+
+.loglist-table td {
+    padding: 5px, 20px, 5px;
+    width: 100%;
+}
+
+.loglist-table th.timestamp {
+    width: 10%;
+}
+
+.loglist-table th.level {
+    width: 10%;
+}
+
+.loglist-table th.thread {
+    width: 10%;
+}
+
+.loglist-table td.timestamp {
+    width: 10%;
+}
+
+.loglist-table td.level {
+    width: 10%;
+}
+
+.log-level-WRN {
+    color: orange;
+}
+
+.log-level-ERR {
+    color: red;
+}
+
+.loglist-table td.thread {
+    width: 10%;
+}
+
+.log-table {
+    margin: 5px;
+    max-height: 100%;
+    overflow: auto;
 }

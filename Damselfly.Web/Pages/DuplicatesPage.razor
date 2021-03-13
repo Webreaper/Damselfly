@@ -68,10 +68,7 @@
     {
         if (firstRender)
         {
-            ViewDataService.ShowFolderList = false;
-            ViewDataService.ShowBasket = false;
-            ViewDataService.ShowExport = true;
-            ViewDataService.ShowTags = false;
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 
             await LoadData();
 

@@ -182,41 +182,68 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <param name="newState"></param>
-        public void SetBasketState(Image image, bool newState)
+        /// TODO: Make this async
+        public void SetBasketState(ICollection<Image> images, bool newState)
         {
-            using var db = new ImageContext();
-            bool changed = false;
-            var watch = new Stopwatch("SetSelection");
-            var entry = db.BasketEntries.FirstOrDefault(x => x.ImageId.Equals( image.ImageId ));
-
-            if (newState && entry == null)
+            try
             {
-                entry = new BasketEntry { ImageId = image.ImageId, BasketId = CurrentBasket.BasketId, DateAdded = DateTime.UtcNow };
-                db.Add(entry);
-                db.SaveChanges("AddToBasket");
+                using var db = new ImageContext();
+                bool changed = false;
+                var watch = new Stopwatch("SetSelection");
 
-                image.BasketEntry = entry;
-                SelectedImages.Add(image);
-                changed = true;
+                var existingEntries = db.BasketEntries.Where(x => x.BasketId == CurrentBasket.BasketId &&
+                            images.Select(img => img.ImageId).Contains(x.ImageId));
 
-                StatusService.Instance.StatusText = $"{image.FileName} added to the basket.";
+                if (newState)
+                {
+                    // TODO: skip existing. Do we need this?!
+                    var imagesToAdd = images.Where(img => !existingEntries.Select(x => x.ImageId).Contains( img.ImageId ) ).ToList();
+
+                    var basketEntries = imagesToAdd.Select(img => new BasketEntry
+                                {
+                                    ImageId = img.ImageId,
+                                    BasketId = CurrentBasket.BasketId,
+                                    DateAdded = DateTime.UtcNow
+                                }).ToList();
+
+                    if (basketEntries.Any())
+                    {
+                        var config = new BulkConfig { SetOutputIdentity = true };
+                        db.BulkInsert(basketEntries, config);
+
+                        imagesToAdd.ForEach(img =>
+                        {
+                            img.BasketEntry = basketEntries.First(x => x.ImageId == img.ImageId);
+                            SelectedImages.Add(img);
+                        });
+
+                        changed = true;
+                        StatusService.Instance.StatusText = $"Added {imagesToAdd.Count} image to the basket.";
+                    }
+                }
+                else if (!newState)
+                {
+                    int deleted = existingEntries.BatchDelete();
+                    if( deleted > 0 )
+                    {
+
+                        images.ToList().ForEach(x => { x.BasketEntry = null; });
+                        SelectedImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
+                        changed = true;
+
+                        StatusService.Instance.StatusText = $"Removed {deleted} images from the basket.";
+                    }
+                }
+
+                watch.Stop();
+
+                if (changed)
+                    NotifyStateChanged();
             }
-            else if (!newState && entry != null)
+            catch( Exception ex )
             {
-                db.Remove(entry);
-                db.SaveChanges("RemoveFromBasket");
-
-                image.BasketEntry = null;
-                SelectedImages.Remove(image);
-                changed = true;
-
-                StatusService.Instance.StatusText = $"{image.FileName} removed from the basket.";
+                Logging.LogError($"Unable to update the basket: {ex.Message}");
             }
-
-            watch.Stop();
-
-            if (changed)
-                NotifyStateChanged();
         }
 
         public bool IsSelected(Image image)

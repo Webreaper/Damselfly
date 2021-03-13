@@ -1,0 +1,69 @@
+﻿
+@inject BasketService basketService
+@inject ViewDataService ViewDataService
+@inject IJSRuntime JsRuntime
+@inject NavigationManager navManager
+
+@code {
+    public bool IsDesktopHosted { get; set; }
+
+    public async Task ExportBasketToLocalFilesystem()
+    {
+        await ExportToLocalFS(basketService.SelectedImages);
+    }
+
+    public async Task ExportImagesToLocalFilesystem(List<Image> images)
+    {
+        await ExportToLocalFS( images );
+    }
+
+    /// <summary>
+    /// Do the actual export
+    /// </summary>
+    /// <returns></returns>
+    private async Task ExportToLocalFS(List<Image> images)
+    {
+        if (IsDesktopHosted)
+        {
+            var baseUrl = new Uri(navManager.BaseUri);
+
+            foreach (var image in images)
+            {
+                var imageUrl = new Uri(baseUrl, image.RawImageUrl);
+
+                // TODO: Save XMP and On1 sidecars with the images here.
+
+                // Image folder is fully qualified, so we need to make it relative to the pictures folder
+                // The electron container will use its local settings to create the full path of where
+                // the image will be written locally on the client-side
+                string localPath = image.FullPath.MakePathRelativeTo(IndexingService.RootFolder);
+
+                StatusService.Instance.StatusText = $"Writing {image.FileName} to {localPath}...";
+
+                // Now, shell out to Javascript, which will trigger the download in the Electron container
+                await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
+            }
+
+            StatusService.Instance.StatusText = "Selected images saved locally.";
+        }
+        else
+            StatusService.Instance.StatusText = "Local save is not available outside the Desktop Client.";
+    }
+
+    /// <summary>
+    /// Initialise the state to tell us if LocalFS is available.
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Probe for a js function which indicates we're in the electron container
+            var version = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
+            IsDesktopHosted = !string.IsNullOrEmpty( version );
+
+            StateHasChanged();
+        }
+    }
+}

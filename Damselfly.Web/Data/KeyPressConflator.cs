@@ -21,6 +21,13 @@ namespace Damselfly.Web.Data
             interval = delay;
         }
 
+        /// <summary>
+        /// An event is pushed into the queue. We overwrite an existing
+        /// event to replace it with the new one, and then start the
+        /// timer. If there's an existing timer, we kill it and create
+        /// a new one, starting from zero again.
+        /// </summary>
+        /// <param name="callback"></param>
         public void HandleEvent(TimerCallback callback)
         {
             theCallback = callback;

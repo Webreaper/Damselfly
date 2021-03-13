@@ -9,7 +9,7 @@
         <div>
             <DamselflyLogo />
 
-            @if (navContext.CurrentImage != null)
+            @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
             {
                 <ToolWindow Title="Image Properties">
                     <ChildContent>
@@ -27,9 +27,14 @@
             }
             @if (ViewDataService.ShowTags)
             {
-                <ToolWindow Title="Keywords">
+                <ToolWindow Title="Image Keywords">
                     <ChildContent>
                         <Keywords />
+                    </ChildContent>
+                </ToolWindow>
+                <ToolWindow Title="Add Keywords">
+                    <ChildContent>
+                        <KeywordFavourites />
                     </ChildContent>
                 </ToolWindow>
             }
@@ -49,6 +54,14 @@
                     </ChildContent>
                 </ToolWindow>
             }
+            @if (ViewDataService.ShowLogs)
+            {
+                <ToolWindow Title="Logs">
+                    <ChildContent>
+                        <LogSettings />
+                    </ChildContent>
+                </ToolWindow>
+            }
         </div>
     </div>
 </div>
@@ -56,10 +69,10 @@
 @code { protected override void OnInitialized()
     {
         base.OnInitialized();
-        ViewDataService.PropertyChanged += OnPropertyChanged;
+        ViewDataService.SideBarStateChanged += OnSideBarStateChanged;
     }
 
-    private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void OnSideBarStateChanged(ViewDataService.SideBarState state)
     {
         InvokeAsync(StateHasChanged);
     }

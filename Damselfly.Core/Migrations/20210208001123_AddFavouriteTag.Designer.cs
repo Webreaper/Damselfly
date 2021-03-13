@@ -3,18 +3,20 @@ using System;
 using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Damselfly.Core.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    partial class ImageContextModelSnapshot : ModelSnapshot
+    [Migration("20210208001123_AddFavouriteTag")]
+    partial class AddFavouriteTag
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.3");
+                .HasAnnotation("ProductVersion", "5.0.2");
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
@@ -53,9 +55,6 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("BasketId");
 
                     b.HasIndex("ImageId")
-                        .IsUnique();
-
-                    b.HasIndex("ImageId", "BasketId")
                         .IsUnique();
 
                     b.ToTable("BasketEntries");

@@ -57,7 +57,7 @@ jobs:
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x'
+          dotnet-version: '6.0.100-preview.1.21103.13'
 
       - name: Run Dotnet Server Build
         run: sh scripts/makeserver.sh ${{ matrix.target }} 
@@ -105,6 +105,13 @@ jobs:
         with:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
+      
+      - name: Validate Desktop and server artifacts
+        run: |
+             echo "Desktop artifacts:"
+             ls publish/wwwroot/desktop
+             echo "Server artifacts:"
+             ls server
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -121,7 +128,7 @@ jobs:
       - name: Build Docker for Dev (develop only)
         if: github.ref == 'refs/heads/develop'
         run: sh scripts/makedocker.sh
-      
+
       - name: Build Docker for Release (master only)
         if: github.ref == 'refs/heads/master'
         run: sh scripts/makedocker.sh master
@@ -146,4 +153,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_paths: '["./server/*", "./publish/wwwroot/desktop/*"]'  
+          asset_paths: '["$GITHUB_WORKSPACE/server/*", "$GITHUB_WORKSPACE/publish/wwwroot/desktop/*"]'  
