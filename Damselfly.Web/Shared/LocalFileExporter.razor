@@ -7,6 +7,12 @@
 @code {
     public bool IsDesktopHosted => !string.IsNullOrEmpty(DesktopVersion);
     public string DesktopVersion { get; set; }
+    public event Action OnChange;
+
+    private void NotifyStateChanged()
+    {
+        OnChange?.Invoke();
+    }
 
     public async Task ExportBasketToLocalFilesystem()
     {
@@ -62,7 +68,7 @@
         {
             // Probe for a js function which indicates we're in the electron container
             DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
-            _ = InvokeAsync(() => { StateHasChanged(); });
+            NotifyStateChanged();
         }
     }
 }

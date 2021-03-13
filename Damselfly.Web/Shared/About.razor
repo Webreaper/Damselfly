@@ -1,9 +1,12 @@
 ﻿@using System
 @using Damselfly.Web.Shared
 @inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<LocalFileExporter @ref="FileExporter" />
+
 
 <div>
-    <LocalFileExporter @ref="FileExporter" />
     <img src="damselfly-logo.png" title="Damselfly" />
     <h2>Damselfly v<span />@Version</h2>
     <h4>Server-based Digital Asset Management system</h4>
@@ -14,7 +17,7 @@
     <h4>Damselfly Desktop</h4>
     @if (FileExporter != null && FileExporter.IsDesktopHosted)
     {
-        <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion.</p>
+        <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
     }
     <p>Download v<span />@Version of the Desktop App here:</p>
     <div class="desktop-download-icons">
@@ -69,5 +72,18 @@
         {
             return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            FileExporter.OnChange += StateHasChanged;
+        }
+    }
+
+    public void Dispose()
+    {
+        FileExporter.OnChange -= StateHasChanged;
     }
 }

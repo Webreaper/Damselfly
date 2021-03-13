@@ -201,6 +201,8 @@
     {
         if (firstRender)
         {
+            FileExporter.OnChange += StateHasChanged;
+
             int initialLoadCount, scrollPos;
 
             if (!int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
@@ -218,6 +220,8 @@
     public void Dispose()
     {
         searchService.OnChange -= SearchQueryChanged;
+        FileExporter.OnChange -= StateHasChanged;
+
     }
 
     public string NoResultsMessage

@@ -3,6 +3,7 @@
 @inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
+@implements IDisposable
 
 <LocalFileExporter @ref="FileExporter" />
 
@@ -43,7 +44,7 @@
             <input id="watermarkText" @bind-value="selectedConfig.WatermarkText" />
         </div>
         <div>
-            @if( FileExporter != null && FileExporter.IsDesktopHosted )
+            @if (FileExporter != null && FileExporter.IsDesktopHosted)
             {
                 <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
             }
@@ -103,6 +104,8 @@
     {
         if (firstRender)
         {
+            FileExporter.OnChange += StateHasChanged;
+
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 
             exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
@@ -118,5 +121,10 @@
         using var db = new ImageContext();
         configs = await Task.FromResult(db.DownloadConfigs.ToList());
         return configs;
+    }
+
+    public void Dispose()
+    {
+        FileExporter.OnChange -= StateHasChanged;
     }
 }
