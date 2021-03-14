@@ -74,6 +74,7 @@ namespace Damselfly.Core.Services
             catch (Exception e)
             {
                 Logging.LogError($"Error uploading to Wordpress: {e.Message}");
+                StatusService.Instance.StatusText = $"Error uploading images to Wordpress. Please check the logs.";
             }
         }
 
