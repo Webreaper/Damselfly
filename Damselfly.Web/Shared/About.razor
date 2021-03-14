@@ -19,42 +19,45 @@
     {
         <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
     }
-    <p>Download v<span />@Version of the Desktop App here:</p>
-    <div class="desktop-download-icons">
-        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-                <a href="@DownloadService.DesktopAppInfo.MacOSApp">
-                    <div class="InputAddOn-field">MacOS</div>
-                </a>
-                @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
-                {
-                    <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
-                        <div class="InputAddOn-field">(M1)</div>
+    @if (DownloadService.DesktopAppInfo.AppsAvailable)
+    {
+        <p>Download v<span />@Version of the Desktop App here:</p>
+        <div class="desktop-download-icons">
+            @if (DownloadService.DesktopAppInfo.MacOSApp != null)
+            {
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                    <a href="@DownloadService.DesktopAppInfo.MacOSApp">
+                        <div class="InputAddOn-field">MacOS</div>
                     </a>
-                }
-            </div>
-        }
-        @if (DownloadService.DesktopAppInfo.WindowsApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
-                <a href="@DownloadService.DesktopAppInfo.WindowsApp">
-                    <div class="InputAddOn-field">Windows</div>
-                </a>
-            </div>
-        }
-        @if (DownloadService.DesktopAppInfo.LinuxApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
-                <a href="@DownloadService.DesktopAppInfo.LinuxApp">
-                    <div class="InputAddOn-field">Linux</div>
-                </a>
-            </div>
-        }
-    </div>
+                    @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+                    {
+                        <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                            <div class="InputAddOn-field">(M1)</div>
+                        </a>
+                    }
+                </div>
+            }
+            @if (DownloadService.DesktopAppInfo.WindowsApp != null)
+            {
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                    <a href="@DownloadService.DesktopAppInfo.WindowsApp">
+                        <div class="InputAddOn-field">Windows</div>
+                    </a>
+                </div>
+            }
+            @if (DownloadService.DesktopAppInfo.LinuxApp != null)
+            {
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                    <a href="@DownloadService.DesktopAppInfo.LinuxApp">
+                        <div class="InputAddOn-field">Linux</div>
+                    </a>
+                </div>
+            }
+        </div>
+    }
     <h4>Credits/Thanks</h4>
     <p>
         Powered by <a href="http://blazor.net" target="_blank">Blazor</a>.

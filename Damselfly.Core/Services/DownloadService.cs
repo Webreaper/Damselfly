@@ -44,6 +44,17 @@ namespace Damselfly.Core.Services
             public string MacOSArmApp { get; set; }
             public string WindowsApp { get; set; }
             public string LinuxApp { get; set; }
+
+            public bool AppsAvailable
+            {
+                get
+                {
+                    return MacOSApp != null ||
+                           MacOSArmApp != null ||
+                           WindowsApp != null ||
+                           LinuxApp != null;
+                }
+            }
         }
 
         public static DownloadService Instance { get; private set; }
