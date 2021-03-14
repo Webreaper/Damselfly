@@ -21,7 +21,7 @@
                 @foreach (var tag in tags)
                 {
                     <div class="damselfly-singletag">
-                        <NavLink href="/tag/@tag">@tag</NavLink>
+                        <NavLink href="@TagLink(tag)">@tag</NavLink>
                     </div>
                 }
             </div>
@@ -41,11 +41,13 @@
     }
 </div>
 @code {
-    [Parameter]
-    public string TagName { get; set; }
+        [Parameter]
+        public string TagName { get; set; }
 
-    Image[] images;
-    string[] tags;
+        Image[] images;
+        string[] tags;
+
+        private string TagLink( string tag ) => $"/tag/{tag}";
 
     protected override async Task OnParametersSetAsync()
     {
