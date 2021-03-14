@@ -27,14 +27,14 @@
             {
                 <div class="InputAddOn">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-                    <a href="@DownloadService.DesktopAppInfo.MacOSApp">
+                    <NavLink href="@DownloadService.DesktopAppInfo.MacOSApp">
                         <div class="InputAddOn-field">MacOS</div>
-                    </a>
+                    </NavLink>
                     @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
                     {
-                        <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                        <NavLink href="@DownloadService.DesktopAppInfo.MacOSArmApp">
                             <div class="InputAddOn-field">(M1)</div>
-                        </a>
+                        </NavLink>
                     }
                 </div>
             }
@@ -42,27 +42,27 @@
             {
                 <div class="InputAddOn">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
-                    <a href="@DownloadService.DesktopAppInfo.WindowsApp">
+                    <NavLink href="@DownloadService.DesktopAppInfo.WindowsApp">
                         <div class="InputAddOn-field">Windows</div>
-                    </a>
+                    </NavLink>
                 </div>
             }
             @if (DownloadService.DesktopAppInfo.LinuxApp != null)
             {
                 <div class="InputAddOn">
                     <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
-                    <a href="@DownloadService.DesktopAppInfo.LinuxApp">
+                    <NavLink href="@DownloadService.DesktopAppInfo.LinuxApp">
                         <div class="InputAddOn-field">Linux</div>
-                    </a>
+                    </NavLink>
                 </div>
             }
         </div>
     }
     <h4>Credits/Thanks</h4>
     <p>
-        Powered by <a href="http://blazor.net" target="_blank">Blazor</a>.
-        Icons by <a href="https://fontawesome.com/" target="_blank">Font-Awesome</a>.
-        Image Processing by <a href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</a> and <a href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</a>.
+        Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
+        Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
+        Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink> and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>.
     </p>
 </div>
 
