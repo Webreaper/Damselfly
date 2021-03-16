@@ -48,6 +48,7 @@ namespace Damselfly.Core.Services
         public int TagId { get { return query.TagId; } set { if (query.TagId != value) { query.TagId = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
+        public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
 
         public void SetDateRange( DateTime min, DateTime max )
         {
@@ -118,11 +119,14 @@ namespace Damselfly.Core.Services
                     {
                         case GroupingType.None:
                         case GroupingType.Date:
-                            images = images.OrderByDescending(x => x.SortDate);
+                            images = query.SortOrder == SortOrderType.Descending ?
+                                           images.OrderByDescending(x => x.SortDate) :
+                                           images.OrderBy(x => x.SortDate);
                             break;
                         case GroupingType.Folder:
-                            images = images.OrderBy(x => x.Folder.Path)
-                                           .ThenByDescending(x => x.SortDate);
+                            images = query.SortOrder == SortOrderType.Descending ?
+                                           images.OrderBy(x => x.Folder.Path).ThenByDescending(x => x.SortDate) :
+                                           images.OrderByDescending(x => x.Folder.Path).ThenBy(x => x.SortDate);
                             break;
                         default:
                             throw new ArgumentException("Unexpected grouping type.");

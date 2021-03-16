@@ -389,6 +389,12 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class SearchQuery
     {
+        public enum SortOrderType
+        {
+            Ascending,
+            Descending
+        };
+
         public enum GroupingType
         {
             None,
@@ -407,10 +413,11 @@ namespace Damselfly.Core.Models
         public int TagId { get; set; } = -1;
         public int LensId { get; set; } = -1;
         public GroupingType Grouping { get; set; } = GroupingType.None;
+        public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}";
         }
     }
 

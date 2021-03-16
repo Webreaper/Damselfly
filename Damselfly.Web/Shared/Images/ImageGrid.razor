@@ -72,7 +72,7 @@
                     <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
                 </div>
 
-                if (!endOfImages && allImages == (gridImages.Count() - scrollTriggerImages))
+                if( !endOfImages )
                 {
                     <div class="damselfly-moreimages" id="list-end" />
                 }
@@ -86,9 +86,8 @@
         @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
         {
             <label class="damselfly-browsetoollabel">
-                <input name="thumbSize" type="radio"
-                       value="@choice"
-                       checked="@(CurrentThumbSize == choice)"
+                <input name="thumbSize" type="radio" value="@choice"
+                       checked="@CurrentThumbSize.Equals( choice )"
                        @onchange="@(() => { ChangeThumbSize( choice ); })" />
                 @choice.ToString()
             </label>
@@ -97,14 +96,28 @@
     <div class="damselfly-browsetool">
         <label class="damselfly-browsetoollabel">
             Group By:
-            @foreach (var choice in new[] { SearchQuery.GroupingType.None, SearchQuery.GroupingType.Date, SearchQuery.GroupingType.Folder })
+            @foreach (var choice in Enum.GetValues( typeof( SearchQuery.GroupingType ) ).Cast<SearchQuery.GroupingType>() )
             {
                 <label class="damselfly-browsetoollabel">
-                    <input name="thumbSize" value="@choice" type="radio"
-                           checked="@(SearchService.Instance.Grouping == choice)"
+                    <input name="grouping" value="@choice" type="radio"
+                           checked="@SearchService.Instance.Grouping.Equals( choice )"
                            @onchange="@(() => { ChangeGroupType( choice ); })" />
                     @choice.ToString()
                 </label>
+            }
+        </label>
+    </div>
+    <div class="damselfly-browsetool">
+        <label class="damselfly-browsetoollabel">
+            Sort By:
+            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.SortOrderType)).Cast<SearchQuery.SortOrderType>() )
+            {
+            <label class="damselfly-browsetoollabel">
+                <input name="sortorder" value="@choice" type="radio"
+                       checked="@SearchService.Instance.SortOrder.Equals( choice )"
+                       @onchange="@(() => { ChangeSortOrder( choice ); })" />
+                @choice.ToString()
+            </label>
             }
         </label>
     </div>
@@ -112,7 +125,6 @@
 
 @code {
     private LocalFileExporter FileExporter;
-    const int scrollTriggerImages = 30;
     const int imagesPerPage = 100;
     private bool showDateSeparators = ConfigService.Instance.GetBool("DateSeparators", false);
 
@@ -156,16 +168,26 @@
             // TODO: Order by
             if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Folder)
             {
-                return gridImages.GroupBy(x => x.Folder)
-                            .OrderBy(x => x.Key.Path)
-                            .Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
+                var result = gridImages.GroupBy(x => x.Folder);
+
+                if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
+                    result = result.OrderBy(x => x.Key.Path);
+                else
+                    result = result.OrderByDescending(x => x.Key.Path);
+
+                return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
                             .ToList();
             }
             else if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Date)
             {
-                return gridImages.GroupBy(x => x.SortDate.Date)
-                            .OrderByDescending(x => x.Key)
-                            .Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
+                var result = gridImages.GroupBy(x => x.SortDate.Date);
+
+                if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
+                    result = result.OrderBy(x => x.Key);
+                else
+                    result = result.OrderByDescending(x => x.Key);
+
+                return result.Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
                             .ToList();
             }
 
@@ -177,6 +199,15 @@
     private void ChangeGroupType(SearchQuery.GroupingType newType)
     {
         SearchService.Instance.Grouping = newType;
+        Logging.Log($"Grouping changed to {SearchService.Instance.Grouping}");
+        StateHasChanged();
+    }
+
+    private void ChangeSortOrder(SearchQuery.SortOrderType newType)
+    {
+        SearchService.Instance.SortOrder = newType;
+        Logging.Log($"Sort order changed to {SearchService.Instance.SortOrder}");
+        StateHasChanged();
     }
 
     string WrapStyle { get; set; } = "wrapping-table-small";
