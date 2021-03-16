@@ -1,6 +1,10 @@
 ﻿@using System
 @using Damselfly.Web.Shared
 @inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<LocalFileExporter @ref="FileExporter" />
+
 
 <div>
     <img src="damselfly-logo.png" title="Damselfly" />
@@ -11,57 +15,59 @@
     <NavLink href="/logs">View Server Logs</NavLink>
     <Stats />
     <h4>Damselfly Desktop</h4>
-    @if (isDesktopHosted)
+    @if (FileExporter != null && FileExporter.IsDesktopHosted)
     {
-        <p>Running in the Damselfly Desktop container, v<span />@DesktopVersion.</p>
+        <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
     }
-    <p>Download v<span />@Version of the Desktop App here:</p>
-    <div class="desktop-download-icons">
-        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
-        {
-        <div class="InputAddOn">
-            <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-            <a href="@DownloadService.DesktopAppInfo.MacOSApp">
-                <div class="InputAddOn-field">MacOS</div>
-            </a>
-            @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+    @if (DownloadService.DesktopAppInfo.AppsAvailable)
+    {
+        <p>Download v<span />@Version of the Desktop App here:</p>
+        <div class="desktop-download-icons">
+            @if (DownloadService.DesktopAppInfo.MacOSApp != null)
             {
-                <a href="@DownloadService.DesktopAppInfo.MacOSArmApp">
-                    <div class="InputAddOn-field">(M1)</div>
-                </a>
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                    <NavLink href="@DownloadService.DesktopAppInfo.MacOSApp">
+                        <div class="InputAddOn-field">MacOS</div>
+                    </NavLink>
+                    @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+                    {
+                        <NavLink href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                            <div class="InputAddOn-field">(M1)</div>
+                        </NavLink>
+                    }
+                </div>
+            }
+            @if (DownloadService.DesktopAppInfo.WindowsApp != null)
+            {
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                    <NavLink href="@DownloadService.DesktopAppInfo.WindowsApp">
+                        <div class="InputAddOn-field">Windows</div>
+                    </NavLink>
+                </div>
+            }
+            @if (DownloadService.DesktopAppInfo.LinuxApp != null)
+            {
+                <div class="InputAddOn">
+                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                    <NavLink href="@DownloadService.DesktopAppInfo.LinuxApp">
+                        <div class="InputAddOn-field">Linux</div>
+                    </NavLink>
+                </div>
             }
         </div>
-        }
-        @if (DownloadService.DesktopAppInfo.WindowsApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
-                <a href="@DownloadService.DesktopAppInfo.WindowsApp">
-                    <div class="InputAddOn-field">Windows</div>
-                </a>
-            </div>
-        }
-        @if (DownloadService.DesktopAppInfo.LinuxApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
-                <a href="@DownloadService.DesktopAppInfo.LinuxApp">
-                    <div class="InputAddOn-field">Linux</div>
-                </a>
-            </div>
-        }
-    </div>
+    }
     <h4>Credits/Thanks</h4>
     <p>
-        Powered by <a href="http://blazor.net" target="_blank">Blazor</a>.
-        Icons by <a href="https://fontawesome.com/" target="_blank">Font-Awesome</a>.
-        Image Processing by <a href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</a> and <a href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</a>.
+        Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
+        Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
+        Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink> and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>.
     </p>
 </div>
 
 @code {
-    public bool isDesktopHosted { get; set; }
-    public string DesktopVersion { get; set; }
+    private LocalFileExporter FileExporter;
 
     public string Version
     {
@@ -71,21 +77,16 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            // Probe for a js function which indicates we're in the electron container
-            DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
-
-            isDesktopHosted = !string.IsNullOrEmpty(DesktopVersion);
-
-            if( isDesktopHosted )
-            {
-                Logging.Log($"Desktop version: {DesktopVersion}");
-            }
-
-            StateHasChanged();
+            FileExporter.OnChange += StateHasChanged;
         }
+    }
+
+    public void Dispose()
+    {
+        FileExporter.OnChange -= StateHasChanged;
     }
 }

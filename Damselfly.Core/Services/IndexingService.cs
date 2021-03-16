@@ -698,42 +698,46 @@ namespace Damselfly.Core.Services
 
                         foreach (var img in imagesToScan)
                         {
-                            ImageMetaData imgMetaData = img.MetaData;
-                            bool isNewMetadata = false;
-
-                            if (imgMetaData == null)
+                            try
                             {
-                                // New metadata
-                                imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
-                                newMetadataEntries.Add(imgMetaData);
-                                isNewMetadata = true;
+                                ImageMetaData imgMetaData = img.MetaData;
+                                bool isNewMetadata = false;
+
+                                if (imgMetaData == null)
+                                {
+                                    // New metadata
+                                    imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
+                                    newMetadataEntries.Add(imgMetaData);
+                                    isNewMetadata = true;
+                                }
+                                else
+                                    updatedEntries.Add(imgMetaData);
+
+                                GetImageMetaData(ref imgMetaData, out var keywords);
+
+                                if (img.SortDate != imgMetaData.DateTaken)
+                                {
+                                    // Update the image sort date with the date taken
+                                    img.SortDate = imgMetaData.DateTaken;
+                                    img.LastUpdated = DateTime.UtcNow;
+                                    updatedImages.Add(img);
+                                }
+
+                                if (keywords.Any())
+                                    imageKeywords[img] = keywords;
+
+                                if (isNewMetadata && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
+                                {
+                                    // If it's new metadata, that means a new image - in which
+                                    // case we should scan for sidecar files and ingest their
+                                    // keywords
+                                    ProcessSideCarKeywords(img, keywords);
+                                }
                             }
-                            else
-                                updatedEntries.Add(imgMetaData);
-
-                            GetImageMetaData(ref imgMetaData, out var keywords);
-
-                            if (img.SortDate != imgMetaData.DateTaken)
+                            catch( Exception ex )
                             {
-                                // Update the image sort date with the date taken
-                                img.SortDate = imgMetaData.DateTaken;
-                                img.LastUpdated = DateTime.UtcNow;
-                                updatedImages.Add(img);
+                                Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
                             }
-
-                            if (keywords.Any())
-                                imageKeywords[img] = keywords;
-
-                            if (isNewMetadata && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
-                            {
-                                // If it's new metadata, that means a new image - in which
-                                // case we should scan for sidecar files and ingest their
-                                // keywords
-                                ProcessSideCarKeywords(img, keywords);
-                            }
-
-                            // Yield a bit. TODO: must be a better way of doing this
-                            Thread.Sleep(50);
                         }
 
                         var saveWatch = new Stopwatch("MetaDataSave");
@@ -787,56 +791,72 @@ namespace Damselfly.Core.Services
             DirectoryInfo dir = new DirectoryInfo(img.Folder.Path);
             var files = dir.GetFiles(sidecarSearch);
 
-            var on1Sidecar = files.FirstOrDefault(x => x.Extension.Equals(".on1", StringComparison.OrdinalIgnoreCase));
-
-            if (on1Sidecar != null)
+            if (files.Any())
             {
-                var on1MetaData = On1Sidecar.LoadMetadata(on1Sidecar);
+                var on1Sidecar = files.FirstOrDefault(x => x.Extension.Equals(".on1", StringComparison.OrdinalIgnoreCase));
+                var xmpSidecar = files.FirstOrDefault(x => x.Extension.Equals(".xmp", StringComparison.OrdinalIgnoreCase));
 
-                if (on1MetaData != null)
+                if (on1Sidecar != null)
                 {
-                    var missingKeywords = on1MetaData.Keywords
-                                            .Except(keywords, StringComparer.OrdinalIgnoreCase)
-                                            .ToList();
-
-                    if (missingKeywords.Any())
+                    try
                     {
-                        Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the On1 Sidecar.");
-                        sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                        var on1MetaData = On1Sidecar.LoadMetadata(on1Sidecar);
+
+                        if( on1MetaData != null && on1MetaData.Keywords != null && on1MetaData.Keywords.Any() )
+                        {
+                            var missingKeywords = on1MetaData.Keywords
+                                                    .Except(keywords, StringComparer.OrdinalIgnoreCase)
+                                                    .ToList();
+
+                            if (missingKeywords.Any())
+                            {
+                                Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the On1 Sidecar.");
+                                sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.LogError($"Exception processing On1 sidecar: {on1Sidecar.FullName}: {ex.Message}");
                     }
                 }
-            }
 
-            var xmpSidecar = files.FirstOrDefault(x => x.Extension.Equals(".xmp", StringComparison.OrdinalIgnoreCase));
-
-            if( xmpSidecar != null )
-            { 
-                using var stream = File.OpenRead(xmpSidecar.FullName);
-                IXmpMeta xmp = XmpMetaFactory.Parse(stream);
-
-                var xmpKeywords = xmp.Properties.FirstOrDefault(x => x.Path == "pdf:Keywords");
-
-                if( xmpKeywords != null )
+                if (xmpSidecar != null)
                 {
-                    var missingKeywords = xmpKeywords.Value
-                                                .Split(",")
-                                                .Select( x => x.Trim() )
-                                                .Except( keywords )
-                                                .ToList();
-
-                    if (missingKeywords.Any())
+                    try
                     {
-                        Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the XMP Sidecar.");
-                        sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                        using var stream = File.OpenRead(xmpSidecar.FullName);
+                        IXmpMeta xmp = XmpMetaFactory.Parse(stream);
+
+                        var xmpKeywords = xmp.Properties.FirstOrDefault(x => x.Path == "pdf:Keywords");
+
+                        if (xmpKeywords != null)
+                        {
+                            var missingKeywords = xmpKeywords.Value
+                                                        .Split(",")
+                                                        .Select(x => x.Trim())
+                                                        .Except(keywords)
+                                                        .ToList();
+
+                            if (missingKeywords.Any())
+                            {
+                                Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the XMP Sidecar.");
+                                sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.LogError($"Exception processing XMP sidecar: {xmpSidecar.FullName}: {ex.Message}");
                     }
                 }
-            }
 
-            if (sideCarTags.Any())
-            {
-                // Now, submit the tags; note they won't get created immediately, but in batch.
-                Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-                _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+                if (sideCarTags.Any())
+                {
+                    // Now, submit the tags; note they won't get created immediately, but in batch.
+                    Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+                    _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+                }
             }
         }
 

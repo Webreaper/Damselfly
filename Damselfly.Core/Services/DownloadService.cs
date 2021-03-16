@@ -44,6 +44,17 @@ namespace Damselfly.Core.Services
             public string MacOSArmApp { get; set; }
             public string WindowsApp { get; set; }
             public string LinuxApp { get; set; }
+
+            public bool AppsAvailable
+            {
+                get
+                {
+                    return MacOSApp != null ||
+                           MacOSArmApp != null ||
+                           WindowsApp != null ||
+                           LinuxApp != null;
+                }
+            }
         }
 
         public static DownloadService Instance { get; private set; }
@@ -230,8 +241,6 @@ namespace Damselfly.Core.Services
             {
                 var threshold = DateTime.UtcNow - timeSpan;
 
-                Logging.LogWarning($"Cleaning up download zips older than {threshold}");
-
                 // Look for files eligible to clean up - they must have been created
                 // before the last cleanup was scheduled.
                 var toDelete = downloadsPath.GetFiles("*.*", SearchOption.AllDirectories)
@@ -239,7 +248,12 @@ namespace Damselfly.Core.Services
                                          .Where(x => x.CreationTimeUtc < threshold)
                                          .ToList();
 
-                toDelete.ForEach(x => x.SafeDelete());
+                if (toDelete.Any())
+                {
+                    Logging.LogWarning($"Cleaning up {toDelete.Count} download zips older than {threshold}");
+
+                    toDelete.ForEach(x => x.SafeDelete());
+                }
             }
             else
                 Logging.LogWarning($"Downloads path ({downloadsPath}) did not exist.");

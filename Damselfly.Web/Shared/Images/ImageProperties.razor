@@ -19,7 +19,7 @@
         <div class="damselfly-imageproperties">
             <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
             <div>Filename: @CurrentImage.FileName</div>
-            <div>Folder:&nbsp;<a href="/folder/@CurrentImage.Folder.FolderId">@CurrentImage.Folder.Name</a></div>
+            <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink">@CurrentImage.Folder.Name</NavLink></div>
             <div>Thumbs Generated: @ThumbnailUpdate</div>
             <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
             @if (CurrentImage.MetaData != null)
@@ -67,6 +67,7 @@
 @code {
     private Image theImage;
     public Image CurrentImage { get { return theImage; } set { theImage = value; } }
+    public string CurrentFolderLink => $"/folder/{CurrentImage.Folder.FolderId}";
 
     public bool InBasket
     {

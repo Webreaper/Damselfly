@@ -20,7 +20,7 @@
             {
                 <div class="damselfly-imagetitlebar">
                     <div class="damselfly-imagenavitem">
-                        <a href="/"><i class="clickable-icon fa fa-reply" /></a>
+                        <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
                     </div>
                     <div class="damselfly-imagetitle">
                         Image: @image.FileName
@@ -30,16 +30,19 @@
                 <div class="damselfly-imagenav">
                     @if (prevImage != null && prevImage.ImageId != image.ImageId)
                     {
-    <a class="damselfly-navleft chevron flipchevron" href="/image/@prevImage.ImageId" /> }
+                        <NavLink class="damselfly-navleft chevron flipchevron" href="@PrevImageIDUrl" />
+                    }
                     else
                     {
-    <div class="damselfly-navleft"></div>}
+                        <div class="damselfly-navleft"></div>
+                    }
                     <div class="damselfly-imagedisplay">
                         <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageService.GetImageThumbUrl(image, ThumbSize.Large)">
                     </div>
                     @if (nextImage != null && nextImage.ImageId != image.ImageId)
                     {
-    <a class="damselfly-navright chevron" href="/image/@nextImage.ImageId" /> }
+                        <NavLink class="damselfly-navright chevron" href="@NextImageIDUrl" />
+                    }
                     else
                     {
     <div class="damselfly-navright"></div>}
@@ -47,14 +50,17 @@
 </div>
 
 @code {
-        [Parameter]
-        public string ImageID { get; set; }
+    [Parameter]
+    public string ImageID { get; set; }
 
-        Image image;
-        Image nextImage;
-        Image prevImage;
+    Image image;
+    Image nextImage;
+    Image prevImage;
 
     public CropJsHelper JsHelper { get; set; }
+
+    private string PrevImageIDUrl => $"/image/{prevImage.ImageId}";
+    private string NextImageIDUrl => $"/image/{nextImage.ImageId}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

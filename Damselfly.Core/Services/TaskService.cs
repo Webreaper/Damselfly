@@ -194,7 +194,7 @@ namespace Damselfly.Core.Services
                         task.NextRun = DateTime.UtcNow + task.ExecutionFrequency;
 
                         runningTasks.Add(task.Type, thread);
-                        Logging.Log($"Starting thread for task {task.Type}");
+                        Logging.LogVerbose($"Starting thread for task \"{task.Type}\"");
                         thread.Start();
                     }
                 }
@@ -241,7 +241,7 @@ namespace Damselfly.Core.Services
             {
                 if (task.WorkMethod != null)
                 {
-                    Logging.Log("Starting execution for task {0}", task.Type);
+                    Logging.LogVerbose("Starting execution for task {0}", task.Type);
                     task.WorkMethod();
                 }
                 else

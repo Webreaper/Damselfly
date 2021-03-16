@@ -20,7 +20,16 @@ namespace Damselfly.Web.Data
             public int index;
         }
 
+        protected class ImageGrouping
+        {
+            public string Key { get; set; }
+            public List<Image> Images { get; set; }
+        }
+
+
+        // Grid images is a list of lists of images.
         protected readonly List<Image> gridImages = new List<Image>();
+
         private SelectionInfo prevSelection = null;
 
         /// <summary>
