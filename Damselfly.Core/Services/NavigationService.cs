@@ -50,6 +50,10 @@ namespace Damselfly.Core.Services
         /// current context, and the current image position. This is passed
         /// back to the UI and is used to form the 'click' URL for the next
         /// or prev icons. 
+        /// TODO: If Context = Search, then there may be more images
+        /// that match the search. So call LoadMore here on wrap-around
+        /// Otherwise we loop through 20 images, despite 200 matching the
+        /// search.
         /// </summary>
         /// <param name="image"></param>
         /// <param name="next"></param>
@@ -65,34 +69,21 @@ namespace Damselfly.Core.Services
 
             if ( this.CurrentImage != null && navigationItems != null )
             {
-                int maxIndex = navigationItems.Count - 1;
                 int currentIndex = navigationItems.FindIndex( x => x.ImageId == CurrentImage.ImageId );
 
-                if (currentIndex >= 0)
+                if (currentIndex != -1)
                 {
-                    int nextIndex = -9999;
                     if (next)
-                    {
-                        if (maxIndex > 0)
-                        {
-                            // TODO: If Context = Search, then there may be more images
-                            // that match the search. So call LoadMore here on wrap-around
-                            // Otherwise we loop through 20 images, despite 200 matching the
-                            // search.
-                            nextIndex = (currentIndex + 1) % maxIndex;
-                        }
-                        else
-                            return null;
-                    }
+                        currentIndex++;
                     else
-                    {
-                        nextIndex = currentIndex - 1;
-                        if (nextIndex == -1)
-                            nextIndex = maxIndex;
-                    }
+                        currentIndex--;
 
-                    if( nextIndex >= 0 )
-                        return navigationItems[nextIndex];
+                    if (currentIndex < 0)
+                        currentIndex = navigationItems.Count - 1;
+                    else
+                        currentIndex = currentIndex % navigationItems.Count;
+
+                    return navigationItems[currentIndex];
                 }
             }
 
