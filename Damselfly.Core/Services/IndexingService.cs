@@ -726,12 +726,10 @@ namespace Damselfly.Core.Services
                                 if (keywords.Any())
                                     imageKeywords[img] = keywords;
 
-                                if (isNewMetadata && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
+                                if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
                                 {
-                                    // If it's new metadata, that means a new image - in which
-                                    // case we should scan for sidecar files and ingest their
-                                    // keywords
-                                    ProcessSideCarKeywords(img, keywords);
+                                    // Scan for sidecar files and ingest their keywords
+                                    ProcessSideCarKeywords(img, keywords );
                                 }
                             }
                             catch( Exception ex )
@@ -796,7 +794,8 @@ namespace Damselfly.Core.Services
                 var on1Sidecar = files.FirstOrDefault(x => x.Extension.Equals(".on1", StringComparison.OrdinalIgnoreCase));
                 var xmpSidecar = files.FirstOrDefault(x => x.Extension.Equals(".xmp", StringComparison.OrdinalIgnoreCase));
 
-                if (on1Sidecar != null)
+                // If there's an On1 sidecar, and it's newer than the last-mod date of the image...
+                if (on1Sidecar != null && on1Sidecar.LastWriteTimeUtc >= img.FileLastModDate )
                 {
                     try
                     {
@@ -810,7 +809,7 @@ namespace Damselfly.Core.Services
 
                             if (missingKeywords.Any())
                             {
-                                Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the On1 Sidecar.");
+                                Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the On1 Sidecar.");
                                 sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                             }
                         }
@@ -821,7 +820,8 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                if (xmpSidecar != null)
+                // If there's an XMP sidecar, and it's newer than the last-mod date of the image...
+                if (xmpSidecar != null && xmpSidecar.LastWriteTimeUtc >= img.FileLastModDate)
                 {
                     try
                     {
@@ -835,12 +835,12 @@ namespace Damselfly.Core.Services
                             var missingKeywords = xmpKeywords.Value
                                                         .Split(",")
                                                         .Select(x => x.Trim())
-                                                        .Except(keywords)
+                                                        .Except(keywords, StringComparer.OrdinalIgnoreCase)
                                                         .ToList();
 
                             if (missingKeywords.Any())
                             {
-                                Logging.LogVerbose($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the XMP Sidecar.");
+                                Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the XMP Sidecar.");
                                 sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                             }
                         }
@@ -1037,7 +1037,7 @@ namespace Damselfly.Core.Services
             // Ignore non images, and hidden files/folders.
             if (file.IsDirectory() || file.IsImageFileType())
             {
-                Logging.Log($"FileWacher: adding to queue: {folder} {changeType}");
+                Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
                 folderQueue.Enqueue(folder);
             }
         }
@@ -1050,7 +1050,7 @@ namespace Damselfly.Core.Services
 
         private static void OnChanged(object source, FileSystemEventArgs e)
         {
-            Logging.LogVerbose($"FileWacher: {e.FullPath} {e.ChangeType}");
+            Logging.LogVerbose($"FileWatcher: {e.FullPath} {e.ChangeType}");
 
             var file = new FileInfo(e.FullPath);
 
