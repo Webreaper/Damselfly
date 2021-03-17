@@ -71,11 +71,11 @@
                 <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
                     <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
                 </div>
+            }
 
-                if( !endOfImages )
-                {
-                    <div class="damselfly-moreimages" id="list-end" />
-                }
+            if (!endOfImages)
+            {
+                <div class="damselfly-moreimages" id="list-end" />
             }
         }
     }
