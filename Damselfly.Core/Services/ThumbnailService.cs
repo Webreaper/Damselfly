@@ -32,65 +32,19 @@ namespace Damselfly.Core.Services
         /// <param name="rootFolder"></param>
         public static void SetThumbnailRoot(string rootFolder)
         {
-            _thumbnailRootFolder = rootFolder;
+            // Get the full absolute path.
+            _thumbnailRootFolder = Path.GetFullPath(rootFolder);
 
             if (!Synology)
-                Logging.Log("Initialised thumbnails storage at {0}", _thumbnailRootFolder);
-        }
-
-        /// <summary>
-        /// Convert a local path into a URL request path - relative to wwwroot.
-        /// Note that we have to be careful of some characters, such as '#', as
-        /// it needs to be escaped. However, we can't use URLEncode, because we
-        /// want to keep the slashes (path separators) as-is.
-        /// </summary>
-        /// <param name="localPath"></param>
-        /// <returns></returns>
-        public string ConvertToRequestPath(string localPath)
-        {
-            if (localPath.StartsWith(PicturesRoot, StringComparison.OrdinalIgnoreCase))
             {
-                string thumbPath = localPath.Substring(PicturesRoot.Length);
-                if (thumbPath.StartsWith(Path.DirectorySeparatorChar))
-                    thumbPath = thumbPath.Substring(1);
-                if (thumbPath.EndsWith(Path.DirectorySeparatorChar))
-                    thumbPath = thumbPath.Substring(0, thumbPath.Length - 1);
-
-                localPath = Path.Combine(_requestRoot, thumbPath);
+                if (!System.IO.Directory.Exists(_thumbnailRootFolder))
+                {
+                    System.IO.Directory.CreateDirectory(_thumbnailRootFolder);
+                    Logging.Log("Created folder for thumbnails storage at {0}", _thumbnailRootFolder);
+                }
+                else
+                    Logging.Log("Initialised thumbnails storage at {0}", _thumbnailRootFolder);
             }
-            else
-                localPath = "/"; // TODO - not found
-
-            return localPath;
-        }
-
-        /// <summary>
-        /// Convert a thumbnail path into a URL request path (i.e., relative to wwwroot).
-        /// </summary>
-        /// <param name="imageFile"></param>
-        /// <param name="size"></param>
-        /// <param name="pathIfNotExist"></param>
-        /// <returns></returns>
-        public string GetThumbRequestPath(FileInfo imageFile, ThumbSize size, string pathIfNotExist)
-        {
-            string localPath = GetThumbPath(imageFile, size);
-
-            if (!string.IsNullOrEmpty(pathIfNotExist) && !File.Exists(localPath))
-                return pathIfNotExist;
-
-            return ConvertToRequestPath(localPath);
-        }
-
-        /// <summary>
-        /// Convert a an image's path into a URL request path (i.e., relative to wwwroot).
-        /// </summary>
-        /// <param name="imageFile"></param>
-        /// <param name="size"></param>
-        /// <param name="pathIfNotExist"></param>
-        /// <returns></returns>
-        public string GetThumbRequestPath(Models.Image image, ThumbSize size, string pathIfNotExist)
-        {
-            return GetThumbRequestPath(new FileInfo(image.FullPath), size, pathIfNotExist);
         }
 
         /// <summary>
@@ -115,7 +69,7 @@ namespace Damselfly.Core.Services
             {
                 string extension = Path.GetExtension(imageFile.Name);
                 string baseName = Path.GetFileNameWithoutExtension(imageFile.Name);
-                string relativePath = imageFile.DirectoryName.MakePathRelativeTo(PicturesRoot);
+                string relativePath = imageFile.DirectoryName.MakePathRelativeTo(PicturesRoot);  
                 string thumbFileName = $"{baseName}_{GetSizePostFix(size)}{extension}";
                 thumbPath = Path.Combine(_thumbnailRootFolder, relativePath, thumbFileName);
             }
@@ -337,11 +291,9 @@ namespace Damselfly.Core.Services
         /// <param name="sourceImage"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public bool CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration)
+        public bool CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration )
         {
-            var imageHash = string.Empty;
-            var imageFileInfo = new FileInfo(sourceImage.Image.FullPath);
-            bool success = ConvertFile(imageFileInfo, forceRegeneration, out imageHash);
+            bool success = ConvertFile(sourceImage.Image, forceRegeneration, out var imageHash);
 
             sourceImage.ThumbLastUpdated = DateTime.UtcNow;
             sourceImage.Hash = imageHash;
@@ -352,41 +304,42 @@ namespace Damselfly.Core.Services
         /// <summary>
         /// Process the file on disk to create a set of thumbnails.
         /// </summary>
-        /// <param name="source"></param>
+        /// <param name="image"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public bool ConvertFile(FileInfo source, bool forceRegeneration, out string imageHash )
+        public bool ConvertFile(Models.Image image, bool forceRegeneration, out string imageHash )
         {
             bool success = false;
             imageHash = string.Empty;
+            var imagePath = new FileInfo(image.FullPath);
 
             try
             {
-                if (source.Exists)
+                if (imagePath.Exists)
                 {
-                    var destFiles = GetThumbConfigs(source, forceRegeneration, out FileInfo altSource);
+                    var destFiles = GetThumbConfigs(imagePath, forceRegeneration, out FileInfo altSource);
 
                     if (altSource != null)
                     {
                         Logging.LogTrace("File {0} exists - using it as source for smaller thumbs.", altSource.Name);
-                        source = altSource;
+                        imagePath = altSource;
                     }
 
                     // See if there's any conversions to do
                     if (destFiles.Any())
                     {
-                        Logging.LogVerbose("Generating thumbnails for {0}", source);
+                        Logging.LogVerbose("Generating thumbnails for {0}", imagePath);
 
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
                         {
-                            ImageProcessService.Instance.CreateThumbs(source, destFiles, out imageHash);
+                            ImageProcessService.Instance.CreateThumbs(imagePath, destFiles, out imageHash);
 
                             success = true;
                         }
                         catch (Exception ex)
                         {
-                            Logging.LogError("Thumbnail conversion failed for {0}: {1}", source, ex.Message);
+                            Logging.LogError("Thumbnail conversion failed for {0}: {1}", imagePath, ex.Message);
                         }
                         finally
                         {
@@ -405,7 +358,7 @@ namespace Damselfly.Core.Services
             }
             catch (Exception ex)
             {
-                Logging.LogTrace("Exception converting thumbnails for {0}: {1}...", source, ex.Message);
+                Logging.LogTrace("Exception converting thumbnails for {0}: {1}...", imagePath, ex.Message);
             }
 
             return success;

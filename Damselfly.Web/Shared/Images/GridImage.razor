@@ -15,8 +15,8 @@ else
 <div class="grid-image" @ondblclick="NavigateToImage">
     @if (!string.IsNullOrEmpty(ImageUrl))
     {
-<img @key="CurrentImage.ImageId" class="@SelectStyle" title="@CurrentImage.FileName" src="@ImageUrl"
-     @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+        <img @key="CurrentImage.ImageId" class="@SelectStyle" title="@CurrentImage.FileName" src="@ImageUrl"
+            @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
                     <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">}
 </div>
                 @if (DisplayFileName)
@@ -51,7 +51,7 @@ else
         }
     }
 
-    string ImageUrl { get; set; } = null;
+    string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
     string SelectStyle { get { return SelectionService.Instance.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
 
     void ShowContextMenu(MouseEventArgs args)
@@ -90,28 +90,9 @@ else
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Could use the following:
-            //   ImageUrl = $"/thumb/{ThumbnailSize}/{CurrentImage.Image.ImageId}";
-            // but it's an order of magnitude slower (probably because the controller
-            // has to hit the DB etc)
-            ImageUrl = await Task.FromResult<string>
-                (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
-
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        ImageUrl = await Task.FromResult<string>
-            (ImageService.GetImageThumbUrl(CurrentImage, ThumbnailSize));
-    }
-
     void NavigateToImage()
     {
         navContext.Context = NavContext;
         NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
-    }}
+    }
+}

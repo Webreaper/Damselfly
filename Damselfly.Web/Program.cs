@@ -33,6 +33,9 @@ namespace Damselfly.Web
             [Option("config", HelpText = "Config path", Required = false)]
             public string ConfigPath { get; set; } = "./config";
 
+            [Option("thumbs", HelpText = "Thumbnail cache path (ignored if --syno specified)", Required = false)]
+            public string ThumbPath { get; set; } = "./config/thumbs";
+
             [Option('v', "verbose", HelpText = "Run logging in Verbose Mode")]
             public bool Verbose { get; set; }
 
@@ -56,9 +59,6 @@ namespace Damselfly.Web
 
             [Option("noindex", Required = false, HelpText = "Don't Index images")]
             public bool NoEnableIndexing { get; set; }
-
-            [Option('c', Required = false, HelpText = "Create thumbnails in config folder.")]
-            public bool ThumbsInSource { get; set; }
         };
 
         public static void Main(string[] args)
@@ -83,22 +83,13 @@ namespace Damselfly.Web
                                     o.NoGenerateThumbnails = true;
                                 }
 
-                                // Default to create the thumbs in a hidden folder in the source folder. 
-                                var thumbPath = Path.Combine(o.SourceDirectory, ".thumbnails");
-
-                                if ( o.ThumbsInSource )
-                                {
-                                    // Alternatively, store the thumbnails in the config folder
-                                    thumbPath = Path.Combine(o.ConfigPath, "thumbs");
-                                }
-
-                                ThumbnailService.Synology = o.Synology;
                                 ImageProcessService.UseImageSharp = o.ImageSharp;
                                 IndexingService.EnableIndexing = ! o.NoEnableIndexing;
                                 IndexingService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
-                                ThumbnailService.PicturesRoot = o.SourceDirectory;
                                 IndexingService.RootFolder = o.SourceDirectory;
-                                ThumbnailService.SetThumbnailRoot(thumbPath);
+                                ThumbnailService.PicturesRoot = o.SourceDirectory;
+                                ThumbnailService.Synology = o.Synology;
+                                ThumbnailService.SetThumbnailRoot(o.ThumbPath);
 
                                 Logging.Log("Startup State:");
                                 Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");

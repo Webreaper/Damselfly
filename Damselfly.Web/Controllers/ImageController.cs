@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.ImageProcessing;
@@ -7,6 +8,9 @@ using Damselfly.Core.Services;
 using Damselfly.Web.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.Models;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Web.Controllers
 {
@@ -45,26 +49,48 @@ namespace Damselfly.Web.Controllers
         [HttpGet("/thumb/{thumbSize}/{imageId}")]
         public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel)
         {
+            Stopwatch watch = new Stopwatch("ControllerGetThumb");
+            IActionResult result = Redirect("/no-image.png");
+            string imagePath = null;
+
             if (Enum.TryParse<ThumbSize>( thumbSize, true, out var size) && int.TryParse(imageId, out var id))
             {
                 try
                 {
-                    var image = await ImageService.GetImage(id, false);
+                    using var db = new ImageContext();
+                    var image = SearchService.Instance.GetFromCache( id );
+
+                    if (image == null)
+                    {
+                        image = await db.Images.Where(x => x.ImageId.Equals(id))
+                                                    .Include(x => x.Folder)
+                                                    .Include(x => x.MetaData)
+                                                    .FirstOrDefaultAsync();
+                    }
 
                     if (image != null)
                     {
                         var file = new FileInfo(image.FullPath);
                         var path = ThumbnailService.Instance.GetThumbPath(file, size);
 
-                        if (!System.IO.File.Exists(path))
-                            path = "/no-image.png";
-
-                        var stream = new FileStream(path, FileMode.Open);
-                        var result = new FileStreamResult(stream, "image/jpeg")
+                        if (System.IO.File.Exists(path))
                         {
-                            FileDownloadName = image.FileName
-                        };
-                        return result;
+                            imagePath = path;
+                        }
+                        else
+                        {
+                            Logging.Log($"Generating thumbnail on-demand for {image.FileName}...");
+                            if( ThumbnailService.Instance.ConvertFile(image, false, out var hash) )
+                            {
+                                image.MetaData.Hash = hash;
+                                image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
+                                db.Attach(image);
+                                db.Update(image.MetaData);
+                                db.SaveChanges("ThumbUpdate");
+
+                                imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -73,7 +99,18 @@ namespace Damselfly.Web.Controllers
                 }
             }
 
-            return null;
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                var stream = new FileStream(imagePath, FileMode.Open);
+                result = new FileStreamResult(stream, "image/jpeg")
+                {
+                    FileDownloadName = imagePath
+                };
+            }
+
+            watch.Stop();
+
+            return result;
         }
     }
 }

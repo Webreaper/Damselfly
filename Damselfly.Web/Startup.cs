@@ -40,6 +40,7 @@ namespace Damselfly.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
+            services.AddResponseCaching();
             services.AddRazorPages();
             services.AddBlazoredModal();
             services.AddServerSideBlazor();
@@ -88,6 +89,7 @@ namespace Damselfly.Web
             // Disable this for now
             // app.UseHttpsRedirection();
 
+            // TODO: Do we need this if we serve all the images via the controller?
             app.UseStaticFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -96,6 +98,7 @@ namespace Damselfly.Web
             });
 
             app.UseRouting();
+            app.UseResponseCaching();
 
             app.UseEndpoints(endpoints =>
             {

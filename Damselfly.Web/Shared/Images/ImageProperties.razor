@@ -84,7 +84,7 @@
     {
         get
         {
-            var url = "http://localhost:6363" + @ImageService.GetImageThumbUrl(CurrentImage, ThumbSize.Large);
+            var url = "http://localhost:6363" + $"/thumb/{ThumbSize.Large}/{CurrentImage.ImageId}";
             var imageUrl = System.Net.WebUtility.UrlEncode(url);
             return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
         }

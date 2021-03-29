@@ -25,6 +25,15 @@ namespace Damselfly.Core.Services
 
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
+        private IDictionary<int, Image> imageCache = new Dictionary<int, Image>();
+
+        public Image GetFromCache( int imageId )
+        {
+            if (imageCache.TryGetValue(imageId, out var Image))
+                return Image;
+
+            return null;
+        }
 
         public void NotifyStateChanged()
         {
@@ -200,9 +209,13 @@ namespace Damselfly.Core.Services
                                     .ToArrayAsync();
 
                     tagwatch = new Stopwatch("SearchLoadTags");
+
                     // Now load the tags....
                     foreach (var img in results)
+                    {
+                        imageCache[img.ImageId] = img;
                         db.LoadTags(img);
+                    }
 
                     tagwatch.Stop();
                 }

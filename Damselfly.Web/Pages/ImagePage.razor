@@ -37,7 +37,7 @@
                         <div class="damselfly-navleft"></div>
                     }
                     <div class="damselfly-imagedisplay">
-                        <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageService.GetImageThumbUrl(image, ThumbSize.Large)">
+                        <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageUrl">
                     </div>
                     @if (nextImage != null && nextImage.ImageId != image.ImageId)
                     {
@@ -56,6 +56,8 @@
     Image image;
     Image nextImage;
     Image prevImage;
+
+    public string ImageUrl => $"/thumb/{ThumbSize.Large}/{ImageID}";
 
     public CropJsHelper JsHelper { get; set; }
 

@@ -1,11 +1,11 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core", "Damselfly.Core\Damselfly.Core.csproj", "{AFD6D21E-4276-4832-B659-118EE7E34A34}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web", "Damselfly.Web\Damselfly.Web.csproj", "{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{037D2CDE-6BD4-41EB-880A-0922A8572A98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core", "Damselfly.Core\Damselfly.Core.csproj", "{D9320EC3-B38C-4982-BBE6-61F27CA95369}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AFD6D21E-4276-4832-B659-118EE7E34A34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AFD6D21E-4276-4832-B659-118EE7E34A34}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AFD6D21E-4276-4832-B659-118EE7E34A34}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AFD6D21E-4276-4832-B659-118EE7E34A34}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -25,5 +21,9 @@ Global
 		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

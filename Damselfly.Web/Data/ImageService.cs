@@ -89,15 +89,16 @@ namespace Damselfly.Web.Data
         /// </summary>
         /// <param name="imageId"></param>
         /// <returns></returns>
-        public static Task<Image> GetImage(int imageId, bool includeMetadata = true )
+        public static Task<Image> GetImage(int imageId, bool includeMetadata = true, bool includeTags = true )
         {
             using var db = new ImageContext();
             var watch = new Stopwatch("GetImage");
             Image image = null;
             try
             {
-                IQueryable<Image> query = db.Images.Where(x => x.ImageId == imageId)
-                            .Include(x => x.Folder);
+                IQueryable<Image> query = db.Images
+                                            .Where(x => x.ImageId == imageId)
+                                            .Include(x => x.Folder);
 
                 if (includeMetadata)
                 {
@@ -119,7 +120,8 @@ namespace Damselfly.Web.Data
                 watch.Stop();
             }
 
-            db.LoadTags(image);
+            if( includeTags )
+                db.LoadTags(image);
 
             return Task.FromResult(image);
         }
@@ -166,33 +168,6 @@ namespace Damselfly.Web.Data
                             .Select( x => x.Image );
 
             return dupes.ToList();
-        }
-
-        public static string GetImageThumbUrl(Image image, ThumbSize size)
-        {
-            string url = "/no-image.jpg";
-
-            if (image.Folder != null)
-            {
-                var file = new FileInfo(image.FullPath);
-
-                var path = ThumbnailService.Instance.GetThumbRequestPath(file, size, "/no-image.png");
-
-                // This is a bit tricky. We need to UrlEncode all of the folders in the path
-                // but we don't want to UrlEncode the slashes itself. So we have to split,
-                // UrlEncode them all, and rejoin.
-                //var parts = path.Split(Path.DirectorySeparatorChar)
-                //                .Select(x => HttpUtility.UrlEncode(x) );
-                // path = string.Join(Path.DirectorySeparatorChar, parts);
-
-                url = path.Replace( "#", "%23" );
-            }
-            else
-            {
-                Logging.Log("ERROR: No folder for image {0}", image.FileName);
-            }
-
-            return url;
         }
     }
 }
