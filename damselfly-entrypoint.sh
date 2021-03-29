@@ -12,6 +12,6 @@ echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo
 echo "Preparing to start Damselfly...."
 echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
 
-./Damselfly.Web /pictures --config=/config ${cmdlineargs}
+./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 
 exec "$@"
