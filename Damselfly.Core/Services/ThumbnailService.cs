@@ -9,6 +9,8 @@ using MetadataExtractor.Formats.Exif;
 using Microsoft.EntityFrameworkCore;
 using MetadataExtractor.Formats.Jpeg;
 using Damselfly.Core.ImageProcessing;
+using System.Threading.Tasks;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
@@ -234,11 +236,12 @@ namespace Damselfly.Core.Services
             }
         }
 
+        
         /// <summary>
         /// Queries the database to find any images that haven't had a thumbnail
         /// generated, and queues them up to process the thumb generation.
         /// </summary>
-        private void ProcessThumbnailScan()
+        private async Task ProcessThumbnailScan()
         {
             using var db = new Models.ImageContext();
 
@@ -268,9 +271,7 @@ namespace Damselfly.Core.Services
                     // them based onthe ThumbLastUpdated date.
                     const bool forceRegeneration = false;
 
-                    // Process the conversions on a threadpool
-                    if (!imagesToScan.ProcessOnThreadPool((img) => { CreateThumbs(img, forceRegeneration); }, s_maxThreads))
-                        Logging.LogWarning($"Thumbnail generation failed for image queue.");
+                    await imagesToScan.ExecuteInParallel(async img => await CreateThumbs(img, forceRegeneration), s_maxThreads);
 
                     var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
                     db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
@@ -291,14 +292,14 @@ namespace Damselfly.Core.Services
         /// <param name="sourceImage"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public bool CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration )
+        public async Task<ImageProcessResult> CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration )
         {
-            bool success = ConvertFile(sourceImage.Image, forceRegeneration, out var imageHash);
+            var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
             sourceImage.ThumbLastUpdated = DateTime.UtcNow;
-            sourceImage.Hash = imageHash;
+            sourceImage.Hash = result.ImageHash;
 
-            return success;
+            return result;
         }
 
         /// <summary>
@@ -307,11 +308,10 @@ namespace Damselfly.Core.Services
         /// <param name="image"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public bool ConvertFile(Models.Image image, bool forceRegeneration, out string imageHash )
+        public async Task<ImageProcessResult> ConvertFile(Models.Image image, bool forceRegeneration )
         {
-            bool success = false;
-            imageHash = string.Empty;
             var imagePath = new FileInfo(image.FullPath);
+            ImageProcessResult result = null;
 
             try
             {
@@ -333,9 +333,7 @@ namespace Damselfly.Core.Services
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
                         {
-                            ImageProcessService.Instance.CreateThumbs(imagePath, destFiles, out imageHash);
-
-                            success = true;
+                            result = await ImageProcessService.Instance.CreateThumbs(imagePath, destFiles);
                         }
                         catch (Exception ex)
                         {
@@ -349,7 +347,7 @@ namespace Damselfly.Core.Services
                     else
                     {
                         Logging.LogTrace("Thumbs already exist in all resolutions. Skipping...");
-                        success = true;
+                        result = new ImageProcessResult { ThumbsGenerated = false };
                     }
                 }
                 else
@@ -361,7 +359,7 @@ namespace Damselfly.Core.Services
                 Logging.LogTrace("Exception converting thumbnails for {0}: {1}...", imagePath, ex.Message);
             }
 
-            return success;
+            return result;
         }
 
         private void TouchFileTime(FileInfo source, string dest)

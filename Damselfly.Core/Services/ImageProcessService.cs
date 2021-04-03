@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Interfaces;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
 {
@@ -41,9 +42,9 @@ namespace Damselfly.Core.Services
                 imageSharp.SetFontPath(Path.Combine(path, "fonts"));
         }
 
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash)
+        public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
         {
-            processor.CreateThumbs(source, destFiles, out imageHash);
+            return await processor.CreateThumbs(source, destFiles);
         }
 
         public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)

@@ -701,14 +701,12 @@ namespace Damselfly.Core.Services
                             try
                             {
                                 ImageMetaData imgMetaData = img.MetaData;
-                                bool isNewMetadata = false;
 
                                 if (imgMetaData == null)
                                 {
                                     // New metadata
                                     imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
                                     newMetadataEntries.Add(imgMetaData);
-                                    isNewMetadata = true;
                                 }
                                 else
                                     updatedEntries.Add(imgMetaData);

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using SixLabors.Fonts;
@@ -98,8 +99,9 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash)
+        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
         {
+            var result = new ImageProcessResult();
             Stopwatch load = new Stopwatch("ImageSharpLoad");
 
             // Image.Load(string path) is a shortcut for our default type. 
@@ -107,7 +109,7 @@ namespace Damselfly.Core.ImageProcessing
             using var image = Image.Load<Rgba32>(source.FullName);
 
             // We've got the image in memory. Create the hash. 
-            imageHash = GetHash(image);
+            result.ImageHash = GetHash(image);
 
             load.Stop();
 
@@ -142,9 +144,13 @@ namespace Damselfly.Core.ImageProcessing
                 // because each previous image is progressively smaller. 
                 image.Mutate(x => x.Resize(opts));
                 image.Save(dest.FullName);
+
+                result.ThumbsGenerated = true;
             }
 
             thumbs.Stop();
+
+            return Task.FromResult(result);
         }
 
         /// <summary>

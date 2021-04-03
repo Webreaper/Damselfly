@@ -27,6 +27,22 @@ namespace Damselfly.Core.Utils
     /// </summary>
     public static class ThreadUtils
     {
+        public static async Task ExecuteInParallel<T>(this IEnumerable<T> collection,
+                                   Func<T, Task> processor,
+                                   int degreeOfParallelism)
+        {
+            var queue = new ConcurrentQueue<T>(collection);
+            var tasks = Enumerable.Range(0, degreeOfParallelism).Select(async _ =>
+            {
+                while (queue.TryDequeue(out var item))
+                {
+                    await processor(item);
+                }
+            });
+
+            await Task.WhenAll(tasks);
+        }
+
         /// <summary>
         /// TaskScheduler implementation that allows the specification of the thread
         /// priorities, and which sets the number of threads based on the CPU arch.

@@ -7,6 +7,7 @@ using SkiaSharp;
 using Damselfly.Core.Utils;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -61,15 +62,17 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash )
+        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles )
         {
+            ImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false };
+
             try
             {
                 int desiredWidth = destFiles.Max(x => x.Value.width);
 
                 using var sourceBitmap = LoadOrientedBitmap(source, desiredWidth);
 
-                imageHash = GetHash( sourceBitmap );
+                result.ImageHash = GetHash( sourceBitmap );
 
                 Stopwatch thumbs = new Stopwatch("SkiaSharpThumbs");
 
@@ -104,6 +107,7 @@ namespace Damselfly.Core.ImageProcessing
                     // iteration
                     srcBitmap = scaledImage.Copy();
 
+                    result.ThumbsGenerated = true;
                     // TODO: Dispose
                 }
 
@@ -115,6 +119,7 @@ namespace Damselfly.Core.ImageProcessing
                 throw;
             }
 
+            return Task.FromResult(result);
         }
 
         /// <summary>

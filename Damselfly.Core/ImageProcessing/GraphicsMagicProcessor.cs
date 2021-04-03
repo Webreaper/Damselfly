@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -61,10 +62,10 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source">Source.</param>
         /// <param name="sizes">Sizes.</param>
-        public void CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles, out string imageHash )
+        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles )
         {
             // This processor doesn't support hash creation
-            imageHash = string.Empty;
+            ImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false, ImageHash = string.Empty };
 
             // Some useful unsharp and quality settings, plus by defining the max size of the JPEG, it 
             // makes imagemagic more efficient with its memory allocation, so significantly faster. 
@@ -133,10 +134,13 @@ namespace Damselfly.Core.ImageProcessing
                         process.BeginOutputReadLine();
                         process.WaitForExit();
 
-                        if (process.ExitCode != 0)
-                            throw new Exception("Failed");
-                        else
+                        if (process.ExitCode == 0)
+                        {
+                            result.ThumbsGenerated = true;
                             Logging.LogVerbose("Execution complete.");
+                        }
+                        else
+                            throw new Exception("Failed");
                     }
                 }
                 catch (Exception ex)
@@ -146,6 +150,8 @@ namespace Damselfly.Core.ImageProcessing
             }
             else
                 Logging.LogVerbose("Thumbs already exist in all resolutions. Skipping...");
+
+            return Task.FromResult(result);
         }
 
         private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)

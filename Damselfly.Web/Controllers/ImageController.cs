@@ -80,9 +80,11 @@ namespace Damselfly.Web.Controllers
                         else
                         {
                             Logging.Log($"Generating thumbnail on-demand for {image.FileName}...");
-                            if( ThumbnailService.Instance.ConvertFile(image, false, out var hash) )
+                            var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false);
+
+                            if( conversionResult.ThumbsGenerated )
                             {
-                                image.MetaData.Hash = hash;
+                                image.MetaData.Hash = conversionResult.ImageHash;
                                 image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
                                 db.Attach(image);
                                 db.Update(image.MetaData);
