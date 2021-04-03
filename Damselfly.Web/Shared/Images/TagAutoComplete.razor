@@ -50,16 +50,19 @@
     }
 
 
-    private void CreateNewTags( string tag )
+    private void CreateNewTags(string tag)
     {
-        Logging.Log("Saving new tag: " + tag);
+        if (!string.IsNullOrEmpty(tag))
+        {
+            Logging.Log("Saving new tag: " + tag);
 
-        // Reset the tag
-        TypeAheadTag = null;
-        StateHasChanged();
+            // Reset the tag
+            TypeAheadTag = null;
+            StateHasChanged();
 
-        // Call the callback
-        OnAddNewtag(tag);
+            // Call the callback
+            OnAddNewtag(tag);
+        }
     }
 
     private async Task<IEnumerable<string>> SearchTags(string text)
