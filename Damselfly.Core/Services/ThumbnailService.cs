@@ -19,7 +19,7 @@ namespace Damselfly.Core.Services
     {
         private static string _thumbnailRootFolder;
         private const string _requestRoot = "/images";
-        private const int s_maxThreads = 1;
+        private static readonly int s_maxThreads = Math.Max( Environment.ProcessorCount / 2, 2 );
 
         public static ThumbnailService Instance { get; private set; }
         public static string PicturesRoot { get; set; }
