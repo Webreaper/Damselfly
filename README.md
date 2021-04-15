@@ -41,20 +41,25 @@ Damselfly is a server-based Digital Asset Management system. The goal of Damself
 ---
 ## Installation
 
-The easiest way to install Damselfly is via Docker (note the `SYNO_THUMBS` env var is optional, and specific to Synology NASes).
+The easiest way to install Damselfly is via Docker.
 
+### Docker Command:
 ```
 docker run \
   --name damselfly \
   --restart unless-stopped \
   -v /volume1/dockerdata/damselfly:/config \
   -v /volume1/photo:/pictures \
-  -e SYNO_THUMBS=true \
+  -v /volume1/dockerdata/damselfly/thumbs:/thumbs \
   -p 6363:6363 \
   -d \
   webreaper/damselfly
 ```
-Docker-Compose: 
+
+**_Note:_** If you're running on a Synology NAS, and have the Synology indexing/thumbnails enabled, you can specify `-e SYNO_THUMBS=true` which will make Damselfly use the same `@eaDir` folder structure as Synology's indexing system, which means that thumbnails already generated will be used by Damselfly (and Damselfly's thumbnails will be used by Synology Photo Station).
+
+
+### Docker-Compose: 
 ```
  damselfly: 
         container_name: damselfly
@@ -63,6 +68,7 @@ Docker-Compose:
             - 6363:6363/tcp
         volumes:
             - /volume1/dockerdata/damselfly:/config
+            - /volume1/dockerdata/damselfly/thumbs:/thumbs
             - /volume1/photo:/pictures 
         restart: unless-stopped
 ```
