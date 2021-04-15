@@ -76,6 +76,16 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Escape out characters like apostrophes
+        /// </summary>
+        /// <param name="searchText"></param>
+        /// <returns></returns>
+        private static string EscapeChars( string searchText )
+        {
+            return searchText.Replace("'", "''");
+        }
+
+        /// <summary>
         /// The actual search query. Given a page (first+count) we run the search query on the DB
         /// and return back a set of data into the SearchResults collection. Since search parameters
         /// are all AND based, and additive, we build up the query depending on whether the user
@@ -117,8 +127,9 @@ namespace Damselfly.Core.Services
 
                     if (hasTextSearch)
                     {
+                        var searchText = EscapeChars( query.SearchText );
                         // If we have search text, then hit the fulltext Search.
-                        images = db.ImageSearch(query.SearchText);
+                        images = db.ImageSearch(searchText);
                     }
 
                     images = images.Include(x => x.Folder);
