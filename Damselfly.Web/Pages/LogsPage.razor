@@ -16,15 +16,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var line in logLines)
-                    {
-                    <tr>
-                        <td class="timestamp">@line.date</td>
-                        <td class="level log-level-@line.level">@line.level</td>
-                        <td class="entry">@line.entry</td>
-                        <td class="thread">@line.thread</td>
-                    </tr>
-                    }
+                    <Virtualize Items="@logLines" ItemSize="15">
+                        @foreach (var line in logLines)
+                        {
+                            <tr>
+                                <td class="timestamp">@line.date</td>
+                                <td class="level log-level-@line.level">@line.level</td>
+                                <td class="entry">@line.entry</td>
+                                <td class="thread">@line.thread</td>
+                            </tr>
+                        }
+                    </Virtualize>
                 </tbody>
             </table>
         </div>
