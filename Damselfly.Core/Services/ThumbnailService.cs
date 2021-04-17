@@ -245,10 +245,14 @@ namespace Damselfly.Core.Services
         {
             using var db = new Models.ImageContext();
 
+            Logging.Log("Starting thumbnail scan...");
+
             bool complete = false;
 
             while (!complete)
             {
+                Logging.Log("Querying DB for pending thumbs...");
+
                 var watch = new Stopwatch("GetThumbnailQueue");
 
                 // TODO: Change this to a consumer/producer thread model
@@ -265,13 +269,19 @@ namespace Damselfly.Core.Services
 
                 if (!complete)
                 {
+                    Logging.Log($"Found {imagesToScan.Count()} images requiring thumb gen. First image is {imagesToScan[0].Image.FullPath}.");
+
                     watch = new Stopwatch("ThumbnailBatch", 100000);
 
                     // We always ignore existing thumbs when generating
                     // them based onthe ThumbLastUpdated date.
                     const bool forceRegeneration = false;
 
+                    Logging.Log($"Executing CreatThumbs in parallel with {s_maxThreads} threads.");
+
                     await imagesToScan.ExecuteInParallel(async img => await CreateThumbs(img, forceRegeneration), s_maxThreads);
+
+                    Logging.Log($"CreateThumbs complete. Writing updates to DB.");
 
                     var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
                     db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
@@ -283,6 +293,8 @@ namespace Damselfly.Core.Services
 
                     Stopwatch.WriteTotals();
                 }
+                else
+                    Logging.Log("No images found to scan.");
             }
         }
 
