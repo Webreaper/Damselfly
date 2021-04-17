@@ -340,7 +340,7 @@ namespace Damselfly.Core.Services
                     // See if there's any conversions to do
                     if (destFiles.Any())
                     {
-                        Logging.LogVerbose("Generating thumbnails for {0}", imagePath);
+                        Logging.Log("Generating thumbnails for {0}", imagePath);
 
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
@@ -358,7 +358,7 @@ namespace Damselfly.Core.Services
                     }
                     else
                     {
-                        Logging.LogTrace("Thumbs already exist in all resolutions. Skipping...");
+                        Logging.Log("Thumbs already exist in all resolutions. Skipping...");
                         result = new ImageProcessResult { ThumbsGenerated = false };
                     }
                 }
