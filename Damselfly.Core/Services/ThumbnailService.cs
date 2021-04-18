@@ -289,9 +289,10 @@ namespace Damselfly.Core.Services
                     }
 
                     // Write the timestamps for the newly-generated thumbs.
-                    var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
                     Logging.LogVerbose("Writing thumbnail generation timestamp updates to DB.");
-                    db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
+
+                    var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
+                    db.BulkUpdate( db, db.ImageMetaData, imagesToScan.ToList() );
                     updateWatch.Stop();
 
                     watch.Stop();
@@ -347,7 +348,7 @@ namespace Damselfly.Core.Services
                     // See if there's any conversions to do
                     if (destFiles.Any())
                     {
-                        Logging.Log("Generating thumbnails for {0}", imagePath);
+                        Logging.LogVerbose("Generating thumbnails for {0}", imagePath);
 
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
@@ -365,7 +366,7 @@ namespace Damselfly.Core.Services
                     }
                     else
                     {
-                        Logging.Log("Thumbs already exist in all resolutions. Skipping...");
+                        Logging.LogVerbose("Thumbs already exist in all resolutions. Skipping...");
                         result = new ImageProcessResult { ThumbsGenerated = false };
                     }
                 }
