@@ -230,7 +230,7 @@ namespace Damselfly.Core.Services
         {
             while (true)
             {
-                ProcessThumbnailScan();
+                _ = ProcessThumbnailScan();
 
                 Thread.Sleep(1000 * 60);
             }
@@ -294,6 +294,7 @@ namespace Damselfly.Core.Services
                         Logging.LogError($"Exception during parallelised thumbnail generation: {ex.Message}");
                     }
 
+                    // TODO: Investigate why this doesn't complete.
                     Logging.Log($"CreateThumbs complete.");
 
 
