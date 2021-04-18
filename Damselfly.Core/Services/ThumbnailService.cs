@@ -273,6 +273,12 @@ namespace Damselfly.Core.Services
 
                     watch = new Stopwatch("ThumbnailBatch", 100000);
 
+                    // Write the timestamp now, pre-emptively, so that if there's any failure *at all* we won't retry.
+                    var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
+                    Logging.Log("Writing thumbnail generation timestamp updates to DB.");
+                    db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
+                    updateWatch.Stop();
+
                     // We always ignore existing thumbs when generating
                     // them based onthe ThumbLastUpdated date.
                     const bool forceRegeneration = false;
@@ -288,11 +294,8 @@ namespace Damselfly.Core.Services
                         Logging.LogError($"Exception during parallelised thumbnail generation: {ex.Message}");
                     }
 
-                    Logging.Log($"CreateThumbs complete. Writing updates to DB.");
+                    Logging.Log($"CreateThumbs complete.");
 
-                    var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
-                    db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
-                    updateWatch.Stop();
 
                     watch.Stop();
 
