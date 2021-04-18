@@ -28,24 +28,17 @@ namespace Damselfly.Core.Utils
     public static class ThreadUtils
     {
         public static async Task ExecuteInParallel<T>(this IEnumerable<T> collection,
-                                   Func<T, Task> processor,
-                                   int degreeOfParallelism)
+                                   Func<T, Task> processor, int degreeOfParallelism)
         {
             var queue = new ConcurrentQueue<T>(collection);
-            var tasks = Enumerable.Range(0, degreeOfParallelism).Select(async _ =>
-            {
-                while (queue.TryDequeue(out var item))
-                {
-                    try
-                    {
-                        await processor(item);
-                    }
-                    catch( Exception ex )
-                    {
-                        Logging.LogError($"Exception during ExecuteInParallel: {ex.Message}");
-                    }
-                }
-            });
+            var tasks = Enumerable.Range(0, degreeOfParallelism)
+                                  .Select(async _ =>
+                            {
+                                while (queue.TryDequeue(out var item))
+                                {
+                                    await processor(item).ConfigureAwait(false);
+                                }
+                            });
 
             Logging.Log("Waiting for Parallel processing to complete...");
 
