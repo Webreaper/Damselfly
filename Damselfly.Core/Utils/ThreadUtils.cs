@@ -47,7 +47,11 @@ namespace Damselfly.Core.Utils
                 }
             });
 
+            Logging.Log("Waiting for Parallel processing to complete...");
+
             await Task.WhenAll(tasks);
+
+            Logging.Log("Parallel processing completed successfully.");
         }
 
         /// <summary>
