@@ -217,7 +217,7 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            Logging.Log("Started indexing service.");
+            Logging.Log("Started thumbnail service.");
 
             var thread = new Thread(new ThreadStart( RunThumbnailScan ));
             thread.Name = "ThumbnailThread";
@@ -230,8 +230,8 @@ namespace Damselfly.Core.Services
         {
             while (true)
             {
-                _ = ProcessThumbnailScan();
-
+                ProcessThumbnailScan().Wait();
+                
                 Thread.Sleep(1000 * 60);
             }
         }
@@ -245,13 +245,13 @@ namespace Damselfly.Core.Services
         {
             using var db = new Models.ImageContext();
 
-            Logging.Log("Starting thumbnail scan...");
+            Logging.LogVerbose("Starting thumbnail scan...");
 
             bool complete = false;
 
             while (!complete)
             {
-                Logging.Log("Querying DB for pending thumbs...");
+                Logging.LogVerbose("Querying DB for pending thumbs...");
 
                 var watch = new Stopwatch("GetThumbnailQueue");
 
@@ -269,21 +269,15 @@ namespace Damselfly.Core.Services
 
                 if (!complete)
                 {
-                    Logging.Log($"Found {imagesToScan.Count()} images requiring thumb gen. First image is {imagesToScan[0].Image.FullPath}.");
+                    Logging.LogVerbose($"Found {imagesToScan.Count()} images requiring thumb gen. First image is {imagesToScan[0].Image.FullPath}.");
 
                     watch = new Stopwatch("ThumbnailBatch", 100000);
-
-                    // Write the timestamp now, pre-emptively, so that if there's any failure *at all* we won't retry.
-                    var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
-                    Logging.Log("Writing thumbnail generation timestamp updates to DB.");
-                    db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
-                    updateWatch.Stop();
 
                     // We always ignore existing thumbs when generating
                     // them based onthe ThumbLastUpdated date.
                     const bool forceRegeneration = false;
 
-                    Logging.Log($"Executing CreatThumbs in parallel with {s_maxThreads} threads.");
+                    Logging.LogVerbose($"Executing CreatThumbs in parallel with {s_maxThreads} threads.");
 
                     try
                     {
@@ -294,9 +288,11 @@ namespace Damselfly.Core.Services
                         Logging.LogError($"Exception during parallelised thumbnail generation: {ex.Message}");
                     }
 
-                    // TODO: Investigate why this doesn't complete.
-                    Logging.Log($"CreateThumbs complete.");
-
+                    // Write the timestamps for the newly-generated thumbs.
+                    var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
+                    Logging.LogVerbose("Writing thumbnail generation timestamp updates to DB.");
+                    db.BulkUpdate(db, db.ImageMetaData, imagesToScan.ToList());
+                    updateWatch.Stop();
 
                     watch.Stop();
 
@@ -305,7 +301,7 @@ namespace Damselfly.Core.Services
                     Stopwatch.WriteTotals();
                 }
                 else
-                    Logging.Log("No images found to scan.");
+                    Logging.LogVerbose("No images found to scan.");
             }
         }
 
