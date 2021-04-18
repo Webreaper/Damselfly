@@ -36,7 +36,14 @@ namespace Damselfly.Core.Utils
             {
                 while (queue.TryDequeue(out var item))
                 {
-                    await processor(item);
+                    try
+                    {
+                        await processor(item);
+                    }
+                    catch( Exception ex )
+                    {
+                        Logging.LogError($"Exception during ExecuteInParallel: {ex.Message}");
+                    }
                 }
             });
 

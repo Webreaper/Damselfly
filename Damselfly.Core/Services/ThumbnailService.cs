@@ -279,7 +279,14 @@ namespace Damselfly.Core.Services
 
                     Logging.Log($"Executing CreatThumbs in parallel with {s_maxThreads} threads.");
 
-                    await imagesToScan.ExecuteInParallel(async img => await CreateThumbs(img, forceRegeneration), s_maxThreads);
+                    try
+                    {
+                        await imagesToScan.ExecuteInParallel(async img => await CreateThumbs(img, forceRegeneration), s_maxThreads);
+                    }
+                    catch( Exception ex )
+                    {
+                        Logging.LogError($"Exception during parallelised thumbnail generation: {ex.Message}");
+                    }
 
                     Logging.Log($"CreateThumbs complete. Writing updates to DB.");
 
