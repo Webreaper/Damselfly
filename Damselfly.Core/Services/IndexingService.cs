@@ -757,7 +757,8 @@ namespace Damselfly.Core.Services
 
                         batchWatch.Stop();
 
-                        Logging.Log($"Completed metadata scan batch ({imagesToScan.Length} images in {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tags: {tagWatch.HumanElapsedTime}).");
+                        Logging.Log($"Completed metadata scan batch: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added.");
+                        Logging.LogVerbose($"Time for metadata scan batch: {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tag writes: {tagWatch.HumanElapsedTime}.");
                     }
 
                     Thread.Sleep(28 * 1000);

@@ -39,7 +39,7 @@ namespace Damselfly.Web.Controllers
                 }
                 catch( Exception ex )
                 {
-                    Logging.LogError($"Unable to process /rawmage/{imageId}: ", ex.Message);
+                    Logging.LogError($"No thumb available for /rawmage/{imageId}: ", ex.Message);
                 }
             }
 
@@ -79,18 +79,25 @@ namespace Damselfly.Web.Controllers
                         }
                         else
                         {
-                            Logging.Log($"Generating thumbnail on-demand for {image.FileName}...");
+                            Logging.LogVerbose($"Generating thumbnail on-demand for {image.FileName}...");
                             var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false);
 
-                            if( conversionResult.ThumbsGenerated )
-                            {
-                                image.MetaData.Hash = conversionResult.ImageHash;
-                                image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
-                                db.Attach(image);
-                                db.Update(image.MetaData);
-                                db.SaveChanges("ThumbUpdate");
+                            imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
 
-                                imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
+                            if ( conversionResult.ThumbsGenerated )
+                            {
+                                try
+                                {
+                                    image.MetaData.Hash = conversionResult.ImageHash;
+                                    image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
+                                    db.Attach(image);
+                                    db.Update(image.MetaData);
+                                    db.SaveChanges("ThumbUpdate");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logging.LogWarning($"Unable to update DB thumb for ID {imageId}: {ex.Message}");
+                                }
                             }
                         }
                     }
