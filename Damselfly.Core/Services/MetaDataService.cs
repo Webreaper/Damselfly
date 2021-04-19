@@ -128,7 +128,7 @@ namespace Damselfly.Core.Services
                 changeDesc += $"removed: {string.Join(',', tagsToRemove)}";
             }
 
-            Logging.Log($"Bulk inserting {keywordOps.Count()} keyword operations (for {images.Count()}) into queue. ");
+            Logging.LogVerbose($"Bulk inserting {keywordOps.Count()} keyword operations (for {images.Count()}) into queue. ");
 
             try
             {
@@ -169,13 +169,13 @@ namespace Damselfly.Core.Services
                 {
                     if (op.Operation == ExifOperation.OperationType.Add)
                     {
-                        Logging.Log($" Adding keyword '{op.Text}' to {op.Image.FileName}");
+                        Logging.LogVerbose($" Adding keyword '{op.Text}' to {op.Image.FileName}");
                         args += $" -keywords+=\"{op.Text}\" ";
                         processedOps.Add(op);
                     }
                     else
                     {
-                        Logging.Log($" Removing keyword {op.Text} from {op.Image.FileName}");
+                        Logging.LogVerbose($" Removing keyword {op.Text} from {op.Image.FileName}");
                         args += $" -keywords-=\"{op.Text}\" ";
                         processedOps.Add(op);
                     }
