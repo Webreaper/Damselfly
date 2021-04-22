@@ -58,7 +58,7 @@
     <PackageReference Include="BlazorDateRangePicker" Version="3.5.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.0.0.20340" />
-    <PackageReference Include="Radzen.Blazor" Version="3.2.3" />
+    <PackageReference Include="Radzen.Blazor" Version="3.2.6" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.0.0" />
     <PackageReference Include="FluentValidation" Version="10.0.4" />
   </ItemGroup>
