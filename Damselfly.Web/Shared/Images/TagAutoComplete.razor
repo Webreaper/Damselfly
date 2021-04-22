@@ -77,12 +77,14 @@
         {
             var results = await Task.FromResult(indexService.CachedTags
                                     .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-                                    .OrderBy(t => t.Keyword)
                                     .Select(t => t.Keyword)
                                     .ToList());
 
-            // Union the search term with the results from the DB.
-            return results.Union(new List<string> { searchText }, StringComparer.OrdinalIgnoreCase);
+            // Union the search term with the results from the DB. Order them so that the
+            // closest matches to the start of the string come first.
+            return results.Union(new List<string> { searchText }, StringComparer.OrdinalIgnoreCase)
+                          .OrderBy( x => x.ToUpper().IndexOf( searchText.ToUpper() ) )
+                          .ThenBy( x => x );
         }
 
         return new List<string>();
