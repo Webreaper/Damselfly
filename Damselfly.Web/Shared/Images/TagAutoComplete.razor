@@ -84,7 +84,7 @@
             // closest matches to the start of the string come first.
             return results.Union(new List<string> { searchText }, StringComparer.OrdinalIgnoreCase)
                           .OrderBy( x => x.ToUpper().IndexOf( searchText.ToUpper() ) )
-                          .ThenBy( x => x );
+                          .ThenBy( x => x, StringComparer.OrdinalIgnoreCase );
         }
 
         return new List<string>();
