@@ -49,6 +49,14 @@ namespace Damselfly.Core.Utils
             return ImageProcessService.Instance.SupportedFileExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
         }
 
+        public static bool IsSidecarFileType(this FileInfo filename)
+        {
+            if (filename.IsHidden())
+                return false;
+
+            return SidecarUtils.SidecarExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
+        }
+
         /// <summary>
         /// Little wrapper for managing relative paths without trailing slashes.
         /// </summary>

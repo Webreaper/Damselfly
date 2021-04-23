@@ -316,7 +316,7 @@ namespace Damselfly.Core.Services
                             {
                                 // Updating the timestamp on the image to newer than its metadata will
                                 // trigger its metadata and tags to be refreshed during the next scan
-                                image.LastUpdated = DateTime.UtcNow;
+                                image.FlagForMetadataUpdate();
                             }
                         }
 

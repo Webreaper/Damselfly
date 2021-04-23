@@ -573,10 +573,28 @@ namespace Damselfly.Core.Services
                     {
                         var existingImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
 
-                        if (existingImage != null && file.WriteTimesMatch(existingImage.FileLastModDate))
+                        if (existingImage != null)
                         {
-                            Logging.LogTrace("Indexed image {0} unchanged - skipping.", existingImage.FileName);
-                            continue;
+                            // See if the image has changed since we last indexed it
+                            bool filehasChanged = ! file.WriteTimesMatch(existingImage.FileLastModDate);
+
+                            if( ! filehasChanged )
+                            {
+                                // File hasn't changed. Look for a sidecar to see if it's been modified.
+                                var sidecar = existingImage.GetSideCar();
+
+                                if (sidecar != null)
+                                {
+                                    // If there's a sidecar, see if that's changed.
+                                    filehasChanged = ! sidecar.Filename.WriteTimesMatch(existingImage.FileLastModDate);
+                                }
+                            }
+
+                            if( ! filehasChanged )
+                            {
+                                Logging.LogTrace($"Indexed image {existingImage.FileName} unchanged - skipping.");
+                                continue;
+                            }
                         }
 
                         Image image = existingImage;
@@ -592,7 +610,7 @@ namespace Damselfly.Core.Services
                         image.FileLastModDate = file.LastWriteTimeUtc;
 
                         image.Folder = folderToScan;
-                        image.LastUpdated = DateTime.UtcNow;
+                        image.FlagForMetadataUpdate();
 
                         if (existingImage == null)
                         {
@@ -672,9 +690,9 @@ namespace Damselfly.Core.Services
                 {
                     var queueQueryWatch = new Stopwatch("MetaDataQueueQuery", -1);
 
-                    // Find all images where there's either no metadata, or where the image
+                    // Find all images where there's either no metadata, or where the image or sidecar file 
                     // was updated more recently than the image metadata
-                    var imagesToScan = db.Images.Where( x => x.MetaData == null || x.MetaData.LastUpdated < x.LastUpdated )
+                    var imagesToScan = db.Images.Where( x => x.MetaData == null || x.LastUpdated > x.MetaData.LastUpdated )
                                             .OrderByDescending( x => x.LastUpdated )
                                             .Take(batchSize)
                                             .Include(x => x.Folder)
@@ -717,7 +735,7 @@ namespace Damselfly.Core.Services
                                 {
                                     // Update the image sort date with the date taken
                                     img.SortDate = imgMetaData.DateTaken;
-                                    img.LastUpdated = DateTime.UtcNow;
+                                    img.FlagForMetadataUpdate();
                                     updatedImages.Add(img);
                                 }
 
@@ -727,7 +745,7 @@ namespace Damselfly.Core.Services
                                 if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
                                 {
                                     // Scan for sidecar files and ingest their keywords
-                                    ProcessSideCarKeywords(img, keywords );
+                                    ProcessSideCarKeywords(img, keywords ).Wait();
                                 }
                             }
                             catch( Exception ex )
@@ -780,81 +798,29 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="img"></param>
         /// <param name="keywords"></param>
-        private void ProcessSideCarKeywords( Image img, string[] keywords )
+        private async Task ProcessSideCarKeywords( Image img, string[] keywords )
         {
             var sideCarTags = new List<string>();
 
-            var sidecarSearch = Path.ChangeExtension(img.FileName, "*");
-            DirectoryInfo dir = new DirectoryInfo(img.Folder.Path);
-            var files = dir.GetFiles(sidecarSearch);
+            var sidecar = img.GetSideCar();
 
-            if (files.Any())
+            if( sidecar != null )
             {
-                var on1Sidecar = files.FirstOrDefault(x => x.Extension.Equals(".on1", StringComparison.OrdinalIgnoreCase));
-                var xmpSidecar = files.FirstOrDefault(x => x.Extension.Equals(".xmp", StringComparison.OrdinalIgnoreCase));
+                var missingKeywords = sidecar.GetKeywords()
+                                         .Except(keywords, StringComparer.OrdinalIgnoreCase)
+                                         .ToList();
 
-                // If there's an On1 sidecar, and it's newer than the last-mod date of the image...
-                if (on1Sidecar != null && on1Sidecar.LastWriteTimeUtc >= img.FileLastModDate )
+                if (missingKeywords.Any())
                 {
-                    try
-                    {
-                        var on1MetaData = On1Sidecar.LoadMetadata(on1Sidecar);
-
-                        if( on1MetaData != null && on1MetaData.Keywords != null && on1MetaData.Keywords.Any() )
-                        {
-                            var missingKeywords = on1MetaData.Keywords
-                                                    .Except(keywords, StringComparer.OrdinalIgnoreCase)
-                                                    .ToList();
-
-                            if (missingKeywords.Any())
-                            {
-                                Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the On1 Sidecar.");
-                                sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError($"Exception processing On1 sidecar: {on1Sidecar.FullName}: {ex.Message}");
-                    }
-                }
-
-                // If there's an XMP sidecar, and it's newer than the last-mod date of the image...
-                if (xmpSidecar != null && xmpSidecar.LastWriteTimeUtc >= img.FileLastModDate)
-                {
-                    try
-                    {
-                        using var stream = File.OpenRead(xmpSidecar.FullName);
-                        IXmpMeta xmp = XmpMetaFactory.Parse(stream);
-
-                        var xmpKeywords = xmp.Properties.FirstOrDefault(x => x.Path == "pdf:Keywords");
-
-                        if (xmpKeywords != null)
-                        {
-                            var missingKeywords = xmpKeywords.Value
-                                                        .Split(",")
-                                                        .Select(x => x.Trim())
-                                                        .Except(keywords, StringComparer.OrdinalIgnoreCase)
-                                                        .ToList();
-
-                            if (missingKeywords.Any())
-                            {
-                                Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the XMP Sidecar.");
-                                sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError($"Exception processing XMP sidecar: {xmpSidecar.FullName}: {ex.Message}");
-                    }
+                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} Sidecar.");
+                    sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
 
                 if (sideCarTags.Any())
                 {
                     // Now, submit the tags; note they won't get created immediately, but in batch.
                     Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-                    _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+                    await MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
                 }
             }
         }
@@ -884,7 +850,7 @@ namespace Damselfly.Core.Services
 
             var watch = new Stopwatch("CompleteIndex", -1);
 
-            IndexFolder(root, null, false);
+            IndexFolder(root, null, true);
 
             watch.Stop();
 
@@ -1034,7 +1000,7 @@ namespace Damselfly.Core.Services
                 return;
 
             // Ignore non images, and hidden files/folders.
-            if (file.IsDirectory() || file.IsImageFileType())
+            if (file.IsDirectory() || file.IsImageFileType() || file.IsSidecarFileType() )
             {
                 Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
                 folderQueue.Enqueue(folder);
