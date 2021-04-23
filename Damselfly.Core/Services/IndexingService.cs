@@ -578,12 +578,12 @@ namespace Damselfly.Core.Services
                             // See if the image has changed since we last indexed it
                             bool filehasChanged = ! file.WriteTimesMatch(existingImage.FileLastModDate);
 
-                            if( ! filehasChanged )
+                            if( ! filehasChanged && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords) )
                             {
                                 // File hasn't changed. Look for a sidecar to see if it's been modified.
                                 var sidecar = existingImage.GetSideCar();
 
-                                if (sidecar != null)
+                                if (sidecar != null )
                                 {
                                     // If there's a sidecar, see if that's changed.
                                     filehasChanged = ! sidecar.Filename.WriteTimesMatch(existingImage.FileLastModDate);
