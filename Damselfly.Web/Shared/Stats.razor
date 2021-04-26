@@ -15,7 +15,7 @@
             <tr><td>Indexed Tags/Keywords:</td><td>@TotalTags</td></tr>
             <tr><td>Pending MetaData Scans:</td><td>@PendingImages</td></tr>
             <tr><td>Pending Thumbnails:</td><td>@PendingThumbs</td></tr>
-            <tr><td>Pending Keyword Operations:</td><td>@PendingKeywordOps</td></tr>
+            <tr><td>Images with Keyword Updates:</td><td>@PendingKeywordImages (total keywords: @PendingKeywordOps)</td></tr>
         </table>
         }
         else
@@ -33,6 +33,7 @@
     int PendingThumbs { get; set; }
     int PendingImages { get; set; }
     int PendingKeywordOps { get; set; }
+    int PendingKeywordImages { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -52,6 +53,9 @@
             PendingThumbs = await db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).CountAsync();
             PendingImages = await db.Images.Where(x => x.MetaData == null ).CountAsync();
             PendingKeywordOps = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending).CountAsync();
+            PendingKeywordImages = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending)
+                                                      .Select(x => x.ImageId )
+                                                      .Distinct().CountAsync();
             StatsReady = true;
             await InvokeAsync( StateHasChanged );
         };
