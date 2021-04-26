@@ -46,7 +46,7 @@ case $PLATFORM in
     ;;
   mac)
     cd dist
-    zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}.dmg"
+    zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}-universal.dmg"
     ;;
   windows)
     cp "dist/Damselfly-${version}-win.zip" $destfolder
