@@ -21,14 +21,14 @@
   "author": "Mark Otway",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^11.0.0",
-    "electron-builder": "^22.10.4"
+    "electron": "^12.0.5",
+    "electron-builder": "^22.10.5"
   },
   "build": {
     "appId": "damselfly-desktop",
     "win": {
       "target": "zip",
-      "legalTrademarks": "(C) Mark Otway 2020)",
+      "legalTrademarks": "(C) Mark Otway 2021)",
       "icon": "build/icon.png"
     },
     "mac": {
@@ -37,7 +37,7 @@
     }
   },
   "dependencies": {
-    "electron-dl": "^3.0.2",
-    "electron-log": "^4.2.4"
+    "electron-dl": "^3.2.1",
+    "electron-log": "^4.3.4"
   }
 }
