@@ -134,24 +134,6 @@ namespace Damselfly.Core.Services
 
                     images = images.Include(x => x.Folder);
 
-                    // Add in the ordering for the group by
-                    switch (query.Grouping)
-                    {
-                        case GroupingType.None:
-                        case GroupingType.Date:
-                            images = query.SortOrder == SortOrderType.Descending ?
-                                           images.OrderByDescending(x => x.SortDate) :
-                                           images.OrderBy(x => x.SortDate);
-                            break;
-                        case GroupingType.Folder:
-                            images = query.SortOrder == SortOrderType.Descending ?
-                                           images.OrderBy(x => x.Folder.Path).ThenByDescending(x => x.SortDate) :
-                                           images.OrderByDescending(x => x.Folder.Path).ThenBy(x => x.SortDate);
-                            break;
-                        default:
-                            throw new ArgumentException("Unexpected grouping type.");
-                    }
-
                     if ( query.TagId != -1 )
                     {
                         images = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
@@ -174,6 +156,24 @@ namespace Damselfly.Core.Services
                     {
                         // Filter by folderID
                         images = images.Where(x => x.FolderId == query.Folder.FolderId);
+                    }
+
+                    // Add in the ordering for the group by
+                    switch (query.Grouping)
+                    {
+                        case GroupingType.None:
+                        case GroupingType.Date:
+                            images = query.SortOrder == SortOrderType.Descending ?
+                                           images.OrderByDescending(x => x.SortDate) :
+                                           images.OrderBy(x => x.SortDate);
+                            break;
+                        case GroupingType.Folder:
+                            images = query.SortOrder == SortOrderType.Descending ?
+                                           images.OrderBy(x => x.Folder.Path).ThenByDescending(x => x.SortDate) :
+                                           images.OrderByDescending(x => x.Folder.Path).ThenBy(x => x.SortDate);
+                            break;
+                        default:
+                            throw new ArgumentException("Unexpected grouping type.");
                     }
 
                     images = images.Include(x => x.MetaData);
