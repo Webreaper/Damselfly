@@ -381,20 +381,5 @@ namespace Damselfly.Core.Services
 
             return result;
         }
-
-        private void TouchFileTime(FileInfo source, string dest)
-        {
-            if (File.Exists(dest))
-            {
-                try
-                {
-                    File.SetCreationTimeUtc(dest, source.CreationTimeUtc);
-                }
-                catch (IOException ex)
-                {
-                    Logging.LogWarning("Unable to update file time {0} to {1}: {2}. Probably a permissions problem.", source.CreationTimeUtc, dest, ex.Message);
-                }
-            }
-        }
     }
 }

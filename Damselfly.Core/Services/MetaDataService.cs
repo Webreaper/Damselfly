@@ -182,9 +182,11 @@ namespace Damselfly.Core.Services
                 }
             }
 
+            // Note: we could do this to preserve the last-mod-time:
+            //   args += " -P -overwrite_original_in_place";
+            // However, we rely on the last-mod-time changing to pick up
+            // changes to keywords and to subsequently re-index images.
             args += " -overwrite_original";
-            // TODO - decide if we want to do this
-            // args += " -P -overwrite_original_in_place";
             args += " \"" + imagePath + "\"";
 
             var process = new ProcessStarter();

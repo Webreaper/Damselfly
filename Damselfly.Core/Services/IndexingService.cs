@@ -573,9 +573,9 @@ namespace Damselfly.Core.Services
                         if (dbImage != null)
                         {
                             // See if the image has changed since we last indexed it
-                            bool filehasChanged = ! file.FileIsMoreRecentThan(dbImage.LastUpdated);
+                            bool fileChanged = file.FileIsMoreRecentThan(dbImage.LastUpdated);
 
-                            if( ! filehasChanged && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords) )
+                            if( !fileChanged && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords) )
                             {
                                 // File hasn't changed. Look for a sidecar to see if it's been modified.
                                 var sidecar = dbImage.GetSideCar();
@@ -583,11 +583,11 @@ namespace Damselfly.Core.Services
                                 if (sidecar != null )
                                 {
                                     // If there's a sidecar, see if that's changed.
-                                    filehasChanged = ! sidecar.Filename.FileIsMoreRecentThan(dbImage.LastUpdated);
+                                    fileChanged = sidecar.Filename.FileIsMoreRecentThan(dbImage.LastUpdated);
                                 }
                             }
 
-                            if( ! filehasChanged )
+                            if( !fileChanged)
                             {
                                 Logging.LogTrace($"Indexed image {dbImage.FileName} unchanged - skipping.");
                                 continue;
@@ -689,7 +689,8 @@ namespace Damselfly.Core.Services
 
                     // Find all images where there's either no metadata, or where the image or sidecar file 
                     // was updated more recently than the image metadata
-                    var imagesToScan = db.Images.Where( x => x.MetaData == null || x.LastUpdated > x.MetaData.LastUpdated )
+                    var imagesToScan = db.Images.Where( x => x.MetaData == null ||
+                                                        x.LastUpdated > x.MetaData.LastUpdated )
                                             .OrderByDescending( x => x.LastUpdated )
                                             .Take(batchSize)
                                             .Include(x => x.Folder)
