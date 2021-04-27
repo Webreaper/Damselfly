@@ -183,6 +183,8 @@ namespace Damselfly.Core.Services
             }
 
             args += " -overwrite_original";
+            // TODO - decide if we want to do this
+            // args += " -P -overwrite_original_in_place";
             args += " \"" + imagePath + "\"";
 
             var process = new ProcessStarter();

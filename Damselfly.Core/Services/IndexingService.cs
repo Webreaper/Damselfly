@@ -12,9 +12,6 @@ using MetadataExtractor.Formats.Iptc;
 using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
 using EFCore.BulkExtensions;
-using Damselfly.Core.Models.SideCars;
-using XmpCore.Impl;
-using XmpCore;
 using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
@@ -571,33 +568,33 @@ namespace Damselfly.Core.Services
                 {
                     try
                     {
-                        var existingImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
+                        var dbImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
 
-                        if (existingImage != null)
+                        if (dbImage != null)
                         {
                             // See if the image has changed since we last indexed it
-                            bool filehasChanged = ! file.WriteTimesMatch(existingImage.FileLastModDate);
+                            bool filehasChanged = ! file.FileIsMoreRecentThan(dbImage.LastUpdated);
 
                             if( ! filehasChanged && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords) )
                             {
                                 // File hasn't changed. Look for a sidecar to see if it's been modified.
-                                var sidecar = existingImage.GetSideCar();
+                                var sidecar = dbImage.GetSideCar();
 
                                 if (sidecar != null )
                                 {
                                     // If there's a sidecar, see if that's changed.
-                                    filehasChanged = ! sidecar.Filename.WriteTimesMatch(existingImage.FileLastModDate);
+                                    filehasChanged = ! sidecar.Filename.FileIsMoreRecentThan(dbImage.LastUpdated);
                                 }
                             }
 
                             if( ! filehasChanged )
                             {
-                                Logging.LogTrace($"Indexed image {existingImage.FileName} unchanged - skipping.");
+                                Logging.LogTrace($"Indexed image {dbImage.FileName} unchanged - skipping.");
                                 continue;
                             }
                         }
 
-                        Image image = existingImage;
+                        Image image = dbImage;
 
                         if (image == null)
                         {
@@ -612,7 +609,7 @@ namespace Damselfly.Core.Services
                         image.Folder = folderToScan;
                         image.FlagForMetadataUpdate();
 
-                        if (existingImage == null)
+                        if (dbImage == null)
                         {
                             // Default the sort date to the last write time. It'll get updated
                             // later during indexing to set it to the date-taken date.

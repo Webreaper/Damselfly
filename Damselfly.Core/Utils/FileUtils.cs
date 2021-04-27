@@ -172,6 +172,17 @@ namespace Damselfly.Core.Utils
         }
 
         /// <summary>
+        /// Returns true if the file is more recent than the time passed in
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="lastModTimeUtc"></param>
+        /// <returns>True if the times are approximately equivalent</returns>
+        public static bool FileIsMoreRecentThan(this FileInfo file, DateTime timestamp)
+        {
+            return file.LastWriteTimeUtc > timestamp;
+        }
+
+        /// <summary>
         /// Delta-based time comparisonfor file last-write/last-mod times.
         /// Returns true for a file that was modified within 5s of the
         /// last-write time.
