@@ -167,16 +167,26 @@ namespace Damselfly.Core.Services
 
                 if (op.Type == ExifOperation.ExifType.Keyword)
                 {
-                    if (op.Operation == ExifOperation.OperationType.Add)
+                    // Weird but important: we *alwaya* add a -= for the keyword,
+                    // whether we're removing or adding it. Removing is self-evident,
+                    // but adding is less intuitive. The reason is to avoid duplicate
+                    // keywords. So if we do
+                    //      "-keywords-=Banana -keywords+=Banana",
+                    // this will remove the tag and re-add it if it already exists
+                    // (creating a no-op) but the remove will do nothing if it doesn't
+                    // exist. Thus, we ensure we don't add keywords twice.
+                    // See: https://stackoverflow.com/questions/67282388/adding-multiple-keywords-with-exiftool-but-only-if-theyre-not-already-present
+                    args += $" -keywords-=\"{op.Text}\" ";
+
+                    if (op.Operation == ExifOperation.OperationType.Remove)
+                    {
+                        Logging.LogVerbose($" Removing keyword {op.Text} from {op.Image.FileName}");
+                        processedOps.Add(op);
+                    }
+                    else if (op.Operation == ExifOperation.OperationType.Add)
                     {
                         Logging.LogVerbose($" Adding keyword '{op.Text}' to {op.Image.FileName}");
                         args += $" -keywords+=\"{op.Text}\" ";
-                        processedOps.Add(op);
-                    }
-                    else
-                    {
-                        Logging.LogVerbose($" Removing keyword {op.Text} from {op.Image.FileName}");
-                        args += $" -keywords-=\"{op.Text}\" ";
                         processedOps.Add(op);
                     }
                 }
