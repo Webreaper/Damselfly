@@ -198,7 +198,11 @@ namespace Damselfly.Core.Services
             //   args += " -P -overwrite_original_in_place";
             // However, we rely on the last-mod-time changing to pick up
             // changes to keywords and to subsequently re-index images.
-            args += " -overwrite_original";
+            args += " -overwrite_original ";
+            // We enable the 'ignore minor warnings' flag which will allow
+            // us to do things like write tags that are too long for the
+            // IPTC specification.
+            args += " -m ";
             args += " \"" + imagePath + "\"";
 
             var process = new ProcessStarter();
