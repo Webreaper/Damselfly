@@ -29,6 +29,25 @@ namespace Damselfly.Core.Utils
         {
             return $"{date:dd-MMM-yyy HH:mm:ss}";
         }
+        /// <summary>
+        /// Strip smart-quotes and replace with single or double-quotes
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string RemoveSmartQuotes(this string s)
+        {
+            const char singleQuote = '\'';
+            const char doubleQuote = '\"';
+
+            var result = s.Replace('\u0091', singleQuote)
+                          .Replace('\u0092', singleQuote)
+                          .Replace('\u2018', singleQuote)
+                          .Replace('\u2019', singleQuote)
+                          .Replace('\u201d', doubleQuote)
+                          .Replace('\u201c', doubleQuote);
+
+            return result;
+        }
 
         /// <summary>
         /// Creates a human-readable string for a timespan, rounding to the

@@ -743,7 +743,7 @@ namespace Damselfly.Core.Services
                                 if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
                                 {
                                     // Scan for sidecar files and ingest their keywords
-                                    ProcessSideCarKeywords(img, keywords ).Wait();
+                                    ProcessSideCarKeywords( img, keywords ).Wait();
                                 }
                             }
                             catch( Exception ex )
@@ -804,8 +804,11 @@ namespace Damselfly.Core.Services
 
             if( sidecar != null )
             {
-                var missingKeywords = sidecar.GetKeywords()
-                                         .Except(keywords, StringComparer.OrdinalIgnoreCase)
+                var imageKeywords = keywords.Select(x => x.RemoveSmartQuotes());
+                var sidecarKeywords = sidecar.GetKeywords().Select( x => x.RemoveSmartQuotes() );
+
+                var missingKeywords = sidecarKeywords
+                                         .Except(imageKeywords, StringComparer.OrdinalIgnoreCase)
                                          .ToList();
 
                 if (missingKeywords.Any())

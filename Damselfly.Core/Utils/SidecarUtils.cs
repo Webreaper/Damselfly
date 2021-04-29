@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Damselfly.Core.Models;
 using Damselfly.Core.Models.SideCars;
+using Damselfly.Core.Utils;
 using XmpCore;
 
 namespace Damselfly.Core.Utils

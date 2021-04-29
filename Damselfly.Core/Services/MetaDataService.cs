@@ -96,7 +96,7 @@ namespace Damselfly.Core.Services
                     keywordOps.AddRange(tagsToAdd.Select(keyword => new ExifOperation
                     {
                         ImageId = image.ImageId,
-                        Text = keyword,
+                        Text = keyword.RemoveSmartQuotes(),
                         Type = ExifOperation.ExifType.Keyword,
                         Operation = ExifOperation.OperationType.Add,
                         TimeStamp = timestamp
@@ -116,7 +116,7 @@ namespace Damselfly.Core.Services
                         new ExifOperation
                         {
                             ImageId = image.ImageId,
-                            Text = keyword,
+                            Text = keyword.RemoveSmartQuotes(),
                             Type = ExifOperation.ExifType.Keyword,
                             Operation = ExifOperation.OperationType.Remove,
                             TimeStamp = timestamp
@@ -159,7 +159,9 @@ namespace Damselfly.Core.Services
 
             foreach (var op in exifOperations)
             {
-                if( String.IsNullOrEmpty( op.Text) )
+                var operationText = op.Text.RemoveSmartQuotes();
+
+                if ( String.IsNullOrEmpty( operationText ) )
                 {
                     Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
                     continue;
@@ -176,17 +178,17 @@ namespace Damselfly.Core.Services
                     // (creating a no-op) but the remove will do nothing if it doesn't
                     // exist. Thus, we ensure we don't add keywords twice.
                     // See: https://stackoverflow.com/questions/67282388/adding-multiple-keywords-with-exiftool-but-only-if-theyre-not-already-present
-                    args += $" -keywords-=\"{op.Text}\" ";
+                    args += $" -keywords-=\"{operationText}\" ";
 
                     if (op.Operation == ExifOperation.OperationType.Remove)
                     {
-                        Logging.LogVerbose($" Removing keyword {op.Text} from {op.Image.FileName}");
+                        Logging.LogVerbose($" Removing keyword {operationText} from {op.Image.FileName}");
                         processedOps.Add(op);
                     }
                     else if (op.Operation == ExifOperation.OperationType.Add)
                     {
-                        Logging.LogVerbose($" Adding keyword '{op.Text}' to {op.Image.FileName}");
-                        args += $" -keywords+=\"{op.Text}\" ";
+                        Logging.LogVerbose($" Adding keyword '{operationText}' to {op.Image.FileName}");
+                        args += $" -keywords+=\"{operationText}\" ";
                         processedOps.Add(op);
                     }
                 }
