@@ -1257,3 +1257,21 @@ hr.separator {
     max-height: 100%;
     overflow: auto;
 }
+
+figure.zoom {
+    background-position: 50% 50%;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    cursor: zoom-in;
+}
+
+figure.zoom img:hover {
+    opacity: 0;
+}
+
+figure.zoom img {
+    transition: opacity 0.5s;
+    display: block;
+    width: 100%;
+}

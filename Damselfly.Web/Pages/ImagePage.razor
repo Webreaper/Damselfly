@@ -37,9 +37,16 @@
                         <div class="damselfly-navleft"></div>
                     }
                     <div class="damselfly-imagedisplay">
-                        <figure @key="image.ImageId" class="image-fill zoom" onmousemove="zoom(event)" style="background-image: url(@ImageUrl)">
-                            <img src="@ImageUrl" />
-                        </figure>
+                        @if( ZoomEnabled )
+                        {
+                            <figure @key="image.ImageId" class="image-fill zoom" onmousemove="zoom(event)" style="background-image: url(@ImageUrl)">
+                                <img src="@ImageUrl" />
+                            </figure>
+                        }
+                        else
+                        {
+                            <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageUrl">
+                        }
                     </div>
                     @if (nextImage != null && nextImage.ImageId != image.ImageId)
                     {
@@ -58,6 +65,7 @@
     Image image;
     Image nextImage;
     Image prevImage;
+    const bool ZoomEnabled => true;
 
     public string ImageUrl => $"/thumb/{ThumbSize.Large}/{ImageID}";
 
