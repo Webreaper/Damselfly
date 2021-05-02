@@ -16,6 +16,9 @@ case $PLATFORM in
   mac)
     yarncommand='distmac'
     ;;
+  universal)
+    yarncommand='distuni'
+    ;;
   windows)
     yarncommand='distwin'
     ;;
@@ -44,9 +47,13 @@ case $PLATFORM in
     cd dist
     zip "${destfolder}/Damselfly-${version}-mac-arm64.zip" "Damselfly-${version}-arm64.dmg"
     ;;
+  universal)
+    cd dist
+    zip "${destfolder}/Damselfly-${version}-mac-universal.zip" "Damselfly-${version}-universal.dmg"
+    ;;
   mac)
     cd dist
-    zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}-universal.dmg"
+    zip "${destfolder}/Damselfly-${version}-mac.zip" "Damselfly-${version}.dmg"
     ;;
   windows)
     cp "dist/Damselfly-${version}-win.zip" $destfolder
