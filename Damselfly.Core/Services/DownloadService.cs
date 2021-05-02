@@ -108,7 +108,11 @@ namespace Damselfly.Core.Services
 
             // TODO: We should inject the json config that the app uses,
             // with the endpoint pre-configured, into the zip here.
-            var macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac.zip", StringComparison.OrdinalIgnoreCase));
+            var macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac-universal.zip", StringComparison.OrdinalIgnoreCase));
+
+            // Check for universal first; if not, use the normal mac version.
+            if( macAppPath == null )
+                macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac.zip", StringComparison.OrdinalIgnoreCase));
 
             if (macAppPath != null)
                 DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
