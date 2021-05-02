@@ -37,7 +37,9 @@
                         <div class="damselfly-navleft"></div>
                     }
                     <div class="damselfly-imagedisplay">
-                        <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageUrl">
+                        <figure @key="image.ImageId" class="image-fill zoom" onmousemove="zoom(event)" style="background-image: url(@ImageUrl)">
+                            <img src="@ImageUrl" />
+                        </figure>
                     </div>
                     @if (nextImage != null && nextImage.ImageId != image.ImageId)
                     {

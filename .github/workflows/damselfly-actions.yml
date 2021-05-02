@@ -13,6 +13,8 @@ jobs:
             os: ubuntu-latest
           - target: mac
             os: macos-latest
+          - target: universal
+            os: macos-latest
           - target: m1
             os: macos-latest
 
