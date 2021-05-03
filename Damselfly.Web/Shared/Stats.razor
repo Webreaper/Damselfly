@@ -51,7 +51,7 @@
             TotalTags = await db.Tags.CountAsync();
             TotalFolders = await db.Folders.CountAsync();
             PendingThumbs = await db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).CountAsync();
-            PendingImages = await db.Images.Where(x => x.MetaData == null ).CountAsync();
+            PendingImages = await db.Images.Where(x => x.MetaData == null || x.LastUpdated > x.MetaData.LastUpdated ).Include( x => x.MetaData ).CountAsync();
             PendingKeywordOps = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending).CountAsync();
             PendingKeywordImages = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending)
                                                       .Select(x => x.ImageId )
