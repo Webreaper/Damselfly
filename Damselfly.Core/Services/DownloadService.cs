@@ -99,6 +99,8 @@ namespace Damselfly.Core.Services
         /// Get the paths of the various desktop apps
         /// </summary>
         /// <param name="desktopPath"></param>
+        /// TODO: We should inject the json config that the app uses,
+        /// with the endpoint pre-configured, into the zip here.
         private void CheckDesktopAppPaths( DirectoryInfo desktopPath)
         {
             // Get the files in the desktop folder
@@ -106,21 +108,23 @@ namespace Damselfly.Core.Services
                                           .Where(x => x.Name.StartsWith("Damselfly-", StringComparison.OrdinalIgnoreCase))
                                           .ToList();
 
-            // TODO: We should inject the json config that the app uses,
-            // with the endpoint pre-configured, into the zip here.
+            // Check for universal first; if not, use the normal mac version.
             var macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac-universal.zip", StringComparison.OrdinalIgnoreCase));
 
-            // Check for universal first; if not, use the normal mac version.
-            if( macAppPath == null )
+            if (macAppPath == null)
+            {
+                // No universal, so check for the Intel Mac version
                 macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac.zip", StringComparison.OrdinalIgnoreCase));
 
-            if (macAppPath != null)
-                DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
+                if (macAppPath != null)
+                    DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
 
-            var m1AppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac-arm64.zip", StringComparison.OrdinalIgnoreCase));
+                // We only care about the M1 version if the unversal isn't available.
+                var m1AppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac-arm64.zip", StringComparison.OrdinalIgnoreCase));
 
-            if (m1AppPath != null)
-                DesktopAppInfo.MacOSArmApp = Path.Combine(s_appVPath, m1AppPath.Name);
+                if (m1AppPath != null)
+                    DesktopAppInfo.MacOSArmApp = Path.Combine(s_appVPath, m1AppPath.Name);
+            }
 
             var winAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-win.zip", StringComparison.OrdinalIgnoreCase));
 
