@@ -179,7 +179,6 @@ namespace Damselfly.Core.Services
                         }
                     }
                 }
-
             }
             catch (Exception ex)
             {
@@ -575,7 +574,7 @@ namespace Damselfly.Core.Services
                             // See if the image has changed since we last indexed it
                             bool fileChanged = file.FileIsMoreRecentThan(dbImage.LastUpdated);
 
-                            if( !fileChanged && ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords) )
+                            if( !fileChanged )
                             {
                                 // File hasn't changed. Look for a sidecar to see if it's been modified.
                                 var sidecar = dbImage.GetSideCar();
@@ -727,7 +726,32 @@ namespace Damselfly.Core.Services
                                 else
                                     updatedEntries.Add(imgMetaData);
 
-                                GetImageMetaData(ref imgMetaData, out var keywords);
+                                // Scan the image from the 
+                                GetImageMetaData(ref imgMetaData, out var exifKeywords);
+
+                                // Scan for sidecar files
+                                var sideCarTags = GetSideCarKeywords(img, exifKeywords);
+
+                                if (sideCarTags.Any())
+                                {
+                                    // See if we've enabled the option to write any sidecar keywords to IPTC keywords
+                                    // if they're missing in the EXIF data of the image.
+                                    if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
+                                    {
+                                        // Now, submit the tags; note they won't get created immediately, but in batch.
+                                        Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+                                        // Fire and forget this asynchronously - we don't care about waiting for it
+                                        _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+                                    }
+                                }
+
+                                // Now combine - with case insensitivity.
+                                var allKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase);
+
+                                // Now we have a list of all of the keywords found in the image
+                                // and the sidecar.
+                                if (allKeywords.Any())
+                                    imageKeywords[img] = allKeywords.ToArray();
 
                                 if (img.SortDate != imgMetaData.DateTaken)
                                 {
@@ -736,17 +760,8 @@ namespace Damselfly.Core.Services
                                     img.FlagForMetadataUpdate();
                                     updatedImages.Add(img);
                                 }
-
-                                if (keywords.Any())
-                                    imageKeywords[img] = keywords;
-
-                                if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
-                                {
-                                    // Scan for sidecar files and ingest their keywords
-                                    ProcessSideCarKeywords( img, keywords ).Wait();
-                                }
                             }
-                            catch( Exception ex )
+                            catch ( Exception ex )
                             {
                                 Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
                             }
@@ -796,7 +811,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="img"></param>
         /// <param name="keywords"></param>
-        private async Task ProcessSideCarKeywords( Image img, string[] keywords )
+        private List<string> GetSideCarKeywords( Image img, string[] keywords )
         {
             var sideCarTags = new List<string>();
 
@@ -816,14 +831,9 @@ namespace Damselfly.Core.Services
                     Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} Sidecar.");
                     sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
-
-                if (sideCarTags.Any())
-                {
-                    // Now, submit the tags; note they won't get created immediately, but in batch.
-                    Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-                    await MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
-                }
             }
+
+            return sideCarTags;
         }
 
         public void StartService()

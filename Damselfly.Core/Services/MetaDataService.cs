@@ -78,7 +78,20 @@ namespace Damselfly.Core.Services
         /// <param name="tagsToAdd"></param>
         /// <param name="tagsToRemove"></param>
         /// <returns></returns>
-        public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags)
+        public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null)
+        {
+            await UpdateTagsAsync(new[] { image }, addTags, removeTags);
+        }
+
+        /// <summary>
+        /// Takes an image and a set of keywords, and writes them to the DB queue for
+        /// keywords to be added. These will then be processed asynchronously.
+        /// </summary>
+        /// <param name="images"></param>
+        /// <param name="tagsToAdd"></param>
+        /// <param name="tagsToRemove"></param>
+        /// <returns></returns>
+        public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null )
         {
             // TODO: Split tags with commas here?
             var timestamp = DateTime.UtcNow;
