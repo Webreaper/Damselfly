@@ -34,6 +34,7 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
     <PackageReference Include="System.Text.Json" Version="6.0.0-preview.2.21154.6" />
     <PackageReference Include="FluentValidation" Version="10.1.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogHandler.cs" />
