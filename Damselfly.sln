@@ -7,6 +7,10 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core", "Damselfly.Core\Damselfly.Core.csproj", "{D9320EC3-B38C-4982-BBE6-61F27CA95369}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj", "{E459082F-F196-47EC-8CA2-A3AC7B36E453}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj", "{379D6438-15BE-4A00-BAAF-B18D4D8170A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,5 +29,13 @@ Global
 		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E459082F-F196-47EC-8CA2-A3AC7B36E453}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E459082F-F196-47EC-8CA2-A3AC7B36E453}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E459082F-F196-47EC-8CA2-A3AC7B36E453}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E459082F-F196-47EC-8CA2-A3AC7B36E453}.Release|Any CPU.Build.0 = Release|Any CPU
+		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

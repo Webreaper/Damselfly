@@ -19,8 +19,11 @@ namespace Damselfly.Core.Models
         /// <param name="options"></param>
         public void Configure(DbContextOptionsBuilder options)
         {
-            string dataSource = @"Host=localhost;Database=entitycore;Username=postgres;Password=mypassword";
-            options.UseNpgsql(dataSource);
+            const string user = "markotway";
+            const string pw = "password";
+
+            string dataSource = $"User ID={user};Password={pw};Host=localhost;Port=5432;Database=Damselfly;Pooling=true;";
+            options.UseNpgsql(dataSource, b => b.MigrationsAssembly("Damselfly.Migrations.Postgres"));
         }
 
         /// <summary>

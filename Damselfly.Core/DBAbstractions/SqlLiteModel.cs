@@ -27,7 +27,7 @@ namespace Damselfly.Core.Models
         public void Configure(DbContextOptionsBuilder options)
         {
             string dataSource = $"Data Source={DatabasePath}";
-            options.UseSqlite(dataSource);
+            options.UseSqlite(dataSource, b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite"));
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Damselfly.Core.Models
         public static bool ReadOnly { get; private set; }
 
         // Instance of our DB type that implements the Database interface
-        public static IDataBase DatabaseSpecialisation { get; private set; } = new SqlLiteModel("dummy");
+        public static IDataBase DatabaseSpecialisation { get; private set; } = new SqlLiteModel("dummy"); // TODO: Make this work with migrations
 
         /// <summary>
         /// Bulk insert weapper for the database specialisation type. 

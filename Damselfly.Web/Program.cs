@@ -105,7 +105,7 @@ namespace Damselfly.Web
 
                                 IDataBase dbType = null;
 
-                                //if (true) // SQLite Check
+                                if (true) // SQLite Check
                                 {
                                     string dbFolder = Path.Combine(o.ConfigPath, "db");
 
@@ -119,11 +119,12 @@ namespace Damselfly.Web
                                     Logging.Log(" Sqlite Database location: {0}", dbPath);
                                     dbType = new SqlLiteModel(dbPath);
                                 }
-                                //else // MySql
-                                //{
-                                //    dbType = new MySqlModel();
-                                //}
+                                else // MySql
+                                {
+                                    dbType = new PostgresModel();
+                                }
 
+                                // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli
                                 BaseDBModel.InitDB<ImageContext>(dbType, o.ReadOnly);
 
                                 StartWebServer(o.Port, args);
