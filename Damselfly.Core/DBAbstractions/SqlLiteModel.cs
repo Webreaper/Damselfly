@@ -125,7 +125,9 @@ namespace Damselfly.Core.Models
             bool success = false;
             try
             {
-                db.BulkInsert(itemsToSave);
+                var config = new BulkConfig { SetOutputIdentity = true };
+
+                db.BulkInsert(itemsToSave, config);
                 success = true;
             }
             catch (Exception ex)

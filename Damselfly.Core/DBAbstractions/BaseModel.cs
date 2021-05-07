@@ -41,17 +41,8 @@ namespace Damselfly.Core.Models
         /// <param name="itemsToSave">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
         public  bool BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
-        { 
-            try
-            {
-                db.BulkInsert(itemsToSave);
-                return true;
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError($"Exception bulk inserting {typeof(T)}: {ex.Message}");
-                return false;
-            }
+        {
+            return DatabaseSpecialisation.BulkUpdate(db, collection, itemsToSave);
         }
 
         /// <summary>

@@ -92,6 +92,7 @@ namespace Damselfly.Core.Models
 
             collection.AddRange(itemsToSave);
 
+            // TODO: Set output identity here.
             int ret = db.SaveChanges("BulkSave");
 
             return ret == itemsToSave.Count;

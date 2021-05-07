@@ -208,8 +208,7 @@ namespace Damselfly.Core.Services
 
                     if (basketEntries.Any())
                     {
-                        var config = new BulkConfig { SetOutputIdentity = true };
-                        db.BulkInsert(basketEntries, config);
+                        db.BulkInsert(db, db.BasketEntries, basketEntries);
 
                         imagesToAdd.ForEach(img =>
                         {

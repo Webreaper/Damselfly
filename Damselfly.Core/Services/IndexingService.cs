@@ -338,8 +338,7 @@ namespace Damselfly.Core.Services
 
                     if (!ImageContext.ReadOnly)
                     {
-                        var config = new BulkConfig { SetOutputIdentity = true };
-                        db.BulkInsert(newTags, config);
+                        db.BulkInsert(db, db.Tags, newTags);
                     }
 
                     // Add the new items to the cache. 
@@ -371,7 +370,10 @@ namespace Damselfly.Core.Services
                         // one tag, and removes another, we maintain the list correctly.
                         Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
 
-                        db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId).Contains(y.ImageId)).BatchDelete();
+                        // TODO: Push these down to the abstract model
+                        db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
+                                    .Contains(y.ImageId))
+                                    .BatchDelete();
                         db.BulkInsertOrUpdate(newImageTags);
 
                         transaction.Commit();
@@ -772,9 +774,9 @@ namespace Damselfly.Core.Services
 
                         if (!ImageContext.ReadOnly)
                         {
-                            db.BulkInsert(newMetadataEntries);
-                            db.BulkUpdate(updatedEntries);
-                            db.BulkUpdate(updatedImages);
+                            db.BulkInsert(db, db.ImageMetaData, newMetadataEntries);
+                            db.BulkUpdate(db, db.ImageMetaData, updatedEntries);
+                            db.BulkUpdate(db, db.Images, updatedImages);
                         }
 
                         saveWatch.Stop();
