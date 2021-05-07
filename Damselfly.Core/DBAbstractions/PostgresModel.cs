@@ -52,11 +52,20 @@ namespace Damselfly.Core.Models
                 Logging.Log("Running Postgres DB migrations...");
                 db.Database.Migrate();
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogWarning("Migrations failed - creating DB. Exception: {0}", ex.Message);
-                db.Database.EnsureCreated();
+
+                try
+                {
+                    db.Database.EnsureCreated();
+                }
+                catch (Exception ex2)
+                {
+                    Logging.LogError("Database creation failed. Exception: {0}", ex2.Message);
+                }
             }
+
 
             // Always rebuild the FTS table at startup
             FullTextTags(true);
@@ -157,8 +166,6 @@ namespace Damselfly.Core.Models
         /// can have an array of multiple keywords.</param>
         public void FullTextTags( bool first )
         {
-            // TODO: What do we do here? Maybe something with LIKE?
-            throw new NotImplementedException();
         }
     }
 }
