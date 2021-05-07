@@ -71,6 +71,10 @@ namespace Damselfly.Core.Models
             ExecutePragma(db, "PRAGMA cache=shared;");
             // Store temporary tables in memory
             ExecutePragma(db, "PRAGMA temp_store=MEMORY;");
+
+            Logging.Log("Running Sqlite DB optimisation...");
+            db.Database.ExecuteSqlRaw("VACUUM;");
+            Logging.Log("DB optimisation complete.");
         }
 
         public void FlushDBWriteCache(BaseDBModel db)
@@ -98,10 +102,6 @@ namespace Damselfly.Core.Models
 
             // Always rebuild the FTS table at startup
             FullTextTags(true);
-
-            Logging.Log("Running Sqlite DB optimisation...");
-            db.Database.ExecuteSqlRaw("VACUUM;");
-            Logging.Log("DB optimisation complete.");
 
             IncreasePerformance(db);
         }

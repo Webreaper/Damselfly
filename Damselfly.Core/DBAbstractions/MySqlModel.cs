@@ -56,6 +56,13 @@ namespace Damselfly.Core.Models
         /// <returns></returns>
         public bool BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
+            // TODO make this method protected and then move this check to the base class
+            if (BaseDBModel.ReadOnly)
+            {
+                Logging.LogVerbose("Read-only mode - no data will be updated.");
+                return true;
+            }
+
             collection.AddRange(itemsToSave);
 
             int ret = db.SaveChanges("BulkSave");
@@ -73,6 +80,13 @@ namespace Damselfly.Core.Models
         /// <returns></returns>
         public bool BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
+            // TODO make this method protected and then move this check to the base class
+            if (BaseDBModel.ReadOnly)
+            {
+                Logging.LogVerbose("Read-only mode - no data will be updated.");
+                return true;
+            }
+
             collection.UpdateRange(itemsToSave);
 
             int ret = db.SaveChanges("BulkSave");
@@ -90,6 +104,13 @@ namespace Damselfly.Core.Models
         /// <returns></returns>
         public bool BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
+            // TODO make this method protected and then move this check to the base class
+            if (BaseDBModel.ReadOnly)
+            {
+                Logging.LogVerbose("Read-only mode - no data will be deleted.");
+                return true;
+            }
+
             collection.RemoveRange(itemsToDelete);
 
             int ret = db.SaveChanges("BulkSave");
