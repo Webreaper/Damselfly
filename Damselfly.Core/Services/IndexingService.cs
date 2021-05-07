@@ -336,10 +336,7 @@ namespace Damselfly.Core.Services
 
                     Logging.LogTrace("Adding {0} tags", newTags.Count());
 
-                    if (!ImageContext.ReadOnly)
-                    {
-                        db.BulkInsert(db, db.Tags, newTags);
-                    }
+                    db.BulkInsert(db.Tags, newTags);
 
                     // Add the new items to the cache. 
                     foreach (var tag in newTags)
@@ -351,39 +348,41 @@ namespace Damselfly.Core.Services
                 Logging.LogError("Exception adding Tags: {0}", ex);
             }
 
-            if (!ImageContext.ReadOnly)
+            using (var transaction = db.Database.BeginTransaction())
             {
-                using (var transaction = db.Database.BeginTransaction())
+                try
                 {
-                    try
-                    {
-                        var newImageTags = imageKeywords.SelectMany(i => i.Value.Select(
-                                                                        v => new ImageTag
-                                                                        {
-                                                                            ImageId = i.Key.ImageId,
-                                                                            TagId = _tagCache[v].TagId
-                                                                        }))
-                                                                    .ToList();
+                    var newImageTags = imageKeywords.SelectMany(i => i.Value.Select(
+                                                                    v => new ImageTag
+                                                                    {
+                                                                        ImageId = i.Key.ImageId,
+                                                                        TagId = _tagCache[v].TagId
+                                                                    }))
+                                                                .ToList();
 
-                        // Note that we need to delete all of the existing tags for an image,
-                        // and then insert all of the new tags. This is so that if somebody adds
-                        // one tag, and removes another, we maintain the list correctly.
-                        Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
+                    // Note that we need to delete all of the existing tags for an image,
+                    // and then insert all of the new tags. This is so that if somebody adds
+                    // one tag, and removes another, we maintain the list correctly.
+                    Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
+
+                    // TODO: This should be in the abstract model
+                    if (!ImageContext.ReadOnly)
+                    {
 
                         // TODO: Push these down to the abstract model
                         db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
-                                    .Contains(y.ImageId))
-                                    .BatchDelete();
+                                .Contains(y.ImageId))
+                                .BatchDelete();
                         db.BulkInsertOrUpdate(newImageTags);
 
                         transaction.Commit();
 
                         db.FullTextTags(false);
                     }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError("Exception adding ImageTags: {0}", ex);
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError("Exception adding ImageTags: {0}", ex);
                 }
             }
 
@@ -772,12 +771,9 @@ namespace Damselfly.Core.Services
                         var saveWatch = new Stopwatch("MetaDataSave");
                         Logging.LogTrace($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
 
-                        if (!ImageContext.ReadOnly)
-                        {
-                            db.BulkInsert(db, db.ImageMetaData, newMetadataEntries);
-                            db.BulkUpdate(db, db.ImageMetaData, updatedEntries);
-                            db.BulkUpdate(db, db.Images, updatedImages);
-                        }
+                        db.BulkInsert(db.ImageMetaData, newMetadataEntries);
+                        db.BulkUpdate(db.ImageMetaData, updatedEntries);
+                        db.BulkUpdate(db.Images, updatedImages);
 
                         saveWatch.Stop();
 

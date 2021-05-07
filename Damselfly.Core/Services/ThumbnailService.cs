@@ -292,7 +292,7 @@ namespace Damselfly.Core.Services
                     Logging.LogVerbose("Writing thumbnail generation timestamp updates to DB.");
 
                     var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
-                    db.BulkUpdate( db, db.ImageMetaData, imagesToScan.ToList() );
+                    db.BulkUpdate( db.ImageMetaData, imagesToScan.ToList() );
                     updateWatch.Stop();
 
                     watch.Stop();

@@ -40,9 +40,12 @@ namespace Damselfly.Core.Models
         /// <param name="collection">DbSet into which we're inserting the objects</param>
         /// <param name="itemsToSave">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
-        public  bool BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public  bool BulkInsert<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
         {
-            return DatabaseSpecialisation.BulkUpdate(db, collection, itemsToSave);
+            if (ReadOnly)
+                return true;
+
+            return DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave);
         }
 
         /// <summary>
@@ -53,9 +56,12 @@ namespace Damselfly.Core.Models
         /// <param name="collection">DbSet into which we're updating the objects</param>
         /// <param name="itemsToSave">Objects to update</param>
         /// <returns>True if the update succeeded</returns>
-        public bool BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public bool BulkUpdate<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
         {
-            return DatabaseSpecialisation.BulkUpdate(db, collection, itemsToSave);
+            if (ReadOnly)
+                return true;
+
+            return DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave);
         }
 
         /// <summary>
@@ -66,9 +72,12 @@ namespace Damselfly.Core.Models
         /// <param name="collection">DbSet into which we're inserting the objects</param>
         /// <param name="itemsToDelete">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
-        public bool BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
+        public bool BulkDelete<T>(DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
-            return DatabaseSpecialisation.BulkDelete(db, collection, itemsToDelete);
+            if (ReadOnly)
+                return true;
+
+            return DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete);
         }
 
         /// <summary>
@@ -221,6 +230,9 @@ namespace Damselfly.Core.Models
 
         internal void FullTextTags( bool first )
         {
+            if (ReadOnly)
+                return;
+
             DatabaseSpecialisation.FullTextTags(first);
         }
 

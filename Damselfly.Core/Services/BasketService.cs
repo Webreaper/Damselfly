@@ -208,7 +208,7 @@ namespace Damselfly.Core.Services
 
                     if (basketEntries.Any())
                     {
-                        db.BulkInsert(db, db.BasketEntries, basketEntries);
+                        db.BulkInsert(db.BasketEntries, basketEntries);
 
                         imagesToAdd.ForEach(img =>
                         {
