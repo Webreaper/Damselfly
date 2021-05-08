@@ -9,31 +9,27 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.5" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
-    <PackageReference Include="MetadataExtractor" Version="2.4.3" />
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="WordPressPCL" Version="1.9.0" />
-    <PackageReference Include="EFCore.BulkExtensions" Version="5.1.7" />
-    <PackageReference Include="NExifTool" Version="0.9.0" />
-    <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0-dev-00839" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="MetadataExtractor" Version="2.4.3" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="WordPressPCL" Version="1.9.0" />
+    <PackageReference Include="NExifTool" Version="0.9.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="SkiaSharp" Version="2.80.3-preview.40" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
     <PackageReference Include="FluentValidation" Version="10.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.35" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogHandler.cs" />
@@ -42,12 +38,15 @@
     <Folder Include="Services\" />
     <Folder Include="Models\" />
     <Folder Include="Utils\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="DBAbstractions\" />
     <Folder Include="ImageProcessing\" />
     <Folder Include="Models\SideCars\" />
+    <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="mono_crash.a7f6ef992.0.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj" />
   </ItemGroup>
 </Project>

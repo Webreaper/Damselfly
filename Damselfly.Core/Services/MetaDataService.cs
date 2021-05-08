@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
-using EFCore.BulkExtensions;
 using System.Threading;
+using Z.EntityFramework.Plus;
 
 namespace Damselfly.Core.Services
 {
@@ -285,7 +285,7 @@ namespace Damselfly.Core.Services
             {
                 int cleanedUp = db.KeywordOperations.Where(op => op.State == ExifOperation.FileWriteState.Written
                                                                           && op.TimeStamp < cutOff )
-                                    .BatchDelete();
+                                    .Delete();
 
                 Logging.LogVerbose($"Cleaned up {cleanedUp} completed Keyword Operations.");
             }

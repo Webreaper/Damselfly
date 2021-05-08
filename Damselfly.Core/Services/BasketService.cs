@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
-using EFCore.BulkExtensions;
+using Z.EntityFramework.Plus;
 
 namespace Damselfly.Core.Services
 {
@@ -136,7 +136,7 @@ namespace Damselfly.Core.Services
             {
                 SelectedImages.Clear();
                 await db.BasketEntries.Where( x => x.BasketId.Equals( CurrentBasket.BasketId ) )
-                                      .BatchDeleteAsync();
+                                      .DeleteAsync();
                 Logging.Log("Basket cleared.");
 
                 NotifyStateChanged();
@@ -222,7 +222,7 @@ namespace Damselfly.Core.Services
                 }
                 else if (!newState)
                 {
-                    int deleted = existingEntries.BatchDelete();
+                    int deleted = existingEntries.Delete();
                     if( deleted > 0 )
                     {
 

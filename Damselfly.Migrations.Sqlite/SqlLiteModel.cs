@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using EFCore.BulkExtensions;
-using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models;
+using Damselfly.Core.Models.Interfaces;
+using Damselfly.Core.Models.DBAbstractions;
 
-namespace Damselfly.Core.Models
+namespace Damselfly.Migrations.Sqlite.Models
 {
     /// <summary>
     /// SQLite database specialisation. Assumes a Database path is set
@@ -197,6 +199,22 @@ namespace Damselfly.Core.Models
             }
 
             return success;
+        }
+
+        /// <summary>
+        /// Use the EF BulkExtensions to implement this.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="collection"></param>
+        /// <param name="itemsToSave"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public bool BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
+        {
+            db.BulkInsertOrUpdate(itemsToSave);
+
+            return true;
         }
 
         // TODO - this is Sqlite specific and should move down into the MySqlite provider.

@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
+using Damselfly.Core.Models.DBAbstractions;
 
 namespace Damselfly.Core.Models
 {

@@ -2,86 +2,59 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using EFCore.BulkExtensions;
-using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models.Interfaces;
 
-namespace Damselfly.Core.Models
+namespace Damselfly.Core.Models.DBAbstractions
 {
     /// <summary>
-    /// Postgres database specialisation. Assumes a Database path is set
-    /// at construction.
+    /// MySQL database specialisation. Pretty limited at present:
+    /// - no support for migrations
+    /// - no free-text searching/indexing.
+    /// Work to do.
     /// </summary>
-    public class PostgresModel : IDataBase
+    public class MySqlModel : IDataBase
     {
-        /// <summary>
-        /// The Postgres-specific initialisation.
-        /// </summary>
-        /// <param name="options"></param>
         public void Configure(DbContextOptionsBuilder options)
         {
-            const string user = "markotway";
-            const string pw = "password";
+#if USE_MYSQL
+            // To support MySQL, add a refernece to Pomelo.EntityFrameworkCore.MySql
+            // and remove this #if section. But some of this isn't implemented yet.
 
-            string dataSource = $"User ID={user};Password={pw};Host=localhost;Port=5432;Database=Damselfly;Pooling=true;";
-            options.UseNpgsql(dataSource, b => b.MigrationsAssembly("Damselfly.Migrations.Postgres"));
+            string connString = "Server=127.0.0.1;Database=damselfly;User=damsel;Password=distress123;";
+            int batchSize = 20;
+
+            options.UseMySql(connString, mysqlOptions => mysqlOptions.MaxBatchSize(batchSize));
+#else
+            throw new NotSupportedException("MySQL not currently supported");
+#endif
         }
 
-        /// <summary>
-        /// Enable Postgres performance improvements
-        /// </summary>
-        /// <param name="db"></param>
-        private void IncreasePerformance(BaseDBModel db)
-        {
-            // Nothing yet for postgres
-        }
-
-        public void FlushDBWriteCache(BaseDBModel db)
-        {
-            // 
-        }
-
-        /// <summary>
-        /// Postgres specific initialisation. Run the migrations, and 
-        /// always run a VACUUM to optimise the DB at startup.
-        /// </summary>
-        /// <param name="db"></param>
-        public void Init( BaseDBModel db )
+        public void Init(BaseDBModel db)
         {
             try
             {
-                Logging.Log("Running Postgres DB migrations...");
-                db.Database.Migrate();
+                Logging.Log("Running MySql DB migrations...");
+
+                // TODO MySQL doesn't support migrations?! - remove this big hammer
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
             }
-            catch (Exception ex)
+            catch( Exception ex )
             {
                 Logging.LogWarning("Migrations failed - creating DB. Exception: {0}", ex.Message);
-
-                try
-                {
-                    db.Database.EnsureCreated();
-                }
-                catch (Exception ex2)
-                {
-                    Logging.LogError("Database creation failed. Exception: {0}", ex2.Message);
-                }
+                db.Database.EnsureCreated();
             }
-
-
-            // Always rebuild the FTS table at startup
-            FullTextTags(true);
-
-            IncreasePerformance(db);
         }
 
         /// <summary>
-        /// Postgres bulk insert uses EF Extensions BulkIndex.
-        /// This would also work for SQLServer.
+        /// Polyfill to account for the fact that EF Extensions BulkIndex only
+        /// works with SQLite and SQL Server.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
+        public bool BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -92,15 +65,14 @@ namespace Damselfly.Core.Models
 
             collection.AddRange(itemsToSave);
 
-            // TODO: Set output identity here.
             int ret = db.SaveChanges("BulkSave");
 
             return ret == itemsToSave.Count;
         }
 
         /// <summary>
-        /// Postgres bulk update uses EF Extensions BulkUpdate.
-        /// This would also work for SQLServer.
+        /// Polyfill to account for the fact that EF Extensions BulkIndex only
+        /// works with SQLite and SQL Server.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
@@ -123,8 +95,8 @@ namespace Damselfly.Core.Models
         }
 
         /// <summary>
-        /// Postgres bulk delete uses EF Extensions BulkDelete.
-        /// This would also work for SQLServer.
+        /// Polyfill to account for the fact that EF Extensions BulkIndex only
+        /// works with SQLite and SQL Server.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
@@ -146,27 +118,49 @@ namespace Damselfly.Core.Models
             return ret == itemsToDelete.Count;
         }
 
+        /// <summary>
+        /// Basic implementation that inserts or updates based on whether the key/ID is zero or not.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="collection"></param>
+        /// <param name="itemsToSave"></param>
+        /// <param name="getKey"></param>
+        /// <returns></returns>
+        public bool BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
+        {
+            var result = false;
+
+            itemsToSave.ForEach(x => { if (isNew(x)) collection.Add(x); else collection.Update(x); });
+
+            if (db.SaveChanges("BulkInsertOrUpdate") > 0)
+                result = true;
+
+            return result;
+        }
+
         public IQueryable<T> Search<T>(string query, DbSet<T> collection) where T : class
         {
-            // Figure out FTS in Postgres
+            // Full text search not supported in MySQL
             // TODO: Implement with a Like Query?
             throw new NotImplementedException();
+        }
+
+        public void FlushDBWriteCache(BaseDBModel db)
+        {
+            // No-op
         }
 
         public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T : class
         {
-            // Figure out FTS in postgres
-            // TODO: Implement with a Like Query?
+            // TODO: What do we do here? Maybe something with LIKE?
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="imageKeywords">A dictionary of images to keywords. Each image
-        /// can have an array of multiple keywords.</param>
-        public void FullTextTags( bool first )
+        public void FullTextTags(bool first)
         {
+            // TODO: What do we do here? Maybe something with LIKE?
+            throw new NotImplementedException();
         }
     }
 }

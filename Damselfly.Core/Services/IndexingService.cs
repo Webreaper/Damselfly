@@ -11,8 +11,7 @@ using Damselfly.Core.Utils;
 using MetadataExtractor.Formats.Iptc;
 using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
-using EFCore.BulkExtensions;
-using System.Threading.Tasks;
+using Z.EntityFramework.Plus;
 
 namespace Damselfly.Core.Services
 {
@@ -372,8 +371,11 @@ namespace Damselfly.Core.Services
                         // TODO: Push these down to the abstract model
                         db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
                                 .Contains(y.ImageId))
-                                .BatchDelete();
-                        db.BulkInsertOrUpdate(newImageTags);
+                                .Delete();
+
+#if ! DEBUG
+                        db.BulkInsertOrUpdate(db.ImageTags, newImageTags, (x) => { return x.TagId == 0; } );;
+#endif
 
                         transaction.Commit();
 

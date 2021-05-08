@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj" />
     <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
   </ItemGroup>
 </Project>

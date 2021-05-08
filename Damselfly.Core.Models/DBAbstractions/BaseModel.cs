@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Utils;
 using Microsoft.Extensions.Logging;
-using Damselfly.Core.Interfaces;
-using EFCore.BulkExtensions;
+using Damselfly.Core.Models.Interfaces;
+using Damselfly.Core.Utils;
 
-namespace Damselfly.Core.Models
+namespace Damselfly.Core.Models.DBAbstractions
 {
     /// <summary>
     /// Base model for DB interactions. Will be passed a model class instance with an
@@ -30,7 +29,7 @@ namespace Damselfly.Core.Models
         public static bool ReadOnly { get; private set; }
 
         // Instance of our DB type that implements the Database interface
-        public static IDataBase DatabaseSpecialisation { get; private set; } = new SqlLiteModel("dummy"); // TODO: Make this work with migrations
+        public static IDataBase DatabaseSpecialisation { get; private set; } //= new SqlLiteModel("dummy"); // TODO: Make this work with migrations
 
         /// <summary>
         /// Bulk insert weapper for the database specialisation type. 
@@ -81,6 +80,22 @@ namespace Damselfly.Core.Models
         }
 
         /// <summary>
+        /// Bulk insert weapper for the database specialisation type. 
+        /// </summary>
+        /// <typeparam name="T">Type of the object to insert</typeparam>
+        /// <param name="db">DB model</param>
+        /// <param name="collection">DbSet into which we're inserting the objects</param>
+        /// <param name="itemsToDelete">Objects to insert</param>
+        /// <returns>True if the insert succeeded</returns>
+        public bool BulkInsertOrUpdate<T>(DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
+        {
+            if (ReadOnly)
+                return true;
+
+            return DatabaseSpecialisation.BulkInsertOrUpdate(this, collection, itemsToSave, isNew);
+        }
+
+        /// <summary>
         /// If the DB supports it, and write-caching is enabled, flush.
         /// </summary>
         public void FlushDBWriteCache()
@@ -113,7 +128,7 @@ namespace Damselfly.Core.Models
         {
             if (traceSQL)
                 options.UseLoggerFactory(SqlLoggerFactory);
-
+            
             if(lazyLoad )
                options.UseLazyLoadingProxies();
 
@@ -192,7 +207,7 @@ namespace Damselfly.Core.Models
         /// written and whether we succeeded.
         /// </summary>
         /// <param name="contextDesc"></param>
-        /// <returns></returns>
+        /// <returns>The number of entities written to the DB</returns>
         public int SaveChanges(string contextDesc)
         {
             if (ReadOnly)
@@ -228,7 +243,7 @@ namespace Damselfly.Core.Models
             }
         }
 
-        internal void FullTextTags( bool first )
+        public void FullTextTags( bool first )
         {
             if (ReadOnly)
                 return;

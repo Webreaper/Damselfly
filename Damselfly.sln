@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Sqlite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj", "{379D6438-15BE-4A00-BAAF-B18D4D8170A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Models", "Damselfly.Core.Models\Damselfly.Core.Models.csproj", "{6A083D73-D1A8-49B4-A1C6-2828B215376C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Utils", "Damselfly.Core.Utils\Damselfly.Core.Utils.csproj", "{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,5 +41,13 @@ Global
 		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{379D6438-15BE-4A00-BAAF-B18D4D8170A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A083D73-D1A8-49B4-A1C6-2828B215376C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A083D73-D1A8-49B4-A1C6-2828B215376C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A083D73-D1A8-49B4-A1C6-2828B215376C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A083D73-D1A8-49B4-A1C6-2828B215376C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
