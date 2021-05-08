@@ -108,7 +108,7 @@ namespace Damselfly.Web
 
                                 IDataBase dbType = null;
 
-                                if (false) // SQLite Check
+                                if (true) // SQLite Check
                                 {
                                     string dbFolder = Path.Combine(o.ConfigPath, "db");
 
