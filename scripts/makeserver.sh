@@ -1,5 +1,6 @@
 # Read the version from disk.
 version=`cat VERSION`
+dotnetversion='5.0'
 
 if [ -n "$1" ]; then
     PLATFORM=$1
@@ -34,7 +35,7 @@ echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname
 
 dotnet publish Damselfly.Web -r $runtime -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
 
-outputdir="Damselfly.Web/bin/Release/net6.0/${runtime}/publish"
+outputdir="Damselfly.Web/bin/Release/net${dotnetversion}/${runtime}/publish"
 
 if [ -d "$outputdir" ]; then
   echo "Zipping build to ${zipname}..."
