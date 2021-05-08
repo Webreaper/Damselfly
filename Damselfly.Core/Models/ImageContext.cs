@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
 using Damselfly.Core.Models.DBAbstractions;
+using Z.EntityFramework.Extensions;
 
 namespace Damselfly.Core.Models
 {
@@ -81,6 +82,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
 
+            EntityFrameworkManager.IsCommunity = true;
         }
     }
 
