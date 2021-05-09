@@ -254,6 +254,7 @@ namespace Damselfly.Migrations.Sqlite.Models
                     try
                     {
                         // TODO - get the tablenames from the type
+                        // TODO - can we put this in a sqlite specific trigger to save having it in code? 
                         string createSql = "CREATE VIRTUAL TABLE IF NOT EXISTS \"FTSKeywords\" USING fts5( \"TagId\", \"Keyword\")";
                         string deleteSql = "DELETE FROM FTSKeywords";
                         string insertSql = "INSERT INTO FTSKeywords SELECT TagId, Keyword FROM Tags";
@@ -281,6 +282,11 @@ namespace Damselfly.Migrations.Sqlite.Models
 
                 Logging.LogWarning("Error writing freetext. Retrying...");
             }
+        }
+
+        public void CreateIndexes(ModelBuilder builder)
+        {
+            // Nothing to do here.
         }
     }
 }

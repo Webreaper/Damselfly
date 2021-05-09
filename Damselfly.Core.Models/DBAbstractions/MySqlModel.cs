@@ -162,5 +162,9 @@ namespace Damselfly.Core.Models.DBAbstractions
             // TODO: What do we do here? Maybe something with LIKE?
             throw new NotImplementedException();
         }
+
+        public void CreateIndexes(ModelBuilder builder)
+        {
+        }
     }
 }

@@ -62,6 +62,9 @@ namespace Damselfly.Web
 
             [Option("noindex", Required = false, HelpText = "Don't Index images")]
             public bool NoEnableIndexing { get; set; }
+
+            [Option("postgres", Required = false, HelpText = "Use Postgres DB (default == Sqlite)")]
+            public bool UsePostgresDB { get; set; }
         };
 
         public static void Main(string[] args)
@@ -108,7 +111,7 @@ namespace Damselfly.Web
 
                                 IDataBase dbType = null;
 
-                                if (true) // SQLite Check
+                                if (! o.UsePostgresDB ) 
                                 {
                                     string dbFolder = Path.Combine(o.ConfigPath, "db");
 
@@ -119,12 +122,14 @@ namespace Damselfly.Web
                                     }
 
                                     string dbPath = Path.Combine(dbFolder, "damselfly.db");
-                                    Logging.Log(" Sqlite Database location: {0}", dbPath);
                                     dbType = new SqlLiteModel(dbPath);
+                                    Logging.Log(" Sqlite Database location: {0}", dbPath);
                                 }
-                                else // MySql
+                                else // Postgres
                                 {
-                                    dbType = new PostgresModel();
+                                    // READ Postgres config json
+                                    dbType = PostgresModel.ReadSettings("settings.json");
+                                    Logging.Log(" Postgres Database location: {0}");
                                 }
 
                                 // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli

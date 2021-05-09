@@ -373,9 +373,7 @@ namespace Damselfly.Core.Services
                                 .Contains(y.ImageId))
                                 .Delete();
 
-#if ! DEBUG
-                        db.BulkInsertOrUpdate(db.ImageTags, newImageTags, (x) => { return x.TagId == 0; } );;
-#endif
+                        db.BulkInsert( db.ImageTags, newImageTags );;
 
                         transaction.Commit();
 

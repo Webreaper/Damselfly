@@ -31,6 +31,11 @@ namespace Damselfly.Core.Models.DBAbstractions
         // Instance of our DB type that implements the Database interface
         public static IDataBase DatabaseSpecialisation { get; private set; } //= new SqlLiteModel("dummy"); // TODO: Make this work with migrations
 
+        public void AddSpecialisationIndexes( ModelBuilder modelBuilder )
+        {
+            DatabaseSpecialisation.CreateIndexes(modelBuilder);
+        }
+
         /// <summary>
         /// Bulk insert weapper for the database specialisation type. 
         /// </summary>
@@ -87,7 +92,8 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection">DbSet into which we're inserting the objects</param>
         /// <param name="itemsToDelete">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
-        public bool BulkInsertOrUpdate<T>(DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
+        /// Note: Currently unused, hence private.
+        private bool BulkInsertOrUpdate<T>(DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
         {
             if (ReadOnly)
                 return true;

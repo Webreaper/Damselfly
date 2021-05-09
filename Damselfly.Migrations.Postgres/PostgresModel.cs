@@ -4,6 +4,9 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Models.Interfaces;
 using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.Models;
+using System.Text.Json;
+using System.IO;
 
 namespace Damselfly.Migrations.Postgres.Models
 {
@@ -13,16 +16,47 @@ namespace Damselfly.Migrations.Postgres.Models
     /// </summary>
     public class PostgresModel : IDataBase
     {
+        private class DBSettings
+        {
+            public string Username { get; set; }
+            public string Password { get; set; }
+            public string Host { get; set; } = "localhost";
+            public int Port { get; set; } = 5432;
+            public string DatabaseName { get; set; } = "Damselfly";
+        }
+
+        private readonly DBSettings dBSettings;
+
+        public static PostgresModel ReadSettings( string settingsPath )
+        {
+            try
+            {
+                var jsonString = File.ReadAllText(settingsPath);
+                var settings = JsonSerializer.Deserialize<DBSettings>(jsonString);
+
+                var model = new PostgresModel(settings);
+                return model;
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Invalid settings for Postgres: {ex.Message}");
+                return null;
+            }
+        }
+
+        private PostgresModel( DBSettings settings )
+        {
+            dBSettings = settings;
+        }
+
         /// <summary>
         /// The Postgres-specific initialisation.
         /// </summary>
         /// <param name="options"></param>
         public void Configure(DbContextOptionsBuilder options)
         {
-            const string user = "markotway";
-            const string pw = "password";
-
-            string dataSource = $"User ID={user};Password={pw};Host=localhost;Port=5432;Database=Damselfly;Pooling=true;";
+            string dataSource = $"User ID={dBSettings.Username};Password={dBSettings.Password};";
+            dataSource += $"Host={dBSettings.Host};Port={dBSettings.Port};Database={dBSettings.DatabaseName};Pooling=true;";
             options.UseNpgsql(dataSource, b => b.MigrationsAssembly("Damselfly.Migrations.Postgres"));
         }
 
@@ -189,5 +223,17 @@ namespace Damselfly.Migrations.Postgres.Models
         public void FullTextTags( bool first )
         {
         }
+
+        /// <summary>
+        /// Create the model-specific indexes
+        /// </summary>
+        /// <param name="modelBuilder"></param>
+        /// <returns></returns>
+        public void CreateIndexes(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Tag>()
+                .HasIndex(b => new { b.Keyword })
+                .IsTsVectorExpressionIndex("english");
+       }
     }
 }

@@ -6,7 +6,7 @@
     <UserSecretsId>d09fa775-aa27-45c8-a743-5b27d054d4dd</UserSecretsId>
   </PropertyGroup>
   <PropertyGroup>
-    <StartArguments>/Users/markotway/Pictures</StartArguments>
+    <StartArguments>/Users/markotway/Pictures --postgress</StartArguments>
   </PropertyGroup>
 
   <ItemGroup>

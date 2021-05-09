@@ -42,6 +42,8 @@ namespace Damselfly.Core.Models
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            EntityFrameworkManager.IsCommunity = true;
+
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
 
@@ -82,7 +84,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
 
-            EntityFrameworkManager.IsCommunity = true;
+            AddSpecialisationIndexes(modelBuilder);
         }
     }
 

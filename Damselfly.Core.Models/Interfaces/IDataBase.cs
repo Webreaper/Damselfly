@@ -23,5 +23,6 @@ namespace Damselfly.Core.Models.Interfaces
 
         IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T : class;
         void FullTextTags(bool first);
+        void CreateIndexes(ModelBuilder builder);
     }
 }
