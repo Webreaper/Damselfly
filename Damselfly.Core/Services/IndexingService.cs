@@ -609,9 +609,10 @@ namespace Damselfly.Core.Services
 
                         if (dbImage == null)
                         {
-                            // Default the sort date to the last write time. It'll get updated
-                            // later during indexing to set it to the date-taken date.
-                            image.SortDate = file.LastWriteTimeUtc;
+                            // Default the sort date to file creation date. It'll get updated
+                            // later during indexing to set it to the date-taken date, if one
+                            // exists.
+                            image.SortDate = image.FileCreationDate;
 
                             Logging.LogTrace("Adding new image {0}", image.FileName);
                             folderToScan.Images.Add(image);
@@ -752,15 +753,15 @@ namespace Damselfly.Core.Services
                                 if (allKeywords.Any())
                                     imageKeywords[img] = allKeywords.ToArray();
 
-                                if (img.SortDate != imgMetaData.DateTaken)
+                                if (imgMetaData.DateTaken != DateTime.MinValue)
                                 {
-                                    // Update the image sort date with the date taken
+                                    // Always update the image sort date with the date taken,
+                                    // if one was found in the metadata
                                     img.SortDate = imgMetaData.DateTaken;
-                                    img.FlagForMetadataUpdate();
-                                    updatedImages.Add(img);
+                                    updatedImages.Add( img );
                                 }
                             }
-                            catch ( Exception ex )
+                            catch (Exception ex)
                             {
                                 Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
                             }
