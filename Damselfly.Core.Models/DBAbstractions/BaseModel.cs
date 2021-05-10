@@ -49,7 +49,7 @@ namespace Damselfly.Core.Models.DBAbstractions
             if (ReadOnly)
                 return true;
 
-            return DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave);
+            return DatabaseSpecialisation.BulkInsert(this, collection, itemsToSave);
         }
 
         /// <summary>
