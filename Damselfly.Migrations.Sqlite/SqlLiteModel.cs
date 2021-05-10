@@ -134,7 +134,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
             catch (Exception ex)
             {
-                Logging.LogError("Exception during bulk insert: {0}", ex.Message);
+                Logging.LogError($"Exception during bulk insert: {ex}");
             }
 
             return success;
@@ -165,7 +165,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
             catch (Exception ex)
             {
-                Logging.LogError("Exception during bulk update: {0}", ex.Message);
+                Logging.LogError($"Exception during bulk update: {ex}");
             }
 
             return success;
@@ -195,7 +195,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
             catch (Exception ex)
             {
-                Logging.LogError("Exception during bulk delete: {0}", ex.Message);
+                Logging.LogError($"Exception during bulk delete: {ex}");
             }
 
             return success;
