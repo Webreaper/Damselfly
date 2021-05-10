@@ -145,8 +145,8 @@ namespace Damselfly.Core.Services
 
             try
             {
-                // TODO: Push this down to the abstract model
-                await db.BulkInsertAsync(keywordOps);
+                // TODO: Async
+                db.BulkInsert(db.KeywordOperations, keywordOps);
 
                 StatusService.Instance.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
             }
