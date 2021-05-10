@@ -824,7 +824,7 @@ namespace Damselfly.Core.Services
 
                 if (missingKeywords.Any())
                 {
-                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} Sidecar.");
+                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} sidecar ({sidecar.Filename.Name}).");
                     sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
             }
