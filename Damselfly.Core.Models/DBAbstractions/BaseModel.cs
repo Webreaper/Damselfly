@@ -85,6 +85,17 @@ namespace Damselfly.Core.Models.DBAbstractions
         }
 
         /// <summary>
+        /// Wrapper to extract the underlying BatchDelete implementation depending on the
+        /// DB model being used.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        {
+            return DatabaseSpecialisation.BatchDelete(query);
+        }
+
+        /// <summary>
         /// Bulk insert weapper for the database specialisation type. 
         /// </summary>
         /// <typeparam name="T">Type of the object to insert</typeparam>

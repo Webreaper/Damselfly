@@ -7,7 +7,6 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
 using Damselfly.Core.Models.DBAbstractions;
-using Z.EntityFramework.Extensions;
 
 namespace Damselfly.Core.Models
 {
@@ -42,8 +41,6 @@ namespace Damselfly.Core.Models
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            EntityFrameworkManager.IsCommunity = true;
-
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
 

@@ -139,6 +139,11 @@ namespace Damselfly.Core.Models.DBAbstractions
             return result;
         }
 
+        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
         public IQueryable<T> Search<T>(string query, DbSet<T> collection) where T : class
         {
             // Full text search not supported in MySQL

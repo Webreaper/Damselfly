@@ -20,6 +20,7 @@ namespace Damselfly.Core.Models.Interfaces
         bool BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class;
         bool BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class;
         bool BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew ) where T : class;
+        int BatchDelete<T>(IQueryable<T> query) where T : class;
 
         IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T : class;
         void FullTextTags(bool first);

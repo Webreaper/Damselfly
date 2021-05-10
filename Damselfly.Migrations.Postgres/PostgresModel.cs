@@ -7,6 +7,8 @@ using Damselfly.Core.Models.DBAbstractions;
 using Damselfly.Core.Models;
 using System.Text.Json;
 using System.IO;
+using Z.EntityFramework.Plus;
+using Z.EntityFramework.Extensions;
 
 namespace Damselfly.Migrations.Postgres.Models
 {
@@ -201,6 +203,16 @@ namespace Damselfly.Migrations.Postgres.Models
             return result;
         }
 
+        /// <summary>
+        /// Wrapper for batch delete on an IQueryable
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        {
+            return query.Delete();
+        }
+
         public IQueryable<T> Search<T>(string query, DbSet<T> collection) where T : class
         {
             // Figure out FTS in Postgres
@@ -231,6 +243,8 @@ namespace Damselfly.Migrations.Postgres.Models
         /// <returns></returns>
         public void CreateIndexes(ModelBuilder modelBuilder)
         {
+            EntityFrameworkManager.IsCommunity = true;
+
             modelBuilder.Entity<Tag>()
                 .HasIndex(b => new { b.Keyword })
                 .IsTsVectorExpressionIndex("english");

@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.5.1" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.35" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj" />

@@ -17,7 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="MetadataExtractor" Version="2.4.3" />
+    <PackageReference Include="MetadataExtractor" Version="2.5.0" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="WordPressPCL" Version="1.9.0" />
     <PackageReference Include="NExifTool" Version="0.9.0" />
@@ -29,7 +29,6 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
     <PackageReference Include="FluentValidation" Version="10.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
-    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.35" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogHandler.cs" />

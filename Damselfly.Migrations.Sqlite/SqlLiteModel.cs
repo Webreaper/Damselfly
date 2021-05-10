@@ -217,6 +217,12 @@ namespace Damselfly.Migrations.Sqlite.Models
             return true;
         }
 
+        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        {
+            // Call the EFCore Bulkextensions method
+            return query.BatchDelete();
+        }
+
         // TODO - this is Sqlite specific and should move down into the MySqlite provider.
         public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T : class
         {
