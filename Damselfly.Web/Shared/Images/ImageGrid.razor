@@ -171,9 +171,9 @@
                 var result = gridImages.GroupBy(x => x.Folder);
 
                 if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
-                    result = result.OrderBy(x => x.Key.Path);
-                else
                     result = result.OrderByDescending(x => x.Key.Path);
+                else
+                    result = result.OrderBy(x => x.Key.Path);
 
                 return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
                             .ToList();
@@ -183,9 +183,9 @@
                 var result = gridImages.GroupBy(x => x.SortDate.Date);
 
                 if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
-                    result = result.OrderBy(x => x.Key);
-                else
                     result = result.OrderByDescending(x => x.Key);
+                else
+                    result = result.OrderBy(x => x.Key);
 
                 return result.Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
                             .ToList();
