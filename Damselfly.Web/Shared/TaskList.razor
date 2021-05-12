@@ -20,10 +20,10 @@
                 {
                     <tr>
                         <td>@task.Type.ToString()</td>
-                        <td>@task.LastStarted.ToHumanReadableString() ago</td>
-                        <td>@task.LastCompleted.ToHumanReadableString() ago</td>
+                        <td>@task.LastStarted.ToHumanReadableString(now) ago</td>
+                        <td>@task.LastCompleted.ToHumanReadableString(now) ago</td>
                         <td>@GetTimeTaken(task)</td>
-                        <td>In @task.NextRun.ToHumanReadableString()</td>
+                        <td>In @now.ToHumanReadableString(task.NextRun)</td>
                         <td align="center"><button class="btn btn-primary" type="submit" @onclick="@(() => RunTask(task))">Run</button></td>
                     </tr>
                 }
@@ -38,6 +38,7 @@
 
 @code {
     ScheduledTask[] tasks;
+    private DateTime now = DateTime.UtcNow;
 
     private string GetTimeTaken(ScheduledTask task)
     {
@@ -48,7 +49,7 @@
         }
         else
         {
-            return task.LastCompleted.ToHumanReadableString(task.LastStarted);
+            return task.LastStarted.ToHumanReadableString(task.LastCompleted);
         }
     }
 
