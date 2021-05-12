@@ -77,7 +77,7 @@ namespace Damselfly.Core.ImageProcessing
                 Stopwatch thumbs = new Stopwatch("SkiaSharpThumbs");
 
                 // Dropping this from High to Low doesn't have that much of an effect
-                // in terms of performance.
+                // in terms of image quality.
                 var quality = SKFilterQuality.Low;
                 var srcBitmap = sourceBitmap;
 
@@ -98,6 +98,8 @@ namespace Damselfly.Core.ImageProcessing
 
                     using SKData data = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
 
+                    // TODO: For configs flagged batchcreate == false, perhaps don't write to disk
+                    // and just pass back the stream?
                     using (var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write))
                         data.SaveTo(stream);
 

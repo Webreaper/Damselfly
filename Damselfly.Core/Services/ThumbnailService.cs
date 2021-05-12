@@ -97,11 +97,11 @@ namespace Damselfly.Core.Services
         /// This is the set of thumb resolutions that Syno PhotoStation and moments expects
         /// </summary>
         private static ThumbConfig[] thumbConfigs = {
-            new ThumbConfig{ width = 1280, height = 1280, size = ThumbSize.ExtraLarge, useAsSource = true },
+            new ThumbConfig{ width = 1280, height = 1280, size = ThumbSize.ExtraLarge, useAsSource = true, batchGenerate = false},
             new ThumbConfig{ width = 800, height = 800, size = ThumbSize.Large, useAsSource = true },
-            new ThumbConfig{ width = 640, height = 640, size = ThumbSize.Big },
+            new ThumbConfig{ width = 640, height = 640, size = ThumbSize.Big, batchGenerate = false},
             new ThumbConfig{ width = 320, height = 320, size = ThumbSize.Medium },
-            new ThumbConfig{ width = 160, height = 120, size = ThumbSize.Preview, cropToRatio = true },
+            new ThumbConfig{ width = 160, height = 120, size = ThumbSize.Preview, cropToRatio = true, batchGenerate = false },
             new ThumbConfig{ width = 120, height = 120, size = ThumbSize.Small, cropToRatio = true }
         };
 
@@ -113,15 +113,6 @@ namespace Damselfly.Core.Services
             {
                 Logging.Log("Synology OS detected - using native thumbnail structure.");
             }
-            else
-            {
-                // Filter out some unnecessary thumbs on standard/non-synology systems
-                thumbConfigs = thumbConfigs.Where(x => x.size == ThumbSize.Large
-                                                    || x.size == ThumbSize.Medium
-                                                    || x.size == ThumbSize.Small)
-                                           .ToArray();
-            }
-
         }
 
         private void GetImageSize(string fullPath, out int width, out int height)
@@ -161,7 +152,7 @@ namespace Damselfly.Core.Services
             var thumbFileAndConfig = new Dictionary<FileInfo, ThumbConfig>();
 
             // First pre-check whether the thumbs exist
-            foreach (var thumbConfig in thumbConfigs)
+            foreach ( var thumbConfig in thumbConfigs.Where( x => x.batchGenerate )  )
             {
                 var destFile = new FileInfo( GetThumbPath(source, thumbConfig.size) );
 
@@ -328,7 +319,7 @@ namespace Damselfly.Core.Services
         /// <param name="image"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public async Task<ImageProcessResult> ConvertFile(Models.Image image, bool forceRegeneration )
+        public async Task<ImageProcessResult> ConvertFile(Models.Image image, bool forceRegeneration, ThumbSize size = ThumbSize.Unknown )
         {
             var imagePath = new FileInfo(image.FullPath);
             ImageProcessResult result = null;
@@ -337,7 +328,20 @@ namespace Damselfly.Core.Services
             {
                 if (imagePath.Exists)
                 {
-                    var destFiles = GetThumbConfigs(imagePath, forceRegeneration, out FileInfo altSource);
+                    Dictionary<FileInfo, ThumbConfig> destFiles;
+                    FileInfo altSource = null;
+
+                    if (size == ThumbSize.Unknown)
+                    {
+                        // No explicit size passed, so we'll generate any that are flagged as batch-generate.
+                        destFiles = GetThumbConfigs(imagePath, forceRegeneration, out altSource);
+                    }
+                    else
+                    {
+                        var destFile = new FileInfo(GetThumbPath(imagePath, size));
+                        var config = thumbConfigs.Where(x => x.size == size).FirstOrDefault();
+                        destFiles = new Dictionary<FileInfo, ThumbConfig>() { { destFile, config } };
+                    }
 
                     if (altSource != null)
                     {

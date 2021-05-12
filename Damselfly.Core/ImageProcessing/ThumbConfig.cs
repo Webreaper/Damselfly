@@ -3,12 +3,13 @@ namespace Damselfly.Core.ImageProcessing
 {
     public enum ThumbSize
     {
-        ExtraLarge,
-        Large,
-        Big,
-        Medium,
-        Preview,
-        Small
+        Unknown = -1,
+        ExtraLarge = 0,
+        Large = 1,
+        Big = 2,
+        Medium = 3,
+        Preview = 4,
+        Small = 5
     };
 
     public class ThumbConfig
@@ -18,5 +19,6 @@ namespace Damselfly.Core.ImageProcessing
         public int width;
         public int height;
         public bool cropToRatio = false;
+        public bool batchGenerate = true;
     }
 }
