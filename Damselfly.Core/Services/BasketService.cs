@@ -134,8 +134,7 @@ namespace Damselfly.Core.Services
             try
             {
                 SelectedImages.Clear();
-                // TODO Async
-                db.BatchDelete( db.BasketEntries.Where( x => x.BasketId.Equals( CurrentBasket.BasketId ) ) );
+                await db.BatchDelete( db.BasketEntries.Where( x => x.BasketId.Equals( CurrentBasket.BasketId ) ) );
                 Logging.Log("Basket cleared.");
 
                 NotifyStateChanged();
@@ -181,8 +180,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <param name="newState"></param>
-        /// TODO: Make this async
-        public void SetBasketState(ICollection<Image> images, bool newState)
+        public async void SetBasketState(ICollection<Image> images, bool newState)
         {
             try
             {
@@ -207,7 +205,7 @@ namespace Damselfly.Core.Services
 
                     if (basketEntries.Any())
                     {
-                        db.BulkInsert(db.BasketEntries, basketEntries);
+                        await db.BulkInsert(db.BasketEntries, basketEntries);
 
                         imagesToAdd.ForEach(img =>
                         {
@@ -221,7 +219,7 @@ namespace Damselfly.Core.Services
                 }
                 else if (!newState)
                 {
-                    int deleted = db.BatchDelete( existingEntries );
+                    int deleted = await db.BatchDelete( existingEntries );
                     if( deleted > 0 )
                     {
 

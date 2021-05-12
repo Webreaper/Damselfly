@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
 using Damselfly.Core.Models.DBAbstractions;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Models
 {
@@ -29,9 +30,9 @@ namespace Damselfly.Core.Models
         public DbSet<ConfigSetting> ConfigSettings { get; set; }
         public DbSet<ExifOperation> KeywordOperations { get; set; }
 
-        public IQueryable<Image> ImageSearch(string query)
+        public async Task<IQueryable<Image>> ImageSearch(string query)
         {
-            return base.ImageSearch<Image>(Images, query);
+            return await base.ImageSearch<Image>(Images, query);
         }
 
         /// <summary>

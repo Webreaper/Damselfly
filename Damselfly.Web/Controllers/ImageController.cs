@@ -51,7 +51,6 @@ namespace Damselfly.Web.Controllers
         {
             Stopwatch watch = new Stopwatch("ControllerGetThumb");
             IActionResult result = Redirect("/no-image.png");
-            string imagePath = null;
 
             if (Enum.TryParse<ThumbSize>( thumbSize, true, out var size) && int.TryParse(imageId, out var id))
             {
@@ -62,6 +61,8 @@ namespace Damselfly.Web.Controllers
 
                     if (image == null)
                     {
+                        Logging.Log($"Cache miss for image thumbnail: {id}");
+
                         image = await db.Images.Where(x => x.ImageId.Equals(id))
                                                     .Include(x => x.Folder)
                                                     .Include(x => x.MetaData)
@@ -71,27 +72,42 @@ namespace Damselfly.Web.Controllers
                     if (image != null)
                     {
                         var file = new FileInfo(image.FullPath);
-                        var path = ThumbnailService.Instance.GetThumbPath(file, size);
+                        var imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
+                        bool gotThumb = true;
 
-                        if (System.IO.File.Exists(path))
+                        if (! System.IO.File.Exists(imagePath))
                         {
-                            imagePath = path;
-                        }
-                        else
-                        {
+                            gotThumb = false;
                             Logging.LogVerbose($"Generating thumbnail on-demand for {image.FileName}...");
-                            var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false);
 
-                            imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
+                            // TODO pass size here, so we don't gen all the thumbs
+                            var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false);
 
                             if ( conversionResult.ThumbsGenerated )
                             {
+                                gotThumb = true;
+
                                 try
                                 {
-                                    image.MetaData.Hash = conversionResult.ImageHash;
-                                    image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
-                                    db.Attach(image);
-                                    db.Update(image.MetaData);
+                                    if (image.MetaData != null)
+                                    {
+                                        db.Attach(image.MetaData);
+                                        image.MetaData.Hash = conversionResult.ImageHash;
+                                        image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
+                                        db.ImageMetaData.Update(image.MetaData);
+                                    }
+                                    else
+                                    {
+                                        var metadata = new ImageMetaData
+                                        {
+                                            ImageId = image.ImageId,
+                                            Hash = conversionResult.ImageHash,
+                                            ThumbLastUpdated = DateTime.UtcNow
+                                        };
+                                        db.ImageMetaData.Add(metadata);
+                                        image.MetaData = metadata;
+                                    }
+
                                     db.SaveChanges("ThumbUpdate");
                                 }
                                 catch (Exception ex)
@@ -100,21 +116,21 @@ namespace Damselfly.Web.Controllers
                                 }
                             }
                         }
-                    }
+
+                        if (gotThumb)
+                        {
+                            var stream = new FileStream(imagePath, FileMode.Open);
+                            result = new FileStreamResult(stream, "image/jpeg")
+                            {
+                                FileDownloadName = imagePath
+                            };
+                        }
+                   }
                 }
                 catch (Exception ex)
                 {
                     Logging.LogError($"Unable to process /thumb/{thumbSize}/{imageId}: ", ex.Message);
                 }
-            }
-
-            if (!string.IsNullOrEmpty(imagePath))
-            {
-                var stream = new FileStream(imagePath, FileMode.Open);
-                result = new FileStreamResult(stream, "image/jpeg")
-                {
-                    FileDownloadName = imagePath
-                };
             }
 
             watch.Stop();

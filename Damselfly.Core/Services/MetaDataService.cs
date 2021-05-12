@@ -144,8 +144,7 @@ namespace Damselfly.Core.Services
 
             try
             {
-                // TODO: Async
-                db.BulkInsert(db.KeywordOperations, keywordOps);
+                await db.BulkInsert(db.KeywordOperations, keywordOps);
 
                 StatusService.Instance.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
             }
@@ -273,7 +272,7 @@ namespace Damselfly.Core.Services
         /// Clean up processed keyword operations
         /// </summary>
         /// <param name="cleanupFreq"></param>
-        public void CleanUpKeywordOperations(TimeSpan cleanupFreq)
+        public async Task CleanUpKeywordOperations(TimeSpan cleanupFreq)
         {
             using var db = new ImageContext();
 
@@ -282,7 +281,7 @@ namespace Damselfly.Core.Services
 
             try
             {
-                int cleanedUp = db.BatchDelete(db.KeywordOperations.Where(op => op.State == ExifOperation.FileWriteState.Written
+                int cleanedUp = await db.BatchDelete(db.KeywordOperations.Where(op => op.State == ExifOperation.FileWriteState.Written
                                                                          && op.TimeStamp < cutOff));
 
                 Logging.LogVerbose($"Cleaned up {cleanedUp} completed Keyword Operations.");

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Damselfly.Core.Models.Interfaces;
 using Damselfly.Core.Utils;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Models.DBAbstractions
 {
@@ -44,12 +45,12 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection">DbSet into which we're inserting the objects</param>
         /// <param name="itemsToSave">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
-        public  bool BulkInsert<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
+        public  async Task<bool> BulkInsert<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             if (ReadOnly)
                 return true;
 
-            return DatabaseSpecialisation.BulkInsert(this, collection, itemsToSave);
+            return await Task.Run(() => DatabaseSpecialisation.BulkInsert(this, collection, itemsToSave));
         }
 
         /// <summary>
@@ -60,12 +61,12 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection">DbSet into which we're updating the objects</param>
         /// <param name="itemsToSave">Objects to update</param>
         /// <returns>True if the update succeeded</returns>
-        public bool BulkUpdate<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
+        public async Task<bool> BulkUpdate<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             if (ReadOnly)
                 return true;
 
-            return DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave);
+            return await Task.Run(() => DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave));
         }
 
         /// <summary>
@@ -76,12 +77,12 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection">DbSet into which we're inserting the objects</param>
         /// <param name="itemsToDelete">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
-        public bool BulkDelete<T>(DbSet<T> collection, List<T> itemsToDelete) where T : class
+        public async Task<bool> BulkDelete<T>(DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
             if (ReadOnly)
                 return true;
 
-            return DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete);
+            return await Task.Run( () => DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete) );
         }
 
         /// <summary>
@@ -90,9 +91,12 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
-            return DatabaseSpecialisation.BatchDelete(query);
+            if (ReadOnly)
+                return 1;
+
+            return await Task.Run(() => DatabaseSpecialisation.BatchDelete(query));
         }
 
         /// <summary>
@@ -260,18 +264,18 @@ namespace Damselfly.Core.Models.DBAbstractions
             }
         }
 
-        public void FullTextTags( bool first )
+        public async Task FullTextTags( bool first )
         {
             if (ReadOnly)
                 return;
 
-            DatabaseSpecialisation.FullTextTags(first);
+            await Task.Run(() => DatabaseSpecialisation.FullTextTags(first));
         }
 
         // TODO - this is Sqlite specific and should move down into the MySqlite provider.
-        public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T:class
+        public async Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query) where T:class
         {
-            return DatabaseSpecialisation.ImageSearch<T>(resultSet, query);
+            return await Task.Run(() => DatabaseSpecialisation.ImageSearch(resultSet, query));
         }
     }
 }

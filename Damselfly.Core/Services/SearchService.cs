@@ -129,7 +129,7 @@ namespace Damselfly.Core.Services
                     {
                         var searchText = EscapeChars( query.SearchText );
                         // If we have search text, then hit the fulltext Search.
-                        images = db.ImageSearch(searchText);
+                        images = await db.ImageSearch(searchText);
                     }
 
                     images = images.Include(x => x.Folder);

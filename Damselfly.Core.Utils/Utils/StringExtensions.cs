@@ -93,7 +93,7 @@ namespace Damselfly.Core.Utils
                 return $@"{secs} second" + (secs > 1 ? "s" : string.Empty);
             }
 
-            return $@"{t:s\.ff}ms";
+            return $@"{t:s\.ff}s";
         }
 
         public static string ToHumanReadableString(this long timeMilliSecs)

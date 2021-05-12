@@ -292,7 +292,7 @@ namespace Damselfly.Core.Services
                     Logging.LogVerbose("Writing thumbnail generation timestamp updates to DB.");
 
                     var updateWatch = new Stopwatch("BulkUpdateThumGenDate");
-                    db.BulkUpdate( db.ImageMetaData, imagesToScan.ToList() );
+                    await db.BulkUpdate( db.ImageMetaData, imagesToScan.ToList() );
                     updateWatch.Stop();
 
                     watch.Stop();
@@ -362,6 +362,7 @@ namespace Damselfly.Core.Services
                         finally
                         {
                             watch.Stop();
+                            Logging.LogVerbose($"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
                         }
                     }
                     else

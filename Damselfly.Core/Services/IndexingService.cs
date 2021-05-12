@@ -11,6 +11,7 @@ using Damselfly.Core.Utils;
 using MetadataExtractor.Formats.Iptc;
 using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
 {
@@ -309,7 +310,7 @@ namespace Damselfly.Core.Services
         /// too.
         /// </summary>
         /// <param name="imageKeywords"></param>
-        private void AddTags( IDictionary<Image, string[]> imageKeywords )
+        private async Task AddTags( IDictionary<Image, string[]> imageKeywords )
         {
             // See if we have any images that were written to the DB and have IDs
             if ( ! imageKeywords.Where( x => x.Key.ImageId != 0 ).Any())
@@ -334,7 +335,7 @@ namespace Damselfly.Core.Services
 
                     Logging.LogTrace("Adding {0} tags", newTags.Count());
 
-                    db.BulkInsert(db.Tags, newTags);
+                    await db.BulkInsert(db.Tags, newTags);
 
                     // Add the new items to the cache. 
                     foreach (var tag in newTags)
@@ -368,14 +369,14 @@ namespace Damselfly.Core.Services
                     {
 
                         // TODO: Push these down to the abstract model
-                        db.BatchDelete(db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
+                        await db.BatchDelete(db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
                                .Contains(y.ImageId)));
 
-                        db.BulkInsert( db.ImageTags, newImageTags );;
+                        await db.BulkInsert( db.ImageTags, newImageTags );;
 
                         transaction.Commit();
 
-                        db.FullTextTags(false);
+                        await db.FullTextTags(false);
                     }
                 }
                 catch (Exception ex)
@@ -671,7 +672,7 @@ namespace Damselfly.Core.Services
             return ScanFolderImages(folder, true);
         }
 
-        public void RunMetaDataScans()
+        public async Task RunMetaDataScans()
         {
             Logging.LogVerbose("Metadata scan thread starting...");
 
@@ -770,16 +771,16 @@ namespace Damselfly.Core.Services
                         var saveWatch = new Stopwatch("MetaDataSave");
                         Logging.LogTrace($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
 
-                        db.BulkInsert(db.ImageMetaData, newMetadataEntries);
-                        db.BulkUpdate(db.ImageMetaData, updatedEntries);
-                        db.BulkUpdate(db.Images, updatedImages);
+                        await db.BulkInsert(db.ImageMetaData, newMetadataEntries);
+                        await db.BulkUpdate(db.ImageMetaData, updatedEntries);
+                        await db.BulkUpdate(db.Images, updatedImages);
 
                         saveWatch.Stop();
 
                         var tagWatch = new Stopwatch("AddTagsSave");
 
                         // Now save the tags
-                        AddTags( imageKeywords );
+                        await AddTags( imageKeywords );
 
                         tagWatch.Stop();
 
@@ -843,11 +844,7 @@ namespace Damselfly.Core.Services
             indexthread.Priority = ThreadPriority.Lowest;
             indexthread.Start();
 
-            var metathread = new Thread(new ThreadStart(() => { RunMetaDataScans(); }));
-            metathread.Name = "MetaDataThread";
-            metathread.IsBackground = true;
-            metathread.Priority = ThreadPriority.Lowest;
-            metathread.Start();
+            Task.Run( () => RunMetaDataScans() );
         }
 
         public void PerformFullIndex()
@@ -869,7 +866,10 @@ namespace Damselfly.Core.Services
         {
             LoadTagCache();
 
-            PerformFullIndex();
+            if (ConfigService.Instance.GetBool(ConfigSettings.FullIndexAtStartup, true))
+            {
+                PerformFullIndex();
+            }
 
             while ( true )
             {

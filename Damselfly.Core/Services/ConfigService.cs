@@ -33,33 +33,36 @@ namespace Damselfly.Core.Services
 
             using var db = new ImageContext();
 
-            if (_cache.TryGetValue(name, out ConfigSetting existing))
+            lock (_cache)
             {
-                if (String.IsNullOrEmpty(value))
+                if (_cache.TryGetValue(name, out ConfigSetting existing))
                 {
-                    // Setting set to null - delete from the DB and cache
-                    db.ConfigSettings.Remove(existing);
-                    _cache.Remove(name);
+                    if (String.IsNullOrEmpty(value))
+                    {
+                        // Setting set to null - delete from the DB and cache
+                        db.ConfigSettings.Remove(existing);
+                        _cache.Remove(name);
+                    }
+                    else
+                    {
+                        // Setting set to non-null - save in the DB and cache
+                        existing.Value = value;
+                        db.ConfigSettings.Update(existing);
+                    }
                 }
                 else
                 {
-                    // Setting set to non-null - save in the DB and cache
-                    existing.Value = value;
-                    db.ConfigSettings.Update(existing);
+                    if (!String.IsNullOrEmpty(value))
+                    {
+                        // Existing setting set to non-null - create in the DB and cache.
+                        existing = new ConfigSetting { Name = name, Value = value };
+                        _cache[name] = existing;
+                        db.ConfigSettings.Add(existing);
+                    }
                 }
-            }
-            else
-            {
-                if (!String.IsNullOrEmpty(value))
-                {
-                    // Existing setting set to non-null - create in the DB and cache.
-                    existing = new ConfigSetting { Name = name, Value = value };
-                    _cache[name] = existing;
-                    db.ConfigSettings.Add(existing);
-                }
-            }
 
-            db.SaveChanges("SaveConfig");
+                db.SaveChanges("SaveConfig");
+            }
 
             // Clear the cache and re-initialise it
             InitialiseCache(true);
