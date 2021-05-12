@@ -71,7 +71,7 @@ namespace Damselfly.Core.ImageProcessing
 
             try
             {
-                var hashWatch = new Stopwatch("HashImage");
+                var hashWatch = new Stopwatch("CalcImageHash");
 
                 var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 

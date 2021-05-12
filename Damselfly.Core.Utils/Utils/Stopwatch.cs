@@ -16,12 +16,12 @@ namespace Damselfly.Core.Utils
         {
             public long count;
             public long totalTime;
+            public long maxTime;
 
             public long AverageTime { get { return (long)(((double)totalTime) / count);  } }
         }
 
-        private static IDictionary<string, Totals> averages = new ConcurrentDictionary<string, Totals>(StringComparer.OrdinalIgnoreCase);
-        private static IDictionary<string, long> maximums = new ConcurrentDictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        private static IDictionary<string, Totals> stats = new ConcurrentDictionary<string, Totals>(StringComparer.OrdinalIgnoreCase);
 
         private int taskThresholdMS = -1;
         private string timername;
@@ -59,32 +59,38 @@ namespace Damselfly.Core.Utils
             }
 
             Totals total;
-            if (!averages.TryGetValue(timername, out total))
+            if (!stats.TryGetValue(timername, out total))
             {
-                total = new Totals { count = 1, totalTime = time };
-                averages[timername] = total;
+                total = new Totals { count = 1, totalTime = time, maxTime = time };
+                stats[timername] = total;
             }
             else
             {
                 total.count++;
                 total.totalTime += time;
+                if (total.maxTime < time)
+                    total.maxTime = time;
             }
-
-            if (! maximums.ContainsKey(timername) || maximums[timername] < time)
-                maximums[timername] = time;
         }
 
         public long ElapsedTime { get { return end - start; } }
         public string HumanElapsedTime { get { return (end - start).ToHumanReadableString(); } }
         public override string ToString() => $"{ElapsedTime}";
 
-        public static void WriteTotals()
+        public static void WriteTotals(bool verbose = true)
         {
             try
             {
-                Logging.LogVerbose("Performance Summary:");
-                foreach (var kvp in averages.OrderBy(x => x.Key))
-                    Logging.LogVerbose($"  {kvp.Key}: \tAvg: {kvp.Value.AverageTime}ms\tMax: {kvp.Value}ms");
+                Action<string> func = verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
+
+                func("Performance Summary:");
+                int titleLength = stats.Keys.Max(x => x.Length);
+
+                foreach (var kvp in stats.OrderBy(x => x.Key))
+                {
+                    var lineItem = kvp.Key + ":";
+                    func($"  {lineItem.PadRight(titleLength + 2, ' ')}   Avg: {kvp.Value.AverageTime,7}ms   Max: {kvp.Value.maxTime,7}ms");
+                }
             }
             catch (Exception)
             {

@@ -651,7 +651,7 @@ namespace Damselfly.Core.Services
                 folderToScan.FolderScanDate = DateTime.UtcNow;
                 db.Folders.Update(folderToScan);
 
-                db.SaveChanges("FolderImageScan");
+                db.SaveChanges("FolderScan");
 
                 watch.Stop();
 
