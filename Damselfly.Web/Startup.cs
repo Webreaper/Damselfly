@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Tewr.Blazor.FileReader;
 using Radzen;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Web
 {
@@ -146,40 +147,55 @@ namespace Damselfly.Web
 
             var tasks = new List<ScheduledTask>();
 
-            var cleanupFreq = new TimeSpan(1, 0, 0);
+            // Clean up old download zips from the wwwroot folder
+            var downloadCleanupFreq = new TimeSpan(6, 0, 0);
             tasks.Add(new ScheduledTask
             {
-                Type = ScheduledTask.TaskType.CleanupJobs,
-                ExecutionFrequency = cleanupFreq,
-                WorkMethod = () => {
-                        DownloadService.Instance.CleanUpOldDownloads(cleanupFreq);
-                        MetaDataService.Instance.CleanUpKeywordOperations(cleanupFreq);
-                   },
+                Type = ScheduledTask.TaskType.CleanupDownloads,
+                ExecutionFrequency = downloadCleanupFreq,
+                WorkMethod = () => DownloadService.Instance.CleanUpOldDownloads(downloadCleanupFreq),
                 ImmediateStart = true
             });
 
-            if( true )
+            // Purge keyword operation entries that have been processed
+            var keywordCleanupFreq = new TimeSpan(24, 0, 0);
+            tasks.Add(new ScheduledTask
             {
-                var walCheckpoint = new ScheduledTask
+                Type = ScheduledTask.TaskType.CleanupKeywordOps,
+                ExecutionFrequency = new TimeSpan(24,0,0),
+                WorkMethod = () => MetaDataService.Instance.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
+                ImmediateStart = true
+            });
+
+            // Dump performance stats out to the logfile
+            tasks.Add( new ScheduledTask
+            {
+                Type = ScheduledTask.TaskType.DumpPerformance,
+                ExecutionFrequency = new TimeSpan(12, 0, 0),
+                WorkMethod = () => Stopwatch.WriteTotals(false)
+            });
+
+            // Flush the DB WriteCache (currently a no-op except for SQLite
+            tasks.Add( new ScheduledTask
+            {
+                Type = ScheduledTask.TaskType.FlushDBWriteCache,
+                ExecutionFrequency = new TimeSpan(2, 0, 0),
+                WorkMethod = () =>
                 {
-                    Type = ScheduledTask.TaskType.WALCheckpoint,
-                    ExecutionFrequency = new TimeSpan(2, 0, 0),
-                    WorkMethod = () =>
+                    using (var db = new ImageContext())
                     {
-                        using (var db = new ImageContext())
-                        {
-                            db.FlushDBWriteCache();
-                        }
+                        db.FlushDBWriteCache();
                     }
-                };
+                }
+            });
 
-            }
-
+            // Add the jobs
             foreach (var task in tasks)
             {
                 taskScheduler.AddTaskDefinition(task);
             }
 
+            // Start the scheduler
             taskScheduler.Start();
         }
     }

@@ -89,7 +89,7 @@ namespace Damselfly.Core.Utils
                 foreach (var kvp in stats.OrderBy(x => x.Key))
                 {
                     var lineItem = kvp.Key + ":";
-                    func($"  {lineItem.PadRight(titleLength + 2, ' ')}   Avg: {kvp.Value.AverageTime,7}ms   Max: {kvp.Value.maxTime,7}ms");
+                    func($"  {lineItem.PadRight(titleLength + 2, ' ')}   Count: {kvp.Value.count, 7}   Avg: {kvp.Value.AverageTime,7}ms   Max: {kvp.Value.maxTime,7}ms");
                 }
             }
             catch (Exception)

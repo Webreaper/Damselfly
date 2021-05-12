@@ -15,10 +15,12 @@ namespace Damselfly.Core.Models
             IncrementalIndex,
             FullThumbnailGen,
             IncrementalThumbnailGen,
-            CleanupJobs,
+            CleanupDownloads,
+            CleanupKeywordOps,
             ThumbnailCleanup,
             MetadataScan,
-            WALCheckpoint
+            FlushDBWriteCache,
+            DumpPerformance
         }
 
         public TaskType Type { get; set; }
