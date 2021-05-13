@@ -352,6 +352,11 @@ namespace Damselfly.Core.Services
                     // See if there's any conversions to do
                     if (destFiles.Any())
                     {
+                        // First, pre-create the folders for any thumbs we'll be creating
+                        destFiles.Select(x => x.Key.DirectoryName)
+                                .Distinct().ToList()
+                                .ForEach(dir => System.IO.Directory.CreateDirectory(dir));
+
                         Logging.LogVerbose("Generating thumbnails for {0}", imagePath);
 
                         var watch = new Stopwatch("ConvertNative", 60000);
