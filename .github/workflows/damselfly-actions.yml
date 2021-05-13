@@ -11,12 +11,13 @@ jobs:
             os: windows-latest
           - target: linux
             os: ubuntu-latest
-          - target: mac
-            os: macos-latest
           - target: universal
             os: macos-latest
-          - target: m1
-            os: macos-latest
+          # Don't need the Mac and M1 versions, we'll just use universal.
+          #- target: mac
+          #  os: macos-latest
+          #- target: m1
+          #  os: macos-latest
 
     steps:
       - name: Checkout Source
@@ -149,10 +150,11 @@ jobs:
           draft: false
           prerelease: true
 
-      - name: Upload assets to Release (master only)
-        uses: alexellis/upload-assets@0.2.3   
-        if: github.ref == 'refs/heads/master'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          asset_paths: '["$GITHUB_WORKSPACE/server/*", "$GITHUB_WORKSPACE/publish/wwwroot/desktop/*"]'  
+      # Skip this for now, everyone is using docker.
+      #- name: Upload assets to Release (master only)
+      #  uses: alexellis/upload-assets@0.2.3   
+      #  if: github.ref == 'refs/heads/master'
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    asset_paths: '["$GITHUB_WORKSPACE/server/*", "$GITHUB_WORKSPACE/publish/wwwroot/desktop/*"]'  
