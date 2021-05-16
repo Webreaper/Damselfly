@@ -176,6 +176,7 @@ namespace Damselfly.Web
             });
 
             // Flush the DB WriteCache (currently a no-op except for SQLite
+            /*
             tasks.Add( new ScheduledTask
             {
                 Type = ScheduledTask.TaskType.FlushDBWriteCache,
@@ -188,6 +189,7 @@ namespace Damselfly.Web
                     }
                 }
             });
+            */
 
             // Add the jobs
             foreach (var task in tasks)
