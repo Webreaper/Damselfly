@@ -23,7 +23,7 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^11.0.0",
-    "electron-builder": "^22.11.1"
+    "electron-builder": "^22.11.4"
   },
   "build": {
     "appId": "damselfly-desktop",
