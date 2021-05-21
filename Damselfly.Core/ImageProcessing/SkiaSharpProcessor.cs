@@ -173,7 +173,7 @@ namespace Damselfly.Core.ImageProcessing
         {
             Stopwatch load = new Stopwatch("SkiaSharpLoad");
 
-            SKImage img = SKImage.FromEncodedData(source.FullName);
+            using SKImage img = SKImage.FromEncodedData(source.FullName);
 
             var bmp = SKBitmap.FromImage(img);
 
@@ -182,50 +182,6 @@ namespace Damselfly.Core.ImageProcessing
             load.Stop();
 
             return bmp;
-        }
-
-
-        private static SKBitmap AutoOrient(SKBitmap bitmap, SKEncodedOrigin origin)
-        {
-            Stopwatch orient = new Stopwatch("SkiaSharpOrient");
-
-            SKBitmap rotated;
-            switch (origin)
-            {
-                case SKEncodedOrigin.BottomRight:
-                    rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                    using (var canvas = new SKCanvas(rotated))
-                    {
-                        canvas.RotateDegrees(180, bitmap.Width / 2, bitmap.Height / 2);
-                        canvas.DrawBitmap(bitmap, 0, 0);
-                    }
-                    break;
-                case SKEncodedOrigin.RightTop:
-                    rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                    using (var canvas = new SKCanvas(rotated))
-                    {
-                        canvas.Translate(rotated.Width, 0);
-                        canvas.RotateDegrees(90);
-                        canvas.DrawBitmap(bitmap, 0, 0);
-                    }
-                    break;
-                case SKEncodedOrigin.LeftBottom:
-                    rotated = new SKBitmap(bitmap.Height, bitmap.Width);
-                    using (var canvas = new SKCanvas(rotated))
-                    {
-                        canvas.Translate(0, rotated.Height);
-                        canvas.RotateDegrees(270);
-                        canvas.DrawBitmap(bitmap, 0, 0);
-                    }
-                    break;
-                default:
-                    rotated = bitmap.Copy();
-                    break;
-            }
-
-            orient.Stop();
-
-            return rotated;
         }
 
         /// <summary>
@@ -238,12 +194,9 @@ namespace Damselfly.Core.ImageProcessing
         {
             float maxSize = 1600f;
             var resizeFactor = 1f;
-            using var codec = SKCodec.Create(input);
-            using var original = SKBitmap.Decode(codec);
 
-            // TODO: Use LoadOrientedBitmap here.
-            // First, auto-orient the bitmap
-            using var bitmap = AutoOrient(original, codec.EncodedOrigin);
+            using SKImage img = SKImage.FromEncodedData(input);
+            using var bitmap = SKBitmap.FromImage(img);
 
             if (bitmap.Width > maxSize)
             {
