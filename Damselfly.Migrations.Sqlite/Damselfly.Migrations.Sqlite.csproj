@@ -11,6 +11,6 @@
     <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="EFCore.BulkExtensions" Version="5.1.8" />
+    <PackageReference Include="EFCore.BulkExtensions" Version="5.2.2" />
   </ItemGroup>
 </Project>
