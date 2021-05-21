@@ -173,24 +173,15 @@ namespace Damselfly.Core.ImageProcessing
         {
             Stopwatch load = new Stopwatch("SkiaSharpLoad");
 
-            SKCodec codec = SKCodec.Create(source.FullName);
-            SKImageInfo info = codec.Info;
+            SKImage img = SKImage.FromEncodedData(source.FullName);
 
-            // get the scale that is nearest to what we want (eg: jpg returned 512)
-            SKSizeI supportedScale = codec.GetScaledDimensions((float)desiredWidth / info.Width);
+            var bmp = SKBitmap.FromImage(img);
 
-            // decode the bitmap at the nearest size
-            SKImageInfo nearest = new SKImageInfo(supportedScale.Width, supportedScale.Height);
-            SKBitmap bmp = SKBitmap.Decode(codec, nearest);
+            Logging.LogTrace($"Loaded {source.Name} - loaded size = W: {bmp.Width}, H: {bmp.Height}");
 
             load.Stop();
 
-            Logging.LogTrace($"Loaded {source.Name} - loaded size = W: {bmp.Width}, H: {bmp.Height}, Orient: {codec.EncodedOrigin}");
-
-            // First, auto-orient the bitmap
-            var sourceBitmap = AutoOrient(bmp, codec.EncodedOrigin);
-
-            return sourceBitmap;
+            return bmp;
         }
 
 
