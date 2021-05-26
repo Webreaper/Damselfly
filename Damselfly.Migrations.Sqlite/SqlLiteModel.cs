@@ -129,7 +129,12 @@ namespace Damselfly.Migrations.Sqlite.Models
             {
                 var config = new BulkConfig { SetOutputIdentity = true };
 
+#if FALSE // https://github.com/borisdj/EFCore.BulkExtensions/issues/485
                 db.BulkInsert(itemsToSave, config);
+#else
+                itemsToSave.ForEach(x => db.Add(x));
+                db.SaveChanges();
+#endif
                 success = true;
             }
             catch (Exception ex)
@@ -160,7 +165,12 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
+#if FALSE // Replace when https://github.com/borisdj/EFCore.BulkExtensions/issues/485 is available.
                 db.BulkUpdate(itemsToSave);
+#else
+                itemsToSave.ForEach(x => db.Update(x));
+                db.SaveChanges();
+#endif
                 success = true;
             }
             catch (Exception ex)
