@@ -222,7 +222,7 @@ namespace Damselfly.Core.ImageProcessing
             // 5% from the bottom right.
             var position = new PointF(imgSize.Width - fivePercent, imgSize.Height - fivePercent);
 
-            var textGraphicOptions = new TextGraphicsOptions
+            var textGraphicOptions = new DrawingOptions
             {
                 TextOptions = {
                     HorizontalAlignment = HorizontalAlignment.Right,

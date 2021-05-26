@@ -1,6 +1,6 @@
 # Read the version from disk.
 version=`cat VERSION`
-dotnetversion='5.0'
+dotnetversion='6.0'
 
 if [ -n "$1" ]; then
     PLATFORM=$1

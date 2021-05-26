@@ -80,7 +80,6 @@ namespace Damselfly.Web.Controllers
                             gotThumb = false;
                             Logging.LogVerbose($"Generating thumbnail on-demand for {image.FileName}...");
 
-                            // TODO pass size here, so we don't gen all the thumbs
                             var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false, size);
 
                             if ( conversionResult.ThumbsGenerated )
