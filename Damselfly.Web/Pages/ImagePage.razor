@@ -13,49 +13,46 @@
 <div class="damselfly-imageview" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
     @if (image == null)
     {
-        <div class="col">
-            <p><em>Error. Image not found!</em></p>
-        </div> }
+    <div class="col">
+        <p><em>Error. Image not found!</em></p>
+    </div>
+}
+else
+{
+    <div class="damselfly-imagetitlebar">
+        <div class="damselfly-imagenavitem">
+            <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
+        </div>
+        <div class="damselfly-imagetitle">
+            Image: @image.FileName
+        </div>
+    </div>
+
+    <div class="damselfly-imagenav">
+        @if (prevImage != null && prevImage.ImageId != image.ImageId)
+        {
+            <NavLink class="damselfly-navleft chevron flipchevron" href="@PrevImageIDUrl" />
+        }
+        else
+        {
+        <div class="damselfly-navleft"></div>}
+            @if (ZoomEnabled)
+            {
+                <img src="@ImageUrlHighRes" /> }
             else
             {
-                <div class="damselfly-imagetitlebar">
-                    <div class="damselfly-imagenavitem">
-                        <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
-                    </div>
-                    <div class="damselfly-imagetitle">
-                        Image: @image.FileName
-                    </div>
-                </div>
-
-                <div class="damselfly-imagenav">
-                    @if (prevImage != null && prevImage.ImageId != image.ImageId)
-                    {
-                        <NavLink class="damselfly-navleft chevron flipchevron" href="@PrevImageIDUrl" />
-                    }
-                    else
-                    {
-                        <div class="damselfly-navleft"></div>
-                    }
-                    <div class="damselfly-imagedisplay">
-                        @if( ZoomEnabled )
-                        {
-                            <figure @key="image.ImageId" class="image-fill zoom" onmousemove="zoom(event)" style="background-image: url(@ImageUrl)">
-                                <img src="@ImageUrl" />
-                            </figure>
-                        }
-                        else
-                        {
-                            <img @key="image.ImageId" id="theImage" class="image-fill" src="@ImageUrl">
-                        }
-                    </div>
-                    @if (nextImage != null && nextImage.ImageId != image.ImageId)
-                    {
-                        <NavLink class="damselfly-navright chevron" href="@NextImageIDUrl" />
-                    }
-                    else
-                    {
-    <div class="damselfly-navright"></div>}
-                </div>}
+                <ImagePreview ImageID="@ImageID" />
+            }
+            @if (nextImage != null && nextImage.ImageId != image.ImageId)
+            {
+                <NavLink class="damselfly-navright chevron" href="@NextImageIDUrl" />
+            }
+            else
+            {
+                <div class="damselfly-navright"></div>
+            }
+        </div>
+    }
 </div>
 
 @code {
@@ -67,12 +64,22 @@
     Image prevImage;
     bool ZoomEnabled => false;
 
-    public string ImageUrl => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+    public string ImgKey => $"prev{image.ImageId}";
+    public string ImgPreviewKey => $"{image.ImageId}";
+    public string ImageUrl { get; set; }
+    public string ImageUrlHighRes { get; set; }
 
     public CropJsHelper JsHelper { get; set; }
 
     private string PrevImageIDUrl => $"/image/{prevImage.ImageId}";
     private string NextImageIDUrl => $"/image/{nextImage.ImageId}";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SetupPreload();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -87,8 +94,24 @@
         }
     }
 
+    private void SetupPreload()
+    {
+        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
+        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+        StateHasChanged();
+    }
+
+    protected void ReplaceUrl( ProgressEventArgs args )
+    {
+        Logging.Log("Replacing Image URL");
+        ImageUrl = ImageUrlHighRes;
+        StateHasChanged();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
+        SetupPreload();
+
         // TODO - do we need this?
         await SetUpNavigation();
     }

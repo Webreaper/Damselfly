@@ -29,6 +29,10 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
     <PackageReference Include="FluentValidation" Version="10.1.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.4.21253.7" />
+    <PackageReference Include="Accord" Version="3.8.0" />
+    <PackageReference Include="Accord.Imaging" Version="3.8.0" />
+    <PackageReference Include="Accord.Vision" Version="3.8.0" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.4.21253.7" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="LogHandler.cs" />
@@ -43,6 +47,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="mono_crash.a7f6ef992.0.json" />
+    <None Remove="Accord" />
+    <None Remove="ImageRecognition\.DS_Store" />
+    <None Remove="Accord.Imaging" />
+    <None Remove="Accord.Vision" />
+    <None Remove="CoreCompat.System.Drawing, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <None Remove="System.Drawing.Common" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />

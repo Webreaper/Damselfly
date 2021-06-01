@@ -1,0 +1,49 @@
+﻿<!--
+    Image preview panel - displays an image in full res. To keep the UX nice, the initial image
+    is set to the medium thumb (which should load very quickly) and a hidden image loads the
+    full-res version - which may need to be generated on the fly. Once that's loaded, the URL
+    of the visible image is updated which should update it instantly. 
+-->
+
+@using Damselfly.Core.ImageProcessing
+
+<div class="damselfly-imagedisplay">
+    <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
+    <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
+</div>
+
+@code {
+    [Parameter]
+    public string ImageID { get; set; }
+
+    private string ImgKey => $"prev{ImageID}";
+    private string ImgPreviewKey => $"{ImageID}";
+    private string ImageUrl { get; set; }
+    private string ImageUrlHighRes { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SetupPreload();
+    }
+
+    private void SetupPreload()
+    {
+        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
+        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+        StateHasChanged();
+    }
+
+    protected override void OnParametersSet()
+    {
+        SetupPreload();
+    }
+
+    protected void ReplaceUrl(ProgressEventArgs args)
+    {
+        Logging.Log("Replacing Image URL");
+        ImageUrl = ImageUrlHighRes;
+        StateHasChanged();
+    }
+}
