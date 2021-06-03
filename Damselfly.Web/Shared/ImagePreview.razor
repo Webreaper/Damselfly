@@ -8,11 +8,12 @@
 
 @using Damselfly.Core.ImageProcessing
 
+<!--div id="myResult" class="img-zoom-result"></div-->
+
 <div class="damselfly-imagedisplay img-zoom-container">
     <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
     <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
 </div>
-<div id="myResult" class="img-zoom-result"></div>
 
 @code {
     [Parameter]
@@ -22,7 +23,11 @@
     private string ImgPreviewKey => $"{ImageID}";
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
-    private string ImageUrlZoom => $"/rawimage/{ImageID}";
+    // Note - whilst it would be nice to use the original image here for the max
+    // detail when zooming, that doesn't work for images which the browser can't
+    // render. We could do something like check for the original file extension
+    // and see if it's jpg/png/webp though.
+    private string ImageUrlZoom => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
 
     protected override void OnInitialized()
     {
@@ -46,14 +51,13 @@
     {
         if (firstRender)
         {
-            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", "myResult", ImageUrlZoom);
+            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom);
 
         }
     }
 
     protected void ReplaceUrl(ProgressEventArgs args)
     {
-        Logging.Log("Replacing Image URL");
         ImageUrl = ImageUrlHighRes;
         StateHasChanged();
     }

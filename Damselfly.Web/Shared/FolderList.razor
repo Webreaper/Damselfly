@@ -89,9 +89,9 @@
         StateHasChanged();
     }
 
-    protected async Task ProcessUpdatedFilter()
+    protected async Task ProcessUpdatedFilter( bool forceRefresh )
     {
-        folderItems = await folderService.GetFilteredFolders(filterTerm);
+        folderItems = await folderService.GetFilteredFolders(filterTerm, forceRefresh );
 
         await InvokeAsync(StateHasChanged);
     }
@@ -102,7 +102,7 @@
         {
             FolderService.Instance.OnChange += OnFoldersChanged;
             // Kick off the data load
-            await ProcessUpdatedFilter();
+            await ProcessUpdatedFilter( false );
         }
     }
 
@@ -114,6 +114,6 @@
     private void OnFoldersChanged()
     {
         // Be careful of threading - we may get called from anywhere
-        _ = ProcessUpdatedFilter();
+        _ = ProcessUpdatedFilter( true );
     }
     }

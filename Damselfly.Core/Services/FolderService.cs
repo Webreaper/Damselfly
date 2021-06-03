@@ -89,7 +89,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="filterTerm"></param>
         /// <returns></returns>
-        public async Task<List<FolderListItem>> GetFilteredFolders( string filterTerm )
+        public async Task<List<FolderListItem>> GetFilteredFolders( string filterTerm, bool force )
         {
             List<FolderListItem> items = null;
 
