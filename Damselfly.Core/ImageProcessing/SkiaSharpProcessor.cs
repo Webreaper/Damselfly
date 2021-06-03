@@ -14,7 +14,7 @@ namespace Damselfly.Core.ImageProcessing
     public class SkiaSharpProcessor : IImageProcessor
     {
         // SkiaSharp doesn't handle .heic files... yet
-        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng" };
+        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng", ".cr2" };
 
         public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
