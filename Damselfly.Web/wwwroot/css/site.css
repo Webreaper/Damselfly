@@ -1258,20 +1258,21 @@ hr.separator {
     overflow: auto;
 }
 
-figure.zoom {
-    background-position: 50% 50%;
+.img-zoom-container {
     position: relative;
-    height: 100%;
-    overflow: hidden;
-    cursor: zoom-in;
 }
 
-figure.zoom img:hover {
-    opacity: 0;
+.img-zoom-lens {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    /*set the size of the lens:*/
+    width: 50px;
+    height: 50px;
 }
 
-figure.zoom img {
-    transition: opacity 0.5s;
-    display: block;
-    width: 100%;
+.img-zoom-result {
+    border: 1px solid #d4d4d4;
+    /*set the size of the result div:*/
+    width: 800px;
+    height: 400px;
 }

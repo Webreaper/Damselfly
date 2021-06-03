@@ -2,15 +2,17 @@
     Image preview panel - displays an image in full res. To keep the UX nice, the initial image
     is set to the medium thumb (which should load very quickly) and a hidden image loads the
     full-res version - which may need to be generated on the fly. Once that's loaded, the URL
-    of the visible image is updated which should update it instantly. 
+    of the visible image is updated which should update it instantly.
 -->
+@inject IJSRuntime JsRuntime
 
 @using Damselfly.Core.ImageProcessing
 
-<div class="damselfly-imagedisplay">
+<div class="damselfly-imagedisplay img-zoom-container">
     <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
     <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
 </div>
+<div id="myResult" class="img-zoom-result"></div>
 
 @code {
     [Parameter]
@@ -19,7 +21,8 @@
     private string ImgKey => $"prev{ImageID}";
     private string ImgPreviewKey => $"{ImageID}";
     private string ImageUrl { get; set; }
-    private string ImageUrlHighRes { get; set; }
+    private string ImageUrlHighRes => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+    private string ImageUrlZoom => $"/rawimage/{ImageID}";
 
     protected override void OnInitialized()
     {
@@ -31,13 +34,21 @@
     private void SetupPreload()
     {
         ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
-        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
         StateHasChanged();
     }
 
     protected override void OnParametersSet()
     {
         SetupPreload();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", "myResult", ImageUrlZoom);
+
+        }
     }
 
     protected void ReplaceUrl(ProgressEventArgs args)

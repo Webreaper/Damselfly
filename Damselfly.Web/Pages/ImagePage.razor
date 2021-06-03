@@ -35,22 +35,17 @@ else
         }
         else
         {
-        <div class="damselfly-navleft"></div>}
-            @if (ZoomEnabled)
-            {
-                <img src="@ImageUrlHighRes" /> }
-            else
-            {
-                <ImagePreview ImageID="@ImageID" />
-            }
-            @if (nextImage != null && nextImage.ImageId != image.ImageId)
-            {
-                <NavLink class="damselfly-navright chevron" href="@NextImageIDUrl" />
-            }
-            else
-            {
-                <div class="damselfly-navright"></div>
-            }
+            <div class="damselfly-navleft"></div>
+        }
+        <ImagePreview ImageID="@ImageID" />
+        @if (nextImage != null && nextImage.ImageId != image.ImageId)
+        {
+            <NavLink class="damselfly-navright chevron" href="@NextImageIDUrl" />
+        }
+        else
+        {
+            <div class="damselfly-navright"></div>
+        }
         </div>
     }
 </div>
@@ -62,7 +57,6 @@ else
     Image image;
     Image nextImage;
     Image prevImage;
-    bool ZoomEnabled => false;
 
     public string ImgKey => $"prev{image.ImageId}";
     public string ImgPreviewKey => $"{image.ImageId}";

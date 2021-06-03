@@ -22,12 +22,12 @@
     <PackageReference Include="WordPressPCL" Version="1.9.0" />
     <PackageReference Include="NExifTool" Version="0.9.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta12" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="SkiaSharp" Version="2.80.3-preview.40" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
-    <PackageReference Include="FluentValidation" Version="10.1.0" />
+    <PackageReference Include="FluentValidation" Version="10.2.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.4.21253.7" />
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="Accord.Imaging" Version="3.8.0" />
