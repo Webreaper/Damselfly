@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -14,6 +14,7 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -159,24 +160,33 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)
+        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
-            Logging.Log($" Running image transform for Watermark: {waterMarkText}");
+            Logging.Log($" Running image transform for Watermark: {config.WatermarkText}");
 
             using var img = Image.Load(input, out IImageFormat fmt);
 
-            var opts = new ResizeOptions { Mode = ResizeMode.Max, Size = new Size { Height = 1600, Width = 1600 } };
+            if (config.Size != Services.ExportSize.FullRes)
+            {
+                int maxSize = config.MaxImageSize;
 
-            // First rotate and resize.
-            img.Mutate(x => x.AutoOrient().Resize(opts));
+                var opts = new ResizeOptions { Mode = ResizeMode.Max, Size = new Size { Height = maxSize, Width = maxSize } };
 
-            if (!string.IsNullOrEmpty(waterMarkText))
+                // Rotate and resize.
+                img.Mutate(x => x.AutoOrient().Resize(opts));
+            }
+            else
+            {
+                // Just rotate.
+                img.Mutate(x => x.AutoOrient());
+            }
+
+            if (!string.IsNullOrEmpty(config.WatermarkText))
             {
                 // Apply the watermark if one's been specified.
                 Font font = fontCollection.CreateFont("Arial", 10);
 
-                if (!string.IsNullOrEmpty(waterMarkText))
-                    img.Mutate(context => ApplyWaterMark(context, font, waterMarkText, Color.White));
+                img.Mutate(context => ApplyWaterMark(context, font, config.WatermarkText, Color.White));
             }
 
             img.Save(output, fmt);

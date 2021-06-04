@@ -50,8 +50,12 @@ namespace Damselfly.Core.Services
                     {
                         using var memoryStream = new MemoryStream();
 
-                        //This saves to the memoryStream with encoder
-                        ImageProcessService.Instance.TransformDownloadImage(image.FullPath, memoryStream);
+                        // We shrink the images a bit before upload to Wordpress.
+                        // TODO: Support watermarks for WP Upload in future.
+                        ExportConfig wpConfig = new ExportConfig { Size = ExportSize.Large, WatermarkText = null };
+
+                        // This saves to the memoryStream with encoder
+                        ImageProcessService.Instance.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
 
                         // The position needs to be reset, before we push it to Wordpress
                         memoryStream.Position = 0; 

@@ -26,7 +26,7 @@
         </div>
         <div>
             <label for="keepFolders">Keep Folders: </label>
-            <input id="keepFolders" type="checkbox" @bind="@KeepFolders" />
+            <input id="keepFolders" type="checkbox" @bind="@selectedConfig.KeepFolders" />
         </div>
         <div>
             <label for="exportSize">Export Size: </label>
@@ -64,7 +64,6 @@
     public List<ExportConfig> configs = new List<ExportConfig>();
     public ExportConfig selectedConfig = new ExportConfig { Name = "Default" };
     public string StatusMessage { get; set; }
-    public bool KeepFolders { get; set; }
 
     private void ChangeConfig(string name)
     {
@@ -96,7 +95,7 @@
     private async Task ProcessExport()
     {
         // TODO: How to handle long zip times. Progress meter etc?
-        string zipPath = await basketService.DownloadSelection(selectedConfig, KeepFolders);
+        string zipPath = await basketService.DownloadSelection(selectedConfig);
         await JsRuntime.InvokeAsync<string>("downloadFile", zipPath);
     }
 

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -163,7 +164,7 @@ namespace Damselfly.Core.ImageProcessing
                 Logging.LogVerbose(e.Data);
         }
 
-        public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)
+        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
             throw new NotImplementedException();
         }

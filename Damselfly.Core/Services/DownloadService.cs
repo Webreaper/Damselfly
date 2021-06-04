@@ -152,7 +152,7 @@ namespace Damselfly.Core.Services
         /// <param name="OnProgress">Callback to report progress.</param>
         /// <returns></returns>
         // TODO: If only one file selected, download directly instead of zipping
-        public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config, bool keepPaths)
+        public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config )
         {
             Logging.Log($"Preparing zip file from {filesToZip.Length} files.");
 
@@ -196,7 +196,7 @@ namespace Damselfly.Core.Services
                                 exportUnchanged = false;
                             }
 
-                            if (keepPaths)
+                            if( config.KeepFolders )
                                 internalZipPath = Path.Combine(imagePath.Directory.Name, internalZipPath);
 
                             if (exportUnchanged)
@@ -214,7 +214,7 @@ namespace Damselfly.Core.Services
                                     // Run the transform - note we do this in-memory and directly on the stream so the
                                     // transformed file is never actually written to disk other than in the zip.
                                     await Task.Run(() => ImageProcessService.Instance.TransformDownloadImage(imagePath.FullName,
-                                                            zipStream, config.WatermarkText));
+                                                            zipStream, config));
                                 }
                             }
                         }

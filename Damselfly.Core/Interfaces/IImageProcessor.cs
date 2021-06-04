@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Damselfly.Core.ImageProcessing;
 using System.Threading.Tasks;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.Interfaces
 {
@@ -18,7 +19,7 @@ namespace Damselfly.Core.Interfaces
     public interface IImageProcessor
     {
         Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles );
-        void TransformDownloadImage(string input, Stream output, string waterMarkText = null);
+        void TransformDownloadImage(string input, Stream output, ExportConfig config);
         ICollection<string> SupportedFileExtensions { get; }
     }
 }

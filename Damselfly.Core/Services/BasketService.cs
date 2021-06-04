@@ -159,11 +159,11 @@ namespace Damselfly.Core.Services
         /// <param name="keepPaths">True to keep folder structure, false for a flat zip of images.</param>
         /// <param name="OnProgress">Callback to give progress information to the UI</param>
         /// <returns>String path to the generated file, which is passed back to the doanload request</returns>
-        public async Task<string> DownloadSelection(ExportConfig config, bool keepPaths )
+        public async Task<string> DownloadSelection(ExportConfig config )
         {
             var images = SelectedImages.Select(x => new FileInfo(x.FullPath)).ToArray();
 
-            var virtualZipPath = await DownloadService.Instance.CreateDownloadZipAsync(images, config, keepPaths );
+            var virtualZipPath = await DownloadService.Instance.CreateDownloadZipAsync(images, config );
 
             if (!string.IsNullOrEmpty(virtualZipPath))
             {

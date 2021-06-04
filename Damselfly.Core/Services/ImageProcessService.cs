@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.Services
 {
@@ -47,9 +48,9 @@ namespace Damselfly.Core.Services
             return await processor.CreateThumbs(source, destFiles);
         }
 
-        public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)
+        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
-            processor.TransformDownloadImage(input, output, waterMarkText);
+            processor.TransformDownloadImage(input, output, config);
         }
 
         public ICollection<string> SupportedFileExtensions { get{ return processor.SupportedFileExtensions; } }

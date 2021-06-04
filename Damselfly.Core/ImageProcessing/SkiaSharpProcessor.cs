@@ -8,6 +8,7 @@ using Damselfly.Core.Utils;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -190,13 +191,13 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, string waterMarkText = null)
+        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
-            float maxSize = 1600f;
-            var resizeFactor = 1f;
-
             using SKImage img = SKImage.FromEncodedData(input);
             using var bitmap = SKBitmap.FromImage(img);
+
+            float maxSize = config.MaxImageSize;
+            var resizeFactor = 1f;
 
             if (bitmap.Width > maxSize)
             {
@@ -219,25 +220,29 @@ namespace Damselfly.Core.ImageProcessing
             canvas.DrawBitmap(bitmap, 0, 0);
             canvas.ResetMatrix();
 
-            using var font = SKTypeface.FromFamilyName("Arial");
-            using var brush = new SKPaint
+            if (!string.IsNullOrEmpty(config.WatermarkText))
             {
-                Typeface = font,
-                TextSize = 64.0f,
-                IsAntialias = true,
-                Color = new SKColor(255, 255, 255, 255)
-            };
+                using var font = SKTypeface.FromFamilyName("Arial");
+                using var brush = new SKPaint
+                {
+                    Typeface = font,
+                    TextSize = 64.0f,
+                    IsAntialias = true,
+                    Color = new SKColor(255, 255, 255, 255)
+                };
 
-            var textWidth = brush.MeasureText(waterMarkText);
-            var textTargetWidth = targetWidth / 6f;
-            var fontScale = textTargetWidth / textWidth;
+                var textWidth = brush.MeasureText(config.WatermarkText);
+                var textTargetWidth = targetWidth / 6f;
+                var fontScale = textTargetWidth / textWidth;
 
-            brush.TextSize *= fontScale;
+                brush.TextSize *= fontScale;
 
-            // Offset by text width + 10%
-            var rightOffSet = (textTargetWidth * 1.1f);
+                // Offset by text width + 10%
+                var rightOffSet = (textTargetWidth * 1.1f);
 
-            canvas.DrawText(waterMarkText, targetWidth - rightOffSet, targetHeight - brush.TextSize, brush);
+                canvas.DrawText(config.WatermarkText, targetWidth - rightOffSet, targetHeight - brush.TextSize, brush);
+            }
+
             canvas.Flush();
 
             using var image = SKImage.FromBitmap(toBitmap);

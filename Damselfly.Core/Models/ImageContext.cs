@@ -435,7 +435,22 @@ namespace Damselfly.Core.Models
         public string Name { get; set; }
         public ExportType Type { get; set; } = ExportType.Download;
         public ExportSize Size { get; set; } = ExportSize.FullRes;
+        public bool KeepFolders { get; set; }
         public string WatermarkText { get; set; }
+
+        public int MaxImageSize
+        {
+            get
+            {
+                return Size switch
+                {
+                    ExportSize.Large => 1600,
+                    ExportSize.Medium => 1024,
+                    ExportSize.Small => 800,
+                    _ => int.MaxValue,
+                };
+            }
+        }
     }
 
     /// <summary>
