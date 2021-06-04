@@ -107,5 +107,20 @@ namespace Damselfly.Core.Services
 
             return result;
         }
+
+        public int GetInt(string name, int defaultIfNotExists = default)
+        {
+            int result = defaultIfNotExists;
+
+            string value = Get(name);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!int.TryParse(value, out result))
+                    result = defaultIfNotExists;
+            }
+
+            return result;
+        }
     }
 }

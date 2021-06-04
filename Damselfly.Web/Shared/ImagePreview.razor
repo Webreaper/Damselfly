@@ -8,18 +8,22 @@
 
 @using Damselfly.Core.ImageProcessing
 
-<!--div id="myResult" class="img-zoom-result"></div-->
-
-<div class="damselfly-imagedisplay img-zoom-container">
-    <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
+<div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown">
+    <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" style="background-size: @ZoomPercentage"/>
     <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
 </div>
+
+<!-- Hidden image to background load the hi-res version-->
+<img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
 
 @code {
     [Parameter]
     public string ImageID { get; set; }
 
+    private int ZoomLevel { get; set; } = ConfigService.Instance.GetInt( ConfigSettings.ZoomLevel, 400 );
+    private string ZoomPercentage => $"{ZoomLevel}%";
     private string ImgKey => $"prev{ImageID}";
+    private string ZoomKey => $"zoom{ImageID}";
     private string ImgPreviewKey => $"{ImageID}";
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
@@ -28,6 +32,7 @@
     // render. We could do something like check for the original file extension
     // and see if it's jpg/png/webp though.
     private string ImageUrlZoom => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+    private bool needToInitZoom = true;
 
     protected override void OnInitialized()
     {
@@ -45,14 +50,15 @@
     protected override void OnParametersSet()
     {
         SetupPreload();
+        needToInitZoom = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( needToInitZoom )
         {
-            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom);
-
+            needToInitZoom = false;
+            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
         }
     }
 
@@ -60,5 +66,23 @@
     {
         ImageUrl = ImageUrlHighRes;
         StateHasChanged();
+    }
+
+    void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "ArrowUp")
+        {
+            ZoomLevel = Math.Min(ZoomLevel + 50, 400);
+        }
+        else if (e.Key == "ArrowDown")
+        {
+            ZoomLevel = Math.Max(ZoomLevel - 50, 150);
+        }
+
+        ConfigService.Instance.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+
+        needToInitZoom = true;
+        StateHasChanged();
+        StatusService.Instance.StatusText = $"Zoom level set to {ZoomLevel}%";
     }
 }

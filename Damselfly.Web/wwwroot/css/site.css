@@ -1273,8 +1273,10 @@ hr.separator {
 .img-zoom-result {
     border: 1px solid #ddd4d4;
     position: absolute;
+    display:none;
     animation: fadeIn ease 1s;
     height: calc( 100vh - 100px);
     width: 100%;
     cursor: zoom-in;
+    background-repeat: no-repeat;
 }

@@ -133,7 +133,7 @@
     bool endOfImages = false;
     private EventConflator conflator = new EventConflator(2000);
 
-    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>("ThumbSize", ThumbSize.Small);
+    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
 
     private void StoreImage(Image image)
     {
@@ -226,7 +226,7 @@
             default: WrapStyle = "wrapping-table-small"; break;
         }
 
-        ConfigService.Instance.Set("ThumbSize", newSize.ToString());
+        ConfigService.Instance.Set(ConfigSettings.ThumbSize, newSize.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

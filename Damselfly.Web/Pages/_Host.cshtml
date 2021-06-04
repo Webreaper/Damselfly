@@ -101,25 +101,12 @@
         }
 
 
-        function imageZoom(imgID, srcUrl) {
-            var img, result, scale, container;
+        function imageZoom(imgID, srcUrl, zoomDivId, zoomPercentage) {
+            var img, result, scale;
             scale = 4;
             img = document.getElementById(imgID);
-            container = img.parentNode;
-
-            /* Create and insert zoom window: */
-            result = document.createElement("DIV");
-            result.setAttribute("class", "img-zoom-result");
-            container.insertBefore(result, img);
-
-            result.style.height = img.offsetHeight;
-            result.style.width = img.offsetWidth;
-            
-            console.log("Initialising zoom for " + srcUrl);
+            result = document.getElementById(zoomDivId);
             result.style.backgroundImage = "url('" + srcUrl + "')";
-            result.style.backgroundSize = (img.width * scale) + "px " + (img.height * scale) + "px";
-            result.style.backgroundRepeat = "no-repeat";
-            result.style.display = "none";
 
             img.addEventListener("mousemove", moveLens);
             img.addEventListener("touchmove", moveLens);
@@ -134,10 +121,11 @@
                 /* Calculate the position of the lens: */
                 x = pos.x;
                 y = pos.y;
+
                 /* Hide the zoom when we move outside it */
-                if (x > (img.width - 5) || x < 5 || y > (img.height - 5) || y < 5 )
+                if (x > (img.width - 5) || x < 5 || y > (img.height - 5) || y < 5) {
                     result.style.display = "none";
-                else
+                } else
                     result.style.display = "inherit";
                 result.style.backgroundPosition = "-" + (x * scale * 0.75) + "px -" + (y * scale * 0.75) + "px";
             }
