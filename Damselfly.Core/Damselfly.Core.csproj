@@ -27,7 +27,7 @@
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="SkiaSharp" Version="2.80.3-preview.40" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
-    <PackageReference Include="FluentValidation" Version="10.2.2" />
+    <PackageReference Include="FluentValidation" Version="10.2.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.4.21253.7" />
     <PackageReference Include="Accord" Version="3.8.0" />
     <PackageReference Include="Accord.Imaging" Version="3.8.0" />

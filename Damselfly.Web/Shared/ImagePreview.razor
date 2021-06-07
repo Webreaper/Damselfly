@@ -53,18 +53,16 @@
         needToInitZoom = true;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if( needToInitZoom )
-        {
-            needToInitZoom = false;
-            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
-        }
-    }
-
     protected void ReplaceUrl(ProgressEventArgs args)
     {
         ImageUrl = ImageUrlHighRes;
+
+        if (needToInitZoom)
+        {
+            needToInitZoom = false;
+            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
+        }
+
         StateHasChanged();
     }
 
