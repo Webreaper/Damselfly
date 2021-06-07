@@ -11,7 +11,7 @@
     <select @bind="SearchService.Instance.LensId" class="InputAddOn-field damselfly-camerafilter">
         @foreach (var lens in lenses)
         {
-            <option value="@lens.LensId" title="@lens.Make">@lens.Model</option>
+            <option value="@lens.LensId" title="@lens.Model">@lens.Model</option>
         }
     </select>
     <button class="InputAddOn-item" title="Clear Filter" @onclick="@(() => ClearFilter())"><i class="fa fa-times-circle" /></button>
@@ -38,8 +38,12 @@
         this.cameras.Clear();
         this.lenses.Clear();
 
-        this.cameras.AddRange(db.Cameras.OrderBy( x => x.Make + x.Model ) );
-        this.lenses.AddRange(db.Lenses.OrderBy(x => x.Make + x.Model));
+        this.cameras.AddRange(db.Cameras
+                                .Where( x => ! string.IsNullOrEmpty( x.Make + x.Model ) )
+                                .OrderBy( x => x.Make + x.Model ) );
+        this.lenses.AddRange(db.Lenses
+                                .Where( x => !string.IsNullOrEmpty( x.Model ))
+                                .OrderBy(x => x.Make + x.Model));
 
         cameras.Insert(0, anyCamera);
         lenses.Insert(0, anyLens);

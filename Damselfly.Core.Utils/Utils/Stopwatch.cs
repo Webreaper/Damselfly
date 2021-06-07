@@ -74,7 +74,7 @@ namespace Damselfly.Core.Utils
         }
 
         public long ElapsedTime { get { return end - start; } }
-        public string HumanElapsedTime { get { return (end - start).ToHumanReadableString(); } }
+        public string HumanElapsedTime { get { return ((int)(end - start)).ToHumanReadableString(); } }
         public override string ToString() => $"{ElapsedTime}";
 
         public static void WriteTotals(bool verbose = true)

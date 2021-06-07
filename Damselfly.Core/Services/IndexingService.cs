@@ -103,6 +103,8 @@ namespace Damselfly.Core.Services
 
                 watch.Stop();
 
+                DumpMetaData(metadata);
+
                 // Update the timestamp
                 imgMetaData.LastUpdated = DateTime.UtcNow;
 
@@ -139,11 +141,29 @@ namespace Damselfly.Core.Services
                         imgMetaData.Exposure = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagExposureTime);
 
                         var lensMake = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagLensMake);
-                        var lensModel = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagLensModel);
+                        var lensModel = subIfdDirectory.SafeExifGetString("Lens Model");
                         var lensSerial = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagLensSerialNumber);
 
+                        // If there was no lens make/model, it may be because it's in the Makernotes. So attempt
+                        // to extract it. This code definitely works for a Leica Panasonic lens on a Panasonic body.
+                        // It may not work for other things.
+                        if (string.IsNullOrEmpty(lensMake) || string.IsNullOrEmpty(lensModel))
+                        {
+                            var makerNoteDir = metadata.FirstOrDefault(x => x.Name.Contains("Makernote", StringComparison.OrdinalIgnoreCase));
+                            if( makerNoteDir != null )
+                            {
+                                if (string.IsNullOrEmpty(lensModel) )
+                                    lensModel = makerNoteDir.SafeExifGetString("Lens Type");
+                            }
+                        }
+
                         if (!string.IsNullOrEmpty(lensMake) || !string.IsNullOrEmpty(lensModel))
+                        {
+                            if (string.IsNullOrEmpty(lensModel) || lensModel == "N/A")
+                                lensModel = "Generic " + lensMake;
+
                             imgMetaData.LensId = GetLens(lensMake, lensModel, lensSerial).LensId;
+                        }
 
                         var flash = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagFlash);
 
@@ -182,6 +202,22 @@ namespace Damselfly.Core.Services
             catch (Exception ex)
             {
                 Logging.Log("Error reading image metadata for {0}: {1}", image.FullPath, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Dump metadata out in tracemode.
+        /// </summary>
+        /// <param name="metadata"></param>
+        private void DumpMetaData(IReadOnlyList<MetadataExtractor.Directory> metadata)
+        {
+            foreach( var dir in metadata )
+            {
+                Logging.LogTrace($"Directory: {dir.Name}:");
+                foreach( var tag in dir.Tags )
+                {
+                    Logging.LogTrace($" Tag: {tag.Name} = {tag.Description}");
+                }
             }
         }
 
@@ -786,7 +822,7 @@ namespace Damselfly.Core.Services
 
                         batchWatch.Stop();
 
-                        Logging.Log($"Completed metadata scan batch: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added.");
+                        Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
                         Logging.LogVerbose($"Time for metadata scan batch: {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tag writes: {tagWatch.HumanElapsedTime}.");
                     }
 

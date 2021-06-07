@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 
@@ -14,6 +15,21 @@ namespace Damselfly.Core.Utils
             try
             {
                 return dir?.GetString(tagType);
+            }
+            catch
+            {
+                Logging.LogVerbose("Error reading string metadata!");
+                return null;
+            }
+        }
+
+        public static string SafeExifGetString(this Directory dir, string tagName)
+        {
+            try
+            {
+                var tag = dir?.Tags.FirstOrDefault(x => x.Name == tagName);
+
+                return tag?.Description;
             }
             catch
             {
