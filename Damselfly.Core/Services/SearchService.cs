@@ -176,8 +176,6 @@ namespace Damselfly.Core.Services
                             throw new ArgumentException("Unexpected grouping type.");
                     }
 
-                    images = images.Include(x => x.MetaData);
-
                     if (query.MinDate > DateTime.MinValue || query.MaxDate < DateTime.MaxValue)
                     {
                         // Always filter by date - because if there's no filter
@@ -198,7 +196,10 @@ namespace Damselfly.Core.Services
                         images = images.Where(x => x.FileSizeBytes <= maxSizeBytes);
                     }
 
-                    if( query.CameraId != -1 )
+                    images = images.Include(x => x.MetaData);
+                    images = images.Include(x => x.BasketEntry);
+
+                    if ( query.CameraId != -1 )
                     {
                         images = images.Where(x => x.MetaData.CameraId == query.CameraId);
                     }
@@ -207,8 +208,6 @@ namespace Damselfly.Core.Services
                     {
                         images = images.Where(x => x.MetaData.LensId == query.LensId);
                     }
-
-                    images = images.Include(x => x.BasketEntry);
 
                     // Disable this for now - it's slow due to the EFCore subquery bug.
                     // We mitigate it by loading the tags in a separate query below.

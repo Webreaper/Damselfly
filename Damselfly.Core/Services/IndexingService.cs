@@ -105,9 +105,6 @@ namespace Damselfly.Core.Services
 
                 DumpMetaData(metadata);
 
-                // Update the timestamp
-                imgMetaData.LastUpdated = DateTime.UtcNow;
-
                 if (metadata != null)
                 {
                     var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
@@ -649,7 +646,7 @@ namespace Damselfly.Core.Services
                             // Default the sort date to file creation date. It'll get updated
                             // later during indexing to set it to the date-taken date, if one
                             // exists.
-                            image.SortDate = image.FileCreationDate;
+                            image.SortDate = image.FileCreationDate.ToUniversalTime();
 
                             Logging.LogTrace("Adding new image {0}", image.FileName);
                             folderToScan.Images.Add(image);
@@ -747,6 +744,7 @@ namespace Damselfly.Core.Services
                         var newMetadataEntries = new List<ImageMetaData>();
                         var updatedEntries = new List<ImageMetaData>();
                         var updatedImages = new List<Image>();
+                        var updateTimeStamp = DateTime.UtcNow;
 
                         foreach (var img in imagesToScan)
                         {
@@ -756,7 +754,6 @@ namespace Damselfly.Core.Services
 
                                 if (imgMetaData == null)
                                 {
-                                    // New metadata
                                     imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
                                     newMetadataEntries.Add(imgMetaData);
                                 }
@@ -765,6 +762,9 @@ namespace Damselfly.Core.Services
 
                                 // Scan the image from the 
                                 GetImageMetaData(ref imgMetaData, out var exifKeywords);
+
+                                // Update the timestamp
+                                imgMetaData.LastUpdated = updateTimeStamp;
 
                                 // Scan for sidecar files
                                 var sideCarTags = GetSideCarKeywords(img, exifKeywords);
@@ -776,7 +776,7 @@ namespace Damselfly.Core.Services
                                     if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
                                     {
                                         // Now, submit the tags; note they won't get created immediately, but in batch.
-                                        Logging.Log($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+                                        Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
                                         // Fire and forget this asynchronously - we don't care about waiting for it
                                         _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
                                     }
@@ -795,6 +795,7 @@ namespace Damselfly.Core.Services
                                     // Always update the image sort date with the date taken,
                                     // if one was found in the metadata
                                     img.SortDate = imgMetaData.DateTaken;
+                                    img.LastUpdated = updateTimeStamp;
                                     updatedImages.Add( img );
                                 }
                             }

@@ -44,6 +44,7 @@
     private void SetupPreload()
     {
         ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
+        StatusService.Instance.StatusText = "Loading hi-res image...";
         StateHasChanged();
     }
 
@@ -63,6 +64,7 @@
             _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
         }
 
+        StatusService.Instance.StatusText = "Hi-res image loaded.";
         StateHasChanged();
     }
 

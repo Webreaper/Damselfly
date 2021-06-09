@@ -244,8 +244,9 @@
                 scrollPos = 0;
 
             searchService.OnChange += SearchQueryChanged;
-            await LoadData(initialLoadCount);
+
             await InitJsListenerAsync(scrollPos);
+            _ = LoadData(initialLoadCount);
         }
     }
 
@@ -322,7 +323,7 @@
 
             IsLoading = false;
 
-            await InvokeAsync(StateHasChanged);
+            _ = InvokeAsync( StateHasChanged );
         }
     }
 }
