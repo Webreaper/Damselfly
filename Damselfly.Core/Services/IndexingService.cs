@@ -561,6 +561,7 @@ namespace Damselfly.Core.Services
         {
             int folderImageCount = 0;
 
+            using var db = new ImageContext();
             var folder = new DirectoryInfo(folderToScan.Path);
             var allImageFiles = folder.SafeGetImageFiles();
 
@@ -576,7 +577,7 @@ namespace Damselfly.Core.Services
             // update. 
             int knownDBImages = folderToScan.Images.Count();
 
-            if( knownDBImages != allImageFiles.Count() )
+            if (knownDBImages != allImageFiles.Count())
             {
                 Logging.LogVerbose($"New or removed images in folder {folderToScan.Name}.");
                 force = true;
@@ -587,110 +588,107 @@ namespace Damselfly.Core.Services
                 return true;
             }
 
-            using (var db = new ImageContext())
+            var watch = new Stopwatch("ScanFolderFiles");
+
+            // Select just JPGs
+            var imageFiles = allImageFiles.Where(x => x.IsImageFileType()).ToList();
+            folderImageCount = imageFiles.Count();
+
+            int newImages = 0, updatedImages = 0;
+            foreach (var file in imageFiles)
             {
-                var watch = new Stopwatch("ScanFolderFiles");
-
-                // Select just JPGs
-                var imageFiles = allImageFiles.Where(x => x.IsImageFileType() ).ToList();
-                folderImageCount = imageFiles.Count();
-
-                int newImages = 0, updatedImages = 0;
-                foreach (var file in imageFiles)
+                try
                 {
-                    try
+                    var dbImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (dbImage != null)
                     {
-                        var dbImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
+                        // See if the image has changed since we last indexed it
+                        bool fileChanged = file.FileIsMoreRecentThan(dbImage.LastUpdated);
 
-                        if (dbImage != null)
+                        if (!fileChanged)
                         {
-                            // See if the image has changed since we last indexed it
-                            bool fileChanged = file.FileIsMoreRecentThan(dbImage.LastUpdated);
+                            // File hasn't changed. Look for a sidecar to see if it's been modified.
+                            var sidecar = dbImage.GetSideCar();
 
-                            if( !fileChanged )
+                            if (sidecar != null)
                             {
-                                // File hasn't changed. Look for a sidecar to see if it's been modified.
-                                var sidecar = dbImage.GetSideCar();
-
-                                if (sidecar != null )
-                                {
-                                    // If there's a sidecar, see if that's changed.
-                                    fileChanged = sidecar.Filename.FileIsMoreRecentThan(dbImage.LastUpdated);
-                                }
-                            }
-
-                            if( !fileChanged)
-                            {
-                                Logging.LogTrace($"Indexed image {dbImage.FileName} unchanged - skipping.");
-                                continue;
+                                // If there's a sidecar, see if that's changed.
+                                fileChanged = sidecar.Filename.FileIsMoreRecentThan(dbImage.LastUpdated);
                             }
                         }
 
-                        Image image = dbImage;
-
-                        if (image == null)
+                        if (!fileChanged)
                         {
-                            image = new Image { FileName = file.Name };
-                        }
-
-                        // Store some info about the disk file
-                        image.FileSizeBytes = (ulong)file.Length;
-                        image.FileCreationDate = file.CreationTimeUtc;
-                        image.FileLastModDate = file.LastWriteTimeUtc;
-
-                        image.Folder = folderToScan;
-                        image.FlagForMetadataUpdate();
-
-                        if (dbImage == null)
-                        {
-                            // Default the sort date to file creation date. It'll get updated
-                            // later during indexing to set it to the date-taken date, if one
-                            // exists.
-                            image.SortDate = image.FileCreationDate.ToUniversalTime();
-
-                            Logging.LogTrace("Adding new image {0}", image.FileName);
-                            folderToScan.Images.Add(image);
-                            newImages++;
-                        }
-                        else
-                        {
-                            db.Images.Update(image);
-                            updatedImages++;
+                            Logging.LogTrace($"Indexed image {dbImage.FileName} unchanged - skipping.");
+                            continue;
                         }
                     }
-                    catch( Exception ex )
+
+                    Image image = dbImage;
+
+                    if (image == null)
                     {
-                        Logging.LogError($"Exception while scanning for new image {file}: {ex.Message}");
+                        image = new Image { FileName = file.Name };
+                    }
+
+                    // Store some info about the disk file
+                    image.FileSizeBytes = (ulong)file.Length;
+                    image.FileCreationDate = file.CreationTimeUtc;
+                    image.FileLastModDate = file.LastWriteTimeUtc;
+
+                    image.Folder = folderToScan;
+                    image.FlagForMetadataUpdate();
+
+                    if (dbImage == null)
+                    {
+                        // Default the sort date to file creation date. It'll get updated
+                        // later during indexing to set it to the date-taken date, if one
+                        // exists.
+                        image.SortDate = image.FileCreationDate.ToUniversalTime();
+
+                        Logging.LogTrace("Adding new image {0}", image.FileName);
+                        folderToScan.Images.Add(image);
+                        newImages++;
+                    }
+                    else
+                    {
+                        db.Images.Update(image);
+                        updatedImages++;
                     }
                 }
-
-                // Now look for files to remove.
-                // TODO - Sanity check that these don't hit the DB
-                var filesToRemove = folderToScan.Images.Select(x => x.FileName).Except(imageFiles.Select(x => x.Name));
-                var dbImages = folderToScan.Images.Select(x => x.FileName);
-                var imagesToDelete = folderToScan.Images
-                                    .Where(x => filesToRemove.Contains(x.FileName))
-                                    .ToList();
-
-                if (imagesToDelete.Any())
+                catch (Exception ex)
                 {
-                    imagesToDelete.ForEach(x => Logging.LogVerbose("Deleting image {0} (ID: {1})", x.FileName, x.ImageId));
-
-                    // Removing these will remove the associated ImageTag and selection references.
-                    db.Images.RemoveRange(imagesToDelete);
+                    Logging.LogError($"Exception while scanning for new image {file}: {ex.Message}");
                 }
-
-                // Now update the folder to say we've processed it
-                folderToScan.FolderScanDate = DateTime.UtcNow;
-                db.Folders.Update(folderToScan);
-
-                db.SaveChanges("FolderScan");
-
-                watch.Stop();
-
-                StatusService.Instance.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
-                        folderToScan.Name,folderToScan.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
             }
+
+            // Now look for files to remove.
+            // TODO - Sanity check that these don't hit the DB
+            var filesToRemove = folderToScan.Images.Select(x => x.FileName).Except(imageFiles.Select(x => x.Name));
+            var dbImages = folderToScan.Images.Select(x => x.FileName);
+            var imagesToDelete = folderToScan.Images
+                                .Where(x => filesToRemove.Contains(x.FileName))
+                                .ToList();
+
+            if (imagesToDelete.Any())
+            {
+                imagesToDelete.ForEach(x => Logging.LogVerbose("Deleting image {0} (ID: {1})", x.FileName, x.ImageId));
+
+                // Removing these will remove the associated ImageTag and selection references.
+                db.Images.RemoveRange(imagesToDelete);
+            }
+
+            // Now update the folder to say we've processed it
+            folderToScan.FolderScanDate = DateTime.UtcNow;
+            db.Folders.Update(folderToScan);
+
+            db.SaveChanges("FolderScan");
+
+            watch.Stop();
+
+            StatusService.Instance.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
+                    folderToScan.Name, folderToScan.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
 
             return true;
         }
@@ -790,14 +788,17 @@ namespace Damselfly.Core.Services
                                 if (allKeywords.Any())
                                     imageKeywords[img] = allKeywords.ToArray();
 
-                                if (imgMetaData.DateTaken != DateTime.MinValue)
+                                if (imgMetaData.DateTaken != img.SortDate)
                                 {
+                                    Logging.Log($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
                                     // Always update the image sort date with the date taken,
                                     // if one was found in the metadata
                                     img.SortDate = imgMetaData.DateTaken;
                                     img.LastUpdated = updateTimeStamp;
                                     updatedImages.Add( img );
                                 }
+                                else
+                                    Logging.Log($"Not updating image {img.FileName} with DateTaken as no valid value.");
                             }
                             catch (Exception ex)
                             {
@@ -806,10 +807,11 @@ namespace Damselfly.Core.Services
                         }
 
                         var saveWatch = new Stopwatch("MetaDataSave");
-                        Logging.LogTrace($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
-
+                        Logging.Log($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
                         await db.BulkInsert(db.ImageMetaData, newMetadataEntries);
                         await db.BulkUpdate(db.ImageMetaData, updatedEntries);
+
+                        Logging.Log($"Updating {updatedImages.Count()} image with new sort date.");
                         await db.BulkUpdate(db.Images, updatedImages);
 
                         saveWatch.Stop();
