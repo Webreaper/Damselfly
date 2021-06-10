@@ -868,7 +868,7 @@ namespace Damselfly.Core.Services
                 {
                     var messagePredicate = tagsWillBeWritten ? "" : "not ";
                     // Only write this log entry if we're actually going to write sidecar files.
-                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} sidecar ({sidecar.Filename.Name}). Logs will {messagePredicate}be written to images.");
+                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} sidecar ({sidecar.Filename.Name}). Tags will {messagePredicate}be written to images.");
                     sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
             }
