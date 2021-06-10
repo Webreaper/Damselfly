@@ -755,7 +755,7 @@ namespace Damselfly.Core.Services
                                     // If the last-write time is within 30s of now,
                                     // skip it, as it's possible it might still be
                                     // mid-copy.
-                                    Logging.Log($"Skipping metadata scan of image {img.FileName} - write time is too recent.");
+                                    Logging.Log($"Skipping metadata scan for image {img.FileName} - write time is too recent.");
                                     continue;
                                 }
 
