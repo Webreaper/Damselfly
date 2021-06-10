@@ -735,6 +735,7 @@ namespace Damselfly.Core.Services
                     if (!complete)
                     {
                         var batchWatch = new Stopwatch("MetaDataBatch", 100000);
+                        var writeSideCarTagsToImages = ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords);
 
                         // Aggregate stuff that we'll collect up as we scan
                         var imageKeywords = new ConcurrentDictionary<Image, string[]>();
@@ -765,13 +766,13 @@ namespace Damselfly.Core.Services
                                 imgMetaData.LastUpdated = updateTimeStamp;
 
                                 // Scan for sidecar files
-                                var sideCarTags = GetSideCarKeywords(img, exifKeywords);
+                                var sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
 
                                 if (sideCarTags.Any())
                                 {
                                     // See if we've enabled the option to write any sidecar keywords to IPTC keywords
                                     // if they're missing in the EXIF data of the image.
-                                    if (ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords))
+                                    if (writeSideCarTagsToImages)
                                     {
                                         // Now, submit the tags; note they won't get created immediately, but in batch.
                                         Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
@@ -848,7 +849,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="img"></param>
         /// <param name="keywords"></param>
-        private List<string> GetSideCarKeywords( Image img, string[] keywords )
+        private List<string> GetSideCarKeywords( Image img, string[] keywords, bool tagsWillBeWritten )
         {
             var sideCarTags = new List<string>();
 
@@ -865,7 +866,9 @@ namespace Damselfly.Core.Services
 
                 if (missingKeywords.Any())
                 {
-                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} sidecar ({sidecar.Filename.Name}).");
+                    var messagePredicate = tagsWillBeWritten ? "" : "not ";
+                    // Only write this log entry if we're actually going to write sidecar files.
+                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} sidecar ({sidecar.Filename.Name}). Logs will {messagePredicate}be written to images.");
                     sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
             }
