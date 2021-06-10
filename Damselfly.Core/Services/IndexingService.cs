@@ -123,7 +123,10 @@ namespace Damselfly.Core.Services
 
                         imgMetaData.Description = FilteredDescription( desc );
 
-                        imgMetaData.DateTaken = subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeOriginal);
+                        imgMetaData.DateTaken = subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeDigitized);
+
+                        if( imgMetaData.DateTaken == DateTime.MinValue )
+                           imgMetaData.DateTaken = subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeOriginal);
 
                         imgMetaData.Width = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
                         imgMetaData.Height = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
@@ -426,9 +429,8 @@ namespace Damselfly.Core.Services
         /// threshold and only indexing those images which have changed since that date.
         /// </summary>
         /// <param name="folder"></param>
-        /// <param name="threshold"></param>
         /// <param name="parent"></param>
-        public void IndexFolder(DirectoryInfo folder, Folder parent, bool isFullIndex )
+        public void IndexFolder(DirectoryInfo folder, Folder parent )
         {
             Folder folderToScan = null;
 
@@ -478,7 +480,7 @@ namespace Damselfly.Core.Services
                 }
 
                 // Now scan the images:
-                ScanFolderImages( folderToScan, isFullIndex);
+                ScanFolderImages( folderToScan );
 
                 CreateFileWatcher(folder);
             }
@@ -492,7 +494,7 @@ namespace Damselfly.Core.Services
             // Scan subdirs recursively.
             foreach (var sub in subFolders)
             {
-                IndexFolder(sub, folderToScan, isFullIndex);
+                IndexFolder( sub, folderToScan );
             }
         }
 
@@ -557,7 +559,7 @@ namespace Damselfly.Core.Services
         /// <param name="folderToScan"></param>
         /// <param name="force">Force the folder to be scanned</param>
         /// <returns></returns>
-        private bool ScanFolderImages(Folder folderToScan, bool force = false)
+        private bool ScanFolderImages(Folder folderToScan)
         {
             int folderImageCount = 0;
 
@@ -577,16 +579,13 @@ namespace Damselfly.Core.Services
             // update. 
             int knownDBImages = folderToScan.Images.Count();
 
-            if (knownDBImages != allImageFiles.Count())
+            if (knownDBImages == allImageFiles.Count() && folderToScan.FolderScanDate != null)
             {
-                Logging.LogVerbose($"New or removed images in folder {folderToScan.Name}.");
-                force = true;
-            }
-
-            if (folderToScan.FolderScanDate != null && !force)
-            {
+                // Number of images is the same, and the folder has a scan date, so nothing to do.
                 return true;
             }
+
+            Logging.LogVerbose($"New or removed images in folder {folderToScan.Name}.");
 
             var watch = new Stopwatch("ScanFolderFiles");
 
@@ -700,7 +699,7 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public bool IndexFolder(Folder folder)
         {
-            return ScanFolderImages(folder, true);
+            return ScanFolderImages(folder);
         }
 
         public async Task RunMetaDataScans()
@@ -749,6 +748,17 @@ namespace Damselfly.Core.Services
                         {
                             try
                             {
+                                var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
+
+                                if (lastWriteTime > DateTime.UtcNow.AddSeconds(-30) )
+                                {
+                                    // If the last-write time is within 30s of now,
+                                    // skip it, as it's possible it might still be
+                                    // mid-copy.
+                                    Logging.Log($"Skipping metadata scan of image {img.FileName} - write time is too recent.");
+                                    continue;
+                                }
+
                                 ImageMetaData imgMetaData = img.MetaData;
 
                                 if (imgMetaData == null)
@@ -897,7 +907,7 @@ namespace Damselfly.Core.Services
 
             var watch = new Stopwatch("CompleteIndex", -1);
 
-            IndexFolder(root, null, true);
+            IndexFolder(root, null);
 
             watch.Stop();
 
@@ -908,10 +918,9 @@ namespace Damselfly.Core.Services
         {
             LoadTagCache();
 
-            if (ConfigService.Instance.GetBool(ConfigSettings.FullIndexAtStartup, true))
-            {
-                PerformFullIndex();
-            }
+            // We always perform a full index at startup. This checks the
+            // state of the folders/images, and also creates the filewatchers
+            PerformFullIndex();
 
             while ( true )
             {
@@ -963,7 +972,7 @@ namespace Damselfly.Core.Services
                     {
                         var dir = new DirectoryInfo(folder.Path);
                         // Scan the folder for subdirs
-                        IndexFolder(dir, null, false);
+                        IndexFolder(dir, null);
                     }
                 }
 

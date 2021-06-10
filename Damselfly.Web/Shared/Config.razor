@@ -14,15 +14,6 @@
 
             <div class="damselfly-configsetting">
                 <div class="damselfly-configlabel">
-                    <label>Run full index at startup:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputCheckbox @bind-Value="fullIndexAtStartup" />
-                </div>
-            </div>
-
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
                     <label>Embed Sidecar (XMP/OM1) keywords during indexing:</label>
                 </div>
                 <div class="damselfly-configfield">
@@ -74,13 +65,10 @@
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
     private bool importSidecarKeywords = false;
-    private bool fullIndexAtStartup = true;
 
     private void HandleValidSubmit()
     {
         ConfigService.Instance.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
-        ConfigService.Instance.Set(ConfigSettings.FullIndexAtStartup, fullIndexAtStartup.ToString());
-
         ConfigService.Instance.Set(ConfigSettings.WordpressURL, wpSettings.URL);
         ConfigService.Instance.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
         ConfigService.Instance.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
@@ -97,7 +85,6 @@
         wpSettings.UserName = ConfigService.Instance.Get(ConfigSettings.WordpressUser);
         wpSettings.Password = ConfigService.Instance.Get(ConfigSettings.WordpressPassword);
         importSidecarKeywords = ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords);
-        fullIndexAtStartup = ConfigService.Instance.GetBool(ConfigSettings.FullIndexAtStartup);
         base.OnInitialized();
     }
 
