@@ -38,8 +38,6 @@ namespace Damselfly.Core.Utils
             {
                 var files = folder
                     .GetFiles()
-                    .Where(x => x.IsImageFileType())
-                    .OrderByDescending(x => x.LastWriteTimeUtc)
                     .ToList();
 
                 return files;

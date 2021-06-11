@@ -591,8 +591,12 @@ namespace Damselfly.Core.Services
 
             var watch = new Stopwatch("ScanFolderFiles");
 
-            // Select just JPGs
-            var imageFiles = allImageFiles.Where(x => x.IsImageFileType()).ToList();
+            // Select just imagefiles, and most-recent first
+            var imageFiles = allImageFiles.Where(x => x.IsImageFileType())
+                                          .OrderByDescending(x => x.LastWriteTimeUtc)
+                                          .ThenByDescending( x => x.CreationTimeUtc )
+                                          .ToList();
+
             folderImageCount = imageFiles.Count();
 
             int newImages = 0, updatedImages = 0;
@@ -724,6 +728,7 @@ namespace Damselfly.Core.Services
                     var imagesToScan = db.Images.Where( x => x.MetaData == null ||
                                                         x.LastUpdated > x.MetaData.LastUpdated )
                                             .OrderByDescending( x => x.LastUpdated )
+                                            .ThenByDescending( x => x.FileLastModDate )
                                             .Take(batchSize)
                                             .Include(x => x.Folder)
                                             .Include(x => x.MetaData)
