@@ -233,8 +233,6 @@
     {
         if (firstRender)
         {
-            FileExporter.OnChange += StateHasChanged;
-
             int initialLoadCount, scrollPos;
 
             if (!int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
@@ -244,6 +242,8 @@
                 scrollPos = 0;
 
             searchService.OnChange += SearchQueryChanged;
+            FileExporter.OnChange += StateHasChanged;
+            BasketService.Instance.OnChange += BasketChanged;
 
             await InitJsListenerAsync(scrollPos);
             _ = LoadData(initialLoadCount);
@@ -254,7 +254,7 @@
     {
         searchService.OnChange -= SearchQueryChanged;
         FileExporter.OnChange -= StateHasChanged;
-
+        BasketService.Instance.OnChange -= BasketChanged;
     }
 
     public string NoResultsMessage
@@ -268,6 +268,11 @@
 
             return "No images were found that match the current filter.";
         }
+    }
+
+    protected void BasketChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     protected void SearchQueryChanged()

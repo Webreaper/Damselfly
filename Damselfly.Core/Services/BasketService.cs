@@ -139,9 +139,6 @@ namespace Damselfly.Core.Services
 
                 NotifyStateChanged();
 
-                // TODO: This is a hack - think of a better way to propagate
-                // the cleared selection to the search results.
-                SearchService.Instance.NotifyStateChanged();
                 StatusService.Instance.StatusText = "Basket selection cleared.";
             }
             catch (Exception ex)

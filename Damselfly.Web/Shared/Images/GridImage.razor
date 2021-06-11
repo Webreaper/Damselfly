@@ -46,7 +46,6 @@ else
         {
             BasketService.Instance.SetBasketState(new[] { CurrentImage }, value);
             // Notify the image list that the selection has changed
-            SearchService.Instance.NotifyStateChanged();
             StateHasChanged();
         }
     }
