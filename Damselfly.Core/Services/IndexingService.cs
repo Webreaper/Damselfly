@@ -197,7 +197,8 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                DumpMetaData(image, metadata);
+                if (imgMetaData.DateTaken == DateTime.MinValue)
+                    DumpMetaData(image, metadata);
             }
             catch (Exception ex)
             {
@@ -212,10 +213,10 @@ namespace Damselfly.Core.Services
         private void DumpMetaData(Image img, IReadOnlyList<MetadataExtractor.Directory> metadata)
         {
             Logging.Log($"Metadata dump for: {img.FileName}:");
-            foreach ( var dir in metadata )
+            foreach (var dir in metadata)
             {
                 Logging.Log($" Directory: {dir.Name}:");
-                foreach( var tag in dir.Tags )
+                foreach (var tag in dir.Tags)
                 {
                     Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
                 }
