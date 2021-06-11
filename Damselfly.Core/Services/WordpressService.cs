@@ -5,8 +5,7 @@ using WordPressPCL;
 using WordPressPCL.Models;
 using Damselfly.Core.Models;
 using System.IO;
-using Damselfly.Core.Interfaces;
-using Damselfly.Core.ImageProcessing;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services
 {

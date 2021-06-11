@@ -576,12 +576,13 @@ namespace Damselfly.Core.Services
                 return false;
             }
 
-            // First, see if images have been added or removed since we last indexed.
-            // If so, we disregard the last scan date of the folder and force the
-            // update. 
-            int knownDBImages = folderToScan.Images.Count();
+            // First, see if images have been added or removed since we last indexed,
+            // by comparing the list of known image filenames with what's on disk.
+            // If they're different, we disregard the last scan date of the folder and
+            // force the update. 
+            bool fileListIsEqual = allImageFiles.Select(x => x.Name).ArePermutations(folderToScan.Images.Select(y => y.FileName));
 
-            if( knownDBImages == allImageFiles.Count() && folderToScan.FolderScanDate != null )
+            if( fileListIsEqual && folderToScan.FolderScanDate != null )
             {
                 // Number of images is the same, and the folder has a scan date
                 // which implies it's been scanned previously, so nothing to do.
@@ -593,15 +594,10 @@ namespace Damselfly.Core.Services
             var watch = new Stopwatch("ScanFolderFiles");
 
             // Select just imagefiles, and most-recent first
-            var imageFiles = allImageFiles.Where(x => x.IsImageFileType())
-                                          .OrderByDescending(x => x.LastWriteTimeUtc)
-                                          .ThenByDescending( x => x.CreationTimeUtc )
-                                          .ToList();
-
-            folderImageCount = imageFiles.Count();
+            folderImageCount = allImageFiles.Count();
 
             int newImages = 0, updatedImages = 0;
-            foreach (var file in imageFiles)
+            foreach (var file in allImageFiles)
             {
                 try
                 {
@@ -671,7 +667,7 @@ namespace Damselfly.Core.Services
 
             // Now look for files to remove.
             // TODO - Sanity check that these don't hit the DB
-            var filesToRemove = folderToScan.Images.Select(x => x.FileName).Except(imageFiles.Select(x => x.Name));
+            var filesToRemove = folderToScan.Images.Select(x => x.FileName).Except(allImageFiles.Select(x => x.Name));
             var dbImages = folderToScan.Images.Select(x => x.FileName);
             var imagesToDelete = folderToScan.Images
                                 .Where(x => filesToRemove.Contains(x.FileName))
@@ -833,8 +829,11 @@ namespace Damselfly.Core.Services
                         await db.BulkInsert(db.ImageMetaData, newMetadataEntries);
                         await db.BulkUpdate(db.ImageMetaData, updatedEntries);
 
-                        Logging.Log($"Updating {updatedImages.Count()} image with new sort date.");
-                        await db.BulkUpdate(db.Images, updatedImages);
+                        if (updatedImages.Any())
+                        {
+                            Logging.Log($"Updating {updatedImages.Count()} image with new sort date.");
+                            await db.BulkUpdate(db.Images, updatedImages);
+                        }
 
                         saveWatch.Stop();
 

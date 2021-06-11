@@ -6,6 +6,7 @@ using EFCore.BulkExtensions;
 using Damselfly.Core.Models;
 using Damselfly.Core.Models.Interfaces;
 using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Migrations.Sqlite.Models
 {

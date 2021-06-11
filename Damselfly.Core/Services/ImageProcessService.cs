@@ -4,6 +4,7 @@ using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services
 {
