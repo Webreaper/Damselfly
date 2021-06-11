@@ -581,9 +581,10 @@ namespace Damselfly.Core.Services
             // update. 
             int knownDBImages = folderToScan.Images.Count();
 
-            if (knownDBImages == allImageFiles.Count() && folderToScan.FolderScanDate != null)
+            if( knownDBImages == allImageFiles.Count() && folderToScan.FolderScanDate != null )
             {
-                // Number of images is the same, and the folder has a scan date, so nothing to do.
+                // Number of images is the same, and the folder has a scan date
+                // which implies it's been scanned previously, so nothing to do.
                 return true;
             }
 
@@ -924,6 +925,27 @@ namespace Damselfly.Core.Services
             StatusService.Instance.StatusText = "Full Indexing Complete.";
         }
 
+        /// <summary>
+        /// Marks the FolderScanDate as null, which will cause the 
+        /// indexing service to pick it up and scan it for any changes. 
+        /// </summary>
+        /// <param name="folders"></param>
+        /// <returns></returns>
+        public async Task FlagFoldersForRescan( IEnumerable<Folder> folders )
+        {
+            using var db = new ImageContext();
+
+            var updatedFolders = folders.ToList();
+
+            if (updatedFolders.Count == 1)
+                Logging.Log($"Flagged folder {updatedFolders.First().Path} for re-scan...");
+            else
+                Logging.Log($"Flagged {updatedFolders.Count} folders for re-scan...");
+
+            updatedFolders.ForEach(x => x.FolderScanDate = null);
+            await db.BulkUpdate( db.Folders, updatedFolders);
+        }
+
         private void RunIndexing()
         {
             LoadTagCache();
@@ -952,21 +974,9 @@ namespace Damselfly.Core.Services
 
                 if( folders.Any() )
                 {
-#if false // TODO: See https://github.com/Webreaper/Damselfly/issues/96
-                    // Now, update any folders to set their scan date to null
-                    var pendingFolders = db.Folders
-                                           .Where(f => folders.Contains(f.Path))
-                                           .BatchUpdate( f => new Folder { FolderScanDate = null } );
-#else
                     var pendingFolders = db.Folders.Where(f => folders.Contains(f.Path));
-                    foreach (var f in pendingFolders)
-                    {
-                        f.FolderScanDate = null;
-                        db.Update(f);
-                    }
 
-                    db.SaveChanges("PendingFolders");
-#endif
+                    FlagFoldersForRescan(pendingFolders).GetAwaiter().GetResult();
                 }
 
                 // Now, see if there's any folders that have a null scan date.
@@ -1058,7 +1068,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="file"></param>
         /// <param name="changeType"></param>
-        private static void FlagFolderForRescan( FileInfo file, WatcherChangeTypes changeType )
+        private static void EnqueueFolderChangeForRescan( FileInfo file, WatcherChangeTypes changeType )
         {
             using var db = new ImageContext();
 
@@ -1088,7 +1098,7 @@ namespace Damselfly.Core.Services
 
             var file = new FileInfo(e.FullPath);
 
-            FlagFolderForRescan(file, e.ChangeType);
+            EnqueueFolderChangeForRescan(file, e.ChangeType);
         }
 
         private static void OnRenamed(object source, RenamedEventArgs e)
@@ -1098,8 +1108,8 @@ namespace Damselfly.Core.Services
             var oldfile = new FileInfo(e.OldFullPath);
             var newfile = new FileInfo(e.FullPath);
 
-            FlagFolderForRescan(oldfile, e.ChangeType);
-            FlagFolderForRescan(newfile, e.ChangeType);
+            EnqueueFolderChangeForRescan(oldfile, e.ChangeType);
+            EnqueueFolderChangeForRescan(newfile, e.ChangeType);
         }
     }
 }

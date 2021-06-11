@@ -1,6 +1,7 @@
 ﻿
 @inject ImageService ImgService
 @inject SearchService searchService
+@inject IndexingService indexService
 @inject FolderService folderService
 @inject ContextMenuService contextMenuService
 @implements IDisposable
@@ -41,15 +42,17 @@
     {
         contextMenuService.Open(args,
         new List<ContextMenuItem>() {
-                new ContextMenuItem(){ Text = "Select Folder", Value = 0 }
-     }, (args) =>
-     {
-         contextMenuService.Close();
-         switch ( args.Value )
+                new ContextMenuItem(){ Text = "Select Folder", Value = 0 },
+                new ContextMenuItem(){ Text = "Re-index Folder", Value = 1 }
+         }, (args) =>
          {
-             case 0: SetFilterFolder(folder); break;
-         }
-     });
+             contextMenuService.Close();
+             switch (args.Value)
+             {
+                 case 0: SetFilterFolder(folder); break;
+                 case 1: _ = indexService.FlagFoldersForRescan(new List<Folder> { folder } ); break;
+             }
+         });
     }
 
     private List<FolderListItem> folderItems;
@@ -89,9 +92,9 @@
         StateHasChanged();
     }
 
-    protected async Task ProcessUpdatedFilter( bool forceRefresh )
+    protected async Task ProcessUpdatedFilter(bool forceRefresh)
     {
-        folderItems = await folderService.GetFilteredFolders(filterTerm, forceRefresh );
+        folderItems = await folderService.GetFilteredFolders(filterTerm, forceRefresh);
 
         await InvokeAsync(StateHasChanged);
     }
@@ -102,7 +105,7 @@
         {
             FolderService.Instance.OnChange += OnFoldersChanged;
             // Kick off the data load
-            await ProcessUpdatedFilter( false );
+            await ProcessUpdatedFilter(false);
         }
     }
 
@@ -114,6 +117,6 @@
     private void OnFoldersChanged()
     {
         // Be careful of threading - we may get called from anywhere
-        _ = ProcessUpdatedFilter( true );
+        _ = ProcessUpdatedFilter(true);
     }
-    }
+}
