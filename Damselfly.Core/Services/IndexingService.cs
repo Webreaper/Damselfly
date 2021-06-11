@@ -103,8 +103,6 @@ namespace Damselfly.Core.Services
 
                 watch.Stop();
 
-                DumpMetaData(metadata);
-
                 if (metadata != null)
                 {
                     var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
@@ -198,6 +196,8 @@ namespace Damselfly.Core.Services
                         }
                     }
                 }
+
+                DumpMetaData(image, metadata);
             }
             catch (Exception ex)
             {
@@ -209,14 +209,15 @@ namespace Damselfly.Core.Services
         /// Dump metadata out in tracemode.
         /// </summary>
         /// <param name="metadata"></param>
-        private void DumpMetaData(IReadOnlyList<MetadataExtractor.Directory> metadata)
+        private void DumpMetaData(Image img, IReadOnlyList<MetadataExtractor.Directory> metadata)
         {
-            foreach( var dir in metadata )
+            Logging.Log($"Metadata dump for: {img.FileName}:");
+            foreach ( var dir in metadata )
             {
-                Logging.LogTrace($"Directory: {dir.Name}:");
+                Logging.Log($" Directory: {dir.Name}:");
                 foreach( var tag in dir.Tags )
                 {
-                    Logging.LogTrace($" Tag: {tag.Name} = {tag.Description}");
+                    Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
                 }
             }
         }
@@ -750,7 +751,7 @@ namespace Damselfly.Core.Services
                             {
                                 var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
 
-                                if (lastWriteTime > DateTime.UtcNow.AddSeconds(-30) )
+                                if (lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
                                 {
                                     // If the last-write time is within 30s of now,
                                     // skip it, as it's possible it might still be
@@ -806,10 +807,13 @@ namespace Damselfly.Core.Services
                                     // if one was found in the metadata
                                     img.SortDate = imgMetaData.DateTaken;
                                     img.LastUpdated = updateTimeStamp;
-                                    updatedImages.Add( img );
+                                    updatedImages.Add(img);
                                 }
                                 else
-                                    Logging.Log($"Not updating image {img.FileName} with DateTaken as no valid value.");
+                                {
+                                    if( imgMetaData.DateTaken == DateTime.MinValue )
+                                        Logging.Log($"Not updating image {img.FileName} with DateTaken as no valid value.");
+                                }
                             }
                             catch (Exception ex)
                             {
