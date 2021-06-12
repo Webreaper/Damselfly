@@ -2,6 +2,10 @@
 @namespace Damselfly.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
+@{
+    string themeCSSFile = "green.css";
+}
+
 <!-- TODO: Clean up these dependencies once we've decided what we actually need. -->
 <!DOCTYPE html>
 <html lang="en">
@@ -17,7 +21,7 @@
     <link rel="stylesheet" href="Cropper/cropper.css" />
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
     <link href="css/DarkDateRangePicker.css" rel="stylesheet" />
-    <link href="css/green.css" rel="stylesheet" />
+    <link href="css/@themeCSSFile" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
@@ -25,11 +29,9 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>
-        window.InfiniteScroll =
+    <script>window.InfiniteScroll =
         {
-            Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos)
-            {
+            Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos) {
                 var scrollArea = document.getElementById(scrollAreaID);
                 scrollArea.scrollTop = initialScrollPos;
 
@@ -48,14 +50,12 @@
 
                 var markerVisibleState = null;
 
-                scrollArea.addEventListener('scroll', function ()
-                {
+                scrollArea.addEventListener('scroll', function () {
                     DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
 
                     var visible = markerIsVisible();
 
-                    if (markerVisibleState != visible )
-                    {
+                    if (markerVisibleState != visible) {
                         markerVisibleState = visible;
                         if (visible)
                             DotNetRef.invokeMethodAsync("LoadMoreData");
@@ -65,7 +65,7 @@
         }
 
         window.setSelection = (element, start, end) => {
-            return element.setSelectionRange( start, end );
+            return element.setSelectionRange(start, end);
         }
 
         function writeFileLocally(sourceUrl, localFilename) {
@@ -144,7 +144,7 @@
                 return { x: x, y: y };
             }
         }
-        /* END EXTERNAL SOURCE */
+            /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
 
     <script src="_framework/blazor.server.js"></script>
