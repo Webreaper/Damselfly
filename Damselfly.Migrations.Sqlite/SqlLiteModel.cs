@@ -18,6 +18,12 @@ namespace Damselfly.Migrations.Sqlite.Models
     {
         private string DatabasePath { get; set; }
 
+        public SqlLiteModel()
+        {
+            Console.WriteLine("Constructing Sqlite Model for EFCore Migrations...");
+            BaseDBModel.DatabaseSpecialisation = this;
+        }
+
         public SqlLiteModel( string dbPath )
         {
             DatabasePath = dbPath;
