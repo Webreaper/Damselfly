@@ -4,7 +4,7 @@ html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     padding: 0;
-    background: #101010;
+    background: var(--main-background);
     color: #aaffaa;
 }
 
@@ -49,14 +49,12 @@ div::-webkit-scrollbar-thumb {
     height: auto;
 }
 
-
-
 .status {
     width: 80%;
     text-align: left;
     font-size: 14px;
     vertical-align: middle;
-    color: #62ff62;
+    color: var( --statusbar-text );
 }
 
 .sidebar {
@@ -78,13 +76,13 @@ div::-webkit-scrollbar-thumb {
     border-width: 0;
     padding: 2px;
     margin: 0;
-    background-image: linear-gradient(180deg, rgb(50, 103, 64) 0%, rgb(40, 63, 44) 70%);
+    background-image: linear-gradient(180deg, var(--statusbar-gradstart), var(--statusbar-gradend) );
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1ba96e;
-    border-color: #18ac61;
+    background-color: var( --button-colour);
+    border-color: var( --button-border );
     height: 30px;
     border-radius: 4px;
 }
@@ -187,7 +185,7 @@ app {
 
 .folder-entry {
     animation: fadeIn ease 0.5s;
-    color: #ddffdd;
+    color: var( --folder-entry-text);
     padding-left: 5px;
     font-size: 0.8rem;
     cursor: pointer;
@@ -198,8 +196,8 @@ app {
 }
 
 .folder-entry-selected {
-    color: #229922;
-    background-color: #ddffdd;
+    color: var( --folder-entry-text-selected );
+    background-color: var( --folder-entry-text-selected-bg );
 }
 
 .folder-search {
@@ -265,29 +263,30 @@ app {
 .damselfly-checkbox {
     width: 1.4em;
     height: 1.4em;
-    background-color: rgba( 0, 0, 0, 0.2);
+    background-color: var( --image-checkbox-bg );
     border-radius: 50%;
     vertical-align: middle;
-    border: 2px solid #aaffaa;
+    border: 2px solid var(--image-checkbox );
     -webkit-appearance: none;
     outline: none;
     cursor: pointer;
 }
 
 .damselfly-checkbox:hover {
-    border: 2px solid #aaffaa;
+    border: 2px solid var( --image-checkbox-hover-border);
     background-color: darkgreen;
 }
 
 .damselfly-checkbox:checked {
-    background-color: #aaffaa;
-    border: 2px solid #779977;
+    background-color: var( --image-checkbox-checked-bg );
+    border: 2px solid var( --image-checkbox-checked-border );
     content: '\2713';
 }
 
 .damselfly-checkbox:checked:hover {
+    background-color: var( --image-checkbox-checked-hover-bg );
+    border: 2px solid var( --image-checkbox-checked-hover-border );
     background-color: green;
-    border: 2px solid #779977;
 }
 
 .grid-text {
@@ -312,12 +311,12 @@ app {
 
 
 .grid-image-unselected {
-    background-color: rgba(110,175,110,0.35);
+    background-color: var(--grid-image-bg);
 }
 
 .grid-image-selected {
-    background-color: rgba(230,255,230,0.75);
-    box-shadow: 1px 1px 0 rgba(225, 255, 225, 0.7) inset;
+    background-color: var(--grid-image-selected-bg);
+    box-shadow: 1px 1px 0 var( --grid-image-selected-box) inset;
 }
 
 .centered-and-cropped {
@@ -380,20 +379,20 @@ app {
 f
 
 .tagEditor {
-    border-color: darkgreen;
-    background: white;
+    border-color: var( --tag-editor-border );
+    background: var( --tag-editor-bg );
     font-size: 13px;
     width: 170px;
 }
 
 .tagEditor:disabled {
-    background: rgb( 200, 200, 200 );
+    background: var( --tag-editor-disabled-bg );
 }
 
 .tagEditor-multiline {
-    border-color: darkgreen;
-    color: #aaffaa;
-    background: black;
+    border-color: var( --tag-editor-border );
+    color: var( --tag-editor-text );
+    background: var( --tag-editor-bg );
     font-size: 12px;
     width: 200px;
     height: 60px;
@@ -514,7 +513,7 @@ f
     align-items: center;
     min-height: 30px;
     padding: 5px;
-    background-image: linear-gradient(180deg, rgb(50, 103, 64) 0%, rgb(40, 63, 44) 70%);
+    background-image: linear-gradient(180deg, var( --statusbar-gradstart ), var( --statusbar-gradend ));
 }
 
 .damselfly-statusitem {
@@ -612,7 +611,7 @@ f
     flex: 1;
     display: flex;
     flex-flow: column;
-    align-items: left;
+    align-items: flex-start;
 }
 
 .damselfly-exportsettings div {
@@ -730,15 +729,15 @@ f
 }
 
 .toolwindow {
-    color: #ddeddd;
-    background-color: rgba(100, 140, 100, 0.3);
-    box-shadow: 1px 1px 0 rgba(225, 255, 225, 0.7) inset;
+    color: var( --tool-window-text );
+    background-color: var( --tool-window-bg );
+    box-shadow: 1px 1px 0 var( --tool-window-shadow ) inset;
 }
 
 .toolwindow-titlebar {
     display: flex;
-    background-color: rgba(160, 210, 160, 0.3);
-    color: #92CF92;
+    background-color: var( --tool-window-title-bg );
+    color: var( --tool-window-title );
     padding: 3px;
 }
 
@@ -863,8 +862,8 @@ f
     margin-top: 5px;
     margin-left: 3px;
     max-height: 28px;
-    border-top: 1px solid rgba(130,155,130,0.75);
-    background-image: linear-gradient(90deg, rgb(50, 103, 64) 0%, rgb(10, 10, 10) 90%);
+    border-top: 1px solid var( --statusbar-topborder );
+    background-image: linear-gradient(90deg, var( --statusbar-gradstart ) 0%, var( --statusbar-gradend ) 90%);
     display: flex;
 }
 

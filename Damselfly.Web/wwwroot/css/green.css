@@ -1,0 +1,33 @@
+﻿:root {
+    --main-background: #101010;
+    --main-color: blue;
+    --statusbar-text: #62ff62;
+    --statusbar-gradstart: rgb(50, 103, 64) 0%;
+    --statusbar-gradend: rgb(40, 63, 44) 70%;
+    --statusbar-topborder: rgba(130,155,130,0.75);
+    --button-colour: #1ba96e;
+    --button-border: #18ac61;
+    --folder-entry-text: #ddffdd;
+    --folder-entry-text-selected: #ddffdd;
+    --folder-entry-text-selected-bg: #ddffdd;
+    --image-checkbox: #aaffaa;
+    --image-checkbox-bg: rgba( 0, 0, 0, 0.2);
+    --image-checkbox-hover-border: #aaffaa;
+    --image-checkbox-hover-bg: darkgreen;
+    --image-checkbox-checked-border: #779977;
+    --image-checkbox-checked-bg: #aaffaa;
+    --image-checkbox-checked-hover-border: #779977;
+    --image-checkbox-checked-hover-bg: green;
+    --grid-image-bg: rgba(110,175,110,0.35);
+    --grid-image-selected-bg: rgba(230,255,230,0.75);
+    --grid-image-selected-box: rgba(225, 255, 225, 0.7);
+    --tag-editor-disabled-bg: rgb( 200, 200, 200 );
+    --tag-editor-text: #aaffaa;
+    --tag-editor-border: darkgreen;
+    --tag-editor-bg: darkgreen;
+    --tool-window-text: #ddeddd;
+    --tool-window-bg: rgba(100, 140, 100, 0.3);
+    --tool-window-shadow: rgba(225, 255, 225, 0.7);
+    --tool-window-title: #92CF92;
+    --tool-window-title-bg: rgba(160, 210, 160, 0.3);
+}

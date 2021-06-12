@@ -9,7 +9,7 @@
     <div class="damselfly-searchfilter">
         <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnKeyPressed="@KeyChanged" OnValueChanged="@DoSearch" TextValue="@SearchText" />
         <input id="tags" title="Search tags only (ignore filename)" type="checkbox" @bind="@searchService.TagsOnly" />
-        <label for="tags"><i class="fa fa-tags" /></label>
+        <label for="tags" title="Search keyword tags only, not filenames"><i class="fa fa-tags" /></label>
     </div>
     <div class="damselfly-searchfilter">
         <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate" />
