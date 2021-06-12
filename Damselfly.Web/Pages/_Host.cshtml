@@ -1,9 +1,10 @@
 ﻿@page "/"
 @namespace Damselfly.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Damselfly.Core.Services;
 
 @{
-    string themeCSSFile = "green.css";
+    string themeCSSFile = ConfigService.Instance.Get("Theme", "Green").ToLower() + ".css"; 
 }
 
 <!-- TODO: Clean up these dependencies once we've decided what we actually need. -->

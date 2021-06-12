@@ -21,6 +21,19 @@
                 </div>
             </div>
 
+            <div class="damselfly-configsetting">
+                <label for="exportType">Export Type: </label>
+                <select name="exportType" value="@SelectedTheme">
+                    @foreach (var choice in new List<string> { "Green", "Grey" } )
+                    {
+                        <option value="@choice">
+                            @choice.ToString()
+                        </option>
+                    }
+                </select>
+            </div>
+
+
             <h2>Wordpress Upload</h2>
 
             <div class="damselfly-configsetting">
@@ -65,6 +78,10 @@
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
     private bool importSidecarKeywords = false;
+    private string SelectedTheme {
+        get { return ConfigService.Instance.Get(ConfigSettings.Theme); }
+        set { ConfigService.Instance.Set(ConfigSettings.Theme, value ); }
+    }
 
     private void HandleValidSubmit()
     {

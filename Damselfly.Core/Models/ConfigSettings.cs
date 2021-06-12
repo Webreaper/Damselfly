@@ -4,6 +4,7 @@ namespace Damselfly.Core.Models
     public class ConfigSettings
     {
         public const string ThumbSize = "ThumbSize";
+        public const string Theme = "Theme";
         public const string ZoomLevel = "ZoomLevel";
         public const string WordpressURL = "WordpressURL";
         public const string WordpressUser = "WordpressUser";
