@@ -30,7 +30,7 @@ namespace Damselfly.Core.Models.DBAbstractions
         public static bool ReadOnly { get; private set; }
 
         // Instance of our DB type that implements the Database interface
-        public static IDataBase DatabaseSpecialisation { get; private set; } //= new SqlLiteModel("dummy"); // TODO: Make this work with migrations
+        public static IDataBase DatabaseSpecialisation { get; set; } 
 
         public void AddSpecialisationIndexes( ModelBuilder modelBuilder )
         {
@@ -152,6 +152,9 @@ namespace Damselfly.Core.Models.DBAbstractions
             
             if(lazyLoad )
                options.UseLazyLoadingProxies();
+
+            //var obj = Activator.CreateInstance("Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres.Models.PostgresModel");
+            //var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
 
             DatabaseSpecialisation.Configure(options);
         }
