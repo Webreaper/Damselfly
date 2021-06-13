@@ -163,6 +163,7 @@ namespace Damselfly.Web
                 var thumbs = new ThumbnailService();
                 var indexing = new IndexingService();
                 var downloads = new DownloadService();
+                var themes = new ThemeService();
                 var basket = new BasketService();
                 var folder = new FolderService();
                 var search = new SearchService();

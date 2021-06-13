@@ -53,6 +53,7 @@ namespace Damselfly.Web
             services.AddSingleton(FolderService.Instance);
             services.AddSingleton(TaskService.Instance);
             services.AddSingleton(DownloadService.Instance);
+            services.AddSingleton(ThemeService.Instance);
             services.AddSingleton(IndexingService.Instance);
             services.AddSingleton(BasketService.Instance);
             services.AddSingleton(MetaDataService.Instance);
@@ -112,6 +113,7 @@ namespace Damselfly.Web
             string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
 
             DownloadService.Instance.SetDownloadPath(contentRootPath);
+            ThemeService.Instance.SetContentPath(contentRootPath);
 
             // TODO: Fix this, or not if Skia doesn't need it
             ImageProcessService.Instance.SetContentPath( contentRootPath );

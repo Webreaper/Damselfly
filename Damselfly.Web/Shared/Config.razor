@@ -1,5 +1,6 @@
 ﻿@using Damselfly.Core.Services;
 @using Damselfly.Web.Shared;
+@using Humanizer;
 
 @inject TaskService taskScheduler
 
@@ -23,14 +24,14 @@
 
             <div class="damselfly-configsetting">
                 <label for="exportType">Export Type: </label>
-                <select name="exportType" value="@SelectedTheme">
-                    @foreach (var choice in new List<string> { "Green", "Grey" } )
+                <InputSelect @bind-Value="selectedTheme">
+                    @foreach (var choice in ThemeService.Instance.Themes )
                     {
                         <option value="@choice">
-                            @choice.ToString()
+                            @choice.Transform(To.SentenceCase)
                         </option>
                     }
-                </select>
+                </InputSelect>
             </div>
 
 
@@ -78,10 +79,7 @@
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
     private bool importSidecarKeywords = false;
-    private string SelectedTheme {
-        get { return ConfigService.Instance.Get(ConfigSettings.Theme); }
-        set { ConfigService.Instance.Set(ConfigSettings.Theme, value ); }
-    }
+    private string selectedTheme;
 
     private void HandleValidSubmit()
     {
@@ -89,6 +87,7 @@
         ConfigService.Instance.Set(ConfigSettings.WordpressURL, wpSettings.URL);
         ConfigService.Instance.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
         ConfigService.Instance.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
+        ThemeService.Instance.CurrentTheme = selectedTheme;
 
         // WP Settings have changed, so reset the client and token
         WordpressService.Instance.ResetClient();
@@ -102,6 +101,7 @@
         wpSettings.UserName = ConfigService.Instance.Get(ConfigSettings.WordpressUser);
         wpSettings.Password = ConfigService.Instance.Get(ConfigSettings.WordpressPassword);
         importSidecarKeywords = ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords);
+        selectedTheme = ThemeService.Instance.CurrentTheme;
         base.OnInitialized();
     }
 
