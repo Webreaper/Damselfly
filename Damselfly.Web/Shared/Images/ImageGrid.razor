@@ -245,7 +245,6 @@
             FileExporter.OnChange += StateHasChanged;
             BasketService.Instance.OnChange += BasketChanged;
 
-            await InitJsListenerAsync(scrollPos);
             _ = LoadData(initialLoadCount);
         }
     }
@@ -291,6 +290,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
+        Logging.Log("Saving scroll position");
         ConfigService.Instance.Set("ImageScrollTop", scrollTop.ToString());
         ConfigService.Instance.Set("LoadedImages", gridImages.Count.ToString());
     }
@@ -309,7 +309,7 @@
         await LoadData(imagesPerPage);
     }
 
-    public async Task LoadData(int imagesToLoad)
+    public async Task LoadData(int imagesToLoad, int scrollPosAfterLoad = -1)
     {
         if (!IsLoading)
         {
@@ -327,6 +327,9 @@
                 endOfImages = true;
 
             IsLoading = false;
+
+            if (scrollPosAfterLoad != -1)
+                await InitJsListenerAsync(scrollPosAfterLoad);
 
             _ = InvokeAsync( StateHasChanged );
         }
