@@ -40,7 +40,7 @@ namespace Damselfly.Core.Services
         public string CurrentTheme {
             get
             {
-                return ConfigService.Instance.Get(ConfigSettings.Theme, "Green");
+                return ConfigService.Instance.Get(ConfigSettings.Theme, "green");
             }
             set
             {
