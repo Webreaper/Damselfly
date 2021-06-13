@@ -24,32 +24,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="wwwroot\css\BlazorVirtualScrolling.css" />
-    <Content Remove="wwwroot\js\BlazorVirtualScrolling.js" />
-    <Content Remove="Properties\launchSettings.json" />
-    <Content Remove="Pages\UploadPage.razor" />
-    <Content Remove="wwwroot\desktop\damselfly-macos.zip" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Shared\Images\" />
     <Folder Include="wwwroot\downloads\" />
-    <Folder Include="config\db\" />
-    <Folder Include="config\logs\" />
+    <Folder Include="wwwroot\css\" />
+    <Folder Include="wwwroot\css\themes\" />
     <Folder Include="Controllers\" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="damselfly.db" />
-    <None Remove="Damselfly-20191118.log" />
-    <None Remove="Damselfly-20191119.log" />
-    <None Remove="Damselfly-20191121.log" />
-    <None Remove="Damselfly-20191204.log" />
-    <None Remove="Damselfly-20191210.log" />
-    <None Remove="Damselfly-20191129.log" />
-    <None Remove="Damselfly-20191218.log" />
-    <None Remove="Damselfly-20191219.log" />
-    <None Remove="config\db\damselfly.db.zip" />
-    <None Remove="config\db\damselfly.db-wal" />
-    <None Remove="config\db\damselfly.db-shm" />
+    <None Remove="config\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Shared\FolderList.razor">
