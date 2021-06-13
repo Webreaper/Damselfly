@@ -11,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using Accord.Imaging.Filters;
 
 namespace Damselfly.Web.Controllers
 {
@@ -23,6 +24,8 @@ namespace Damselfly.Web.Controllers
         [HttpGet("/rawimage/{imageId}")]
         public async Task<IActionResult> Image(string imageId, CancellationToken cancel)
         {
+            Stopwatch watch = new Stopwatch("ControllerGetImage");
+
             if (int.TryParse(imageId, out var id))
             {
                 try
@@ -31,10 +34,8 @@ namespace Damselfly.Web.Controllers
 
                     if (image != null)
                     {
-                        var stream = new FileStream(image.FullPath, FileMode.Open);
-                        var result = new FileStreamResult(stream, "image/jpeg");
-                        result.FileDownloadName = image.FileName;
-                        return result;
+                        var fs = System.IO.File.OpenRead(image.FullPath);
+                        return File(fs, "image/jpeg");
                     }
                 }
                 catch( Exception ex )
@@ -42,6 +43,8 @@ namespace Damselfly.Web.Controllers
                     Logging.LogError($"No thumb available for /rawmage/{imageId}: ", ex.Message);
                 }
             }
+
+            watch.Stop();
 
             return null;
         }
@@ -116,13 +119,10 @@ namespace Damselfly.Web.Controllers
                             }
                         }
 
-                        if (gotThumb)
+                        if( gotThumb )
                         {
-                            var stream = new FileStream(imagePath, FileMode.Open);
-                            result = new FileStreamResult(stream, "image/jpeg")
-                            {
-                                FileDownloadName = imagePath
-                            };
+                            var fs = System.IO.File.OpenRead(imagePath);
+                            result = File(fs, "image/jpeg");
                         }
                    }
                 }
