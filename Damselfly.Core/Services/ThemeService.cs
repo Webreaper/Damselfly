@@ -33,8 +33,7 @@ namespace Damselfly.Core.Services
         /// <param name="contentRootPath"></param>
         public void SetContentPath(string contentRootPath)
         {
-            string themesSubFolder = Path.Combine("css", "themes");
-            themesFolder = new DirectoryInfo(Path.Combine(contentRootPath, themesSubFolder));
+            themesFolder = new DirectoryInfo(Path.Combine(contentRootPath, "themes"));
         }
 
         public string CurrentTheme {
