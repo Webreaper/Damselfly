@@ -27,11 +27,14 @@
     <Folder Include="Shared\Images\" />
     <Folder Include="wwwroot\downloads\" />
     <Folder Include="wwwroot\css\" />
-    <Folder Include="wwwroot\css\themes\" />
     <Folder Include="Controllers\" />
+    <Folder Include="wwwroot\themes\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="config\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\themes\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Shared\FolderList.razor">
