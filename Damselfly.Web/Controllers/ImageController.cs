@@ -31,7 +31,7 @@ namespace Damselfly.Web.Controllers
             {
                 try
                 {
-                    var image = await ImageService.GetImage(id, false);
+                    var image = await ImageService.GetImage(id, false, false);
 
                     if (image != null)
                     {
@@ -67,10 +67,7 @@ namespace Damselfly.Web.Controllers
                     {
                         Logging.Log($"Cache miss for image thumbnail: {id}");
 
-                        image = await db.Images.Where(x => x.ImageId.Equals(id))
-                                                    .Include(x => x.Folder)
-                                                    .Include(x => x.MetaData)
-                                                    .FirstOrDefaultAsync();
+                        image = await ImageService.GetImage(id, false, false);
                     }
 
                     if (image != null)

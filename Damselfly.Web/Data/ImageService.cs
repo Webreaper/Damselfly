@@ -89,7 +89,7 @@ namespace Damselfly.Web.Data
         /// </summary>
         /// <param name="imageId"></param>
         /// <returns></returns>
-        public static Task<Image> GetImage(int imageId, bool includeMetadata = true, bool includeTags = true )
+        public static async Task<Image> GetImage(int imageId, bool includeMetadata = true, bool includeTags = true )
         {
             using var db = new ImageContext();
             var watch = new Stopwatch("GetImage");
@@ -108,7 +108,7 @@ namespace Damselfly.Web.Data
                 }
 
                 // Now execute the actual query
-                image = query.FirstOrDefault();
+                image = await query.FirstOrDefaultAsync();
             }
 
             catch (Exception ex)
@@ -123,7 +123,7 @@ namespace Damselfly.Web.Data
             if( includeTags )
                 db.LoadTags(image);
 
-            return Task.FromResult(image);
+            return image;
         }
 
         public static List<List<Image>> GetImagesWithDuplicates()
