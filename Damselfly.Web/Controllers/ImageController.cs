@@ -25,6 +25,7 @@ namespace Damselfly.Web.Controllers
         public async Task<IActionResult> Image(string imageId, CancellationToken cancel)
         {
             Stopwatch watch = new Stopwatch("ControllerGetImage");
+            IActionResult result = Redirect("/no-image.png");
 
             if (int.TryParse(imageId, out var id))
             {
@@ -35,7 +36,7 @@ namespace Damselfly.Web.Controllers
                     if (image != null)
                     {
                         var fs = System.IO.File.OpenRead(image.FullPath);
-                        return File(fs, "image/jpeg");
+                        result = File(fs, "image/jpeg");
                     }
                 }
                 catch( Exception ex )
@@ -46,7 +47,7 @@ namespace Damselfly.Web.Controllers
 
             watch.Stop();
 
-            return null;
+            return result;
         }
 
         [HttpGet("/thumb/{thumbSize}/{imageId}")]
