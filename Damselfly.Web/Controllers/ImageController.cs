@@ -35,8 +35,7 @@ namespace Damselfly.Web.Controllers
 
                     if (image != null)
                     {
-                        var fs = System.IO.File.OpenRead(image.FullPath);
-                        result = File(fs, "image/jpeg");
+                        result = PhysicalFile(image.FullPath, "image/jpeg");
                     }
                 }
                 catch( Exception ex )
@@ -119,8 +118,7 @@ namespace Damselfly.Web.Controllers
 
                         if( gotThumb )
                         {
-                            var fs = System.IO.File.OpenRead(imagePath);
-                            result = File(fs, "image/jpeg");
+                            result = PhysicalFile(imagePath, "image/jpeg");
                         }
                    }
                 }
