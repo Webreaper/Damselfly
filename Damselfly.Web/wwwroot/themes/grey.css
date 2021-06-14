@@ -1,6 +1,7 @@
 ﻿:root {
-    --main-background: #101010;    
-    --statusbar-text: #888888;
+    --main-background: #202020;
+    --body-text: #dedede;
+    --statusbar-text: #f8f8f8;
     --statusbar-gradstart: rgb(100, 100, 100) 0%;
     --statusbar-gradend: rgb(30, 30, 30) 70%;
     --statusbar-topborder: rgba(130,130,130,0.75);
@@ -14,7 +15,7 @@
     --image-checkbox-hover-border: #aaaaaa;
     --image-checkbox-hover-bg: darkgrey;
     --image-checkbox-checked-border: #777777;
-    --image-checkbox-checked-bg: #aaffaa;
+    --image-checkbox-checked-bg: #aaaaaa;
     --image-checkbox-checked-hover-border: #777777;
     --image-checkbox-checked-hover-bg: grey;
     --grid-image-bg: rgba(150,150,150,0.35);
@@ -26,7 +27,7 @@
     --tag-editor-bg: darkgrey;
     --tool-window-text: #dddddd;
     --tool-window-bg: rgba(100, 100, 100, 0.3);
-    --tool-window-shadow: rgba(225, 255, 225, 0.7);
+    --tool-window-shadow: rgba(225, 225, 225, 0.7);
     --tool-window-title: #CFCFCF;
     --tool-window-title-bg: rgba(160, 160, 160, 0.3);
 }
