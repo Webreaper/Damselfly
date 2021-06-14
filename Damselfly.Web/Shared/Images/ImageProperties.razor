@@ -135,7 +135,7 @@
     {
         try
         {
-            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.RawImageUrl);
+            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.DownloadImageUrl);
         }
         catch (Exception ex)
         {

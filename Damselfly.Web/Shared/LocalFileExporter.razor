@@ -36,7 +36,7 @@
 
             foreach (var image in images)
             {
-                var imageUrl = new Uri(baseUrl, image.RawImageUrl);
+                var imageUrl = new Uri(baseUrl, image.DownloadImageUrl);
 
                 // TODO: Save XMP and On1 sidecars with the images here.
 

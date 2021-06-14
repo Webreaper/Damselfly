@@ -147,6 +147,8 @@ namespace Damselfly.Core.Models
 
         [NotMapped]
         public string RawImageUrl {  get { return $"/rawimage/{ImageId}"; } }
+        [NotMapped]
+        public string DownloadImageUrl { get { return $"/dlimage/{ImageId}"; } }
 
         public void FlagForMetadataUpdate() { this.LastUpdated = DateTime.UtcNow; }
     }

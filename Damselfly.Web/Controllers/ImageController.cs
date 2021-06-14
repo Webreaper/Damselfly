@@ -20,9 +20,15 @@ namespace Damselfly.Web.Controllers
     [ApiController]
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller methods cannot be static")]
     public class ImageController : Controller
-    {   
-        [HttpGet("/rawimage/{imageId}")]
+    {
+        [HttpGet("/dlimage/{imageId}")]
         public async Task<IActionResult> Image(string imageId, CancellationToken cancel)
+        {
+            return await Image(imageId, cancel, true);
+        }
+
+        [HttpGet("/rawimage/{imageId}")]
+        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, bool isDownload = false)
         {
             Stopwatch watch = new Stopwatch("ControllerGetImage");
             IActionResult result = Redirect("/no-image.png");
@@ -35,7 +41,12 @@ namespace Damselfly.Web.Controllers
 
                     if (image != null)
                     {
-                        result = PhysicalFile(image.FullPath, "image/jpeg");
+                        string downloadFilename = null;
+
+                        if (isDownload)
+                            downloadFilename = image.FileName;
+
+                        result = PhysicalFile(image.FullPath, "image/jpeg", downloadFilename);
                     }
                 }
                 catch( Exception ex )
