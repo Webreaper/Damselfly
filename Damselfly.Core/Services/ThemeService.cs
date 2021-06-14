@@ -20,6 +20,7 @@ namespace Damselfly.Core.Services
     {
         public static ThemeService Instance { get; private set; }
         private static DirectoryInfo themesFolder;
+        private long cacheBuster = 1;
 
         public ThemeService()
         {
@@ -44,12 +45,13 @@ namespace Damselfly.Core.Services
             set
             {
                 ConfigService.Instance.Set(ConfigSettings.Theme, value);
+                cacheBuster++;
             }
         }
 
         public string ThemeCSS
         {
-            get { return CurrentTheme + ".css"; }
+            get { return $"{CurrentTheme}.css?j={cacheBuster}"; }
         }
 
         public List<string> Themes

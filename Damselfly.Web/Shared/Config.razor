@@ -2,6 +2,7 @@
 @using Damselfly.Web.Shared;
 @using Humanizer;
 
+@inject IJSRuntime JsRuntime
 @inject TaskService taskScheduler
 
 <div class="damselfly-config">
@@ -25,7 +26,7 @@
             <div class="damselfly-configsetting">
                 <label for="exportType">Export Type: </label>
                 <InputSelect @bind-Value="selectedTheme">
-                    @foreach (var choice in ThemeService.Instance.Themes )
+                    @foreach (var choice in ThemeService.Instance.Themes)
                     {
                         <option value="@choice">
                             @choice.Transform(To.SentenceCase)
@@ -68,7 +69,7 @@
     </div>
 
     <div class="damselfly-configsection">
-        <hr/>
+        <hr />
         <h2>Task Statuses:</h2>
     </div>
     <div class="damselfly-configsection">
@@ -87,10 +88,15 @@
         ConfigService.Instance.Set(ConfigSettings.WordpressURL, wpSettings.URL);
         ConfigService.Instance.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
         ConfigService.Instance.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
-        ThemeService.Instance.CurrentTheme = selectedTheme;
 
         // WP Settings have changed, so reset the client and token
         WordpressService.Instance.ResetClient();
+
+        if (ThemeService.Instance.CurrentTheme != selectedTheme)
+        {
+            ThemeService.Instance.CurrentTheme = selectedTheme;
+            _ = JsRuntime.InvokeVoidAsync("window.location.reload");
+        }
 
         StatusService.Instance.StatusText = "Settings saved.";
     }

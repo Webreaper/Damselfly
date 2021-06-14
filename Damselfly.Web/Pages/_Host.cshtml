@@ -3,10 +3,6 @@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using Damselfly.Core.Services;
 
-@{
-    string themeCSSFile = ThemeService.Instance.ThemeCSS;
-}
-
 <!-- TODO: Clean up these dependencies once we've decided what we actually need. -->
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +18,7 @@
     <link rel="stylesheet" href="Cropper/cropper.css" />
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
     <link href="css/DarkDateRangePicker.css" rel="stylesheet" />
-    <link href="themes/@themeCSSFile" rel="stylesheet" />
+    <link href="themes/@ThemeService.Instance.ThemeCSS" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
@@ -145,7 +141,7 @@
                 return { x: x, y: y };
             }
         }
-                        /* END EXTERNAL SOURCE */
+                                /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
 
     <script src="_framework/blazor.server.js"></script>
@@ -153,6 +149,5 @@
     <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
     <script src="Cropper/cropper.min.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
-    <script src="_content/Microsoft.AspNetCore.Components.Web.Extensions/headManager.js"></script>
 </body>
 </html>
