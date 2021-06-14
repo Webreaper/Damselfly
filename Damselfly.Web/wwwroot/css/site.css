@@ -812,36 +812,36 @@ f
     width: 20px;
     margin:20px;
   }
-  
-  .chevron:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 50%;
-    width: 100%;
-    background: linear-gradient(90deg, rgb(50, 103, 64) 0%, rgb(40, 63, 44) 70%);
-    -webkit-transform: skew(25deg, 0deg);
-    -moz-transform: skew(25deg, 0deg);
-    -ms-transform: skew(25deg, 0deg);
-    -o-transform: skew(25deg, 0deg);
-    transform: skew(25deg, 0deg);
-  }
-  
-  .chevron:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: 0;
-    height: 50%;
-    width: 100%;
-    background: linear-gradient(270deg, rgb(50, 103, 64) 0%, rgb(40, 63, 44) 70%);
-    -webkit-transform: skew(-25deg, 0deg);
-    -moz-transform: skew(-25deg, 0deg);
-    -ms-transform: skew(-25deg, 0deg);
-    -o-transform: skew(-25deg, 0deg);
-    transform: skew(-25deg, 0deg);
-  }
+
+    .chevron:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 50%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--statusbar-gradstart), var(--statusbar-gradend));
+        -webkit-transform: skew(25deg, 0deg);
+        -moz-transform: skew(25deg, 0deg);
+        -ms-transform: skew(25deg, 0deg);
+        -o-transform: skew(25deg, 0deg);
+        transform: skew(25deg, 0deg);
+    }
+
+    .chevron:after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 0;
+        height: 50%;
+        width: 100%;
+        background: linear-gradient(270deg, var(--statusbar-gradstart), var(--statusbar-gradend));
+        -webkit-transform: skew(-25deg, 0deg);
+        -moz-transform: skew(-25deg, 0deg);
+        -ms-transform: skew(-25deg, 0deg);
+        -o-transform: skew(-25deg, 0deg);
+        transform: skew(-25deg, 0deg);
+    }
   
   .flipchevron
   {

@@ -3,7 +3,7 @@
     --body-text: #dedede;
     --statusbar-text: #f8f8f8;
     --statusbar-gradstart: rgb(100, 100, 100) 0%;
-    --statusbar-gradend: rgb(30, 30, 30) 70%;
+    --statusbar-gradend: rgb(60, 60, 60) 70%;
     --statusbar-topborder: rgba(130,130,130,0.75);
     --button-colour: #bbbbbb;
     --button-text-colour: black;
