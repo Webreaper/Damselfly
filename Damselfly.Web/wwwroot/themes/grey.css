@@ -6,10 +6,15 @@
     --statusbar-gradend: rgb(30, 30, 30) 70%;
     --statusbar-topborder: rgba(130,130,130,0.75);
     --button-colour: #bbbbbb;
+    --button-text-colour: black;
     --button-border: #999999;
     --folder-entry-text: #dddddd;
     --folder-entry-text-selected: darkgray;
     --folder-entry-text-selected-bg: #dddddd;
+    --inputaddon-bg: rgba(235, 235, 235, 0.9);
+    --inputaddon-text: #555555;
+    --inputaddon-hover: rgba(150, 150, 150, 0.9);
+    --inputaddon-border: rgba(100, 100, 100, 0.25);
     --image-checkbox: #aaaaaa;
     --image-checkbox-bg: rgba( 0, 0, 0, 0.2);
     --image-checkbox-hover-border: #aaaaaa;
