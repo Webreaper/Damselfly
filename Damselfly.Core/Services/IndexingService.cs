@@ -443,8 +443,6 @@ namespace Damselfly.Core.Services
                                     .Where( x => x.IsMonitoredFolder() )
                                     .ToList();
 
-            Logging.Log($"Indexing folder: {folder.Name}");
-
             try
             {
                 using (var db = new ImageContext())

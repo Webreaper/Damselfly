@@ -27,8 +27,6 @@ namespace Damselfly.Core.Services
 
         private void OnFoldersChanged()
         {
-            Logging.Log("Folders added or removed - re-loading cached folder list...");
-
             // Do this async?
             _ = LoadFolders();
         }
