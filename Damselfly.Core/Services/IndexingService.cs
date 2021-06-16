@@ -443,6 +443,8 @@ namespace Damselfly.Core.Services
                                     .Where( x => x.IsMonitoredFolder() )
                                     .ToList();
 
+            Logging.Log($"Indexing folder: {folder.Name}");
+
             try
             {
                 using (var db = new ImageContext())
@@ -481,11 +483,7 @@ namespace Damselfly.Core.Services
 
                 // Now scan the images. If there's changes it could mean the folder
                 // should now be included in the folderlist, so flag it.
-                bool imagesAddedOrRemoved = ScanFolderImages( folderToScan );
-
-                // Do this after we scan for images, because we only load folders if they have images.
-                if( foldersChanged || imagesAddedOrRemoved )
-                    NotifyFolderChanged();
+                ScanFolderImages( folderToScan );
             }
             catch (Exception ex)
             {
@@ -696,6 +694,10 @@ namespace Damselfly.Core.Services
 
             StatusService.Instance.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
                     folderToScan.Name, folderToScan.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
+
+            // Do this after we scan for images, because we only load folders if they have images.
+            if (imagesWereAddedOrRemoved)
+                NotifyFolderChanged();
 
             return imagesWereAddedOrRemoved;
         }
