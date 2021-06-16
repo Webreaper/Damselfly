@@ -41,6 +41,7 @@ namespace Damselfly.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddLogging();
+            services.AddResponseCompression();
             services.AddResponseCaching();
             services.AddRazorPages();
             services.AddBlazoredModal();
@@ -88,6 +89,10 @@ namespace Damselfly.Web
             if( Logging.Verbose )
                 app.UseSerilogRequestLogging(); // <-- Add this line
 
+            app.UseResponseCompression();
+            app.UseRouting();
+            app.UseResponseCaching();
+
             // Disable this for now
             // app.UseHttpsRedirection();
 
@@ -98,9 +103,6 @@ namespace Damselfly.Web
                 FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
                 RequestPath = ThumbnailService.RequestRoot
             });
-
-            app.UseRouting();
-            app.UseResponseCaching();
 
             app.UseEndpoints(endpoints =>
             {

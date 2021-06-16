@@ -70,21 +70,27 @@ namespace Damselfly.Web.Controllers
             {
                 try
                 {
-                    Logging.Log($"Controller - Getting Thumb for {imageId}");
+                    Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
                     using var db = new ImageContext();
                     var image = SearchService.Instance.GetFromCache( id );
 
+                    if (cancel.IsCancellationRequested)
+                        return result;
+
                     if (image == null)
                     {
-                        Logging.Log($" - Cache miss for image thumbnail: {id}");
+                        Logging.LogTrace($" - Cache miss for image thumbnail: {id}");
 
                         image = await ImageService.GetImage(id, false, false);
                     }
 
                     if (image != null)
                     {
-                        Logging.Log($" - Getting thumb path for {imageId}");
+                        if (cancel.IsCancellationRequested)
+                            return result;
+
+                        Logging.LogTrace($" - Getting thumb path for {imageId}");
 
                         var file = new FileInfo(image.FullPath);
                         var imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
@@ -93,7 +99,10 @@ namespace Damselfly.Web.Controllers
                         if (! System.IO.File.Exists(imagePath))
                         {
                             gotThumb = false;
-                            Logging.Log($" - Generating thumbnail on-demand for {image.FileName}...");
+                            Logging.LogTrace($" - Generating thumbnail on-demand for {image.FileName}...");
+
+                            if (cancel.IsCancellationRequested)
+                                return result;
 
                             var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false, size);
 
@@ -101,7 +110,7 @@ namespace Damselfly.Web.Controllers
                             {
                                 gotThumb = true;
 
-                                Logging.Log($" - Updating metadata for {imageId}");
+                                Logging.LogTrace($" - Updating metadata for {imageId}");
                                 try
                                 {
                                     if (image.MetaData != null)
@@ -132,14 +141,17 @@ namespace Damselfly.Web.Controllers
                             }
                         }
 
-                        if( gotThumb )
+                        if (cancel.IsCancellationRequested)
+                            return result;
+
+                        if ( gotThumb )
                         {
-                            Logging.Log($" - Loading file for {imageId}");
+                            Logging.LogTrace($" - Loading file for {imageId}");
 
                             result = PhysicalFile(imagePath, "image/jpeg");
                         }
 
-                        Logging.Log($"Controller - served thumb for {imageId}");
+                        Logging.LogTrace($"Controller - served thumb for {imageId}");
                     }
                 }
                 catch (Exception ex)
