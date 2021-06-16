@@ -37,6 +37,9 @@ namespace Damselfly.Web.Controllers
             {
                 try
                 {
+                    if (cancel.IsCancellationRequested)
+                        return result;
+
                     var image = await ImageService.GetImage(id, false, false);
 
                     if (image != null)
@@ -45,6 +48,9 @@ namespace Damselfly.Web.Controllers
 
                         if (isDownload)
                             downloadFilename = image.FileName;
+
+                        if (cancel.IsCancellationRequested)
+                            return result;
 
                         result = PhysicalFile(image.FullPath, "image/jpeg", downloadFilename);
                     }
