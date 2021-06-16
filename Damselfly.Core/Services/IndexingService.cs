@@ -435,6 +435,7 @@ namespace Damselfly.Core.Services
         public void IndexFolder(DirectoryInfo folder, Folder parent )
         {
             Folder folderToScan = null;
+            bool foldersChanged = false;
 
             // Get all the sub-folders on the disk, but filter out
             // ones we're not interested in.
@@ -463,8 +464,6 @@ namespace Damselfly.Core.Services
                     if (parent != null)
                         folderToScan.ParentFolderId = parent.FolderId;
 
-                    bool foldersChanged = false;
-
                     if (folderToScan.FolderId == 0)
                     {
                         Logging.Log($"Adding new folder: {folderToScan.Path}");
@@ -476,15 +475,17 @@ namespace Damselfly.Core.Services
 
                     // Now, check for missing folders, and clean up if appropriate.
                     foldersChanged = RemoveMissingChildDirs(db, folderToScan) || foldersChanged;
-
-                    if (foldersChanged)
-                        NotifyFolderChanged();
                 }
 
-                // Now scan the images:
-                ScanFolderImages( folderToScan );
-
                 CreateFileWatcher(folder);
+
+                // Now scan the images. If there's changes it could mean the folder
+                // should now be included in the folderlist, so flag it.
+                bool imagesAddedOrRemoved = ScanFolderImages( folderToScan );
+
+                // Do this after we scan for images, because we only load folders if they have images.
+                if( foldersChanged || imagesAddedOrRemoved )
+                    NotifyFolderChanged();
             }
             catch (Exception ex)
             {
@@ -563,6 +564,7 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         private bool ScanFolderImages(Folder folderToScan)
         {
+            bool imagesWereAddedOrRemoved = false;
             int folderImageCount = 0;
 
             using var db = new ImageContext();
@@ -652,6 +654,7 @@ namespace Damselfly.Core.Services
                         Logging.LogTrace("Adding new image {0}", image.FileName);
                         folderToScan.Images.Add(image);
                         newImages++;
+                        imagesWereAddedOrRemoved = true;
                     }
                     else
                     {
@@ -679,6 +682,8 @@ namespace Damselfly.Core.Services
 
                 // Removing these will remove the associated ImageTag and selection references.
                 db.Images.RemoveRange(imagesToDelete);
+
+                imagesWereAddedOrRemoved = true;
             }
 
             // Now update the folder to say we've processed it
@@ -692,7 +697,7 @@ namespace Damselfly.Core.Services
             StatusService.Instance.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
                     folderToScan.Name, folderToScan.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
 
-            return true;
+            return imagesWereAddedOrRemoved;
         }
 
         /// <summary>

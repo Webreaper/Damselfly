@@ -23,7 +23,7 @@
             <i class="fa fa-folder-open folder-icon" /> All Folders
         </div>
         <div class="folder-scroll-area">
-            <Virtualize Items="@folderItems" ItemSize="15">
+            <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Name"
                      @onclick="@(() => SetFilterFolder(context.Folder))"
                      @oncontextmenu=@(args => ShowContextMenu(args, context.Folder)) @oncontextmenu:preventDefault="true">
@@ -37,6 +37,9 @@
 @code {
     private string filterTerm;
     public string FilterTerm { get { return filterTerm; } }
+    private Virtualize<FolderListItem> folderContainer;
+    private List<FolderListItem> folderItems;
+    Folder SelectedItem { get; set; }
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
     {
@@ -55,9 +58,6 @@
          });
     }
 
-    private List<FolderListItem> folderItems;
-
-    Folder SelectedItem { get; set; }
     protected void SelectionChanged(Folder f)
     {
         //Logging.Log($"Selected folder {f.FolderId}");
@@ -96,6 +96,8 @@
     {
         folderItems = await folderService.GetFilteredFolders(filterTerm, forceRefresh);
 
+        if( folderContainer != null )
+            await folderContainer.RefreshDataAsync();
         await InvokeAsync(StateHasChanged);
     }
 
