@@ -13,32 +13,30 @@
 
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-    <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
-                        placeholder="Add a keyword" Debounce="300"
-                        @bind-Value="@TypeAheadTag">
+    <BlazoredTypeahead Disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" 
+                       placeholder="Add a keyword" Debounce="250" @bind-Value="@TypeAheadTag"
+                       AddItemOnEmptyResultMethod="AddNewItem" >
         <SelectedTemplate>
-            @{
-                CreateNewTags(context);
-            }
+            @context Saved
         </SelectedTemplate>
         <ResultTemplate>
             @context
         </ResultTemplate>
         <NotFoundTemplate>
-            @tagSearchText
+            @context
         </NotFoundTemplate>
     </BlazoredTypeahead>
 </div>
 
 @code {
-    private string TypeAheadTag { get; set; }
-    private string tagSearchText { get; set; }
+            [Parameter]
+            public string TypeAheadTag { get; set; }
 
-    [Parameter]
-    public bool IsDisabled { get; set; } = false;
+            [Parameter]
+            public bool IsDisabled { get; set; } = false;
 
-    [Parameter]
-    public Action<string> OnAddNewtag { private get; set; }
+            [Parameter]
+            public Func<string, Task<string>> OnAddNewtag { private get; set; }
 
     protected override void OnParametersSet()
     {
@@ -49,42 +47,32 @@
         base.OnParametersSet();
     }
 
-
-    private void CreateNewTags(string tag)
+    private async Task<string> AddNewItem( string newTag )
     {
-        if (!string.IsNullOrEmpty(tag))
+        if (!string.IsNullOrEmpty(newTag))
         {
-            Logging.Log("Saving new tag: " + tag);
-
-            // Reset the tag
-            TypeAheadTag = null;
-            StateHasChanged();
+            Logging.Log("Saving new tag: " + newTag);
 
             // Call the callback
-            OnAddNewtag(tag);
+            await OnAddNewtag(newTag);
+
+            return newTag;
         }
+
+        return string.Empty;
     }
 
     private async Task<IEnumerable<string>> SearchTags(string text)
     {
-        var searchText = text.Trim();
-
-        // Store the search text which is used in the NotFound template
-        tagSearchText = searchText;
-
         // Only query the DB if we have more than 2 chars.
-        if (searchText.Length > 1)
+        if (text.Length > 1)
         {
-            var results = await Task.FromResult(indexService.CachedTags
-                                    .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            return await Task.FromResult(indexService.CachedTags
+                                    .Where(x => x.Keyword.Contains(text.Trim(), StringComparison.OrdinalIgnoreCase))
                                     .Select(t => t.Keyword)
+                                    .OrderBy(x => x.ToUpper().IndexOf(text.ToUpper()))
+                                    .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
                                     .ToList());
-
-            // Union the search term with the results from the DB. Order them so that the
-            // closest matches to the start of the string come first.
-            return results.Union(new List<string> { searchText }, StringComparer.OrdinalIgnoreCase)
-                          .OrderBy( x => x.ToUpper().IndexOf( searchText.ToUpper() ) )
-                          .ThenBy( x => x, StringComparer.OrdinalIgnoreCase );
         }
 
         return new List<string>();

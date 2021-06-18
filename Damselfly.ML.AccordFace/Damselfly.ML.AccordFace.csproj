@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="System.Drawing.Common" />
+    <None Remove="runtime.osx.10.10-x64.CoreCompat.System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.8.64" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Accord\Accord.Core\Accord.Core.csproj" />
+    <ProjectReference Include="..\Accord\Accord.Imaging\Accord.Imaging.csproj" />
+    <ProjectReference Include="..\Accord\Accord.MachineLearning\Accord.MachineLearning.csproj" />
+    <ProjectReference Include="..\Accord\Accord.Math\Accord.Math.csproj" />
+    <ProjectReference Include="..\Accord\Accord.Vision\Accord.Vision.csproj" />
+    <ProjectReference Include="..\Accord\Accord.Video\Accord.Video.csproj" />
+    <ProjectReference Include="..\Accord\Accord.Statistics\Accord.Statistics.csproj" />
+    <ProjectReference Include="..\Accord\Accord.Math.Core\Accord.Math.Core.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+  </ItemGroup>
+</Project>

@@ -41,13 +41,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [mac, windows, linux, alpine]
+        target: [mac, windows, linux]
         include: 
           - target: windows
             os: ubuntu-latest
           - target: linux
-            os: ubuntu-latest
-          - target: alpine
             os: ubuntu-latest
           - target: mac
             os: macos-latest
@@ -59,7 +57,7 @@ jobs:
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.100-preview.4.21255.9'
+          dotnet-version: '6.0.100-preview.5.21302.13'
 
       - name: Run Dotnet Server Build
         run: sh scripts/makeserver.sh ${{ matrix.target }} 
@@ -76,9 +74,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [alpine]
+        target: [linux]
         include: 
-          - target: alpine
+          - target: linux
             os: ubuntu-latest
 
     steps:        
@@ -102,18 +100,21 @@ jobs:
              unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
              cd ..
 
+      - name: Validate Server artifacts
+        run: |
+             echo "Server artifacts:"
+             ls server
+
       - name: Download Desktop Builds into wwwroot folder
         uses: actions/download-artifact@v2
         with:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
       
-      - name: Validate Desktop and server artifacts
+      - name: Validate Desktop artifacts
         run: |
              echo "Desktop artifacts:"
              ls publish/wwwroot/desktop
-             echo "Server artifacts:"
-             ls server
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1

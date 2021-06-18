@@ -5,88 +5,75 @@
 
 <LocalFileExporter @ref="FileExporter" />
 
-
-<div>
-    <img src="damselfly-logo.png" title="Damselfly" />
-    <h2>Damselfly v<span />@Version</h2>
+<div class="damselfly-about">
+    <div>
+        <img src="damselfly-logo.png" height="200" title="Damselfly" />
+    </div>
+    <h2>Damselfly v<span />@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h2>
     <h4>Server-based Digital Asset Management system</h4>
-    <p>&copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</p>
-    <p>ExifTool version: <span />@MetaDataService.ExifToolVer</p>
-    <NavLink href="/logs">View Server Logs</NavLink>
-    <Stats />
-    <h4>Damselfly Desktop</h4>
-    @if (FileExporter != null && FileExporter.IsDesktopHosted)
-    {
-        <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
-    }
-    @if (DownloadService.DesktopAppInfo.AppsAvailable)
-    {
-        <p>Download v<span />@Version of the Desktop App here:</p>
-        <div class="desktop-download-icons">
-            @if (DownloadService.DesktopAppInfo.MacOSApp != null)
+
+    <div class="damselfly-aboutcolumn">
+        <div class="damselfly-aboutcolumncontent">
+            <h4>Damselfly Desktop</h4>
+            @if (FileExporter != null && FileExporter.IsDesktopHosted)
             {
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-                    <NavLink href="@DownloadService.DesktopAppInfo.MacOSApp">
-                        <div class="InputAddOn-field">MacOS</div>
-                    </NavLink>
-                    @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
-                    {
-                        <NavLink href="@DownloadService.DesktopAppInfo.MacOSArmApp">
-                            <div class="InputAddOn-field">(M1)</div>
-                        </NavLink>
-                    }
-                </div>
+                <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
             }
-            @if (DownloadService.DesktopAppInfo.WindowsApp != null)
-            {
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
-                    <NavLink href="@DownloadService.DesktopAppInfo.WindowsApp">
-                        <div class="InputAddOn-field">Windows</div>
-                    </NavLink>
-                </div>
-            }
-            @if (DownloadService.DesktopAppInfo.LinuxApp != null)
-            {
-                <div class="InputAddOn">
-                    <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
-                    <NavLink href="@DownloadService.DesktopAppInfo.LinuxApp">
-                        <div class="InputAddOn-field">Linux</div>
-                    </NavLink>
-                </div>
-            }
+            <DesktopAppDownload />
+
+            <h4>Credits/Thanks</h4>
+            <p>
+                Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
+                Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
+                Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink> and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>.
+                Face Detection by <NavLink href="https://www.emgu.com/">EmguCV</NavLink> and <NavLink href="http://accord-framework.net/" target="_blank">Accord.Net</NavLink>.
+                Facial recognition by <NavLink href="https://azure.microsoft.com/en-gb/services/cognitive-services/face/">Azure Cognitive Services Face API</NavLink>.
+                Object Detection based on <NavLink href="https://github.com/mentalstack/yolov5-net" target="_blank">MentalStack's</NavLink> code.
+                <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@MetaDataService.ExifToolVer by Phil Harvey.
+            </p>
+
+            <h4> Want to Support Damselfly?</h4>
+
+            <p>
+                Damselfly is free, open-source software. But if you find it useful, and fancy buying me a coffee or a slice of pizza, that would
+                be appreciated!
+                <br />
+                <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+            </p>
         </div>
-    }
-    <h4>Credits/Thanks</h4>
-    <p>
-        Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
-        Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
-        Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink> and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>.
-    </p>
+        <div class="damselfly-aboutcolumncontent">
+            <h4>Stats:</h4>
+            <Stats />
+        </div>
+    </div>
+    <h4>Task Statuses:</h4>
+
+    <TaskList />
+
+    <NavLink href="/logs">View Server Logs</NavLink>
 </div>
 
-@code {
-    private LocalFileExporter FileExporter;
+    @code {
+        private LocalFileExporter FileExporter;
 
-    public string Version
-    {
-        get
+        public string Version
         {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            get
+            {
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+        }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            if (firstRender)
+            {
+                FileExporter.OnChange += StateHasChanged;
+            }
+        }
+
+        public void Dispose()
+        {
+            FileExporter.OnChange -= StateHasChanged;
         }
     }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            FileExporter.OnChange += StateHasChanged;
-        }
-    }
-
-    public void Dispose()
-    {
-        FileExporter.OnChange -= StateHasChanged;
-    }
-}

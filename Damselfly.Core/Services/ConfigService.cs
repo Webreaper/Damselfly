@@ -2,20 +2,20 @@
 using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Models;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
     /// <summary>
     /// Service to store NVP configuration settings
     /// </summary>
-    public class ConfigService
+    public class ConfigService : IConfigService
     {
-        public static ConfigService Instance { get; private set; }
         private IDictionary<string, ConfigSetting> _cache;
 
         public ConfigService()
         {
-            Instance = this;
+            InitialiseCache();
         }
 
         public void InitialiseCache( bool force = false )

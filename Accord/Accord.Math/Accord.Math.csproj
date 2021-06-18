@@ -1,0 +1,319 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Accord.Math</AssemblyName>
+    <RootNamespace>Accord.Math</RootNamespace>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG;NET;NET6_0;NETCOREAPP;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1701;1702;3245;0003</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType></DebugType>
+    <DefineConstants>TRACE;RELEASE;NET;NET6_0;NETCOREAPP;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Accord.Core\Accord.Core.csproj" />
+    <ProjectReference Include="..\Accord.Math.Core\Accord.Math.Core.csproj" />
+  </ItemGroup>
+
+<ItemGroup>
+    <Reference Include="System.Threading.Thread" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.IO.Compression" />
+</ItemGroup>
+
+  <ItemGroup>
+    <None Update="Decompositions\CholeskyDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>CholeskyDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+        .\CholeskyDecomposition.cs
+        .\CholeskyDecomposition.txt
+        .\CholeskyDecompositionD.cs
+        .\CholeskyDecompositionF.cs
+      </LastOutputs>
+    </None>
+    <None Update="Decompositions\EigenvalueDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>EigenvalueDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\EigenvalueDecomposition.cs
+.\EigenvalueDecomposition.txt
+.\EigenvalueDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\EigenvalueDecomposition.txt">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EigenvalueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedCholeskyDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>JaggedCholeskyDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+        .\JaggedCholeskyDecomposition.cs
+        .\JaggedCholeskyDecomposition.txt
+        .\JaggedCholeskyDecompositionD.cs
+        .\JaggedCholeskyDecompositionF.cs
+      </LastOutputs>
+    </None>
+    <None Update="Decompositions\JaggedEigenvalueDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>JaggedEigenvalueDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\JaggedEigenvalueDecomposition.cs
+.\JaggedEigenvalueDecomposition.txt
+.\JaggedEigenvalueDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\JaggedLuDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>JaggedLuDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\JaggedLuDecomposition.cs
+.\JaggedLuDecomposition.txt
+.\JaggedLuDecompositionD.cs
+.\JaggedLuDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\JaggedQrDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>JaggedQrDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\JaggedQrDecomposition.cs
+.\JaggedQrDecomposition.txt
+.\JaggedQrDecompositionD.cs
+.\JaggedQrDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\JaggedSingularValueDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>JaggedSingularValueDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\JaggedSingularValueDecomposition.cs
+.\JaggedSingularValueDecomposition.txt
+.\JaggedSingularValueDecompositionD.cs
+.\JaggedSingularValueDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\JaggedSingularValueDecomposition.txt">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JaggedSingularValueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\LuDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>LuDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\LuDecomposition.cs
+.\LuDecomposition.txt
+.\LuDecompositionD.cs
+.\LuDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\QrDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QrDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\QrDecomposition.cs
+.\QrDecomposition.txt
+.\QrDecompositionD.cs
+.\QrDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Decompositions\QrDecomposition.txt">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>QrDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\SingularValueDecomposition.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SingularValueDecomposition.cs</LastGenOutput>
+      <LastOutputs>
+.\SingularValueDecomposition.cs
+.\SingularValueDecomposition.txt
+.\SingularValueDecompositionD.cs
+.\SingularValueDecompositionF.cs
+</LastOutputs>
+    </None>
+    <None Update="Distance.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Distance.cs</LastGenOutput>
+    </None>
+    <None Update="Matrix\Jagged.Product.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Jagged.Product.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Jagged.Product.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Jagged.Random.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Jagged.Random.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Jagged.Random.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Matrix.Comparisons.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Matrix.Comparisons.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Matrix.Comparisons.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Matrix.Conversions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Matrix.Conversions.cs</LastGenOutput>
+      <LastOutputs>.\Matrix.Conversions.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Matrix.Linear.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Matrix.Linear.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Matrix.Linear.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Matrix.Product.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Matrix.Product.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Matrix.Product.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Matrix.Random.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Matrix.Random.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Matrix.Random.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Matrix\Matrix.Reduction.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Matrix.Reduction.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Matrix.Reduction.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Norm.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Norm.cs</LastGenOutput>
+    </None>
+    <None Update="Vector\Vector.Interval.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vector.Interval.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Vector.Interval.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Vector\Vector.Random.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vector.Random.cs</LastGenOutput>
+      <LastOutputs>.\Vector.Random.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Vector\Vector.Range.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vector.Range.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Vector.Range.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Vector\Vector.Scale.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Vector.Scale.Generated.cs</LastGenOutput>
+      <LastOutputs>.\Vector.Scale.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Decompositions\CholeskyDecomposition.txt">
+      <DependentUpon>CholeskyDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\LuDecomposition.txt">
+      <DependentUpon>LuDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\SingularValueDecomposition.txt">
+      <DependentUpon>SingularValueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedEigenvalueDecomposition.txt">
+      <DependentUpon>JaggedEigenvalueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedCholeskyDecomposition.txt">
+      <DependentUpon>JaggedCholeskyDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedLuDecomposition.txt">
+      <DependentUpon>JaggedLuDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedQrDecomposition.txt">
+      <DependentUpon>JaggedQrDecomposition.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Distance.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Distance.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Matrix\Matrix.Comparisons.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Matrix.Comparisons.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Matrix\Matrix.Product.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Matrix.Product.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Norm.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Norm.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Interval.Generated.cs">
+      <DependentUpon>Vector.Interval.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Range.Generated.cs">
+      <DependentUpon>Vector.Range.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Scale.Generated.cs">
+      <DependentUpon>Vector.Scale.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Random.Generated.cs">
+      <DependentUpon>Matrix.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Reduction.Generated.cs">
+      <DependentUpon>Matrix.Reduction.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Conversions.Generated.cs">
+      <DependentUpon>Matrix.Conversions.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Random.Generated.cs">
+      <DependentUpon>Vector.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Linear.Generated.cs">
+      <DependentUpon>Matrix.Linear.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Jagged.Random.Generated.cs">
+      <DependentUpon>Jagged.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Jagged.Product.Generated.cs">
+      <DependentUpon>Jagged.Product.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Decompositions\QrDecomposition.cs">
+      <DependentUpon>QrDecomposition.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Decompositions\JaggedSingularValueDecomposition.cs">
+      <DependentUpon>JaggedSingularValueDecomposition.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Decompositions\EigenvalueDecomposition.cs">
+      <DependentUpon>EigenvalueDecomposition.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Random.cs">
+      <DependentUpon>Vector.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Norm.cs">
+      <DependentUpon>Norm.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Distance.cs">
+      <DependentUpon>Distance.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Conversions.cs">
+      <DependentUpon>Matrix.Conversions.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Conversions.cs">
+      <DependentUpon>Matrix.Conversions.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>

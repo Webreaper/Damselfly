@@ -3,16 +3,69 @@
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService keywordService
-@inject IJSRuntime JsRuntime
+@inject StatusService statusService
+@inject BasketService basketService
 @inject SearchService searchService
+@inject ConfigService configService
+@inject IJSRuntime JsRuntime
 @implements IDisposable
 @inherits ImageGridBase
 
 @using Damselfly.Web.Shared
 @using Damselfly.Web.Shared.Images
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.Utils.Constants
 
 <LocalFileExporter @ref="FileExporter" />
+
+<div class="damselfly-imagetools">
+    <div class="damselfly-browsetool">
+        <button @onclick="AddSelectedToBasket" class="btn btn-primary" disabled="@NoImagesSelected">
+            <i class="fas fa-shopping-basket" />
+            &nbsp;Add Images
+        </button>
+    </div>
+    <div class="damselfly-browsetool">
+        @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
+        {
+            <label class="damselfly-browsetoollabel">
+                <input name="thumbSize" type="radio" value="@choice"
+                        checked="@CurrentThumbSize.Equals( choice )"
+                        @onchange="@(() => { ChangeThumbSize( choice ); })" />
+                @choice.ToString()
+            </label>
+        }
+    </div>
+    <div class="damselfly-browsetool">
+        <label class="damselfly-browsetoollabel">
+            Group By:
+            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.GroupingType)).Cast<SearchQuery.GroupingType>())
+            {
+                <label class="damselfly-browsetoollabel">
+                    <input name="grouping" value="@choice" type="radio"
+                            checked="@searchService.Grouping.Equals( choice )"
+                            @onchange="@(() => { ChangeGroupType( choice ); })" />
+                    @choice.ToString()
+                </label>
+            }
+        </label>
+    </div>
+    <div class="damselfly-browsetool">
+        <label class="damselfly-browsetoollabel">
+            Sort By:
+            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.SortOrderType)).Cast<SearchQuery.SortOrderType>())
+            {
+                <label class="damselfly-browsetoollabel">
+                    <input name="sortorder" value="@choice" type="radio"
+                            checked="@searchService.SortOrder.Equals( choice )"
+                            @onchange="@(() => { ChangeSortOrder( choice ); })" />
+                    @choice.ToString()
+                </label>
+            }
+        </label>
+    </div>
+</div>
+
 <div class="damselfly-imagegrid" id="scroll-area">
     @if (!gridImages.Any())
     {
@@ -56,7 +109,7 @@
                         @if (FileExporter != null && FileExporter.IsDesktopHosted)
                         {
                             <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
-                                <i class="fas fa-shopping-basket" />
+                                <i class="fas fa-download" />
                                 &nbsp;Save Locally
                             </button>
                         }
@@ -77,260 +130,251 @@
 
         if (!endOfImages)
         {
-            <div class="damselfly-moreimages" id="list-end" />
+            <div class="damselfly-moreimages" id="list-end">
+                <i class="fas fa-ellipsis-h"></i>
+            </div>
+        }
+        else
+        {
+            <div id="snackbar" class="@toastClass">No more images to show.</div>
         }
     }
 </div>
 
-<div class="damselfly-imagetools">
-    <div class="damselfly-browsetool">
-        @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
+
+    @code {
+        private LocalFileExporter FileExporter;
+        const int imagesPerPage = 100;
+        private bool showDateSeparators;
+        private bool NoImagesSelected => !selectionService.Selection.Any();
+        bool IsLoading { get; set; } = false;
+        bool endOfImages = false;
+        string toastClass = string.Empty;
+        private EventConflator conflator = new EventConflator(2000);
+
+        ThumbSize CurrentThumbSize = ThumbSize.Small;
+
+        protected override void OnInitialized()
         {
-            <label class="damselfly-browsetoollabel">
-                <input name="thumbSize" type="radio" value="@choice"
-                       checked="@CurrentThumbSize.Equals( choice )"
-                       @onchange="@(() => { ChangeThumbSize( choice ); })" />
-                @choice.ToString()
-            </label>
-        }
-    </div>
-    <div class="damselfly-browsetool">
-        <label class="damselfly-browsetoollabel">
-            Group By:
-            @foreach (var choice in Enum.GetValues( typeof( SearchQuery.GroupingType ) ).Cast<SearchQuery.GroupingType>() )
-            {
-                <label class="damselfly-browsetoollabel">
-                    <input name="grouping" value="@choice" type="radio"
-                           checked="@SearchService.Instance.Grouping.Equals( choice )"
-                           @onchange="@(() => { ChangeGroupType( choice ); })" />
-                    @choice.ToString()
-                </label>
-            }
-        </label>
-    </div>
-    <div class="damselfly-browsetool">
-        <label class="damselfly-browsetoollabel">
-            Sort By:
-            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.SortOrderType)).Cast<SearchQuery.SortOrderType>() )
-            {
-            <label class="damselfly-browsetoollabel">
-                <input name="sortorder" value="@choice" type="radio"
-                       checked="@SearchService.Instance.SortOrder.Equals( choice )"
-                       @onchange="@(() => { ChangeSortOrder( choice ); })" />
-                @choice.ToString()
-            </label>
-            }
-        </label>
-    </div>
-</div>
-
-@code {
-    private LocalFileExporter FileExporter;
-    const int imagesPerPage = 100;
-    private bool showDateSeparators = ConfigService.Instance.GetBool("DateSeparators", false);
-
-    bool IsLoading { get; set; } = false;
-    bool endOfImages = false;
-    private EventConflator conflator = new EventConflator(2000);
-
-    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
-
-    private void StoreImage(Image image)
-    {
-        // Todo - save an image to local storage
-    }
-
-    void AddGroupToBasket(ImageGrouping grouping)
-    {
-        BasketService.Instance.SetBasketState(grouping.Images, true);
-        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
-    }
-
-    void RemoveGroupFromBasket(ImageGrouping grouping)
-    {
-        BasketService.Instance.SetBasketState(grouping.Images, false);
-        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images removed from the basket";
-    }
-
-    void SelectGroup(ImageGrouping grouping)
-    {
-        SelectionService.Instance.SelectImages(grouping.Images);
-    }
-
-    void DeselectGroup(ImageGrouping grouping)
-    {
-        SelectionService.Instance.DeselectImages(grouping.Images);
-    }
-
-    private List<ImageGrouping> GroupedImages
-    {
-        get
-        {
-            // TODO: Order by
-            if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Folder)
-            {
-                var result = gridImages.GroupBy(x => x.Folder);
-
-                if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
-                    result = result.OrderByDescending(x => x.Key.Path);
-                else
-                    result = result.OrderBy(x => x.Key.Path);
-
-                return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
-                            .ToList();
-            }
-            else if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Date)
-            {
-                var result = gridImages.GroupBy(x => x.SortDate.Date);
-
-                if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
-                    result = result.OrderByDescending(x => x.Key);
-                else
-                    result = result.OrderBy(x => x.Key);
-
-                return result.Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
-                            .ToList();
-            }
-
-            return new List<ImageGrouping> { new ImageGrouping { Key = null, Images = gridImages } };
+            showDateSeparators = configService.GetBool("DateSeparators", false);
+            CurrentThumbSize = configService.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
         }
 
-    }
-
-    private void ChangeGroupType(SearchQuery.GroupingType newType)
-    {
-        SearchService.Instance.Grouping = newType;
-        Logging.Log($"Grouping changed to {SearchService.Instance.Grouping}");
-        StateHasChanged();
-    }
-
-    private void ChangeSortOrder(SearchQuery.SortOrderType newType)
-    {
-        SearchService.Instance.SortOrder = newType;
-        Logging.Log($"Sort order changed to {SearchService.Instance.SortOrder}");
-        StateHasChanged();
-    }
-
-    string WrapStyle { get; set; } = "wrapping-table-small";
-
-    protected void ChangeThumbSize(ThumbSize newSize)
-    {
-        CurrentThumbSize = newSize;
-
-        switch (newSize)
+        private void StoreImage(Image image)
         {
-            case ThumbSize.Medium: WrapStyle = "wrapping-table-medium"; break;
-            case ThumbSize.Large: WrapStyle = "wrapping-table-large"; break;
-            case ThumbSize.ExtraLarge: WrapStyle = "wrapping-table-x-large"; break;
-            case ThumbSize.Small: WrapStyle = "wrapping-table-small"; break;
-            default: WrapStyle = "wrapping-table-small"; break;
+            // Todo - save an image to local storage
         }
 
-        ConfigService.Instance.Set(ConfigSettings.ThumbSize, newSize.ToString());
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        void AddSelectedToBasket()
         {
-            int initialLoadCount, scrollPos;
+            var selected = selectionService.Selection.ToList();
+            basketService.SetBasketState(selected, true);
 
-            if (!int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
-                initialLoadCount = imagesPerPage;
-
-            if (!int.TryParse(ConfigService.Instance.Get("ImageScrollTop"), out scrollPos))
-                scrollPos = 0;
-
-            searchService.OnChange += SearchQueryChanged;
-            FileExporter.OnChange += StateHasChanged;
-            BasketService.Instance.OnChange += BasketChanged;
-
-            await LoadData( initialLoadCount );
-            await InitJsListenerAsync(scrollPos);
+            statusService.StatusText = $"{selected.Count()} images added to the basket";
         }
-    }
 
-    public void Dispose()
-    {
-        searchService.OnChange -= SearchQueryChanged;
-        FileExporter.OnChange -= StateHasChanged;
-        BasketService.Instance.OnChange -= BasketChanged;
-    }
-
-    public string NoResultsMessage
-    {
-        get
+        void AddGroupToBasket(ImageGrouping grouping)
         {
-            if (searchService.Folder != null)
+            basketService.SetBasketState(grouping.Images, true);
+            statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
+        }
+
+        void RemoveGroupFromBasket(ImageGrouping grouping)
+        {
+            basketService.SetBasketState(grouping.Images, false);
+            statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+        }
+
+        void SelectGroup(ImageGrouping grouping)
+        {
+            selectionService.SelectImages(grouping.Images);
+        }
+
+        void DeselectGroup(ImageGrouping grouping)
+        {
+            selectionService.DeselectImages(grouping.Images);
+        }
+
+        private List<ImageGrouping> GroupedImages
+        {
+            get
             {
-                return $"No images were found in folder '{searchService.Folder.Name}' that match the current filter.";
+                // TODO: Order by
+                if (searchService.Grouping == SearchQuery.GroupingType.Folder)
+                {
+                    var result = gridImages.GroupBy(x => x.Folder);
+
+                    if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+                        result = result.OrderByDescending(x => x.Key.Path);
+                    else
+                        result = result.OrderBy(x => x.Key.Path);
+
+                    return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
+                                .ToList();
+                }
+                else if (searchService.Grouping == SearchQuery.GroupingType.Date)
+                {
+                    var result = gridImages.GroupBy(x => x.SortDate.Date);
+
+                    if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+                        result = result.OrderByDescending(x => x.Key);
+                    else
+                        result = result.OrderBy(x => x.Key);
+
+                    return result.Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
+                                .ToList();
+                }
+
+                return new List<ImageGrouping> { new ImageGrouping { Key = null, Images = gridImages } };
             }
 
-            return "No images were found that match the current filter.";
         }
-    }
 
-    protected void BasketChanged()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    protected void SearchQueryChanged()
-    {
-        SelectionService.Instance.ClearSelection();
-        gridImages.Clear();
-        endOfImages = false;
-
-        _ = LoadData(imagesPerPage);
-    }
-
-    protected async Task InitJsListenerAsync(int initialScrollPos)
-    {
-        Logging.LogTrace($"Setting scroll position to {initialScrollPos}.");
-        await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this), initialScrollPos);
-    }
-
-    private void SaveScrollState(int scrollTop)
-    {
-        Logging.LogTrace($"Saving scroll position: {scrollTop}");
-        ConfigService.Instance.Set("ImageScrollTop", scrollTop.ToString());
-        ConfigService.Instance.Set("LoadedImages", gridImages.Count.ToString());
-    }
-
-    [JSInvokable]
-    // Debugging method to help us differentiate between JS calls and other data loads
-    public void HandleScroll(int scrollTop)
-    {
-        conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
-    }
-
-    [JSInvokable]
-    // Debugging assistant to help us differentiate between JS calls and other data loads
-    public async Task LoadMoreData()
-    {
-        await LoadData(imagesPerPage);
-    }
-
-    public async Task LoadData(int imagesToLoad)
-    {
-        if (!IsLoading)
+        private void ChangeGroupType(SearchQuery.GroupingType newType)
         {
-            IsLoading = true;
+            searchService.Grouping = newType;
+            Logging.Log($"Grouping changed to {searchService.Grouping}");
+            StateHasChanged();
+        }
 
-            ChangeThumbSize(CurrentThumbSize);
-            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+        private void ChangeSortOrder(SearchQuery.SortOrderType newType)
+        {
+            searchService.SortOrder = newType;
+            Logging.Log($"Sort order changed to {searchService.SortOrder}");
+            StateHasChanged();
+        }
 
-            if (newImages.Any())
+        string WrapStyle { get; set; } = "wrapping-table-small";
+
+        protected void ChangeThumbSize(ThumbSize newSize)
+        {
+            CurrentThumbSize = newSize;
+
+            switch (newSize)
             {
-                gridImages.AddRange(newImages);
+                case ThumbSize.Medium: WrapStyle = "wrapping-table-medium"; break;
+                case ThumbSize.Large: WrapStyle = "wrapping-table-large"; break;
+                case ThumbSize.ExtraLarge: WrapStyle = "wrapping-table-x-large"; break;
+                case ThumbSize.Small: WrapStyle = "wrapping-table-small"; break;
+                default: WrapStyle = "wrapping-table-small"; break;
             }
 
-            if (newImages.Count() < imagesToLoad)
-                endOfImages = true;
+            configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
+        }
 
-            IsLoading = false;
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                selectionService.OnSelectionChanged += SelectedImagesChanged;
 
-            _ = InvokeAsync( StateHasChanged );
+                int initialLoadCount, scrollPos;
+
+                if (!int.TryParse(configService.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
+                    initialLoadCount = imagesPerPage;
+
+                if (!int.TryParse(configService.Get("ImageScrollTop"), out scrollPos))
+                    scrollPos = 0;
+
+                searchService.OnChange += SearchQueryChanged;
+                FileExporter.OnChange += StateHasChanged;
+                basketService.OnChange += BasketChanged;
+
+                await LoadData(initialLoadCount);
+                await InitJsListenerAsync(scrollPos);
+            }
+        }
+
+        protected void SelectedImagesChanged()
+        {
+            InvokeAsync(StateHasChanged);
+        }
+
+        public void Dispose()
+        {
+            selectionService.OnSelectionChanged -= SelectedImagesChanged;
+            searchService.OnChange -= SearchQueryChanged;
+            FileExporter.OnChange -= StateHasChanged;
+            basketService.OnChange -= BasketChanged;
+        }
+
+        public string NoResultsMessage
+        {
+            get
+            {
+                if (searchService.Folder != null)
+                {
+                    return $"No images were found in folder '{searchService.Folder.Name}' that match the current filter.";
+                }
+
+                return "No images were found that match the current filter.";
+            }
+        }
+
+        protected void BasketChanged()
+        {
+            InvokeAsync(StateHasChanged);
+        }
+
+        protected void SearchQueryChanged()
+        {
+            selectionService.ClearSelection();
+            gridImages.Clear();
+            endOfImages = false;
+
+            _ = LoadData(imagesPerPage);
+        }
+
+        protected async Task InitJsListenerAsync(int initialScrollPos)
+        {
+            Logging.LogTrace($"Setting scroll position to {initialScrollPos}.");
+            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this), initialScrollPos);
+        }
+
+        private void SaveScrollState(int scrollTop)
+        {
+            Logging.LogTrace($"Saving scroll position: {scrollTop}");
+            configService.Set("ImageScrollTop", scrollTop.ToString());
+            configService.Set("LoadedImages", gridImages.Count.ToString());
+        }
+
+        [JSInvokable]
+        // Debugging method to help us differentiate between JS calls and other data loads
+        public void HandleScroll(int scrollTop)
+        {
+            conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
+        }
+
+        [JSInvokable]
+        // Debugging assistant to help us differentiate between JS calls and other data loads
+        public async Task LoadMoreData()
+        {
+            await LoadData(imagesPerPage);
+        }
+
+        public async Task LoadData(int imagesToLoad)
+        {
+            if (!IsLoading)
+            {
+                IsLoading = true;
+
+                ChangeThumbSize(CurrentThumbSize);
+                var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+
+                if (newImages.Any())
+                {
+                    gridImages.AddRange(newImages);
+                }
+
+                // Flag the 'more' div if we loaded at least as many as we requested.
+                endOfImages = newImages.Count() < imagesToLoad;
+
+                // If we've tried to load data and there isn't any more, show the toast.
+                toastClass = endOfImages ? "show" : string.Empty;
+
+                IsLoading = false;
+
+                _ = InvokeAsync(StateHasChanged);
+            }
         }
     }
-}

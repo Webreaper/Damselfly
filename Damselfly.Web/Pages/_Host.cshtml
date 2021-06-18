@@ -1,6 +1,8 @@
 ﻿@page "/"
 @namespace Damselfly.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject ThemeService themeService
+
 @using Damselfly.Core.Services;
 
 <!-- TODO: Clean up these dependencies once we've decided what we actually need. -->
@@ -18,136 +20,86 @@
     <link rel="stylesheet" href="Cropper/cropper.css" />
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
     <link href="css/DarkDateRangePicker.css" rel="stylesheet" />
-    <link href="themes/@ThemeService.Instance.ThemeCSS" rel="stylesheet" />
+    <link href="css/snackbar.css" rel="stylesheet" />
+    <link href="themes/@themeService.ThemeCSS" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
+    <div id="components-reconnect-modal" class="damselfly-reconnect-modal components-reconnect-hide">
+        <div class="show">
+            <img src="damselfly-logo.png" title="Damselfly" />
+            <p>
+                Attempting to reconnect to Damselfly Server....
+            </p>
+        </div>
+        <div class="failed">
+            <img src="damselfly-logo.png" title="Damselfly" />
+            <p>
+                Failed to connect to Damselfly Server - please <a href=".">reload</a>.
+            </p>
+        </div>
+        <div class="rejected">
+            <img src="damselfly-logo.png" title="Damselfly" />
+            <p>
+                Connection refused. Please check if the Damselfly server is down.<br />
+                If the connection is not automatically restored, you should <a href="javascript:window.location.reload(true)">reload the page</a>.
+            </p>
+        </div>
+    </div>
+
     <app>
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>window.InfiniteScroll =
-        {
-            Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos) {
-                var scrollArea = document.getElementById(scrollAreaID);
-                scrollArea.scrollTop = initialScrollPos;
+    <script>
+            window.setSelection = (element, start, end) => {
+                return element.setSelectionRange(start, end);
+            }
 
-                var markerIsVisible = function () {
-                    var endMarker = document.getElementById(endMarkerId);
+            function writeFileLocally(sourceUrl, localFilename) {
+                window.downloadUrl(sourceUrl, localFilename);
+            }
 
-                    if (endMarker === null)
-                        return false;
-
-                    var bounding = endMarker.getBoundingClientRect();
-
-                    return (bounding.top >= 0 && bounding.left >= 0 &&
-                        bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
-                        bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
-                }
-
-                var markerVisibleState = null;
-
-                scrollArea.addEventListener('scroll', function () {
-                    DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
-
-                    var visible = markerIsVisible();
-
-                    if (markerVisibleState != visible) {
-                        markerVisibleState = visible;
-                        if (visible)
-                            DotNetRef.invokeMethodAsync("LoadMoreData");
+            function downloadFile(filename) {
+                location.href = filename;
+            }
+            function doImageCrop(elementId, DotNetRef) {
+                var image = document.getElementById(elementId);
+                new Cropper(image, {
+                    update: function (coords) {
+                        DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
                     }
                 });
             }
-        }
 
-        window.setSelection = (element, start, end) => {
-            return element.setSelectionRange(start, end);
-        }
+            function getDesktopVersion() {
+                return window.desktopVersion;
+            }
 
-        function writeFileLocally(sourceUrl, localFilename) {
-            window.downloadUrl(sourceUrl, localFilename);
-        }
-
-        function downloadFile(filename) {
-            location.href = filename;
-        }
-
-        function doImageCrop(elementId, DotNetRef) {
-            var image = document.getElementById(elementId);
-            new Cropper(image, {
-                update: function (coords) {
-                    DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
+            function checkDesktopUpgrade(desktopVersion, cb) {
+                try {
+                    DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
+                        if (upgradeVersion !== '') {
+                            cb(upgradeVersion);
+                        }
+                    })
+                } catch (err) {
+                    console.log("Error: " + err);
                 }
-            });
-        }
-
-        function getDesktopVersion() {
-            return window.desktopVersion;
-        }
-
-        function checkDesktopUpgrade(desktopVersion, cb) {
-            try {
-                DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
-                    if (upgradeVersion !== '') {
-                        cb(upgradeVersion);
-                    }
-                })
-            } catch (err) {
-                console.log("Error: " + err);
             }
-        }
 
-
-        function imageZoom(imgID, srcUrl, zoomDivId, zoomPercentage) {
-            var img, result, scale;
-            scale = 4;
-            img = document.getElementById(imgID);
-            result = document.getElementById(zoomDivId);
-            result.style.backgroundImage = "url('" + srcUrl + "')";
-
-            img.addEventListener("mousemove", moveLens);
-            img.addEventListener("touchmove", moveLens);
-            result.addEventListener("mousemove", moveLens);
-            result.addEventListener("touchmove", moveLens);
-            function moveLens(e) {
-                var pos, x, y;
-                /* Prevent any other actions that may occur when moving over the image */
-                e.preventDefault();
-                /* Get the cursor's x and y positions: */
-                pos = getCursorPos(e);
-                /* Calculate the position of the lens: */
-                x = pos.x;
-                y = pos.y;
-
-                /* Hide the zoom when we move outside it */
-                if (x > (img.width - 5) || x < 5 || y > (img.height - 5) || y < 5) {
-                    result.style.display = "none";
-                } else
-                    result.style.display = "inherit";
-                result.style.backgroundPosition = "-" + (x * scale * 0.75) + "px -" + (y * scale * 0.75) + "px";
-            }
-            function getCursorPos(e) {
-                var a, x = 0, y = 0;
-                e = e || window.event;
-                /* Get the x and y positions of the image: */
-                a = img.getBoundingClientRect();
-                /* Calculate the cursor's x and y coordinates, relative to the image: */
-                x = e.pageX - a.left;
-                y = e.pageY - a.top;
-                /* Consider any page scrolling: */
-                x = x - window.pageXOffset;
-                y = y - window.pageYOffset;
-                return { x: x, y: y };
-            }
-        }
-                                /* END EXTERNAL SOURCE */
+        /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
+
 
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
     <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
-    <script src="Cropper/cropper.min.js"></script>
+    <script src="zoom/imageZoom.js"></script>
+    <script src="objectrects/objectrects.js"></script>
+    <script src="vScroll/virtualScroll.js"></script>
+    <script src="Cropper/cropper.js"></script>
+    <script src="Cropper/damselflyCrop.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
 </body>
 </html>

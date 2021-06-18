@@ -8,6 +8,52 @@ html, body {
     color: var(--body-text);
 }
 
+/* Reconnection Scrreen stuff */
+
+.damselfly-reconnect-modal > div {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    overflow: hidden;
+    background-color: black;
+    opacity: 0.9;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+.components-reconnect-hide > div {
+    display: none;
+}
+
+.components-reconnect-show > div {
+    display: none;
+}
+
+.components-reconnect-show > .show {
+    display: block;
+}
+
+.components-reconnect-failed > div {
+    display: none;
+}
+
+.components-reconnect-failed > .failed {
+    display: block;
+}
+
+.components-reconnect-rejected > div {
+    display: none;
+}
+
+.components-reconnect-rejected > .rejected {
+    display: block;
+}
+
+/* ************************** */
 a, .btn-link {
     color: #03d666;
 }
@@ -90,12 +136,21 @@ div::-webkit-scrollbar-thumb {
     border-radius: 4px;
 }
 
+.btn-primary:disabled {
+    opacity: 0.5;
+}
+
 .image-grid-controls {
     font-size: 12px;
 }
 
-.image-title h4 {
-    vertical-align: middle;
+.damselfly-pagetitlebar {
+    display: flex;
+    flex: 1;
+    padding: 3px;
+    max-height: 30px;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .tag-table {
@@ -177,14 +232,6 @@ app {
     overflow-y: scroll;
 }
 
-.folder-scroll-area {
-    max-height: 250px;
-    /* Yuk */
-    max-width: 290px;
-    top: 0px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 
 .folder-entry {
     animation: fadeIn ease 0.5s;
@@ -205,9 +252,14 @@ app {
 
 .folder-search {
     padding: 2px;
+    width: 100%;
     align-content: center;
     vertical-align: middle;
-    font-size: 13px;
+    font-size: 12pt;
+}
+
+.folder-search label {
+    width: 100%;
 }
 
 .folder-icon{
@@ -217,7 +269,8 @@ app {
 }
 
 .clickable-icon {
-    font-size: 1.5em;
+    padding: 1px;
+    font-size: 1.9em;
     cursor: pointer;
 }
 
@@ -247,7 +300,7 @@ app {
     padding: 5px, 20px, 5px;
     width: 120px;
     font-weight: bold;
-    background-color: #004400;
+    background-color: var( --tool-window-title-bg );
 }
 
 .tasklist-table td {
@@ -452,6 +505,7 @@ f
 
 .damselfly-logo {
     display: flex;
+    background-color: black;
     flex: 0 0 50px;
     order: -1;
     justify-content: center;
@@ -464,11 +518,19 @@ f
 
 
 .damselfly-folderlist {
-    display: flex;
-    max-width: 100%;
     flex-direction: column;
-    flex: 1 1 auto;
+    flex: 0 1 100%;
+    width: 100%;
+    max-width: 100%;
     order: 1;
+    display: flex;
+}
+
+.folder-scroll-area {
+    flex-direction: column;
+    flex: 1 1 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .damselfly-selectedimages {
@@ -481,6 +543,10 @@ f
     align-content: flex-start;
     align-items: center;
     overflow-y: auto;
+}
+
+.damselfly-basketmanager {
+    order: 3;
 }
 
 .damselfly-imageproperties {
@@ -530,6 +596,7 @@ f
     align-items: stretch;
     flex: 0 0 auto;
     flex-flow: row wrap;
+    font-size: 10pt;
 }
 
 /* Mobile adaptive changes. WIP */
@@ -570,19 +637,21 @@ f
     float: left;
     overflow-y: scroll;
 }
-  
+
 .damselfly-imagetools {
     display: flex;
-    align-items: stretch;
+    flex-flow: row wrap;
     align-items: center;
     flex: 0 0 40px;
-    flex-flow: row wrap;
-    max-height: 40px;
+    min-height: 30px;
+    justify-content: space-evenly;
+    padding-right: 3px;
+    padding-left: 3px;
 }
 
 .damselfly-browsetool {
     flex: 1;
-    margin: 10px;
+    margin: 3px;
     display: flex;
     min-width: 200px;
     flex-flow: row;
@@ -590,7 +659,7 @@ f
 }
 
 .damselfly-browsetoollabel {
-    margin: 5px;
+    margin: 2px;
 }
 .damselfly-gridimage {
     display: flex;
@@ -602,11 +671,12 @@ f
     100% {opacity:1;}
 }
 
-  
+
 .damselfly-searchfilter {
     flex: 1;
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: row;
+    margin-right: 3px;
     align-items: center;
 }
 
@@ -630,21 +700,31 @@ f
     align-content: center;
 }
 
-.damselfly-imagetitlebar {
+.damselfly-about {
     display: flex;
-    flex: 1;
-    max-height: 30px;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-.damselfly-about{
+    flex-direction: column;
+    justify-content: center;
     padding: 10px;
     display: flex;
     order: 3;
     flex: 1;
+    padding: 5px;
+    margin: 5px;
 }
 
+.damselfly-aboutcolumn {
+    display: flex;
+    flex-direction: row;
+    flex: 1 0 auto;
+    margin: 5px;
+}
+
+.damselfly-aboutcolumncontent {
+    flex: 1;
+    justify-content: flex-start;
+    padding: 5px;
+    border-radius: 3px;
+}
 
 .damselfly-imagenav {
     display: flex;
@@ -661,9 +741,52 @@ f
     max-height: 30px;
 }
 
-.damselfly-imagetitle{
+.damselfly-imagepreview {
     display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
     flex: 8;
+    padding: 3px;
+}
+
+.damselfly-imagetitlebar {
+    display: flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+    flex-flow: row wrap;
+    font-size: 10pt;
+    max-height: 30px;
+}
+
+.damselfly-imagetitlenav {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 3px;
+    flex: 1;
+}
+
+.damselfly-imagetitle {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 3px;
+    flex: 1;
+}
+
+.damselfly-imagebuttons {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.damselfly-imagetitle h4 {
+    text-align: right;
 }
 
 .damselfly-navleft {
@@ -732,9 +855,16 @@ f
 }
 
 .toolwindow {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
     color: var( --tool-window-text );
     background-color: var( --tool-window-bg );
     box-shadow: 1px 1px 0 var( --tool-window-shadow ) inset;
+}
+
+.toolwindow:last-child {
+    flex: 1 0 auto;
 }
 
 .toolwindow-titlebar {
@@ -757,6 +887,9 @@ f
 
 .toolwindow-content {
     padding: 4px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 
@@ -899,6 +1032,7 @@ f
 /* TODO: Rename these */
 .InputAddOn-field {
     flex: 1;
+    font-size: 10pt;
 }
 
 .InputAddOn-field:not(:first-child) {
@@ -960,9 +1094,10 @@ padding: 0.4em 0.65em;
     flex-wrap: nowrap;
     font-size: 9pt;
     cursor: default;
-    border: 0.5px solid rgba(55, 125, 55, 0.6);
+    color: var( --keyword-text );
+    border: 0.5px solid var( --keyword-border);
     border-radius: 6px;
-    background-color: rgba(25, 95, 25, 0.9);
+    background-color: var( --keyword-bg );
 }
 
 .damselfly-favouritetag {
@@ -973,7 +1108,7 @@ padding: 0.4em 0.65em;
 }
 
 .damselfly-favouritetag:hover {
-    color: rgba(200, 255, 200, 0.9);
+    color: var(--image-checkbox-checked-hover-bg);
 }
 
 .damselfly-deletetag {
@@ -986,11 +1121,11 @@ padding: 0.4em 0.65em;
     cursor: pointer;
 }
 
-    .damselfly-addfavekeyword:hover {
-        cursor: pointer;
-        color: rgba(220, 255, 220, 0.9);
-        background-color: rgba(85, 135, 85, 0.9);
-    }
+.damselfly-addfavekeyword:hover {
+    cursor: pointer;
+    color: rgba(220, 255, 220, 0.9);
+    background-color: rgba(85, 135, 85, 0.9);
+}
 
 .damselfly-deletetag:hover {
     color: rgba(200, 255, 200, 0.9);
@@ -1037,9 +1172,10 @@ padding: 0.4em 0.65em;
 }
 
 .desktop-download-icons {
-    font-size: 16pt;
-    padding: 10px;
+    font-size: 14pt;
+    padding: 7px;
     display: flex;
+    vertical-align: middle;
 }
 
 .damselfly-config {
@@ -1051,18 +1187,24 @@ padding: 0.4em 0.65em;
 
 .damselfly-configsection {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .damselfly-configsetting {
     display: flex;
+    flex-direction: row;
 }
 
 .damselfly-configfield {
-    flex: 1;
+    flex: 1 0 500px;
+}
+.damselfly-configfield input {
+    width: 400px;
 }
 
 .damselfly-configlabel {
-    flex: 1;
+    flex: 1 0 400px;
 }
 
 .toolbar-hidden {
@@ -1103,7 +1245,7 @@ padding: 0.4em 0.65em;
 .blazored-typeahead__input-mask-wrapper--disabled {
     border-radius: 0px;
     background: rgb( 200, 200, 200 );
-    color: grey;
+    color: lightgrey;
     height: 28px;
 }
 
@@ -1199,9 +1341,9 @@ hr.separator {
     flex-wrap: nowrap;
     font-size: 9pt;
     cursor: default;
-    border: 0.5px solid rgba(55, 125, 55, 0.6);
+    border: 0.5px solid var(--keyword-border);
     border-radius: 3px;
-    background-color: rgba(25, 95, 25, 0.9);
+    background-color: var(--keyword-bg);
 }
 
 .loglist-table {
@@ -1272,13 +1414,99 @@ hr.separator {
     height: 50px;
 }
 
-.img-zoom-result {
-    border: 1px solid #ddd4d4;
+.damselfly-about {
+    overflow-y: auto;
+    flex-direction: column;
+}
+
+.objects-box {
+    display: inherit;
     position: absolute;
-    display:none;
+    border: none;
+    background-color: transparent;
+    left: -10000px;
+    top: -10000px;
+    width: 0px;
+    height: 0px;
+}
+
+.object {
+    z-index: 50;
+    display: none;
+    position: absolute;
+    padding: 3px;
+    font-weight: bold;
+    border: 2px solid #555555;
+    background-color: rgba(155,155,155,0.25);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn ease 0.4s;
+}
+
+.object:hover {
+    background-color: rgba(255,255,255,0.45);
+    border: 3px solid #ffffff;
+    animation: fadeIn ease 0.2s;
+}
+
+.object-text {
+    flex: 1;
+    color: black;
+    padding: 3px;
+    font-size: 14pt;
+    font-weight: bold;
+    z-index: 60;
+    text-shadow: -2px -2px 0 rgb( 255, 255, 255, 0.5 ), 2px -2px 0 rgb( 255, 255, 255, 0.5 ), -2px 2px 0 rgb( 255, 255, 255, 0.5 ), 2px 2px 0 rgb( 255, 255, 255, 0.5 );
+}
+
+.img-zoom-result {
+    z-index: 100;
+    border: 1px solid rgba(130, 130, 130, 0.6);
+    position: absolute;
+    display: none;
     animation: fadeIn ease 1s;
     height: calc( 100vh - 100px);
     width: 100%;
     cursor: zoom-in;
     background-repeat: no-repeat;
+}
+
+.object-editor {
+    flex: 1;
+    font-size: 10pt;
+    min-width: 200px;
+    min-height: 20px;
+}
+
+.damselfly-toolbarbutton {
+    vertical-align: top;
+    color: var( --keyword-bg );
+}
+
+.damselfly-toolbarbutton:hover {
+    color: var( --image-checkbox-checked-hover-bg );
+}
+
+.damselfly-textsearchoptions {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin: 3px;
+}
+
+.blazored-typeahead__loader {
+    display: none;
+}
+
+.blazored-typeahead__input-mask-wrapper--disabled {
+    min-height: 32px;
+    background: lightgrey;
+}
+
+.blazored-typeahead__input-mask-wrapper {
+    background: white;
+    color: black;
+    padding-left: 4px;
 }

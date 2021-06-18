@@ -1,0 +1,32 @@
+
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
+
+WORKDIR /app
+COPY /publish .
+RUN chmod +x Damselfly.Web 
+
+# Copy the entrypoint script
+COPY ./damselfly-entrypoint.sh /
+RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
+ADD VERSION .
+
+RUN apt-get update
+RUN apt-get install -y procps
+
+# Need sudo for the iNotify count increase
+RUN set -ex && apt-get install -y sudo
+
+# Add Microsoft fonts that'll be used for watermarking
+RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
+RUN apt-get update && apt-get install -y ttf-mscorefonts-installer fontconfig
+
+# Add ExifTool
+RUN sudo apt-get install -y exiftool 
+
+RUN apt-get install -y libgomp1
+RUN apt-get install -y apt-utils
+RUN apt-get install -y libgdiplus
+RUN apt-get install -y libc6-dev 
+
+EXPOSE 6363
+ENTRYPOINT ["sh","/damselfly-entrypoint.sh"]

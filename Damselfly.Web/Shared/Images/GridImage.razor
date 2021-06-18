@@ -5,7 +5,13 @@
 @inject NavigationManager NavigationManager
 @inject NavigationService navContext
 @inject ContextMenuService contextMenuService
+@inject BasketService basketService
+@inject ImageRecognitionService aiService;
+@inject SelectionService selectionService
+ 
 @inject IJSRuntime JsRuntime
+
+<LocalFileExporter @ref="FileExporter" />
 
 @if (CurrentImage == null)
 {
@@ -41,28 +47,40 @@ else
 
     public bool InBasket
     {
-        get { return BasketService.Instance.IsSelected(CurrentImage); }
+        get { return basketService.IsSelected(CurrentImage); }
         set
         {
-            BasketService.Instance.SetBasketState(new[] { CurrentImage }, value);
+            basketService.SetBasketState(new[] { CurrentImage }, value);
             // Notify the image list that the selection has changed
             StateHasChanged();
         }
     }
 
+    private LocalFileExporter FileExporter;
     string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
-    string SelectStyle { get { return SelectionService.Instance.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
+    string SelectStyle { get { return selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
 
     void ShowContextMenu(MouseEventArgs args)
     {
+        var selectedImages = selectionService.Selection;
         var basketEntry = (InBasket ? "Remove from" : "Add to") + " Basket";
+
         contextMenuService.Open(args, ds =>
            @<RadzenMenu Click="OnMenuItemClick">
-            <RadzenMenuItem Text="View Image" Value="0" />
-            <hr class="separator">
-            <RadzenMenuItem Text="@basketEntry" Value="1" />
-            <RadzenMenuItem Text="Download" Value="2" />
-            </RadzenMenu>);
+            @if (selectedImages.Count == 1)
+            {
+                <RadzenMenuItem Text="View Image" Value="0" />
+                <RadzenMenuItem Text="Download" Value="1" />
+                <hr class="separator">}
+                <RadzenMenuItem Text="@basketEntry" Value="2" />
+                @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                { 
+                    <RadzenMenuItem Text="Save Locally" Value="3" />
+                }
+                <RadzenMenuItem Text="Regenerate Thumbnail" Value="3" />
+                <RadzenMenuItem Text="Rescan AI" Value="5" />
+            </RadzenMenu>
+        );
     }
 
     void OnMenuItemClick(MenuItemEventArgs args)
@@ -71,9 +89,12 @@ else
         switch (args.Value)
         {
             case 0: NavigateToImage(); break;
-                // TODO: Async?
-            case 1: InBasket = !InBasket; break;
-            case 2: _ = DownloadImage(); break;
+            case 1: _ = DownloadImage(); break;
+            // TODO: Async?
+            case 2: basketService.SetBasketState( selectionService.Selection, true ); break;
+            case 3: _ = FileExporter.ExportImagesToLocalFilesystem(selectionService.Selection); break;
+            case 4: _ = thumbService.MarkImagesForScan( selectionService.Selection); break;
+            case 5: _ = aiService.MarkImagesForScan(selectionService.Selection); break;
         }
     }
 

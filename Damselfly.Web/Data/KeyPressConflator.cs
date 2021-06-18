@@ -17,7 +17,7 @@ namespace Damselfly.Web.Data
         private Timer searchTimer;
         private TimerCallback theCallback;
 
-        public EventConflator( int delay = 500 )
+        public EventConflator( int delay = 1000 )
         {
             interval = delay;
         }
@@ -56,7 +56,6 @@ namespace Damselfly.Web.Data
             searchTimer = null;
             if( oldTimer != null )
                 oldTimer.Dispose();
-
             theCallback(state);
         }
     }

@@ -7,11 +7,9 @@ namespace Damselfly.Core.Services
     {
         private string statusText;
         public event Action<string> OnChange;
-        public static StatusService Instance { get; private set; }
-        
+
         public StatusService()
         {
-            Instance = this;
         }
 
         private void NotifyStateChanged()

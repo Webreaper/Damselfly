@@ -3,19 +3,16 @@
 @inject BasketService basketService
 @inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
-@inject NavigationManager navManager  
+@inject NavigationManager navManager
 
 @using Damselfly.Core.ImageProcessing
 
-
 <div class="damselfly-exportview">
-    <div>
-        <div class="damselfly-imagenavitem">
-            <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
-            <h4 class="image-title">
-                Export Images
-            </h4>
-        </div>
+    <div class="damselfly-pagetitlebar">
+        <NavBack />
+        <h4 class="damselfly-imagetitle">
+            Export Images
+        </h4>
     </div>
     <div class="damselfly-exportlist">
         @if (images != null)
@@ -41,7 +38,7 @@
             <p>Loading selection...</p>
         }
     </div>
-            </div>
+</div>
 
 @code {
     readonly List<ListableImage> images = new List<ListableImage>();

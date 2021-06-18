@@ -9,8 +9,12 @@
 *.db-wal
 
 # Downloads folder
-wwwroot/[Dd]ownloads
 server/
+Damselfly.Web/wwwroot/desktop
+Damselfly.Web/wwwroot/[Dd]ownloads
+Damselfly.Web/config/
+Damselfly.Desktop/dist/
+
 
 # User-specific files
 *.rsuser
@@ -361,12 +365,8 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-Damselfly.Web/wwwroot/
-Damselfly.Web/config/
-Damselfly.Desktop/dist/
-
 # The following is the electron gitignore
-.DS_Store
+**/.DS_Store
 .env
 .gclient_done
 **/.npmrc

@@ -40,23 +40,31 @@ namespace Damselfly.Core.Utils
 
             try
             {
-                // If there's tags there already, we're done.
-                if (img.ImageTags.Any())
-                    return;
-
                 // Need to ensure the image is re-attached to the
                 // context if we didn't load it with this one
                 db.Attach(img);
-                
-                // Now load the tags
-                db.Entry(img).Collection(e => e.ImageTags)
-                            .Query()
-                            .Include(e => e.Tag)
-                            .Load();
+
+                if (!img.ImageTags.Any())
+                {
+                    // Now load the tags
+                    db.Entry(img).Collection(e => e.ImageTags)
+                                .Query()
+                                .Include(e => e.Tag)
+                                .Load();
+                }
+
+                if (!img.ImageObjects.Any())
+                {
+                    db.Entry(img).Collection(e => e.ImageObjects)
+                                 .Query()
+                                 .Include(x => x.Tag)
+                                 .Include(x => x.Person)
+                                 .Load();
+                }
             }
             catch (Exception ex)
             {
-                Logging.Log($"Exception retrieving image tags: {ex.Message}");
+                Logging.Log($"Exception retrieving image {img.ImageId}'s tags: {ex.Message}");
             }
             finally
             {

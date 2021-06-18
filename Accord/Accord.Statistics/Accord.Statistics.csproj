@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Accord.Statistics</AssemblyName>
+    <RootNamespace>Accord.Statistics</RootNamespace>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+</PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG;NET;NET6_0;NETCOREAPP;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1701;1702;0436;3245;3243;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType></DebugType>
+    <DefineConstants>TRACE;RELEASE;NET;NET6_0;NETCOREAPP;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Accord.Core\Accord.Core.csproj" />
+    <ProjectReference Include="..\Accord.Math.Core\Accord.Math.Core.csproj" />
+    <ProjectReference Include="..\Accord.Math\Accord.Math.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
+</Project>

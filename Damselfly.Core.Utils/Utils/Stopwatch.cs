@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using Humanizer;
 
 namespace Damselfly.Core.Utils
 {
@@ -75,7 +76,7 @@ namespace Damselfly.Core.Utils
 
         public long ElapsedTime { get { return end - start; } }
         public string HumanElapsedTime { get { return ((int)(end - start)).ToHumanReadableString(); } }
-        public override string ToString() => $"{ElapsedTime}";
+        public override string ToString() => $"{ElapsedTime}ms";
 
         public static void WriteTotals(bool verbose = true)
         {
@@ -83,13 +84,16 @@ namespace Damselfly.Core.Utils
             {
                 Action<string> func = verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
 
-                func("Performance Summary:");
-                int titleLength = stats.Keys.Max(x => x.Length);
-
-                foreach (var kvp in stats.OrderBy(x => x.Key))
+                if (stats.Any())
                 {
-                    var lineItem = kvp.Key + ":";
-                    func($"  {lineItem.PadRight(titleLength + 2, ' ')}   Count: {kvp.Value.count, 7}   Avg: {kvp.Value.AverageTime,7}ms   Max: {kvp.Value.maxTime,7}ms");
+                    func("Performance Summary:");
+                    int titleLength = stats.Keys.Max(x => x.Length);
+
+                    foreach (var kvp in stats.OrderBy(x => x.Key))
+                    {
+                        var lineItem = kvp.Key + ":";
+                        func($"  {lineItem.PadRight(titleLength + 2, ' ')}   Count: {kvp.Value.count,7}   Avg: {kvp.Value.AverageTime,7}ms   Max: {kvp.Value.maxTime,7}ms");
+                    }
                 }
             }
             catch (Exception)

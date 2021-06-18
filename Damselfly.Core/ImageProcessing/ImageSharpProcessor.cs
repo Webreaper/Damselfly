@@ -95,6 +95,21 @@ namespace Damselfly.Core.ImageProcessing
             return result;
         }
 
+        public static void DrawRects( string path, List<Rectangle> rects, string output )
+        {
+            using var image = Image.Load<Rgba32>(path);
+
+            foreach (var rect in rects)
+            {
+                var pen = new Pen(Color.HotPink, 7);
+
+                image.Mutate(x => x.AutoOrient());
+                image.Mutate(x => DrawRectangleExtensions.Draw(x, pen, rect));
+            }
+
+            image.Save(output);
+        }
+
         /// <summary>
         /// Resize using SixLabors ImageSharp, which can do 100 images in about 59s (2020 MacBook Air i5)
         /// </summary>

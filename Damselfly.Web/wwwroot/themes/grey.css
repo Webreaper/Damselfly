@@ -35,4 +35,7 @@
     --tool-window-shadow: rgba(225, 225, 225, 0.7);
     --tool-window-title: #CFCFCF;
     --tool-window-title-bg: rgba(160, 160, 160, 0.3);
+    --keyword-text: black;
+    --keyword-bg: rgba(225, 225, 225, 0.9);
+    --keyword-border: rgba(245, 245, 245, 0.9);
 }

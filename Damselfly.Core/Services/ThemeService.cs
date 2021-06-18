@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Collections.Generic;
+using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
@@ -18,13 +20,13 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ThemeService
     {
-        public static ThemeService Instance { get; private set; }
         private static DirectoryInfo themesFolder;
         private long cacheBuster = 1;
+        private readonly IConfigService _configService;
 
-        public ThemeService()
+        public ThemeService( IConfigService configService )
         {
-            Instance = this;
+            _configService = configService;
         }
 
         /// <summary>
@@ -40,11 +42,11 @@ namespace Damselfly.Core.Services
         public string CurrentTheme {
             get
             {
-                return ConfigService.Instance.Get(ConfigSettings.Theme, "green");
+                return _configService.Get(ConfigSettings.Theme, "green");
             }
             set
             {
-                ConfigService.Instance.Set(ConfigSettings.Theme, value);
+                _configService.Set(ConfigSettings.Theme, value);
                 cacheBuster++;
             }
         }

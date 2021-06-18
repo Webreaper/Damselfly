@@ -16,15 +16,18 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class BasketService
     {
-        public static BasketService Instance { get; private set; }
         private const string s_DefaultBasket = "default";
-
+        private readonly StatusService _statusService;
         public event Action OnChange;
         public Basket CurrentBasket { get; set; }
+        private readonly DownloadService _downloadService;
 
-        public BasketService()
+        public BasketService( StatusService statusService, DownloadService downloadService)
         {
-            Instance = this;
+            _statusService = statusService;
+            _downloadService = downloadService;
+
+            Initialise();
         }
 
         private void NotifyStateChanged()
@@ -139,7 +142,7 @@ namespace Damselfly.Core.Services
 
                 NotifyStateChanged();
 
-                StatusService.Instance.StatusText = "Basket selection cleared.";
+                _statusService.StatusText = "Basket selection cleared.";
             }
             catch (Exception ex)
             {
@@ -160,11 +163,11 @@ namespace Damselfly.Core.Services
         {
             var images = SelectedImages.Select(x => new FileInfo(x.FullPath)).ToArray();
 
-            var virtualZipPath = await DownloadService.Instance.CreateDownloadZipAsync(images, config );
+            var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images, config );
 
             if (!string.IsNullOrEmpty(virtualZipPath))
             {
-                StatusService.Instance.StatusText = $"Basket selection downloaded to {virtualZipPath}.";
+                _statusService.StatusText = $"Basket selection downloaded to {virtualZipPath}.";
 
                 return virtualZipPath;
             }
@@ -211,7 +214,7 @@ namespace Damselfly.Core.Services
                         });
 
                         changed = true;
-                        StatusService.Instance.StatusText = $"Added {imagesToAdd.Count} image to the basket.";
+                        _statusService.StatusText = $"Added {imagesToAdd.Count} image to the basket.";
                     }
                 }
                 else if (!newState)
@@ -224,7 +227,7 @@ namespace Damselfly.Core.Services
                         SelectedImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
                         changed = true;
 
-                        StatusService.Instance.StatusText = $"Removed {deleted} images from the basket.";
+                        _statusService.StatusText = $"Removed {deleted} images from the basket.";
                     }
                 }
 

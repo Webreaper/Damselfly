@@ -28,6 +28,19 @@ namespace Damselfly.Core.Utils
         }
 
         /// <summary>
+        /// Returns true if this is a known, supported sidecar type.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        public static bool IsSidecarFileType(this FileInfo filename)
+        {
+            if (filename.IsHidden())
+                return false;
+
+            return SidecarExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
         /// Given a sidecar object, parses the files (ON1 or XMP) and pulls out
         /// the list of keywords in the sidecar file.
         /// </summary>

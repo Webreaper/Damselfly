@@ -24,8 +24,8 @@
     --image-checkbox-checked-hover-border: #777777;
     --image-checkbox-checked-hover-bg: grey;
     --grid-image-bg: rgba(50,50,50,0.35);
-    --grid-image-selected-bg: rgba(80,80,80,0.75);
-    --grid-image-selected-box: rgba(25, 125, 25, 0.7);
+    --grid-image-selected-bg: rgba(80,120,80,0.75);
+    --grid-image-selected-box: rgba(55, 155, 55, 0.7);
     --tag-editor-disabled-bg: rgb( 200, 200, 200 );
     --tag-editor-text: #aaaaaa;
     --tag-editor-border: darkgrey;
@@ -33,6 +33,9 @@
     --tool-window-text: #777777;
     --tool-window-bg: rgba(50, 60, 50, 0.3);
     --tool-window-shadow: rgba(25, 25, 25, 0.7);
-    --tool-window-title: #97FF97;
-    --tool-window-title-bg: rgba(30, 30, 30, 0.3);
+    --tool-window-title: #070707;
+    --tool-window-title-bg: rgba(90, 90, 90, 0.3);
+    --keyword-text: white;
+    --keyword-bg: rgba(25, 25, 25, 0.9);
+    --keyword-border: rgba(35, 35, 35, 0.9);
 }

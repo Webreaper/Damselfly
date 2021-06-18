@@ -19,7 +19,7 @@
       "commandName": "Project",
       "commandLineArgs": "/Users/markotway/Pictures",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5050;https://localhost:5051;",
+      "applicationUrl": "http://localhost:6363",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

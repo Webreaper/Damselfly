@@ -6,6 +6,7 @@ using WordPressPCL.Models;
 using Damselfly.Core.Models;
 using System.IO;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Services
 {
@@ -14,12 +15,21 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class WordpressService
     {
-        public static WordpressService Instance { get; private set; }
         private WordPressClient _client;
+        private readonly BasketService _basketService;
+        private readonly StatusService _statusService;
+        private readonly ConfigService _configService;
+        private readonly ImageProcessService _imageProcessService;
 
-        public WordpressService()
+        public WordpressService( BasketService basketService,
+                                 ImageProcessService imageService,
+                                 ConfigService configService,
+                                 StatusService statusService)
         {
-            Instance = this;
+            _configService = configService;
+            _basketService = basketService;
+            _statusService = statusService;
+            _imageProcessService = imageService;
 
             ResetClient();
         }
@@ -33,11 +43,11 @@ namespace Damselfly.Core.Services
         {
             try
             {
-                var images = BasketService.Instance.SelectedImages
+                var images = _basketService.SelectedImages
                                    .Select(x => x)
                                    .ToList();
 
-                StatusService.Instance.StatusText = $"Uploading {images.Count()} to Wordpress...";
+                _statusService.StatusText = $"Uploading {images.Count()} to Wordpress...";
 
                 Logging.LogVerbose($"Checking token validity...");
 
@@ -54,30 +64,30 @@ namespace Damselfly.Core.Services
                         ExportConfig wpConfig = new ExportConfig { Size = ExportSize.Large, WatermarkText = null };
 
                         // This saves to the memoryStream with encoder
-                        ImageProcessService.Instance.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
+                        _imageProcessService.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
 
                         // The position needs to be reset, before we push it to Wordpress
                         memoryStream.Position = 0; 
 
-                        StatusService.Instance.StatusText = $"Uploading {image.FileName} to Wordpress.";
+                        _statusService.StatusText = $"Uploading {image.FileName} to Wordpress.";
 
                         await _client.Media.Create(memoryStream, image.FileName);
 
                         Logging.LogVerbose($"Image uploaded: {image.FullPath} successfully.");
                     }
 
-                    StatusService.Instance.StatusText = $"{images.Count()} images uploaded to Wordpress.";
+                    _statusService.StatusText = $"{images.Count()} images uploaded to Wordpress.";
                 }
                 else
                 {
                     Logging.LogError($"Token was invalid.");
-                    StatusService.Instance.StatusText = $"Authentication error uploading to Wordpress.";
+                    _statusService.StatusText = $"Authentication error uploading to Wordpress.";
                 }
             }
             catch (Exception e)
             {
                 Logging.LogError($"Error uploading to Wordpress: {e.Message}");
-                StatusService.Instance.StatusText = $"Error uploading images to Wordpress. Please check the logs.";
+                _statusService.StatusText = $"Error uploading images to Wordpress. Please check the logs.";
             }
         }
 
@@ -107,8 +117,8 @@ namespace Damselfly.Core.Services
 
             if (! gotToken )
             {
-                var user = ConfigService.Instance.Get(ConfigSettings.WordpressUser);
-                var pass = ConfigService.Instance.Get(ConfigSettings.WordpressPassword);
+                var user = _configService.Get(ConfigSettings.WordpressUser);
+                var pass = _configService.Get(ConfigSettings.WordpressPassword);
 
                 Logging.LogVerbose($"No valid JWT token. Requesting a new one.");
 
@@ -144,7 +154,7 @@ namespace Damselfly.Core.Services
 
             try
             {
-                var wpUrl = ConfigService.Instance.Get(ConfigSettings.WordpressURL);
+                var wpUrl = _configService.Get(ConfigSettings.WordpressURL);
 
                 if (!String.IsNullOrEmpty(wpUrl))
                 {

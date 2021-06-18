@@ -9,15 +9,20 @@
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
 @inject NavigationService navContext
+@inject SearchService searchService
+@inject StatusService statusService
 @inject IModalService Modal
 
 <div class="damselfly-imagebrowser">
-    <SearchBar />
-    <ImageGrid />
+    <ErrorBoundary>
+        <SearchBar />
+    </ErrorBoundary>
+    <ErrorBoundary>
+        <ImageGrid />
+    </ErrorBoundary>
 </div>
 
-@code {
-    [Parameter]
+@code { [Parameter]
     public string FolderId { get; set; }
 
     protected override async Task OnParametersSetAsync()
@@ -28,8 +33,8 @@
 
             if (folder != null)
             {
-                StatusService.Instance.StatusText = $"Selected folder {folder.Name}";
-                SearchService.Instance.Folder = folder;
+                statusService.StatusText = $"Selected folder {folder.Name}";
+                searchService.Folder = folder;
             }
         }
     }
@@ -39,7 +44,7 @@
         base.OnInitialized();
         navContext.CurrentImage = null;
 
-        ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true});
+        ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
     }
 
     // TODO: Don't think we need this
@@ -49,5 +54,4 @@
     {
         Logging.Log($"Checking for update: {clientVersion}");
 
-    }
-}
+    } }

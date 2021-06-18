@@ -6,13 +6,11 @@
 @using Damselfly.Core.ImageProcessing
 
 <div class="damselfly-export">
-    <div>
-        <div class="damselfly-imagenavitem">
-            <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
-            <h4 class="image-title">
-                Images with Duplicates
-            </h4>
-        </div>
+    <div class="damselfly-pagetitlebar">
+        <NavBack />
+        <h4 class="damselfly-imagetitle">
+            Images with Duplicates
+        </h4>
     </div>
     <div class="damselfly-dupelist">
         @if (imageLists != null)
@@ -25,14 +23,14 @@
                     </div>
 
                     <div class="damselfly-dupe-entries">
-                        @foreach( var img in list )
+                        @foreach (var img in list)
                         {
                             <div class="damselfly-dupe-entry">
                                 @img.FullPath, Date Taken: @img.SortDate.Display()
                             </div>
                         }
                     </div>
-              </div>
+                </div>
             }
         }
         else
@@ -47,7 +45,7 @@
 
     List<List<Image>> imageLists = new List<List<Image>>();
 
-    private string GetImgUrl( Image image )
+    private string GetImgUrl(Image image)
     {
         return $"/thumb/{ThumbSize.Small}/{image.ImageId}";
     }

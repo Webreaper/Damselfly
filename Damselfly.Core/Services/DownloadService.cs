@@ -5,9 +5,6 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
-using Damselfly.Core.ImageProcessing;
-using Damselfly.Core.Interfaces;
-using System.Threading;
 
 namespace Damselfly.Core.Services
 {
@@ -57,7 +54,8 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public static DownloadService Instance { get; private set; }
+        private readonly StatusService _statusService;
+        private readonly ImageProcessService _imageProcessingService;
         public static DesktopAppPaths DesktopAppInfo { get; private set; } = new DesktopAppPaths();
         private static DirectoryInfo desktopPath;
         private static DirectoryInfo downloadsPath;
@@ -65,9 +63,10 @@ namespace Damselfly.Core.Services
         private const string s_downloadVPath = "downloads";
         private const string s_completionMsg = "Zip created.";
 
-        public DownloadService()
+        public DownloadService( StatusService statusService, ImageProcessService imageService)
         {
-            Instance = this;
+            _statusService = statusService;
+            _imageProcessingService = imageService;
         }
 
         /// <summary>
@@ -174,7 +173,7 @@ namespace Damselfly.Core.Services
                     File.Delete(serverZipPath);
 
                 Logging.Log($" Opening zip archive: {serverZipPath}");
-                StatusService.Instance.StatusText = $"Preparing to zip {filesToZip.Count()} images...";
+                _statusService.StatusText = $"Preparing to zip {filesToZip.Count()} images...";
 
                 using (ZipArchive zip = ZipFile.Open(serverZipPath, ZipArchiveMode.Create))
                 {
@@ -213,7 +212,7 @@ namespace Damselfly.Core.Services
                                 {
                                     // Run the transform - note we do this in-memory and directly on the stream so the
                                     // transformed file is never actually written to disk other than in the zip.
-                                    await Task.Run(() => ImageProcessService.Instance.TransformDownloadImage(imagePath.FullName,
+                                    await Task.Run(() => _imageProcessingService.TransformDownloadImage(imagePath.FullName,
                                                             zipStream, config));
                                 }
                             }
@@ -226,10 +225,10 @@ namespace Damselfly.Core.Services
                         // Yield a bit, otherwise 
                         await Task.Delay(50);
 
-                        StatusService.Instance.StatusText = $"Zipping image {imagePath.Name}... ({percentComplete}% complete)";
+                        _statusService.StatusText = $"Zipping image {imagePath.Name}... ({percentComplete}% complete)";
                     }
 
-                    StatusService.Instance.StatusText = s_completionMsg;
+                    _statusService.StatusText = s_completionMsg;
                 }
 
                 return virtualZipPath;
@@ -292,7 +291,7 @@ namespace Damselfly.Core.Services
                 db.DownloadConfigs.Add(config);
             }
 
-            await Task.FromResult(db.SaveChanges("SaveExportConfig"));
+            await db.SaveChangesAsync("SaveExportConfig");
         }
     }
 }

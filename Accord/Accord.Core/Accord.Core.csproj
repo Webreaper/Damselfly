@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Accord</AssemblyName>
+    <RootNamespace>Accord</RootNamespace>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+</PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+      <Compile Update="Properties\**\*.Designer.cs">
+         <DesignTime>True</DesignTime>
+         <AutoGen>True</AutoGen>
+         <DependentUpon>Properties\$([System.String]::Copy('%(FileName)').Replace('.Designer', '')).resx</DependentUpon>
+      </Compile>
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>TRACE;DEBUG;NET;NET6_0;NETCOREAPP;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1701;1702;3245;0003;0436;</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType></DebugType>
+    <DefineConstants>TRACE;RELEASE;NET;NET6_0;NETCOREAPP;NETSTANDARD2_0</DefineConstants>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+<ItemGroup>
+<Reference Include="System.ComponentModel.DataAnnotations" />
+</ItemGroup>
+
+</Project>

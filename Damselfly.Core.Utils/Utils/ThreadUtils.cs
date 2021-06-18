@@ -21,6 +21,7 @@ namespace Damselfly.Core.Utils
                                 while (queue.TryDequeue(out var item))
                                 {
                                     await processor(item).ConfigureAwait(false);
+                                    await Task.Delay(100); // Don't thrash.
                                 }
                             });
 

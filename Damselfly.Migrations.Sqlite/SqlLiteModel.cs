@@ -4,8 +4,8 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using EFCore.BulkExtensions;
 using Damselfly.Core.Models;
-using Damselfly.Core.Models.Interfaces;
-using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Migrations.Sqlite.Models
@@ -78,6 +78,10 @@ namespace Damselfly.Migrations.Sqlite.Models
             ExecutePragma(db, "PRAGMA cache_size=10000;");
             // Use a shared cache - good for multi-threaded access
             ExecutePragma(db, "PRAGMA cache=shared;");
+            // Allow reading from the cache. Means we might get stale
+            // data, but in most cases that's fine and concurrency will
+            // be improved. 
+            ExecutePragma(db, "PRAGMA read_uncommitted=true;");
             // Store temporary tables in memory
             ExecutePragma(db, "PRAGMA temp_store=MEMORY;");
 
@@ -240,21 +244,30 @@ namespace Damselfly.Migrations.Sqlite.Models
             return query.BatchDelete();
         }
 
-        // TODO - this is Sqlite specific and should move down into the MySqlite provider.
-        public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T : class
+        public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
         {
             // Convert the string from a set of terms to quote and add * so they're all exact partial matches
             // TODO: How do we handle suffix matches - i.e., contains. SQLite FTS doesn't support that. :(
-            var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => $"\"{x}\"*");
-
-            var subQueries = new List<String>();
+            var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             var sql = "SELECT i.* from Images i";
             int i = 1;
+
             foreach( var term in terms )
             {
+                var ftsTerm = $"\"{term}\"*";
+                var tagSubQuery = $"select distinct it.ImageId from FTSKeywords fts join ImageTags it on it.tagId = fts.TagId where fts.Keyword MATCH ('{ftsTerm}')";
+                var joinSubQuery = tagSubQuery;
+
+                if (includeAITags)
+                {
+                    var objectSubQuery = $"select distinct io.ImageId from FTSKeywords fts join ImageObjects io on io.tagId = fts.TagId where fts.Keyword MATCH ('{ftsTerm}')";
+                    var nameSubQuery = $"select distinct io.ImageId from People p join ImageObjects io on io.PersonID = p.PersonID where p.Name like '%{term}%'";
+                    joinSubQuery = $"{tagSubQuery} union {objectSubQuery} union {nameSubQuery}";
+                }
+
                 // Subquery to produce the distinct set of images that match the term
-                var subQuery = $" join (select distinct it.ImageId from FTSKeywords fts join ImageTags it on it.tagId = fts.TagId where fts.Keyword MATCH ('{term}')) term{i} on term{i}.ImageID = i.ImageId";
+                var subQuery = $" join ({joinSubQuery}) term{i} on term{i}.ImageID = i.ImageId";
                 sql += subQuery;
                 i++;
             }

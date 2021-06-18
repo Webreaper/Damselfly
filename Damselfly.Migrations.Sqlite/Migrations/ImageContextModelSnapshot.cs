@@ -14,7 +14,7 @@ namespace Damselfly.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0-preview.4.21253.1");
+                .HasAnnotation("ProductVersion", "6.0.0-preview.6.21352.1");
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
@@ -79,6 +79,28 @@ namespace Damselfly.Core.Migrations
                     b.HasKey("CameraId");
 
                     b.ToTable("Cameras");
+                });
+
+            modelBuilder.Entity("Damselfly.Core.Models.CloudTransaction", b =>
+                {
+                    b.Property<int>("CloudTransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TransCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TransType")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("CloudTransactionId");
+
+                    b.HasIndex("Date", "TransType");
+
+                    b.ToTable("CloudTransactions");
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ConfigSetting", b =>
@@ -202,6 +224,12 @@ namespace Damselfly.Core.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("ClassificationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("ClassificationScore")
+                        .HasColumnType("REAL");
+
                     b.Property<DateTime>("FileCreationDate")
                         .HasColumnType("TEXT");
 
@@ -238,11 +266,30 @@ namespace Damselfly.Core.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("Damselfly.Core.Models.ImageClassification", b =>
+                {
+                    b.Property<int>("ClassificationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ClassificationId");
+
+                    b.HasIndex("Label")
+                        .IsUnique();
+
+                    b.ToTable("ImageClassifications");
+                });
+
             modelBuilder.Entity("Damselfly.Core.Models.ImageMetaData", b =>
                 {
                     b.Property<int>("MetaDataId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("AILastUpdated")
+                        .HasColumnType("TEXT");
 
                     b.Property<int?>("CameraId")
                         .HasColumnType("INTEGER");
@@ -294,6 +341,8 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("MetaDataId");
 
+                    b.HasIndex("AILastUpdated");
+
                     b.HasIndex("CameraId");
 
                     b.HasIndex("DateTaken");
@@ -308,6 +357,53 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("ThumbLastUpdated");
 
                     b.ToTable("ImageMetaData");
+                });
+
+            modelBuilder.Entity("Damselfly.Core.Models.ImageObject", b =>
+                {
+                    b.Property<int>("ImageObjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RecogntionSource")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RectHeight")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RectWidth")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RectX")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RectY")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("Score")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ImageObjectId");
+
+                    b.HasIndex("ImageId");
+
+                    b.HasIndex("PersonId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("ImageObjects");
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageTag", b =>
@@ -348,6 +444,27 @@ namespace Damselfly.Core.Migrations
                     b.ToTable("Lenses");
                 });
 
+            modelBuilder.Entity("Damselfly.Core.Models.Person", b =>
+                {
+                    b.Property<int>("PersonId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AzurePersonId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PersonId");
+
+                    b.ToTable("People");
+                });
+
             modelBuilder.Entity("Damselfly.Core.Models.Tag", b =>
                 {
                     b.Property<int>("TagId")
@@ -361,10 +478,10 @@ namespace Damselfly.Core.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("TimeStamp")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("TagType")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("Type")
+                    b.Property<DateTime>("TimeStamp")
                         .HasColumnType("TEXT");
 
                     b.HasKey("TagId");
@@ -416,6 +533,15 @@ namespace Damselfly.Core.Migrations
                     b.Navigation("Folder");
                 });
 
+            modelBuilder.Entity("Damselfly.Core.Models.ImageClassification", b =>
+                {
+                    b.HasOne("Damselfly.Core.Models.Image", null)
+                        .WithOne("Classification")
+                        .HasForeignKey("Damselfly.Core.Models.ImageClassification", "ClassificationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Damselfly.Core.Models.ImageMetaData", b =>
                 {
                     b.HasOne("Damselfly.Core.Models.Camera", "Camera")
@@ -437,6 +563,31 @@ namespace Damselfly.Core.Migrations
                     b.Navigation("Image");
 
                     b.Navigation("Lens");
+                });
+
+            modelBuilder.Entity("Damselfly.Core.Models.ImageObject", b =>
+                {
+                    b.HasOne("Damselfly.Core.Models.Image", "Image")
+                        .WithMany("ImageObjects")
+                        .HasForeignKey("ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Damselfly.Core.Models.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId");
+
+                    b.HasOne("Damselfly.Core.Models.Tag", "Tag")
+                        .WithMany("ImageObjects")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageTag", b =>
@@ -472,6 +623,10 @@ namespace Damselfly.Core.Migrations
                 {
                     b.Navigation("BasketEntry");
 
+                    b.Navigation("Classification");
+
+                    b.Navigation("ImageObjects");
+
                     b.Navigation("ImageTags");
 
                     b.Navigation("MetaData");
@@ -479,6 +634,8 @@ namespace Damselfly.Core.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Tag", b =>
                 {
+                    b.Navigation("ImageObjects");
+
                     b.Navigation("ImageTags");
                 });
 #pragma warning restore 612, 618

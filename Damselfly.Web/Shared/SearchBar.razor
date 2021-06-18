@@ -4,12 +4,21 @@
 
 @inject ImageService imageService
 @inject SearchService searchService
+@inject StatusService statusService
 
 <div class="damselfly-searchbar">
     <div class="damselfly-searchfilter">
-        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnKeyPressed="@KeyChanged" OnValueChanged="@DoSearch" TextValue="@SearchText" />
-        <input id="tags" title="Search tags only (ignore filename)" type="checkbox" @bind="@searchService.TagsOnly" />
-        <label for="tags" title="Search keyword tags only, not filenames"><i class="fa fa-tags" /></label>
+        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnValueChanged="@DoSearch" TextValue="@SearchText" />
+        <div class="damselfly-textsearchoptions">
+            <div>
+                <input id="tags" title="Search tags only (ignore filename)" type="checkbox" @bind="@searchService.TagsOnly" />
+                <label for="tags" title="Search keyword tags only, not filenames"><i class="fa fa-tags" /></label>
+            </div>
+            <div>
+                <input id="ai" title="Include AI Tags" type="checkbox" @bind="@searchService.IncludeAITags" />
+                <label for="ai" title="Include auto-generated/AI tags"><i class="fa fa-brain" /></label>
+            </div>
+        </div>
     </div>
     <div class="damselfly-searchfilter">
         <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate" />
@@ -32,20 +41,16 @@
         searchService.SetDateRange(range.Start.Date, range.End.Date);
     }
 
-    private void KeyChanged(string newText)
-    {
-        if (!string.IsNullOrEmpty(newText))
-            StatusService.Instance.StatusText = $"Searching for keyword: {newText}...";
-    }
-
     private void KeyChangedMinSize(string newText)
     {
         if (!string.IsNullOrEmpty(newText))
-            StatusService.Instance.StatusText = $"Searching for images larger than {newText}...";
+            statusService.StatusText = $"Searching for images larger than {newText}...";
     }
 
     private void DoSearch(string searchTerm)
     {
+        if (!string.IsNullOrEmpty(searchTerm))
+            statusService.StatusText = $"Searching for keyword: {searchTerm}...";
         searchService.SearchText = searchTerm;
     }
 }

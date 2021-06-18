@@ -3,6 +3,7 @@
 @inject SearchService searchService
 @inject IndexingService indexService
 @inject FolderService folderService
+@inject ImageRecognitionService aiService
 @inject ContextMenuService contextMenuService
 @implements IDisposable
 
@@ -46,7 +47,8 @@
         contextMenuService.Open(args,
         new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = "Select Folder", Value = 0 },
-                new ContextMenuItem(){ Text = "Re-index Folder", Value = 1 }
+                new ContextMenuItem(){ Text = "Re-index Folder", Value = 1 },
+                new ContextMenuItem(){ Text = "Run AI on Folder", Value = 2 }
          }, (args) =>
          {
              contextMenuService.Close();
@@ -54,6 +56,7 @@
              {
                  case 0: SetFilterFolder(folder); break;
                  case 1: _ = indexService.FlagFoldersForRescan(new List<Folder> { folder } ); break;
+                 case 2: _ = aiService.MarkFolderForScan( folder ); break;
              }
          });
     }
@@ -105,7 +108,7 @@
     {
         if (firstRender)
         {
-            FolderService.Instance.OnChange += OnFoldersChanged;
+            folderService.OnChange += OnFoldersChanged;
             // Kick off the data load
             await ProcessUpdatedFilter(false);
         }
@@ -113,7 +116,7 @@
 
     public void Dispose()
     {
-        FolderService.Instance.OnChange -= OnFoldersChanged;
+        folderService.OnChange -= OnFoldersChanged;
     }
 
     private void OnFoldersChanged()

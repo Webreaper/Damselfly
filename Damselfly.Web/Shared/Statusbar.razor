@@ -1,6 +1,6 @@
 ﻿@using Damselfly
 
-@inject StatusService StatService
+@inject StatusService statusService
 
 <div class="damselfly-statusbar">
     <Toolbar />
@@ -24,13 +24,13 @@
     {
         if (firstRender)
         {
-            StatusService.Instance.OnChange += UpdateStatus;
+            statusService.OnChange += UpdateStatus;
         }
     }
 
     public void Dispose()
     {
-        StatusService.Instance.OnChange -= UpdateStatus;
+        statusService.OnChange -= UpdateStatus;
     }
 
 }

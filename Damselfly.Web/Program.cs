@@ -10,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Damselfly.Core.Services;
 using Damselfly.Core.Models;
-using Damselfly.Core.Models.Interfaces;
+using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Migrations.Sqlite.Models;
 using Damselfly.Migrations.Postgres.Models;
-using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Web
@@ -55,9 +55,6 @@ namespace Damselfly.Web
             [Option("syno", Required = false, HelpText = "Use native Synology thumbnail structure.")]
             public bool Synology { get; set; }
 
-            [Option("isharp", Required = false, HelpText = "Use ImageSharp for thumbnail generation.")]
-            public bool ImageSharp { get; set; }
-
             [Option("nothumbs", Required = false, HelpText = "Don't Generate thumbnails")]
             public bool NoGenerateThumbnails { get; set; }
 
@@ -90,13 +87,12 @@ namespace Damselfly.Web
                                     o.NoGenerateThumbnails = true;
                                 }
 
-                                ImageProcessService.UseImageSharp = o.ImageSharp;
                                 IndexingService.EnableIndexing = ! o.NoEnableIndexing;
-                                IndexingService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
                                 IndexingService.RootFolder = o.SourceDirectory;
                                 ThumbnailService.PicturesRoot = o.SourceDirectory;
                                 ThumbnailService.Synology = o.Synology;
                                 ThumbnailService.SetThumbnailRoot(o.ThumbPath);
+                                ThumbnailService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
 
                                 Logging.Log("Startup State:");
                                 Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
@@ -136,6 +132,9 @@ namespace Damselfly.Web
                                 // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli
                                 BaseDBModel.InitDB<ImageContext>(dbType, o.ReadOnly);
 
+                                // Make ourselves low-priority.
+                                System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
+
                                 StartWebServer(o.Port, args);
 
                                 Logging.Log("Shutting down.");
@@ -156,24 +155,6 @@ namespace Damselfly.Web
         {
             try
             {
-                Logging.Log("Starting Damselfly Services");
-
-                // Instantiate all of our services
-                var status = new StatusService();
-                var thumbs = new ThumbnailService();
-                var indexing = new IndexingService();
-                var downloads = new DownloadService();
-                var themes = new ThemeService();
-                var basket = new BasketService();
-                var folder = new FolderService();
-                var search = new SearchService();
-                var tasks = new TaskService();
-                var config = new ConfigService();
-                var meta = new MetaDataService();
-                var wp = new WordpressService();
-                var proc = new ImageProcessService();
-                var select = new SelectionService();
-
                 Logging.Log("Starting Damselfly Webserver");
 
                 BuildWebHost(listeningPort, args).Run();

@@ -20,8 +20,8 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class MetaDataService
     {
-        public static MetaDataService Instance { get; private set; }
         public static string ExifToolVer { get; private set; }
+        private readonly StatusService _statusService;
 
         public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
         public event Action OnFavouritesChanged;
@@ -31,11 +31,13 @@ namespace Damselfly.Core.Services
             OnFavouritesChanged?.Invoke();
         }
 
-        public MetaDataService()
+        public MetaDataService( StatusService statusService )
         {
-            Instance = this;
+            _statusService = statusService;
 
             GetExifToolVersion();
+
+            StartService();
         }
 
         /// <summary>
@@ -146,7 +148,7 @@ namespace Damselfly.Core.Services
             {
                 await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-                StatusService.Instance.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
+                _statusService.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
             }
             catch (Exception ex)
             {
@@ -377,7 +379,7 @@ namespace Damselfly.Core.Services
 
                         Logging.Log($"Completed keyword op batch ({opsToProcess.Count()} operations on {conflatedOps.Count()} images in {batchWatch.HumanElapsedTime}).");
 
-                        StatusService.Instance.StatusText = $"Keywords processed. {totals}";
+                        _statusService.StatusText = $"Keywords processed. {totals}";
                     }
                 }
 
@@ -481,7 +483,7 @@ namespace Damselfly.Core.Services
             tag.Favourite = !tag.Favourite;
 
             db.Tags.Update(tag);
-            db.SaveChanges("Tag favourite");
+            await db.SaveChangesAsync("Tag favourite");
 
             await LoadFavouriteTagsAsync();
         }

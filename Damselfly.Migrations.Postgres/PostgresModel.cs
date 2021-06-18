@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Models.Interfaces;
-using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Models;
 using System.Text.Json;
 using System.IO;
@@ -49,6 +49,7 @@ namespace Damselfly.Migrations.Postgres.Models
 
         public PostgresModel()
         {
+            dBSettings = new DBSettings();
             Console.WriteLine("Constructing Postgres Model for EFCore Migrations...");
             BaseDBModel.DatabaseSpecialisation = this;
         }
@@ -227,7 +228,7 @@ namespace Damselfly.Migrations.Postgres.Models
             throw new NotImplementedException();
         }
 
-        public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query) where T : class
+        public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
         {
             // Figure out FTS in postgres
             // TODO: Implement with a Like Query?

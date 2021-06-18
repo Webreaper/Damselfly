@@ -3,8 +3,13 @@
 
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
+@inject BasketService basketService
+@inject SearchService searchService 
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
+@inject ConfigService configService
+@inject ImageRecognitionService aiService
+ 
 @inject IJSRuntime JsRuntime
 @implements IDisposable 
 
@@ -16,52 +21,73 @@
     }
     else
     {
-        <div class="damselfly-imageproperties">
-            <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
-            <div>Filename: @CurrentImage.FileName</div>
-            <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink">@CurrentImage.Folder.Name</NavLink></div>
-            <div>Thumbs Generated: @ThumbnailUpdate</div>
-            <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
-            @if (CurrentImage.MetaData != null)
-            {
-                <div>Description: @CurrentImage.MetaData.Description</div>
-                <div>Caption: @CurrentImage.MetaData.Caption</div>
-                <div>Date Taken: @CurrentImage.MetaData.DateTaken.Display()</div>
-                @if (CurrentImage.MetaData.Camera != null)
-                {
-                    <div>
-                        Camera:
-                        @CurrentImage.MetaData.Camera.Make
-                        @CurrentImage.MetaData.Camera.Model
-                    </div>
-                }
-                @if (CurrentImage.MetaData.Lens != null)
-                {
-                    <div>
-                        Lens:
-                        @CurrentImage.MetaData.Lens.Make
-                        @CurrentImage.MetaData.Lens.Model
-                    </div>
-                }
-                <div>Hash: @CurrentImage.MetaData.Hash</div>
-            }
-            else
-            {
-                <div>No metadata available yet.</div>
-            }
+<div class="damselfly-imageproperties">
+    <div>Selected: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
+    <div>Date Taken: @CurrentImage.SortDate</div>
+    <div>Filename: @CurrentImage.FileName</div>
+    <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink">@CurrentImage.Folder.Name</NavLink></div>
+    @if (CurrentImage.MetaData != null)
+    {
+        @if (!string.IsNullOrEmpty(CurrentImage.MetaData.Description))
+        {
+            <div>Description: @CurrentImage.MetaData.Description</div>
+        }
+        @if (!string.IsNullOrEmpty(CurrentImage.MetaData.Caption))
+        {
+            <div>Caption: @CurrentImage.MetaData.Caption</div>
+        }
+        <div>Width: @CurrentImage.MetaData.Width Height: @CurrentImage.MetaData.Height</div>
+        @if (CurrentImage.MetaData.Camera != null)
+        {
+            <div>
+                Camera:
+                @CurrentImage.MetaData.Camera.Make
+                @CurrentImage.MetaData.Camera.Model
+            </div>
+        }
+        @if (CurrentImage.MetaData.Lens != null)
+        {
+            <div>
+                Lens:
+                @CurrentImage.MetaData.Lens.Make
+                @CurrentImage.MetaData.Lens.Model
+            </div>
+        }
+    }
+    else
+    {
+        <div>No metadata available yet.</div>
+    }
+    @if (Expanded)
+    {
+        <div @onclick="@(() => CollapseDisplay())">
+            Show Less... &nbsp;<i class="fas fa-chevron-up" />
+        </div>
+    }
+    else
+    {
+        <div @onclick="@(() => ExpandDisplay())">
+            Show More... &nbsp; <i class="fas fa-chevron-down" />
+        </div>
+    }
+    @if (Expanded)
+    {
+        <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
+        <div>
+            Thumbs Generated: @ThumbnailUpdate
+            <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
         </div>
         <div>
-            <button title="Refresh Folder" type="submit" @onclick="RefreshFolder"><i class="fas fa-sync-alt" /></button>
-            <button title="Download Image" type="submit" @onclick="DownloadImage"><i class="fa fa-download" /></button>
-            <button class="fab fa-facebook" title="Share on Facebook"
-                    onclick="
-                    window.open(
-                      '@FaceBookShareUrl',
-                      'facebook-share-dialog',
-                      'width=626,height=436');
-                    return false;">
-            </button>
+            AI Processed: @AIProcessDate
+            <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
         </div>
+
+        @if (CurrentImage.MetaData != null)
+        {
+            <div>Hash: @CurrentImage.MetaData.Hash</div>
+        }
+    }
+</div>
     }
 
 @code {
@@ -69,36 +95,53 @@
     public Image CurrentImage { get { return theImage; } set { theImage = value; } }
     public string CurrentFolderLink => $"/folder/{CurrentImage.Folder.FolderId}";
 
-    public bool InBasket
+    private bool Expanded { get; set; }
+
+    private void ExpandDisplay()
     {
-        get { return BasketService.Instance.IsSelected(CurrentImage); }
-        set
-        {
-            BasketService.Instance.SetBasketState(new[] { CurrentImage }, value);
-            // Notify the image list that the selection has changed
-            SearchService.Instance.NotifyStateChanged();
-        }
+        Expanded = true;
+        configService.Set("ShowExtendedProps", Expanded.ToString());
     }
 
-    public string FaceBookShareUrl
+    private void CollapseDisplay()
     {
-        get
+        Expanded = false;
+        configService.Set("ShowExtendedProps", Expanded.ToString());
+    }
+
+    public bool InBasket
+    {
+        get { return basketService.IsSelected(CurrentImage); }
+        set
         {
-            var url = "http://localhost:6363" + $"/thumb/{ThumbSize.Large}/{CurrentImage.ImageId}";
-            var imageUrl = System.Net.WebUtility.UrlEncode(url);
-            return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
+            basketService.SetBasketState(new[] { CurrentImage }, value);
+            // Notify the image list that the selection has changed
+            searchService.NotifyStateChanged();
         }
     }
 
     protected override void OnInitialized()
     {
+        Expanded = configService.GetBool("ShowExtendedProps", false);
+
+        if( ! Expanded )
+            CollapseDisplay();
+
         navContext.OnChange += NavigationChanged;
+        basketService.OnChange += BasketStateChanged;
     }
 
     public void Dispose()
     {
-        navContext.OnChange += NavigationChanged;
+        navContext.OnChange -= NavigationChanged;
+        basketService.OnChange -= BasketStateChanged;
     }
+
+    protected void BasketStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
 
     protected void NavigationChanged(Image image)
     {
@@ -126,20 +169,28 @@
         }
     }
 
-    public void RefreshFolder()
+    public string AIProcessDate
     {
-        indexService.IndexFolder(CurrentImage.Folder);
+        get
+        {
+            if (CurrentImage != null && CurrentImage.MetaData != null && CurrentImage.MetaData.AILastUpdated.HasValue)
+            {
+                var age = DateTime.UtcNow - CurrentImage.MetaData.AILastUpdated;
+
+                return age.Value.ToHumanReadableString() + " ago";
+            }
+
+            return "Never";
+        }
     }
 
-    public async Task DownloadImage()
+    public async Task RefreshThumb()
     {
-        try
-        {
-            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.DownloadImageUrl);
-        }
-        catch (Exception ex)
-        {
-            Logging.LogError("Exception: " + ex.Message);
-        }
+        await thumbService.MarkImagesForScan(new List<Image> { CurrentImage });
+    }
+
+    public async Task RefreshAI()
+    {
+        await aiService.MarkImagesForScan(new List<Image> { CurrentImage });
     }
 }

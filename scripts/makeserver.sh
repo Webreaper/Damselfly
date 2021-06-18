@@ -20,9 +20,6 @@ case $PLATFORM in
   windows)
     runtime='win-x64'
     ;;
-  alpine)
-    runtime='alpine-x64'
-    ;;
   linux)
     runtime='linux-x64'
     ;;
@@ -33,9 +30,21 @@ zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
 
 echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname}"
 
-dotnet publish Damselfly.Web -r $runtime -c Release --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:Version=$version /p:IncludeNativeLibrariesForSelfExtract=true
+dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true
 
 outputdir="Damselfly.Web/bin/Release/net${dotnetversion}/${runtime}/publish"
+
+# Hack to get the libcvextern.so into the linux build. 
+case $PLATFORM in
+  linux)
+    runtime='linux-x64'
+    emguVer='4.5.1.4349'
+    wget https://www.nuget.org/api/v2/package/Emgu.CV.runtime.ubuntu.20.04-x64/$emguVer
+    unzip -j "$emguVer" "runtimes/ubuntu.20.04-x64/native/libcvextern.so" -d "$outputdir"
+    chmod 777 "$outputdir/libcvextern.so"
+    ls "$outputdir"
+    ;;
+esac
 
 if [ -d "$outputdir" ]; then
   echo "Zipping build to ${zipname}..."

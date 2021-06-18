@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,25 +17,18 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="MetadataExtractor" Version="2.5.0" />
+    <PackageReference Include="MetadataExtractor" Version="2.6.0" />
     <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
     <PackageReference Include="WordPressPCL" Version="1.9.0" />
-    <PackageReference Include="NExifTool" Version="0.9.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="SkiaSharp" Version="2.80.3-preview.40" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.80.3-preview.40" />
-    <PackageReference Include="FluentValidation" Version="10.2.3" />
+    <PackageReference Include="FluentValidation" Version="10.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Accord" Version="3.8.0" />
-    <PackageReference Include="Accord.Imaging" Version="3.8.0" />
-    <PackageReference Include="Accord.Vision" Version="3.8.0" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.4.21253.7" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="LogHandler.cs" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
@@ -46,16 +39,11 @@
     <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="mono_crash.a7f6ef992.0.json" />
-    <None Remove="Accord" />
-    <None Remove="ImageRecognition\.DS_Store" />
-    <None Remove="Accord.Imaging" />
-    <None Remove="Accord.Vision" />
-    <None Remove="CoreCompat.System.Drawing, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
-    <None Remove="System.Drawing.Common" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj" />
-  </ItemGroup>
+    <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+    <ProjectReference Include="..\Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
+    <ProjectReference Include="..\Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj" />
+    <ProjectReference Include="..\Damselfly.ML.EmguFace\Damselfly.ML.EmguFace.csproj" />
+</ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>d09fa775-aa27-45c8-a743-5b27d054d4dd</UserSecretsId>
   </PropertyGroup>
@@ -10,16 +10,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj">
+    <ProjectReference Include="..\Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
     <ProjectReference Include="..\Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
-    <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj">
+    <ProjectReference Include="..\Damselfly.ML.EmguFace\Damselfly.ML.EmguFace.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>
@@ -29,12 +41,13 @@
     <Folder Include="wwwroot\css\" />
     <Folder Include="Controllers\" />
     <Folder Include="wwwroot\themes\" />
+    <Folder Include="wwwroot\zoom\" />
+    <Folder Include="wwwroot\vScroll\" />
+    <Folder Include="wwwroot\objectrects\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="config\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="wwwroot\themes\" />
+    <None Remove="Microsoft.EntityFrameworkCore.Tools" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Shared\FolderList.razor">
@@ -46,17 +59,21 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.0-preview.4.21253.7" />
-    <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.0-preview.6.21352.12" />
+    <PackageReference Include="Serilog.AspNetCore" Version="4.1.1-dev-00229" />
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="Blazored.Modal" Version="6.0.1" />
     <PackageReference Include="BlazorDateRangePicker" Version="3.6.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
-    <PackageReference Include="Tewr.Blazor.FileReader" Version="3.1.0.21158" />
-    <PackageReference Include="Radzen.Blazor" Version="3.5.1" />
+    <PackageReference Include="Tewr.Blazor.FileReader" Version="3.2.0.21211" />
+    <PackageReference Include="Radzen.Blazor" Version="3.8.1" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.0.1" />
-    <PackageReference Include="FluentValidation" Version="10.2.3" />
+    <PackageReference Include="FluentValidation" Version="10.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-preview.4.21253.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-preview.4.21253.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

@@ -5,39 +5,38 @@
 
 @using Damselfly.Core.ImageProcessing
 
+<div class="damselfly-pagetitlebar">
+    <NavBack />
+    <div class="damselfly-imagetitle">
+        <h4>
+            Duplicate Images for @CurrentImage.FileName
+        </h4>
+    </div>
+</div>
 <div class="damselfly-export">
-    <div>
-        <div class="damselfly-imagenavitem">
-            <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
-            <h4 class="image-title">
-                Duplicate Images for @CurrentImage.FileName
-            </h4>
-        </div>
-    </div>
-    <div class="damselfly-exportlist">
-        @if (images != null)
-        {
-            @foreach (var img in images)
-            {
-                <div class="damselfly-exportitem">
-                    <div>
-                        <img title="@img.Image.FileName" src="@img.ThumbURL" style="max-width:100px;">
-                    </div>
-                    <div>
-                        @img.Image.FileName
-                    </div>
-                    <div>
-                        @img.Image.Folder.Name
-                    </div>
-                </div>
 
-            }
-        }
-        else
+    @if (images != null)
+    {
+        @foreach (var img in images)
         {
-            <p>Loading selection...</p>
+            <div class="damselfly-exportitem">
+                <div>
+                    <img title="@img.Image.FileName" src="@img.ThumbURL" style="max-width:100px;">
+                </div>
+                <div>
+                    @img.Image.FileName
+                </div>
+                <div>
+                    @img.Image.Folder.Name
+                </div>
+            </div>
+
         }
-    </div>
+    }
+    else
+    {
+        <p>Loading selection...</p>
+    }
 </div>
 
 @code {
@@ -63,7 +62,7 @@
         var watch = new Stopwatch("DupesLoadData");
         images.Clear();
 
-        images.AddRange( ImageService.GetImageDuplicates(CurrentImage).Select( x => new ListableImage( x, ThumbSize.Small ) ) );
+        images.AddRange(ImageService.GetImageDuplicates(CurrentImage).Select(x => new ListableImage(x, ThumbSize.Small)));
         watch.Stop();
 
         return Task.FromResult(images);

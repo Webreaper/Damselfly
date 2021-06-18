@@ -1,0 +1,124 @@
+﻿
+@inject ImageService ImgService
+@inject SearchService searchService
+@inject ImageRecognitionService aiService
+@inject StatusService statusService;
+
+<div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
+    @if (Editing)
+    {
+        <div class="object-editor">
+            <BlazoredTypeahead SearchMethod="SearchNames" placeholder="Enter a Name" Debounce="100"
+                               @bind-Value="@TypeAheadName" AddItemOnEmptyResultMethod="UpdateName">
+                <SelectedTemplate>
+                    @context Saved
+                </SelectedTemplate>
+                <ResultTemplate>
+                    @context
+                </ResultTemplate>
+                <NotFoundTemplate>
+                    @context
+                </NotFoundTemplate>
+            </BlazoredTypeahead>
+        </div>
+    }
+    else
+    {
+        <div class="object-text" @onclick="EditName" title="Click to Edit">@ObjectName</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public ImageObject theObject { get; set; }
+
+    private bool Editing { get; set; }
+    private string TypeAheadName { get; set; }
+
+    public string ObjectName => theObject.ToString();
+    public string ObjectTitle => $"{ObjectName} - click to edit";
+
+    private string ObjectStylePos
+    {
+        get
+        {
+            int imgWidth = theObject.Image.MetaData.Width > 0 ? theObject.Image.MetaData.Width : 800;
+            int imgHeight = theObject.Image.MetaData.Height > 0 ? theObject.Image.MetaData.Height : 800;
+
+            int xPercent = (theObject.RectX * 100) / imgWidth;
+            int yPercent = (theObject.RectY * 100) / imgHeight;
+            int wPercent = (theObject.RectWidth * 100) / imgWidth;
+            int hPercent = (theObject.RectHeight * 100) / imgHeight;
+            var pos = $"top:{yPercent}%;left:{xPercent}%;width:{wPercent}%;height:{hPercent}%;";
+
+            return pos;
+        }
+    }
+
+    private void EditName()
+    {
+        if (!Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString())
+        {
+            Logging.Log("Starting name edit");
+            Editing = true;
+            StateHasChanged();
+        }
+    }
+
+    private Task<IEnumerable<string>> SearchNames(string text)
+    {
+        var searchText = text.Trim();
+        IEnumerable<string> result = new List<string>();
+
+        // Only query the DB if we have more than 2 chars.
+        if (searchText.Length > 1)
+        {
+            // Union the search term with the results from the DB. Order them so that the
+            // closest matches to the start of the string come first.
+            result = aiService.GetCachedPeople().Where(x => x.Name.StartsWith( searchText.Trim(), StringComparison.OrdinalIgnoreCase) )
+                                               .Select( x => x.Name )
+                                               .Distinct()
+                                               .OrderBy(x => x.ToUpper().IndexOf(searchText.ToUpper()))
+                                               .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
+                                               .ToList();
+        }
+
+        return Task.FromResult( result );
+    }
+
+    private async Task<string> UpdateName(string name)
+    {
+        // Reset the tag
+        Editing = false;
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            Logging.Log($"Saving name: {name}");
+
+            using var db = new ImageContext();
+
+            if (theObject.Person == null)
+            {
+                theObject.Person = new Person { Name = name };
+                db.People.Add(theObject.Person);
+                db.ImageObjects.Update(theObject);
+            }
+            else
+            {
+                theObject.Person.Name = name;
+                db.People.Update(theObject.Person);
+            }
+
+            await db.SaveChangesAsync("SetName");
+
+            // TODO: Update the cache
+            statusService.StatusText = $"Name saved as '{name}'";
+
+            StateHasChanged();
+
+            return name;
+        }
+
+        return string.Empty;
+    }
+}

@@ -14,6 +14,9 @@ namespace Damselfly.Web.Data
     /// </summary>
     public class ImageGridBase : ComponentBase 
     {
+        [Inject]
+        protected SelectionService selectionService { get; set; }
+
         public class SelectionInfo
         {
             public Image image;
@@ -56,27 +59,27 @@ namespace Damselfly.Web.Data
                 Logging.LogVerbose($"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");
 
                 var selectedImages = gridImages.Skip(first).Take(last - (first - 1)).ToList();
-                SelectionService.Instance.SelectImages(selectedImages);
+                selectionService.SelectImages(selectedImages);
             }
             else
             {
                 if (e.MetaKey)
                 {
                     // Apple key was pressed - toggle the selection
-                    SelectionService.Instance.ToggleSelection(new List<Image> { selectionInfo.image });
+                    selectionService.ToggleSelection(new List<Image> { selectionInfo.image });
                 }
                 else
                 {
                     // No keys pressed. Select if unselected, or deselect if selected - but
                     // clear any other selection at the same time. Store the last selection
                     // as it could be the beginning of a range selection
-                    bool wasPreviouslySelected = SelectionService.Instance.IsSelected(selectionInfo.image);
-                    SelectionService.Instance.ClearSelection();
+                    bool wasPreviouslySelected = selectionService.IsSelected(selectionInfo.image);
+                    selectionService.ClearSelection();
                     prevSelection = null;
 
                     if (!wasPreviouslySelected)
                     {
-                        SelectionService.Instance.SelectImage(selectionInfo.image);
+                        selectionService.SelectImage(selectionInfo.image);
                         prevSelection = selectionInfo;
                     }
                 }

@@ -11,6 +11,7 @@ using MetadataExtractor.Formats.Jpeg;
 using Damselfly.Core.ImageProcessing;
 using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.Services
 {
@@ -19,13 +20,35 @@ namespace Damselfly.Core.Services
     {
         private static string _thumbnailRootFolder;
         private const string _requestRoot = "/images";
-        private static readonly int s_maxThreads = Math.Max( Environment.ProcessorCount / 2, 2 );
+        private static int s_maxThreads = GetMaxThreads();
+        private readonly StatusService _statusService;
+        private readonly ImageProcessService _imageProcessingService;
 
-        public static ThumbnailService Instance { get; private set; }
+
+        public ThumbnailService( StatusService statusService,
+                        ImageProcessService imageService)
+        {
+            _statusService = statusService;
+            _imageProcessingService = imageService;
+        }
+
+        /// <summary>
+        /// TODO - move this somewhere better
+        /// </summary>
+        /// <returns></returns>
+        public static int GetMaxThreads()
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+                return 1;
+
+            return Math.Max(Environment.ProcessorCount / 2, 2);
+        }
+
         public static string PicturesRoot { get; set; }
         public static bool UseGraphicsMagick { get; set; }
         public static bool Synology { get; set; }
         public static string RequestRoot { get { return _requestRoot; } }
+        public static bool EnableThumbnailGeneration { get; set; } = true;
 
         /// <summary>
         /// Set the http thumbnail request root - this will be wwwroot or equivalent
@@ -104,16 +127,6 @@ namespace Damselfly.Core.Services
             new ThumbConfig{ width = 160, height = 120, size = ThumbSize.Preview, cropToRatio = true, batchGenerate = false },
             new ThumbConfig{ width = 120, height = 120, size = ThumbSize.Small, cropToRatio = true }
         };
-
-        public ThumbnailService()
-        {
-            Instance = this;
-
-            if (Synology)
-            {
-                Logging.Log("Synology OS detected - using native thumbnail structure.");
-            }
-        }
 
         private void GetImageSize(string fullPath, out int width, out int height)
         {
@@ -208,22 +221,43 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            Logging.Log("Started thumbnail service.");
+            if (EnableThumbnailGeneration)
+            {
+                Logging.Log("Started thumbnail service.");
 
-            var thread = new Thread(new ThreadStart( RunThumbnailScan ));
-            thread.Name = "ThumbnailThread";
-            thread.IsBackground = true;
-            thread.Priority = ThreadPriority.Lowest;
-            thread.Start();
+                var thread = new Thread(new ThreadStart(RunThumbnailScan));
+                thread.Name = "ThumbnailThread";
+                thread.IsBackground = true;
+                thread.Priority = ThreadPriority.Lowest;
+                thread.Start();
+            }
+            else
+            {
+                Logging.Log("Thumbnail service was disabled.");
+            }
         }
 
         private void RunThumbnailScan()
         {
             while (true)
             {
-                ProcessThumbnailScan().Wait();
-                
-                Thread.Sleep(1000 * 60);
+#if DEBUG
+                const int sleepSecs = 5;
+#else
+                const int sleepSecs = 60;
+#endif
+                try
+                {
+                    ProcessThumbnailScan().Wait();
+                }
+                catch( Exception ex )
+                {
+                    Logging.LogError($"Exception during thumbnail processing: {ex.Message}");
+                }
+                finally
+                {
+                    Thread.Sleep(1000 * sleepSecs);
+                }
             }
         }
 
@@ -288,7 +322,7 @@ namespace Damselfly.Core.Services
 
                     watch.Stop();
 
-                    StatusService.Instance.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
+                    _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
 
                     Stopwatch.WriteTotals();
                 }
@@ -303,7 +337,7 @@ namespace Damselfly.Core.Services
         /// <param name="sourceImage"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public async Task<ImageProcessResult> CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration )
+        public async Task<ImageProcessResult> CreateThumbs(ImageMetaData sourceImage, bool forceRegeneration )
         {
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
@@ -312,6 +346,10 @@ namespace Damselfly.Core.Services
 
             return result;
         }
+
+
+
+        
 
         /// <summary>
         /// Process the file on disk to create a set of thumbnails.
@@ -362,7 +400,7 @@ namespace Damselfly.Core.Services
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
                         {
-                            result = await ImageProcessService.Instance.CreateThumbs(imagePath, destFiles);
+                            result = await _imageProcessingService.CreateThumbs(imagePath, destFiles);
                         }
                         catch (Exception ex)
                         {
@@ -390,6 +428,29 @@ namespace Damselfly.Core.Services
             }
 
             return result;
+        }
+
+        public async Task MarkFolderForScan(Folder folder)
+        {
+            using var db = new ImageContext();
+
+            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null where imageid in (select imageid from folders where folderid = {folder.FolderId})");
+
+            _statusService.StatusText = $"Folder {folder.Name} flagged for thumbnail re-generation.";
+        }
+
+        public async Task MarkImagesForScan(ICollection<Image> images)
+        {
+            using var db = new ImageContext();
+
+            string imageIds = string.Join(",", images.Select(x => x.ImageId));
+
+            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})");
+
+            var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
+            _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";
         }
     }
 }

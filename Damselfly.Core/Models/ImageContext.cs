@@ -6,8 +6,9 @@ using System.Linq;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
-using Damselfly.Core.Models.DBAbstractions;
 using System.Threading.Tasks;
+using Damselfly.Core.DbModels.DBAbstractions;
+using Humanizer;
 
 namespace Damselfly.Core.Models
 {
@@ -21,6 +22,9 @@ namespace Damselfly.Core.Models
         public DbSet<ImageMetaData> ImageMetaData { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ImageTag> ImageTags { get; set; }
+        public DbSet<ImageObject> ImageObjects { get; set; }
+        public DbSet<Person> People { get; set; }
+        public DbSet<ImageClassification> ImageClassifications { get; set; }
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketEntry> BasketEntries { get; set; }
@@ -29,10 +33,11 @@ namespace Damselfly.Core.Models
         public DbSet<ExportConfig> DownloadConfigs { get; set; }
         public DbSet<ConfigSetting> ConfigSettings { get; set; }
         public DbSet<ExifOperation> KeywordOperations { get; set; }
+        public DbSet<CloudTransaction> CloudTransactions { get; set; }
 
-        public async Task<IQueryable<Image>> ImageSearch(string query)
+        public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
         {
-            return await base.ImageSearch<Image>(Images, query);
+            return await base.ImageSearch<Image>(Images, query, IncludeAITags);
         }
 
         /// <summary>
@@ -42,6 +47,7 @@ namespace Damselfly.Core.Models
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Many to many via ImageTags
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
 
@@ -55,6 +61,19 @@ namespace Damselfly.Core.Models
                 .HasForeignKey(p => p.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // One to ImageObjects
+            var io = modelBuilder.Entity<ImageObject>();
+
+            io.HasOne(p => p.Image)
+                .WithMany(p => p.   ImageObjects)
+                .HasForeignKey(p => p.ImageId);
+
+            modelBuilder.Entity<Image>()
+                .HasOne(img => img.Classification)
+                .WithOne()
+                .HasForeignKey<ImageClassification>(i => i.ClassificationId);
+
+            // Others
             modelBuilder.Entity<BasketEntry>()
                 .HasOne(a => a.Image)
                 .WithOne(b => b.BasketEntry)
@@ -66,6 +85,7 @@ namespace Damselfly.Core.Models
                 .HasForeignKey<ImageMetaData>(i => i.ImageId);
 
             modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
+            modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
             modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });
             modelBuilder.Entity<Image>().HasIndex(x => x.LastUpdated);
             modelBuilder.Entity<Image>().HasIndex(x => x.FileName);
@@ -74,13 +94,18 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<Folder>().HasIndex(x => x.FolderScanDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.Path);
             modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
+
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Hash);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
+            modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AILastUpdated);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
+            modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
+
+            modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
             AddSpecialisationIndexes(modelBuilder);
         }
@@ -136,6 +161,13 @@ namespace Damselfly.Core.Models
         public virtual BasketEntry BasketEntry { get; set; }
         public virtual ImageMetaData MetaData { get; set; }
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
+
+        // Machine learning fields
+        public int? ClassificationId { get; set; }
+        public virtual ImageClassification Classification { get; set; }
+        public double ClassificationScore { get; set; }
+
+        public virtual IList<ImageObject> ImageObjects { get; } = new List<ImageObject>();
 
         public override string ToString()
         {
@@ -195,7 +227,10 @@ namespace Damselfly.Core.Models
 
         // The date that this metadata was read from the image
         public DateTime LastUpdated { get; set; }
+        // Date the thumbs were last created
         public DateTime? ThumbLastUpdated { get; set; }
+        // Date we last performed face/object/image recognition
+        public DateTime? AILastUpdated { get; set; }
     }
 
     /// <summary>
@@ -229,19 +264,28 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class Tag
     {
+        public enum TagTypes
+        {
+            IPTC = 0,
+            Classification = 1
+        };
+
         [Key]
         public int TagId { get; set; }
         [Required]
         public string Keyword { get; set; }
-        public string Type { get; set; }
+
+        public TagTypes TagType { get; set; }
         public bool Favourite { get; set; }
+
         public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
+        public virtual IList<ImageObject> ImageObjects { get; } = new List<ImageObject>();
 
         public override string ToString()
         {
-            return $"{Keyword} [{TagId}]";
+            return $"{TagType}: {Keyword} [{TagId}]";
         }
 
         public override int GetHashCode()
@@ -303,6 +347,149 @@ namespace Damselfly.Core.Models
         public override int GetHashCode()
         {
             return ImageId.GetHashCode() + '_' + TagId.GetHashCode();
+        }
+    }
+
+    /// <summary>
+    /// An image classification detected via ML
+    /// </summary>
+    public class ImageClassification
+    {
+        [Key]
+        public int ClassificationId { get; set; }
+
+        public string Label { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Label} [{ClassificationId}]";
+        }
+    }
+
+    /// <summary>
+    /// One image can have a number of objects each with a name.
+    /// </summary>
+    public class ImageObject
+    {
+        public enum ObjectTypes
+        {
+            Object = 0,
+            Face = 1
+        };
+
+        public enum RecognitionType
+        {
+            Manual = 0,
+            Emgu = 1,
+            Accord = 2,
+            Azure = 3,
+            MLNetObject = 4
+        };
+
+        [Key]
+        public int ImageObjectId { get; set; }
+
+        [Required]
+        public int ImageId { get; set; }
+        public virtual Image Image { get; set; }
+
+        [Required]
+        public int TagId { get; set; }
+        public virtual Tag Tag { get; set; }
+
+        public string Type { get; set; } = ObjectTypes.Object.ToString();
+        public RecognitionType RecogntionSource { get; set; }
+        public double Score { get; set; }
+        public int RectX { get; set; }
+        public int RectY { get; set; }
+        public int RectWidth { get; set; }
+        public int RectHeight { get; set; }
+
+        public int? PersonId { get; set; }
+        public virtual Person Person { get; set; }
+
+        public override string ToString()
+        {
+            return GetTagName();
+        }
+
+        public bool IsFace {  get { return Type == ObjectTypes.Face.ToString();  } }
+
+        public string GetTagName( bool includeScore = false )
+        {
+            string ret = "Unidentified Object";
+
+            if( IsFace )
+            {
+                if (Person != null && Person.Name != "Unknown")
+                {
+                    return $"{Person.Name.Transform(To.TitleCase)}";
+                }
+                else
+                    ret = "Unidentified face";
+            }
+            else if (Type == ObjectTypes.Object.ToString() && Tag != null)
+            {
+                ret = $"{Tag.Keyword.Transform(To.SentenceCase)}";
+            }
+
+            if ( includeScore && Score > 0 )
+            {
+                ret += $" ({Score:P0})";
+            }
+
+            return ret;
+        }
+    }
+
+    /// <summary>
+    /// A person
+    /// </summary>
+    public class Person
+    {
+        public enum PersonState
+        {
+            Unknown = 0,
+            Identified = 1,
+            Confirmed = 2
+        };
+
+        [Key]
+        public int PersonId { get; set; }
+
+        [Required]
+        public string Name { get; set; } = "Unknown";
+
+        public PersonState State { get; set; } = PersonState.Unknown;
+        public string AzurePersonId { get; set; }
+
+        public override string ToString()
+        {
+            return $"{PersonId}=>{Name} [{State}, AzureID: {AzurePersonId}]";
+        }
+    }
+
+    /// <summary>
+    /// Transaction Count for Cloud services - to keep approximate track of usage
+    /// </summary>
+    public class CloudTransaction
+    {
+        public enum TransactionType
+        {
+            Unknown = 0,
+            AzureFace = 1
+        };
+
+        [Key]
+        public int CloudTransactionId { get; set; }
+
+        public TransactionType TransType { get; set; }
+        public DateTime Date { get; set; }
+        public int TransCount { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Date}: {TransCount}";
         }
     }
 
@@ -416,6 +603,7 @@ namespace Damselfly.Core.Models
         public ulong MinSizeKB { get; set; } = ulong.MinValue;
         public Folder Folder { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
+        public bool IncludeAITags { get; set; } = true;
         public int CameraId { get; set; } = -1;
         public int TagId { get; set; } = -1;
         public int LensId { get; set; } = -1;

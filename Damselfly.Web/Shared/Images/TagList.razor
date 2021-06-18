@@ -1,14 +1,19 @@
 ﻿@using System.Linq
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services
+@using Humanizer
 
+@inject IJSRuntime JsRuntime
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService iptcService
+@inject SelectionService selectionService
 @inject IndexingService indexService
+@inject MetaDataService metadataService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
+
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -27,8 +32,8 @@
                     @if (CurrentImages != null && CurrentImages.Any())
                     {
                         <div class="damselfly-keyword damselfly-addfavekeyword"
-                            @onclick="@(() => QuickAddTag(tag))"
-                            @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
+                             @onclick="@(() => QuickAddTag(tag))"
+                             @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
                             <div class="damselfly-addtag" title="Add @tag.Keyword to Selection"><i class="fa fa-plus-circle" /></div>
                             <div title="Add @tag.Keyword to image" class="damselfly-keywordtext">@tag.Keyword</div>
                         </div>
@@ -36,7 +41,7 @@
                     else
                     {
                         <div class="damselfly-keyword damselfly-addfavekeyword"
-                            @oncontextmenu=@(args => ShowContextMenu(args, tag, true )) @oncontextmenu:preventDefault="true">
+                             @oncontextmenu=@(args => ShowContextMenu(args, tag, true )) @oncontextmenu:preventDefault="true">
                             <div title="Add @tag.Keyword to Selection" class="damselfly-keywordtext-disabled">@tag.Keyword</div>
                         </div>
                     }
@@ -50,27 +55,54 @@
         <div class="damselfly-keywordlist">
             @if (CurrentImages != null && CurrentImages.Any())
             {
-                @foreach (var tag in theImageTags)
+                @if ((theImageTags != null && theImageTags.Any()) ||
+                    (theObjectTags != null && theObjectTags.Any()) )
                 {
-                    <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
-                        <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
-                            @if (tag.Favourite)
+                    @foreach (var tag in theImageTags)
+                    {
+                        <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
+                            <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
+                                @if (tag.Favourite)
+                                {
+                                    <i class="fas fa-star" />
+                                }
+                                else
+                                {
+                                    <i class="far fa-star" />
+                                }
+                            </div>
+                            <div class="damselfly-keywordtext">@tag.Keyword</div>
+                            <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
+                        </div>
+                    }
+
+                    @foreach (var obj in theObjectTags)
+                    {
+                        <div class="damselfly-keyword">
+                            @if (obj.IsFace)
                             {
-                                <i class="fas fa-star" />
+                                <div class="damselfly-favouritetag" title="Detected Face">
+                                    <i class="fas fa-user" />
+                                </div>
                             }
                             else
                             {
-                                <i class="far fa-star" />
+                                <div class="damselfly-favouritetag" title="Detected Object">
+                                    <i class="fas fa-lightbulb" />
+                                </div>
                             }
+                            <div class="damselfly-keywordtext">@obj.GetTagName()</div>
                         </div>
-                        <div class="damselfly-keywordtext">@tag.Keyword</div>
-                        <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
-                    </div>
+                    }
+                }
+                else
+                {
+                    <div>No Keywords</div>
                 }
             }
             else
             {
-                <div>No Keywords</div>
+                <div>No Images Selected</div>
             }
         </div>
     }
@@ -93,24 +125,20 @@
     public bool TrackSelection { get; set; }
 
     private IList<Tag> theImageTags { get; set; }
+    private IList<ImageObject> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
-    private async Task<IList<Tag>> LoadImageTagsAsync()
-    {
-        return await Task.FromResult(GetImageTags()
-                                        .OrderBy(x => x.Keyword)
-                                        .ToList());
-    }
-
-    private void CreateNewTag(string tagToAdd)
+    private async Task<string> CreateNewTag(string tagToAdd)
     {
         Logging.Log($"Creating tag for {tagToAdd}...");
 
         // If multiple tags have been added, split them and add individually.
         var addedTags = tagToAdd.Split(',').Select(x => x.Trim()).ToList();
 
-        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null); });
+        await iptcService.UpdateTagsAsync(CurrentImages, addedTags, null);
+
         StateHasChanged();
+        return tagToAdd;
     }
 
     private void QuickAddTag(Tag tag)
@@ -140,12 +168,6 @@
         {
             try
             {
-                using var db = new ImageContext();
-
-                // Enrich all the images with their with their tags
-                foreach (var img in CurrentImages)
-                    db.LoadTags(img);
-
                 var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
 
                 if (tagLists.Count() > 1)
@@ -156,7 +178,9 @@
                 }
                 else if (tagLists.Count() == 1)
                 {
-                    return tagLists.FirstOrDefault().ToList();
+                    return tagLists.FirstOrDefault()
+                                   .OrderBy(x => x.Keyword)
+                                   .ToList();
                 }
             }
             catch (Exception ex)
@@ -168,19 +192,40 @@
         return new Tag[0];
     }
 
+    private IList<ImageObject> GetObjectTags()
+    {
+        if (CurrentImages != null)
+        {
+            try
+            {
+                using var db = new ImageContext();
+
+                var tagLists = CurrentImages.SelectMany(x => x.ImageObjects)
+                                            .ToArray();
+
+                return tagLists;
+            }
+            catch (Exception ex)
+            {
+                Logging.Log($"Unable to get object tags: {ex}");
+            }
+        }
+
+        return new List<ImageObject>();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (TrackSelection)
         {
             // TODO: Dispose
-            SelectionService.Instance.OnSelectionChanged += SelectionChanged;
-            MetaDataService.Instance.OnFavouritesChanged += FavouritesChanged;
+            selectionService.OnSelectionChanged += SelectionChanged;
+            metadataService.OnFavouritesChanged += FavouritesChanged;
             SelectionChanged();
         }
         else
         {
-            theImageTags = await LoadImageTagsAsync();
-            StateHasChanged();
+            await OnParametersSetAsync();
         }
     }
 
@@ -203,14 +248,14 @@
 
     public void Dispose()
     {
-        SelectionService.Instance.OnSelectionChanged -= SelectionChanged;
-        MetaDataService.Instance.OnFavouritesChanged -= FavouritesChanged;
+        selectionService.OnSelectionChanged -= SelectionChanged;
+        metadataService.OnFavouritesChanged -= FavouritesChanged;
         navContext.OnChange += NavigationChanged;
     }
 
     protected void SelectionChanged()
     {
-        this.CurrentImages = SelectionService.Instance.Selection.ToArray();
+        this.CurrentImages = selectionService.Selection.ToArray();
 
         InvokeAsync(() => { _ = OnParametersSetAsync(); });
     }
@@ -222,8 +267,20 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        theImageTags = await LoadImageTagsAsync();
-        StateHasChanged();
+        await Task.Run(RefreshTagsForSelection);
+    }
+
+    private void RefreshTagsForSelection()
+    {
+        using var db = new ImageContext();
+
+        // Enrich all the images with their with their tags
+        foreach (var img in CurrentImages)
+            db.LoadTags(img);
+
+        theImageTags = GetImageTags();
+        theObjectTags = GetObjectTags();
+        InvokeAsync(StateHasChanged);
     }
 
     void ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)
@@ -233,9 +290,9 @@
                 new ContextMenuItem(){ Text = (tag.Favourite ? "Remove from" : "Add to") + " Favourites", Value = 1 }
         };
 
-        if( CurrentImages != null && CurrentImages.Any() )
+        if (CurrentImages != null && CurrentImages.Any())
         {
-            if( favourite )
+            if (favourite)
                 menuList.Insert(0, new ContextMenuItem { Text = "Add Tag to Selection", Value = 2 });
             else
                 menuList.Insert(0, new ContextMenuItem { Text = "Remove Tag from Selection", Value = 3 });

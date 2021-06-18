@@ -5,84 +5,209 @@
     of the visible image is updated which should update it instantly.
 -->
 @inject IJSRuntime JsRuntime
+@inject StatusService statusService
+@inject ConfigService configService
+@inject ContextMenuService contextMenuService
+
 
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.Utils.Constants
+@using Microsoft.EntityFrameworkCore
 
-<div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown">
-    <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" style="background-size: @ZoomPercentage"/>
-    <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
+<div class="damselfly-imagepreview">
+    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown"
+         @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+        @if(ZoomEnabled)
+        {
+            <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" />
+        }
+        <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
+        <div class="objects-box" id="objectBox">
+            @if (ShowObjects )
+            {
+                @foreach (var obj in Objects)
+                {
+                    <AIObject theObject="@obj" />
+                }
+            }
+        </div>
+    </div>
 </div>
 
 <!-- Hidden image to background load the hi-res version-->
 <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
 
-@code {
-    [Parameter]
-    public string ImageID { get; set; }
+@code
+{
+    [Parameter] // TODO Change to required with .Net 6 preview 6
+    public Image Image { get{ return theImage; } set{ ChangeImage(value); } }
 
-    private int ZoomLevel { get; set; } = ConfigService.Instance.GetInt( ConfigSettings.ZoomLevel, 400 );
-    private string ZoomPercentage => $"{ZoomLevel}%";
-    private string ImgKey => $"prev{ImageID}";
-    private string ZoomKey => $"zoom{ImageID}";
-    private string ImgPreviewKey => $"{ImageID}";
+    [Parameter]
+    public bool ShowObjects { get{ return showObjects; } set{ SetShowObjects(value); } }
+
+    [Parameter]
+    public bool ZoomEnabled { get { return zoomEnabled; } set { SetZoomEnabled(value); } }
+
+    private bool showObjects;
+    private bool zoomEnabled;
+    private Image theImage;
+
+    private int ZoomLevel { get; set; } = 400;
+    private string ImgKey => $"prev{theImage.ImageId}";
+    private string ZoomKey => $"zoom{theImage.ImageId}";
+    private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
-    private string ImageUrlHighRes => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+    private string ImageUrlHighRes => $"/thumb/{ThumbSize.ExtraLarge}/{theImage.ImageId}";
     // Note - whilst it would be nice to use the original image here for the max
     // detail when zooming, that doesn't work for images which the browser can't
     // render. We could do something like check for the original file extension
     // and see if it's jpg/png/webp though.
-    private string ImageUrlZoom => $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
-    private bool needToInitZoom = true;
+    private string ImageUrlZoom => $"/thumb/{ThumbSize.ExtraLarge}/{theImage.ImageId}";
+
+    private IList<ImageObject> Objects { get { return theImage?.ImageObjects ?? new List<ImageObject>(); } }
+
+    private bool HiResImageLoaded { get; set; }
+    private string ShowObjectsMenuText => ShowObjects ? "Hide Objects/Faces" : "Show Objects/Faces";
+    private string ShowZoomMenuText => ZoomEnabled ? "Hide Zoom" : "Show Zoom";
+
+    void ShowContextMenu(MouseEventArgs args)
+    {
+        contextMenuService.Open(args,
+        new List<ContextMenuItem>() {
+                new ContextMenuItem(){ Text = ShowObjectsMenuText, Value = 0 },
+                new ContextMenuItem(){ Text = ShowZoomMenuText, Value = 1 }
+        }, (args) =>
+        {
+            contextMenuService.Close();
+            switch (args.Value)
+            {
+                case 0: SetShowObjects(!ShowObjects); break;
+                case 1: SetZoomEnabled( ! ZoomEnabled ); break;
+            }
+        });
+    }
+
+    private void DoObjectBox()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await JsRuntime.InvokeAsync<string>("ScaleToFitImage", "theImage", "objectBox");
+            StateHasChanged();
+        });
+    }
+
+    private void SetShowObjects(bool newState)
+    {
+        if (newState == showObjects)
+            return;
+
+        showObjects = newState;
+        configService.Set(ConfigSettings.ShowObjects, showObjects.ToString());
+        StateHasChanged();
+
+        if (showObjects)
+            DoObjectBox();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (showObjects)
+                DoObjectBox();
+
+            if (zoomEnabled && HiResImageLoaded)
+            {
+                await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
+            }
+        }
+    }
+
+    private void SetZoomEnabled(bool newState)
+    {
+        if (newState != zoomEnabled)
+        {
+            zoomEnabled = newState;
+            configService.Set(ConfigSettings.ShowZoom, zoomEnabled.ToString());
+            StateHasChanged();
+
+            if (zoomEnabled)
+            {
+                _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
+
+                if (showObjects)
+                    DoObjectBox();
+            }
+        }
+    }
+
+    private void ChangeImage(Image newImage)
+    {
+        if (newImage == null)
+            throw new ArgumentException("Image cannot be null");
+
+        if (theImage == null || theImage.ImageId != newImage.ImageId)
+        {
+            theImage = newImage;
+            HiResImageLoaded = false;
+            ImageUrl = $"/thumb/{ThumbSize.Medium}/{theImage.ImageId}";
+            statusService.StatusText = "Loading hi-res image...";
+            StateHasChanged();
+        }
+    }
 
     protected override void OnInitialized()
     {
+        ZoomLevel = configService.GetInt(ConfigSettings.ZoomLevel, 400);
+        ZoomEnabled = configService.GetBool(ConfigSettings.ShowZoom, true);
+        ShowObjects = configService.GetBool(ConfigSettings.ShowObjects, false);
+
         base.OnInitialized();
 
-        SetupPreload();
-    }
-
-    private void SetupPreload()
-    {
-        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
-        StatusService.Instance.StatusText = "Loading hi-res image...";
-        StateHasChanged();
-    }
-
-    protected override void OnParametersSet()
-    {
-        SetupPreload();
-        needToInitZoom = true;
     }
 
     protected void ReplaceUrl(ProgressEventArgs args)
     {
         ImageUrl = ImageUrlHighRes;
 
-        if (needToInitZoom)
-        {
-            needToInitZoom = false;
-            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
-        }
+        HiResImageLoaded = true;
 
-        StatusService.Instance.StatusText = "Hi-res image loaded.";
+        if( zoomEnabled )
+            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
+
+        statusService.StatusText = "Hi-res image loaded.";
         StateHasChanged();
+
+        DoObjectBox();
+
+        // For when we want to do region selection
+        //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
     }
 
     void OnKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "ArrowUp")
+        if (zoomEnabled)
         {
-            ZoomLevel = Math.Min(ZoomLevel + 50, 400);
-        }
-        else if (e.Key == "ArrowDown")
-        {
-            ZoomLevel = Math.Max(ZoomLevel - 50, 150);
-        }
+            bool zoomChanged = false;
+            if (e.Key == "ArrowUp")
+            {
+                ZoomLevel = Math.Min(ZoomLevel + 50, 400);
+                zoomChanged = true;
+            }
+            else if (e.Key == "ArrowDown")
+            {
+                ZoomLevel = Math.Max(ZoomLevel - 50, 150);
+                zoomChanged = true;
+            }
 
-        ConfigService.Instance.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+            if (zoomChanged)
+            {
+                configService.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+                _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
-        needToInitZoom = true;
-        StateHasChanged();
-        StatusService.Instance.StatusText = $"Zoom level set to {ZoomLevel}%";
+                StateHasChanged();
+                statusService.StatusText = $"Zoom level set to {ZoomLevel}%";
+            }
+        }
     }
 }

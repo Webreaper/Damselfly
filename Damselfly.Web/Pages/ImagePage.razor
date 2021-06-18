@@ -7,57 +7,63 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ViewDataService ViewDataService
+@inject ConfigService configService
+@inject IndexingService indexService            
 @inject IJSRuntime JsRuntime
 @implements ICropHelper
 
-<div class="damselfly-imageview" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
+@using Damselfly.Core.Utils.Constants
+
+<div class="damselfly-imageview" @ref="ImageView" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
     @if (image == null)
     {
-    <div class="col">
-        <p><em>Error. Image not found!</em></p>
-    </div>
-}
+<div class="col">
+    <p><em>Error. Image not found!</em></p>
+</div> }
 else
 {
-    <div class="damselfly-imagetitlebar">
-        <div class="damselfly-imagenavitem">
-            <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
-        </div>
-        <div class="damselfly-imagetitle">
-            Image: @image.FileName
-        </div>
+<div class="damselfly-imagetools">
+    <div class="damselfly-imagetitlenav">
+        <NavBack />
     </div>
+    <div class="damselfly-imagebuttons">
+        <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image" />
+        <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@EnableZoom" title="Toggle Zoom" />
+        <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces" />
+        <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
+        <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
+        <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
+            window.open(
+                '@FaceBookShareUrl',
+                'facebook-share-dialog',
+                'width=626,height=436');
+            return false;" />
+        <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
 
-    <div class="damselfly-imagenav">
-        @if (prevImage != null && prevImage.ImageId != image.ImageId)
-        {
-            <NavLink class="damselfly-navleft chevron flipchevron" href="@PrevImageIDUrl" />
-        }
-        else
-        {
-            <div class="damselfly-navleft"></div>
-        }
-        <ImagePreview ImageID="@ImageID" />
-        @if (nextImage != null && nextImage.ImageId != image.ImageId)
-        {
-            <NavLink class="damselfly-navright chevron" href="@NextImageIDUrl" />
-        }
-        else
-        {
-            <div class="damselfly-navright"></div>
-        }
-        </div>
-    }
+        <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image" />
+    </div>
+    <div class="damselfly-imagetitle" title="@image.FullPath">
+        <h4>
+            @image.FileName
+        </h4>
+    </div>
 </div>
 
-@code {
-    [Parameter]
+                <ImagePreview @ref="theImagePreview" Image="@image" ShowObjects="@ShowObjects" ZoomEnabled="@EnableZoom" />}
+</div>
+
+@code { [Parameter]
     public string ImageID { get; set; }
 
-    Image image;
-    Image nextImage;
-    Image prevImage;
+    private bool ShowObjects { get; set; }
+    private bool EnableZoom { get; set; }
 
+    private Image image;
+    private Image nextImage;
+    private Image prevImage;
+    private ElementReference ImageView;
+
+    private ImagePreview theImagePreview;
     public string ImgKey => $"prev{image.ImageId}";
     public string ImgPreviewKey => $"{image.ImageId}";
     public string ImageUrl { get; set; }
@@ -65,14 +71,29 @@ else
 
     public CropJsHelper JsHelper { get; set; }
 
+    private bool NextEnabled => nextImage != null && nextImage.ImageId != image.ImageId;
+    private bool PrevEnabled => prevImage != null && prevImage.ImageId != image.ImageId;
     private string PrevImageIDUrl => $"/image/{prevImage.ImageId}";
     private string NextImageIDUrl => $"/image/{nextImage.ImageId}";
 
     protected override void OnInitialized()
     {
+        EnableZoom = configService.GetBool(ConfigSettings.ShowZoom, true);
+        ShowObjects = configService.GetBool(ConfigSettings.ShowObjects, false);
+
         base.OnInitialized();
 
         SetupPreload();
+    }
+
+    public string FaceBookShareUrl
+    {
+        get
+        {
+            var url = "http://localhost:6363" + $"/thumb/{ThumbSize.Large}/{ImageID}";
+            var imageUrl = System.Net.WebUtility.UrlEncode(url);
+            return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -85,7 +106,21 @@ else
             //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
 
             await SetUpNavigation();
+
+            _ = ImageView.FocusAsync();
         }
+    }
+
+    private void ToggleShowObjects()
+    {
+        ShowObjects = !ShowObjects;
+        StateHasChanged();
+    }
+
+    private void ToggleZoom()
+    {
+        EnableZoom = !EnableZoom;
+        StateHasChanged();
     }
 
     private void SetupPreload()
@@ -95,7 +130,7 @@ else
         StateHasChanged();
     }
 
-    protected void ReplaceUrl( ProgressEventArgs args )
+    protected void ReplaceUrl(ProgressEventArgs args)
     {
         Logging.Log("Replacing Image URL");
         ImageUrl = ImageUrlHighRes;
@@ -121,7 +156,7 @@ else
     {
         if (Int32.TryParse(ImageID, out var imageId))
         {
-            image = await ImageService.GetImage(imageId);
+            image = await ImageService.GetImage(imageId, true, true);
             navContext.CurrentImage = image;
 
             nextImage = await navContext.GetNextImageAsync(true);
@@ -129,17 +164,45 @@ else
         }
     }
 
+    private void Next()
+    {
+        if (nextImage != null && nextImage.ImageId != image.ImageId)
+            NavigationManager.NavigateTo("/image/" + nextImage.ImageId);
+
+    }
+
+    private void Prev()
+    {
+        if (prevImage != null && prevImage.ImageId != image.ImageId)
+            NavigationManager.NavigateTo("/image/" + prevImage.ImageId);
+    }
+
+    public void RefreshImage()
+    {
+        _ = indexService.MarkImageForScan(image);
+    }
+
+    public async Task DownloadImage()
+    {
+        try
+        {
+            await JsRuntime.InvokeAsync<string>("downloadFile", image.DownloadImageUrl);
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
+    }
+
+
     void OnKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "ArrowRight")
         {
-            if (nextImage != null && nextImage.ImageId != image.ImageId)
-                NavigationManager.NavigateTo("/image/" + nextImage.ImageId);
+            Next();
         }
         else if (e.Key == "ArrowLeft")
         {
-            if (prevImage != null && prevImage.ImageId != image.ImageId)
-                NavigationManager.NavigateTo("/image/" + prevImage.ImageId);
+            Prev();
         }
-    }
-}
+    } }

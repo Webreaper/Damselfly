@@ -25,6 +25,14 @@ namespace Damselfly.Core.Services
 
         public NavigationContexts Context { get; set; } = NavigationContexts.Search;
         public Image CurrentImage { get { return theImage; } set { theImage = value; NotifyStateChanged( theImage ); } }
+        private readonly BasketService _basketService;
+        private readonly SearchService _searchService;
+
+        public NavigationService( BasketService basketService, SearchService searchService)
+        {
+            _basketService = basketService;
+            _searchService = searchService;
+        }
 
         private void NotifyStateChanged( Image newImage )
         {
@@ -63,9 +71,9 @@ namespace Damselfly.Core.Services
             List<Image> navigationItems = null;
 
             if (Context == NavigationContexts.Basket)
-                navigationItems = BasketService.Instance.SelectedImages;
+                navigationItems = _basketService.SelectedImages;
             else if (Context == NavigationContexts.Search)
-                navigationItems = SearchService.Instance.SearchResults;
+                navigationItems = _searchService.SearchResults;
 
             if ( this.CurrentImage != null && navigationItems != null )
             {

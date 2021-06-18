@@ -26,7 +26,7 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <returns>String hash of the image data</returns>
-        public static string GetHash( SKBitmap sourceBitmap )
+        public static string GetHash(SKBitmap sourceBitmap)
         {
             string result = null;
 
@@ -38,7 +38,7 @@ namespace Damselfly.Core.ImageProcessing
 
                 var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 
-                for ( int row = 0; row < sourceBitmap.Height; row++ )
+                for (int row = 0; row < sourceBitmap.Height; row++)
                 {
                     var rowPixels = pixels.Slice(row * sourceBitmap.RowBytes, sourceBitmap.RowBytes);
 
@@ -63,29 +63,36 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles )
+        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
         {
+            Stopwatch load, hashThumb, scale, save, thumbs;
             ImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false };
 
             try
             {
+                thumbs = new Stopwatch("SkiaSharpThumbs");
+
                 int desiredWidth = destFiles.Max(x => x.Value.width);
 
+                load = new Stopwatch("LoadTHumb");
                 using var sourceBitmap = LoadOrientedBitmap(source, desiredWidth);
+                load.Stop();
 
-                result.ImageHash = GetHash( sourceBitmap );
-
-                Stopwatch thumbs = new Stopwatch("SkiaSharpThumbs");
+                hashThumb = new Stopwatch("HashHumb");
+                result.ImageHash = GetHash(sourceBitmap);
+                hashThumb.Stop();
 
                 // Dropping this from High to Low doesn't have that much of an effect
                 // in terms of image quality.
-                var quality = SKFilterQuality.Low;
+                var quality = SKFilterQuality.Medium;
                 var srcBitmap = sourceBitmap;
 
                 foreach (var pair in destFiles.OrderByDescending(x => x.Value.width))
                 {
                     var dest = pair.Key;
                     var config = pair.Value;
+
+                    scale = new Stopwatch("ScaleThumb");
 
                     float widthScaleFactor = (float)srcBitmap.Width / (float)config.width;
                     float heighScaleFactor = (float)srcBitmap.Height / (float)config.height;
@@ -99,24 +106,31 @@ namespace Damselfly.Core.ImageProcessing
 
                     using SKData data = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
 
+                    scale.Stop();
+                    save = new Stopwatch("SaveThumb");
                     // TODO: For configs flagged batchcreate == false, perhaps don't write to disk
                     // and just pass back the stream?
                     using (var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write))
                         data.SaveTo(stream);
+                    save.Stop();
 
                     // Now, use the previous scaled image as the basis for the
                     // next smaller thumbnail. This should reduce processing
                     // time as we only work on the large image on the first
                     // iteration
-                    srcBitmap = scaledImage.Copy();
+                    if (destFiles.Count > 1)
+                        srcBitmap = scaledImage.Copy();
 
                     result.ThumbsGenerated = true;
                     // TODO: Dispose
+
+                    if (pair.Value.size == ThumbSize.ExtraLarge)
+                        Logging.Log($"{pair.Value.size} thumb created for {source.Name} [load: {load.ElapsedTime}ms, scale: {scale.ElapsedTime}ms, save: {save.ElapsedTime}ms]");
                 }
 
                 thumbs.Stop();
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 Logging.Log($"Exception during Skia processing: {ex.Message}");
                 throw;
@@ -170,7 +184,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="source"></param>
         /// <param name="desiredWidth"></param>
         /// <returns></returns>
-        private SKBitmap LoadOrientedBitmap( FileInfo source, int desiredWidth )
+        private SKBitmap SlowLoadOrientedBitmap(FileInfo source, int desiredWidth)
         {
             Stopwatch load = new Stopwatch("SkiaSharpLoad");
 
@@ -183,6 +197,121 @@ namespace Damselfly.Core.ImageProcessing
             load.Stop();
 
             return bmp;
+        }
+
+        /// <summary>
+        /// Loads an image from a disk file, decoding for the optimal required
+        /// size so that we don't load the entire image for a smaller target,
+        /// and auto-orienting the bitmap according to the codec origin.
+        /// This is faster than the slow method above, because it uses the trick
+        /// outlined here:
+        /// https://forums.xamarin.com/discussion/88794/fast-way-to-decode-skbitmap-from-byte-jpeg-raw
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="desiredWidth"></param>
+        /// <returns></returns>
+        private SKBitmap LoadOrientedBitmap(FileInfo source, int desiredWidth)
+        {
+            Stopwatch load = new Stopwatch("SkiaSharpLoad");
+
+            SKCodec codec = SKCodec.Create(source.FullName);
+            SKImageInfo info = codec.Info;
+
+            // get the scale that is nearest to what we want (eg: jpg returned 512)
+            SKSizeI supportedScale = codec.GetScaledDimensions((float)desiredWidth / info.Width);
+
+            // decode the bitmap at the nearest size
+            SKImageInfo nearest = new SKImageInfo(supportedScale.Width, supportedScale.Height);
+            SKBitmap bmp = SKBitmap.Decode(codec, nearest);
+            load.Stop();
+
+            // First, auto-orient the bitmap
+            var sourceBitmap = AutoOrient(bmp, codec.EncodedOrigin);
+
+            return sourceBitmap;
+        }
+
+        /// <summary>
+        /// Needed for auto-orienting the image after using the Scaled codec to load
+        /// the image. 
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="origin"></param>
+        /// <returns></returns>
+        private static SKBitmap AutoOrient(SKBitmap original, SKEncodedOrigin origin)
+        {
+            Stopwatch orient = new Stopwatch("SkiaSharpOrient");
+                
+            var useWidth = original.Width;
+            var useHeight = original.Height;
+            Action<SKCanvas> transform = canvas => { };
+            switch (origin)
+            {
+                case SKEncodedOrigin.TopLeft:
+                    break;
+                case SKEncodedOrigin.TopRight:
+                    // flip along the x-axis
+                    transform = canvas => canvas.Scale(-1, 1, useWidth / 2, useHeight / 2);
+                    break;
+                case SKEncodedOrigin.BottomRight:
+                    transform = canvas => canvas.RotateDegrees(180, useWidth / 2, useHeight / 2);
+                    break;
+                case SKEncodedOrigin.BottomLeft:
+                    // flip along the y-axis
+                    transform = canvas => canvas.Scale(1, -1, useWidth / 2, useHeight / 2);
+                    break;
+                case SKEncodedOrigin.LeftTop:
+                    useWidth = original.Height;
+                    useHeight = original.Width;
+                    transform = canvas =>
+                    {
+                        // Rotate 90
+                        canvas.RotateDegrees(90, useWidth / 2, useHeight / 2);
+                        canvas.Scale(useHeight * 1.0f / useWidth, -useWidth * 1.0f / useHeight, useWidth / 2, useHeight / 2);
+                    };
+                    break;
+                case SKEncodedOrigin.RightTop:
+                    useWidth = original.Height;
+                    useHeight = original.Width;
+                    transform = canvas =>
+                    {
+                        canvas.Translate(useWidth, 0);
+                        canvas.RotateDegrees(90);
+                    };
+                    break;
+                case SKEncodedOrigin.RightBottom:
+                    useWidth = original.Height;
+                    useHeight = original.Width;
+                    transform = canvas =>
+                    {
+                        // Rotate 90
+                        canvas.RotateDegrees(90, useWidth / 2, useHeight / 2);
+                        canvas.Scale(-useHeight * 1.0f / useWidth, useWidth * 1.0f / useHeight, useWidth / 2, useHeight / 2);
+                    };
+                    break;
+                case SKEncodedOrigin.LeftBottom:
+                    useWidth = original.Height;
+                    useHeight = original.Width;
+                    transform = canvas =>
+                    {
+                        canvas.Translate(0, useHeight);
+                        canvas.RotateDegrees(270);
+                    };
+                    break;
+                default:
+                    break;
+            }
+
+            var rotated = new SKBitmap(useWidth, useHeight);
+            using (var canvas = new SKCanvas(rotated))
+            {
+                transform.Invoke(canvas);
+                canvas.DrawBitmap(original, 0, 0);
+            }
+
+            orient.Stop();
+
+            return rotated;
         }
 
         /// <summary>
