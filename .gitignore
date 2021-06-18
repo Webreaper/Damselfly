@@ -366,7 +366,7 @@ Damselfly.Web/config/
 Damselfly.Desktop/dist/
 
 # The following is the electron gitignore
-.DS_Store
+**/.DS_Store
 .env
 .gclient_done
 **/.npmrc
