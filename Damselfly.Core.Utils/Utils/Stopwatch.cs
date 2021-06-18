@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using Humanizer;
 
 namespace Damselfly.Core.Utils
 {
@@ -75,7 +76,7 @@ namespace Damselfly.Core.Utils
 
         public long ElapsedTime { get { return end - start; } }
         public string HumanElapsedTime { get { return ((int)(end - start)).ToHumanReadableString(); } }
-        public override string ToString() => $"{ElapsedTime}";
+        public override string ToString() => $"{ElapsedTime}ms";
 
         public static void WriteTotals(bool verbose = true)
         {

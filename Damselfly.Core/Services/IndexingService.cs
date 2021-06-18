@@ -810,7 +810,7 @@ namespace Damselfly.Core.Services
 
                                 if (imgMetaData.DateTaken != img.SortDate)
                                 {
-                                    Logging.Log($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
+                                    Logging.LogTrace($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
                                     // Always update the image sort date with the date taken,
                                     // if one was found in the metadata
                                     img.SortDate = imgMetaData.DateTaken;
@@ -820,7 +820,7 @@ namespace Damselfly.Core.Services
                                 else
                                 {
                                     if( imgMetaData.DateTaken == DateTime.MinValue )
-                                        Logging.Log($"Not updating image {img.FileName} with DateTaken as no valid value.");
+                                        Logging.LogTrace($"Not updating image {img.FileName} with DateTaken as no valid value.");
                                 }
                             }
                             catch (Exception ex)

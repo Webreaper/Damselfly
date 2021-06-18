@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Accord.Imaging.Filters;
+using System.Collections.Generic;
 
 namespace Damselfly.Web.Controllers
 {
@@ -31,16 +32,22 @@ namespace Damselfly.Web.Controllers
         public async Task<IActionResult> Image(string imageId, CancellationToken cancel, bool isDownload = false)
         {
             Stopwatch watch = new Stopwatch("ControllerGetImage");
+
             IActionResult result = Redirect("/no-image.png");
 
             if (int.TryParse(imageId, out var id))
             {
                 try
                 {
+                    var image = SearchService.Instance.GetFromCache(id);
+
                     if (cancel.IsCancellationRequested)
                         return result;
 
-                    var image = await ImageService.GetImage(id, false, false);
+                    if (image == null)
+                    {
+                        image = await ImageService.GetImage(id, false, false);
+                    }
 
                     if (image != null)
                     {
@@ -70,6 +77,7 @@ namespace Damselfly.Web.Controllers
         public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel)
         {
             Stopwatch watch = new Stopwatch("ControllerGetThumb");
+
             IActionResult result = Redirect("/no-image.png");
 
             if (Enum.TryParse<ThumbSize>( thumbSize, true, out var size) && int.TryParse(imageId, out var id))
@@ -101,6 +109,7 @@ namespace Damselfly.Web.Controllers
                         var file = new FileInfo(image.FullPath);
                         var imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
                         bool gotThumb = true;
+
 
                         if (! System.IO.File.Exists(imagePath))
                         {
