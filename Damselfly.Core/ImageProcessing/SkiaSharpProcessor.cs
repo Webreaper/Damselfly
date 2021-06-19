@@ -84,7 +84,7 @@ namespace Damselfly.Core.ImageProcessing
 
                 // Dropping this from High to Low doesn't have that much of an effect
                 // in terms of image quality.
-                var quality = SKFilterQuality.Low;
+                var quality = SKFilterQuality.High;
                 var srcBitmap = sourceBitmap;
 
                 foreach (var pair in destFiles.OrderByDescending(x => x.Value.width))
