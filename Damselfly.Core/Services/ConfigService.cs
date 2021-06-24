@@ -10,12 +10,11 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ConfigService
     {
-        public static ConfigService Instance { get; private set; }
         private IDictionary<string, ConfigSetting> _cache;
 
         public ConfigService()
         {
-            Instance = this;
+            InitialiseCache();
         }
 
         public void InitialiseCache( bool force = false )

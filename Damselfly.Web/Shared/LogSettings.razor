@@ -1,5 +1,6 @@
 ﻿
 @inject BasketService basketService
+@inject ConfigService configService 
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
 
@@ -37,6 +38,6 @@
             Logging.ChangeLogLevel(Serilog.Events.LogEventLevel.Debug);
         }
 
-        ConfigService.Instance.Set("LogLevel", logLevel);
+        configService.Set("LogLevel", logLevel);
     }
 }

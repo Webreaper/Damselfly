@@ -53,6 +53,11 @@ namespace Damselfly.Core.Utils
                             .Query()
                             .Include(e => e.Tag)
                             .Load();
+
+                db.Entry(img).Collection(e => e.ImageObjects)
+                             .Query()
+                             .Include(x => x.Tag)
+                             .Load();
             }
             catch (Exception ex)
             {

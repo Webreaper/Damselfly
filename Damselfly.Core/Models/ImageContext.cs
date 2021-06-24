@@ -21,6 +21,8 @@ namespace Damselfly.Core.Models
         public DbSet<ImageMetaData> ImageMetaData { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ImageTag> ImageTags { get; set; }
+        public DbSet<ImageObject> ImageObjects { get; set; }
+        public DbSet<ImageClassification> ImageClassifications { get; set; }
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketEntry> BasketEntries { get; set; }
@@ -42,6 +44,7 @@ namespace Damselfly.Core.Models
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Many to many via ImageTags
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
 
@@ -55,6 +58,19 @@ namespace Damselfly.Core.Models
                 .HasForeignKey(p => p.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // One to ImageObjects
+            var io = modelBuilder.Entity<ImageObject>();
+
+            io.HasOne(p => p.Image)
+                .WithMany(p => p.ImageObjects)
+                .HasForeignKey(p => p.ImageId);
+
+            modelBuilder.Entity<Image>()
+                .HasOne(img => img.Classification)
+                .WithOne()
+                .HasForeignKey<ImageClassification>(i => i.ClassificationId);
+
+            // Others
             modelBuilder.Entity<BasketEntry>()
                 .HasOne(a => a.Image)
                 .WithOne(b => b.BasketEntry)
@@ -74,6 +90,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<Folder>().HasIndex(x => x.FolderScanDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.Path);
             modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
+
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Hash);
@@ -81,6 +98,8 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
+
+            modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
             AddSpecialisationIndexes(modelBuilder);
         }
@@ -136,6 +155,13 @@ namespace Damselfly.Core.Models
         public virtual BasketEntry BasketEntry { get; set; }
         public virtual ImageMetaData MetaData { get; set; }
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
+
+        // Machine learning fields
+        public int? ClassificationId { get; set; }
+        public virtual ImageClassification Classification { get; set; }
+        public float ClassificationScore { get; set; }
+
+        public virtual IList<ImageObject> ImageObjects { get; } = new List<ImageObject>();
 
         public override string ToString()
         {
@@ -229,19 +255,28 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class Tag
     {
+        public enum TagTypes
+        {
+            IPTC = 0,
+            Classification = 1
+        };
+
         [Key]
         public int TagId { get; set; }
         [Required]
         public string Keyword { get; set; }
-        public string Type { get; set; }
+
+        public TagTypes TagType { get; set; }
         public bool Favourite { get; set; }
+
         public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
         public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
+        public virtual IList<ImageObject> ImageObjects { get; } = new List<ImageObject>();
 
         public override string ToString()
         {
-            return $"{Keyword} [{TagId}]";
+            return $"{TagType}: {Keyword} [{TagId}]";
         }
 
         public override int GetHashCode()
@@ -303,6 +338,50 @@ namespace Damselfly.Core.Models
         public override int GetHashCode()
         {
             return ImageId.GetHashCode() + '_' + TagId.GetHashCode();
+        }
+    }
+
+    /// <summary>
+    /// An image classification detected via ML
+    /// </summary>
+    public class ImageClassification
+    {
+        [Key]
+        public int ClassificationId { get; set; }
+
+        public string Label { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Label} [{ClassificationId}]";
+        }
+    }
+
+    /// <summary>
+    /// One image can have a number of objects each with a name.
+    /// </summary>
+    public class ImageObject
+    {
+        [Key]
+        public int ImageObjectId { get; set; }
+
+        [Required]
+        public int ImageId { get; set; }
+        public virtual Image Image { get; set; }
+
+        [Required]
+        public int TagId { get; set; }
+        public virtual Tag Tag { get; set; }
+
+        public float Score { get; set; }
+        public int RectX { get; set; }
+        public int RectY { get; set; }
+        public int RectWidth { get; set; }
+        public int RectHeight { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Image.FileName}=>{Tag.Keyword} [{ImageId}, ({RectX},{RectY},{RectWidth},{RectHeight}]";
         }
     }
 

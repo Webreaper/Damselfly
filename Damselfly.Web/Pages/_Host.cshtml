@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject ThemeService themeService 
 @namespace Damselfly.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using Damselfly.Core.Services;
@@ -18,7 +19,7 @@
     <link rel="stylesheet" href="Cropper/cropper.css" />
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
     <link href="css/DarkDateRangePicker.css" rel="stylesheet" />
-    <link href="themes/@ThemeService.Instance.ThemeCSS" rel="stylesheet" />
+    <link href="themes/@themeService.ThemeCSS" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>

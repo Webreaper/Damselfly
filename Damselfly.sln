@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Models", "Da
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Utils", "Damselfly.Core.Utils\Damselfly.Core.Utils.csproj", "{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassification", "Damselfly.Core.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.Core.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{6040AF22-D698-4558-88D2-144EAEA73507}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,5 +53,13 @@ Global
 		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6040AF22-D698-4558-88D2-144EAEA73507}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6040AF22-D698-4558-88D2-144EAEA73507}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6040AF22-D698-4558-88D2-144EAEA73507}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6040AF22-D698-4558-88D2-144EAEA73507}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,7 @@
 ﻿
 @inject BasketService basketService
 @inject ViewDataService ViewDataService
+@inject DownloadService downloadService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
 @implements IDisposable
@@ -81,7 +82,7 @@
 
     private async Task SaveConfig()
     {
-        await DownloadService.Instance.SaveDownloadConfig(selectedConfig);
+        await downloadService.SaveDownloadConfig(selectedConfig);
         StatusMessage = $"Saved Config for '{selectedConfig.Name}'";
         await LoadConfigs();
         StateHasChanged();

@@ -4,6 +4,7 @@
 
 @inject ImageService imageService
 @inject SearchService searchService
+@inject StatusService statusService
 
 <div class="damselfly-searchbar">
     <div class="damselfly-searchfilter">
@@ -35,13 +36,13 @@
     private void KeyChangedMinSize(string newText)
     {
         if (!string.IsNullOrEmpty(newText))
-            StatusService.Instance.StatusText = $"Searching for images larger than {newText}...";
+            statusService.StatusText = $"Searching for images larger than {newText}...";
     }
 
     private void DoSearch(string searchTerm)
     {
         if (!string.IsNullOrEmpty(searchTerm))
-            StatusService.Instance.StatusText = $"Searching for keyword: {searchTerm}...";
+            statusService.StatusText = $"Searching for keyword: {searchTerm}...";
         searchService.SearchText = searchTerm;
     }
 }

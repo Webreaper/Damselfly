@@ -1,14 +1,16 @@
 ﻿@using Damselfly.Web.Data
 
+@inject SearchService searchService
+
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Camera Filter"><i class="fas fa-camera" /></div>
-    <select @bind="SearchService.Instance.CameraId" class="InputAddOn-field damselfly-camerafilter">
+    <select @bind="searchService.CameraId" class="InputAddOn-field damselfly-camerafilter">
         @foreach (var camera in cameras)
         {
             <option value="@camera.CameraId" title="@camera.Make">@camera.Model</option>
         }
     </select>
-    <select @bind="SearchService.Instance.LensId" class="InputAddOn-field damselfly-camerafilter">
+    <select @bind="searchService.LensId" class="InputAddOn-field damselfly-camerafilter">
         @foreach (var lens in lenses)
         {
             <option value="@lens.LensId" title="@lens.Model">@lens.Model</option>
@@ -56,8 +58,8 @@
     private void ClearFilter()
     {
         // TODO: Conflate these so we don't search twice?
-        SearchService.Instance.CameraId = -1;
-        SearchService.Instance.LensId = -1;
+        searchService.CameraId = -1;
+        searchService.LensId = -1;
         StateHasChanged();
     }
 
@@ -66,7 +68,7 @@
         if (int.TryParse(e.Value.ToString(), out var cameraId))
         {
             Logging.Log("Camera filter changed.");
-            SearchService.Instance.CameraId = cameraId;
+            searchService.CameraId = cameraId;
         }
     }
 
@@ -75,7 +77,7 @@
         if (int.TryParse(e.Value.ToString(), out var lensId))
         {
             Logging.Log("Lens filter changed.");
-            SearchService.Instance.LensId = lensId;
+            searchService.LensId = lensId;
         }
     }
 }

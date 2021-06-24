@@ -452,6 +452,7 @@ f
 
 .damselfly-logo {
     display: flex;
+    background-color: black;
     flex: 0 0 50px;
     order: -1;
     justify-content: center;

@@ -3,6 +3,8 @@
 
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
+@inject BasketService basketService
+@inject SearchService searchService 
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
@@ -72,12 +74,12 @@
 
     public bool InBasket
     {
-        get { return BasketService.Instance.IsSelected(CurrentImage); }
+        get { return basketService.IsSelected(CurrentImage); }
         set
         {
-            BasketService.Instance.SetBasketState(new[] { CurrentImage }, value);
+            basketService.SetBasketState(new[] { CurrentImage }, value);
             // Notify the image list that the selection has changed
-            SearchService.Instance.NotifyStateChanged();
+            searchService.NotifyStateChanged();
         }
     }
 

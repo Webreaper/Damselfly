@@ -24,11 +24,9 @@ namespace Damselfly.Core.Services
         private readonly IDictionary<ScheduledTask.TaskType, Thread> runningTasks = new Dictionary<ScheduledTask.TaskType, Thread>();
 
         private readonly object runningTaskLock = new object();
-        public static TaskService Instance { get; private set; }
 
         public TaskService()
         {
-            Instance = this;
             Logging.Log("Task scheduler started.");
         }
 

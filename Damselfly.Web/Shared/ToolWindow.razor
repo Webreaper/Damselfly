@@ -1,4 +1,6 @@
 ﻿
+@inject ConfigService configService
+
 <div class="toolwindow">
     <div class="toolwindow-titlebar">
         <div class="toolwindow-title">@Title</div>
@@ -35,7 +37,7 @@
 
     protected override void OnInitialized()
     {
-        var visible = ConfigService.Instance.Get(ConfigName, "True");
+        var visible = configService.Get(ConfigName, "True");
 
         if (visible == "False")
             CollapseDisplay();
@@ -45,13 +47,13 @@
     {
         Collapsed = false;
         DisplayClass = string.Empty;
-        ConfigService.Instance.Set(ConfigName, "True");
+        configService.Set(ConfigName, "True");
     }
 
     private void CollapseDisplay()
     {
         Collapsed = true;
         DisplayClass = "toolbar-hidden";
-        ConfigService.Instance.Set(ConfigName, "False");
+        configService.Set(ConfigName, "False");
     }
 }

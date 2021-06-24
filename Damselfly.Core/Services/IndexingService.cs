@@ -12,6 +12,7 @@ using MetadataExtractor.Formats.Iptc;
 using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
 using System.Threading.Tasks;
+using TagTypes = Damselfly.Core.Models.Tag.TagTypes;
 
 namespace Damselfly.Core.Services
 {
@@ -30,13 +31,22 @@ namespace Damselfly.Core.Services
         private IDictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>( StringComparer.OrdinalIgnoreCase );
 
         public static string RootFolder { get; set; }
-        public static IndexingService Instance { get; private set; }
         public static bool EnableIndexing { get; set; } = true;
-        public static bool EnableThumbnailGeneration { get; set; } = true;
+        private readonly StatusService _statusService;
+        private readonly MetaDataService _metadataService;
+        private readonly ConfigService _configService;
+        private readonly ImageProcessService _imageProcessService;
 
-        public IndexingService()
+        public IndexingService( StatusService statusService, MetaDataService metaData, 
+            ImageProcessService imageService, ConfigService config )
         {
-            Instance = this;
+            _statusService = statusService;
+            _configService = config;
+            _metadataService = metaData;
+            _imageProcessService = imageService;
+
+            if( EnableIndexing )
+                StartService();
         }
 
         public event Action OnFoldersChanged;
@@ -341,6 +351,31 @@ namespace Damselfly.Core.Services
         }
         #endregion
 
+        public async Task<List<Models.Tag>> CreateTagsFromStrings(IEnumerable<string> tags)
+        {
+            using ImageContext db = new ImageContext();
+
+            // Find the tags that aren't already in the cache
+            var newTags = tags.Where( x => ! _tagCache.ContainsKey(x) )
+                        .Select(x => new Models.Tag { Keyword = x, TagType = TagTypes.IPTC })
+                        .ToList();
+
+
+            if (newTags.Any())
+            {
+
+                Logging.LogTrace("Adding {0} tags", newTags.Count());
+
+                await db.BulkInsert(db.Tags, newTags);
+
+                // Add the new items to the cache. 
+                newTags.ForEach(x => _tagCache[x.Keyword] = x);
+            }
+
+            var allTags = tags.Select(x => _tagCache[x]).ToList();
+            return allTags;
+        }
+
         /// <summary>
         /// Given a collection of images and their keywords, performs a bulk insert
         /// of them all. This is way more performant than adding the keywords as
@@ -348,6 +383,7 @@ namespace Damselfly.Core.Services
         /// too.
         /// </summary>
         /// <param name="imageKeywords"></param>
+        /// <param name="type"></param>
         private async Task AddTags( IDictionary<Image, string[]> imageKeywords )
         {
             // See if we have any images that were written to the DB and have IDs
@@ -360,25 +396,12 @@ namespace Damselfly.Core.Services
 
             try
             {
-                var newTags = imageKeywords.Where( x => x.Value != null && x.Value.Any() )
-                                        .SelectMany(x => x.Value)
-                                        .Distinct()
-                                        .Where( x => _tagCache != null && ! _tagCache.ContainsKey( x ))
-                                        .Select( x => new Models.Tag { Keyword = x, Type = "IPTC" })
-                                        .ToList();
+                // First, find all the distinct keywords, and check whether
+                // they're in the cache. If not, create them in the DB.
+                var allKeywords = imageKeywords.Where(x => x.Value != null && x.Value.Any() )
+                                               .SelectMany( x => x.Value ).Distinct();
 
-
-                if (newTags.Any())
-                {
-
-                    Logging.LogTrace("Adding {0} tags", newTags.Count());
-
-                    await db.BulkInsert(db.Tags, newTags);
-
-                    // Add the new items to the cache. 
-                    foreach (var tag in newTags)
-                        _tagCache[tag.Keyword] = tag;
-                }
+                await CreateTagsFromStrings(allKeywords);
             }
             catch (Exception ex)
             {
@@ -565,7 +588,7 @@ namespace Damselfly.Core.Services
 
             using var db = new ImageContext();
             var folder = new DirectoryInfo(folderToScan.Path);
-            var allImageFiles = folder.SafeGetImageFiles();
+            var allImageFiles = SafeGetImageFiles( folder );
 
             if (allImageFiles == null)
             {
@@ -690,7 +713,7 @@ namespace Damselfly.Core.Services
 
             watch.Stop();
 
-            StatusService.Instance.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
+            _statusService.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
                     folderToScan.Name, folderToScan.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
 
             // Do this after we scan for images, because we only load folders if they have images.
@@ -698,6 +721,39 @@ namespace Damselfly.Core.Services
                 NotifyFolderChanged();
 
             return imagesWereAddedOrRemoved;
+        }
+
+
+
+        /// <summary>
+        /// Get all image files in a subfolder, and return them, ordered by
+        /// the most recently updated first. 
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        public List<FileInfo> SafeGetImageFiles(DirectoryInfo folder)
+        {
+            var watch = new Stopwatch("GetFiles");
+
+            try
+            {
+                var files = folder.GetFiles()
+                                  .Where(x => _imageProcessService.IsImageFileType(x))
+                                  .OrderByDescending(x => x.LastWriteTimeUtc)
+                                  .ThenByDescending(x => x.CreationTimeUtc)
+                                  .ToList();
+
+                return files;
+            }
+            catch (Exception ex)
+            {
+                Logging.LogWarning("Unable to read files from {0}: {1}", folder.FullName, ex.Message);
+                return new List<FileInfo>();
+            }
+            finally
+            {
+                watch.Stop();
+            }
         }
 
         /// <summary>
@@ -743,7 +799,7 @@ namespace Damselfly.Core.Services
                     if (!complete)
                     {
                         var batchWatch = new Stopwatch("MetaDataBatch", 100000);
-                        var writeSideCarTagsToImages = ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords);
+                        var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
 
                         // Aggregate stuff that we'll collect up as we scan
                         var imageKeywords = new ConcurrentDictionary<Image, string[]>();
@@ -796,7 +852,7 @@ namespace Damselfly.Core.Services
                                         // Now, submit the tags; note they won't get created immediately, but in batch.
                                         Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
                                         // Fire and forget this asynchronously - we don't care about waiting for it
-                                        _ = MetaDataService.Instance.UpdateTagsAsync(new[] { img }, sideCarTags, null);
+                                        _ = _metadataService.UpdateTagsAsync(new[] { img }, sideCarTags, null);
                                     }
                                 }
 
@@ -917,7 +973,7 @@ namespace Damselfly.Core.Services
         public void PerformFullIndex()
         {
             // Perform a full index at startup
-            StatusService.Instance.StatusText = "Full Indexing starting...";
+            _statusService.StatusText = "Full Indexing starting...";
             var root = new DirectoryInfo(RootFolder);
 
             var watch = new Stopwatch("CompleteIndex", -1);
@@ -926,7 +982,7 @@ namespace Damselfly.Core.Services
 
             watch.Stop();
 
-            StatusService.Instance.StatusText = "Full Indexing Complete.";
+            _statusService.StatusText = "Full Indexing Complete.";
         }
 
         /// <summary>
@@ -990,7 +1046,7 @@ namespace Damselfly.Core.Services
 
                 if( foldersToIndex.Any() )
                 {
-                    StatusService.Instance.StatusText = $"Detected {foldersToIndex.Count()} folders with new/changed images.";
+                    _statusService.StatusText = $"Detected {foldersToIndex.Count()} folders with new/changed images.";
 
                     foreach ( var folder in foldersToIndex )
                     {
@@ -1072,7 +1128,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="file"></param>
         /// <param name="changeType"></param>
-        private static void EnqueueFolderChangeForRescan( FileInfo file, WatcherChangeTypes changeType )
+        private void EnqueueFolderChangeForRescan( FileInfo file, WatcherChangeTypes changeType )
         {
             using var db = new ImageContext();
 
@@ -1083,7 +1139,7 @@ namespace Damselfly.Core.Services
                 return;
 
             // Ignore non images, and hidden files/folders.
-            if (file.IsDirectory() || file.IsImageFileType() || file.IsSidecarFileType() )
+            if (file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType() )
             {
                 Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
                 folderQueue.Enqueue(folder);
@@ -1096,7 +1152,7 @@ namespace Damselfly.Core.Services
             Logging.LogError($"Flagging Error for folder: {e.GetException().Message}");
         }
 
-        private static void OnChanged(object source, FileSystemEventArgs e)
+        private void OnChanged(object source, FileSystemEventArgs e)
         {
             Logging.LogVerbose($"FileWatcher: {e.FullPath} {e.ChangeType}");
 
@@ -1105,7 +1161,7 @@ namespace Damselfly.Core.Services
             EnqueueFolderChangeForRescan(file, e.ChangeType);
         }
 
-        private static void OnRenamed(object source, RenamedEventArgs e)
+        private void OnRenamed(object source, RenamedEventArgs e)
         {
             Logging.LogVerbose($"FileWatcher: {e.OldFullPath} => {e.FullPath} {e.ChangeType}");
 

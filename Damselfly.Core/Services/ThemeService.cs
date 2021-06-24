@@ -18,13 +18,13 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ThemeService
     {
-        public static ThemeService Instance { get; private set; }
         private static DirectoryInfo themesFolder;
         private long cacheBuster = 1;
+        private readonly ConfigService _configService;
 
-        public ThemeService()
+        public ThemeService( ConfigService configService)
         {
-            Instance = this;
+            _configService = configService;
         }
 
         /// <summary>
@@ -40,11 +40,11 @@ namespace Damselfly.Core.Services
         public string CurrentTheme {
             get
             {
-                return ConfigService.Instance.Get(ConfigSettings.Theme, "green");
+                return _configService.Get(ConfigSettings.Theme, "green");
             }
             set
             {
-                ConfigService.Instance.Set(ConfigSettings.Theme, value);
+                _configService.Set(ConfigSettings.Theme, value);
                 cacheBuster++;
             }
         }

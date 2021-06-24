@@ -5,6 +5,9 @@
 @inject NavigationManager NavigationManager
 @inject NavigationService navContext
 @inject ContextMenuService contextMenuService
+@inject BasketService basketService
+@inject SelectionService selectionService
+ 
 @inject IJSRuntime JsRuntime
 
 @if (CurrentImage == null)
@@ -41,17 +44,17 @@ else
 
     public bool InBasket
     {
-        get { return BasketService.Instance.IsSelected(CurrentImage); }
+        get { return basketService.IsSelected(CurrentImage); }
         set
         {
-            BasketService.Instance.SetBasketState(new[] { CurrentImage }, value);
+            basketService.SetBasketState(new[] { CurrentImage }, value);
             // Notify the image list that the selection has changed
             StateHasChanged();
         }
     }
 
     string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
-    string SelectStyle { get { return SelectionService.Instance.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
+    string SelectStyle { get { return selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
 
     void ShowContextMenu(MouseEventArgs args)
     {

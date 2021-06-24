@@ -3,8 +3,11 @@
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService keywordService
-@inject IJSRuntime JsRuntime
+@inject StatusService statusService
+@inject BasketService basketService
 @inject SearchService searchService
+@inject ConfigService configService
+@inject IJSRuntime JsRuntime
 @implements IDisposable
 @inherits ImageGridBase
 
@@ -97,11 +100,11 @@
     <div class="damselfly-browsetool">
         <label class="damselfly-browsetoollabel">
             Group By:
-            @foreach (var choice in Enum.GetValues( typeof( SearchQuery.GroupingType ) ).Cast<SearchQuery.GroupingType>() )
+            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.GroupingType)).Cast<SearchQuery.GroupingType>())
             {
                 <label class="damselfly-browsetoollabel">
                     <input name="grouping" value="@choice" type="radio"
-                           checked="@SearchService.Instance.Grouping.Equals( choice )"
+                           checked="@searchService.Grouping.Equals( choice )"
                            @onchange="@(() => { ChangeGroupType( choice ); })" />
                     @choice.ToString()
                 </label>
@@ -111,14 +114,14 @@
     <div class="damselfly-browsetool">
         <label class="damselfly-browsetoollabel">
             Sort By:
-            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.SortOrderType)).Cast<SearchQuery.SortOrderType>() )
+            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.SortOrderType)).Cast<SearchQuery.SortOrderType>())
             {
-            <label class="damselfly-browsetoollabel">
-                <input name="sortorder" value="@choice" type="radio"
-                       checked="@SearchService.Instance.SortOrder.Equals( choice )"
-                       @onchange="@(() => { ChangeSortOrder( choice ); })" />
-                @choice.ToString()
-            </label>
+                <label class="damselfly-browsetoollabel">
+                    <input name="sortorder" value="@choice" type="radio"
+                           checked="@searchService.SortOrder.Equals( choice )"
+                           @onchange="@(() => { ChangeSortOrder( choice ); })" />
+                    @choice.ToString()
+                </label>
             }
         </label>
     </div>
@@ -127,13 +130,19 @@
 @code {
     private LocalFileExporter FileExporter;
     const int imagesPerPage = 100;
-    private bool showDateSeparators = ConfigService.Instance.GetBool("DateSeparators", false);
+    private bool showDateSeparators;
 
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
     private EventConflator conflator = new EventConflator(2000);
 
-    ThumbSize CurrentThumbSize = ConfigService.Instance.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
+    ThumbSize CurrentThumbSize = ThumbSize.Small;
+
+    protected override void OnInitialized()
+    {
+        showDateSeparators = configService.GetBool("DateSeparators", false);
+        CurrentThumbSize = configService.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
+    }
 
     private void StoreImage(Image image)
     {
@@ -142,24 +151,24 @@
 
     void AddGroupToBasket(ImageGrouping grouping)
     {
-        BasketService.Instance.SetBasketState(grouping.Images, true);
-        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images added to the basket";
+        basketService.SetBasketState(grouping.Images, true);
+        statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
     }
 
     void RemoveGroupFromBasket(ImageGrouping grouping)
     {
-        BasketService.Instance.SetBasketState(grouping.Images, false);
-        StatusService.Instance.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+        basketService.SetBasketState(grouping.Images, false);
+        statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
     }
 
     void SelectGroup(ImageGrouping grouping)
     {
-        SelectionService.Instance.SelectImages(grouping.Images);
+        selectionService.SelectImages(grouping.Images);
     }
 
     void DeselectGroup(ImageGrouping grouping)
     {
-        SelectionService.Instance.DeselectImages(grouping.Images);
+        selectionService.DeselectImages(grouping.Images);
     }
 
     private List<ImageGrouping> GroupedImages
@@ -167,11 +176,11 @@
         get
         {
             // TODO: Order by
-            if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Folder)
+            if (searchService.Grouping == SearchQuery.GroupingType.Folder)
             {
                 var result = gridImages.GroupBy(x => x.Folder);
 
-                if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
+                if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key.Path);
                 else
                     result = result.OrderBy(x => x.Key.Path);
@@ -179,11 +188,11 @@
                 return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
                             .ToList();
             }
-            else if (SearchService.Instance.Grouping == SearchQuery.GroupingType.Date)
+            else if (searchService.Grouping == SearchQuery.GroupingType.Date)
             {
                 var result = gridImages.GroupBy(x => x.SortDate.Date);
 
-                if (SearchService.Instance.SortOrder == SearchQuery.SortOrderType.Descending)
+                if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -199,15 +208,15 @@
 
     private void ChangeGroupType(SearchQuery.GroupingType newType)
     {
-        SearchService.Instance.Grouping = newType;
-        Logging.Log($"Grouping changed to {SearchService.Instance.Grouping}");
+        searchService.Grouping = newType;
+        Logging.Log($"Grouping changed to {searchService.Grouping}");
         StateHasChanged();
     }
 
     private void ChangeSortOrder(SearchQuery.SortOrderType newType)
     {
-        SearchService.Instance.SortOrder = newType;
-        Logging.Log($"Sort order changed to {SearchService.Instance.SortOrder}");
+        searchService.SortOrder = newType;
+        Logging.Log($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
 
@@ -226,7 +235,7 @@
             default: WrapStyle = "wrapping-table-small"; break;
         }
 
-        ConfigService.Instance.Set(ConfigSettings.ThumbSize, newSize.ToString());
+        configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -235,17 +244,17 @@
         {
             int initialLoadCount, scrollPos;
 
-            if (!int.TryParse(ConfigService.Instance.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
+            if (!int.TryParse(configService.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
                 initialLoadCount = imagesPerPage;
 
-            if (!int.TryParse(ConfigService.Instance.Get("ImageScrollTop"), out scrollPos))
+            if (!int.TryParse(configService.Get("ImageScrollTop"), out scrollPos))
                 scrollPos = 0;
 
             searchService.OnChange += SearchQueryChanged;
             FileExporter.OnChange += StateHasChanged;
-            BasketService.Instance.OnChange += BasketChanged;
+            basketService.OnChange += BasketChanged;
 
-            await LoadData( initialLoadCount );
+            await LoadData(initialLoadCount);
             await InitJsListenerAsync(scrollPos);
         }
     }
@@ -254,7 +263,7 @@
     {
         searchService.OnChange -= SearchQueryChanged;
         FileExporter.OnChange -= StateHasChanged;
-        BasketService.Instance.OnChange -= BasketChanged;
+        basketService.OnChange -= BasketChanged;
     }
 
     public string NoResultsMessage
@@ -277,7 +286,7 @@
 
     protected void SearchQueryChanged()
     {
-        SelectionService.Instance.ClearSelection();
+        selectionService.ClearSelection();
         gridImages.Clear();
         endOfImages = false;
 
@@ -293,8 +302,8 @@
     private void SaveScrollState(int scrollTop)
     {
         Logging.LogTrace($"Saving scroll position: {scrollTop}");
-        ConfigService.Instance.Set("ImageScrollTop", scrollTop.ToString());
-        ConfigService.Instance.Set("LoadedImages", gridImages.Count.ToString());
+        configService.Set("ImageScrollTop", scrollTop.ToString());
+        configService.Set("LoadedImages", gridImages.Count.ToString());
     }
 
     [JSInvokable]
@@ -330,7 +339,7 @@
 
             IsLoading = false;
 
-            _ = InvokeAsync( StateHasChanged );
+            _ = InvokeAsync(StateHasChanged);
         }
     }
 }

@@ -14,15 +14,16 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class FolderService
     {
+        private readonly SearchService _searchService;
         private List<FolderListItem> allFolderItems = new List<FolderListItem>();
-        public static FolderService Instance { get; private set; }
         public event Action OnChange;
 
-        public FolderService()
+        public FolderService( IndexingService _indexingService, SearchService searchService)
         {
-            Instance = this;
+            _indexingService.OnFoldersChanged += OnFoldersChanged;
+            _searchService = searchService;
 
-            IndexingService.Instance.OnFoldersChanged += OnFoldersChanged;
+            PreLoadFolderData();
         }
 
         private void OnFoldersChanged()
@@ -96,7 +97,7 @@ namespace Damselfly.Core.Services
                 items = await Task.FromResult(allFolderItems
                                 .Where(x => x.Folder.Name.ContainsNoCase(filterTerm)
                                             // Always include the currently selected folder so it remains highlighted
-                                            || SearchService.Instance.Folder?.FolderId == x.Folder.FolderId)
+                                            || _searchService.Folder?.FolderId == x.Folder.FolderId)
                                 .ToList());
             }
             else

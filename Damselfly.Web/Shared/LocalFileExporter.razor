@@ -1,6 +1,7 @@
 ﻿
 @inject BasketService basketService
 @inject ViewDataService ViewDataService
+@inject StatusService statusService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
 
@@ -45,16 +46,16 @@
                 // the image will be written locally on the client-side
                 string localPath = image.FullPath.MakePathRelativeTo(IndexingService.RootFolder);
 
-                StatusService.Instance.StatusText = $"Writing {image.FileName} to {localPath}...";
+                statusService.StatusText = $"Writing {image.FileName} to {localPath}...";
 
                 // Now, shell out to Javascript, which will trigger the download in the Electron container
                 await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
             }
 
-            StatusService.Instance.StatusText = "Selected images saved locally.";
+            statusService.StatusText = "Selected images saved locally.";
         }
         else
-            StatusService.Instance.StatusText = "Local save is not available outside the Desktop Client.";
+            statusService.StatusText = "Local save is not available outside the Desktop Client.";
     }
 
     /// <summary>

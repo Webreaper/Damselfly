@@ -5,6 +5,8 @@
     of the visible image is updated which should update it instantly.
 -->
 @inject IJSRuntime JsRuntime
+@inject StatusService statusService
+@inject ConfigService configService
 
 @using Damselfly.Core.ImageProcessing
 
@@ -20,7 +22,7 @@
     [Parameter]
     public string ImageID { get; set; }
 
-    private int ZoomLevel { get; set; } = ConfigService.Instance.GetInt( ConfigSettings.ZoomLevel, 400 );
+    private int ZoomLevel { get; set; } = 400;
     private string ZoomPercentage => $"{ZoomLevel}%";
     private string ImgKey => $"prev{ImageID}";
     private string ZoomKey => $"zoom{ImageID}";
@@ -36,6 +38,8 @@
 
     protected override void OnInitialized()
     {
+        ZoomLevel = configService.GetInt(ConfigSettings.ZoomLevel, 400);
+
         base.OnInitialized();
 
         SetupPreload();
@@ -44,7 +48,7 @@
     private void SetupPreload()
     {
         ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
-        StatusService.Instance.StatusText = "Loading hi-res image...";
+        statusService.StatusText = "Loading hi-res image...";
         StateHasChanged();
     }
 
@@ -64,7 +68,7 @@
             _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
         }
 
-        StatusService.Instance.StatusText = "Hi-res image loaded.";
+        statusService.StatusText = "Hi-res image loaded.";
         StateHasChanged();
     }
 
@@ -79,10 +83,10 @@
             ZoomLevel = Math.Max(ZoomLevel - 50, 150);
         }
 
-        ConfigService.Instance.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+        configService.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
 
         needToInitZoom = true;
         StateHasChanged();
-        StatusService.Instance.StatusText = $"Zoom level set to {ZoomLevel}%";
+        statusService.StatusText = $"Zoom level set to {ZoomLevel}%";
     }
 }

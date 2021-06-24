@@ -15,6 +15,7 @@ using Damselfly.Core.Models;
 using Tewr.Blazor.FileReader;
 using Radzen;
 using Damselfly.Core.Utils;
+using Damselfly.ML.ObjectDetection;
 
 namespace Damselfly.Web
 {
@@ -25,8 +26,6 @@ namespace Damselfly.Web
     /// </summary>
     public class Startup
     {
-        private static TaskService taskScheduler;
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -47,23 +46,26 @@ namespace Damselfly.Web
             services.AddBlazoredModal();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
+            services.AddSingleton<ConfigService>();
             services.AddSingleton<ImageService>();
-            services.AddSingleton(StatusService.Instance);
-            services.AddSingleton(SearchService.Instance);
-            services.AddSingleton(ThumbnailService.Instance);
-            services.AddSingleton(FolderService.Instance);
-            services.AddSingleton(TaskService.Instance);
-            services.AddSingleton(DownloadService.Instance);
-            services.AddSingleton(ThemeService.Instance);
-            services.AddSingleton(IndexingService.Instance);
-            services.AddSingleton(BasketService.Instance);
-            services.AddSingleton(MetaDataService.Instance);
-            services.AddSingleton(ImageProcessService.Instance);
-            services.AddSingleton(WordpressService.Instance);
-            services.AddSingleton(SelectionService.Instance);
+            services.AddSingleton<StatusService>();
+            services.AddSingleton<ObjectDetector>();
+            services.AddSingleton<FolderService>();
+            services.AddSingleton<IndexingService>();
+            services.AddSingleton<ThumbnailService>();
+            services.AddSingleton<SearchService>();
+            services.AddSingleton<BasketService>();
             services.AddSingleton<NavigationService>();
             services.AddSingleton<ViewDataService>();
             services.AddSingleton<ConfigService>();
+            services.AddSingleton<MetaDataService>();
+            services.AddSingleton<TaskService>();
+            services.AddSingleton<DownloadService>();
+            services.AddSingleton<ThemeService>();
+            services.AddSingleton<ImageProcessService>();
+            services.AddSingleton<WordpressService>();
+            services.AddSingleton<SelectionService>();
+
             services.AddScoped<ContextMenuService>();
         }
 
@@ -73,7 +75,9 @@ namespace Damselfly.Web
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
+                        ImageProcessService imageProcessing, DownloadService download,
+                        ThemeService themes, TaskService tasks, MetaDataService metadata)
         {
             if (env.IsDevelopment())
             {
@@ -112,32 +116,15 @@ namespace Damselfly.Web
                 endpoints.MapFallbackToPage("/_Host");
             });
 
+            // TODO: Save this in ConfigService
             string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
 
-            DownloadService.Instance.SetDownloadPath(contentRootPath);
-            ThemeService.Instance.SetContentPath(contentRootPath);
-
             // TODO: Fix this, or not if Skia doesn't need it
-            ImageProcessService.Instance.SetContentPath( contentRootPath );
+            imageProcessing.SetContentPath(contentRootPath);
+            download.SetDownloadPath(contentRootPath);
+            themes.SetContentPath(contentRootPath);
 
-            Logging.Log("Preloading config, folders, images and selection...");
-
-            // TODO: Make all this async?
-            ConfigService.Instance.InitialiseCache();
-            SearchService.Instance.PreLoadSearchData();
-            FolderService.Instance.PreLoadFolderData();
-            BasketService.Instance.Initialise();
-            MetaDataService.Instance.StartService();
-
-            if (IndexingService.EnableIndexing)
-                IndexingService.Instance.StartService();
-
-            if (IndexingService.EnableThumbnailGeneration)
-                ThumbnailService.Instance.StartService();
-
-            Logging.Log("Preloading complete");
-
-            StartTaskScheduler();
+            StartTaskScheduler(tasks, download, metadata);
         }
 
         /// <summary>
@@ -145,10 +132,8 @@ namespace Damselfly.Web
         /// that we'll want to run periodically, such as indexing, thumbnail generation,
         /// cleanup of temporary download files, etc., etc.
         /// </summary>
-        private static void StartTaskScheduler()
+        private static void StartTaskScheduler(TaskService taskScheduler, DownloadService download, MetaDataService metadata)
         {
-            taskScheduler = TaskService.Instance;
-
             var tasks = new List<ScheduledTask>();
 
             // Clean up old download zips from the wwwroot folder
@@ -157,7 +142,7 @@ namespace Damselfly.Web
             {
                 Type = ScheduledTask.TaskType.CleanupDownloads,
                 ExecutionFrequency = downloadCleanupFreq,
-                WorkMethod = () => DownloadService.Instance.CleanUpOldDownloads(downloadCleanupFreq),
+                WorkMethod = () => download.CleanUpOldDownloads(downloadCleanupFreq),
                 ImmediateStart = true
             });
 
@@ -167,7 +152,7 @@ namespace Damselfly.Web
             {
                 Type = ScheduledTask.TaskType.CleanupKeywordOps,
                 ExecutionFrequency = new TimeSpan(24,0,0),
-                WorkMethod = () => MetaDataService.Instance.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
+                WorkMethod = () => metadata.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
                 ImmediateStart = true
             });
 

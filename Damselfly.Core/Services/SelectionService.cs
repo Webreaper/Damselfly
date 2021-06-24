@@ -8,14 +8,12 @@ namespace Damselfly.Core.Services
     {
         // Maintain a look up of all selected images, by ID
         private readonly IDictionary<int, Image> selectedImages = new Dictionary<int, Image>();
-        public static SelectionService Instance { get; private set; }
         public event Action OnSelectionChanged;
 
         // TODO: Remember last selected image and use it for range selections etc?
 
         public SelectionService()
         {
-            Instance = this;
         }
 
         private void NotifyStateChanged()

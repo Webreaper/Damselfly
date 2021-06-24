@@ -5,7 +5,9 @@
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService iptcService
+@inject SelectionService selectionService 
 @inject IndexingService indexService
+@inject MetaDataService metadataService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
@@ -67,6 +69,16 @@
                         <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
                     </div>
                 }
+
+                @foreach (var tag in theObjectTags)
+                {
+                    <div class="damselfly-keyword">
+                        <div class="damselfly-favouritetag" title="AI Detected">
+                            <i class="fas fa-lightbulb" />
+                        </div>
+                        <div class="damselfly-keywordtext">@tag</div>
+                    </div>
+                }
             }
             else
             {
@@ -93,14 +105,8 @@
     public bool TrackSelection { get; set; }
 
     private IList<Tag> theImageTags { get; set; }
+    private IList<string> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
-
-    private async Task<IList<Tag>> LoadImageTagsAsync()
-    {
-        return await Task.FromResult(GetImageTags()
-                                        .OrderBy(x => x.Keyword)
-                                        .ToList());
-    }
 
     private void CreateNewTag(string tagToAdd)
     {
@@ -140,12 +146,6 @@
         {
             try
             {
-                using var db = new ImageContext();
-
-                // Enrich all the images with their with their tags
-                foreach (var img in CurrentImages)
-                    db.LoadTags(img);
-
                 var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
 
                 if (tagLists.Count() > 1)
@@ -156,7 +156,9 @@
                 }
                 else if (tagLists.Count() == 1)
                 {
-                    return tagLists.FirstOrDefault().ToList();
+                    return tagLists.FirstOrDefault()
+                                   .OrderBy( x => x.Keyword )
+                                   .ToList();
                 }
             }
             catch (Exception ex)
@@ -168,19 +170,41 @@
         return new Tag[0];
     }
 
+    private IList<string> GetObjectTags()
+    {
+        if (CurrentImages != null)
+        {
+            try
+            {
+                using var db = new ImageContext();
+
+                var tagLists = CurrentImages.SelectMany(x => x.ImageObjects.Select(t => t.Tag.Keyword))
+                                            .Distinct()
+                                            .ToArray();
+
+                return tagLists;
+            }
+            catch (Exception ex)
+            {
+                Logging.Log($"Unable to get common tags: {ex}");
+            }
+        }
+
+        return new string[0];
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (TrackSelection)
         {
             // TODO: Dispose
-            SelectionService.Instance.OnSelectionChanged += SelectionChanged;
-            MetaDataService.Instance.OnFavouritesChanged += FavouritesChanged;
+            selectionService.OnSelectionChanged += SelectionChanged;
+            metadataService.OnFavouritesChanged += FavouritesChanged;
             SelectionChanged();
         }
         else
         {
-            theImageTags = await LoadImageTagsAsync();
-            StateHasChanged();
+            await OnParametersSetAsync();
         }
     }
 
@@ -203,14 +227,14 @@
 
     public void Dispose()
     {
-        SelectionService.Instance.OnSelectionChanged -= SelectionChanged;
-        MetaDataService.Instance.OnFavouritesChanged -= FavouritesChanged;
+        selectionService.OnSelectionChanged -= SelectionChanged;
+        metadataService.OnFavouritesChanged -= FavouritesChanged;
         navContext.OnChange += NavigationChanged;
     }
 
     protected void SelectionChanged()
     {
-        this.CurrentImages = SelectionService.Instance.Selection.ToArray();
+        this.CurrentImages = selectionService.Selection.ToArray();
 
         InvokeAsync(() => { _ = OnParametersSetAsync(); });
     }
@@ -222,8 +246,20 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        theImageTags = await LoadImageTagsAsync();
-        StateHasChanged();
+        await Task.Run( RefreshTagsForSelection );
+    }
+
+    private void RefreshTagsForSelection()
+    {
+        using var db = new ImageContext();
+
+        // Enrich all the images with their with their tags
+        foreach (var img in CurrentImages)
+            db.LoadTags(img);
+
+        theImageTags = GetImageTags();
+        theObjectTags = GetObjectTags();
+        InvokeAsync( StateHasChanged );
     }
 
     void ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)

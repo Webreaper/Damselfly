@@ -3,6 +3,10 @@
 @using Humanizer;
 
 @inject IJSRuntime JsRuntime
+@inject ConfigService configService
+@inject ThemeService themeService
+@inject StatusService statusService
+@inject WordpressService wpService
 @inject TaskService taskScheduler
 
 <div class="damselfly-config">
@@ -29,7 +33,7 @@
                 </div>
                 <div class="damselfly-configfield">
                     <InputSelect @bind-Value="selectedTheme">
-                        @foreach (var choice in ThemeService.Instance.Themes)
+                        @foreach (var choice in themeService.Themes)
                         {
                             <option value="@choice">
                                 @choice.Transform(To.SentenceCase)
@@ -87,30 +91,30 @@
 
     private void HandleValidSubmit()
     {
-        ConfigService.Instance.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
-        ConfigService.Instance.Set(ConfigSettings.WordpressURL, wpSettings.URL);
-        ConfigService.Instance.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
-        ConfigService.Instance.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
+        configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
+        configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
+        configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
+        configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
 
         // WP Settings have changed, so reset the client and token
-        WordpressService.Instance.ResetClient();
+        wpService.ResetClient();
 
-        if (ThemeService.Instance.CurrentTheme != selectedTheme)
+        if (themeService.CurrentTheme != selectedTheme)
         {
-            ThemeService.Instance.CurrentTheme = selectedTheme;
+            themeService.CurrentTheme = selectedTheme;
             _ = JsRuntime.InvokeVoidAsync("window.location.reload");
         }
 
-        StatusService.Instance.StatusText = "Settings saved.";
+        statusService.StatusText = "Settings saved.";
     }
 
     protected override void OnInitialized()
     {
-        wpSettings.URL = ConfigService.Instance.Get(ConfigSettings.WordpressURL);
-        wpSettings.UserName = ConfigService.Instance.Get(ConfigSettings.WordpressUser);
-        wpSettings.Password = ConfigService.Instance.Get(ConfigSettings.WordpressPassword);
-        importSidecarKeywords = ConfigService.Instance.GetBool(ConfigSettings.ImportSidecarKeywords);
-        selectedTheme = ThemeService.Instance.CurrentTheme;
+        wpSettings.URL = configService.Get(ConfigSettings.WordpressURL);
+        wpSettings.UserName = configService.Get(ConfigSettings.WordpressUser);
+        wpSettings.Password = configService.Get(ConfigSettings.WordpressPassword);
+        importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
+        selectedTheme = themeService.CurrentTheme;
         base.OnInitialized();
     }
 

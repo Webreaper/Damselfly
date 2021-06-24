@@ -92,11 +92,11 @@ namespace Damselfly.Web
 
                                 ImageProcessService.UseImageSharp = o.ImageSharp;
                                 IndexingService.EnableIndexing = ! o.NoEnableIndexing;
-                                IndexingService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
                                 IndexingService.RootFolder = o.SourceDirectory;
                                 ThumbnailService.PicturesRoot = o.SourceDirectory;
                                 ThumbnailService.Synology = o.Synology;
                                 ThumbnailService.SetThumbnailRoot(o.ThumbPath);
+                                ThumbnailService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
 
                                 Logging.Log("Startup State:");
                                 Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
@@ -156,24 +156,6 @@ namespace Damselfly.Web
         {
             try
             {
-                Logging.Log("Starting Damselfly Services");
-
-                // Instantiate all of our services
-                var status = new StatusService();
-                var thumbs = new ThumbnailService();
-                var indexing = new IndexingService();
-                var downloads = new DownloadService();
-                var themes = new ThemeService();
-                var basket = new BasketService();
-                var folder = new FolderService();
-                var search = new SearchService();
-                var tasks = new TaskService();
-                var config = new ConfigService();
-                var meta = new MetaDataService();
-                var wp = new WordpressService();
-                var proc = new ImageProcessService();
-                var select = new SelectionService();
-
                 Logging.Log("Starting Damselfly Webserver");
 
                 BuildWebHost(listeningPort, args).Run();

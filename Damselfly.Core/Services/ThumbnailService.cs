@@ -11,6 +11,8 @@ using MetadataExtractor.Formats.Jpeg;
 using Damselfly.Core.ImageProcessing;
 using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
+using Damselfly.ML.ObjectDetection;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.Services
 {
@@ -19,13 +21,38 @@ namespace Damselfly.Core.Services
     {
         private static string _thumbnailRootFolder;
         private const string _requestRoot = "/images";
-        private static readonly int s_maxThreads = Math.Max( Environment.ProcessorCount / 2, 2 );
+        private static int s_maxThreads = GetMaxThreads();
+        private readonly ObjectDetector _objectDetector;
+        private readonly StatusService _statusService;
+        private readonly IndexingService _indexingService;
+        private readonly ImageProcessService _imageProcessingService;
 
-        public static ThumbnailService Instance { get; private set; }
+
+        public ThumbnailService( StatusService statusService, ObjectDetector objectDetector,
+                        IndexingService indexingService, ImageProcessService imageService )
+        {
+            _statusService = statusService;
+            _objectDetector = objectDetector;
+            _indexingService = indexingService;
+            _imageProcessingService = imageService;
+
+            if( EnableThumbnailGeneration )
+                StartService();
+        }
+
+        private static int GetMaxThreads()
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+                return 1;
+
+            return Math.Max(Environment.ProcessorCount / 2, 2);
+        }
+
         public static string PicturesRoot { get; set; }
         public static bool UseGraphicsMagick { get; set; }
         public static bool Synology { get; set; }
         public static string RequestRoot { get { return _requestRoot; } }
+        public static bool EnableThumbnailGeneration { get; set; } = true;
 
         /// <summary>
         /// Set the http thumbnail request root - this will be wwwroot or equivalent
@@ -104,16 +131,6 @@ namespace Damselfly.Core.Services
             new ThumbConfig{ width = 160, height = 120, size = ThumbSize.Preview, cropToRatio = true, batchGenerate = false },
             new ThumbConfig{ width = 120, height = 120, size = ThumbSize.Small, cropToRatio = true }
         };
-
-        public ThumbnailService()
-        {
-            Instance = this;
-
-            if (Synology)
-            {
-                Logging.Log("Synology OS detected - using native thumbnail structure.");
-            }
-        }
 
         private void GetImageSize(string fullPath, out int width, out int height)
         {
@@ -288,7 +305,7 @@ namespace Damselfly.Core.Services
 
                     watch.Stop();
 
-                    StatusService.Instance.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
+                    _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
 
                     Stopwatch.WriteTotals();
                 }
@@ -303,14 +320,66 @@ namespace Damselfly.Core.Services
         /// <param name="sourceImage"></param>
         /// <param name="forceRegeneration"></param>
         /// <returns></returns>
-        public async Task<ImageProcessResult> CreateThumbs(Models.ImageMetaData sourceImage, bool forceRegeneration )
+        public async Task<ImageProcessResult> CreateThumbs(ImageMetaData sourceImage, bool forceRegeneration )
         {
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
             sourceImage.ThumbLastUpdated = DateTime.UtcNow;
             sourceImage.Hash = result.ImageHash;
 
+            await DetectObjects(sourceImage.Image);
+
             return result;
+        }
+
+        /// <summary>
+        /// Detect objects in the image.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        private async Task DetectObjects(Image image)
+        {
+            try
+            {
+                const float predictionThreshold = 0.5f;
+
+                var file = new FileInfo(image.FullPath);
+                var medThumb = new FileInfo(GetThumbPath(file, ThumbSize.Medium));
+
+                var allPredictions = await _objectDetector.DetectObjects(medThumb);
+
+                var validPredictions = allPredictions.Where(x => x.Score >= predictionThreshold).ToList();
+
+                Logging.LogVerbose($"Discarding {allPredictions.Count - validPredictions.Count} uncertain predictions.");
+
+                if(validPredictions.Any() )
+                {
+                    Logging.Log($"Found {validPredictions.Count} objects in {medThumb}...");
+
+                    var allLabels = validPredictions.Select(x => x.Label.Name).Distinct().ToList();
+
+                    var tags = await _indexingService.CreateTagsFromStrings(allLabels);
+
+                    var imageObjects = validPredictions.Select(x => new ImageObject
+                                        {
+                                            ImageId = image.ImageId,
+                                            TagId = tags.Where(l => l.Keyword == x.Label.Name).Select( x => x.TagId ).First(),
+                                            RectX = (int)x.Rectangle.Left,
+                                            RectY = (int)x.Rectangle.Top,
+                                            RectHeight = (int)x.Rectangle.Height,
+                                            RectWidth = (int)x.Rectangle.Width,
+                                            Score = x.Score
+                                        }).ToList();
+
+                    using var db = new ImageContext();
+
+                    await db.BulkInsert( db.ImageObjects, imageObjects);
+                }
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during object detection: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -362,7 +431,7 @@ namespace Damselfly.Core.Services
                         var watch = new Stopwatch("ConvertNative", 60000);
                         try
                         {
-                            result = await ImageProcessService.Instance.CreateThumbs(imagePath, destFiles);
+                            result = await _imageProcessingService.CreateThumbs(imagePath, destFiles);
                         }
                         catch (Exception ex)
                         {

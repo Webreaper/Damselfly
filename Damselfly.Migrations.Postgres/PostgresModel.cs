@@ -49,6 +49,7 @@ namespace Damselfly.Migrations.Postgres.Models
 
         public PostgresModel()
         {
+            dBSettings = new DBSettings();
             Console.WriteLine("Constructing Postgres Model for EFCore Migrations...");
             BaseDBModel.DatabaseSpecialisation = this;
         }

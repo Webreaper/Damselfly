@@ -105,7 +105,7 @@
     {
         if (firstRender)
         {
-            FolderService.Instance.OnChange += OnFoldersChanged;
+            folderService.OnChange += OnFoldersChanged;
             // Kick off the data load
             await ProcessUpdatedFilter(false);
         }
@@ -113,7 +113,7 @@
 
     public void Dispose()
     {
-        FolderService.Instance.OnChange -= OnFoldersChanged;
+        folderService.OnChange -= OnFoldersChanged;
     }
 
     private void OnFoldersChanged()

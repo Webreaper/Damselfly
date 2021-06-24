@@ -18,11 +18,14 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class SearchService
     {
-        public SearchService()
+        public SearchService( StatusService statusService )
         {
-            Instance = this;
+            _statusService = statusService;
+
+            PreLoadSearchData();
         }
 
+        private readonly StatusService _statusService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
         private IDictionary<int, Image> imageCache = new Dictionary<int, Image>();
@@ -43,8 +46,6 @@ namespace Damselfly.Core.Services
         }
 
         public event Action OnChange;
-
-        public static SearchService Instance { get; private set; }
 
         public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim() ) { query.SearchText = value.Trim(); QueryChanged(); } } }
         public DateTime MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
@@ -136,7 +137,10 @@ namespace Damselfly.Core.Services
 
                     if ( query.TagId != -1 )
                     {
-                        images = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
+                        var tagImages = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
+                        var objImages = images.Where(x => x.ImageObjects.Any(y => y.TagId == query.TagId));
+
+                        images = tagImages.Union(objImages);
                     }
 
                     // If selected, filter by the image filename/foldername
@@ -239,7 +243,7 @@ namespace Damselfly.Core.Services
                 }
 
                 Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms (Tags: {tagwatch.ElapsedTime}ms)");
-                StatusService.Instance.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
+                _statusService.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
 
                 // Now save the results in our stored dataset
                 SearchResults.AddRange(results);

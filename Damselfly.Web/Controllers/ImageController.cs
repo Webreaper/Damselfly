@@ -23,13 +23,13 @@ namespace Damselfly.Web.Controllers
     public class ImageController : Controller
     {
         [HttpGet("/dlimage/{imageId}")]
-        public async Task<IActionResult> Image(string imageId, CancellationToken cancel)
+        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] SearchService searchService)
         {
-            return await Image(imageId, cancel, true);
+            return await Image(imageId, cancel, searchService, true);
         }
 
         [HttpGet("/rawimage/{imageId}")]
-        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, bool isDownload = false)
+        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] SearchService searchService, bool isDownload = false )
         {
             Stopwatch watch = new Stopwatch("ControllerGetImage");
 
@@ -39,7 +39,7 @@ namespace Damselfly.Web.Controllers
             {
                 try
                 {
-                    var image = SearchService.Instance.GetFromCache(id);
+                    var image = searchService.GetFromCache(id);
 
                     if (cancel.IsCancellationRequested)
                         return result;
@@ -74,7 +74,8 @@ namespace Damselfly.Web.Controllers
         }
 
         [HttpGet("/thumb/{thumbSize}/{imageId}")]
-        public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel)
+        public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel,
+                        [FromServices] SearchService searchService, [FromServices] ThumbnailService thumbService)
         {
             Stopwatch watch = new Stopwatch("ControllerGetThumb");
 
@@ -87,7 +88,7 @@ namespace Damselfly.Web.Controllers
                     Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
                     using var db = new ImageContext();
-                    var image = SearchService.Instance.GetFromCache( id );
+                    var image = searchService.GetFromCache( id );
 
                     if (cancel.IsCancellationRequested)
                         return result;
@@ -107,7 +108,7 @@ namespace Damselfly.Web.Controllers
                         Logging.LogTrace($" - Getting thumb path for {imageId}");
 
                         var file = new FileInfo(image.FullPath);
-                        var imagePath = ThumbnailService.Instance.GetThumbPath(file, size);
+                        var imagePath = thumbService.GetThumbPath(file, size);
                         bool gotThumb = true;
 
 
@@ -119,7 +120,7 @@ namespace Damselfly.Web.Controllers
                             if (cancel.IsCancellationRequested)
                                 return result;
 
-                            var conversionResult = await ThumbnailService.Instance.ConvertFile(image, false, size);
+                            var conversionResult = await thumbService.ConvertFile(image, false, size);
 
                             if ( conversionResult.ThumbsGenerated )
                             {

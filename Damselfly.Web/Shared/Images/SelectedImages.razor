@@ -5,7 +5,8 @@
 @inject ThumbnailService thumbService
 @inject BasketService basketService
 @inject NavigationManager NavigationManager
-@inject WordpressService wpService;
+@inject WordpressService wpService
+@inject StatusService statusService
 @implements IDisposable
 @inherits ImageGridBase
 
@@ -62,7 +63,7 @@ else
             </button>
         }
     }
-    @if (SelectionService.Instance.Selection.Any())
+    @if (selectionService.Selection.Any())
     {
         <button @onclick="AddSelectedToBasket" class="btn btn-primary">
             <i class="fas fa-shopping-basket" />
@@ -86,10 +87,10 @@ else
 
     void AddSelectedToBasket()
     {
-        var selected = SelectionService.Instance.Selection.ToList();
-        BasketService.Instance.SetBasketState(selected, true);
+        var selected = selectionService.Selection.ToList();
+        basketService.SetBasketState(selected, true);
 
-        StatusService.Instance.StatusText = $"{selected.Count()} images added to the basket";
+        statusService.StatusText = $"{selected.Count()} images added to the basket";
     }
 
     private void SaveBasket()
@@ -140,7 +141,7 @@ else
         if (firstRender)
         {
             basketService.OnChange += BasketImagesChanged;
-            SelectionService.Instance.OnSelectionChanged += SelectedImagesChanged;
+            selectionService.OnSelectionChanged += SelectedImagesChanged;
             await LoadData();
         }
     }
@@ -148,7 +149,7 @@ else
     public void Dispose()
     {
         basketService.OnChange -= BasketImagesChanged;
-        SelectionService.Instance.OnSelectionChanged -= SelectedImagesChanged;
+        selectionService.OnSelectionChanged -= SelectedImagesChanged;
     }
 
     protected void SelectedImagesChanged()

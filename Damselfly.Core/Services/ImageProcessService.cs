@@ -1,10 +1,12 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using System;
 
 namespace Damselfly.Core.Services
 {
@@ -21,15 +23,12 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ImageProcessService : IImageProcessor
     {
-        public static ImageProcessService Instance { get; private set; }
         private readonly IImageProcessor processor;
 
         public static bool UseImageSharp { get; set; }
 
         public ImageProcessService()
         {
-            Instance = this;
-
             if (UseImageSharp)
                 processor = new ImageSharpProcessor();
             else
@@ -53,6 +52,15 @@ namespace Damselfly.Core.Services
         {
             processor.TransformDownloadImage(input, output, config);
         }
+
+        public bool IsImageFileType(FileInfo filename)
+        {
+            if (filename.IsHidden())
+                return false;
+
+            return processor.SupportedFileExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
+        }
+
 
         public ICollection<string> SupportedFileExtensions { get{ return processor.SupportedFileExtensions; } }
     }
