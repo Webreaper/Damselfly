@@ -20,7 +20,7 @@ RUN apk add --no-cache msttcorefonts-installer fontconfig && update-ms-fonts
 RUN apk --update add exiftool && rm -rf /var/cache/apk/*
 
 # Install this for onnx - per https://stackoverflow.com/questions/61407089/asp-net-core-load-an-onnx-file-inside-a-docker-container
-RUN apt-get update && apt-get install -y libgomp1
+RUN apk --update add libgomp1 
 
 EXPOSE 6363
 ENTRYPOINT ["sh","/damselfly-entrypoint.sh"]
