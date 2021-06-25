@@ -11,13 +11,21 @@ namespace Damselfly.ML.ObjectDetection
 {
     public class ObjectDetector
     {
-        private readonly YoloScorer<YoloCocoModel> scorer; 
+        private readonly YoloScorer<YoloCocoModel> scorer;
 
         public ObjectDetector()
         {
             Logging.Log("Initialising ObjectDetector service.");
-            scorer = new YoloScorer<YoloCocoModel>();
-        }
+            try
+            {
+                scorer = new YoloScorer<YoloCocoModel>();
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Unexpected exception initialising Object detection: {ex}");
+                scorer = null; // disable.
+            }
+         }
 
         /// <summary>
         /// Given an image, detect objects in it using the Yolo v5 model.
@@ -26,6 +34,9 @@ namespace Damselfly.ML.ObjectDetection
         /// <returns></returns>
         public async Task<IList<YoloPrediction>> DetectObjects( FileInfo imageFile )
         {
+            if (scorer == null)
+                return new List<YoloPrediction>();
+
             return await Task.Run(() =>
             {
                 using var stream = new FileStream(imageFile.FullName, FileMode.Open);
