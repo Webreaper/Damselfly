@@ -5,65 +5,61 @@
 
 
 <div class="damselfly-sidebar">
-    <div>
-        <div>
-            <DamselflyLogo />
+    <DamselflyLogo />
 
-            @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
-            {
-                <ToolWindow Title="Image Properties">
-                    <ChildContent>
-                        <ImageProperties />
-                    </ChildContent>
-                </ToolWindow>
-            }
-            @if (ViewDataService.ShowBasket)
-            {
-                <ToolWindow Title="Basket">
-                    <ChildContent>
-                        <SelectedImages />
-                    </ChildContent>
-                </ToolWindow>
-            }
-            @if (ViewDataService.ShowTags)
-            {
-                <ToolWindow Title="Image Keywords">
-                    <ChildContent>
-                        <Keywords />
-                    </ChildContent>
-                </ToolWindow>
-                <ToolWindow Title="Add Keywords">
-                    <ChildContent>
-                        <KeywordFavourites />
-                    </ChildContent>
-                </ToolWindow>
-            }
-            @if (ViewDataService.ShowFolderList)
-            {
-                <ToolWindow Title="Folders">
-                    <ChildContent>
-                        <FolderList />
-                    </ChildContent>
-                </ToolWindow>
-            }
-            @if (ViewDataService.ShowExport)
-            {
-                <ToolWindow Title="Export">
-                    <ChildContent>
-                        <ExportSettings />
-                    </ChildContent>
-                </ToolWindow>
-            }
-            @if (ViewDataService.ShowLogs)
-            {
-                <ToolWindow Title="Logs">
-                    <ChildContent>
-                        <LogSettings />
-                    </ChildContent>
-                </ToolWindow>
-            }
-        </div>
-    </div>
+    @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
+    {
+        <ToolWindow Title="Image Properties">
+            <ChildContent>
+                <ImageProperties />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowBasket)
+    {
+        <ToolWindow Title="Basket">
+            <ChildContent>
+                <SelectedImages />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowTags)
+    {
+        <ToolWindow Title="Image Keywords">
+            <ChildContent>
+                <Keywords />
+            </ChildContent>
+        </ToolWindow>
+        <ToolWindow Title="Add Keywords">
+            <ChildContent>
+                <KeywordFavourites />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowFolderList)
+    {
+        <ToolWindow Title="Folders">
+            <ChildContent>
+                <FolderList />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowExport)
+    {
+        <ToolWindow Title="Export">
+            <ChildContent>
+                <ExportSettings />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowLogs)
+    {
+        <ToolWindow Title="Logs">
+            <ChildContent>
+                <LogSettings />
+            </ChildContent>
+        </ToolWindow>
+    }
 </div>
 
 @code { protected override void OnInitialized()
