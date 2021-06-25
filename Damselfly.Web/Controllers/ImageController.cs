@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.ImageProcessing;
@@ -8,11 +7,8 @@ using Damselfly.Core.Services;
 using Damselfly.Web.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
-using Accord.Imaging.Filters;
-using System.Collections.Generic;
 
 namespace Damselfly.Web.Controllers
 {
