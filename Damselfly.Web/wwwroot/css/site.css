@@ -179,6 +179,9 @@ app {
 
 .folder-scroll-area {
     top: 0px;
+    flex: 1 1 auto;
+    max-height: 390px;
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -464,7 +467,7 @@ f
 .damselfly-folderlist {
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
+    flex: 1 0 auto;
     width: 100%;
     max-width: 100%;
     height: 100%;
@@ -472,7 +475,7 @@ f
 }
 
 .damselfly-folderlist:last-child {
-    flex: 1 1 auto;
+    flex: 1 0 auto;
 }
 
 .damselfly-selectedimages {
