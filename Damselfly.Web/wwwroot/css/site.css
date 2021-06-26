@@ -177,14 +177,6 @@ app {
     overflow-y: scroll;
 }
 
-.folder-scroll-area {
-    top: 0px;
-    flex: 1 1 auto;
-    max-height: 390px;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 
 .folder-entry {
     animation: fadeIn ease 0.5s;
@@ -465,17 +457,19 @@ f
 
 
 .damselfly-folderlist {
-    display: flex;
     flex-direction: column;
-    flex: 1 0 auto;
+    flex: 0 1 100%;
     width: 100%;
     max-width: 100%;
-    height: 100%;
     order: 1;
+    display: flex;
 }
 
-.damselfly-folderlist:last-child {
-    flex: 1 0 auto;
+.folder-scroll-area {
+    flex-direction: column;
+    flex: 1 1 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .damselfly-selectedimages {
@@ -740,6 +734,7 @@ f
 
 .toolwindow {
     display: flex;
+    flex: 0 0 auto;
     flex-direction: column;
     color: var( --tool-window-text );
     background-color: var( --tool-window-bg );
@@ -747,7 +742,7 @@ f
 }
 
 .toolwindow:last-child {
-    flex: 1 1 auto;
+    flex: 1 0 auto;
 }
 
 .toolwindow-titlebar {
@@ -770,7 +765,8 @@ f
 
 .toolwindow-content {
     padding: 4px;
-    height: calc( 100% - 40px);
+    height: 100%;
+    display: flex;
 }
 
 
