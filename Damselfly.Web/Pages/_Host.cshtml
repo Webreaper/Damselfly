@@ -111,6 +111,7 @@
             img.addEventListener("touchmove", moveLens);
             result.addEventListener("mousemove", moveLens);
             result.addEventListener("touchmove", moveLens);
+            result.addEventListener("mouseleave", moveLens);
             function moveLens(e) {
                 var pos, x, y;
                 /* Prevent any other actions that may occur when moving over the image */
@@ -126,6 +127,9 @@
                     result.style.display = "none";
                 } else
                     result.style.display = "inherit";
+
+                /* TODO: Scale the mouse movements to reach all corners of the image */
+
                 result.style.backgroundPosition = "-" + (x * scale * 0.75) + "px -" + (y * scale * 0.75) + "px";
             }
             function getCursorPos(e) {

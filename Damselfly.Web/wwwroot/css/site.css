@@ -197,9 +197,14 @@ app {
 
 .folder-search {
     padding: 2px;
+    width: 100%;
     align-content: center;
     vertical-align: middle;
-    font-size: 13px;
+    font-size: 12pt;
+}
+
+.folder-search label {
+    width: 100%;
 }
 
 .folder-icon{
@@ -484,6 +489,10 @@ f
     overflow-y: auto;
 }
 
+.damselfly-basketmanager {
+    order: 3;
+}
+
 .damselfly-imageproperties {
     display: flex;
     flex: 3 3 auto;
@@ -531,6 +540,7 @@ f
     align-items: stretch;
     flex: 0 0 auto;
     flex-flow: row wrap;
+    font-size: 10pt;
 }
 
 /* Mobile adaptive changes. WIP */
@@ -910,6 +920,7 @@ f
 /* TODO: Rename these */
 .InputAddOn-field {
     flex: 1;
+    font-size: 10pt;
 }
 
 .InputAddOn-field:not(:first-child) {
