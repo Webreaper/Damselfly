@@ -129,16 +129,16 @@
                     result.style.display = "inherit";
 
                 /* Calculate the cursor percentage x/y across the lens */
+                var scaleOffsetted = (scale - 1);
                 var lensXPercent = (x / result.clientWidth);
                 var lensYPercent = (y / result.clientHeight);
                 var viewPortXRatio = result.clientWidth / img.naturalWidth;
                 var viewPortYRatio = result.clientHeight / img.naturalHeight;
-                var inverseScaleOffsetted = (scale - 1);
-                var imageXPos = img.naturalWidth * lensXPercent * inverseScaleOffsetted * viewPortXRatio * -1;
-                var imageyPos = img.naturalHeight * lensYPercent * inverseScaleOffsetted * viewPortYRatio * -1;
-                var newPos = imageXPos + "px " + imageyPos + "px";
+                var imageXPos = img.naturalWidth * lensXPercent * scaleOffsetted * viewPortXRatio * -1;
+                var imageYPos = img.naturalHeight * lensYPercent * scaleOffsetted * viewPortYRatio * -1;
+                var newPos = imageXPos + "px " + imageYPos + "px";
 
-                console.log("Scale: " + scale + "; ViewRatio: " + viewPortXRatio + "; invScale: " + inverseScaleOffsetted + "; Zoom pos: " + newPos + "; image width: " + img.naturalWidth + "; xPercent: " + lensXPercent);
+                console.log("Scale: " + scale + "; clientHeight: " + result.clientHeight + "; ViewXRatio: " + viewPortXRatio + "; ViewYRatio: " + viewPortYRatio + "; invScale: " + scaleOffsetted + "; Zoom pos: " + newPos + "; naturalHeight " + img.naturalHeight + "; xPercent: " + lensYPercent);
 
                 result.style.backgroundPosition = newPos;
             }
