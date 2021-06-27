@@ -65,7 +65,7 @@
         if (needToInitZoom)
         {
             needToInitZoom = false;
-            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane");
+            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
         }
 
         statusService.StatusText = "Hi-res image loaded.";

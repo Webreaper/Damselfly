@@ -101,12 +101,12 @@
 
 
         function imageZoom(imgID, srcUrl, zoomDivId, zoomPercentage) {
-            var img, result, scale;
-            scale = 4;
+            var img, result, scale, aspect;
+            scale = zoomPercentage / 100;
             img = document.getElementById(imgID);
+            aspect = img.naturalHeight / img.naturalWidth;
             result = document.getElementById(zoomDivId);
             result.style.backgroundImage = "url('" + srcUrl + "')";
-
             img.addEventListener("mousemove", moveLens);
             img.addEventListener("touchmove", moveLens);
             result.addEventListener("mousemove", moveLens);
@@ -128,9 +128,19 @@
                 } else
                     result.style.display = "inherit";
 
-                /* TODO: Scale the mouse movements to reach all corners of the image */
+                /* Calculate the cursor percentage x/y across the lens */
+                var lensXPercent = (x / result.clientWidth);
+                var lensYPercent = (y / result.clientHeight);
+                var inverseScaleOffsetted = (scale - 1);
+                var imageXPos = img.naturalWidth * lensXPercent * inverseScaleOffsetted * -1;
+                var imageyPos = img.naturalHeight * lensYPercent * inverseScaleOffsetted * -1;
+                var newPos = imageXPos + "px " + imageyPos + "px";
+                result.style.backgroundPosition = newPos;
 
-                result.style.backgroundPosition = "-" + (x * scale * 0.75) + "px -" + (y * scale * 0.75) + "px";
+                var oldcalc = "-" + (x * scale * 0.75) + "px -" + (y * scale * 0.75) + "px";
+
+                console.log("Scale: " + scale + "; invScale: " + inverseScaleOffsetted + "; Zoom pos: " + newPos + "; image width: " + img.naturalWidth + "; xPercent: " + lensXPercent + "; oldcalc: " + oldcalc);
+
             }
             function getCursorPos(e) {
                 var a, x = 0, y = 0;
