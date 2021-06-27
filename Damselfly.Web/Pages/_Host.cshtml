@@ -129,16 +129,18 @@
                     result.style.display = "inherit";
 
                 /* Calculate the cursor percentage x/y across the lens */
-                var scaleOffsetted = (scale - 1);
+                var scaleOffsettedX = (scale - 1);
+                var scaleOffsettedY = (scale);
                 var lensXPercent = (x / result.clientWidth);
                 var lensYPercent = (y / result.clientHeight);
                 var viewPortXRatio = result.clientWidth / img.naturalWidth;
-                var viewPortYRatio = result.clientHeight / img.naturalHeight;
-                var imageXPos = img.naturalWidth * lensXPercent * scaleOffsetted * viewPortXRatio * -1;
-                var imageYPos = img.naturalHeight * lensYPercent * scaleOffsetted * viewPortYRatio * -1;
+                var viewPortYRatio = (result.clientHeight / img.naturalHeight);
+                var lensAspectRatio = (result.clientWidth / result.clientHeight);
+                var imageXPos = img.naturalWidth * lensXPercent * scaleOffsettedX * viewPortXRatio * -1;
+                var imageYPos = img.naturalHeight * lensYPercent * scaleOffsettedY * viewPortYRatio * -1;
                 var newPos = imageXPos + "px " + imageYPos + "px";
 
-                console.log("Scale: " + scale + "; clientHeight: " + result.clientHeight + "; ViewXRatio: " + viewPortXRatio + "; ViewYRatio: " + viewPortYRatio + "; invScale: " + scaleOffsetted + "; Zoom pos: " + newPos + "; naturalHeight " + img.naturalHeight + "; xPercent: " + lensYPercent);
+                console.log("LensAspectRatio: " + lensAspectRatio + "; naturalHeight: " + img.naturalHeight + "; ViewYRatio: " + viewPortYRatio + "; invScale: " + scaleOffsettedY + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
 
                 result.style.backgroundPosition = newPos;
             }
