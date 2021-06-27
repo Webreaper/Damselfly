@@ -131,16 +131,16 @@
                 /* Calculate the cursor percentage x/y across the lens */
                 var lensXPercent = (x / result.clientWidth);
                 var lensYPercent = (y / result.clientHeight);
+                var viewPortXRatio = result.clientWidth / img.naturalWidth;
+                var viewPortYRatio = result.clientHeight / img.naturalHeight;
                 var inverseScaleOffsetted = (scale - 1);
-                var imageXPos = img.naturalWidth * lensXPercent * inverseScaleOffsetted * -1;
-                var imageyPos = img.naturalHeight * lensYPercent * inverseScaleOffsetted * -1;
+                var imageXPos = img.naturalWidth * lensXPercent * inverseScaleOffsetted * viewPortXRatio * -1;
+                var imageyPos = img.naturalHeight * lensYPercent * inverseScaleOffsetted * viewPortYRatio * -1;
                 var newPos = imageXPos + "px " + imageyPos + "px";
+
+                console.log("Scale: " + scale + "; ViewRatio: " + viewPortXRatio + "; invScale: " + inverseScaleOffsetted + "; Zoom pos: " + newPos + "; image width: " + img.naturalWidth + "; xPercent: " + lensXPercent);
+
                 result.style.backgroundPosition = newPos;
-
-                var oldcalc = "-" + (x * scale * 0.75) + "px -" + (y * scale * 0.75) + "px";
-
-                console.log("Scale: " + scale + "; invScale: " + inverseScaleOffsetted + "; Zoom pos: " + newPos + "; image width: " + img.naturalWidth + "; xPercent: " + lensXPercent + "; oldcalc: " + oldcalc);
-
             }
             function getCursorPos(e) {
                 var a, x = 0, y = 0;
