@@ -96,12 +96,20 @@
     protected override void OnInitialized()
     {
         navContext.OnChange += NavigationChanged;
+        basketService.OnChange += BasketStateChanged;
     }
 
     public void Dispose()
     {
-        navContext.OnChange += NavigationChanged;
+        navContext.OnChange -= NavigationChanged;
+        basketService.OnChange -= BasketStateChanged;
     }
+
+    protected void BasketStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
 
     protected void NavigationChanged(Image image)
     {
