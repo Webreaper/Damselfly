@@ -129,12 +129,13 @@
                     result.style.display = "inherit";
 
                 var bgWidth = img.naturalWidth * scale;
-                var bgHeight = ((img.naturalWidth + result.clientHeight) * scale) - result.clientHeight;
+                var bgHeight = ((img.naturalWidth + result.clientHeight) * scale) + result.clientHeight;
 
                 var imgAspectRatio = img.naturalHeight / img.naturalWidth;
 
-                if (imgAspectRatio < 1)
+                if (imgAspectRatio < 1) {
                     bgHeight = ((img.naturalWidth - result.clientHeight) * scale);
+                }
 
                 /* Calculate the cursor percentage x/y across the lens */
                 var lensXPercent = (x / result.clientWidth);
@@ -143,7 +144,7 @@
                 var imageYPos = bgHeight * lensYPercent * -1;
 
                 var newPos = imageXPos + "px " + imageYPos + "px";
-                console.log("ImgAspect: " + imgAspectRatio + "; bgHeight + " + bgHeight + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
+                console.log("ImgAspect: " + imgAspectRatio + "; imgHeight: " + img.naturalHeight + "; bgHeight + " + bgHeight + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
 
                 result.style.backgroundSize = bgWidth + "px"
                 result.style.backgroundPosition = newPos;
