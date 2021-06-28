@@ -84,7 +84,7 @@ namespace Damselfly.Core.ImageProcessing
 
                 // Dropping this from High to Low doesn't have that much of an effect
                 // in terms of image quality.
-                var quality = SKFilterQuality.High;
+                var quality = SKFilterQuality.Medium;
                 var srcBitmap = sourceBitmap;
 
                 foreach (var pair in destFiles.OrderByDescending(x => x.Value.width))
@@ -123,6 +123,9 @@ namespace Damselfly.Core.ImageProcessing
 
                     result.ThumbsGenerated = true;
                     // TODO: Dispose
+
+                    if (pair.Value.size == ThumbSize.ExtraLarge)
+                        Logging.Log($"{pair.Value.size} thumb created for {source.Name} [load: {load.ElapsedTime}ms, scale: {scale.ElapsedTime}ms, save: {save.ElapsedTime}ms]");
                 }
 
                 thumbs.Stop();
