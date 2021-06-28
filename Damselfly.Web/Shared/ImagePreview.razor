@@ -11,7 +11,7 @@
 @using Damselfly.Core.ImageProcessing
 
 <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown">
-    <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" style="background-size: @ZoomPercentage"/>
+    <div @key="ZoomKey" class="img-zoom-result" id="zoomPane"/>
     <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
 </div>
 
@@ -23,7 +23,6 @@
     public string ImageID { get; set; }
 
     private int ZoomLevel { get; set; } = 400;
-    private string ZoomPercentage => $"{ZoomLevel}%";
     private string ImgKey => $"prev{ImageID}";
     private string ZoomKey => $"zoom{ImageID}";
     private string ImgPreviewKey => $"{ImageID}";

@@ -128,20 +128,25 @@
                 } else
                     result.style.display = "inherit";
 
+                var bgWidth = img.naturalWidth * scale;
+                var bgHeight = ((img.naturalWidth + result.clientHeight) * scale) - result.clientHeight;
+
                 /* Calculate the cursor percentage x/y across the lens */
                 var scaleOffsettedX = (scale - 1);
-                var scaleOffsettedY = (scale);
-                var lensXPercent = (x / result.clientWidth);
-                var lensYPercent = (y / result.clientHeight);
+                var scaleOffsettedY = (scale - 1);
+                var lensAspectRatio = (result.clientWidth / result.clientHeight);
                 var viewPortXRatio = result.clientWidth / img.naturalWidth;
                 var viewPortYRatio = (result.clientHeight / img.naturalHeight);
-                var lensAspectRatio = (result.clientWidth / result.clientHeight);
-                var imageXPos = img.naturalWidth * lensXPercent * scaleOffsettedX * viewPortXRatio * -1;
-                var imageYPos = img.naturalHeight * lensYPercent * scaleOffsettedY * viewPortYRatio * -1;
+                var imgAspectRatio = img.naturalHeight / img.naturalWidth;
+                var lensXPercent = (x / result.clientWidth);
+                var lensYPercent = (y / result.clientHeight);
+                var imageXPos = (bgWidth - result.clientWidth) * lensXPercent * -1;
+                var imageYPos = bgHeight * lensYPercent * -1;
+
                 var newPos = imageXPos + "px " + imageYPos + "px";
+                console.log("ImgAspect: " + imgAspectRatio + "; LensAspectRatio + " + lensAspectRatio + "; ViewYRatio: " + viewPortYRatio + "; invScale: " + scaleOffsettedY + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
 
-                console.log("LensAspectRatio: " + lensAspectRatio + "; naturalHeight: " + img.naturalHeight + "; ViewYRatio: " + viewPortYRatio + "; invScale: " + scaleOffsettedY + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
-
+                result.style.backgroundSize = bgWidth + "px"
                 result.style.backgroundPosition = newPos;
             }
             function getCursorPos(e) {
