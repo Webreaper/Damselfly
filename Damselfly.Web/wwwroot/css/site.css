@@ -8,6 +8,52 @@ html, body {
     color: var(--body-text);
 }
 
+/* Reconnection Scrreen stuff */
+
+.damselfly-reconnect-modal > div {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    overflow: hidden;
+    background-color: black;
+    opacity: 0.9;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+.components-reconnect-hide > div {
+    display: none;
+}
+
+.components-reconnect-show > div {
+    display: none;
+}
+
+.components-reconnect-show > .show {
+    display: block;
+}
+
+.components-reconnect-failed > div {
+    display: none;
+}
+
+.components-reconnect-failed > .failed {
+    display: block;
+}
+
+.components-reconnect-rejected > div {
+    display: none;
+}
+
+.components-reconnect-rejected > .rejected {
+    display: block;
+}
+
+/* ************************** */
 a, .btn-link {
     color: #03d666;
 }
