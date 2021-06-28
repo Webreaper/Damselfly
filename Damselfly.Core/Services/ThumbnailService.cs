@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
 using Damselfly.ML.ObjectDetection;
 using Damselfly.Core.Models;
+using Damselfly.ML.Accord.Face;
 
 namespace Damselfly.Core.Services
 {
@@ -35,9 +36,6 @@ namespace Damselfly.Core.Services
             _objectDetector = objectDetector;
             _indexingService = indexingService;
             _imageProcessingService = imageService;
-
-            if( EnableThumbnailGeneration )
-                StartService();
         }
 
         private static int GetMaxThreads()
@@ -225,13 +223,20 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            Logging.Log("Started thumbnail service.");
+            if (EnableThumbnailGeneration)
+            {
+                Logging.Log("Started thumbnail service.");
 
-            var thread = new Thread(new ThreadStart( RunThumbnailScan ));
-            thread.Name = "ThumbnailThread";
-            thread.IsBackground = true;
-            thread.Priority = ThreadPriority.Lowest;
-            thread.Start();
+                var thread = new Thread(new ThreadStart(RunThumbnailScan));
+                thread.Name = "ThumbnailThread";
+                thread.IsBackground = true;
+                thread.Priority = ThreadPriority.Lowest;
+                thread.Start();
+            }
+            else
+            {
+                Logging.Log("Thumbnail service was disabled.");
+            }
         }
 
         private void RunThumbnailScan()
@@ -341,39 +346,75 @@ namespace Damselfly.Core.Services
         {
             try
             {
+                var foundObjects = new List<ImageObject>();
                 const float predictionThreshold = 0.5f;
-
                 var file = new FileInfo(image.FullPath);
                 var medThumb = new FileInfo(GetThumbPath(file, ThumbSize.Medium));
 
+                // First, look for faces
+
+                var faces = AccordFaceService.DetectFaces( medThumb );
+
+                if( faces.Any() )
+                {
+                    Logging.Log($"Found {faces.Count} faces in {medThumb}...");
+
+                    const string faceTagName = "Face";
+                    var tags = await _indexingService.CreateTagsFromStrings( new List<string> { faceTagName });
+
+                    // TODO: Need to scale the rect for the original image size here
+                    // as we'll have generated it based on a thumbnail.
+                    foundObjects.AddRange( faces.Select( x => new ImageObject
+                    {
+                        ImageId = image.ImageId,
+                        TagId = tags.Where(l => l.Keyword == faceTagName).Select(x => x.TagId).First(),
+                        RectX = (int)x.FaceRectangle.Left,
+                        RectY = (int)x.FaceRectangle.Top,
+                        RectHeight = (int)x.FaceRectangle.Height,
+                        RectWidth = (int)x.FaceRectangle.Width,
+                        Type = ImageObject.ObjectTypes.Face.ToString(),
+                        Score = 100
+                    } ) );
+                }
+
+                // Next, look for Objects
                 var allPredictions = await _objectDetector.DetectObjects(medThumb);
 
-                var validPredictions = allPredictions.Where(x => x.Score >= predictionThreshold).ToList();
-
-                Logging.LogVerbose($"Discarding {allPredictions.Count - validPredictions.Count} uncertain predictions.");
-
-                if(validPredictions.Any() )
+                if (allPredictions.Any())
                 {
-                    Logging.Log($"Found {validPredictions.Count} objects in {medThumb}...");
+                    var validPredictions = allPredictions.Where(x => x.Score >= predictionThreshold).ToList();
 
-                    var allLabels = validPredictions.Select(x => x.Label.Name).Distinct().ToList();
+                    Logging.LogVerbose($"Discarding {allPredictions.Count - validPredictions.Count} uncertain predictions.");
 
-                    var tags = await _indexingService.CreateTagsFromStrings(allLabels);
+                    if (validPredictions.Any())
+                    {
+                        Logging.Log($"Found {validPredictions.Count} objects in {medThumb}...");
 
-                    var imageObjects = validPredictions.Select(x => new ImageObject
-                                        {
-                                            ImageId = image.ImageId,
-                                            TagId = tags.Where(l => l.Keyword == x.Label.Name).Select( x => x.TagId ).First(),
-                                            RectX = (int)x.Rectangle.Left,
-                                            RectY = (int)x.Rectangle.Top,
-                                            RectHeight = (int)x.Rectangle.Height,
-                                            RectWidth = (int)x.Rectangle.Width,
-                                            Score = x.Score
-                                        }).ToList();
+                        var allLabels = validPredictions.Select(x => x.Label.Name).Distinct().ToList();
 
+                        var tags = await _indexingService.CreateTagsFromStrings(allLabels);
+
+                        // TODO: Need to scale the rect for the original image size here
+                        // as we'll have generated it based on a thumbnail.
+                        foundObjects.AddRange(validPredictions.Select(x => new ImageObject
+                        {
+                            ImageId = image.ImageId,
+                            TagId = tags.Where(l => l.Keyword == x.Label.Name).Select(x => x.TagId).First(),
+                            RectX = (int)x.Rectangle.Left,
+                            RectY = (int)x.Rectangle.Top,
+                            RectHeight = (int)x.Rectangle.Height,
+                            RectWidth = (int)x.Rectangle.Width,
+                            Type = ImageObject.ObjectTypes.Object.ToString(),
+                            Score = x.Score
+                        }));
+                    }
+                }
+
+                if( foundObjects.Any() )
+                {
                     using var db = new ImageContext();
 
-                    await db.BulkInsert( db.ImageObjects, imageObjects);
+                    await db.BulkInsert(db.ImageObjects, foundObjects);
                 }
             }
             catch( Exception ex )

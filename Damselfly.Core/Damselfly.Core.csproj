@@ -42,17 +42,8 @@
     <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="mono_crash.a7f6ef992.0.json" />
-    <None Remove="Accord" />
-    <None Remove="ImageRecognition\.DS_Store" />
-    <None Remove="Accord.Imaging" />
-    <None Remove="Accord.Vision" />
-    <None Remove="CoreCompat.System.Drawing, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
-    <None Remove="System.Drawing.Common" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
     <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj" />
     <ProjectReference Include="..\Damselfly.Core.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
-  </ItemGroup>
+    <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj" />
+</ItemGroup>
 </Project>

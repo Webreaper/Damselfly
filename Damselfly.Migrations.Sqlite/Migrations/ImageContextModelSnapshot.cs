@@ -359,6 +359,9 @@ namespace Damselfly.Core.Migrations
                     b.Property<int>("TagId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Type")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("ImageObjectId");
 
                     b.HasIndex("ImageId");

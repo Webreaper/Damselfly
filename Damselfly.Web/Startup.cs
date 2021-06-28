@@ -77,7 +77,8 @@ namespace Damselfly.Web
         /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
                         ImageProcessService imageProcessing, DownloadService download,
-                        ThemeService themes, TaskService tasks, MetaDataService metadata)
+                        ThemeService themes, TaskService tasks, MetaDataService metadata,
+                        ThumbnailService thumbService, IndexingService indexService )
         {
             if (env.IsDevelopment())
             {
@@ -125,6 +126,9 @@ namespace Damselfly.Web
             themes.SetContentPath(contentRootPath);
 
             StartTaskScheduler(tasks, download, metadata);
+
+            indexService.StartService();
+            thumbService.StartService();
         }
 
         /// <summary>

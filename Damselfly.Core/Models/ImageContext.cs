@@ -362,6 +362,12 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class ImageObject
     {
+        public enum ObjectTypes
+        {
+            Object = 0,
+            Face = 1
+        };
+
         [Key]
         public int ImageObjectId { get; set; }
 
@@ -373,6 +379,7 @@ namespace Damselfly.Core.Models
         public int TagId { get; set; }
         public virtual Tag Tag { get; set; }
 
+        public string Type { get; set; } = ObjectTypes.Object.ToString();
         public float Score { get; set; }
         public int RectX { get; set; }
         public int RectY { get; set; }

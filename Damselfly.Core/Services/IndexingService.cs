@@ -44,9 +44,6 @@ namespace Damselfly.Core.Services
             _configService = config;
             _metadataService = metaData;
             _imageProcessService = imageService;
-
-            if( EnableIndexing )
-                StartService();
         }
 
         public event Action OnFoldersChanged;
@@ -959,15 +956,20 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            Logging.Log("Starting indexing service.");
+            if (EnableIndexing)
+            {
+                Logging.Log("Starting indexing service.");
 
-            var indexthread = new Thread( new ThreadStart(() => { RunIndexing(); } ));
-            indexthread.Name = "IndexingThread";
-            indexthread.IsBackground = true;
-            indexthread.Priority = ThreadPriority.Lowest;
-            indexthread.Start();
+                var indexthread = new Thread(new ThreadStart(() => { RunIndexing(); }));
+                indexthread.Name = "IndexingThread";
+                indexthread.IsBackground = true;
+                indexthread.Priority = ThreadPriority.Lowest;
+                indexthread.Start();
 
-            Task.Run( () => RunMetaDataScans() );
+                Task.Run(() => RunMetaDataScans());
+            }
+            else
+                Logging.Log("Indexing service has been disabled.");
         }
 
         public void PerformFullIndex()

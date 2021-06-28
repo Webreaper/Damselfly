@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Accord.MachineLearning</AssemblyName>
+    <RootNamespace>Accord.MachineLearning</RootNamespace>
+    <TargetFrameworks>net60</TargetFrameworks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+</PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Accord.Core\Accord.Core.csproj" />
+    <ProjectReference Include="..\Accord.Math.Core\Accord.Math.Core.csproj" />
+    <ProjectReference Include="..\Accord.Math\Accord.Math.csproj" />
+    <ProjectReference Include="..\Accord.Statistics\Accord.Statistics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Threading.Tasks" />
+  </ItemGroup>
+
+<ItemGroup>
+<Reference Include="Microsoft.CSharp" />
+</ItemGroup>
+
+<ItemGroup>
+  <Compile Remove="Clustering\FastMeanShift.cs" />
+  <Compile Remove="Properties\AssemblyInfo.cs" />
+</ItemGroup>
+</Project>
