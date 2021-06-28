@@ -441,6 +441,9 @@ namespace Damselfly.Core.Services
                         {
                             watch.Stop();
                             Logging.LogVerbose($"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
+
+                            if( size == ThumbSize.ExtraLarge )
+                                Logging.Log($"ExtraLarge thumb created for {imagePath} in {watch.ElapsedTime}ms");
                         }
                     }
                     else

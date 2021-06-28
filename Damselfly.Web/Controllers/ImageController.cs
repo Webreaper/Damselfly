@@ -93,7 +93,7 @@ namespace Damselfly.Web.Controllers
                     {
                         Logging.LogTrace($" - Cache miss for image thumbnail: {id}");
 
-                        image = await ImageService.GetImage(id, false, false);
+                        image = await ImageService.GetImage(id, true, false);
                     }
 
                     if (image != null)
