@@ -27,42 +27,7 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>window.InfiniteScroll =
-        {
-            Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos) {
-                var scrollArea = document.getElementById(scrollAreaID);
-                scrollArea.scrollTop = initialScrollPos;
-
-                var markerIsVisible = function () {
-                    var endMarker = document.getElementById(endMarkerId);
-
-                    if (endMarker === null)
-                        return false;
-
-                    var bounding = endMarker.getBoundingClientRect();
-
-                    return (bounding.top >= 0 && bounding.left >= 0 &&
-                        bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
-                        bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
-                }
-
-                var markerVisibleState = null;
-
-                scrollArea.addEventListener('scroll', function () {
-                    DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
-
-                    var visible = markerIsVisible();
-
-                    if (markerVisibleState != visible) {
-                        markerVisibleState = visible;
-                        if (visible)
-                            DotNetRef.invokeMethodAsync("LoadMoreData");
-                    }
-                });
-            }
-        }
-
-        window.setSelection = (element, start, end) => {
+    <script>window.setSelection = (element, start, end) => {
             return element.setSelectionRange(start, end);
         }
 
@@ -100,75 +65,15 @@
         }
 
 
-        function imageZoom(imgID, srcUrl, zoomDivId, zoomPercentage) {
-            var img, result, scale, aspect;
-            scale = zoomPercentage / 100;
-            img = document.getElementById(imgID);
-            aspect = img.naturalHeight / img.naturalWidth;
-            result = document.getElementById(zoomDivId);
-            result.style.backgroundImage = "url('" + srcUrl + "')";
-            img.addEventListener("mousemove", moveLens);
-            img.addEventListener("touchmove", moveLens);
-            result.addEventListener("mousemove", moveLens);
-            result.addEventListener("touchmove", moveLens);
-            result.addEventListener("mouseleave", moveLens);
-            function moveLens(e) {
-                var pos, x, y;
-                /* Prevent any other actions that may occur when moving over the image */
-                e.preventDefault();
-                /* Get the cursor's x and y positions: */
-                pos = getCursorPos(e);
-                /* Calculate the position of the lens: */
-                x = pos.x;
-                y = pos.y;
 
-                /* Hide the zoom when we move outside it */
-                if (x > (img.width - 5) || x < 5 || y > (img.height - 5) || y < 5) {
-                    result.style.display = "none";
-                } else
-                    result.style.display = "inherit";
-
-                var bgWidth = img.naturalWidth * scale;
-                var bgHeight = ((img.naturalWidth + result.clientHeight) * scale) + result.clientHeight;
-
-                var imgAspectRatio = img.naturalHeight / img.naturalWidth;
-
-                if (imgAspectRatio < 1) {
-                    bgHeight = ((img.naturalWidth - result.clientHeight) * scale);
-                }
-
-                /* Calculate the cursor percentage x/y across the lens */
-                var lensXPercent = (x / result.clientWidth);
-                var lensYPercent = (y / result.clientHeight);
-                var imageXPos = (bgWidth - result.clientWidth) * lensXPercent * -1;
-                var imageYPos = bgHeight * lensYPercent * -1;
-
-                var newPos = imageXPos + "px " + imageYPos + "px";
-                // console.log("ImgAspect: " + imgAspectRatio + "; imgHeight: " + img.naturalHeight + "; bgHeight + " + bgHeight + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
-
-                result.style.backgroundSize = bgWidth + "px"
-                result.style.backgroundPosition = newPos;
-            }
-            function getCursorPos(e) {
-                var a, x = 0, y = 0;
-                e = e || window.event;
-                /* Get the x and y positions of the image: */
-                a = img.getBoundingClientRect();
-                /* Calculate the cursor's x and y coordinates, relative to the image: */
-                x = e.pageX - a.left;
-                y = e.pageY - a.top;
-                /* Consider any page scrolling: */
-                x = x - window.pageXOffset;
-                y = y - window.pageYOffset;
-                return { x: x, y: y };
-            }
-        }
-                                /* END EXTERNAL SOURCE */
+        /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
 
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
     <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
+    <script src="zoom/imageZoom.js"></script>
+    <script src="vScroll/virtualScroll.js"></script>
     <script src="Cropper/cropper.min.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
 </body>

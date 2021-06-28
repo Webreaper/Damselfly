@@ -76,10 +76,12 @@
         if (e.Key == "ArrowUp")
         {
             ZoomLevel = Math.Min(ZoomLevel + 50, 400);
+            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
         }
         else if (e.Key == "ArrowDown")
         {
             ZoomLevel = Math.Max(ZoomLevel - 50, 150);
+            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
         }
 
         configService.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
