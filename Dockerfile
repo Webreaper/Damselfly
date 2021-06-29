@@ -21,9 +21,8 @@ RUN apk --update add exiftool && rm -rf /var/cache/apk/*
 
 # Install this for onnx - per https://stackoverflow.com/questions/61407089/asp-net-core-load-an-onnx-file-inside-a-docker-container
 RUN apk add --no-cache libgomp 
-RUN apk add --no-cache libgdiplus 
-RUN apk add --no-cache libgdiplus-dev 
-RUN apk add --no-cache libc-dev 
+RUN apk add libgdiplus-dev --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+RUN apk add libc-dev --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 RUN apk add --no-cache libx11 
 RUN apk add --no-cache libstdc++
 
