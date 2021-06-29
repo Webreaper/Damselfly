@@ -27,7 +27,7 @@
   <ItemGroup>
     <None Update="Decompositions\CholeskyDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>CholeskyDecomposition.txt</LastGenOutput>
+      <LastGenOutput>CholeskyDecomposition.cs</LastGenOutput>
       <LastOutputs>
         .\CholeskyDecomposition.cs
         .\CholeskyDecomposition.txt
@@ -37,7 +37,7 @@
     </None>
     <None Update="Decompositions\EigenvalueDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>EigenvalueDecomposition.txt</LastGenOutput>
+      <LastGenOutput>EigenvalueDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\EigenvalueDecomposition.cs
 .\EigenvalueDecomposition.txt
@@ -51,7 +51,7 @@
     </None>
     <None Update="Decompositions\JaggedCholeskyDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>JaggedCholeskyDecomposition.txt</LastGenOutput>
+      <LastGenOutput>JaggedCholeskyDecomposition.cs</LastGenOutput>
       <LastOutputs>
         .\JaggedCholeskyDecomposition.cs
         .\JaggedCholeskyDecomposition.txt
@@ -61,7 +61,7 @@
     </None>
     <None Update="Decompositions\JaggedEigenvalueDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>JaggedEigenvalueDecomposition.txt</LastGenOutput>
+      <LastGenOutput>JaggedEigenvalueDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\JaggedEigenvalueDecomposition.cs
 .\JaggedEigenvalueDecomposition.txt
@@ -70,7 +70,7 @@
     </None>
     <None Update="Decompositions\JaggedLuDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>JaggedLuDecomposition.txt</LastGenOutput>
+      <LastGenOutput>JaggedLuDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\JaggedLuDecomposition.cs
 .\JaggedLuDecomposition.txt
@@ -80,7 +80,7 @@
     </None>
     <None Update="Decompositions\JaggedQrDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>JaggedQrDecomposition.txt</LastGenOutput>
+      <LastGenOutput>JaggedQrDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\JaggedQrDecomposition.cs
 .\JaggedQrDecomposition.txt
@@ -90,7 +90,7 @@
     </None>
     <None Update="Decompositions\JaggedSingularValueDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>JaggedSingularValueDecomposition.txt</LastGenOutput>
+      <LastGenOutput>JaggedSingularValueDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\JaggedSingularValueDecomposition.cs
 .\JaggedSingularValueDecomposition.txt
@@ -105,7 +105,7 @@
     </None>
     <None Update="Decompositions\LuDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>LuDecomposition.txt</LastGenOutput>
+      <LastGenOutput>LuDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\LuDecomposition.cs
 .\LuDecomposition.txt
@@ -115,7 +115,7 @@
     </None>
     <None Update="Decompositions\QrDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>QrDecomposition.txt</LastGenOutput>
+      <LastGenOutput>QrDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\QrDecomposition.cs
 .\QrDecomposition.txt
@@ -130,7 +130,7 @@
     </None>
     <None Update="Decompositions\SingularValueDecomposition.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SingularValueDecomposition.txt</LastGenOutput>
+      <LastGenOutput>SingularValueDecomposition.cs</LastGenOutput>
       <LastOutputs>
 .\SingularValueDecomposition.cs
 .\SingularValueDecomposition.txt
@@ -140,7 +140,7 @@
     </None>
     <None Update="Distance.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Distance.Generated.cs</LastGenOutput>
+      <LastGenOutput>Distance.cs</LastGenOutput>
     </None>
     <None Update="Matrix\Jagged.Product.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -159,7 +159,7 @@
     </None>
     <None Update="Matrix\Matrix.Conversions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Matrix.Conversions.Generated.cs</LastGenOutput>
+      <LastGenOutput>Matrix.Conversions.cs</LastGenOutput>
       <LastOutputs>.\Matrix.Conversions.Generated.cs</LastOutputs>
     </None>
     <None Update="Matrix\Matrix.Linear.tt">
@@ -184,7 +184,7 @@
     </None>
     <None Update="Norm.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Norm.Generated.cs</LastGenOutput>
+      <LastGenOutput>Norm.cs</LastGenOutput>
     </None>
     <None Update="Vector\Vector.Interval.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -193,7 +193,7 @@
     </None>
     <None Update="Vector\Vector.Random.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Vector.Random.Generated.cs</LastGenOutput>
+      <LastGenOutput>Vector.Random.cs</LastGenOutput>
       <LastOutputs>.\Vector.Random.Generated.cs</LastOutputs>
     </None>
     <None Update="Vector\Vector.Range.tt">
@@ -205,6 +205,48 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Vector.Scale.Generated.cs</LastGenOutput>
       <LastOutputs>.\Vector.Scale.Generated.cs</LastOutputs>
+    </None>
+    <None Update="Decompositions\CholeskyDecomposition.txt">
+      <DependentUpon>CholeskyDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\LuDecomposition.txt">
+      <DependentUpon>LuDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\SingularValueDecomposition.txt">
+      <DependentUpon>SingularValueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedEigenvalueDecomposition.txt">
+      <DependentUpon>JaggedEigenvalueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedCholeskyDecomposition.txt">
+      <DependentUpon>JaggedCholeskyDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedLuDecomposition.txt">
+      <DependentUpon>JaggedLuDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedQrDecomposition.txt">
+      <DependentUpon>JaggedQrDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedQrDecomposition.cs">
+      <DependentUpon>JaggedQrDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedEigenvalueDecomposition.cs">
+      <DependentUpon>JaggedEigenvalueDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedLuDecomposition.cs">
+      <DependentUpon>JaggedLuDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\LuDecomposition.cs">
+      <DependentUpon>LuDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\CholeskyDecomposition.cs">
+      <DependentUpon>CholeskyDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\JaggedCholeskyDecomposition.cs">
+      <DependentUpon>JaggedCholeskyDecomposition.tt</DependentUpon>
+    </None>
+    <None Update="Decompositions\SingularValueDecomposition.cs">
+      <DependentUpon>SingularValueDecomposition.tt</DependentUpon>
     </None>
   </ItemGroup>
 
@@ -238,6 +280,54 @@
     </Compile>
     <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Range.Generated.cs">
       <DependentUpon>Vector.Range.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Scale.Generated.cs">
+      <DependentUpon>Vector.Scale.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Random.Generated.cs">
+      <DependentUpon>Matrix.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Reduction.Generated.cs">
+      <DependentUpon>Matrix.Reduction.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Conversions.Generated.cs">
+      <DependentUpon>Matrix.Conversions.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Random.Generated.cs">
+      <DependentUpon>Vector.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Linear.Generated.cs">
+      <DependentUpon>Matrix.Linear.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Jagged.Random.Generated.cs">
+      <DependentUpon>Jagged.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Jagged.Product.Generated.cs">
+      <DependentUpon>Jagged.Product.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Decompositions\QrDecomposition.cs">
+      <DependentUpon>QrDecomposition.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Decompositions\JaggedSingularValueDecomposition.cs">
+      <DependentUpon>JaggedSingularValueDecomposition.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Decompositions\EigenvalueDecomposition.cs">
+      <DependentUpon>EigenvalueDecomposition.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Vector\Vector.Random.cs">
+      <DependentUpon>Vector.Random.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Norm.cs">
+      <DependentUpon>Norm.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Distance.cs">
+      <DependentUpon>Distance.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Conversions.cs">
+      <DependentUpon>Matrix.Conversions.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix\Matrix.Conversions.cs">
+      <DependentUpon>Matrix.Conversions.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

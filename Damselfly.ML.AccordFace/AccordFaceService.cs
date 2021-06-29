@@ -24,37 +24,45 @@ namespace Damselfly.ML.Accord.Face
         /// </summary>
         public static List<Face> DetectFaces( FileInfo inputFile )
         {
-            FaceDetector _faceDetector = new FaceDetector();
-            using var pic = new Bitmap( inputFile.FullName );
+            var faces = new List<Face>();
 
-            var faces = _faceDetector.ExtractFaces(
-                new ImageProcessor(pic).Grayscale().EqualizeHistogram().Result,
-                FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression))
-                .ToList();
-
-#if DEBUG
-            if (faces.Any())
+            try
             {
 
-                if (System.Diagnostics.Debugger.IsAttached)
+                FaceDetector _faceDetector = new FaceDetector();
+                using var pic = new Bitmap(inputFile.FullName);
+
+                faces = _faceDetector.ExtractFaces(
+                    new ImageProcessor(pic).Grayscale().EqualizeHistogram().Result,
+                    FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression))
+                    .ToList();
+
+                if (faces.Any())
                 {
-                    string outDir = "/Users/markotway/Desktop/Faces";
-                    if (!Directory.Exists(outDir))
-                        Directory.CreateDirectory(outDir);
 
-                    var output = Path.Combine(outDir, inputFile.Name);
-                    using (Graphics G = Graphics.FromImage(pic))
+                    if (System.Diagnostics.Debugger.IsAttached)
                     {
-                        faces.ForEach(x => G.DrawRectangle(Pens.Red, x.FaceRectangle));
+                        string outDir = "/Users/markotway/Desktop/Faces";
+                        if (!Directory.Exists(outDir))
+                            Directory.CreateDirectory(outDir);
+
+                        var output = Path.Combine(outDir, inputFile.Name);
+                        using (Graphics G = Graphics.FromImage(pic))
+                        {
+                            faces.ForEach(x => G.DrawRectangle(Pens.Red, x.FaceRectangle));
+                        }
+
+                        pic.Save(output, ImageFormat.Bmp);
+
+                        Logging.Log($"Found {faces.Count} faces:");
+                        faces.ForEach(x => Logging.Log($" Face Rectangle: {x.FaceRectangle}"));
                     }
-
-                    pic.Save(output, ImageFormat.Bmp);
-
-                    Logging.Log($"Found {faces.Count} faces:");
-                    faces.ForEach(x => Logging.Log($" Face Rectangle: {x.FaceRectangle}"));
                 }
             }
-#endif
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during face detection: {ex.Message}");
+            }
 
             return faces;
         }

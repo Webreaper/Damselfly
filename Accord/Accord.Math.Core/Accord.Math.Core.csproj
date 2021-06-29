@@ -38,6 +38,12 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Matrix.Elementwise3.txt</LastGenOutput>
     </None>
+    <None Update="Matrix.Elementwise2.txt">
+      <DependentUpon>Matrix.Elementwise2.tt</DependentUpon>
+    </None>
+    <None Update="Matrix.Elementwise3.txt">
+      <DependentUpon>Matrix.Elementwise3.tt</DependentUpon>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -46,5 +52,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Accord.Core\Accord.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix.Comparisons.Generated.cs">
+      <DependentUpon>Matrix.Comparisons.tt</DependentUpon>
+    </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Matrix.Elementwise.Generated.cs">
+      <DependentUpon>Matrix.Elementwise.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

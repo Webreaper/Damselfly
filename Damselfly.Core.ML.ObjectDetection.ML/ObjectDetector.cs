@@ -34,23 +34,34 @@ namespace Damselfly.ML.ObjectDetection
         /// <returns></returns>
         public async Task<IList<YoloPrediction>> DetectObjects( FileInfo imageFile )
         {
-            if (scorer == null)
-                return new List<YoloPrediction>();
-
-            return await Task.Run(() =>
+            var result = new List<YoloPrediction>();
+            try
             {
-                using var stream = new FileStream(imageFile.FullName, FileMode.Open);
 
-                var img = Image.FromStream(stream);
+                if (scorer == null)
+                    return new List<YoloPrediction>();
 
-                Stopwatch watch = new Stopwatch("DetectObjects");
+                result = await Task.Run(() =>
+                {
+                    using var stream = new FileStream(imageFile.FullName, FileMode.Open);
 
-                List<YoloPrediction> predictions = scorer.Predict(img);
+                    var img = Image.FromStream(stream);
 
-                watch.Stop();
+                    Stopwatch watch = new Stopwatch("DetectObjects");
 
-                return predictions;
-            });
+                    var predictions = scorer.Predict(img);
+
+                    watch.Stop();
+
+                    return predictions;
+                });
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Error during object detection: {ex.Message}");
+            }
+
+            return result;
         }
 
         private void DrawRectangles( Image img, List<YoloPrediction> predictions )

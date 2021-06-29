@@ -347,7 +347,6 @@ namespace Damselfly.Core.Services
             try
             {
                 var foundObjects = new List<ImageObject>();
-                const float predictionThreshold = 0.5f;
                 var file = new FileInfo(image.FullPath);
                 var medThumb = new FileInfo(GetThumbPath(file, ThumbSize.Medium));
 
@@ -382,6 +381,8 @@ namespace Damselfly.Core.Services
 
                 if (allPredictions.Any())
                 {
+                    const float predictionThreshold = 0.5f;
+
                     var validPredictions = allPredictions.Where(x => x.Score >= predictionThreshold).ToList();
 
                     Logging.LogVerbose($"Discarding {allPredictions.Count - validPredictions.Count} uncertain predictions.");
@@ -419,7 +420,7 @@ namespace Damselfly.Core.Services
             }
             catch( Exception ex )
             {
-                Logging.LogError($"Exception during object detection: {ex.Message}");
+                Logging.LogError($"Exception during AI detection: {ex.Message}");
             }
         }
 
