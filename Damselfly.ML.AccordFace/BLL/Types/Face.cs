@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace Damselfly.ML.Accord.Face
+namespace Damselfly.ML.Face.Accord
 {
     public class Face
     {

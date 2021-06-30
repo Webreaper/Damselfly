@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Damselfly.Core.Models.Utils
+namespace Damselfly.Core.DbModels.Utils
 {
     public static class ModelExtensions
     {

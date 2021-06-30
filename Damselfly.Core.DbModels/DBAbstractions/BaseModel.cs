@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Damselfly.Core.Models.Interfaces;
+using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 
-namespace Damselfly.Core.Models.DBAbstractions
+namespace Damselfly.Core.DbModels.DBAbstractions
 {
     /// <summary>
     /// Base model for DB interactions. Will be passed a model class instance with an

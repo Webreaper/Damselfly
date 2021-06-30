@@ -6,6 +6,7 @@ using WordPressPCL.Models;
 using Damselfly.Core.Models;
 using System.IO;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Services
 {

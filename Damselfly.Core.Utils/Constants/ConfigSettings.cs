@@ -1,5 +1,5 @@
-﻿using System;
-namespace Damselfly.Core.Models
+﻿
+namespace Damselfly.Core.Utils.Constants
 {
     public class ConfigSettings
     {
@@ -10,5 +10,7 @@ namespace Damselfly.Core.Models
         public const string WordpressUser = "WordpressUser";
         public const string WordpressPassword = "WordpressPassword";
         public const string ImportSidecarKeywords = "ImportSidecarKeywords";
+        public const string AzureEndpoint = "AzureEndpoint";
+        public const string AzureApiKey = "AzureApiKey";
     }
 }

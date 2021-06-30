@@ -1,7 +1,7 @@
 ﻿using Accord.Imaging.Filters;
 using System.Drawing;
 
-namespace Damselfly.ML.Accord.Face
+namespace Damselfly.ML.Face.Accord
 {
     /// <summary>
     /// From https://code-ai.mk/image-face-detection-with-c/

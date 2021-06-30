@@ -4,8 +4,8 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using EFCore.BulkExtensions;
 using Damselfly.Core.Models;
-using Damselfly.Core.Models.Interfaces;
-using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Migrations.Sqlite.Models

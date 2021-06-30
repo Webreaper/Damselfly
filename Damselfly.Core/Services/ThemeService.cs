@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Collections.Generic;
+using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
@@ -20,9 +22,9 @@ namespace Damselfly.Core.Services
     {
         private static DirectoryInfo themesFolder;
         private long cacheBuster = 1;
-        private readonly ConfigService _configService;
+        private readonly IConfigService _configService;
 
-        public ThemeService( ConfigService configService)
+        public ThemeService( IConfigService configService )
         {
             _configService = configService;
         }

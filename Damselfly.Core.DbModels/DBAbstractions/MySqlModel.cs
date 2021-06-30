@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Models.Interfaces;
+using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Core.DbModels.DBAbstractions;
 
 namespace Damselfly.Core.Models.DBAbstractions
 {

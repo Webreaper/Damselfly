@@ -9,9 +9,10 @@
 @inject ConfigService configService
 
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.Utils.Constants
 
 <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown">
-    <div @key="ZoomKey" class="img-zoom-result" id="zoomPane"/>
+    <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" />
     <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill">
 </div>
 

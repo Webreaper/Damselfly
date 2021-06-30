@@ -13,7 +13,8 @@ using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
 using Damselfly.ML.ObjectDetection;
 using Damselfly.Core.Models;
-using Damselfly.ML.Accord.Face;
+using Damselfly.ML.Face.Accord;
+using Damselfly.ML.Face.Azure;
 
 namespace Damselfly.Core.Services
 {
@@ -27,11 +28,16 @@ namespace Damselfly.Core.Services
         private readonly StatusService _statusService;
         private readonly IndexingService _indexingService;
         private readonly ImageProcessService _imageProcessingService;
+        private readonly AccordFaceService _accordFaceService;
+        private readonly AzureFaceService _azureFaceService;
 
 
         public ThumbnailService( StatusService statusService, ObjectDetector objectDetector,
-                        IndexingService indexingService, ImageProcessService imageService )
+                        IndexingService indexingService, ImageProcessService imageService,
+                        AzureFaceService azureFace, AccordFaceService accordFace )
         {
+            _accordFaceService = accordFace;
+            _azureFaceService = azureFace;
             _statusService = statusService;
             _objectDetector = objectDetector;
             _indexingService = indexingService;
@@ -352,7 +358,7 @@ namespace Damselfly.Core.Services
 
                 // First, look for faces
 
-                var faces = AccordFaceService.DetectFaces( medThumb );
+                var faces = _accordFaceService.DetectFaces( medThumb );
 
                 if( faces.Any() )
                 {
@@ -367,10 +373,10 @@ namespace Damselfly.Core.Services
                     {
                         ImageId = image.ImageId,
                         TagId = tags.Where(l => l.Keyword == faceTagName).Select(x => x.TagId).First(),
-                        RectX = (int)x.FaceRectangle.Left,
-                        RectY = (int)x.FaceRectangle.Top,
-                        RectHeight = (int)x.FaceRectangle.Height,
-                        RectWidth = (int)x.FaceRectangle.Width,
+                        RectX = x.FaceRectangle.Left,
+                        RectY = x.FaceRectangle.Top,
+                        RectHeight = x.FaceRectangle.Height,
+                        RectWidth = x.FaceRectangle.Width,
                         Type = ImageObject.ObjectTypes.Face.ToString(),
                         Score = 100
                     } ) );
@@ -409,6 +415,9 @@ namespace Damselfly.Core.Services
                             Score = x.Score
                         }));
                     }
+
+                    // We got predictions - so now let's try the image with Azure.
+                    await _azureFaceService.ProcessImage( medThumb );
                 }
 
                 if( foundObjects.Any() )

@@ -1,5 +1,7 @@
 ﻿@using Damselfly.Core.Services;
 @using Damselfly.Web.Shared;
+@using Damselfly.ML.Face.Azure;
+@using Damselfly.Core.Utils.Constants;
 @using Humanizer;
 
 @inject IJSRuntime JsRuntime
@@ -70,8 +72,26 @@
                 </div>
             </div>
 
+            <h2>Azure Cognitive Services Face Recognition</h2>
+
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configlabel">
+                    <label>URL:</label>
+                </div>
+                <div class="damselfly-configfield">
+                    <InputText placeholder="Endpoint" @bind-Value="azureSettings.Endpoint" />
+                </div>
+            </div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configlabel">
+                    <label>Key 1:</label>
+                </div>
+                <div class="damselfly-configfield">
+                    <InputText placeholder="API Key" @bind-Value="azureSettings.ApiKey" />
+                </div>
+            </div>
             <button class="btn btn-primary" type="submit">Save Settings</button>
-</EditForm>
+        </EditForm>
 
     </div>
 
@@ -79,18 +99,24 @@
 
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
+    private AzureSettings azureSettings = new AzureSettings();
     private bool importSidecarKeywords = false;
     private string selectedTheme;
 
     private void HandleValidSubmit()
     {
         configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
+
         configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
         configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
         configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
 
         // WP Settings have changed, so reset the client and token
         wpService.ResetClient();
+
+        configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
+        configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
+        // TODO: Validate azure settings here?
 
         if (themeService.CurrentTheme != selectedTheme)
         {
@@ -106,6 +132,10 @@
         wpSettings.URL = configService.Get(ConfigSettings.WordpressURL);
         wpSettings.UserName = configService.Get(ConfigSettings.WordpressUser);
         wpSettings.Password = configService.Get(ConfigSettings.WordpressPassword);
+
+        azureSettings.Endpoint = configService.Get(ConfigSettings.AzureEndpoint);
+        azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
+
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
         base.OnInitialized();

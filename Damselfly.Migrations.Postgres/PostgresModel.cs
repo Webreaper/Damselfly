@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Models.Interfaces;
-using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Models;
 using System.Text.Json;
 using System.IO;

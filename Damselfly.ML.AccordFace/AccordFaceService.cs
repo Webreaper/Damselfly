@@ -8,28 +8,35 @@ using System.Threading.Tasks;
 using Accord.Vision.Detection;
 using Damselfly.Core.Utils;
 
-namespace Damselfly.ML.Accord.Face
+namespace Damselfly.ML.Face.Accord
 {
-    public static class AccordFaceService
+    public class AccordFaceService
     {
-        public static float ScaleFactor { get; set; } = 1.2f;
-        public static int MinSize { get; set; } = 20;
-        public static ObjectDetectorScalingMode ScaleMode { get; set; } = ObjectDetectorScalingMode.GreaterToSmaller;
-        public static ObjectDetectorSearchMode SearchMode { get; set; } = ObjectDetectorSearchMode.Average;
-        public static bool Parallel { get; set; } = true;
-        public static int Suppression { get; set; } = 3;
+        private float ScaleFactor { get; set; } = 1.2f;
+        private int MinSize { get; set; } = 20;
+        private ObjectDetectorScalingMode ScaleMode { get; set; } = ObjectDetectorScalingMode.GreaterToSmaller;
+        private ObjectDetectorSearchMode SearchMode { get; set; } = ObjectDetectorSearchMode.Average;
+        private bool Parallel { get; set; } = true;
+        private int Suppression { get; set; } = 3;
+        private FaceDetector _faceDetector;
+
+        public AccordFaceService()
+        {
+             _faceDetector = new FaceDetector();
+
+        }
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        public static List<Face> DetectFaces( FileInfo inputFile )
+        public List<Face> DetectFaces( FileInfo inputFile )
         {
             var faces = new List<Face>();
 
             try
             {
+                var watch = new Stopwatch("AccordFace");
 
-                FaceDetector _faceDetector = new FaceDetector();
                 using var pic = new Bitmap(inputFile.FullName);
 
                 faces = _faceDetector.ExtractFaces(
@@ -37,27 +44,10 @@ namespace Damselfly.ML.Accord.Face
                     FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression))
                     .ToList();
 
+                watch.Stop();
+
                 if (faces.Any())
-                {
-
-                    if (System.Diagnostics.Debugger.IsAttached)
-                    {
-                        string outDir = "/Users/markotway/Desktop/Faces";
-                        if (!Directory.Exists(outDir))
-                            Directory.CreateDirectory(outDir);
-
-                        var output = Path.Combine(outDir, inputFile.Name);
-                        using (Graphics G = Graphics.FromImage(pic))
-                        {
-                            faces.ForEach(x => G.DrawRectangle(Pens.Red, x.FaceRectangle));
-                        }
-
-                        pic.Save(output, ImageFormat.Bmp);
-
-                        Logging.Log($"Found {faces.Count} faces:");
-                        faces.ForEach(x => Logging.Log($" Face Rectangle: {x.FaceRectangle}"));
-                    }
-                }
+                    Logging.Log($"Accord found {faces.Count} faces in {watch.ElapsedTime}ms.");
             }
             catch( Exception ex )
             {

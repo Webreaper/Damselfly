@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace Damselfly.ML.Accord.Face
+namespace Damselfly.ML.Face.Accord
 {
     internal class FaceDetector
     {

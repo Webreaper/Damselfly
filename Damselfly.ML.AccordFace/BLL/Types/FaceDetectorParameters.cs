@@ -1,6 +1,6 @@
 ﻿using Accord.Vision.Detection;
 
-namespace Damselfly.ML.Accord.Face
+namespace Damselfly.ML.Face.Accord
 {
     internal class FaceDetectorParameters
     {

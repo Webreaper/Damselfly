@@ -9,6 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EFCore.BulkExtensions" Version="5.2.5" />

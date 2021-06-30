@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System;
-using Damselfly.Core.Models.DBAbstractions;
+using Damselfly.Core.DbModels.DBAbstractions;
 
-namespace Damselfly.Core.Models.Interfaces
+namespace Damselfly.Core.DbModels.Interfaces
 {
     /// <summary>
     /// Interface representing a type of DB (e.g., Sqlite, MySql or SQL Server.

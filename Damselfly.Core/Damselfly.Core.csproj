@@ -31,9 +31,6 @@
     <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.5.21301.5" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="LogHandler.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Services\" />
     <Folder Include="Models\" />
     <Folder Include="Utils\" />
@@ -42,8 +39,10 @@
     <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Models\Damselfly.Core.Models.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
     <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
+    <ProjectReference Include="..\Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj" />
 </ItemGroup>
 </Project>

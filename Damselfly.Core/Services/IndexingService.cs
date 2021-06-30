@@ -13,6 +13,7 @@ using System.Threading;
 using MetadataExtractor.Formats.Jpeg;
 using System.Threading.Tasks;
 using TagTypes = Damselfly.Core.Models.Tag.TagTypes;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Services
 {

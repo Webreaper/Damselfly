@@ -16,6 +16,9 @@ using Tewr.Blazor.FileReader;
 using Radzen;
 using Damselfly.Core.Utils;
 using Damselfly.ML.ObjectDetection;
+using Damselfly.Core.Interfaces;
+using Damselfly.ML.Face.Accord;
+using Damselfly.ML.Face.Azure;
 
 namespace Damselfly.Web
 {
@@ -46,7 +49,10 @@ namespace Damselfly.Web
             services.AddBlazoredModal();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
+
             services.AddSingleton<ConfigService>();
+            services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+
             services.AddSingleton<ImageService>();
             services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
@@ -57,7 +63,6 @@ namespace Damselfly.Web
             services.AddSingleton<BasketService>();
             services.AddSingleton<NavigationService>();
             services.AddSingleton<ViewDataService>();
-            services.AddSingleton<ConfigService>();
             services.AddSingleton<MetaDataService>();
             services.AddSingleton<TaskService>();
             services.AddSingleton<DownloadService>();
@@ -65,6 +70,8 @@ namespace Damselfly.Web
             services.AddSingleton<ImageProcessService>();
             services.AddSingleton<WordpressService>();
             services.AddSingleton<SelectionService>();
+            services.AddSingleton<AccordFaceService>();
+            services.AddSingleton<AzureFaceService>();
 
             services.AddScoped<ContextMenuService>();
         }
@@ -76,9 +83,9 @@ namespace Damselfly.Web
         /// <param name="app"></param>
         /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
-                        ImageProcessService imageProcessing, DownloadService download,
-                        ThemeService themes, TaskService tasks, MetaDataService metadata,
-                        ThumbnailService thumbService, IndexingService indexService )
+                        DownloadService download, ThemeService themes, TaskService tasks,
+                        MetaDataService metadata, ThumbnailService thumbService,
+                        IndexingService indexService, ImageProcessService imageProcessing)
         {
             if (env.IsDevelopment())
             {
