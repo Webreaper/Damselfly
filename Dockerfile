@@ -10,14 +10,14 @@ COPY ./damselfly-entrypoint.sh /
 RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
 ADD VERSION .
 
-# Need sudo for the iNotify count increase
-RUN set -ex && apt-get install sudo
-
 RUN apt-get update
+
+# Need sudo for the iNotify count increase
+RUN set -ex && apt-get install -y sudo
 
 # Add Microsoft fonts that'll be used for watermarking
 RUN sed -i'.bak' 's/$/ contrib/' /etc/apt/sources.list
-RUN apt-get update; apt-get install -y ttf-mscorefonts-installer fontconfig
+RUN apt-get update && apt-get install -y ttf-mscorefonts-installer fontconfig
 
 # Add ExifTool
 RUN sudo apt-get install -y exiftool 
