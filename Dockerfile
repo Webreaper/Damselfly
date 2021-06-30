@@ -11,6 +11,7 @@ RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]
 ADD VERSION .
 
 RUN apt-get update
+RUN apt-get install procps
 
 # Need sudo for the iNotify count increase
 RUN set -ex && apt-get install -y sudo
