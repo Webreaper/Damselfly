@@ -64,13 +64,6 @@ else
                 </button>
             }
         }
-        @if (selectionService.Selection.Any())
-        {
-            <button @onclick="AddSelectedToBasket" class="btn btn-primary">
-                <i class="fas fa-shopping-basket" />
-                &nbsp;Add Images
-            </button>
-        }
     </div>
 </div>
 
@@ -86,14 +79,6 @@ else
     public bool ShowTags { get; set; } = true;
 
     public bool ShowClearButton { get { return gridImages.Any(); } set { } }
-
-    void AddSelectedToBasket()
-    {
-        var selected = selectionService.Selection.ToList();
-        basketService.SetBasketState(selected, true);
-
-        statusService.StatusText = $"{selected.Count()} images added to the basket";
-    }
 
     private void SaveBasket()
     {

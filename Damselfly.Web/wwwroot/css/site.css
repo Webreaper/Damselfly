@@ -136,6 +136,10 @@ div::-webkit-scrollbar-thumb {
     border-radius: 4px;
 }
 
+.btn-primary:disabled {
+    opacity: 0.5;
+}
+
 .image-grid-controls {
     font-size: 12px;
 }
@@ -630,7 +634,6 @@ f
   
 .damselfly-imagetools {
     display: flex;
-    align-items: stretch;
     align-items: center;
     flex: 0 0 40px;
     flex-flow: row wrap;
@@ -639,7 +642,7 @@ f
 
 .damselfly-browsetool {
     flex: 1;
-    margin: 10px;
+    margin: 3px;
     display: flex;
     min-width: 200px;
     flex-flow: row;
@@ -647,7 +650,7 @@ f
 }
 
 .damselfly-browsetoollabel {
-    margin: 5px;
+    margin: 2px;
 }
 .damselfly-gridimage {
     display: flex;
@@ -659,11 +662,12 @@ f
     100% {opacity:1;}
 }
 
-  
+
 .damselfly-searchfilter {
     flex: 1;
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: row;
+    margin-right: 3px;
     align-items: center;
 }
 

@@ -52,49 +52,58 @@
     @if (ShowImageKeywords)
     {
         <div class="damselfly-keywordlist">
-            @if (CurrentImages != null && CurrentImages.Any() && theImageTags != null)
+            @if (CurrentImages != null && CurrentImages.Any())
             {
-                @foreach (var tag in theImageTags)
+                @if ((theImageTags != null && theFaceTags.Any()) ||
+                     (theObjectTags != null && theObjectTags.Any()) ||
+                     (theFaceTags != null && theFaceTags.Any()))
                 {
-                    <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
-                        <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
-                            @if (tag.Favourite)
-                            {
-                                <i class="fas fa-star" />
-                            }
-                            else
-                            {
-                                <i class="far fa-star" />
-                            }
+                    @foreach (var tag in theImageTags)
+                    {
+                        <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
+                            <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
+                                @if (tag.Favourite)
+                                {
+                                    <i class="fas fa-star" />
+                                }
+                                else
+                                {
+                                    <i class="far fa-star" />
+                                }
+                            </div>
+                            <div class="damselfly-keywordtext">@tag.Keyword</div>
+                            <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
                         </div>
-                        <div class="damselfly-keywordtext">@tag.Keyword</div>
-                        <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
-                    </div>
-                }
+                    }
 
-                @foreach (var tag in theObjectTags)
-                {
-                    <div class="damselfly-keyword">
-                        <div class="damselfly-favouritetag" title="AI Detected">
-                            <i class="fas fa-lightbulb" />
+                    @foreach (var tag in theObjectTags)
+                    {
+                        <div class="damselfly-keyword">
+                            <div class="damselfly-favouritetag" title="AI Detected">
+                                <i class="fas fa-lightbulb" />
+                            </div>
+                            <div class="damselfly-keywordtext">@tag</div>
                         </div>
-                        <div class="damselfly-keywordtext">@tag</div>
-                    </div>
-                }
+                    }
 
-                @foreach (var tag in theFaceTags)
-                {
-                    <div class="damselfly-keyword">
-                        <div class="damselfly-favouritetag" title="Face Detected">
-                            <i class="fas fa-smile" />
+                    @foreach (var tag in theFaceTags)
+                    {
+                        <div class="damselfly-keyword">
+                            <div class="damselfly-favouritetag" title="Face Detected">
+                                <i class="fas fa-smile" />
+                            </div>
+                            <div class="damselfly-keywordtext">@tag.Tag.Keyword</div>
                         </div>
-                        <div class="damselfly-keywordtext">@tag.Tag.Keyword</div>
-                    </div>
+                    }
+                }
+                else
+                {
+                    <div>No Keywords</div>
                 }
             }
             else
             {
-                <div>No Keywords</div>
+                <div>No Images Selected</div>
             }
         </div>
     }
