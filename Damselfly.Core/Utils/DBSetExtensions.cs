@@ -63,7 +63,7 @@ namespace Damselfly.Core.Utils
             }
             catch (Exception ex)
             {
-                Logging.Log($"Exception retrieving image tags: {ex.Message}");
+                Logging.Log($"Exception retrieving image {img.ImageId}'s tags: {ex.Message}");
             }
             finally
             {

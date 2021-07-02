@@ -47,7 +47,7 @@ namespace Damselfly.ML.Face.Accord
                 watch.Stop();
 
                 if (faces.Any())
-                    Logging.Log($"Accord found {faces.Count} faces in {watch.ElapsedTime}ms.");
+                    Logging.Log($"Accord.Net found {faces.Count} faces in {inputFile.Name} in {watch.ElapsedTime}ms.");
             }
             catch( Exception ex )
             {

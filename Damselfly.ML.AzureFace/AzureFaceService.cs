@@ -26,11 +26,14 @@ namespace Damselfly.ML.Face.Azure
         private FaceClient _faceClient;
         private IList<FaceAttributeType> _attributes;
         private AzureDetection _detectionType;
+        private DateTime _lastRequest;
 
         public AzureDetection DetectionType
         {
             get { return _detectionType; }
         }
+
+        public int MaxTransactionsPerMin { get; set; } = 20;
 
         public enum AzureDetection
         {
@@ -91,6 +94,18 @@ namespace Damselfly.ML.Face.Azure
                 {
                     using (Stream imageFileStream = File.OpenRead(imageFilePath.FullName))
                     {
+                        var timeSinceLastReq = DateTime.UtcNow - _lastRequest;
+                        var transPerSecs = Math.Ceiling( 60.0 / MaxTransactionsPerMin );
+
+                        if( timeSinceLastReq.TotalSeconds < transPerSecs )
+                        {
+                            var delay = transPerSecs - timeSinceLastReq.TotalSeconds;
+                            var toSleep = (int)Math.Ceiling(delay);
+                            Logging.LogVerbose($"Sleeping for {toSleep}s to adhere to Azure {MaxTransactionsPerMin}/min transaction limit.");
+                            await Task.Delay(toSleep * 1000);
+                        }
+
+                        _lastRequest = DateTime.UtcNow;
                         var detectedFaces = await _faceClient.Face.DetectWithStreamAsync(imageFileStream, true, true, _attributes);
 
                         faces = detectedFaces.Select(x => new Face
@@ -106,13 +121,13 @@ namespace Damselfly.ML.Face.Azure
                 }
                 catch ( Exception ex )
                 {
-                    Logging.LogError($"Exception during Azure face detection: {ex}");
+                    Logging.LogError($"Exception during Azure face detection: {ex.Message}");
                 }
 
                 watch.Stop();
 
                 if( faces.Any() )
-                    Logging.Log($"Azure Detected {faces.Count()} faces in {watch.ElapsedTime}ms");
+                    Logging.Log($"Azure Detected {faces.Count()} faces in {imageFilePath.Name} in {watch.ElapsedTime}ms");
             }
             else
             {

@@ -884,13 +884,13 @@ namespace Damselfly.Core.Services
                         }
 
                         var saveWatch = new Stopwatch("MetaDataSave");
-                        Logging.Log($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
+                        Logging.LogVerbose($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
                         await db.BulkInsert(db.ImageMetaData, newMetadataEntries);
                         await db.BulkUpdate(db.ImageMetaData, updatedEntries);
 
                         if (updatedImages.Any())
                         {
-                            Logging.Log($"Updating {updatedImages.Count()} image with new sort date.");
+                            Logging.LogTrace($"Updating {updatedImages.Count()} image with new sort date.");
                             await db.BulkUpdate(db.Images, updatedImages);
                         }
 

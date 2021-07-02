@@ -62,7 +62,7 @@ namespace Damselfly.Core.Models
             var io = modelBuilder.Entity<ImageObject>();
 
             io.HasOne(p => p.Image)
-                .WithMany(p => p.ImageObjects)
+                .WithMany(p => p.   ImageObjects)
                 .HasForeignKey(p => p.ImageId);
 
             modelBuilder.Entity<Image>()
