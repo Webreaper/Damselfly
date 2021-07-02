@@ -12,6 +12,8 @@ you to quickly sync a selection of images from the Damselfly basket to a local f
 
 ![Damselfly Screenshot](docs/Screenshot2.png)
 
+![Damselfly Screenshot](docs/Screenshot3.png)
+
 ## Features
 
 * Server-based deployment, with a web-based front-end UI, so the image library can be accessed via multiple 
@@ -28,16 +30,19 @@ you to quickly sync a selection of images from the Damselfly basket to a local f
 * Download/export processing to watermark images ready for social media, or sending via Email etc.
 * Runs on Windows, Linux and OSX, and in Docker.
 * Electron.Net Desktop Client for hosted site to allow closer native integration with client OS
+ * Desktop Client versions for MacOS (universal), Windows and Linux
  * Synchronise images from server basket select to local filesystem for editing
  * Other integrations coming in future
 * Direct upload to Wordpress 
 * Persistable named basket selections
+* Themes
 * Built with Microsoft .Net 6, so runs cross-platform on MacOS, Linux and Windows. 
 
 ## Planned Features/Enhancements
 
 * Machine Learning and image detection - which will provide object recognition, image classification and face detection
-  for photos in your library.
+  for photos in your library (in progress)
+* Image de-duplication (in progress)
 * Currently Damselfly has no concept of user identity, so there are no user-specific sessions (for things 
   like selection, baskets and access control). 
 * Direct upload to Social media platforms, Google Drive, etc.
