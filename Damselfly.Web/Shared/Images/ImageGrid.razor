@@ -149,7 +149,7 @@
         private bool NoImagesSelected => !selectionService.Selection.Any();
         bool IsLoading { get; set; } = false;
         bool endOfImages = false;
-        string toastClass => endOfImages ? "show" : string.Empty;
+        string toastClass = string.Empty;
         private EventConflator conflator = new EventConflator(2000);
 
         ThumbSize CurrentThumbSize = ThumbSize.Small;
@@ -366,8 +366,11 @@
                     gridImages.AddRange(newImages);
                 }
 
-                if (newImages.Count() < imagesToLoad)
-                    endOfImages = true;
+                // Flag the 'more' div if we loaded at least as many as we requested.
+                endOfImages = newImages.Count() < imagesToLoad;
+
+                // If we've tried to load data and there isn't any more, show the toast.
+                toastClass = endOfImages ? "show" : string.Empty;
 
                 IsLoading = false;
 
