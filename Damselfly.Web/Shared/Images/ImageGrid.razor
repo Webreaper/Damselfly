@@ -66,74 +66,79 @@
     </div>
 </div>
 
-    <div class="damselfly-imagegrid" id="scroll-area">
-        @if (!gridImages.Any())
+<div class="damselfly-imagegrid" id="scroll-area">
+    @if (!gridImages.Any())
+    {
+        <div class="damselfly-searchmsg">
+            @if (endOfImages)
+            {
+                <span>@NoResultsMessage</span>
+            }
+            else
+            {
+                <span> Loading images...</span>
+            }
+        </div>
+    }
+    else
+    {
+        int allImages = 0;
+        foreach (var grouping in GroupedImages)
         {
-            <div class="damselfly-searchmsg">
-                @if (endOfImages)
-                {
-                    <span>@NoResultsMessage</span>
-                }
-                else
-                {
-                    <span> Loading images...</span>
-                }
-            </div>
+            if (!string.IsNullOrEmpty(grouping.Key))
+            {
+                <div class="damselfly-imageseparator">
+                    <div class="damselfly-imageseparatortitle">
+                        @grouping.Key
+                    </div>
+                    <div class="damselfly-imageseparatorbuttons">
+                        <button @onclick="() => { AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            <i class="fas fa-shopping-basket" />
+                            &nbsp;Add
+                        </button>
+                        <button @onclick="() => { RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            <i class="fas fa-shopping-basket" />
+                            &nbsp;Remove
+                        </button>
+                        <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            &nbsp;Select
+                        </button>
+                        <button @onclick="() => { DeselectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            &nbsp;De-select
+                        </button>
+                        @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                        {
+                            <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
+                                <i class="fas fa-shopping-basket" />
+                                &nbsp;Save Locally
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
+            foreach (var image in grouping.Images)
+            {
+                var info = new SelectionInfo { image = image, index = allImages++ };
+
+                <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
+                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
+                </div>
+            }
+
+        }
+
+        if (!endOfImages)
+        {
+            <div>...</div>
+            <div class="damselfly-moreimages" id="list-end" />
         }
         else
         {
-            int allImages = 0;
-            foreach (var grouping in GroupedImages)
-            {
-                if (!string.IsNullOrEmpty(grouping.Key))
-                {
-                    <div class="damselfly-imageseparator">
-                        <div class="damselfly-imageseparatortitle">
-                            @grouping.Key
-                        </div>
-                        <div class="damselfly-imageseparatorbuttons">
-                            <button @onclick="() => { AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
-                                <i class="fas fa-shopping-basket" />
-                                &nbsp;Add
-                            </button>
-                            <button @onclick="() => { RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
-                                <i class="fas fa-shopping-basket" />
-                                &nbsp;Remove
-                            </button>
-                            <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
-                                &nbsp;Select
-                            </button>
-                            <button @onclick="() => { DeselectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
-                                &nbsp;De-select
-                            </button>
-                            @if (FileExporter != null && FileExporter.IsDesktopHosted)
-                            {
-                                <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
-                                    <i class="fas fa-shopping-basket" />
-                                    &nbsp;Save Locally
-                                </button>
-                            }
-                        </div>
-                    </div>
-                }
-
-                foreach (var image in grouping.Images)
-                {
-                    var info = new SelectionInfo { image = image, index = allImages++ };
-
-                    <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
-                        <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
-                    </div>
-                }
-
-            }
-
-            if (!endOfImages)
-            {
-                <div class="damselfly-moreimages" id="list-end" />
-            }
+            <div id="snackbar" class="@toastClass">No more images to show.</div>
         }
-    </div>
+    }
+</div>
 
 
     @code {
@@ -143,6 +148,7 @@
         private bool NoImagesSelected => !selectionService.Selection.Any();
         bool IsLoading { get; set; } = false;
         bool endOfImages = false;
+        string toastClass => endOfImages ? "show" : string.Empty;
         private EventConflator conflator = new EventConflator(2000);
 
         ThumbSize CurrentThumbSize = ThumbSize.Small;
