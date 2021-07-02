@@ -25,8 +25,21 @@ namespace Damselfly.ML.Face.Azure
         private HttpClient _httpClient;
         private FaceClient _faceClient;
         private IList<FaceAttributeType> _attributes;
+        private AzureDetection _detectionType;
 
-        public AzureFaceService( IConfigService configService )
+        public AzureDetection DetectionType
+        {
+            get { return _detectionType; }
+        }
+
+        public enum AzureDetection
+        {
+            Disabled = 0,
+            AllImages = 1,
+            ImagesWithFaces = 2
+        }
+
+        public AzureFaceService(IConfigService configService)
         {
             var endpoint = configService.Get(ConfigSettings.AzureEndpoint);
             var key = configService.Get(ConfigSettings.AzureApiKey);
@@ -56,14 +69,21 @@ namespace Damselfly.ML.Face.Azure
                     // FaceAttributeType.Makeup,
                 };
 
+                // We have config and have set up the service, now figure out what we're going to use it for
+                _detectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
+            }
+            else
+            {
+                // No config, so we're disabled.
+                _detectionType = AzureDetection.Disabled;
             }
         }
 
-        public async Task<List<Face>> ProcessImage( FileInfo imageFilePath )
+        public async Task<List<Face>> DetectFaces( FileInfo imageFilePath )
         {
             var faces = new List<Face>();
 
-            if (_faceClient != null)
+            if (_faceClient != null && _detectionType != AzureDetection.Disabled )
             {
                 var watch = new Stopwatch("AzureFace");
 
@@ -76,7 +96,10 @@ namespace Damselfly.ML.Face.Azure
                         faces = detectedFaces.Select(x => new Face
                         {
                             FaceId = x.FaceId,
-                            //Rectangle = x.FaceRectangle,
+                            Left = x.FaceRectangle.Left,
+                            Top = x.FaceRectangle.Top,
+                            Width = x.FaceRectangle.Width,
+                            Height = x.FaceRectangle.Height,
                             Emotion = GetTopEmotion(x.FaceAttributes)
                         }).ToList();
                     }
@@ -123,6 +146,10 @@ namespace Damselfly.ML.Face.Azure
         public class Face
         {
             public Guid? FaceId { get; set; }
+            public int Left { set; get; }
+            public int Top { set; get; }
+            public int Width { set; get; }
+            public int Height { set; get; }
             public string Emotion { get; set; }
         }
 

@@ -12,5 +12,6 @@ namespace Damselfly.Core.Utils.Constants
         public const string ImportSidecarKeywords = "ImportSidecarKeywords";
         public const string AzureEndpoint = "AzureEndpoint";
         public const string AzureApiKey = "AzureApiKey";
+        public const string AzureDetectionType = "AzureDetectionType";
     }
 }

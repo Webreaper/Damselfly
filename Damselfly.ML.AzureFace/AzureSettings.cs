@@ -9,6 +9,7 @@ namespace Damselfly.ML.Face.Azure
         [Url]
         public string Endpoint { get; set; }
         public string ApiKey { get; set; }
+        public AzureFaceService.AzureDetection DetectionType { get; set; }
     }
 
     public class AzureSettingsValidator : AbstractValidator<AzureSettings>

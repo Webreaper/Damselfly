@@ -9,7 +9,7 @@
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WarningLevel>3</WarningLevel>
+    <WarningLevel>1</WarningLevel>
     <NoWarn>1701;1702;3245;0003</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

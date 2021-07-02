@@ -90,6 +90,22 @@
                     <InputText placeholder="API Key" @bind-Value="azureSettings.ApiKey" />
                 </div>
             </div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configlabel">
+                    <label>Azure Detection: </label>
+                </div>
+                <div class="damselfly-configfield">
+                    <InputSelect @bind-Value="azureSettings.DetectionType">
+                        @foreach (var choice in Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
+                        {
+                            <option value="@choice">
+                                @choice.ToString().Humanize()
+                            </option>
+                        }
+                    </InputSelect>
+                </div>
+            </div>
+
             <button class="btn btn-primary" type="submit">Save Settings</button>
         </EditForm>
 
@@ -116,7 +132,7 @@
 
         configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
         configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
-        // TODO: Validate azure settings here?
+        configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
         if (themeService.CurrentTheme != selectedTheme)
         {
@@ -135,6 +151,7 @@
 
         azureSettings.Endpoint = configService.Get(ConfigSettings.AzureEndpoint);
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
+        azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;

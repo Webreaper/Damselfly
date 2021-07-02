@@ -353,33 +353,76 @@ namespace Damselfly.Core.Services
             try
             {
                 var foundObjects = new List<ImageObject>();
+                var foundFaces = new List<ImageObject>();
                 var file = new FileInfo(image.FullPath);
                 var medThumb = new FileInfo(GetThumbPath(file, ThumbSize.Medium));
 
                 // First, look for faces
+                bool useAzureDetection = false;
 
-                var faces = _accordFaceService.DetectFaces( medThumb );
-
-                if( faces.Any() )
+                if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages)
                 {
-                    Logging.Log($"Found {faces.Count} faces in {medThumb}...");
+                    // Skip local face detection and just go straight to Azure
+                    useAzureDetection = true;
+                }
+                else
+                {
+                    var faces = _accordFaceService.DetectFaces(medThumb);
 
-                    const string faceTagName = "Face";
-                    var tags = await _indexingService.CreateTagsFromStrings( new List<string> { faceTagName });
+                    if (faces.Any())
+                    {
+                        if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.ImagesWithFaces)
+                        {
+                            // We've found some faces. Discard them, and reprocess more accurately using Azure
+                            useAzureDetection = true;
+                        }
+                        else
+                        {
+                            // Azure is disabled, so just use what we've got.
+                            Logging.Log($"Found {faces.Count} faces in {medThumb}...");
+
+                            // TODO: Need to scale the rect for the original image size here
+                            // as we'll have generated it based on a thumbnail.
+                            foundFaces.AddRange(faces.Select(x => new ImageObject
+                            {
+                                ImageId = image.ImageId,
+                                RectX = x.FaceRectangle.Left,
+                                RectY = x.FaceRectangle.Top,
+                                RectHeight = x.FaceRectangle.Height,
+                                RectWidth = x.FaceRectangle.Width,
+                                Type = ImageObject.ObjectTypes.Face.ToString(),
+                                Score = 100
+                            }));
+                        }
+                    }
+                }
+
+                if (useAzureDetection)
+                {
+                    // We got predictions or we're scanning everything - so now let's try the image with Azure.
+                    var azureFaces = await _azureFaceService.DetectFaces(medThumb);
 
                     // TODO: Need to scale the rect for the original image size here
                     // as we'll have generated it based on a thumbnail.
-                    foundObjects.AddRange( faces.Select( x => new ImageObject
+                    foundFaces.AddRange(azureFaces.Select(x => new ImageObject
                     {
                         ImageId = image.ImageId,
-                        TagId = tags.Where(l => l.Keyword == faceTagName).Select(x => x.TagId).First(),
-                        RectX = x.FaceRectangle.Left,
-                        RectY = x.FaceRectangle.Top,
-                        RectHeight = x.FaceRectangle.Height,
-                        RectWidth = x.FaceRectangle.Width,
+                        RectX = x.Left,
+                        RectY = x.Top,
+                        RectHeight = x.Height,
+                        RectWidth = x.Width,
                         Type = ImageObject.ObjectTypes.Face.ToString(),
                         Score = 100
-                    } ) );
+                    }));
+                }
+
+                if ( foundFaces.Any() )
+                {
+                    // We've found some faces. Add a tagID.
+                    const string faceTagName = "Face";
+                    var tags = await _indexingService.CreateTagsFromStrings(new List<string> { faceTagName });
+                    var faceTagId = tags.Single().TagId;
+                    foundFaces.ForEach(x => x.TagId = faceTagId);
                 }
 
                 // Next, look for Objects
@@ -415,16 +458,14 @@ namespace Damselfly.Core.Services
                             Score = x.Score
                         }));
                     }
-
-                    // We got predictions - so now let's try the image with Azure.
-                    await _azureFaceService.ProcessImage( medThumb );
                 }
 
-                if( foundObjects.Any() )
+                if( foundObjects.Any() || foundFaces.Any() )
                 {
+                    var allFound = foundObjects.Union(foundFaces).ToList();
                     using var db = new ImageContext();
 
-                    await db.BulkInsert(db.ImageObjects, foundObjects);
+                    await db.BulkInsert(db.ImageObjects, allFound);
                 }
             }
             catch( Exception ex )
