@@ -5,16 +5,15 @@
 
 @using Damselfly.Core.ImageProcessing
 
+<div class="damselfly-imagetitlebar">
+    <NavBack />
+    <div class="damselfly-imagetitle">
+    <h4>
+        Duplicate Images for @CurrentImage.FileName
+    </h4>
+</div>
 <div class="damselfly-export">
-    <div>
-        <div class="damselfly-imagenavitem">
-            <NavLink href="/"><i class="clickable-icon fa fa-reply" /></NavLink>
-            <h4 class="image-title">
-                Duplicate Images for @CurrentImage.FileName
-            </h4>
-        </div>
-    </div>
-    <div class="damselfly-exportlist">
+
         @if (images != null)
         {
             @foreach (var img in images)

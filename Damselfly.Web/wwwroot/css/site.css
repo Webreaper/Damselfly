@@ -144,8 +144,13 @@ div::-webkit-scrollbar-thumb {
     font-size: 12px;
 }
 
-.image-title h4 {
-    vertical-align: middle;
+.damselfly-imagetitlebar {
+    display: flex;
+    flex: 1;
+    padding: 3px;
+    max-height: 30px;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .tag-table {
@@ -264,7 +269,8 @@ app {
 }
 
 .clickable-icon {
-    font-size: 1.5em;
+    padding: 1px;
+    font-size: 1.9em;
     cursor: pointer;
 }
 
@@ -691,14 +697,6 @@ f
     align-content: center;
 }
 
-.damselfly-imagetitlebar {
-    display: flex;
-    flex: 1;
-    max-height: 30px;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
 .damselfly-about{
     padding: 10px;
     display: flex;
@@ -722,9 +720,12 @@ f
     max-height: 30px;
 }
 
-.damselfly-imagetitle{
+.damselfly-imagetitle {
     display: flex;
+    align-content: center;
+    align-items: center;
     flex: 8;
+    padding: 3px;
 }
 
 .damselfly-navleft {
