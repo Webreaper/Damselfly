@@ -13,9 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Postgr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Utils", "Damselfly.Core.Utils\Damselfly.Core.Utils.csproj", "{DE8A3F06-8C50-4DD5-BB2C-A92412CECB90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassification", "Damselfly.Core.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassification", "Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{9259AF4A-1E4C-482E-B728-A8F60D0B1AFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.Core.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{6040AF22-D698-4558-88D2-144EAEA73507}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{6040AF22-D698-4558-88D2-144EAEA73507}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.AzureFace", "Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj", "{1D19AC4A-91CE-4A78-A9D9-D5163697636B}"
 EndProject
