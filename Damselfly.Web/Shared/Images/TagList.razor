@@ -3,6 +3,7 @@
 @using Damselfly.Core.Services
 @using Humanizer
 
+@inject IJSRuntime JsRuntime
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService iptcService
@@ -55,8 +56,8 @@
             @if (CurrentImages != null && CurrentImages.Any())
             {
                 @if ((theImageTags != null && theImageTags.Any()) ||
-                     (theObjectTags != null && theObjectTags.Any()) ||
-                     (theFaceTags != null && theFaceTags.Any()))
+                    (theObjectTags != null && theObjectTags.Any()) ||
+                    (theFaceTags != null && theFaceTags.Any()))
                 {
                     @foreach (var tag in theImageTags)
                     {
@@ -76,19 +77,19 @@
                         </div>
                     }
 
-                    @foreach (var tag in theObjectTags)
+                    @foreach (var obj in theObjectTags)
                     {
-                        <div class="damselfly-keyword">
+                        <div class="damselfly-keyword" @onclick="()=>ShowObjectRect(obj)">
                             <div class="damselfly-favouritetag" title="AI Detected">
                                 <i class="fas fa-lightbulb" />
                             </div>
-                            <div class="damselfly-keywordtext">@tag</div>
+                            <div class="damselfly-keywordtext">@obj.Tag.Keyword</div>
                         </div>
                     }
 
                     @foreach (var tag in theFaceTags)
                     {
-                        <div class="damselfly-keyword">
+                        <div class="damselfly-keyword" @onclick="()=>ShowObjectRect(tag)">
                             <div class="damselfly-favouritetag" title="Face Detected">
                                 <i class="fas fa-smile" />
                             </div>
@@ -126,7 +127,7 @@
     public bool TrackSelection { get; set; }
 
     private IList<Tag> theImageTags { get; set; }
-    private IList<string> theObjectTags { get; set; }
+    private IList<ImageObject> theObjectTags { get; set; }
     private IList<ImageObject> theFaceTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
@@ -146,6 +147,11 @@
         var tagsToAdd = new List<string> { tag.Keyword };
         InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, tagsToAdd, null); });
         StateHasChanged();
+    }
+
+    private void ShowObjectRect(ImageObject obj)
+    {
+        _ = JsRuntime.InvokeAsync<string>("drawRect", "objectBox", obj.RectX, obj.RectY, obj.RectWidth, obj.RectHeight);
     }
 
     private void DeleteTag(Tag tag)
@@ -192,7 +198,7 @@
         return new Tag[0];
     }
 
-    private IList<string> GetObjectTags()
+    private IList<ImageObject> GetObjectTags()
     {
         if (CurrentImages != null)
         {
@@ -201,8 +207,6 @@
                 using var db = new ImageContext();
 
                 var tagLists = CurrentImages.SelectMany(x => x.ImageObjects.Where(t => t.Type == ImageObject.ObjectTypes.Object.ToString()))
-                                            .Select(t => t.Tag.Keyword.Transform(To.SentenceCase))
-                                            .Distinct()
                                             .ToArray();
 
                 return tagLists;
@@ -213,7 +217,7 @@
             }
         }
 
-        return new string[0];
+        return new List<ImageObject>();
     }
 
     private IList<ImageObject> GetFaceTags()

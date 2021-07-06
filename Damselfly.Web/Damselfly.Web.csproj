@@ -40,14 +40,10 @@
     <Folder Include="wwwroot\themes\" />
     <Folder Include="wwwroot\zoom\" />
     <Folder Include="wwwroot\vScroll\" />
+    <Folder Include="wwwroot\objectrects\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="config\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="wwwroot\themes\" />
-    <Content Remove="wwwroot\zoom\" />
-    <Content Remove="wwwroot\vScroll\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Shared\FolderList.razor">

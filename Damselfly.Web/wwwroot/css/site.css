@@ -1368,3 +1368,10 @@ hr.separator {
     overflow-y: auto;
     flex-direction: column;
 }
+
+.box {
+    display: none;
+    position: absolute;
+    border: 2px solid #ccffcc;
+    background-color: transparent
+}

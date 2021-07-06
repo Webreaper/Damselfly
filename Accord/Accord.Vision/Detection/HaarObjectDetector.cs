@@ -574,6 +574,8 @@ namespace Accord.Vision.Detection
 
                     int numSteps = (int)Math.Ceiling((double)yEnd / yStep);
 
+                    Exception parallelException = null;
+
                     // For each pixel in the window column
                     Parallel.For(0, numSteps, (j, options) =>
                     {
@@ -584,25 +586,35 @@ namespace Accord.Vision.Detection
 
                         localWindow.Y = y;
 
-                        // For each pixel in the window row
-                        for (int x = 0; x < xEnd; x += xStep)
+                        try
                         {
-                            if (options.ShouldExitCurrentIteration)
-                                return;
-
-                            localWindow.X = x;
-
-                            // Try to detect and object inside the window
-                            if (classifier.Compute(integralImage, localWindow))
+                            // For each pixel in the window row
+                            for (int x = 0; x < xEnd; x += xStep)
                             {
-                                // an object has been detected
-                                bag.Add(localWindow);
+                                if (options.ShouldExitCurrentIteration)
+                                    return;
 
-                                if (searchMode == ObjectDetectorSearchMode.Single)
-                                    options.Stop();
+                                localWindow.X = x;
+
+                                // Try to detect and object inside the window
+                                if (classifier.Compute(integralImage, localWindow))
+                                {
+                                    // an object has been detected
+                                    bag.Add(localWindow);
+
+                                    if (searchMode == ObjectDetectorSearchMode.Single)
+                                        options.Stop();
+                                }
                             }
                         }
+                        catch( Exception ex )
+                        {
+                            parallelException = ex;
+                        }
                     });
+
+                    if (parallelException != null)
+                        throw parallelException;
 
                     // If required, avoid adding overlapping objects at
                     // the expense of extra computation. Otherwise, only

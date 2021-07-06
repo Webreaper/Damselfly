@@ -30,7 +30,7 @@ you to quickly sync a selection of images from the Damselfly basket to a local f
 * Download/export processing to watermark images ready for social media, or sending via Email etc.
 * Runs on Windows, Linux and OSX, and in Docker.
 * Electron.Net Desktop Client for hosted site to allow closer native integration with client OS
- * Desktop Client versions for MacOS (universal), Windows and Linux
+ * Desktop Client versions for MacOS (universal), Windows and Linux 
  * Synchronise images from server basket select to local filesystem for editing
  * Other integrations coming in future
 * Direct upload to Wordpress 

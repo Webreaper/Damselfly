@@ -42,7 +42,6 @@
         var imageYPos = bgHeight * lensYPercent * -1;
 
         var newPos = imageXPos + "px " + imageYPos + "px";
-        console.log("ImgAspect: " + imgAspectRatio + "; imgHeight: " + img.naturalHeight + "; bgHeight + " + bgHeight + "; Zoom pos: " + newPos + "; yPercent: " + lensYPercent);
 
         result.style.backgroundSize = bgWidth + "px"
         result.style.backgroundPosition = newPos;
