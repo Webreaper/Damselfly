@@ -151,9 +151,18 @@
 
     private void ShowObjectRect(ImageObject obj)
     {
-        // Pass ratio of image to thumbnail here?!
-        // TODO: Maybe store the percentage/relative position of the object on the picture for ease?
-        _ = JsRuntime.InvokeAsync<string>("drawRect", "objectBox", obj.RectX, obj.RectY, obj.RectWidth, obj.RectHeight);
+        if (navContext.CurrentImage != null)
+        {
+            float width = navContext.CurrentImage.MetaData.Width;
+            float height = navContext.CurrentImage.MetaData.Height;
+            var pctX = obj.RectX / width;
+            var pctY = obj.RectY / height;
+            var pctW = obj.RectWidth / width;
+            var pctH = obj.RectHeight / height;
+
+            // Pass ratio of image to thumbnail here?!
+            _ = JsRuntime.InvokeAsync<string>("drawRect", "objectBox", pctX, pctY, pctW, pctH );
+        }
     }
 
     private void DeleteTag(Tag tag)
