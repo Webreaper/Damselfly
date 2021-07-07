@@ -4,18 +4,21 @@
     theImg = document.getElementById("theImage");
 
     if (box != undefined && theImg != undefined) {
-
         var imgPos = getImgSizeInfo( theImg );
-    
+        console.log( "RenderedWidth = " + imgPos.width + ", RenderedHeight = " + imgPos.height );
+
+        var shortestImgSide = theImg.naturalWidth < theImage.naturalHeight ? theImg.naturalWidth : theImg.naturalHeight;
+        var shortestRenderSide = imgPos.width < imgPos.height ? imgPos.width : imgPos.height;
+        var ratio = shortestRenderSide / shortestImgSide;
+
+        console.log( "Ratio: " + ratio + " x=" + x + " y=" + y );
         box.style.display = "inherit";
-        box.style.top = y "px";
-        box.style.left = x "px";
-        box.style.width = width + "px";
-        box.style.height = height + "px";
-        console.log("rect: " + x + " x " + y);
+        box.style.left = (x * ratio) + "px";
+        box.style.top = (y * ratio) + "px";
+        box.style.width = (width * ratio) + "px";
+        box.style.height = (height * ratio) + "px";
+        console.log("Scaled Rect: x=" + box.style.left + " y=" + box.style.top);
     }
-    else
-        console.log("No box");
 }
 
 function getRenderedSize(contains, cWidth, cHeight, width, height, pos){

@@ -151,6 +151,8 @@
 
     private void ShowObjectRect(ImageObject obj)
     {
+        // Pass ratio of image to thumbnail here?!
+        // TODO: Maybe store the percentage/relative position of the object on the picture for ease?
         _ = JsRuntime.InvokeAsync<string>("drawRect", "objectBox", obj.RectX, obj.RectY, obj.RectWidth, obj.RectHeight);
     }
 

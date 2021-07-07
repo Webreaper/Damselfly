@@ -47,7 +47,24 @@ namespace Damselfly.ML.Face.Accord
                 watch.Stop();
 
                 if (faces.Any())
+                {
                     Logging.Log($"Accord.Net found {faces.Count} faces in {inputFile.Name} in {watch.ElapsedTime}ms.");
+
+                    if (System.Diagnostics.Debugger.IsAttached)
+                    {
+                        string outDir = "/Users/markotway/Desktop/Faces";
+                        if (!Directory.Exists(outDir))
+                            Directory.CreateDirectory(outDir);
+
+                        var output = Path.Combine(outDir, inputFile.Name);
+                        using (Graphics G = Graphics.FromImage(pic))
+                        {
+                            faces.ForEach(x => G.DrawRectangle(Pens.Red, x.FaceRectangle));
+                        }
+
+                        pic.Save(output, ImageFormat.Bmp);
+                    }
+                }
             }
             catch( Exception ex )
             {

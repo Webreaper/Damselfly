@@ -249,9 +249,14 @@ namespace Damselfly.Core.Services
         {
             while (true)
             {
+#if DEBUG
+                const int sleepSecs = 5;
+#else
+                const int sleepSecs = 60;
+#endif
                 ProcessThumbnailScan().Wait();
                 
-                Thread.Sleep(1000 * 60);
+                Thread.Sleep(1000 * sleepSecs);
             }
         }
 
@@ -355,7 +360,8 @@ namespace Damselfly.Core.Services
                 var foundObjects = new List<ImageObject>();
                 var foundFaces = new List<ImageObject>();
                 var file = new FileInfo(image.FullPath);
-                var medThumb = new FileInfo(GetThumbPath(file, ThumbSize.Medium));
+                var thumbSize = ThumbSize.Medium;
+                var medThumb = new FileInfo(GetThumbPath(file, thumbSize));
 
                 // First, look for faces
                 bool useAzureDetection = false;
@@ -381,8 +387,6 @@ namespace Damselfly.Core.Services
                             // Azure is disabled, so just use what we've got.
                             Logging.Log($"Found {faces.Count} faces in {medThumb}...");
 
-                            // TODO: Need to scale the rect for the original image size here
-                            // as we'll have generated it based on a thumbnail.
                             foundFaces.AddRange(faces.Select(x => new ImageObject
                             {
                                 ImageId = image.ImageId,
@@ -402,8 +406,6 @@ namespace Damselfly.Core.Services
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
                     var azureFaces = await _azureFaceService.DetectFaces(medThumb);
 
-                    // TODO: Need to scale the rect for the original image size here
-                    // as we'll have generated it based on a thumbnail.
                     foundFaces.AddRange(azureFaces.Select(x => new ImageObject
                     {
                         ImageId = image.ImageId,
@@ -444,8 +446,6 @@ namespace Damselfly.Core.Services
 
                         var tags = await _indexingService.CreateTagsFromStrings(allLabels);
 
-                        // TODO: Need to scale the rect for the original image size here
-                        // as we'll have generated it based on a thumbnail.
                         foundObjects.AddRange(validPredictions.Select(x => new ImageObject
                         {
                             ImageId = image.ImageId,
@@ -463,6 +463,12 @@ namespace Damselfly.Core.Services
                 if( foundObjects.Any() || foundFaces.Any() )
                 {
                     var allFound = foundObjects.Union(foundFaces).ToList();
+
+                    allFound.ForEach(x =>
+                    {
+                        ScaleObjectRect(image, ref x, thumbSize);
+                        DrawRect(image.FullPath, x);
+                    });
                     using var db = new ImageContext();
 
                     await db.BulkInsert(db.ImageObjects, allFound);
@@ -471,6 +477,46 @@ namespace Damselfly.Core.Services
             catch( Exception ex )
             {
                 Logging.LogError($"Exception during AI detection: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Scales the detected face/object rectangles based on the full-sized image,
+        /// since the object detection was done on a smaller thumbnail.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="imgObj"></param>
+        /// <param name="thumbSize"></param>
+        private void ScaleObjectRect(Image image, ref ImageObject imgObj, ThumbSize thumbSize )
+        {
+            var thumbConfig = thumbConfigs.First(x => x.size == thumbSize);
+
+            float shortestThumbSide = thumbConfig.width < thumbConfig.height ? thumbConfig.width : thumbConfig.height;
+            float shortestImgSide = image.MetaData.Width < image.MetaData.Height ? image.MetaData.Width : image.MetaData.Height;
+            var ratio = shortestImgSide / shortestThumbSide;
+
+            imgObj.RectX = (int)(imgObj.RectX * ratio);
+            imgObj.RectY = (int)(imgObj.RectY * ratio);
+            imgObj.RectWidth = (int)(imgObj.RectWidth * ratio);
+            imgObj.RectHeight = (int)(imgObj.RectHeight * ratio);
+        }
+
+        /// <summary>
+        /// Debugging tool.
+        /// </summary>
+        /// <param name="fullPath"></param>
+        /// <param name="imgObj"></param>
+        private void DrawRect(string fullPath, ImageObject imgObj)
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                string outDir = "/Users/markotway/Desktop/Faces";
+                if (!System.IO.Directory.Exists(outDir))
+                    System.IO.Directory.CreateDirectory(outDir);
+
+                var output = Path.Combine(outDir, Path.GetFileName(fullPath));
+
+                ImageSharpProcessor.DrawRects(fullPath, imgObj.RectX, imgObj.RectY, imgObj.RectWidth, imgObj.RectHeight, output);
             }
         }
 
