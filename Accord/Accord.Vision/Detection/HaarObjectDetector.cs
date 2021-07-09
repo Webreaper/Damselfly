@@ -42,6 +42,7 @@ namespace Accord.Vision.Detection
     using Cascades;
     using Accord.Compat;
     using System.Threading.Tasks;
+    using System.Collections.Concurrent;
 
     /// <summary>
     ///   Object detector options for the search procedure.
@@ -455,16 +456,16 @@ namespace Accord.Vision.Detection
         ///   Performs object detection on the given frame.
         /// </summary>
         /// 
-        public Rectangle[] ProcessFrame(Bitmap frame)
+        public Rectangle[] ProcessFrame(Bitmap frame, Action<string> logMethod )
         {
-            return frame.LockBits(ImageLockMode.ReadOnly, (ui) => ProcessFrame(ui));
+            return frame.LockBits(ImageLockMode.ReadOnly, (ui) => ProcessFrame(ui, logMethod));
         }
 
         /// <summary>
         ///   Performs object detection on the given frame.
         /// </summary>
         /// 
-        public Rectangle[] ProcessFrame(UnmanagedImage image)
+        public Rectangle[] ProcessFrame(UnmanagedImage image, Action<string> logInfo )
         {
             int colorChannel =
               image.PixelFormat == PixelFormat.Format8bppIndexed ? 0 : channel;
@@ -570,7 +571,7 @@ namespace Accord.Vision.Detection
                 {
                     // Parallel mode. Scan the integral image searching
                     // for objects in the window with parallelization.
-                    var bag = new System.Collections.Concurrent.ConcurrentBag<Rectangle>();
+                    var bag = new ConcurrentBag<Rectangle>();
 
                     int numSteps = (int)Math.Ceiling((double)yEnd / yStep);
 
@@ -579,42 +580,22 @@ namespace Accord.Vision.Detection
                     // For each pixel in the window column
                     Parallel.For(0, numSteps, (j, options) =>
                     {
-                        int y = j * yStep;
-
-                        // Create a local window reference
-                        Rectangle localWindow = window;
-
-                        localWindow.Y = y;
-
                         try
                         {
-                            // For each pixel in the window row
-                            for (int x = 0; x < xEnd; x += xStep)
-                            {
-                                if (options.ShouldExitCurrentIteration)
-                                    return;
-
-                                localWindow.X = x;
-
-                                // Try to detect and object inside the window
-                                if (classifier.Compute(integralImage, localWindow))
-                                {
-                                    // an object has been detected
-                                    bag.Add(localWindow);
-
-                                    if (searchMode == ObjectDetectorSearchMode.Single)
-                                        options.Stop();
-                                }
-                            }
+                            ProcessWindows(j, options, window, xStep, yStep, xEnd, bag);
                         }
                         catch( Exception ex )
                         {
+                            if (logInfo != null)
+                                logInfo($"Exception in HaarObjectDetector: {ex.Message}");
+                            
                             parallelException = ex;
+                            options.Stop();
                         }
                     });
 
                     if (parallelException != null)
-                        throw parallelException;
+                        goto EXIT;
 
                     // If required, avoid adding overlapping objects at
                     // the expense of extra computation. Otherwise, only
@@ -654,6 +635,45 @@ namespace Accord.Vision.Detection
             lastObjects = objects;
 
             return objects; // Returns the array of detected objects.
+        }
+
+        /// <summary>
+        /// Extracted method to make the code clearer.
+        /// </summary>
+        /// <param name="j"></param>
+        /// <param name="options"></param>
+        /// <param name="window"></param>
+        /// <param name="xStep"></param>
+        /// <param name="yStep"></param>
+        /// <param name="xEnd"></param>
+        /// <param name="bag"></param>
+        private void ProcessWindows(int j, ParallelLoopState options, Rectangle window, int xStep, int yStep, int xEnd, ConcurrentBag<Rectangle> bag)
+        {
+            int y = j * yStep;
+
+            // Create a local window reference
+            Rectangle localWindow = window;
+
+            localWindow.Y = y;
+
+            // For each pixel in the window row
+            for (int x = 0; x < xEnd; x += xStep)
+            {
+                if (options.ShouldExitCurrentIteration)
+                    return;
+
+                localWindow.X = x;
+
+                // Try to detect and object inside the window
+                if (classifier.Compute(integralImage, localWindow))
+                {
+                    // an object has been detected
+                    bag.Add(localWindow);
+
+                    if (searchMode == ObjectDetectorSearchMode.Single)
+                        options.Stop();
+                }
+            }
         }
 
         private void update(int width, int height)

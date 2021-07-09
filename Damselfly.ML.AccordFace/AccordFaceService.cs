@@ -41,10 +41,9 @@ namespace Damselfly.ML.Face.Accord
 
                 faces = _faceDetector.ExtractFaces(
                     new ImageProcessor(pic).Grayscale().EqualizeHistogram().Result,
-                    FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression))
-                    .ToList();
+                    FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression));
 
-                watch.Stop();
+                watch.Stop();   
 
                 if (faces.Any())
                 {

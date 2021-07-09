@@ -22,6 +22,7 @@
 
 namespace Accord.Vision.Detection
 {
+    using System;
     using System.Drawing;
     using Accord.Imaging;
 
@@ -38,6 +39,6 @@ namespace Accord.Vision.Detection
         /// <summary>
         ///   Process a new image scene looking for objects.
         /// </summary>
-        Rectangle[] ProcessFrame(UnmanagedImage image);
+        Rectangle[] ProcessFrame(UnmanagedImage image, Action<string> logMethod);
     }
 }
