@@ -471,6 +471,11 @@ namespace Damselfly.Core.Services
                     });
                     using var db = new ImageContext();
 
+                    // First, clear out the existing faces and objects - we don't want dupes
+                    // TODO: Might need to be smarter about this once we add face names and
+                    // Object identification details.
+                    await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId)));
+                    // Now add the objects and faces.
                     await db.BulkInsert(db.ImageObjects, allFound);
                 }
             }
