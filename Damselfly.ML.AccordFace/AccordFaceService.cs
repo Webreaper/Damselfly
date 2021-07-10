@@ -16,7 +16,7 @@ namespace Damselfly.ML.Face.Accord
         private int MinSize { get; set; } = 20;
         private ObjectDetectorScalingMode ScaleMode { get; set; } = ObjectDetectorScalingMode.GreaterToSmaller;
         private ObjectDetectorSearchMode SearchMode { get; set; } = ObjectDetectorSearchMode.Average;
-        private bool Parallel { get; set; } = true;
+        private bool Parallel { get; set; } = false;
         private int Suppression { get; set; } = 3;
         private FaceDetector _faceDetector;
 
@@ -39,8 +39,8 @@ namespace Damselfly.ML.Face.Accord
 
                 using var pic = new Bitmap(inputFile.FullName);
 
-                faces = _faceDetector.ExtractFaces(
-                    new ImageProcessor(pic).Grayscale().EqualizeHistogram().Result,
+                var processedImage = new ImageProcessor(pic).Resize( new Size( 320, 320 ) ).Grayscale().EqualizeHistogram().Result;
+                faces = _faceDetector.ExtractFaces( processedImage,
                     FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression));
 
                 watch.Stop();   
