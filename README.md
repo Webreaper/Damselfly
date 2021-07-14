@@ -10,7 +10,7 @@ you to quickly sync a selection of images from the Damselfly basket to a local f
 
 ### Want to Support Damselfly?
 
-Damselfly is free, open-source software. But if you find it useful, and fancy buying me a slice of pizza, that would 
+Damselfly is free, open-source software. But if you find it useful, and fancy buying me a coffee or a slice of pizza, that would 
 be appreciated!
 
 <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Slice Of Pizza" height="41" width="174"></a>
