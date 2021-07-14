@@ -8,6 +8,15 @@ The user-interface and workflow is loosely based on the much-loved Picasa, with 
 types of processing. Damselfly also provides a desktop/client app which gives closer integraton with your laptop or PC, allowing
 you to quickly sync a selection of images from the Damselfly basket to a local folder, for editing etc.
 
+### Want to Support Damselfly?
+
+Damselfly is free, open-source software. But if you find it useful, and fancy buying me a slice of pizza, that would 
+be appreciated!
+
+<a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Slice Of Pizza" height="41" width="174"></a>
+
+## Screenshots
+
 ![Damselfly Screenshot](docs/Screenshot.png)
 
 ![Damselfly Screenshot](docs/Screenshot2.png)
