@@ -2,9 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Mime;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.Constants;
@@ -14,6 +11,8 @@ using System.Reflection;
 using Microsoft.Azure.CognitiveServices.Vision.Face;
 using System.IO;
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
+using System.Drawing;
+using Damselfly.ML.AzureFace;
 
 namespace Damselfly.ML.Face.Azure
 {
@@ -26,14 +25,17 @@ namespace Damselfly.ML.Face.Azure
         private FaceClient _faceClient;
         private IList<FaceAttributeType> _attributes;
         private AzureDetection _detectionType;
-        private DateTime _lastRequest;
+        private DateTime? _lastTrained;
+        private int _persistedFaces;
+        private TransThrottle _transThrottle;
+        private const string GroupName = "Damselfly Faces";
+        private const string GroupId = "damselflyfaces";
+        private const string RECOGNITION_MODEL = RecognitionModel.Recognition04;
 
         public AzureDetection DetectionType
         {
             get { return _detectionType; }
         }
-
-        public int MaxTransactionsPerMin { get; set; } = 20;
 
         public enum AzureDetection
         {
@@ -44,10 +46,23 @@ namespace Damselfly.ML.Face.Azure
 
         public AzureFaceService(IConfigService configService)
         {
+            _transThrottle = new TransThrottle(20);
+
             var endpoint = configService.Get(ConfigSettings.AzureEndpoint);
             var key = configService.Get(ConfigSettings.AzureApiKey);
 
             if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key))
+            {
+                // We have config and have set up the service, now figure out what we're going to use it for
+                _detectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
+            }
+            else
+            {
+                // No config, so we're disabled.
+                _detectionType = AzureDetection.Disabled;
+            }
+
+            if( _detectionType != AzureDetection.Disabled )
             {
                 _httpClient = new HttpClient();
                 var agent = new ProductInfoHeaderValue("Damselfly", $"{Assembly.GetExecutingAssembly().GetName().Version}");
@@ -71,20 +86,85 @@ namespace Damselfly.ML.Face.Azure
                     // FaceAttributeType.Mask
                     // FaceAttributeType.Makeup,
                 };
-
-                // We have config and have set up the service, now figure out what we're going to use it for
-                _detectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
-            }
-            else
-            {
-                // No config, so we're disabled.
-                _detectionType = AzureDetection.Disabled;
             }
         }
 
+        /// <summary>
+        /// Discard the Person group persisted on MSFT's server, along with
+        /// all the trained data associated with it. Use with care - if
+        /// this is done at the wrong time, all face-recognition will fail.
+        /// </summary>
+        /// <returns></returns>
+        public async Task ClearAllFaceData()
+        {
+            // TEMP WHILE DEBUGGING
+            await _transThrottle.Run( "Delete", _faceClient.PersonGroup.DeleteAsync(GroupId) );
+        }
+
+        /// <summary>
+        /// Initialise the face training service
+        /// TODO: Need to ensure we can initialise this after startup,
+        /// when the user specifies the new config.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> StartService()
+        {
+            bool exists = false;
+            try
+            {
+                var group = await _transThrottle.Call( "GetGroup", _faceClient.PersonGroup.GetAsync(GroupId) );
+
+                if (group != null)
+                {
+                    exists = true;
+
+                    // Get the training status and group face list, and cache them
+                    // so we don't have to requery, using up valuable API calls.
+                    var trainingStatus = await _transThrottle.Call( "GetTrainingStatus", _faceClient.PersonGroup.GetTrainingStatusAsync(GroupId) );
+                    _lastTrained = trainingStatus.LastSuccessfulTraining;
+
+                    var list = await _transThrottle.Call( "ListGroup", _faceClient.PersonGroupPerson.ListAsync(GroupId) );
+                    _persistedFaces = list.SelectMany(x => x.PersistedFaceIds).Count();
+                }
+            }
+            catch (Exception)
+            {
+                exists = false;
+            }
+
+            if (!exists)
+            {
+                try
+                {
+                    await _transThrottle.Run( "CreateGroup", _faceClient.PersonGroup.CreateAsync(GroupId, GroupName, recognitionModel: RECOGNITION_MODEL) );
+                    Logging.Log($"Created Azure person group: {GroupId}");
+                    exists = true;
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError($"Failed to create person group: {ex.Message}");
+                }
+            }
+
+            if( ! exists )
+            {
+                Logging.LogError("Unable to create Azure face group. Azure face detection will be disabled.");
+                _faceClient = null;
+                _detectionType = AzureDetection.Disabled;
+            }
+
+            return exists;
+        }
+
+        /// <summary>
+        /// Detect faces
+        /// </summary>
+        /// <param name="imageFilePath"></param>
+        /// <returns></returns>
         public async Task<List<Face>> DetectFaces( FileInfo imageFilePath )
         {
             var faces = new List<Face>();
+            int startTransCount = _transThrottle.TotalTransactions;
 
             if (_faceClient != null && _detectionType != AzureDetection.Disabled )
             {
@@ -94,34 +174,59 @@ namespace Damselfly.ML.Face.Azure
                 {
                     using (Stream imageFileStream = File.OpenRead(imageFilePath.FullName))
                     {
-                        var timeSinceLastReq = DateTime.UtcNow - _lastRequest;
-                        var transPerSecs = Math.Ceiling( 60.0 / MaxTransactionsPerMin );
+                        Logging.Log($"Calling Azure Detect...");
 
-                        if( timeSinceLastReq.TotalSeconds < transPerSecs )
+                        var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(imageFileStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
+
+                        if (detectedFaces.Any())
                         {
-                            var delay = transPerSecs - timeSinceLastReq.TotalSeconds;
-                            var toSleep = (int)Math.Ceiling(delay);
-                            Logging.LogVerbose($"Sleeping for {toSleep}s to adhere to Azure {MaxTransactionsPerMin}/min transaction limit.");
-                            await Task.Delay(toSleep * 1000);
+                            faces = await IdentifyOrCreateFaces(detectedFaces);
+
+                            // Load the image just once, we can re-crop multiple times to pull out the faces.
+                            var image = new Bitmap(imageFilePath.FullName);
+
+                            bool needTraining = false;
+
+                            foreach (var face in faces)
+                            {
+                                // It's a new face. Extract the face rect.
+                                var faceRect = new Rectangle(face.Left, face.Top, face.Width, face.Height);
+
+                                // Save the faces
+                                var faceBitmap = GetCroppedFaceFromImage(image, faceRect);
+                                using var memoryStream = new MemoryStream();
+                                faceBitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                                if (System.Diagnostics.Debugger.IsAttached)
+                                {
+                                    // TODO: Probably want to write these to a 'thumbs' style folder, so we can resubmit
+                                    // the face training data if we need to for any reason.
+                                    string faceFile = $"/Users/markotway/Desktop/Faces/{face.PersonId.Value}_{imageFilePath.Name}";
+                                    faceBitmap.Save(faceFile);
+                                }
+
+                                var persistedFace = await _transThrottle.Call("AddFace", _faceClient.PersonGroupPerson.AddFaceFromStreamAsync(GroupId, face.PersonId.Value, memoryStream) );
+                                // TODO: Do something with the persisted face (save to the DB?!)
+
+                                needTraining = true;
+                            }
+
+                            if (needTraining)
+                            {
+                                // We've added new faces/images, so train.
+                                await Train();
+                            }
                         }
-
-                        _lastRequest = DateTime.UtcNow;
-                        var detectedFaces = await _faceClient.Face.DetectWithStreamAsync(imageFileStream, true, true, _attributes);
-
-                        faces = detectedFaces.Select(x => new Face
-                        {
-                            FaceId = x.FaceId,
-                            Left = x.FaceRectangle.Left,
-                            Top = x.FaceRectangle.Top,
-                            Width = x.FaceRectangle.Width,
-                            Height = x.FaceRectangle.Height,
-                            Emotion = GetTopEmotion(x.FaceAttributes)
-                        }).ToList();
                     }
+                }
+                catch (APIErrorException ex)
+                {
+                    Logging.LogError($"Azure face error: {ex.Response.Content}");
                 }
                 catch ( Exception ex )
                 {
-                    Logging.LogError($"Exception during Azure face detection: {ex.Message}");
+                    Logging.LogError($"Exception during Azure face detection: {ex}");
                 }
 
                 watch.Stop();
@@ -134,7 +239,118 @@ namespace Damselfly.ML.Face.Azure
                 Logging.LogVerbose($"Azure Face Service was not configured.");
             }
 
+            var transUsed = _transThrottle.TotalTransactions - startTransCount;
+
+            Logging.Log($"Face detection used {transUsed} Azure transactions for image {imageFilePath.Name}");
+
             return faces;
+        }
+
+        /// <summary>
+        /// Attempt to identify the faces from the trained set we have now.
+        /// </summary>
+        /// <param name="detectedFaces"></param>
+        /// <returns></returns>
+        private async Task<List<Face>> IdentifyOrCreateFaces( IList<DetectedFace> detectedFaces )
+        {
+            List<Face> faces = detectedFaces.Select(x => new Face
+                {
+                    FaceId = x.FaceId,
+                    Left = x.FaceRectangle.Left,
+                    Top = x.FaceRectangle.Top,
+                    Width = x.FaceRectangle.Width,
+                    Height = x.FaceRectangle.Height,
+                    Emotion = GetTopEmotion(x.FaceAttributes)
+                }).ToList();
+
+            // If we have any trained faces yet, try and identify
+            if (_persistedFaces > 0 && _lastTrained.HasValue)
+            {
+                var faceIdsToMatch = detectedFaces.Where(x => x.FaceId.HasValue).Select(x => x.FaceId.Value).ToList();
+
+                var matches = await _transThrottle.Call( "Identify", _faceClient.Face.IdentifyAsync(faceIdsToMatch, personGroupId: GroupId, maxNumOfCandidatesReturned: 3) );
+
+                foreach (var match in matches)
+                {
+                    // Find the face for this match
+                    var face = faces.FirstOrDefault(x => x.FaceId == match.FaceId);
+
+                    if (match.Candidates?.Count > 0)
+                    {
+                        // We got a match. Pick the first one for now.
+                        face.PersonId = match.Candidates[0].PersonId;
+                        Logging.Log($"Identified person {face.PersonId.Value}.");
+                    }
+                }
+            }
+
+            // Okay, so having found all the existing faces, now we go through and create
+            // Person objects for any faces we didn't recognise.
+            var newFaces = faces.Where(x => !x.PersonId.HasValue).ToList();
+
+            foreach (var newFace in newFaces)
+            {
+                // It's somebody new - create the person
+                var createdPerson = await _transThrottle.Call( "CreatePerson", _faceClient.PersonGroupPerson.CreateAsync(GroupId, Guid.NewGuid().ToString()) );
+
+                // Keep track of this - we could call GetGroup.List, but that uses up a transaction...
+                _persistedFaces++;
+
+                newFace.PersonId = createdPerson.PersonId;
+                Logging.Log($"Created new person {newFace.PersonId.Value}.");
+            }
+
+            return faces;
+        }
+
+        /// <summary>
+        /// Extract the cropped area of a specific face from the source image
+        /// </summary>
+        /// <param name="sourceImage"></param>
+        /// <param name="cropRect"></param>
+        /// <returns></returns>
+        public static Bitmap GetCroppedFaceFromImage(Bitmap sourceImage, Rectangle cropRect)
+        {
+            // Inflate by 10% to ensure we capture the whole face. 
+            var inflate = new Size( (int)(cropRect.Width * 0.1), (int)(cropRect.Height * 0.1) );
+            cropRect.Inflate( inflate );
+
+            Bitmap nb = new Bitmap(cropRect.Width, cropRect.Height);
+            using (Graphics g = Graphics.FromImage(nb))
+            {
+                g.DrawImage(sourceImage, -cropRect.X, -cropRect.Y);
+                return nb;
+            }
+        }
+
+        /// <summary>
+        /// Train the model.
+        /// </summary>
+        /// <returns></returns>
+        private async Task Train()
+        {
+            await _transThrottle.Run( "Train", _faceClient.PersonGroup.TrainAsync(GroupId) );
+
+            TrainingStatus trainingStatus = null;
+            while (true)
+            {
+                await Task.Delay(1000);
+
+                trainingStatus = await _transThrottle.Call( "GetTrainingStatus", _faceClient.PersonGroup.GetTrainingStatusAsync(GroupId) );
+
+                if (trainingStatus.Status != TrainingStatusType.Running)
+                {
+                    if (trainingStatus.Status == TrainingStatusType.Succeeded)
+                        Logging.Log($"Training succeeded on {GroupId}");
+                    if (trainingStatus.Status == TrainingStatusType.Failed)
+                        Logging.LogError($"Training failed on {GroupId}");
+
+                    _lastTrained = trainingStatus.LastSuccessfulTraining;
+                    break;
+                }
+
+                Logging.Log("Training in progress...");
+            }
         }
 
         private static string GetTopEmotion( FaceAttributes attributes )
@@ -161,6 +377,7 @@ namespace Damselfly.ML.Face.Azure
         public class Face
         {
             public Guid? FaceId { get; set; }
+            public Guid? PersonId { get; set; }
             public int Left { set; get; }
             public int Top { set; get; }
             public int Width { set; get; }

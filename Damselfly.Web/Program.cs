@@ -55,9 +55,6 @@ namespace Damselfly.Web
             [Option("syno", Required = false, HelpText = "Use native Synology thumbnail structure.")]
             public bool Synology { get; set; }
 
-            [Option("isharp", Required = false, HelpText = "Use ImageSharp for thumbnail generation.")]
-            public bool ImageSharp { get; set; }
-
             [Option("nothumbs", Required = false, HelpText = "Don't Generate thumbnails")]
             public bool NoGenerateThumbnails { get; set; }
 
@@ -90,7 +87,6 @@ namespace Damselfly.Web
                                     o.NoGenerateThumbnails = true;
                                 }
 
-                                ImageProcessService.UseImageSharp = o.ImageSharp;
                                 IndexingService.EnableIndexing = ! o.NoEnableIndexing;
                                 IndexingService.RootFolder = o.SourceDirectory;
                                 ThumbnailService.PicturesRoot = o.SourceDirectory;

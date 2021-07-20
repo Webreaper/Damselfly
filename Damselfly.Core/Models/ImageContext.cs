@@ -22,6 +22,7 @@ namespace Damselfly.Core.Models
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ImageTag> ImageTags { get; set; }
         public DbSet<ImageObject> ImageObjects { get; set; }
+        //public DbSet<Person> People { get; set; }
         public DbSet<ImageClassification> ImageClassifications { get; set; }
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Basket> Baskets { get; set; }
@@ -389,6 +390,34 @@ namespace Damselfly.Core.Models
         public override string ToString()
         {
             return $"{Image.FileName}=>{Tag.Keyword} [{ImageId}, ({RectX},{RectY},{RectWidth},{RectHeight}]";
+        }
+    }
+
+    /// <summary>
+    /// A person
+    /// </summary>
+    public class Person
+    {
+        public enum PersonState
+        {
+            Unknown = 0,
+            Identified = 1,
+            Confirmed = 2
+        };
+
+        [Required]
+        public int ImageObjectId { get; set; }
+        public virtual ImageObject ImageObject { get; set; }
+
+        [Required]
+        public string AzureId { get; set; }
+
+        public string Name { get; set; }
+        public PersonState State { get; set; } = PersonState.Unknown;
+
+        public override string ToString()
+        {
+            return $"{ImageObject.ImageObjectId}=>{Name} [{State}, AzureID: {AzureId}]";
         }
     }
 

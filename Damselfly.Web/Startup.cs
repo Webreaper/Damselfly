@@ -19,6 +19,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.Core.Interfaces;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
+using Damselfly.Core.ImageProcessing;
 
 namespace Damselfly.Web
 {
@@ -51,7 +52,9 @@ namespace Damselfly.Web
             services.AddFileReaderService();
 
             services.AddSingleton<ConfigService>();
+            services.AddSingleton<SkiaSharpProcessor>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+            services.AddSingleton<IImageProcessor>(x => x.GetRequiredService<SkiaSharpProcessor>());
 
             services.AddSingleton<ImageService>();
             services.AddSingleton<StatusService>();
@@ -85,7 +88,8 @@ namespace Damselfly.Web
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
                         DownloadService download, ThemeService themes, TaskService tasks,
                         MetaDataService metadata, ThumbnailService thumbService,
-                        IndexingService indexService, ImageProcessService imageProcessing)
+                        IndexingService indexService, ImageProcessService imageProcessing,
+                        AzureFaceService azureFace, IConfigService configService)
         {
             if (env.IsDevelopment())
             {
@@ -136,6 +140,7 @@ namespace Damselfly.Web
 
             indexService.StartService();
             thumbService.StartService();
+            azureFace.StartService().Wait();
         }
 
         /// <summary>

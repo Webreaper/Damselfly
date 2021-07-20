@@ -23,34 +23,29 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ImageProcessService : IImageProcessor
     {
-        private readonly IImageProcessor processor;
+        private readonly IImageProcessor _processor;
 
-        public static bool UseImageSharp { get; set; }
-
-        public ImageProcessService()
+        public ImageProcessService(IImageProcessor processor)
         {
-            if (UseImageSharp)
-                processor = new ImageSharpProcessor();
-            else
-                processor = new SkiaSharpProcessor();
+            _processor = processor;
 
             Logging.Log($"Initialised {processor.GetType().Name} for thumbnail processing.");
         }
 
         public void SetContentPath( string path )
         {
-            if( processor is ImageSharpProcessor imageSharp )
+            if( _processor is ImageSharpProcessor imageSharp )
                 imageSharp.SetFontPath(Path.Combine(path, "fonts"));
         }
 
         public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
         {
-            return await processor.CreateThumbs(source, destFiles);
+            return await _processor.CreateThumbs(source, destFiles);
         }
 
         public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
-            processor.TransformDownloadImage(input, output, config);
+            _processor.TransformDownloadImage(input, output, config);
         }
 
         public bool IsImageFileType(FileInfo filename)
@@ -58,10 +53,10 @@ namespace Damselfly.Core.Services
             if (filename.IsHidden())
                 return false;
 
-            return processor.SupportedFileExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
+            return _processor.SupportedFileExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
         }
 
 
-        public ICollection<string> SupportedFileExtensions { get{ return processor.SupportedFileExtensions; } }
+        public ICollection<string> SupportedFileExtensions { get{ return _processor.SupportedFileExtensions; } }
     }
 }
