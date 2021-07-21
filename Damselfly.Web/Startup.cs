@@ -138,9 +138,10 @@ namespace Damselfly.Web
 
             StartTaskScheduler(tasks, download, metadata);
 
+            // Start the face service before the thumbnail service
+            azureFace.StartService();
             indexService.StartService();
             thumbService.StartService();
-            azureFace.StartService().Wait();
         }
 
         /// <summary>

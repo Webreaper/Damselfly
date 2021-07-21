@@ -107,36 +107,65 @@ namespace Damselfly.ML.Face.Azure
         /// when the user specifies the new config.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> StartService()
+        public void StartService()
         {
+            if (_faceClient != null && _detectionType != AzureDetection.Disabled)
+            {
+                try
+                {
+                    InitializeAzureService().Wait();
+                }
+                catch( Exception ex )
+                {
+                    Logging.LogError($"Unable to start Azure service: {ex.Message}");
+                }
+            }
+        }
+
+        private async Task InitializeAzureService()
+        {
+            Logging.Log("Starting Azure Face Service...");
             bool exists = false;
             try
             {
-                var group = await _transThrottle.Call( "GetGroup", _faceClient.PersonGroup.GetAsync(GroupId) );
+                var group = await _transThrottle.Call("GetGroup", _faceClient.PersonGroup.GetAsync(GroupId));
 
                 if (group != null)
                 {
+                    Logging.Log($"Azure - Found existing Face Group: {GroupId}");
                     exists = true;
 
-                    // Get the training status and group face list, and cache them
-                    // so we don't have to requery, using up valuable API calls.
-                    var trainingStatus = await _transThrottle.Call( "GetTrainingStatus", _faceClient.PersonGroup.GetTrainingStatusAsync(GroupId) );
-                    _lastTrained = trainingStatus.LastSuccessfulTraining;
-
-                    var list = await _transThrottle.Call( "ListGroup", _faceClient.PersonGroupPerson.ListAsync(GroupId) );
+                    var list = await _transThrottle.Call("ListGroup", _faceClient.PersonGroupPerson.ListAsync(GroupId));
                     _persistedFaces = list.SelectMany(x => x.PersistedFaceIds).Count();
                 }
             }
-            catch (Exception)
+            catch (APIErrorException ex)
             {
+                Logging.LogWarning($"Failed to initialise Azure Group: {ex.Message} [{ex.Response.Content}]");
                 exists = false;
+            }
+
+            if( exists )
+            {
+                // See if it's been trained yet.
+                try
+                {
+                    // Get the training status and group face list, and cache them
+                    // so we don't have to requery, using up valuable API calls.
+                    var trainingStatus = await _transThrottle.Call("GetTrainingStatus", _faceClient.PersonGroup.GetTrainingStatusAsync(GroupId));
+                    _lastTrained = trainingStatus.LastSuccessfulTraining;
+                }
+                catch (APIErrorException ex)
+                {
+                    Logging.LogWarning($"Facegroup has not been trained.");
+                }
             }
 
             if (!exists)
             {
                 try
                 {
-                    await _transThrottle.Run( "CreateGroup", _faceClient.PersonGroup.CreateAsync(GroupId, GroupName, recognitionModel: RECOGNITION_MODEL) );
+                    await _transThrottle.Run("CreateGroup", _faceClient.PersonGroup.CreateAsync(GroupId, GroupName, recognitionModel: RECOGNITION_MODEL));
                     Logging.Log($"Created Azure person group: {GroupId}");
                     exists = true;
                 }
@@ -146,14 +175,12 @@ namespace Damselfly.ML.Face.Azure
                 }
             }
 
-            if( ! exists )
+            if (!exists)
             {
                 Logging.LogError("Unable to create Azure face group. Azure face detection will be disabled.");
                 _faceClient = null;
                 _detectionType = AzureDetection.Disabled;
             }
-
-            return exists;
         }
 
         /// <summary>
@@ -174,7 +201,7 @@ namespace Damselfly.ML.Face.Azure
                 {
                     using (Stream imageFileStream = File.OpenRead(imageFilePath.FullName))
                     {
-                        Logging.Log($"Calling Azure Detect...");
+                        Logging.LogVerbose($"Calling Azure Detect...");
 
                         var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(imageFileStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
 
@@ -211,7 +238,7 @@ namespace Damselfly.ML.Face.Azure
 
                                 needTraining = true;
                             }
-
+                            
                             if (needTraining)
                             {
                                 // We've added new faces/images, so train.
@@ -241,9 +268,18 @@ namespace Damselfly.ML.Face.Azure
 
             var transUsed = _transThrottle.TotalTransactions - startTransCount;
 
-            Logging.Log($"Face detection used {transUsed} Azure transactions for image {imageFilePath.Name}");
+            Logging.LogVerbose($"Face detection used {transUsed} Azure transactions for image {imageFilePath.Name}");
 
             return faces;
+        }
+
+        /// <summary>
+        /// Used by the caller to periodically log transaction usage
+        /// </summary>
+        /// <returns></returns>
+        public int GetAndResetTransCount()
+        {
+            return _transThrottle.ResetTotalTransactions();
         }
 
         /// <summary>
@@ -329,27 +365,34 @@ namespace Damselfly.ML.Face.Azure
         /// <returns></returns>
         private async Task Train()
         {
-            await _transThrottle.Run( "Train", _faceClient.PersonGroup.TrainAsync(GroupId) );
-
-            TrainingStatus trainingStatus = null;
-            while (true)
+            try
             {
-                await Task.Delay(1000);
+                await _transThrottle.Run("Train", _faceClient.PersonGroup.TrainAsync(GroupId));
 
-                trainingStatus = await _transThrottle.Call( "GetTrainingStatus", _faceClient.PersonGroup.GetTrainingStatusAsync(GroupId) );
-
-                if (trainingStatus.Status != TrainingStatusType.Running)
+                TrainingStatus trainingStatus = null;
+                while (true)
                 {
-                    if (trainingStatus.Status == TrainingStatusType.Succeeded)
-                        Logging.Log($"Training succeeded on {GroupId}");
-                    if (trainingStatus.Status == TrainingStatusType.Failed)
-                        Logging.LogError($"Training failed on {GroupId}");
+                    await Task.Delay(1000);
 
-                    _lastTrained = trainingStatus.LastSuccessfulTraining;
-                    break;
+                    trainingStatus = await _transThrottle.Call("GetTrainingStatus", _faceClient.PersonGroup.GetTrainingStatusAsync(GroupId));
+
+                    if (trainingStatus.Status != TrainingStatusType.Running)
+                    {
+                        if (trainingStatus.Status == TrainingStatusType.Succeeded)
+                            Logging.LogVerbose($"Training succeeded on {GroupId}");
+                        if (trainingStatus.Status == TrainingStatusType.Failed)
+                            Logging.LogError($"Training failed on {GroupId}");
+
+                        _lastTrained = trainingStatus.LastSuccessfulTraining;
+                        break;
+                    }
+
+                    Logging.Log("Training in progress...");
                 }
-
-                Logging.Log("Training in progress...");
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during Azure training: {ex.Message}");
             }
         }
 

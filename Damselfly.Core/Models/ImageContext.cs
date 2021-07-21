@@ -22,7 +22,7 @@ namespace Damselfly.Core.Models
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ImageTag> ImageTags { get; set; }
         public DbSet<ImageObject> ImageObjects { get; set; }
-        //public DbSet<Person> People { get; set; }
+        public DbSet<Person> People { get; set; }
         public DbSet<ImageClassification> ImageClassifications { get; set; }
         public DbSet<Camera> Cameras { get; set; }
         public DbSet<Basket> Baskets { get; set; }
@@ -32,6 +32,7 @@ namespace Damselfly.Core.Models
         public DbSet<ExportConfig> DownloadConfigs { get; set; }
         public DbSet<ConfigSetting> ConfigSettings { get; set; }
         public DbSet<ExifOperation> KeywordOperations { get; set; }
+        public DbSet<CloudTransaction> CloudTransactions { get; set; }
 
         public async Task<IQueryable<Image>> ImageSearch(string query)
         {
@@ -99,6 +100,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
+            modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
 
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
@@ -387,6 +389,9 @@ namespace Damselfly.Core.Models
         public int RectWidth { get; set; }
         public int RectHeight { get; set; }
 
+        public int? PersonId { get; set; }
+        public virtual Person Person { get; set; }
+
         public override string ToString()
         {
             return $"{Image.FileName}=>{Tag.Keyword} [{ImageId}, ({RectX},{RectY},{RectWidth},{RectHeight}]";
@@ -405,19 +410,42 @@ namespace Damselfly.Core.Models
             Confirmed = 2
         };
 
-        [Required]
-        public int ImageObjectId { get; set; }
-        public virtual ImageObject ImageObject { get; set; }
+        [Key]
+        public int PersonId { get; set; }
 
         [Required]
-        public string AzureId { get; set; }
+        public string Name { get; set; } = "Unknown";
 
-        public string Name { get; set; }
         public PersonState State { get; set; } = PersonState.Unknown;
+        public string AzurePersonId { get; set; }
 
         public override string ToString()
         {
-            return $"{ImageObject.ImageObjectId}=>{Name} [{State}, AzureID: {AzureId}]";
+            return $"{PersonId}=>{Name} [{State}, AzureID: {AzurePersonId}]";
+        }
+    }
+
+    /// <summary>
+    /// Transaction Count for Cloud services - to keep approximate track of usage
+    /// </summary>
+    public class CloudTransaction
+    {
+        public enum TransactionType
+        {
+            Unknown = 0,
+            AzureFace = 1
+        };
+
+        [Key]
+        public int CloudTransactionId { get; set; }
+
+        public TransactionType TransType { get; set; }
+        public DateOnly Date { get; set; }
+        public int TransCount { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Date}: {TransCount}";
         }
     }
 

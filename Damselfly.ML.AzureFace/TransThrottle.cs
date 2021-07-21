@@ -38,7 +38,7 @@ namespace Damselfly.ML.AzureFace
             }
         }
 
-        private volatile int totalTransactions;
+        private volatile int _totalTransactions;
         private readonly int maxTransactionsPerMin;
         private ConcurrentQueue<AzureTransaction> transQueue = new ConcurrentQueue<AzureTransaction>();
 
@@ -52,7 +52,7 @@ namespace Damselfly.ML.AzureFace
             // Now add our transaction
             transQueue.Enqueue( new AzureTransaction { timestamp = DateTime.UtcNow, description = desc } );
             Logging.LogTrace($"Executed {desc}; there are now {transQueue.Count} Azure transactions in current batch");
-            totalTransactions++;
+            _totalTransactions++;
 
             if (transQueue.Count == (maxTransactionsPerMin - 1))
             {
@@ -147,8 +147,8 @@ namespace Damselfly.ML.AzureFace
                 throw ex;
         }
 
-        public int TotalTransactions { get { return totalTransactions; } }
-        public void ResetTotalTransactions() { totalTransactions = 0; }
+        public int TotalTransactions { get { return _totalTransactions; } }
+        public int ResetTotalTransactions() { int total = _totalTransactions;  _totalTransactions = 0; return total;  }
 
         internal void DumpQueue()
         {

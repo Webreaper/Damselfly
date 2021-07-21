@@ -16,6 +16,10 @@
             <tr><td>Pending MetaData Scans:</td><td>@PendingImages</td></tr>
             <tr><td>Pending Thumbnails:</td><td>@PendingThumbs</td></tr>
             <tr><td>Images with Keyword Updates:</td><td>@PendingKeywordImages (total keywords: @PendingKeywordOps)</td></tr>
+            @if (! string.IsNullOrEmpty(AzureMonthlyTransactions))
+            {
+                <tr><td>Azure Monthly Txns:</td><td>@AzureMonthlyTransactions</td></tr>
+            }
         </table>
         }
         else
@@ -34,6 +38,7 @@
     int PendingImages { get; set; }
     int PendingKeywordOps { get; set; }
     int PendingKeywordImages { get; set; }
+    string AzureMonthlyTransactions { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -56,6 +61,15 @@
             PendingKeywordImages = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending)
                                                       .Select(x => x.ImageId )
                                                       .Distinct().CountAsync();
+
+            var now = DateTime.UtcNow;
+            var monthStart = new DateOnly( now.Year, now.Month, 1 );
+            var monthEnd = monthStart.AddMonths(1).AddDays( -1 );
+            var totalTrans = await db.CloudTransactions.Where(x => x.Date >= monthStart && x.Date <= monthEnd).SumAsync(x => x.TransCount);
+
+            if( totalTrans > 0 )
+                AzureMonthlyTransactions = $"{totalTrans} ({monthStart:dd-MMM} - {monthEnd:dd-MMM})";
+
             StatsReady = true;
             await InvokeAsync( StateHasChanged );
         };

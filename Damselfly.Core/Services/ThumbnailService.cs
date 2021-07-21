@@ -15,6 +15,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.Core.Models;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
+using System.Collections.Concurrent;
 
 namespace Damselfly.Core.Services
 {
@@ -30,6 +31,7 @@ namespace Damselfly.Core.Services
         private readonly ImageProcessService _imageProcessingService;
         private readonly AccordFaceService _accordFaceService;
         private readonly AzureFaceService _azureFaceService;
+        private IDictionary<string, Person> _peopleCache;
 
 
         public ThumbnailService( StatusService statusService, ObjectDetector objectDetector,
@@ -229,6 +231,8 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
+            LoadPersonCache();
+
             if (EnableThumbnailGeneration)
             {
                 Logging.Log("Started thumbnail service.");
@@ -349,6 +353,66 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Initialise the in-memory cache of people.
+        /// </summary>
+        /// <param name="force"></param>
+        private void LoadPersonCache(bool force = false)
+        {
+            try
+            {
+                if (_peopleCache == null || force)
+                {
+                    var watch = new Stopwatch("LoadTagCache");
+
+                    using (var db = new ImageContext())
+                    {
+                        // Pre-cache tags from DB.
+                        _peopleCache = new ConcurrentDictionary<string, Person>(db.People
+                                                                                    .AsNoTracking()
+                                                                                    .ToDictionary(k => k.AzurePersonId, v => v));
+                        if (_peopleCache.Any())
+                            Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
+                    }
+
+                    watch.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Unexpected exception loading people cache: {ex.Message}");
+            }
+        }
+
+        public async Task<List<Person>> CreateMissingPeople(IEnumerable<string> personIdsToAdd)
+        {
+            using ImageContext db = new ImageContext();
+
+            // Find the people that aren't already in the cache and add new ones
+            var newPeople = personIdsToAdd.Where(x => !_peopleCache.ContainsKey(x))
+                        .Select(x => new Person {
+                                AzurePersonId = x,
+                                Name = "Unknown",
+                                State = Person.PersonState.Unknown
+                            }
+                        ).ToList();
+
+
+            if (newPeople.Any())
+            {
+
+                Logging.LogTrace("Adding {0} people", newPeople.Count());
+
+                await db.BulkInsert(db.People, newPeople);
+
+                // Add the new items to the cache. 
+                newPeople.ForEach(x => _peopleCache[x.AzurePersonId] = x);
+            }
+
+            var allTags = personIdsToAdd.Select(x => _peopleCache[x]).ToList();
+            return allTags;
+        }
+
+        /// <summary>
         /// Detect objects in the image.
         /// </summary>
         /// <param name="image"></param>
@@ -406,6 +470,14 @@ namespace Damselfly.Core.Services
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
                     var azureFaces = await _azureFaceService.DetectFaces(medThumb);
 
+                    WriteTransactionCount();
+
+                    // Get a list of the Azure Person IDs
+                    var peopleIds = azureFaces.Select(x => x.PersonId.ToString() );
+
+                    // Create any new ones, or pull existing ones back from the cache
+                    var people = await CreateMissingPeople( peopleIds );
+
                     foundFaces.AddRange(azureFaces.Select(x => new ImageObject
                     {
                         ImageId = image.ImageId,
@@ -414,8 +486,11 @@ namespace Damselfly.Core.Services
                         RectHeight = x.Height,
                         RectWidth = x.Width,
                         Type = ImageObject.ObjectTypes.Face.ToString(),
-                        Score = 100
+                        Score = 100,
+                        PersonId = _peopleCache[x.PersonId.ToString()].PersonId
                     }));
+
+                    var peopleToAdd = foundFaces.Select(x => x.Person);
                 }
 
                 if ( foundFaces.Any() )
@@ -469,6 +544,7 @@ namespace Damselfly.Core.Services
                         ScaleObjectRect(image, ref x, thumbSize);
                         DrawRect(image.FullPath, x);
                     });
+
                     using var db = new ImageContext();
 
                     // First, clear out the existing faces and objects - we don't want dupes
@@ -482,6 +558,37 @@ namespace Damselfly.Core.Services
             catch( Exception ex )
             {
                 Logging.LogError($"Exception during AI detection: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Store an aggregated count of Cloud Transactions
+        /// </summary>
+        private void WriteTransactionCount()
+        {
+            using var db = new ImageContext();
+            var type = CloudTransaction.TransactionType.AzureFace;
+
+            DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            var count = _azureFaceService.GetAndResetTransCount();
+
+            if (count > 0)
+            {
+                var todayTrans = db.CloudTransactions.Where(x => x.Date == today && x.TransType == type).FirstOrDefault();
+
+                if (todayTrans == null)
+                {
+                    todayTrans = new CloudTransaction { Date = today, TransType = type, TransCount = count };
+                    db.CloudTransactions.Add(todayTrans);
+                }
+                else
+                {
+                    todayTrans.TransCount += count;
+                    db.CloudTransactions.Update(todayTrans);
+                }
+
+                db.SaveChanges("TransCount");
             }
         }
 
