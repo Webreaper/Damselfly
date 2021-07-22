@@ -32,6 +32,8 @@ namespace Damselfly.ML.Face.Azure
         private const string GroupId = "damselflyfaces";
         private const string RECOGNITION_MODEL = RecognitionModel.Recognition04;
 
+        // TODO: Look at PersonDirectory
+
         public AzureDetection DetectionType
         {
             get { return _detectionType; }
