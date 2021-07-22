@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Accord.Vision.Detection;
 using Damselfly.Core.Utils;
 
@@ -23,7 +22,6 @@ namespace Damselfly.ML.Face.Accord
         public AccordFaceService()
         {
              _faceDetector = new FaceDetector();
-
         }
 
         /// <summary>
@@ -48,26 +46,11 @@ namespace Damselfly.ML.Face.Accord
                 if (faces.Any())
                 {
                     Logging.Log($"Accord.Net found {faces.Count} faces in {inputFile.Name} in {watch.ElapsedTime}ms.");
-
-                    if (System.Diagnostics.Debugger.IsAttached)
-                    {
-                        string outDir = "/Users/markotway/Desktop/Faces";
-                        if (!Directory.Exists(outDir))
-                            Directory.CreateDirectory(outDir);
-
-                        var output = Path.Combine(outDir, inputFile.Name);
-                        using (Graphics G = Graphics.FromImage(pic))
-                        {
-                            faces.ForEach(x => G.DrawRectangle(Pens.Red, x.FaceRectangle));
-                        }
-
-                        pic.Save(output, ImageFormat.Bmp);
-                    }
                 }
             }
             catch( Exception ex )
             {
-                Logging.LogError($"Exception during Azure face detection: {ex.Message}");
+                Logging.LogError($"Exception during Accord face detection: {ex.Message}");
             }
 
             return faces;
