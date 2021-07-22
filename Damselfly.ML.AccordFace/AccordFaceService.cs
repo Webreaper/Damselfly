@@ -37,8 +37,8 @@ namespace Damselfly.ML.Face.Accord
                 using var pic = new Bitmap(inputFile.FullName);
 
                 var processedImage = new ImageProcessor(pic).Resize( new Size( 320, 320 ) ).Grayscale().EqualizeHistogram().Result;
-                faces = _faceDetector.ExtractFaces( processedImage,
-                    FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression));
+
+                faces = DoFaceRecognition(processedImage);
 
                 watch.Stop();   
 
@@ -49,10 +49,24 @@ namespace Damselfly.ML.Face.Accord
             }
             catch( Exception ex )
             {
-                Logging.LogError($"Exception during Accord face detection: {ex.Message}");
+                Logging.LogError($"Exception during Accord face detection pre-processing: {ex.Message}");
             }
 
             return faces;
+        }
+
+        private List<Face> DoFaceRecognition(Bitmap processedImage)
+        {
+            try
+            {
+                return _faceDetector.ExtractFaces(processedImage,
+                    FaceDetectorParameters.Create(ScaleFactor, MinSize, ScaleMode, SearchMode, Parallel, Suppression));
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during Accord Face extraction: {ex}");
+                return new List<Face>();
+            }
         }
     }
 }
