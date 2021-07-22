@@ -67,7 +67,7 @@ namespace Damselfly.ML.Face.Accord
             }
             catch( Exception ex )
             {
-                Logging.LogError($"Exception during Azure face detection: {ex.Message}");
+                Logging.LogError($"Exception during face detection: {ex.Message}");
             }
 
             return faces;
