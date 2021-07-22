@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Accord.Statistics</AssemblyName>
     <RootNamespace>Accord.Statistics</RootNamespace>
-    <TargetFrameworks>net60</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 </PropertyGroup>
 

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Accord.Imaging</AssemblyName>
     <RootNamespace>Accord.Imaging</RootNamespace>
-    <TargetFrameworks>net60</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -33,7 +33,7 @@
     <None Remove="System.Drawing.Common" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.5.21301.5" />
+    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Accord.Math</AssemblyName>
     <RootNamespace>Accord.Math</RootNamespace>
-    <TargetFrameworks>net60</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 

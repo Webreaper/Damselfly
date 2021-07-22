@@ -429,7 +429,8 @@ namespace Damselfly.ML.Face.Azure
                 {"Surprise", attributes.Emotion.Surprise}
             };
 
-            return emotionValues.MaxBy(x => x.Value).Key;
+            // Use MaxBy when .Net 6 is available.
+            return emotionValues.OrderByDescending(x => x.Value).First().Key;
         }
 
         public class DataPayload
