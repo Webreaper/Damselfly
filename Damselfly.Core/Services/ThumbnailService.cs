@@ -427,8 +427,18 @@ namespace Damselfly.Core.Services
                 var thumbSize = ThumbSize.Medium;
                 var medThumb = new FileInfo(GetThumbPath(file, thumbSize));
 
-                // Load the bitmap once
-                var bitmap = new System.Drawing.Bitmap( medThumb.FullName );
+                System.Drawing.Bitmap bitmap;
+
+                try
+                {
+                    // Load the bitmap once
+                    bitmap = new System.Drawing.Bitmap(medThumb.FullName);
+                }
+                catch(Exception ex )
+                {
+                    Logging.LogError($"Exception loading image for AI: {ex}");
+                    return;
+                }
 
                 // First, look for faces
                 bool useAzureDetection = false;
