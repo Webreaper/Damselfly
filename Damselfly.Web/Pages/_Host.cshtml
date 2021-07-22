@@ -1,7 +1,8 @@
 ﻿@page "/"
-@inject ThemeService themeService 
 @namespace Damselfly.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject ThemeService themeService
+
 @using Damselfly.Core.Services;
 
 <!-- TODO: Clean up these dependencies once we've decided what we actually need. -->
@@ -24,6 +25,28 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
+    <div id="components-reconnect-modal" class="damselfly-reconnect-modal components-reconnect-hide">
+        <div class="show">
+            <img src="damselfly-logo.png" title="Damselfly" />
+            <p>
+                Attempting to reconnect to Damselfly Server....
+            </p>
+        </div>
+        <div class="failed">
+            <img src="damselfly-logo.png" title="Damselfly" />
+            <p>
+                Failed to connect to Damselfly Server - please <a href=".">reload</a>.
+            </p>
+        </div>
+        <div class="rejected">
+            <img src="damselfly-logo.png" title="Damselfly" />
+            <p>
+                Connection refused. Please check if the Damselfly server is down.<br />
+                If the connection is not automatically restored, you should <a href="javascript:window.location.reload(true)">reload the page</a>.
+            </p>
+        </div>
+    </div>
+
     <app>
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
@@ -72,6 +95,7 @@
     <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
     <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
     <script src="zoom/imageZoom.js"></script>
+    <script src="objectrects/objectrects.js"></script>
     <script src="vScroll/virtualScroll.js"></script>
     <script src="Cropper/cropper.min.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
