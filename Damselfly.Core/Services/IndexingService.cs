@@ -761,7 +761,15 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public bool IndexFolder(Folder folder)
         {
-            return ScanFolderImages(folder);
+            try
+            {
+                return ScanFolderImages(folder);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during IndexFolder:ScanFolderImages: {ex}");
+                return false;
+            }
         }
 
         public async Task RunMetaDataScans()
@@ -981,8 +989,14 @@ namespace Damselfly.Core.Services
 
             var watch = new Stopwatch("CompleteIndex", -1);
 
-            IndexFolder(root, null);
-
+            try
+            {
+                IndexFolder(root, null);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during full indexing: {ex}");
+            }
             watch.Stop();
 
             _statusService.StatusText = "Full Indexing Complete.";
