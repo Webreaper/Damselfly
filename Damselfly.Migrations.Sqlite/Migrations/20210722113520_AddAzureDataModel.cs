@@ -20,7 +20,7 @@ namespace Damselfly.Core.Migrations
                     CloudTransactionId = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     TransType = table.Column<int>(type: "INTEGER", nullable: false),
-                    Date = table.Column<DateOnly>(type: "TEXT", nullable: false),
+                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
                     TransCount = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>

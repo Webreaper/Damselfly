@@ -440,7 +440,7 @@ namespace Damselfly.Core.Models
         public int CloudTransactionId { get; set; }
 
         public TransactionType TransType { get; set; }
-        public DateOnly Date { get; set; }
+        public DateTime Date { get; set; }
         public int TransCount { get; set; }
 
         public override string ToString()

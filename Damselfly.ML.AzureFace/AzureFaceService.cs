@@ -159,7 +159,7 @@ namespace Damselfly.ML.Face.Azure
                 }
                 catch (APIErrorException ex)
                 {
-                    Logging.LogWarning($"Facegroup has not been trained.");
+                    Logging.LogWarning($"Facegroup has not been trained ({ex.Message}).");
                 }
             }
 

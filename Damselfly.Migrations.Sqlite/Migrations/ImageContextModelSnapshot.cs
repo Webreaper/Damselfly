@@ -14,7 +14,7 @@ namespace Damselfly.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0-preview.6.21352.1");
+                .HasAnnotation("ProductVersion", "6.0.0-preview.5.21301.9");
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
@@ -87,7 +87,7 @@ namespace Damselfly.Core.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateOnly>("Date")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TransCount")

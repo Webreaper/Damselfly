@@ -569,7 +569,7 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
             var type = CloudTransaction.TransactionType.AzureFace;
 
-            DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+            DateTime today = DateTime.UtcNow.Date;
 
             var count = _azureFaceService.GetAndResetTransCount();
 
