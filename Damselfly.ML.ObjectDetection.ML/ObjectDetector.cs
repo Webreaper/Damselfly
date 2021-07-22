@@ -32,7 +32,7 @@ namespace Damselfly.ML.ObjectDetection
         /// </summary>
         /// <param name="imageFile"></param>
         /// <returns></returns>
-        public async Task<IList<YoloPrediction>> DetectObjects( FileInfo imageFile )
+        public async Task<IList<YoloPrediction>> DetectObjects( Bitmap image )
         {
             var result = new List<YoloPrediction>();
             try
@@ -43,13 +43,9 @@ namespace Damselfly.ML.ObjectDetection
 
                 result = await Task.Run(() =>
                 {
-                    using var stream = new FileStream(imageFile.FullName, FileMode.Open);
-
-                    var img = Image.FromStream(stream);
-
                     Stopwatch watch = new Stopwatch("DetectObjects");
 
-                    var predictions = scorer.Predict(img);
+                    var predictions = scorer.Predict( image );
 
                     watch.Stop();
 

@@ -186,14 +186,31 @@ namespace Damselfly.ML.Face.Azure
         }
 
         /// <summary>
+        /// Push the image into a memorystream and send it to the Azure service.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        private async Task<IList<DetectedFace>> AzureDetect( Bitmap image )
+        {
+            using var memoryStream = new MemoryStream();
+            image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            Logging.LogVerbose($"Calling Azure Detect...");
+
+            var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(memoryStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
+
+            return detectedFaces;
+        }
+
+        /// <summary>
         /// Detect faces
         /// </summary>
         /// <param name="imageFilePath"></param>
         /// <returns></returns>
-        public async Task<List<Face>> DetectFaces( FileInfo imageFilePath )
+        public async Task<List<Face>> DetectFaces( Bitmap sourceImage )
         {
             var faces = new List<Face>();
-            int startTransCount = _transThrottle.TotalTransactions;
 
             if (_faceClient != null && _detectionType != AzureDetection.Disabled )
             {
@@ -201,51 +218,28 @@ namespace Damselfly.ML.Face.Azure
 
                 try
                 {
-                    using (Stream imageFileStream = File.OpenRead(imageFilePath.FullName))
+                    var detectedFaces = await AzureDetect(sourceImage);
+
+                    if (detectedFaces.Any())
                     {
-                        Logging.LogVerbose($"Calling Azure Detect...");
+                        faces = await IdentifyOrCreateFaces(detectedFaces);
 
-                        var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(imageFileStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
+                        bool needTraining = false;
 
-                        if (detectedFaces.Any())
+                        foreach (var face in faces)
                         {
-                            faces = await IdentifyOrCreateFaces(detectedFaces);
+                            MemoryStream memoryStream = SaveFaceThumb(sourceImage, face);
 
-                            // Load the image just once, we can re-crop multiple times to pull out the faces.
-                            var image = new Bitmap(imageFilePath.FullName);
+                            var persistedFace = await _transThrottle.Call("AddFace", _faceClient.PersonGroupPerson.AddFaceFromStreamAsync(GroupId, face.PersonId.Value, memoryStream));
+                            // TODO: Do something with the persisted face (save to the DB?!)
 
-                            bool needTraining = false;
+                            needTraining = true;
+                        }
 
-                            foreach (var face in faces)
-                            {
-                                // It's a new face. Extract the face rect.
-                                var faceRect = new Rectangle(face.Left, face.Top, face.Width, face.Height);
-
-                                // Save the faces
-                                var faceBitmap = GetCroppedFaceFromImage(image, faceRect);
-                                using var memoryStream = new MemoryStream();
-                                faceBitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-                                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                                if (System.Diagnostics.Debugger.IsAttached)
-                                {
-                                    // TODO: Probably want to write these to a 'thumbs' style folder, so we can resubmit
-                                    // the face training data if we need to for any reason.
-                                    string faceFile = $"/Users/markotway/Desktop/Faces/{face.PersonId.Value}_{imageFilePath.Name}";
-                                    faceBitmap.Save(faceFile);
-                                }
-
-                                var persistedFace = await _transThrottle.Call("AddFace", _faceClient.PersonGroupPerson.AddFaceFromStreamAsync(GroupId, face.PersonId.Value, memoryStream) );
-                                // TODO: Do something with the persisted face (save to the DB?!)
-
-                                needTraining = true;
-                            }
-                            
-                            if (needTraining)
-                            {
-                                // We've added new faces/images, so train.
-                                await Train();
-                            }
+                        if (needTraining)
+                        {
+                            // We've added new faces/images, so train.
+                            await Train();
                         }
                     }
                 }
@@ -261,18 +255,42 @@ namespace Damselfly.ML.Face.Azure
                 watch.Stop();
 
                 if( faces.Any() )
-                    Logging.Log($"Azure Detected {faces.Count()} faces in {imageFilePath.Name} in {watch.ElapsedTime}ms");
+                    Logging.Log($"Azure Detected {faces.Count()} faces in {watch.ElapsedTime}ms");
             }
             else
             {
                 Logging.LogVerbose($"Azure Face Service was not configured.");
             }
 
-            var transUsed = _transThrottle.TotalTransactions - startTransCount;
-
-            Logging.LogVerbose($"Face detection used {transUsed} Azure transactions for image {imageFilePath.Name}");
-
             return faces;
+        }
+
+        /// <summary>
+        /// Crop the face from the original image, and save it locally.
+        /// </summary>
+        /// <param name="sourceImage"></param>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        private static MemoryStream SaveFaceThumb(Bitmap sourceImage, Face face)
+        {
+            // It's a new face. Extract the face rect.
+            var faceRect = new Rectangle(face.Left, face.Top, face.Width, face.Height);
+
+            // Save the faces
+            var faceBitmap = GetCroppedFaceFromImage(sourceImage, faceRect);
+            var memoryStream = new MemoryStream();
+            faceBitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                // TODO: Probably want to write these to a 'thumbs' style folder, so we can resubmit
+                // the face training data if we need to for any reason.
+                string faceFile = $"/Users/markotway/Desktop/Faces/{face.PersonId.Value}.jpg";
+                faceBitmap.Save(faceFile);
+            }
+
+            return memoryStream;
         }
 
         /// <summary>

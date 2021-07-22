@@ -26,7 +26,7 @@ namespace Damselfly.ML.Face.Accord
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        public List<Face> DetectFaces( FileInfo inputFile )
+        public List<Face> DetectFaces( Bitmap inputImage )
         {
             var faces = new List<Face>();
 
@@ -34,18 +34,11 @@ namespace Damselfly.ML.Face.Accord
             {
                 var watch = new Stopwatch("AccordFace");
 
-                using var pic = new Bitmap(inputFile.FullName);
-
-                var processedImage = new ImageProcessor(pic).Resize( new Size( 320, 320 ) ).Grayscale().EqualizeHistogram().Result;
+                var processedImage = new ImageProcessor(inputImage).Resize( new Size( 320, 320 ) ).Grayscale().EqualizeHistogram().Result;
 
                 faces = DoFaceRecognition(processedImage);
 
                 watch.Stop();   
-
-                if (faces.Any())
-                {
-                    Logging.Log($"Accord.Net found {faces.Count} faces in {inputFile.Name} in {watch.ElapsedTime}ms.");
-                }
             }
             catch( Exception ex )
             {

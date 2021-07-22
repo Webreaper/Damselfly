@@ -427,6 +427,9 @@ namespace Damselfly.Core.Services
                 var thumbSize = ThumbSize.Medium;
                 var medThumb = new FileInfo(GetThumbPath(file, thumbSize));
 
+                // Load the bitmap once
+                var bitmap = new System.Drawing.Bitmap( medThumb.FullName );
+
                 // First, look for faces
                 bool useAzureDetection = false;
 
@@ -437,7 +440,7 @@ namespace Damselfly.Core.Services
                 }
                 else
                 {
-                    var faces = _accordFaceService.DetectFaces(medThumb);
+                    var faces = _accordFaceService.DetectFaces(bitmap);
 
                     if (faces.Any())
                     {
@@ -449,7 +452,9 @@ namespace Damselfly.Core.Services
                         else
                         {
                             // Azure is disabled, so just use what we've got.
-                            Logging.Log($"Found {faces.Count} faces in {medThumb}...");
+
+                            if ( faces.Any() )
+                                Logging.Log($"Accord.Net found {faces.Count} faces in {medThumb}...");
 
                             foundFaces.AddRange(faces.Select(x => new ImageObject
                             {
@@ -468,9 +473,12 @@ namespace Damselfly.Core.Services
                 if (useAzureDetection)
                 {
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
-                    var azureFaces = await _azureFaceService.DetectFaces(medThumb);
+                    var azureFaces = await _azureFaceService.DetectFaces( bitmap );
 
                     WriteTransactionCount();
+
+                    if( azureFaces.Any() )
+                        Logging.Log($"Azure found {azureFaces.Count} faces in {medThumb}...");
 
                     // Get a list of the Azure Person IDs
                     var peopleIds = azureFaces.Select(x => x.PersonId.ToString() );
@@ -503,7 +511,7 @@ namespace Damselfly.Core.Services
                 }
 
                 // Next, look for Objects
-                var allPredictions = await _objectDetector.DetectObjects(medThumb);
+                var allPredictions = await _objectDetector.DetectObjects( bitmap );
 
                 if (allPredictions.Any())
                 {
@@ -515,7 +523,7 @@ namespace Damselfly.Core.Services
 
                     if (validPredictions.Any())
                     {
-                        Logging.Log($"Found {validPredictions.Count} objects in {medThumb}...");
+                        Logging.Log($"Yolo found {validPredictions.Count} objects in {medThumb}...");
 
                         var allLabels = validPredictions.Select(x => x.Label.Name).Distinct().ToList();
 
