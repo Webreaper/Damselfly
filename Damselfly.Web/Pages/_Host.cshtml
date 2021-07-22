@@ -24,28 +24,6 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="components-reconnect-modal" class="damselfly-reconnect-modal components-reconnect-hide">
-        <div class="show">
-            <img src="damselfly-logo.png" title="Damselfly" />
-            <p>
-                Attempting to reconnect to Damselfly Server....
-            </p>
-        </div>
-        <div class="failed">
-            <img src="damselfly-logo.png" title="Damselfly" />
-            <p>
-                Failed to connect to Damselfly Server - please <a href=".">reload</a>.
-            </p>
-        </div>
-        <div class="rejected">
-            <img src="damselfly-logo.png" title="Damselfly" />
-            <p>
-                Connection refused. Please check if the Damselfly server is down.<br />
-                If the connection is not automatically restored, you should <a href="javascript:window.location.reload(true)">reload the page</a>.
-            </p>
-        </div>
-    </div>
-
     <app>
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
@@ -87,21 +65,6 @@
             }
         }
 
-        // Auto-reload if server goes down/up
-        // Wait until a 'reload' button appears
-        new MutationObserver((mutations, observer) => {
-            if (document.querySelector('#components-reconnect-modal h5 a')) {
-                // Now every 10 seconds, see if the server appears to be back, and if so, reload
-                async function attemptReload() {
-                    await fetch(''); // Check the server really is back
-                    location.reload();
-                }
-                observer.disconnect();
-                attemptReload();
-                setInterval(attemptReload, 10000);
-            }
-        }).observe(document.body, { childList: true, subtree: true });
-
         /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
 
@@ -109,7 +72,6 @@
     <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
     <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
     <script src="zoom/imageZoom.js"></script>
-    <script src="objectrects/objectrects.js"></script>
     <script src="vScroll/virtualScroll.js"></script>
     <script src="Cropper/cropper.min.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
