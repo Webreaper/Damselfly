@@ -51,53 +51,56 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>window.setSelection = (element, start, end) => {
-            return element.setSelectionRange(start, end);
-        }
-
-        function writeFileLocally(sourceUrl, localFilename) {
-            window.downloadUrl(sourceUrl, localFilename);
-        }
-
-        function downloadFile(filename) {
-            location.href = filename;
-        }
-
-        function doImageCrop(elementId, DotNetRef) {
-            var image = document.getElementById(elementId);
-            new Cropper(image, {
-                update: function (coords) {
-                    DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
-                }
-            });
-        }
-
-        function getDesktopVersion() {
-            return window.desktopVersion;
-        }
-
-        function checkDesktopUpgrade(desktopVersion, cb) {
-            try {
-                DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
-                    if (upgradeVersion !== '') {
-                        cb(upgradeVersion);
-                    }
-                })
-            } catch (err) {
-                console.log("Error: " + err);
+    <script>/*
+            window.setSelection = (element, start, end) => {
+                return element.setSelectionRange(start, end);
             }
-        }
 
+            function writeFileLocally(sourceUrl, localFilename) {
+                window.downloadUrl(sourceUrl, localFilename);
+            }
+
+            function downloadFile(filename) {
+                location.href = filename;
+            }
+            function doImageCrop(elementId, DotNetRef) {
+                var image = document.getElementById(elementId);
+                new Cropper(image, {
+                    update: function (coords) {
+                        DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
+                    }
+                });
+            }
+
+            function getDesktopVersion() {
+                return window.desktopVersion;
+            }
+
+            function checkDesktopUpgrade(desktopVersion, cb) {
+                try {
+                    DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
+                        if (upgradeVersion !== '') {
+                            cb(upgradeVersion);
+                        }
+                    })
+                } catch (err) {
+                    console.log("Error: " + err);
+                }
+            }
+        * /
         /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
 
+
     <script src="_framework/blazor.server.js"></script>
-    <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
-    <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
-    <script src="zoom/imageZoom.js"></script>
-    <script src="objectrects/objectrects.js"></script>
-    <script src="vScroll/virtualScroll.js"></script>
-    <script src="Cropper/cropper.min.js"></script>
-    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <!--
+        <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
+        <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
+        <script src="zoom/imageZoom.js"></script>
+        <script src="objectrects/objectrects.js"></script>
+        <script src="vScroll/virtualScroll.js"></script>
+        <script src="Cropper/cropper.min.js"></script>
+        <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    -->
 </body>
 </html>
