@@ -14,8 +14,12 @@
 @inject IModalService Modal
 
 <div class="damselfly-imagebrowser">
-    <SearchBar />
-    <ImageGrid />
+    <ErrorBoundary>
+        <SearchBar />
+    </ErrorBoundary>
+    <ErrorBoundary>
+        <ImageGrid />
+    </ErrorBoundary>
 </div>
 
 @code { [Parameter]

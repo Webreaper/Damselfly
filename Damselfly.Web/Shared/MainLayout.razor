@@ -5,8 +5,14 @@
 
 <div class="damselfly-container">
     <div class="damselfly-application">
-        <SideBar />
-        @Body
+        <ErrorBoundary>
+            <SideBar />
+        </ErrorBoundary>
+        <ErrorBoundary>
+            @Body
+        </ErrorBoundary>
     </div>
-    <Statusbar />
+    <ErrorBoundary>
+        <Statusbar />
+    </ErrorBoundary>
 </div>
