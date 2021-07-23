@@ -108,14 +108,12 @@ jobs:
              ls server
 
       - name: Download Desktop Builds into wwwroot folder
-        if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v2
         with:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
       
       - name: Validate Desktop artifacts
-        if: github.ref == 'refs/heads/master'
         run: |
              echo "Desktop artifacts:"
              ls publish/wwwroot/desktop
