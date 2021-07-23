@@ -51,7 +51,7 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>/*
+    <script>
             window.setSelection = (element, start, end) => {
                 return element.setSelectionRange(start, end);
             }
@@ -87,20 +87,17 @@
                     console.log("Error: " + err);
                 }
             }
-        * /
         /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
 
 
     <script src="_framework/blazor.server.js"></script>
-    <!--
-        <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
-        <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
-        <script src="zoom/imageZoom.js"></script>
-        <script src="objectrects/objectrects.js"></script>
-        <script src="vScroll/virtualScroll.js"></script>
-        <script src="Cropper/cropper.min.js"></script>
-        <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
-    -->
+    <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
+    <script src="_content/BlazorDateRangePicker/clickAndPositionHandler.js"></script>
+    <script src="zoom/imageZoom.js"></script>
+    <script src="objectrects/objectrects.js"></script>
+    <script src="vScroll/virtualScroll.js"></script>
+    <script src="Cropper/cropper.min.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
 </body>
 </html>
