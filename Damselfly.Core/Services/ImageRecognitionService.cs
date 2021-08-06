@@ -541,7 +541,7 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
 
             // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set AILastUpdated = null where imageid in (select imageid from folders where folderid = {folder.FolderId})");
+            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set AILastUpdated = null where imageid in (select imageid from images where folderid = {folder.FolderId})");
 
             _statusService.StatusText = $"Folder {folder.Name} flagged for AI reprocessing.";
         }
