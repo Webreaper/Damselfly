@@ -29,7 +29,7 @@ be appreciated!
 
 * Server-based deployment, with a web-based front-end UI, so the image library can be accessed via multiple 
   devices without having to copy catalogues or other DBs to local device storage.   
-* Support for most impage formats including JPG, PNG, Webp, BMP and DNG (RAW) files (HEIC coming in future).
+* Support for most impage formats including JPG, PNG, HEIC, TIFF, Webp, BMP and DNG/CR2 (RAW) files.
 * Focus on extremely fast performance - searching a 500,000-image catalogue returns results in less than a second.
 * Full-text search with multi-phrase partial-word searches
 * Fast keyword tagging workflow with non-destructive EXIF data updates (using ExifTool) - so JPEGs are not re-encoded 
