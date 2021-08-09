@@ -92,7 +92,12 @@ namespace Damselfly.Core.Services
             }
             else
             {
-                string extension = ".jpg";// Always use .jpg - we don't want to create .heic thumbs, etc
+                string extension = imageFile.Extension;
+
+                // Keep the extension if it's JPG, but otherwise change it to JPG (for HEIC etc).
+                if (!extension.Equals(".JPG", StringComparison.OrdinalIgnoreCase))
+                    extension = ".JPG";
+
                 string baseName = Path.GetFileNameWithoutExtension(imageFile.Name);
                 string relativePath = imageFile.DirectoryName.MakePathRelativeTo(PicturesRoot);  
                 string thumbFileName = $"{baseName}_{GetSizePostFix(size)}{extension}";
