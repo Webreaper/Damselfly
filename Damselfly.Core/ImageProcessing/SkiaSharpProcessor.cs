@@ -17,7 +17,7 @@ namespace Damselfly.Core.ImageProcessing
         // SkiaSharp doesn't handle .heic files... yet
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng", ".cr2" };
 
-        public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
+        public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
         /// <summary>
         /// Create an SHA1 hash from the image data (pixels only) to allow us to find
@@ -70,11 +70,11 @@ namespace Damselfly.Core.ImageProcessing
 
             try
             {
-                thumbs = new Stopwatch("SkiaSharpThumbs");
+                thumbs = new Stopwatch("GenThumbs");
 
                 int desiredWidth = destFiles.Max(x => x.Value.width);
 
-                load = new Stopwatch("LoadTHumb");
+                load = new Stopwatch("LoadThumb");
                 using var sourceBitmap = LoadOrientedBitmap(source, desiredWidth);
                 load.Stop();
 
@@ -132,7 +132,7 @@ namespace Damselfly.Core.ImageProcessing
             }
             catch (Exception ex)
             {
-                Logging.Log($"Exception during Skia processing: {ex.Message}");
+                Logging.Log($"Exception during Thumbnail processing: {ex.Message}");
                 throw;
             }
 

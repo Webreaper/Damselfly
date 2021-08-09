@@ -23,40 +23,65 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ImageProcessService : IImageProcessor
     {
-        private readonly IImageProcessor _processor;
+        private readonly ImageProcessorFactory _factory;
 
-        public ImageProcessService(IImageProcessor processor)
+        public ImageProcessService()
         {
-            _processor = processor;
-
-            Logging.Log($"Initialised {processor.GetType().Name} for thumbnail processing.");
+            _factory = new ImageProcessorFactory();
         }
 
         public void SetContentPath( string path )
         {
-            if( _processor is ImageSharpProcessor imageSharp )
-                imageSharp.SetFontPath(Path.Combine(path, "fonts"));
+            _factory.SetContentPath(path);
         }
 
+        /// <summary>
+        /// Creates a set of thumbs for an input image
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="destFiles"></param>
+        /// <returns></returns>
         public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
         {
-            return await _processor.CreateThumbs(source, destFiles);
+            var processor = _factory.GetProcessor(source.Extension);
+
+            if( processor != null )
+                return await processor.CreateThumbs(source, destFiles);
+
+            return new ImageProcessResult { ThumbsGenerated = false };
         }
 
+        /// <summary>
+        /// Convert an image, optionally watermarking.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <param name="config"></param>
         public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
-            _processor.TransformDownloadImage(input, output, config);
+            var ext = Path.GetExtension(input);
+
+            var processor = _factory.GetProcessor(ext);
+
+            if (processor != null)
+                processor.TransformDownloadImage(input, output, config);
         }
 
+        /// <summary>
+        /// Returns true if the file is one that we consider to be an image - that is,
+        /// one that we have an image processor for, which will generate thumbs, etc.
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         public bool IsImageFileType(FileInfo filename)
         {
             if (filename.IsHidden())
                 return false;
 
-            return _processor.SupportedFileExtensions.Any(x => x.Equals(filename.Extension, StringComparison.OrdinalIgnoreCase));
+            var processor = _factory.GetProcessor(filename.Extension);
+
+            // If we have a valid processor, we're good. 
+            return processor != null;
         }
-
-
-        public ICollection<string> SupportedFileExtensions { get{ return _processor.SupportedFileExtensions; } }
     }
 }

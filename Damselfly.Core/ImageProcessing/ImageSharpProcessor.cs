@@ -21,9 +21,9 @@ namespace Damselfly.Core.ImageProcessing
     public class ImageSharpProcessor : IImageProcessor
     {
         private static FontCollection fontCollection;
-        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
+        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".tga", ".gif", ".bmp" };
 
-        public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions;  } }
+        public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions;  } }
 
         public ImageSharpProcessor()
         {

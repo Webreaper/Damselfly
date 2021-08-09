@@ -11,7 +11,7 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ConfigService : IConfigService
     {
-        private IDictionary<string, ConfigSetting> _cache;
+        private readonly IDictionary<string, ConfigSetting> _cache = new Dictionary<string, ConfigSetting>(StringComparer.OrdinalIgnoreCase);
 
         public ConfigService()
         {
@@ -23,7 +23,8 @@ namespace Damselfly.Core.Services
             if (_cache == null || force)
             {
                 using var db = new ImageContext();
-                _cache = db.ConfigSettings.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                foreach (var setting in db.ConfigSettings )
+                    _cache[setting.Name] = setting;
             }
         }
 

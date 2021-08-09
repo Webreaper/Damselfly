@@ -10,20 +10,18 @@ using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ImageProcessing
 {
-    public class GraphicsMagicProcessor : IImageProcessor
+    public class ImageMagickProcessor : IImageProcessor
     {
-        // TODO: Add check that GM exists
-
         // SkiaSharp doesn't handle .heic files... yet
-        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp" };
+        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp" };
 
-        public ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
+        public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
         const string imageMagickExe = "convert";
         const string graphicsMagickExe = "gm";
-        private bool s_useGraphicsMagick = true;
+        private bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
 
-        public GraphicsMagicProcessor()
+        public ImageMagickProcessor()
         {
             CheckToolStatus();
         }
@@ -33,28 +31,16 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         private void CheckToolStatus()
         {
-            ProcessStarter gmprocess = new ProcessStarter();
-            bool gmAvailable = gmprocess.StartProcess("gm", "-version");
+            ProcessStarter improcess = new ProcessStarter();
+            bool imAvailable = improcess.StartProcess("convert", "--version");
 
-            if (!gmAvailable)
+            if (imAvailable)
             {
-                ProcessStarter improcess = new ProcessStarter();
-                bool imAvailable = improcess.StartProcess("convert", "--version");
-
-                if (imAvailable)
-                {
-                    var verString = gmprocess.OutputText?.Split('\n').FirstOrDefault();
-                    Logging.Log($"ImageMagick found: {verString}");
-                }
-                else
-                    throw new ApplicationException("Neither ImageMagick or GraphicsMagick were found.");
+                var verString = improcess.OutputText?.Split('\n').FirstOrDefault();
+                Logging.Log($"ImageMagick found: {verString}");
             }
             else
-            {
-                s_useGraphicsMagick = true;
-                var verString = gmprocess.OutputText?.Split('\n').FirstOrDefault();
-                Logging.Log($"GraphicsMagick found: {verString}");
-            }
+                Logging.LogError("ImageMagick not found.");
         }
 
         /// <summary>

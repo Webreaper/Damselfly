@@ -92,7 +92,7 @@ namespace Damselfly.Core.Services
             }
             else
             {
-                string extension = Path.GetExtension(imageFile.Name);
+                string extension = ".jpg";// Always use .jpg - we don't want to create .heic thumbs, etc
                 string baseName = Path.GetFileNameWithoutExtension(imageFile.Name);
                 string relativePath = imageFile.DirectoryName.MakePathRelativeTo(PicturesRoot);  
                 string thumbFileName = $"{baseName}_{GetSizePostFix(size)}{extension}";
@@ -169,7 +169,7 @@ namespace Damselfly.Core.Services
             {
                 var destFile = new FileInfo( GetThumbPath(source, thumbConfig.size) );
 
-                if( ! destFile.Directory.Exists )
+                if ( ! destFile.Directory.Exists )
                 {
                     Logging.LogTrace("Creating directory: {0}", destFile.Directory.FullName);
                     var newDir = System.IO.Directory.CreateDirectory( destFile.Directory.FullName );

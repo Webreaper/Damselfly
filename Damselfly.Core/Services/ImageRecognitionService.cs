@@ -154,6 +154,21 @@ namespace Damselfly.Core.Services
             return false;
         }
 
+        private System.Drawing.Bitmap SafeLoadBitmap(string fileName)
+        {
+            System.Drawing.Bitmap bmp = null;
+            try
+            {
+                // Load the bitmap once
+                bmp = new System.Drawing.Bitmap(fileName);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
+            }
+
+            return bmp;
+        }
         /// <summary>
         /// Detect objects in the image.
         /// </summary>
@@ -161,18 +176,27 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         private async Task DetectObjects(Image image)
         {
+            var file = new FileInfo(image.FullPath);
+            var thumbSize = ThumbSize.Large;
+            var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
+            var fileName = Path.Combine(image.Folder.Path, image.FileName);
+
             try
             {
                 var foundObjects = new List<ImageObject>();
                 var foundFaces = new List<ImageObject>();
-                var file = new FileInfo(image.FullPath);
-                var thumbSize = ThumbSize.Large;
-                var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
-                var fileName = Path.Combine(image.Folder.Path, image.FileName);
                 Logging.Log($"Processing AI image detection for {file.Name}...");
 
-                // Load the bitmap once
-                var bitmap = new System.Drawing.Bitmap(medThumb.FullName);
+                if (!File.Exists(medThumb.FullName) )
+                {
+                    // The thumb isn't ready yet. 
+                    return;
+                }
+
+                var bitmap = SafeLoadBitmap(medThumb.FullName);
+
+                if (bitmap == null)
+                    return;
 
                 // Next, look for faces. We need to determine if we:
                 //  a) Use only local (Accord.Net) detection
@@ -351,7 +375,7 @@ namespace Damselfly.Core.Services
                     var allFound = foundObjects.Union(foundFaces).ToList();
 
                     // Write faces locally with rectangles - for debugging
-                    DrawRects(image.FullPath, allFound);
+                    DrawRects(medThumb.FullName, allFound);
 
                     using var db = new ImageContext();
 
@@ -365,7 +389,7 @@ namespace Damselfly.Core.Services
             }
             catch (Exception ex)
             {
-                Logging.LogError($"Exception during AI detection: {ex}");
+                Logging.LogError($"Exception during AI detection for {fileName}: {ex}");
             }
         }
 
@@ -408,14 +432,21 @@ namespace Damselfly.Core.Services
         {
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                string outDir = "/Users/markotway/Desktop/Faces";
-                if (!System.IO.Directory.Exists(outDir))
-                    System.IO.Directory.CreateDirectory(outDir);
+                try
+                {
+                    string outDir = "/Users/markotway/Desktop/Faces";
+                    if (!System.IO.Directory.Exists(outDir))
+                        System.IO.Directory.CreateDirectory(outDir);
 
-                var output = Path.Combine(outDir, Path.GetFileName(fullPath));
+                    var output = Path.Combine(outDir, Path.GetFileName(fullPath));
 
-                var rects = imgObjs.Select(x => new SixLabors.ImageSharp.Rectangle(x.RectX, x.RectY, x.RectWidth, x.RectHeight)).ToList();
-                ImageSharpProcessor.DrawRects(fullPath, rects, output);
+                    var rects = imgObjs.Select(x => new SixLabors.ImageSharp.Rectangle(x.RectX, x.RectY, x.RectWidth, x.RectHeight)).ToList();
+                    ImageSharpProcessor.DrawRects(fullPath, rects, output);
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError($"Exception while drawing rects for {fullPath}: {ex}");
+                }
             }
         }
 

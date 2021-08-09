@@ -53,7 +53,7 @@ namespace Damselfly.Web
             services.AddFileReaderService();
 
             services.AddSingleton<ConfigService>();
-            services.AddSingleton<SkiaSharpProcessor>();
+            services.AddSingleton<ImageProcessorFactory>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<IImageProcessor>(x => x.GetRequiredService<SkiaSharpProcessor>());
 

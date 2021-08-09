@@ -20,6 +20,6 @@ namespace Damselfly.Core.Interfaces
     {
         Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles );
         void TransformDownloadImage(string input, Stream output, ExportConfig config);
-        ICollection<string> SupportedFileExtensions { get; }
+        static ICollection<string> SupportedFileExtensions { get; }
     }
 }
