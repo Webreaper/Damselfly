@@ -1,5 +1,5 @@
 
-FROM webreaper/damselfly-base AS final
+FROM webreaper/damselfly-base:latest AS final
 
 WORKDIR /app
 COPY /publish .
