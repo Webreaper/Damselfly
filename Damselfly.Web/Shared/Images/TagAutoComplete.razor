@@ -17,7 +17,6 @@
                        placeholder="Add a keyword" Debounce="250" @bind-Value="@TypeAheadTag"
                        AddItemOnEmptyResultMethod="AddNewItem" >
         <SelectedTemplate>
-            @context Saved
         </SelectedTemplate>
         <ResultTemplate>
             @context
@@ -29,14 +28,14 @@
 </div>
 
 @code {
-            [Parameter]
-            public string TypeAheadTag { get; set; }
+    [Parameter]
+    public string TypeAheadTag { get; set; }
 
-            [Parameter]
-            public bool IsDisabled { get; set; } = false;
+    [Parameter]
+    public bool IsDisabled { get; set; } = false;
 
-            [Parameter]
-            public Func<string, Task<string>> OnAddNewtag { private get; set; }
+    [Parameter]
+    public Func<string, Task<string>> OnAddNewtag { private get; set; }
 
     protected override void OnParametersSet()
     {
@@ -67,12 +66,15 @@
         // Only query the DB if we have more than 2 chars.
         if (text.Length > 1)
         {
-            return await Task.FromResult(indexService.CachedTags
+            var tags = indexService.CachedTags
                                     .Where(x => x.Keyword.Contains(text.Trim(), StringComparison.OrdinalIgnoreCase))
                                     .Select(t => t.Keyword)
+                                    .Union(new List<string> { text })
+                                    .Distinct(StringComparer.OrdinalIgnoreCase)
                                     .OrderBy(x => x.ToUpper().IndexOf(text.ToUpper()))
-                                    .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
-                                    .ToList());
+                                    .ThenBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+            return await Task.FromResult( tags.ToList() );
         }
 
         return new List<string>();

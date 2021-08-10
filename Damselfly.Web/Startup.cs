@@ -139,7 +139,7 @@ namespace Damselfly.Web
             download.SetDownloadPath(contentRootPath);
             themes.SetContentPath(contentRootPath);
 
-            StartTaskScheduler(tasks, download, metadata);
+            StartTaskScheduler(tasks, download, thumbService, metadata);
 
             // Start the face service before the thumbnail service
             azureFace.StartService( new TransThrottle( CloudTransaction.TransactionType.AzureFace ) );
@@ -153,9 +153,21 @@ namespace Damselfly.Web
         /// that we'll want to run periodically, such as indexing, thumbnail generation,
         /// cleanup of temporary download files, etc., etc.
         /// </summary>
-        private static void StartTaskScheduler(TaskService taskScheduler, DownloadService download, MetaDataService metadata)
+        private static void StartTaskScheduler(TaskService taskScheduler, DownloadService download,
+                                            ThumbnailService thumbService, MetaDataService metadata)
         {
             var tasks = new List<ScheduledTask>();
+
+            // Clean up old/irrelevant thumbnails once a week
+            var thumbCleanupFreq = new TimeSpan(7, 0, 0, 0);
+            tasks.Add(new ScheduledTask
+            {
+                Type = ScheduledTask.TaskType.CleanupThumbs,
+                ExecutionFrequency = thumbCleanupFreq,
+                WorkMethod = () => thumbService.CleanUpThumbnails(thumbCleanupFreq),
+                ImmediateStart = false
+            });
+
 
             // Clean up old download zips from the wwwroot folder
             var downloadCleanupFreq = new TimeSpan(6, 0, 0);

@@ -20,11 +20,12 @@ namespace Damselfly.Core.Models
             ThumbnailCleanup,
             MetadataScan,
             FlushDBWriteCache,
-            DumpPerformance
+            DumpPerformance,
+            CleanupThumbs
         }
 
         public TaskType Type { get; set; }
-        public DateTime LastStarted { get; set; } = DateTime.MinValue;
+        public DateTime LastStarted { get; set; } = DateTime.UtcNow;
         public DateTime LastCompleted { get; set; } = DateTime.MinValue;
         public DateTime NextRun { get; set; } = DateTime.MinValue;
         public TimeSpan ExecutionFrequency { get; set; }

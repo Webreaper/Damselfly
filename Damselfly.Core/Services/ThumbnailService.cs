@@ -224,6 +224,47 @@ namespace Damselfly.Core.Services
             return thumbFileAndConfig;
         }
 
+        /// <summary>
+        /// Go through all of the thumbnails and delete any thumbs that
+        /// don't apply to a legit iamage.
+        /// </summary>
+        /// <param name="thumbCleanupFreq"></param>
+        public void CleanUpThumbnails(TimeSpan thumbCleanupFreq)
+        {
+            DirectoryInfo root = new DirectoryInfo( PicturesRoot );
+            DirectoryInfo thumbRoot = new DirectoryInfo(_thumbnailRootFolder);
+
+            CleanUpThumbDir(root, thumbRoot);
+        }
+
+        private void CleanUpThumbDir( DirectoryInfo picsFolder, DirectoryInfo thumbsFolder )
+        {
+            // Check the images here.
+            var thumbsToKeep = thumbConfigs.Where(x => x.batchGenerate);
+            var picsSubDirs = picsFolder.SafeGetSubDirectories().Select(x => x.Name);
+            var thumbSubDirs = thumbsFolder.SafeGetSubDirectories().Select(x => x.Name);
+
+            var foldersToDelete = thumbSubDirs.Except(picsSubDirs);
+            var foldersToCheck = thumbSubDirs.Intersect(picsSubDirs);
+
+            foreach (var deleteDir in foldersToDelete)
+            {
+                Logging.Log($"Deleting folder {deleteDir} [Dry run]");
+            }
+
+            foreach (var folderToCheck in foldersToCheck.Select( x => new DirectoryInfo( x ) ) )
+            {
+                var allFiles = folderToCheck.GetFiles("*.*");
+                var allThumbFiles = allFiles.SelectMany(file => thumbsToKeep.Select(thumb => GetThumbPath( file, thumb.size )));
+
+                //var filesToDelete = allFiles;
+
+                // Build hashmap of all base filenames without postfix or extension. Then enumerate
+                // thumb files, and any that aren't found, delete
+            }
+        }
+
+
         public void StartService()
         {
             if (EnableThumbnailGeneration)
