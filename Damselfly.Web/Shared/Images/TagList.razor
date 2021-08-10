@@ -128,17 +128,16 @@
     private IList<ImageObject> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
-    private async Task<string> CreateNewTag(string tagToAdd)
+    private void CreateNewTag(string tagToAdd)
     {
         Logging.Log($"Creating tag for {tagToAdd}...");
 
         // If multiple tags have been added, split them and add individually.
         var addedTags = tagToAdd.Split(',').Select(x => x.Trim()).ToList();
 
-        await iptcService.UpdateTagsAsync(CurrentImages, addedTags, null);
+        _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null);
 
         StateHasChanged();
-        return tagToAdd;
     }
 
     private void QuickAddTag(Tag tag)

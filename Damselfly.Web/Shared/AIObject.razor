@@ -7,20 +7,23 @@
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
     @if (Editing)
     {
-        <div class="object-editor">
-            <BlazoredTypeahead SearchMethod="SearchNames" placeholder="Enter a Name" Debounce="100"
-                               @bind-Value="@TypeAheadName" AddItemOnEmptyResultMethod="UpdateName">
-                <SelectedTemplate>
-                    @context Saved
-                </SelectedTemplate>
-                <ResultTemplate>
-                    @context
-                </ResultTemplate>
-                <NotFoundTemplate>
-                    @context
-                </NotFoundTemplate>
-            </BlazoredTypeahead>
-        </div>
+    <div class="object-editor">
+        <BlazoredTypeahead class="InputAddOn-field" SearchMethod="SearchNames" EnableDropDown="false"
+                           placeholder="Enter a Name" Debounce="100" Disabled="false"
+                           @bind-Value="@TypeAheadName">
+            <SelectedTemplate>
+                @{
+                    UpdateName(context);
+                }
+            </SelectedTemplate>
+            <ResultTemplate>
+                @context
+            </ResultTemplate>
+            <NotFoundTemplate>
+                @tagSearchText
+            </NotFoundTemplate>
+        </BlazoredTypeahead>
+    </div>
     }
     else
     {
@@ -34,6 +37,7 @@
 
     private bool Editing { get; set; }
     private string TypeAheadName { get; set; }
+    private string tagSearchText { get; set; }
 
     public string ObjectName => theObject.ToString();
     public string ObjectTitle => $"{ObjectName} - click to edit";
@@ -70,6 +74,9 @@
         var searchText = text.Trim();
         IEnumerable<string> result = new List<string>();
 
+        // Store the search text which is used in the NotFound template
+        tagSearchText = searchText;
+
         // Only query the DB if we have more than 2 chars.
         if (searchText.Length > 1)
         {
@@ -86,11 +93,8 @@
         return Task.FromResult( result );
     }
 
-    private async Task<string> UpdateName(string name)
+    private void UpdateName(string name)
     {
-        // Reset the tag
-        Editing = false;
-
         if (!string.IsNullOrEmpty(name))
         {
             Logging.Log($"Saving name: {name}");
@@ -109,16 +113,17 @@
                 db.People.Update(theObject.Person);
             }
 
-            await db.SaveChangesAsync("SetName");
+            _ = db.SaveChangesAsync("SetName");
 
             // TODO: Update the cache
             statusService.StatusText = $"Name saved as '{name}'";
 
-            StateHasChanged();
-
-            return name;
         }
 
-        return string.Empty;
+        // Reset the tag
+        Editing = false;
+        TypeAheadName = null;
+
+        StateHasChanged();
     }
 }
