@@ -9,8 +9,8 @@
     {
     <div class="object-editor">
         <BlazoredTypeahead class="InputAddOn-field" SearchMethod="SearchNames" EnableDropDown="false"
-                           placeholder="Enter a Name" Debounce="100" Disabled="false"
-                           @bind-Value="@TypeAheadName">
+                           placeholder="Enter a Name" Debounce="100" 
+                           @bind-Value="@TypeAheadName" @onblur="@LostFocus">
             <SelectedTemplate>
                 @{
                     UpdateName(context);
@@ -36,6 +36,7 @@
     public ImageObject theObject { get; set; }
 
     private bool Editing { get; set; }
+
     private string TypeAheadName { get; set; }
     private string tagSearchText { get; set; }
 
@@ -59,11 +60,16 @@
         }
     }
 
+    private void LostFocus()
+    {
+        Editing = false;
+        StateHasChanged();
+    }
+
     private void EditName()
     {
         if (!Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString())
         {
-            Logging.Log("Starting name edit");
             Editing = true;
             StateHasChanged();
         }
@@ -72,7 +78,7 @@
     private Task<IEnumerable<string>> SearchNames(string text)
     {
         var searchText = text.Trim();
-        IEnumerable<string> result = new List<string>();
+        IEnumerable<string> results = new List<string>();
 
         // Store the search text which is used in the NotFound template
         tagSearchText = searchText;
@@ -82,22 +88,29 @@
         {
             // Union the search term with the results from the DB. Order them so that the
             // closest matches to the start of the string come first.
-            result = aiService.GetCachedPeople().Where(x => x.Name.StartsWith( searchText.Trim(), StringComparison.OrdinalIgnoreCase) )
+            var names = aiService.GetCachedPeople().Where(x => x.Name.StartsWith( searchText.Trim(), StringComparison.OrdinalIgnoreCase) )
                                                .Select( x => x.Name )
-                                               .Distinct()
                                                .OrderBy(x => x.ToUpper().IndexOf(searchText.ToUpper()))
                                                .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
                                                .ToList();
+
+            if (!names.Contains(searchText, StringComparer.OrdinalIgnoreCase))
+                names.Insert(0, searchText);
+
+            results = names;
         }
 
-        return Task.FromResult( result );
+        return Task.FromResult( results );
     }
 
     private void UpdateName(string name)
     {
         if (!string.IsNullOrEmpty(name))
         {
+
             Logging.Log($"Saving name: {name}");
+            TypeAheadName = null;
+            StateHasChanged();
 
             using var db = new ImageContext();
 
@@ -113,17 +126,15 @@
                 db.People.Update(theObject.Person);
             }
 
-            _ = db.SaveChangesAsync("SetName");
+            db.SaveChanges("SetName");
 
             // TODO: Update the cache
             statusService.StatusText = $"Name saved as '{name}'";
 
+            // Reset the tag
+            Editing = false;
+
+            StateHasChanged();
         }
-
-        // Reset the tag
-        Editing = false;
-        TypeAheadName = null;
-
-        StateHasChanged();
     }
 }
