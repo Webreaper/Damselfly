@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-  </PropertyGroup>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+</PropertyGroup>
 
   <ItemGroup>
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />

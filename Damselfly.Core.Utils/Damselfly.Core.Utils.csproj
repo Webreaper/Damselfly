@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-  </PropertyGroup>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Serilog" Version="2.10.1-dev-01343" />
