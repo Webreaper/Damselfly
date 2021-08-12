@@ -57,31 +57,28 @@ namespace Damselfly.Web
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<IImageProcessor>(x => x.GetRequiredService<SkiaSharpProcessor>());
 
-            services.AddScoped<StatusService>();
-            services.AddScoped<NavigationService>();
-            services.AddScoped<ThemeService>();
-            services.AddScoped<ViewDataService>();
-            services.AddScoped<SearchService>();
-
-            // Ummmmm
-            services.AddSingleton<BasketService>();
-
             services.AddSingleton<ImageService>();
+            services.AddSingleton<StatusService>(); // How does this get scoped?
             services.AddSingleton<ObjectDetector>();
             services.AddSingleton<FolderService>();
             services.AddSingleton<IndexingService>();
             services.AddSingleton<ThumbnailService>();
+            services.AddSingleton<SearchService>();
+            services.AddSingleton<BasketService>();
             services.AddSingleton<MetaDataService>();
             services.AddSingleton<TaskService>();
             services.AddSingleton<DownloadService>();
             services.AddSingleton<ImageProcessService>();
             services.AddSingleton<WordpressService>();
-            services.AddSingleton<SelectionService>();
             services.AddSingleton<AccordFaceService>();
             services.AddSingleton<AzureFaceService>();
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ImageRecognitionService>();
 
+            services.AddScoped<NavigationService>();
+            services.AddScoped<ViewDataService>();
+            services.AddScoped<ThemeService>();
+            services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
         }
 
