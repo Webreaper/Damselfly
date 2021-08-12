@@ -87,6 +87,8 @@ namespace Damselfly.Web
                                     o.NoGenerateThumbnails = true;
                                 }
 
+                                // TODO: Do away with static members here. We should pass this
+                                // through to the config service and pick them up via DI
                                 IndexingService.EnableIndexing = ! o.NoEnableIndexing;
                                 IndexingService.RootFolder = o.SourceDirectory;
                                 ThumbnailService.PicturesRoot = o.SourceDirectory;
