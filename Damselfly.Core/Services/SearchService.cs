@@ -21,8 +21,6 @@ namespace Damselfly.Core.Services
         public SearchService( StatusService statusService )
         {
             _statusService = statusService;
-
-            PreLoadSearchData();
         }
 
         private readonly StatusService _statusService;
@@ -249,14 +247,6 @@ namespace Damselfly.Core.Services
                 // Now save the results in our stored dataset
                 SearchResults.AddRange(results);
             }
-        }
-
-        /// <summary>
-        /// Load some initial data into memory when we first start up.
-        /// </summary>
-        public void PreLoadSearchData()
-        {
-            _ = LoadMoreData(0, 100);
         }
 
         public async Task<Image[]> GetQueryImagesAsync(int first, int count)
