@@ -60,10 +60,8 @@ namespace Damselfly.Web
             services.AddSingleton<ImageService>();
             services.AddSingleton<StatusService>(); // How does this get scoped?
             services.AddSingleton<ObjectDetector>();
-            services.AddSingleton<FolderService>();
             services.AddSingleton<IndexingService>();
             services.AddSingleton<ThumbnailService>();
-            services.AddSingleton<SearchService>();
             services.AddSingleton<BasketService>();
             services.AddSingleton<MetaDataService>();
             services.AddSingleton<TaskService>();
@@ -75,6 +73,8 @@ namespace Damselfly.Web
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ImageRecognitionService>();
 
+            services.AddScoped<SearchService>();
+            services.AddScoped<FolderService>();
             services.AddScoped<NavigationService>();
             services.AddScoped<ViewDataService>();
             services.AddScoped<ThemeService>();
