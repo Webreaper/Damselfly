@@ -153,7 +153,8 @@ namespace Damselfly.Core.ImageProcessing
                     mode = ResizeMode.Crop;
                 }
 
-                var opts = new ResizeOptions { Mode = mode, Size = size };
+                var opts = new ResizeOptions { Mode = mode, Size = size,
+                                Sampler = KnownResamplers.Lanczos8 };
 
                 // Note, we don't clone and resize from the original image, because that's expensive.
                 // So we always resize the previous image, which will be faster for each iteration
@@ -185,7 +186,11 @@ namespace Damselfly.Core.ImageProcessing
             {
                 int maxSize = config.MaxImageSize;
 
-                var opts = new ResizeOptions { Mode = ResizeMode.Max, Size = new Size { Height = maxSize, Width = maxSize } };
+                var opts = new ResizeOptions {
+                                    Mode = ResizeMode.Max,
+                                    Size = new Size { Height = maxSize, Width = maxSize },
+                                    Sampler = KnownResamplers.Lanczos3
+                            };
 
                 // Rotate and resize.
                 img.Mutate(x => x.AutoOrient().Resize(opts));

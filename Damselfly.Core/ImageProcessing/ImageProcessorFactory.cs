@@ -31,7 +31,8 @@ namespace Damselfly.Core.ImageProcessing
                 fileExtension = $".{fileExtension}";
             }
 
-            if( SkiaSharpProcessor.SupportedFileExtensions.Any( x => x.Equals( fileExtension, StringComparison.OrdinalIgnoreCase ) ) )
+            // Skiasharp first. As of 12-Aug-2021, it can do thumbs for 100 images in about 23 seconds
+            if (SkiaSharpProcessor.SupportedFileExtensions.Any(x => x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 if (skiaProcessor == null)
                     skiaProcessor = new SkiaSharpProcessor();
@@ -39,6 +40,7 @@ namespace Damselfly.Core.ImageProcessing
                 return skiaProcessor;
             }
 
+            // ImageSharp next. As of 12-Aug-2021, it can do thumbs for 100 images in about 60 seconds
             if (ImageSharpProcessor.SupportedFileExtensions.Any(x => x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 if (isharpProcessor == null)
@@ -49,6 +51,7 @@ namespace Damselfly.Core.ImageProcessing
                 return isharpProcessor;
             }
 
+            // ImageSharp next. As of 12-Aug-2021, it can do thumbs for 100 images in about 33 seconds. It can also handle HEIC
             if (ImageMagickProcessor.SupportedFileExtensions.Any(x => x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 if (imProcessor == null)

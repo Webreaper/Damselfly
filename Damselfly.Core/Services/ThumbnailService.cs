@@ -125,7 +125,7 @@ namespace Damselfly.Core.Services
         /// This is the set of thumb resolutions that Syno PhotoStation and moments expects
         /// </summary>
         private static ThumbConfig[] thumbConfigs = {
-            new ThumbConfig{ width = 1280, height = 1280, size = ThumbSize.ExtraLarge, useAsSource = true, batchGenerate = false},
+            new ThumbConfig{ width = 2000, height = 2000, size = ThumbSize.ExtraLarge, useAsSource = true, batchGenerate = false},
             new ThumbConfig{ width = 800, height = 800, size = ThumbSize.Large, useAsSource = true },
             new ThumbConfig{ width = 640, height = 640, size = ThumbSize.Big, batchGenerate = false},
             new ThumbConfig{ width = 320, height = 320, size = ThumbSize.Medium },
