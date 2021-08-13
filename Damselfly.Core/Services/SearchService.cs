@@ -18,12 +18,12 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class SearchService
     {
-        public SearchService( StatusService statusService )
+        public SearchService( UserStatusService statusService )
         {
             _statusService = statusService;
         }
 
-        private readonly StatusService _statusService;
+        private readonly UserStatusService _statusService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
         private IDictionary<int, Image> imageCache = new Dictionary<int, Image>();

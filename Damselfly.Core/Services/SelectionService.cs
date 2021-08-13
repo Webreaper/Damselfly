@@ -8,12 +8,14 @@ namespace Damselfly.Core.Services
     {
         // Maintain a look up of all selected images, by ID
         private readonly IDictionary<int, Image> selectedImages = new Dictionary<int, Image>();
+        private readonly UserStatusService _statusService;
         public event Action OnSelectionChanged;
 
         // TODO: Remember last selected image and use it for range selections etc?
 
-        public SelectionService()
+        public SelectionService( UserStatusService statusService )
         {
+            _statusService = statusService;
         }
 
         private void NotifyStateChanged()
@@ -30,6 +32,8 @@ namespace Damselfly.Core.Services
             {
                 selectedImages.Clear();
                 NotifyStateChanged();
+
+                _statusService.StatusText = "Selection cleared.";
             }
         }
 
@@ -48,7 +52,10 @@ namespace Damselfly.Core.Services
             }
 
             if (added)
+            {
+                _statusService.StatusText = $"{images.Count} images selected.";
                 NotifyStateChanged();
+            }
         }
 
         /// <summary>
