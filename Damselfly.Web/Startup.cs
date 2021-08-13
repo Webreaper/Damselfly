@@ -24,6 +24,7 @@ using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.Areas.Identity;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Web
 {
@@ -57,7 +58,7 @@ namespace Damselfly.Web
 
             services.AddDbContext<ImageContext>();
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                                                             .AddEntityFrameworkStores<ImageContext>();
 
             services.AddSingleton<ConfigService>();

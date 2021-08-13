@@ -15,7 +15,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
     /// implmentation of a DB type - e.g., SqlIe or MySql, kindof like a visitor
     /// pattern.
     /// </summary>
-    public abstract class BaseDBModel : IdentityDbContext
+    public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, ApplicationRole, int>
     {
         public static readonly ILoggerFactory SqlLoggerFactory
             = LoggerFactory.Create(builder => { builder.AddConsole(); });
@@ -51,8 +51,8 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                 options.UseLazyLoadingProxies();
 
             // See efmigrations.md
+            var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
             //var obj = Activator.CreateInstance("Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres.Models.PostgresModel");
-            //var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
 
             DatabaseSpecialisation.Configure(options);
         }

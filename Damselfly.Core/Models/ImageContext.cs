@@ -9,6 +9,8 @@ using Damselfly.Core.Services;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.DBAbstractions;
 using Humanizer;
+using Microsoft.AspNetCore.Identity;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Models
 {
@@ -506,6 +508,9 @@ namespace Damselfly.Core.Models
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
         public string Name { get; set; }
 
+        public int? OwnerId { get; set; }
+        public virtual AppIdentityUser Owner { get; set; }
+
         public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
     }
 
@@ -577,6 +582,9 @@ namespace Damselfly.Core.Models
 
         public DateTime TimeStamp { get; internal set; }
         public FileWriteState State { get; set; } = FileWriteState.Pending;
+
+        public int? UserId { get; set; }
+        public virtual AppIdentityUser User { get; set; }
     }
 
     /// <summary>
@@ -653,6 +661,9 @@ namespace Damselfly.Core.Models
         public int ConfigSettingId { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }
+
+        public int? UserId { get; set; }
+        public virtual AppIdentityUser Owner { get; set; }
 
         public override string ToString()
         {

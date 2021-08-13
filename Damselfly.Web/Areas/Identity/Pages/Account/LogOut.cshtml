@@ -1,7 +1,9 @@
 ﻿@page
 @using Microsoft.AspNetCore.Identity
+@using Damselfly.Core.DbModels
+
 @attribute [IgnoreAntiforgeryToken]
-@inject SignInManager<IdentityUser> SignInManager
+@inject SignInManager<AppIdentityUser> SignInManager
 @functions {
     public async Task<IActionResult> OnPost()
     {
