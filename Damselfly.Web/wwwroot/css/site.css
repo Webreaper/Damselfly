@@ -239,6 +239,7 @@ app {
 .folder-entry:hover {
     animation: fadeIn ease 0.2s;
     background: var( --keyword-bg );
+    color: var( --keyword-text );
 }
 
 .folder-entry-selected {

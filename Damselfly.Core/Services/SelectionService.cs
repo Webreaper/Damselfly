@@ -53,8 +53,9 @@ namespace Damselfly.Core.Services
 
             if (added)
             {
-                _statusService.StatusText = $"{images.Count} images selected.";
                 NotifyStateChanged();
+                if( images.Count > 1 )
+                    _statusService.StatusText = $"{images.Count} images selected.";
             }
         }
 
