@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Components.Authorization;
 using Blazored.Modal;
 using Damselfly.Web.Data;
 using Damselfly.Core.Services;
@@ -21,6 +23,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
+using Damselfly.Areas.Identity;
 
 namespace Damselfly.Web
 {
@@ -52,13 +55,16 @@ namespace Damselfly.Web
             services.AddServerSideBlazor();
             services.AddFileReaderService();
 
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                                                            .AddEntityFrameworkStores<ImageContext>();
+
             services.AddSingleton<ConfigService>();
             services.AddSingleton<ImageProcessorFactory>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<IImageProcessor>(x => x.GetRequiredService<SkiaSharpProcessor>());
 
             services.AddSingleton<ImageService>();
-            services.AddSingleton<StatusService>(); // How does this get scoped?
+            services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
             services.AddSingleton<IndexingService>();
             services.AddSingleton<ThumbnailService>();
@@ -73,6 +79,7 @@ namespace Damselfly.Web
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ImageRecognitionService>();
 
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             services.AddScoped<SearchService>();
             services.AddScoped<FolderService>();
             services.AddScoped<NavigationService>();
@@ -122,6 +129,10 @@ namespace Damselfly.Web
                 FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
                 RequestPath = ThumbnailService.RequestRoot
             });
+
+            // Enable auth
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
