@@ -95,15 +95,6 @@ div::-webkit-scrollbar-thumb {
     height: auto;
 }
 
-.status {
-    width: 80%;
-    margin-left: 5px;
-    text-align: left;
-    font-size: 14px;
-    vertical-align: middle;
-    color: var( --statusbar-text );
-}
-
 .sidebar {
     display: flex;
     float: right;
@@ -589,6 +580,15 @@ f
     display: flex;
     flex: 0 0 auto;
     padding: 5px;
+}
+
+.status {
+    flex: 6 0 auto;
+    margin-left: 5px;
+    text-align: left;
+    font-size: 14px;
+    vertical-align: middle;
+    color: var( --statusbar-text );
 }
 
 .damselfly-searchbar {

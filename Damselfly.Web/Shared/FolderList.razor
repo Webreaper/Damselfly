@@ -2,7 +2,8 @@
 @inject ImageService ImgService
 @inject SearchService searchService
 @inject IndexingService indexService
-@inject FolderService folderService
+@inject FolderService folderService 
+@inject UserFolderService userFolderService
 @inject ImageRecognitionService aiService
 @inject ContextMenuService contextMenuService
 @implements IDisposable
@@ -97,7 +98,7 @@
 
     protected async Task ProcessUpdatedFilter(bool forceRefresh)
     {
-        folderItems = await folderService.GetFilteredFolders(filterTerm, forceRefresh);
+        folderItems = await userFolderService.GetFilteredFolders(filterTerm, forceRefresh);
 
         if( folderContainer != null )
             await folderContainer.RefreshDataAsync();

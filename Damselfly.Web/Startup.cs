@@ -73,6 +73,7 @@ namespace Damselfly.Web
             services.AddSingleton<BasketService>();
             services.AddSingleton<MetaDataService>();
             services.AddSingleton<TaskService>();
+            services.AddSingleton<FolderService>();
             services.AddSingleton<DownloadService>();
             services.AddSingleton<ImageProcessService>();
             services.AddSingleton<WordpressService>();
@@ -83,8 +84,8 @@ namespace Damselfly.Web
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             services.AddScoped<SearchService>();
-            services.AddScoped<FolderService>();
             services.AddScoped<NavigationService>();
+            services.AddScoped<UserFolderService>();
             services.AddScoped<ViewDataService>();
             services.AddScoped<ThemeService>();
             services.AddScoped<SelectionService>();

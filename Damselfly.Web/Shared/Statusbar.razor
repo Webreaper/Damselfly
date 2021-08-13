@@ -3,8 +3,9 @@
 @inject StatusService statusService
 
 <div class="damselfly-statusbar">
-    <Toolbar />
     <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
+    <LoginDisplay />
+    <Toolbar />
 </div>
 
 @code

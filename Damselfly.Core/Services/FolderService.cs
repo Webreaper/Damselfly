@@ -14,23 +14,22 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class FolderService
     {
-        private readonly SearchService _searchService;
         private List<FolderListItem> allFolderItems = new List<FolderListItem>();
         public event Action OnChange;
 
-        public FolderService( IndexingService _indexingService, SearchService searchService)
+        public FolderService( IndexingService _indexingService)
         {
             _indexingService.OnFoldersChanged += OnFoldersChanged;
-            _searchService = searchService;
 
             PreLoadFolderData();
         }
 
         private void OnFoldersChanged()
         {
-            // Do this async?
             _ = LoadFolders();
         }
+
+        public List<FolderListItem> FolderItems { get { return allFolderItems;  } }
 
         private void NotifyStateChanged()
         {
@@ -80,30 +79,6 @@ namespace Damselfly.Core.Services
         public void PreLoadFolderData()
         {
             _ = LoadFolders();
-        }
-
-        /// <summary>
-        /// Process a filter on the service's in-memory list, and present it back
-        /// to be displayed to the UI.
-        /// </summary>
-        /// <param name="filterTerm"></param>
-        /// <returns></returns>
-        public async Task<List<FolderListItem>> GetFilteredFolders( string filterTerm, bool force )
-        {
-            List<FolderListItem> items = null;
-
-            if (allFolderItems != null && allFolderItems.Any() && !string.IsNullOrEmpty(filterTerm))
-            {
-                items = await Task.FromResult(allFolderItems
-                                .Where(x => x.Folder.Name.ContainsNoCase(filterTerm)
-                                            // Always include the currently selected folder so it remains highlighted
-                                            || _searchService.Folder?.FolderId == x.Folder.FolderId)
-                                .ToList());
-            }
-            else
-                items = allFolderItems;
-
-            return items;
         }
     }
 }

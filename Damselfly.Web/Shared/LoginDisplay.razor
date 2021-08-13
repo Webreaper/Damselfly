@@ -1,12 +1,21 @@
-﻿<AuthorizeView>
+﻿@inject NavigationManager Navigation
+
+<AuthorizeView>
     <Authorized>
-        <a href="Identity/Account/Manage">Hello, @context.User.Identity?.Name!</a>
-        <form method="post" action="Identity/Account/LogOut">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
-        </form>
+        <div><NavLink href="Identity/Account/Manage">@context.User.Identity?.Name</NavLink></div>
+        <div><button class="btn btn-primary sign-out" @onclick="BeginSignOut">Sign out</button></div>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Log in</a>
+        <div>
+            <NavLink href="Identity/Account/Login">Log in</NavLink>
+        </div>
     </NotAuthorized>
 </AuthorizeView>
+
+@code{
+    void BeginSignOut()
+    {
+        // TODO? await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("Identity/Account/Logout");
+    }
+}
