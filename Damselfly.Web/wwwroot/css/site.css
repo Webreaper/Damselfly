@@ -225,7 +225,7 @@ app {
 
 
 .folder-entry {
-    animation: fadeIn ease 0.5s;
+    animation: fadeIn ease 0.2s;
     color: var( --folder-entry-text);
     padding-left: 5px;
     font-size: 0.8rem;
@@ -234,6 +234,11 @@ app {
     white-space: nowrap;
     text-overflow: ellipsis;
     vertical-align: middle;
+}
+
+.folder-entry:hover {
+    animation: fadeIn ease 0.2s;
+    background: var( --keyword-bg );
 }
 
 .folder-entry-selected {

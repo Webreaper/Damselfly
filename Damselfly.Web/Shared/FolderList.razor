@@ -80,8 +80,11 @@
 
     private void DoFilter(string searchTerm)
     {
-        filterTerm = searchTerm;
-        OnFoldersChanged();
+        if (filterTerm != searchTerm)
+        {
+            filterTerm = searchTerm;
+            OnFoldersChanged();
+        }
     }
 
     void ResetFilterFolder()
@@ -100,7 +103,7 @@
     {
         folderItems = await userFolderService.GetFilteredFolders(filterTerm, forceRefresh);
 
-        if( folderContainer != null )
+        if (folderContainer != null)
             await folderContainer.RefreshDataAsync();
         await InvokeAsync(StateHasChanged);
     }
@@ -111,7 +114,7 @@
         {
             folderService.OnChange += OnFoldersChanged;
             // Kick off the data load
-            await ProcessUpdatedFilter(false);
+            _ = ProcessUpdatedFilter(false);
         }
     }
 
