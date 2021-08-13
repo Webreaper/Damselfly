@@ -7,6 +7,8 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using System.Threading;
+using Damselfly.Core.DbModels;
+using System.Security.Principal;
 
 namespace Damselfly.Core.Services
 {
@@ -79,9 +81,9 @@ namespace Damselfly.Core.Services
         /// <param name="tagsToAdd"></param>
         /// <param name="tagsToRemove"></param>
         /// <returns></returns>
-        public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null)
+        public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null)
         {
-            await UpdateTagsAsync(new[] { image }, addTags, removeTags);
+            await UpdateTagsAsync(new[] { image }, addTags, removeTags, user);
         }
 
         /// <summary>
@@ -92,7 +94,7 @@ namespace Damselfly.Core.Services
         /// <param name="tagsToAdd"></param>
         /// <param name="tagsToRemove"></param>
         /// <returns></returns>
-        public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null )
+        public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null )
         {
             // TODO: Split tags with commas here?
             var timestamp = DateTime.UtcNow;
@@ -113,8 +115,9 @@ namespace Damselfly.Core.Services
                         Text = keyword.RemoveSmartQuotes(),
                         Type = ExifOperation.ExifType.Keyword,
                         Operation = ExifOperation.OperationType.Add,
-                        TimeStamp = timestamp
-                    }));;
+                        TimeStamp = timestamp,
+                        UserId = user?.Id
+                    }));
                 }
 
                 changeDesc += $"added: {string.Join(',', tagsToAdd)}";

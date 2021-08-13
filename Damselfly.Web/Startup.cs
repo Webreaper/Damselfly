@@ -61,6 +61,8 @@ namespace Damselfly.Web
             services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                                                             .AddEntityFrameworkStores<ImageContext>();
 
+            services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
+
             services.AddSingleton<ConfigService>();
             services.AddSingleton<ImageProcessorFactory>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());

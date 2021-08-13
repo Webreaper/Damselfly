@@ -2,6 +2,8 @@
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services
 @using Humanizer
+@using Microsoft.AspNetCore.Identity;
+@using Damselfly.Core.DbModels
 
 @inject IJSRuntime JsRuntime
 @inject ImageService imageService
@@ -13,6 +15,7 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
+@inject UserManager<AppIdentityUser> UserManager;
 
 @implements IDisposable
 
@@ -56,7 +59,7 @@
             @if (CurrentImages != null && CurrentImages.Any())
             {
                 @if ((theImageTags != null && theImageTags.Any()) ||
-                    (theObjectTags != null && theObjectTags.Any()) )
+                  (theObjectTags != null && theObjectTags.Any()))
                 {
                     @foreach (var tag in theImageTags)
                     {
@@ -124,6 +127,9 @@
     [Parameter]
     public bool TrackSelection { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
     private IList<Tag> theImageTags { get; set; }
     private IList<ImageObject> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
@@ -135,7 +141,20 @@
         // If multiple tags have been added, split them and add individually.
         var addedTags = tagToAdd.Split(',').Select(x => x.Trim()).ToList();
 
-        _ = iptcService.UpdateTagsAsync(CurrentImages, addedTags, null);
+        _ = WriteNewTags(addedTags);
+    }
+
+    /// <summary>
+    /// Helper to get identity and write the tags
+    /// </summary>
+    /// <param name="tagsToAdd"></param>
+    /// <returns></returns>
+    private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
+    {
+        var authState = await authenticationStateTask;
+        var currentUser = await UserManager.GetUserAsync(authState.User); // May return NULL if not logged in
+
+        await iptcService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, currentUser);
 
         StateHasChanged();
     }
@@ -143,22 +162,20 @@
     private void QuickAddTag(Tag tag)
     {
         var tagsToAdd = new List<string> { tag.Keyword };
-        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, tagsToAdd, null); });
-        StateHasChanged();
+        _ = WriteNewTags( tagsToAdd );
     }
 
     private void DeleteTag(Tag tag)
     {
         Logging.Log($"Tag {tag} removed");
 
-        // TODO: Fix this async mess
         var tagToDelete = new List<string> { tag.Keyword };
-        InvokeAsync(() => { _ = iptcService.UpdateTagsAsync(CurrentImages, null, tagToDelete); });
 
         // Now store the state
         theImageTags.Remove(tag);
 
-        StateHasChanged();
+        // Write the change asynchronously and update the UI
+        _ = WriteNewTags( null, tagToDelete );
     }
 
     private IList<Tag> GetImageTags()
