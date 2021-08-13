@@ -51,7 +51,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                 options.UseLazyLoadingProxies();
 
             // See efmigrations.md
-            var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
+            //var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
             //var obj = Activator.CreateInstance("Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres.Models.PostgresModel");
 
             DatabaseSpecialisation.Configure(options);
