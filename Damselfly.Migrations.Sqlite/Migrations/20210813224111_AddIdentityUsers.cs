@@ -2,19 +2,13 @@
 
 namespace Damselfly.Core.Migrations
 {
-    public partial class AddIdentityUser : Migration
+    public partial class AddIdentityUsers : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
                 name: "UserId",
                 table: "KeywordOperations",
-                type: "INTEGER",
-                nullable: true);
-
-            migrationBuilder.AddColumn<int>(
-                name: "OwnerId",
-                table: "ConfigSettings",
                 type: "INTEGER",
                 nullable: true);
 
@@ -102,9 +96,9 @@ namespace Damselfly.Core.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ConfigSettings_OwnerId",
+                name: "IX_ConfigSettings_UserId",
                 table: "ConfigSettings",
-                column: "OwnerId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Baskets_OwnerId",
@@ -120,9 +114,9 @@ namespace Damselfly.Core.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_ConfigSettings_AspNetUsers_OwnerId",
+                name: "FK_ConfigSettings_AspNetUsers_UserId",
                 table: "ConfigSettings",
-                column: "OwnerId",
+                column: "UserId",
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
@@ -143,7 +137,7 @@ namespace Damselfly.Core.Migrations
                 table: "Baskets");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_ConfigSettings_AspNetUsers_OwnerId",
+                name: "FK_ConfigSettings_AspNetUsers_UserId",
                 table: "ConfigSettings");
 
             migrationBuilder.DropForeignKey(
@@ -155,7 +149,7 @@ namespace Damselfly.Core.Migrations
                 table: "KeywordOperations");
 
             migrationBuilder.DropIndex(
-                name: "IX_ConfigSettings_OwnerId",
+                name: "IX_ConfigSettings_UserId",
                 table: "ConfigSettings");
 
             migrationBuilder.DropIndex(
@@ -165,10 +159,6 @@ namespace Damselfly.Core.Migrations
             migrationBuilder.DropColumn(
                 name: "UserId",
                 table: "KeywordOperations");
-
-            migrationBuilder.DropColumn(
-                name: "OwnerId",
-                table: "ConfigSettings");
 
             migrationBuilder.DropColumn(
                 name: "UserId",

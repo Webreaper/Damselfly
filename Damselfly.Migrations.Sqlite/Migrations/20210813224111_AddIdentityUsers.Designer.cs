@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Damselfly.Core.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    [Migration("20210813195147_AddIdentityUser")]
-    partial class AddIdentityUser
+    [Migration("20210813224111_AddIdentityUsers")]
+    partial class AddIdentityUsers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -211,9 +211,6 @@ namespace Damselfly.Core.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("OwnerId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
@@ -222,7 +219,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("ConfigSettingId");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("ConfigSettings");
                 });
@@ -736,11 +733,11 @@ namespace Damselfly.Core.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.ConfigSetting", b =>
                 {
-                    b.HasOne("Damselfly.Core.DbModels.AppIdentityUser", "Owner")
+                    b.HasOne("Damselfly.Core.DbModels.AppIdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("OwnerId");
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("Owner");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ExifOperation", b =>
