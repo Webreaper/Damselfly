@@ -663,7 +663,7 @@ namespace Damselfly.Core.Models
         public string Value { get; set; }
 
         public int? UserId { get; set; }
-        public virtual AppIdentityUser Owner { get; set; }
+        public virtual AppIdentityUser User { get; set; }
 
         public override string ToString()
         {

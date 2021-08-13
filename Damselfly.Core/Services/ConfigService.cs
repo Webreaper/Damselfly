@@ -30,7 +30,7 @@ namespace Damselfly.Core.Services
                 else
                     settings = db.ConfigSettings.ToList();
 
-                foreach (var setting in db.ConfigSettings.Where( x => x.UserId == user.Id || x.UserId == null ) )
+                foreach (var setting in settings )
                     _cache[setting.Name] = setting;
             }
         }
