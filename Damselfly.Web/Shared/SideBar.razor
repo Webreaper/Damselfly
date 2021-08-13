@@ -3,9 +3,9 @@
 @inject ViewDataService ViewDataService
 @inject NavigationService navContext
 
-
 <div class="damselfly-sidebar">
     <DamselflyLogo />
+    <LoginDisplay />
 
     @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
     {

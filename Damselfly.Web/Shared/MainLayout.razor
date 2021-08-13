@@ -3,16 +3,20 @@
 
 <RadzenContextMenu />
 
-<div class="damselfly-container">
-    <div class="damselfly-application">
+<CascadingAuthenticationState>
+
+    <div class="damselfly-container">
+        <div class="damselfly-application">
+            <ErrorBoundary>
+                <SideBar />
+            </ErrorBoundary>
+            <ErrorBoundary>
+                @Body
+            </ErrorBoundary>
+        </div>
         <ErrorBoundary>
-            <SideBar />
-        </ErrorBoundary>
-        <ErrorBoundary>
-            @Body
+            <Statusbar />
         </ErrorBoundary>
     </div>
-    <ErrorBoundary>
-        <Statusbar />
-    </ErrorBoundary>
-</div>
+
+</CascadingAuthenticationState>
