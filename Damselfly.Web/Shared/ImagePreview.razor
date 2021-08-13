@@ -4,10 +4,15 @@
     full-res version - which may need to be generated on the fly. Once that's loaded, the URL
     of the visible image is updated which should update it instantly.
 -->
+
+@using Microsoft.AspNetCore.Identity;
+@using Damselfly.Core.DbModels
+
 @inject IJSRuntime JsRuntime
 @inject UserStatusService statusService
 @inject ConfigService configService
 @inject ContextMenuService contextMenuService
+@inject UserManager<AppIdentityUser> UserManager;
 
 
 @using Damselfly.Core.ImageProcessing
@@ -17,13 +22,13 @@
 <div class="damselfly-imagepreview">
     <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown"
          @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
-        @if(ZoomEnabled)
+        @if (ZoomEnabled)
         {
             <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" />
         }
         <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
         <div class="objects-box" id="objectBox">
-            @if (ShowObjects )
+            @if (ShowObjects)
             {
                 @foreach (var obj in Objects)
                 {
@@ -39,14 +44,17 @@
 
 @code
 {
-        [Parameter] // TODO Change to required with .Net 6 preview 6
-        public Image Image { get{ return theImage; } set{ ChangeImage(value); } }
+    [Parameter] // TODO Change to required with .Net 6 preview 6
+    public Image Image { get { return theImage; } set { ChangeImage(value); } }
 
-        [Parameter]
-        public bool ShowObjects { get{ return showObjects; } set{ SetShowObjects(value); } }
+    [Parameter]
+    public bool ShowObjects { get { return showObjects; } set { SetShowObjects(value); } }
 
-        [Parameter]
-        public bool ZoomEnabled { get { return zoomEnabled; } set { SetZoomEnabled(value); } }
+    [Parameter]
+    public bool ZoomEnabled { get { return zoomEnabled; } set { SetZoomEnabled(value); } }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
 
     private bool showObjects;
     private bool zoomEnabled;
@@ -58,7 +66,7 @@
     private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => $"/thumb/{ThumbSize.ExtraLarge}/{theImage.ImageId}";
-    private string ImageUrlZoom => GetZoomUrl( theImage );
+    private string ImageUrlZoom => GetZoomUrl(theImage);
 
     private readonly List<string> browserRenderedExtensions = new List<string> { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
 
@@ -75,7 +83,7 @@
     /// </summary>
     /// <param name="image"></param>
     /// <returns></returns>
-    private string GetZoomUrl( Image image )
+    private string GetZoomUrl(Image image)
     {
         var ext = Path.GetExtension(image.FileName);
 
@@ -95,15 +103,15 @@
         new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = ShowObjectsMenuText, Value = 0 },
                 new ContextMenuItem(){ Text = ShowZoomMenuText, Value = 1 }
-        }, (args) =>
-        {
-            contextMenuService.Close();
-            switch (args.Value)
-            {
-                case 0: SetShowObjects(!ShowObjects); break;
-                case 1: SetZoomEnabled( ! ZoomEnabled ); break;
-            }
-        });
+                }, (args) =>
+                {
+                    contextMenuService.Close();
+                    switch (args.Value)
+                    {
+                        case 0: SetShowObjects(!ShowObjects); break;
+                        case 1: SetZoomEnabled(!ZoomEnabled); break;
+                    }
+                });
     }
 
     private void DoObjectBox()
@@ -121,11 +129,18 @@
             return;
 
         showObjects = newState;
-        configService.Set(ConfigSettings.ShowObjects, showObjects.ToString());
+        _ = SetConfig(ConfigSettings.ShowObjects, showObjects.ToString());
         StateHasChanged();
 
         if (showObjects)
             DoObjectBox();
+    }
+
+    private async Task SetConfig( string setting, string newValue )
+    {
+        var authState = await authenticationStateTask;
+        var currentUser = await UserManager.GetUserAsync(authState.User);
+        configService.Set(setting.ToString(), newValue, currentUser);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -147,7 +162,7 @@
         if (newState != zoomEnabled)
         {
             zoomEnabled = newState;
-            configService.Set(ConfigSettings.ShowZoom, zoomEnabled.ToString());
+            _ = SetConfig(ConfigSettings.ShowZoom, zoomEnabled.ToString());
             StateHasChanged();
 
             if (zoomEnabled)
@@ -191,7 +206,7 @@
 
         HiResImageLoaded = true;
 
-        if( zoomEnabled )
+        if (zoomEnabled)
             _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
         statusService.StatusText = "Hi-res image loaded.";
@@ -221,7 +236,7 @@
 
             if (zoomChanged)
             {
-                configService.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+                _ = SetConfig(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
                 _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
                 StateHasChanged();

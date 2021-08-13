@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.DbModels
 {
-    public class AppIdentityUser : IdentityUser<int>
+    public class AppIdentityUser : IdentityUser<int>, IDamselflyUser
     {
     }
         

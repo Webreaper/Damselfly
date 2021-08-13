@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Services
 {
@@ -15,20 +16,26 @@ namespace Damselfly.Core.Services
 
         public ConfigService()
         {
-            InitialiseCache();
         }
 
-        public void InitialiseCache( bool force = false )
+        public void InitialiseCache( bool force = false, IDamselflyUser user = null)
         {
             if (_cache == null || force)
             {
                 using var db = new ImageContext();
-                foreach (var setting in db.ConfigSettings )
+                List<ConfigSetting> settings;
+
+                if (user != null)
+                    settings = db.ConfigSettings.Where(x => x.UserId == user.Id || x.UserId == null).ToList();
+                else
+                    settings = db.ConfigSettings.ToList();
+
+                foreach (var setting in db.ConfigSettings.Where( x => x.UserId == user.Id || x.UserId == null ) )
                     _cache[setting.Name] = setting;
             }
         }
 
-        public void Set(string name, string value)
+        public void Set(string name, string value, IDamselflyUser user = null )
         {
             InitialiseCache();
 
@@ -48,6 +55,7 @@ namespace Damselfly.Core.Services
                     {
                         // Setting set to non-null - save in the DB and cache
                         existing.Value = value;
+                        existing.UserId = user?.Id;
                         db.ConfigSettings.Update(existing);
                     }
                 }
@@ -56,7 +64,7 @@ namespace Damselfly.Core.Services
                     if (!String.IsNullOrEmpty(value))
                     {
                         // Existing setting set to non-null - create in the DB and cache.
-                        existing = new ConfigSetting { Name = name, Value = value };
+                        existing = new ConfigSetting { Name = name, Value = value, UserId = user?.Id };
                         _cache[name] = existing;
                         db.ConfigSettings.Add(existing);
                     }
@@ -66,12 +74,12 @@ namespace Damselfly.Core.Services
             }
 
             // Clear the cache and re-initialise it
-            InitialiseCache(true);
+            InitialiseCache(true, user);
         }
 
-        public string Get(string name, string defaultIfNotExists = null)
+        public string Get(string name, string defaultIfNotExists = null, IDamselflyUser user = null )
         {
-            InitialiseCache();
+            InitialiseCache( false, user );
 
             if (_cache.TryGetValue(name, out ConfigSetting existing))
                 return existing.Value;
@@ -79,11 +87,11 @@ namespace Damselfly.Core.Services
             return defaultIfNotExists;
         }
 
-        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default) where EnumType : struct
+        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default, IDamselflyUser user = null ) where EnumType : struct
         {
             EnumType resultInputType = defaultIfNotExists;
 
-            string value = Get(name);
+            string value = Get(name, null, user);
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -94,11 +102,11 @@ namespace Damselfly.Core.Services
             return resultInputType;
         }
 
-        public bool GetBool(string name, bool defaultIfNotExists = default)
+        public bool GetBool(string name, bool defaultIfNotExists = default, IDamselflyUser user = null)
         {
             bool result = defaultIfNotExists;
 
-            string value = Get(name);
+            string value = Get(name, null, user);
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -109,11 +117,11 @@ namespace Damselfly.Core.Services
             return result;
         }
 
-        public int GetInt(string name, int defaultIfNotExists = default)
+        public int GetInt(string name, int defaultIfNotExists = default, IDamselflyUser user = null)
         {
             int result = defaultIfNotExists;
 
-            string value = Get(name);
+            string value = Get(name, null, user);
 
             if (!string.IsNullOrEmpty(value))
             {

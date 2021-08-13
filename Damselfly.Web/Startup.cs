@@ -57,17 +57,13 @@ namespace Damselfly.Web
             services.AddFileReaderService();
 
             services.AddDbContext<ImageContext>();
-
+            services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
             services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                                                             .AddEntityFrameworkStores<ImageContext>();
-
-            services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
 
             services.AddSingleton<ConfigService>();
             services.AddSingleton<ImageProcessorFactory>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-            services.AddSingleton<IImageProcessor>(x => x.GetRequiredService<SkiaSharpProcessor>());
-
             services.AddSingleton<ImageService>();
             services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
@@ -86,6 +82,7 @@ namespace Damselfly.Web
             services.AddSingleton<ImageRecognitionService>();
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            services.AddScoped<UserConfigService>();
             services.AddScoped<UserStatusService>();
             services.AddScoped<SearchService>();
             services.AddScoped<NavigationService>();
