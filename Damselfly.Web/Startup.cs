@@ -55,6 +55,8 @@ namespace Damselfly.Web
             services.AddServerSideBlazor();
             services.AddFileReaderService();
 
+            services.AddDbContext<ImageContext>();
+
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                                                             .AddEntityFrameworkStores<ImageContext>();
 
