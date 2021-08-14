@@ -1187,12 +1187,13 @@ padding: 0.4em 0.65em;
 .damselfly-config {
     padding: 10px;
     order: 3;
+    flex: 1 1 100%;
     display: flex;
     flex-direction: column;
 }
 
 .damselfly-configsection {
-    flex: 1;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
 }
@@ -1515,4 +1516,21 @@ hr.separator {
     background: white;
     color: black;
     padding-left: 4px;
+}
+
+.rz-tabview-panels {
+    background-color: var( --main-background);
+}
+
+.rz-tabview-nav .rz-tabview-selected {
+    background-color: var( --toolwindow-title-bg);
+    border-top-color: var( --tool-window-shadow);
+}
+
+.rz-tabview-nav li {
+    background-color: var( --toolwindow-title-bg);
+    border: solid 1px var( --tool-window-shadow);
+}
+.rz-state-active a[role='tab'] {
+    color: var( --body-text );
 }

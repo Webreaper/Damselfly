@@ -1,0 +1,20 @@
+﻿
+@inject ThemeService themeService
+@inject IJSRuntime JsRuntime
+
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            themeService.OnChangeCSS += SwitchTheme;
+            SwitchTheme(themeService.ThemeCSS);
+        }
+    }
+
+    private void SwitchTheme(string newCSS)
+    {
+        _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newCSS);
+    }
+}

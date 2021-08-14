@@ -22,9 +22,10 @@ namespace Damselfly.Core.Services
     {
         private static DirectoryInfo themesFolder;
         private long cacheBuster = 1;
-        private readonly IConfigService _configService;
+        private readonly UserConfigService _configService;
+        public event Action<string> OnChangeCSS;
 
-        public ThemeService( IConfigService configService )
+        public ThemeService( UserConfigService configService )
         {
             _configService = configService;
         }
@@ -48,12 +49,13 @@ namespace Damselfly.Core.Services
             {
                 _configService.Set(ConfigSettings.Theme, value);
                 cacheBuster++;
+                OnChangeCSS?.Invoke(ThemeCSS);
             }
         }
 
         public string ThemeCSS
         {
-            get { return $"{CurrentTheme}.css?j={cacheBuster}"; }
+            get { return $"themes/{CurrentTheme}.css?j={cacheBuster}"; }
         }
 
         public List<string> Themes

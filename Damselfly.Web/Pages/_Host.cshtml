@@ -21,7 +21,7 @@
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
     <link href="css/DarkDateRangePicker.css" rel="stylesheet" />
     <link href="css/snackbar.css" rel="stylesheet" />
-    <link href="themes/@themeService.ThemeCSS" rel="stylesheet" />
+    <link href="themes/green.css" id="themeStyleSheet" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
@@ -52,6 +52,12 @@
     </app>
 
     <script>
+            function setStyleSheet(url) {
+                var stylesheet = document.getElementById("themeStyleSheet");
+                console.log("Changing stylesheet to " + url);
+                stylesheet.setAttribute('href', url);
+            }
+
             window.setSelection = (element, start, end) => {
                 return element.setSelectionRange(start, end);
             }

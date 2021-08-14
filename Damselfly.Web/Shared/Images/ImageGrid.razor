@@ -273,7 +273,7 @@
                 if (!int.TryParse(configService.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
                     initialLoadCount = imagesPerPage;
 
-                if (!int.TryParse(configService.Get("ImageScrollTop"), out scrollPos))
+                if (!int.TryParse(configService.Get("ImageScrollTop"),out scrollPos))
                     scrollPos = 0;
 
                 searchService.OnChange += SearchQueryChanged;

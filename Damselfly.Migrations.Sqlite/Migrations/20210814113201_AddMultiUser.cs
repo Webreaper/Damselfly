@@ -7,7 +7,6 @@ namespace Damselfly.Core.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-        {
             // Delete this to avoid FK constraints
             migrationBuilder.Sql(@"delete from KeywordOperations;");
 

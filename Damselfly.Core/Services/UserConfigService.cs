@@ -1,5 +1,7 @@
-﻿using Damselfly.Core.DbModels;
+﻿using System;
+using Damselfly.Core.DbModels;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -10,7 +12,7 @@ namespace Damselfly.Core.Services
         private AuthenticationStateProvider _authenticationStateProvider;
         private ConfigService _configService;
         private UserManager<AppIdentityUser> _userManager;
-        private AppIdentityUser _user;
+        private AppIdentityUser _user => GetUser();
 
         public UserConfigService(AuthenticationStateProvider authenticationStateProvider, ConfigService configService,
                                     UserManager<AppIdentityUser> userManager )
@@ -19,9 +21,21 @@ namespace Damselfly.Core.Services
             _configService = configService;
             _userManager = userManager;
 
-            // TODO: Not sure this is a great place to do this async bodge
-            var authState = _authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
-            _user = _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult(); ;
+        }
+
+        private AppIdentityUser GetUser()
+        {
+            try
+            {
+                // TODO: Not sure this is a great place to do this async bodge
+                var authState = _authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
+                return _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError( $"Identity State error: {ex.Message}");
+                return null;
+            }
         }
 
         public string Get(string name, string defaultIfNotExists = null)

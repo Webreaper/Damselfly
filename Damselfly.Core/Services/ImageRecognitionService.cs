@@ -169,6 +169,7 @@ namespace Damselfly.Core.Services
 
             return bmp;
         }
+
         /// <summary>
         /// Detect objects in the image.
         /// </summary>

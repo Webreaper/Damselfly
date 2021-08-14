@@ -6,6 +6,7 @@
 
 @inject IJSRuntime JsRuntime
 @inject ConfigService configService
+@inject UserConfigService userConfigService
 @inject ThemeService themeService
 @inject UserStatusService statusService
 @inject WordpressService wpService
@@ -13,116 +14,131 @@
 @inject AzureFaceService azureService
 
 <div class="damselfly-config">
-    <div class="damselfly-configsection">
-        <h1>Configuration Settings</h1>
-    </div>
-    <div class="damselfly-configsection">
-        <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-            <FluentValidationValidator />
-            <ValidationSummary />
+    <h1>Configuration Settings</h1>
+    <RadzenTabs class="damselfly-configsection" RenderMode="TabRenderMode.Client">
+        <Tabs>
+            <RadzenTabsItem Text="User Config">
+                <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                    <FluentValidationValidator />
+                    <ValidationSummary />
 
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>Embed Sidecar (XMP/OM1) keywords during indexing:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputCheckbox @bind-Value="importSidecarKeywords" />
-                </div>
-            </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>Theme: </label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputSelect @bind-Value="selectedTheme">
+                                @foreach (var choice in themeService.Themes)
+                                {
+                                    <option value="@choice">
+                                        @choice.Transform(To.SentenceCase)
+                                    </option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Save Settings</button>
+                </EditForm>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Admin Config">
+                <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                    <FluentValidationValidator />
+                    <ValidationSummary />
 
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>Theme: </label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputSelect @bind-Value="selectedTheme">
-                        @foreach (var choice in themeService.Themes)
-                        {
-                            <option value="@choice">
-                                @choice.Transform(To.SentenceCase)
-                            </option>
-                        }
-                    </InputSelect>
-                </div>
-            </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>Embed Sidecar (XMP/OM1) keywords during indexing:</label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputCheckbox @bind-Value="importSidecarKeywords" />
+                        </div>
+                    </div>
 
-            <h2>Wordpress Upload</h2>
+                    <h2>Wordpress Upload</h2>
 
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>URL:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputText placeholder="Wordpress URL" @bind-Value="wpSettings.URL" />
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>User Name:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputText placeholder="User Name" @bind-Value="wpSettings.UserName" />
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>Password:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputText type="password" placeholder="Password" @bind-Value="wpSettings.Password" />
-                </div>
-            </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>URL:</label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputText placeholder="Wordpress URL" @bind-Value="wpSettings.URL" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>User Name:</label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputText placeholder="User Name" @bind-Value="wpSettings.UserName" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>Password:</label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputText type="password" placeholder="Password" @bind-Value="wpSettings.Password" />
+                        </div>
+                    </div>
 
-            <h2>Azure Cognitive Services Face Recognition</h2>
+                    <button class="btn btn-primary" type="submit">Save Settings</button>
+                </EditForm>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="AI Config">
+                <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                    <FluentValidationValidator />
+                    <ValidationSummary />
 
-            <p>
-                <a href="https://azure.microsoft.com/services/cognitive-services/face/" target="_blank">Azure Face</a>
-                is an online Face-recognition service provided by Microsoft.
-                <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
-                and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
-                recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
-                month (Damselfly uses around 3 transactions per image processed). To use the tranaction limit efficiently
-                you can elect to only submit images to Azure which have faces or people detected in them by Damselfly's
-                offline detection.'
-            </p>
+                    <h2>Azure Cognitive Services Face Recognition</h2>
 
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>URL:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputText placeholder="Endpoint" @bind-Value="azureSettings.Endpoint" />
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>Key 1:</label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputText placeholder="API Key" @bind-Value="azureSettings.ApiKey" />
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configlabel">
-                    <label>Azure Detection: </label>
-                </div>
-                <div class="damselfly-configfield">
-                    <InputSelect @bind-Value="azureSettings.DetectionType">
-                        @foreach (var choice in Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
-                        {
-                            <option value="@choice">
-                                @choice.ToString().Humanize()
-                            </option>
-                        }
-                    </InputSelect>
-                </div>
-            </div>
+                    <p>
+                        <a href="https://azure.microsoft.com/services/cognitive-services/face/" target="_blank">Azure Face</a>
+                        is an online Face-recognition service provided by Microsoft.
+                        <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
+                        and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
+                        recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
+                        month (Damselfly uses around 3 transactions per image processed). To use the tranaction limit efficiently
+                        you can elect to only submit images to Azure which have faces or people detected in them by Damselfly's
+                        offline detection.'
+                    </p>
 
-            <button class="btn btn-primary" type="submit">Save Settings</button>
-        </EditForm>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>URL:</label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputText placeholder="Endpoint" @bind-Value="azureSettings.Endpoint" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>Key 1:</label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputText placeholder="API Key" @bind-Value="azureSettings.ApiKey" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configlabel">
+                            <label>Azure Detection: </label>
+                        </div>
+                        <div class="damselfly-configfield">
+                            <InputSelect @bind-Value="azureSettings.DetectionType">
+                                @foreach (var choice in Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
+                                {
+                                    <option value="@choice">
+                                        @choice.ToString().Humanize()
+                                    </option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
 
-    </div>
-
+                    <button class="btn btn-primary" type="submit">Save Settings</button>
+                </EditForm>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
 </div>
 
 @code {
@@ -149,11 +165,11 @@
         if (themeService.CurrentTheme != selectedTheme)
         {
             themeService.CurrentTheme = selectedTheme;
-            _ = JsRuntime.InvokeVoidAsync("window.location.reload");
+            //_ = JsRuntime.InvokeVoidAsync("window.location.reload");
         }
 
         // Init the azure service status based on config.
-        azureService.StartService( new TransThrottle(CloudTransaction.TransactionType.AzureFace) );
+        azureService.StartService(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
 
         statusService.StatusText = "Settings saved.";
     }

@@ -62,8 +62,8 @@ namespace Damselfly.Web
                                                             .AddEntityFrameworkStores<ImageContext>();
 
             services.AddSingleton<ConfigService>();
-            services.AddSingleton<ImageProcessorFactory>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+            services.AddSingleton<ImageProcessorFactory>();
             services.AddSingleton<ImageService>();
             services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
@@ -81,9 +81,9 @@ namespace Damselfly.Web
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ImageRecognitionService>();
 
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddScoped<UserConfigService>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
             services.AddScoped<UserStatusService>();
+            services.AddScoped<UserConfigService>();
             services.AddScoped<SearchService>();
             services.AddScoped<NavigationService>();
             services.AddScoped<UserFolderService>();
