@@ -18,6 +18,12 @@ namespace Damselfly.Core.Services
         {
         }
 
+        private string GetCacheKey( string settingName, IDamselflyUser user )
+        {
+            string userId = user != null ? $"_{user.Id}" : string.Empty;
+
+            return $"{settingName}{userId}";
+        }
         public void InitialiseCache( bool force = false, IDamselflyUser user = null)
         {
             if (_cache == null || force)
@@ -30,8 +36,11 @@ namespace Damselfly.Core.Services
                 else
                     settings = db.ConfigSettings.ToList();
 
-                foreach (var setting in settings )
-                    _cache[setting.Name] = setting;
+                foreach (var setting in settings)
+                {
+                    var key = GetCacheKey(setting.Name, user);
+                    _cache[key] = setting;
+                }
             }
         }
 
@@ -43,13 +52,15 @@ namespace Damselfly.Core.Services
 
             lock (_cache)
             {
-                if (_cache.TryGetValue(name, out ConfigSetting existing))
+                var key = GetCacheKey(name, user);
+
+                if (_cache.TryGetValue(key, out ConfigSetting existing))
                 {
                     if (String.IsNullOrEmpty(value))
                     {
                         // Setting set to null - delete from the DB and cache
                         db.ConfigSettings.Remove(existing);
-                        _cache.Remove(name);
+                        _cache.Remove(key);
                     }
                     else
                     {
@@ -81,7 +92,9 @@ namespace Damselfly.Core.Services
         {
             InitialiseCache( false, user );
 
-            if (_cache.TryGetValue(name, out ConfigSetting existing))
+            var key = GetCacheKey(name, user);
+
+            if (_cache.TryGetValue(key, out ConfigSetting existing))
                 return existing.Value;
 
             return defaultIfNotExists;
