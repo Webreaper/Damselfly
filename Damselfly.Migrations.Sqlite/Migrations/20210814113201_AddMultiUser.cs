@@ -3,15 +3,34 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Damselfly.Core.Migrations
 {
-    public partial class AddIdentity : Migration
+    public partial class AddMultiUser : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<int>(
+                name: "UserId",
+                table: "KeywordOperations",
+                type: "INTEGER",
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "UserId",
+                table: "ConfigSettings",
+                type: "INTEGER",
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "UserId",
+                table: "Baskets",
+                type: "INTEGER",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
@@ -25,7 +44,8 @@ namespace Damselfly.Core.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "TEXT", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -52,7 +72,7 @@ namespace Damselfly.Core.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    RoleId = table.Column<string>(type: "TEXT", nullable: false),
+                    RoleId = table.Column<int>(type: "INTEGER", nullable: false),
                     ClaimType = table.Column<string>(type: "TEXT", nullable: true),
                     ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
                 },
@@ -73,7 +93,7 @@ namespace Damselfly.Core.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     ClaimType = table.Column<string>(type: "TEXT", nullable: true),
                     ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
                 },
@@ -95,7 +115,7 @@ namespace Damselfly.Core.Migrations
                     LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
                     ProviderKey = table.Column<string>(type: "TEXT", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId = table.Column<string>(type: "TEXT", nullable: false)
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -112,8 +132,8 @@ namespace Damselfly.Core.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    RoleId = table.Column<string>(type: "TEXT", nullable: false)
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    RoleId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -136,7 +156,7 @@ namespace Damselfly.Core.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
                     Value = table.Column<string>(type: "TEXT", nullable: true)
@@ -153,10 +173,25 @@ namespace Damselfly.Core.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_KeywordOperations_UserId",
+                table: "KeywordOperations",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Images_FileName_FolderId",
                 table: "Images",
                 columns: new[] { "FileName", "FolderId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ConfigSettings_UserId",
+                table: "ConfigSettings",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Baskets_UserId",
+                table: "Baskets",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -194,10 +229,46 @@ namespace Damselfly.Core.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Baskets_AspNetUsers_UserId",
+                table: "Baskets",
+                column: "UserId",
+                principalTable: "AspNetUsers",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ConfigSettings_AspNetUsers_UserId",
+                table: "ConfigSettings",
+                column: "UserId",
+                principalTable: "AspNetUsers",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_KeywordOperations_AspNetUsers_UserId",
+                table: "KeywordOperations",
+                column: "UserId",
+                principalTable: "AspNetUsers",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Baskets_AspNetUsers_UserId",
+                table: "Baskets");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_ConfigSettings_AspNetUsers_UserId",
+                table: "ConfigSettings");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_KeywordOperations_AspNetUsers_UserId",
+                table: "KeywordOperations");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -220,8 +291,32 @@ namespace Damselfly.Core.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropIndex(
+                name: "IX_KeywordOperations_UserId",
+                table: "KeywordOperations");
+
+            migrationBuilder.DropIndex(
                 name: "IX_Images_FileName_FolderId",
                 table: "Images");
+
+            migrationBuilder.DropIndex(
+                name: "IX_ConfigSettings_UserId",
+                table: "ConfigSettings");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Baskets_UserId",
+                table: "Baskets");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "KeywordOperations");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "ConfigSettings");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "Baskets");
         }
     }
 }

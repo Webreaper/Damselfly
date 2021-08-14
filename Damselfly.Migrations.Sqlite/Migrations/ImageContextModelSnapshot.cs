@@ -120,12 +120,12 @@ namespace Damselfly.Core.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("OwnerId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("BasketId");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Baskets");
                 });
@@ -703,11 +703,11 @@ namespace Damselfly.Core.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
-                    b.HasOne("Damselfly.Core.DbModels.AppIdentityUser", "Owner")
+                    b.HasOne("Damselfly.Core.DbModels.AppIdentityUser", "User")
                         .WithMany()
-                        .HasForeignKey("OwnerId");
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("Owner");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.BasketEntry", b =>
