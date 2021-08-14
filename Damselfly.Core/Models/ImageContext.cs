@@ -508,8 +508,8 @@ namespace Damselfly.Core.Models
         public DateTime DateAdded { get; set; } = DateTime.UtcNow;
         public string Name { get; set; }
 
-        public int? OwnerId { get; set; }
-        public virtual AppIdentityUser Owner { get; set; }
+        public int? UserId { get; set; }
+        public virtual AppIdentityUser User { get; set; }
 
         public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
     }

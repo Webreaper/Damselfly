@@ -109,7 +109,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
             catch( Exception ex )
             {
-                Logging.LogWarning("Migrations failed - creating DB. Exception: {0}", ex.Message);
+                Logging.LogWarning($"Migrations failed - creating DB. Exception: {ex}");
                 db.Database.EnsureCreated();
             }
 
