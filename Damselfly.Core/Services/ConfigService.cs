@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
 
@@ -9,16 +8,14 @@ namespace Damselfly.Core.Services
     /// <summary>
     /// Service to store NVP configuration settings
     /// </summary>
-    public class ConfigService : IConfigService
+    public class ConfigService : BaseConfigService, IConfigService
     {
-        private readonly IDictionary<string, ConfigSetting> _cache = new Dictionary<string, ConfigSetting>(StringComparer.OrdinalIgnoreCase);
-
         public ConfigService()
         {
             InitialiseCache();
         }
 
-        public void InitialiseCache()
+        public override void InitialiseCache()
         {
             lock (_cache)
             {
@@ -34,7 +31,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public void Set(string name, string value )
+        public override void Set(string name, string value )
         {
             using var db = new ImageContext();
 
@@ -68,59 +65,6 @@ namespace Damselfly.Core.Services
 
                 db.SaveChanges("SaveConfig");
             }
-        }
-
-        public string Get(string name, string defaultIfNotExists = null)
-        {
-            if (_cache.TryGetValue(name, out ConfigSetting existing))
-                return existing.Value;
-
-            return defaultIfNotExists;
-        }
-
-        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default ) where EnumType : struct
-        {
-            EnumType resultInputType = defaultIfNotExists;
-
-            string value = Get(name, null);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!Enum.TryParse(value, true, out resultInputType))
-                    resultInputType = defaultIfNotExists;
-            }
-
-            return resultInputType;
-        }
-
-        public bool GetBool(string name, bool defaultIfNotExists = default)
-        {
-            bool result = defaultIfNotExists;
-
-            string value = Get(name, null);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!bool.TryParse(value, out result))
-                    result = defaultIfNotExists;
-            }
-
-            return result;
-        }
-
-        public int GetInt(string name, int defaultIfNotExists = default)
-        {
-            int result = defaultIfNotExists;
-
-            string value = Get(name, null);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!int.TryParse(value, out result))
-                    result = defaultIfNotExists;
-            }
-
-            return result;
         }
     }
 }

@@ -1,28 +1,22 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 using Damselfly.Core.DbModels;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.Services
 {
-    public class UserConfigService
+    public class UserConfigService : BaseConfigService
     {
-        private ConfigService _configService;
         private UserService _userService;
         private AppIdentityUser _user;
-        private readonly IDictionary<string, ConfigSetting> _cache = new Dictionary<string, ConfigSetting>(StringComparer.OrdinalIgnoreCase);
 
-        public UserConfigService(ConfigService configService, UserService userService)
+        public UserConfigService(UserService userService)
         {
-            _configService = configService;
             _userService = userService;
             _userService.OnChange += UserChanged;
             _user = userService.User;
 
-            if (_user != null)
-                InitialiseCache();
+            InitialiseCache();
         }
 
         private void UserChanged( AppIdentityUser user )
@@ -31,7 +25,7 @@ namespace Damselfly.Core.Services
             InitialiseCache();
         }
 
-        public void InitialiseCache()
+        public override void InitialiseCache()
         {
             lock (_cache)
             {
@@ -51,61 +45,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-
-        public string Get(string name, string defaultIfNotExists = null)
-        {
-            if (_cache.TryGetValue(name, out ConfigSetting existing))
-                return existing.Value;
-
-            return defaultIfNotExists;
-        }
-
-        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default) where EnumType : struct
-        {
-            EnumType resultInputType = defaultIfNotExists;
-
-            string value = Get(name, null);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!Enum.TryParse(value, true, out resultInputType))
-                    resultInputType = defaultIfNotExists;
-            }
-
-            return resultInputType;
-        }
-
-        public bool GetBool(string name, bool defaultIfNotExists = default)
-        {
-            bool result = defaultIfNotExists;
-
-            string value = Get(name, null);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!bool.TryParse(value, out result))
-                    result = defaultIfNotExists;
-            }
-
-            return result;
-        }
-
-        public int GetInt(string name, int defaultIfNotExists = default)
-        {
-            int result = defaultIfNotExists;
-
-            string value = Get(name, null);
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                if (!int.TryParse(value, out result))
-                    result = defaultIfNotExists;
-            }
-
-            return result;
-        }
-
-        public void Set(string name, string value)
+        public override void Set(string name, string value)
         {
             if (_user == null)
                 return;
