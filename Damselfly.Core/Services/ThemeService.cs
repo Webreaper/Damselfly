@@ -8,6 +8,7 @@ using Damselfly.Core.Models;
 using System.Collections.Generic;
 using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Services
 {
@@ -24,10 +25,13 @@ namespace Damselfly.Core.Services
         private long cacheBuster = 1;
         private readonly UserConfigService _configService;
         public event Action<string> OnChangeCSS;
+        private string _currentTheme;
 
         public ThemeService( UserConfigService configService )
         {
             _configService = configService;
+
+            _currentTheme = _configService.Get(ConfigSettings.Theme, "green");
         }
 
         /// <summary>
@@ -40,16 +44,21 @@ namespace Damselfly.Core.Services
             themesFolder = new DirectoryInfo(Path.Combine(contentRootPath, "themes"));
         }
 
-        public string CurrentTheme {
+        public string CurrentTheme
+        {
             get
             {
-                return _configService.Get(ConfigSettings.Theme, "green");
+                return _currentTheme;
             }
             set
             {
-                _configService.Set(ConfigSettings.Theme, value);
-                cacheBuster++;
-                OnChangeCSS?.Invoke(ThemeCSS);
+                if(_currentTheme != value )
+                {
+                    _currentTheme = value;
+                    _configService.Set(ConfigSettings.Theme, _currentTheme);
+                    cacheBuster++;
+                    OnChangeCSS?.Invoke(ThemeCSS);
+                }
             }
         }
 

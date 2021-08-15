@@ -10,7 +10,7 @@
 
 @inject IJSRuntime JsRuntime
 @inject UserStatusService statusService
-@inject UserConfigService configService
+@inject UserConfigService userConfigService
 @inject ContextMenuService contextMenuService
 @inject UserManager<AppIdentityUser> UserManager;
 
@@ -129,18 +129,11 @@
             return;
 
         showObjects = newState;
-        _ = SetConfig(ConfigSettings.ShowObjects, showObjects.ToString());
+        userConfigService.Set(ConfigSettings.ShowObjects, showObjects.ToString());
         StateHasChanged();
 
         if (showObjects)
             DoObjectBox();
-    }
-
-    private async Task SetConfig( string setting, string newValue )
-    {
-        var authState = await authenticationStateTask;
-        var currentUser = await UserManager.GetUserAsync(authState.User);
-        configService.Set(setting.ToString(), newValue, currentUser);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -162,7 +155,7 @@
         if (newState != zoomEnabled)
         {
             zoomEnabled = newState;
-            _ = SetConfig(ConfigSettings.ShowZoom, zoomEnabled.ToString());
+            userConfigService.Set(ConfigSettings.ShowZoom, zoomEnabled.ToString());
             StateHasChanged();
 
             if (zoomEnabled)
@@ -192,9 +185,9 @@
 
     protected override void OnInitialized()
     {
-        ZoomLevel = configService.GetInt(ConfigSettings.ZoomLevel, 400);
-        ZoomEnabled = configService.GetBool(ConfigSettings.ShowZoom, true);
-        ShowObjects = configService.GetBool(ConfigSettings.ShowObjects, false);
+        ZoomLevel = userConfigService.GetInt(ConfigSettings.ZoomLevel, 400);
+        ZoomEnabled = userConfigService.GetBool(ConfigSettings.ShowZoom, true);
+        ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects, false);
 
         base.OnInitialized();
 
@@ -236,7 +229,7 @@
 
             if (zoomChanged)
             {
-                _ = SetConfig(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+                userConfigService.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
                 _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
                 StateHasChanged();

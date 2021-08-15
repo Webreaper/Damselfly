@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
-using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Services
 {
@@ -16,57 +15,43 @@ namespace Damselfly.Core.Services
 
         public ConfigService()
         {
+            InitialiseCache();
         }
 
-        private string GetCacheKey( string settingName, IDamselflyUser user )
+        public void InitialiseCache()
         {
-            string userId = user != null ? $"_{user.Id}" : string.Empty;
-
-            return $"{settingName}{userId}";
-        }
-        public void InitialiseCache( bool force = false, IDamselflyUser user = null)
-        {
-            if (_cache == null || force)
+            lock (_cache)
             {
+                _cache.Clear();
                 using var db = new ImageContext();
-                List<ConfigSetting> settings;
 
-                if (user != null)
-                    settings = db.ConfigSettings.Where(x => x.UserId == user.Id || x.UserId == null).ToList();
-                else
-                    settings = db.ConfigSettings.ToList();
+                var settings = db.ConfigSettings.Where(x => x.UserId == null || x.UserId == 0).ToList();
 
                 foreach (var setting in settings)
                 {
-                    var key = GetCacheKey(setting.Name, user);
-                    _cache[key] = setting;
+                    _cache[setting.Name] = setting;
                 }
             }
         }
 
-        public void Set(string name, string value, IDamselflyUser user = null )
+        public void Set(string name, string value )
         {
-            InitialiseCache();
-
             using var db = new ImageContext();
 
             lock (_cache)
             {
-                var key = GetCacheKey(name, user);
-
-                if (_cache.TryGetValue(key, out ConfigSetting existing))
+                if (_cache.TryGetValue(name, out ConfigSetting existing))
                 {
                     if (String.IsNullOrEmpty(value))
                     {
                         // Setting set to null - delete from the DB and cache
                         db.ConfigSettings.Remove(existing);
-                        _cache.Remove(key);
+                        _cache.Remove(name);
                     }
                     else
                     {
                         // Setting set to non-null - save in the DB and cache
                         existing.Value = value;
-                        existing.UserId = user?.Id;
                         db.ConfigSettings.Update(existing);
                     }
                 }
@@ -75,7 +60,7 @@ namespace Damselfly.Core.Services
                     if (!String.IsNullOrEmpty(value))
                     {
                         // Existing setting set to non-null - create in the DB and cache.
-                        existing = new ConfigSetting { Name = name, Value = value, UserId = user?.Id };
+                        existing = new ConfigSetting { Name = name, Value = value };
                         _cache[name] = existing;
                         db.ConfigSettings.Add(existing);
                     }
@@ -83,28 +68,21 @@ namespace Damselfly.Core.Services
 
                 db.SaveChanges("SaveConfig");
             }
-
-            // Clear the cache and re-initialise it
-            InitialiseCache(true, user);
         }
 
-        public string Get(string name, string defaultIfNotExists = null, IDamselflyUser user = null )
+        public string Get(string name, string defaultIfNotExists = null)
         {
-            InitialiseCache( false, user );
-
-            var key = GetCacheKey(name, user);
-
-            if (_cache.TryGetValue(key, out ConfigSetting existing))
+            if (_cache.TryGetValue(name, out ConfigSetting existing))
                 return existing.Value;
 
             return defaultIfNotExists;
         }
 
-        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default, IDamselflyUser user = null ) where EnumType : struct
+        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default ) where EnumType : struct
         {
             EnumType resultInputType = defaultIfNotExists;
 
-            string value = Get(name, null, user);
+            string value = Get(name, null);
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -115,11 +93,11 @@ namespace Damselfly.Core.Services
             return resultInputType;
         }
 
-        public bool GetBool(string name, bool defaultIfNotExists = default, IDamselflyUser user = null)
+        public bool GetBool(string name, bool defaultIfNotExists = default)
         {
             bool result = defaultIfNotExists;
 
-            string value = Get(name, null, user);
+            string value = Get(name, null);
 
             if (!string.IsNullOrEmpty(value))
             {
@@ -130,11 +108,11 @@ namespace Damselfly.Core.Services
             return result;
         }
 
-        public int GetInt(string name, int defaultIfNotExists = default, IDamselflyUser user = null)
+        public int GetInt(string name, int defaultIfNotExists = default)
         {
             int result = defaultIfNotExists;
 
-            string value = Get(name, null, user);
+            string value = Get(name, null);
 
             if (!string.IsNullOrEmpty(value))
             {

@@ -1,7 +1,7 @@
 ﻿
 @inject ThemeService themeService
 @inject IJSRuntime JsRuntime
-
+@implements IDisposable
 
 @code {
     protected override void OnAfterRender(bool firstRender)
@@ -11,6 +11,11 @@
             themeService.OnChangeCSS += SwitchTheme;
             SwitchTheme(themeService.ThemeCSS);
         }
+    }
+
+    public void Dispose()
+    {
+        themeService.OnChangeCSS -= SwitchTheme;
     }
 
     private void SwitchTheme(string newCSS)

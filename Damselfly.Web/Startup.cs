@@ -82,6 +82,7 @@ namespace Damselfly.Web
             services.AddSingleton<ImageRecognitionService>();
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
+            services.AddScoped<UserService>();
             services.AddScoped<UserStatusService>();
             services.AddScoped<UserConfigService>();
             services.AddScoped<SearchService>();

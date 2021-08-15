@@ -1,66 +1,148 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Interfaces;
-using Damselfly.Core.Utils;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.Services
 {
     public class UserConfigService
     {
-        private AuthenticationStateProvider _authenticationStateProvider;
         private ConfigService _configService;
-        private UserManager<AppIdentityUser> _userManager;
-        private AppIdentityUser _user => GetUser();
+        private UserService _userService;
+        private AppIdentityUser _user;
+        private readonly IDictionary<string, ConfigSetting> _cache = new Dictionary<string, ConfigSetting>(StringComparer.OrdinalIgnoreCase);
 
-        public UserConfigService(AuthenticationStateProvider authenticationStateProvider, ConfigService configService,
-                                    UserManager<AppIdentityUser> userManager )
+        public UserConfigService(ConfigService configService, UserService userService)
         {
-            _authenticationStateProvider = authenticationStateProvider;
             _configService = configService;
-            _userManager = userManager;
+            _userService = userService;
+            _userService.OnChange += UserChanged;
+            _user = userService.User;
 
+            if (_user != null)
+                InitialiseCache();
         }
 
-        private AppIdentityUser GetUser()
+        private void UserChanged( AppIdentityUser user )
         {
-            try
+            _user = user;
+            InitialiseCache();
+        }
+
+        public void InitialiseCache()
+        {
+            lock (_cache)
             {
-                // TODO: Not sure this is a great place to do this async bodge
-                var authState = _authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
-                return _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError( $"Identity State error: {ex.Message}");
-                return null;
+                _cache.Clear();
+
+                if (_user != null)
+                {
+                    using var db = new ImageContext();
+
+                    var settings = db.ConfigSettings.Where(x => x.UserId == _user.Id).ToList();
+
+                    foreach (var setting in settings)
+                    {
+                        _cache[setting.Name] = setting;
+                    }
+                }
             }
         }
+
 
         public string Get(string name, string defaultIfNotExists = null)
         {
-            return _configService.Get(name, defaultIfNotExists, _user);
+            if (_cache.TryGetValue(name, out ConfigSetting existing))
+                return existing.Value;
+
+            return defaultIfNotExists;
         }
 
-        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default, IDamselflyUser user = null) where EnumType : struct
+        public EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default) where EnumType : struct
         {
-            return _configService.Get(name, defaultIfNotExists, _user);
+            EnumType resultInputType = defaultIfNotExists;
+
+            string value = Get(name, null);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!Enum.TryParse(value, true, out resultInputType))
+                    resultInputType = defaultIfNotExists;
+            }
+
+            return resultInputType;
         }
 
-        public bool GetBool(string name, bool defaultIfNotExists = false, IDamselflyUser user = null)
+        public bool GetBool(string name, bool defaultIfNotExists = default)
         {
-            return _configService.GetBool(name, defaultIfNotExists, _user);
+            bool result = defaultIfNotExists;
+
+            string value = Get(name, null);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!bool.TryParse(value, out result))
+                    result = defaultIfNotExists;
+            }
+
+            return result;
         }
 
-        public int GetInt(string name, int defaultIfNotExists = 0, IDamselflyUser user = null)
+        public int GetInt(string name, int defaultIfNotExists = default)
         {
-            return _configService.GetInt(name, defaultIfNotExists, _user);
+            int result = defaultIfNotExists;
+
+            string value = Get(name, null);
+
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (!int.TryParse(value, out result))
+                    result = defaultIfNotExists;
+            }
+
+            return result;
         }
 
-        public void Set(string name, string value, IDamselflyUser user = null)
+        public void Set(string name, string value)
         {
-            _configService.Set(name, value, _user);
+            if (_user == null)
+                return;
+
+            lock (_cache)
+            {
+                using var db = new ImageContext();
+
+                if (_cache.TryGetValue(name, out ConfigSetting existing))
+                {
+                    if (String.IsNullOrEmpty(value))
+                    {
+                        // Setting set to null - delete from the DB and cache
+                        db.ConfigSettings.Remove(existing);
+                        _cache.Remove(name);
+                    }
+                    else
+                    {
+                        // Setting set to non-null - save in the DB and cache
+                        existing.Value = value;
+                        existing.UserId = _user.Id;
+                        db.ConfigSettings.Update(existing);
+                    }
+                }
+                else
+                {
+                    if (!String.IsNullOrEmpty(value))
+                    {
+                        // Existing setting set to non-null - create in the DB and cache.
+                        existing = new ConfigSetting { Name = name, Value = value, UserId = _user.Id };
+                        _cache[name] = existing;
+                        db.ConfigSettings.Add(existing);
+                    }
+                }
+
+                db.SaveChanges("SaveConfig");
+            }
         }
     }
 }
