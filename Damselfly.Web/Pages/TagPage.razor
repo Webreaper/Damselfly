@@ -5,26 +5,46 @@
 @using System.IO;
 @using Damselfly.Web.Shared.Images;
 @using Damselfly.Core.Services;
+@using Damselfly.Core.Models;
+
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
+@inject IndexingService indexingService
 
 <div class="damselfly-tagview">
     @if (images == null)
     {
-        if (tags == null)
+        if (Tags == null)
         {
             <p><em>Loading tags...</em></p>
         }
         else
         {
-            <div class="damselfly-alltags">
-                @foreach (var tag in tags)
-                {
-                    <div class="damselfly-singletag">
-                        <NavLink href="@TagLink(tag)">@tag</NavLink>
-                    </div>
-                }
-            </div>
+            <MudTable Items="@Tags" FixedHeader="true" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+                      Filter="new Func<Tag,bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Keyword Tags</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TagId)">ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Tag, object>(x=>x.Keyword)">Keyword</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.Favourite)">Favourite</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nr">@context.TagId</MudTd>
+                    <MudTd DataLabel="Sign">
+                        <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
+                    </MudTd>
+                    <MudTd DataLabel="Name">@context.Favourite</MudTd>
+                    <MudTd DataLabel="Position">@context.TimeStamp</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
         }
     }
     else
@@ -41,33 +61,48 @@
     }
 </div>
 @code {
-        [Parameter]
-        public string TagName { get; set; }
+    [Parameter]
+    public string TagName { get; set; }
 
-        Image[] images;
-        string[] tags;
+    Image[] images;
+    Tag selectedTag;
+    string searchText;
 
-        private string TagLink( string tag ) => $"/tag/{tag}";
+    private string TagLink( Tag tag ) => $"/tag/{tag.Keyword}";
+
+    private IEnumerable<Tag> Tags
+    {
+        get
+        {
+            return indexingService.CachedTags.OrderBy(x => x.Favourite)
+                                             .ThenBy(x => x.Keyword, StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    private bool FilterFunc( Tag tag )
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+
+        return tag.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         if (!string.IsNullOrEmpty(TagName))
         {
             images = await ImageService.GetTagImagesAsync(TagName);
-            tags = null;
             StateHasChanged();
         }
 
         StateHasChanged();
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        // TODO: Called twice?
         if (string.IsNullOrEmpty(TagName))
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true });
-            tags = await ImageService.GetAllTagsAsync(null);
             images = null;
         }
     }

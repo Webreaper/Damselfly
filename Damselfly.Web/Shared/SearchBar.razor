@@ -36,7 +36,7 @@
     public string SearchText { get { return searchService.SearchText; } }
     public string MinSize { get { return searchService.MinSizeKB.ToString(); } }
 
-    public void OnRangeSelect(DateRange range)
+    public void OnRangeSelect(BlazorDateRangePicker.DateRange range)
     {
         searchService.SetDateRange(range.Start.Date, range.End.Date);
     }

@@ -499,6 +499,7 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
+            // TODO: Clear the tag cache and reload, and get this from the cache
             var faves = await Task.FromResult(db.Tags
                                         .Where(x => x.Favourite)
                                         .OrderBy(x => x.Keyword)

@@ -1,14 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.IO.Compression;
-using System.Threading.Tasks;
-using Damselfly.Core.Utils;
-using Damselfly.Core.Models;
 using System.Collections.Generic;
 using Damselfly.Core.Utils.Constants;
-using Damselfly.Core.Interfaces;
-using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Services
 {

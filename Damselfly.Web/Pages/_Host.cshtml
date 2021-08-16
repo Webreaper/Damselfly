@@ -14,7 +14,6 @@
     <title>Damselfly - Digital Asset Management</title>
     <base href="~/" />
     <link href="_content/Blazored.Typeahead/blazored-typeahead.css" rel="stylesheet" />
-    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
     <link rel="stylesheet" href="_content/BlazorDateRangePicker/daterangepicker.min.css" />
     <link rel="stylesheet" href="font-awesome/css/all.min.css" />
     <link rel="stylesheet" href="Cropper/cropper.css" />
@@ -23,6 +22,8 @@
     <link href="css/snackbar.css" rel="stylesheet" />
     <link href="themes/green.css" id="themeStyleSheet" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
 </head>
 <body>
     <div id="components-reconnect-modal" class="damselfly-reconnect-modal components-reconnect-hide">
@@ -51,48 +52,47 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>
-            function setStyleSheet(url) {
-                var stylesheet = document.getElementById("themeStyleSheet");
-                console.log("Changing stylesheet to " + url);
-                stylesheet.setAttribute('href', url);
-            }
+    <script>function setStyleSheet(url) {
+            var stylesheet = document.getElementById("themeStyleSheet");
+            console.log("Changing stylesheet to " + url);
+            stylesheet.setAttribute('href', url);
+        }
 
-            window.setSelection = (element, start, end) => {
-                return element.setSelectionRange(start, end);
-            }
+        window.setSelection = (element, start, end) => {
+            return element.setSelectionRange(start, end);
+        }
 
-            function writeFileLocally(sourceUrl, localFilename) {
-                window.downloadUrl(sourceUrl, localFilename);
-            }
+        function writeFileLocally(sourceUrl, localFilename) {
+            window.downloadUrl(sourceUrl, localFilename);
+        }
 
-            function downloadFile(filename) {
-                location.href = filename;
-            }
-            function doImageCrop(elementId, DotNetRef) {
-                var image = document.getElementById(elementId);
-                new Cropper(image, {
-                    update: function (coords) {
-                        DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
-                    }
-                });
-            }
-
-            function getDesktopVersion() {
-                return window.desktopVersion;
-            }
-
-            function checkDesktopUpgrade(desktopVersion, cb) {
-                try {
-                    DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
-                        if (upgradeVersion !== '') {
-                            cb(upgradeVersion);
-                        }
-                    })
-                } catch (err) {
-                    console.log("Error: " + err);
+        function downloadFile(filename) {
+            location.href = filename;
+        }
+        function doImageCrop(elementId, DotNetRef) {
+            var image = document.getElementById(elementId);
+            new Cropper(image, {
+                update: function (coords) {
+                    DotNetRef.invokeMethodAsync("CompleteCrop", { top: coords.y, left: coords.x, width: coords.width, height: coords.height });
                 }
+            });
+        }
+
+        function getDesktopVersion() {
+            return window.desktopVersion;
+        }
+
+        function checkDesktopUpgrade(desktopVersion, cb) {
+            try {
+                DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
+                    if (upgradeVersion !== '') {
+                        cb(upgradeVersion);
+                    }
+                })
+            } catch (err) {
+                console.log("Error: " + err);
             }
+        }
 
         /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
@@ -107,5 +107,6 @@
     <script src="Cropper/cropper.js"></script>
     <script src="Cropper/damselflyCrop.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 </body>
 </html>

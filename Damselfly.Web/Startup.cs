@@ -7,9 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Components.Authorization;
-using Blazored.Modal;
 using Damselfly.Web.Data;
 using Damselfly.Core.Services;
 using System.Collections.Generic;
@@ -25,6 +23,7 @@ using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
+using MudBlazor.Services;
 
 namespace Damselfly.Web
 {
@@ -52,9 +51,9 @@ namespace Damselfly.Web
             services.AddResponseCompression();
             services.AddResponseCaching();
             services.AddRazorPages();
-            services.AddBlazoredModal();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
+            services.AddMudServices();
 
             services.AddDbContext<ImageContext>();
             services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
