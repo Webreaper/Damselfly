@@ -8,7 +8,6 @@ using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using System.Threading;
 using Damselfly.Core.DbModels;
-using System.Security.Principal;
 
 namespace Damselfly.Core.Services
 {
