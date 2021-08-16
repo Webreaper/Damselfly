@@ -125,6 +125,8 @@ div::-webkit-scrollbar-thumb {
     margin-left: 2px;
     margin-right: 2px;
     border-radius: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
 }
 
 .btn-primary:disabled {
