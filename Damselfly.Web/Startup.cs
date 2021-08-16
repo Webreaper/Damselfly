@@ -25,6 +25,7 @@ using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace Damselfly.Web
 {
@@ -105,7 +106,8 @@ namespace Damselfly.Web
                         DownloadService download, ThemeService themes, TaskService tasks,
                         MetaDataService metadata, ThumbnailService thumbService,
                         IndexingService indexService, ImageProcessService imageProcessing,
-                        AzureFaceService azureFace, ImageRecognitionService aiService)
+                        AzureFaceService azureFace, ImageRecognitionService aiService,
+                        UserManager<AppIdentityUser> userManager)
         {
             if (env.IsDevelopment())
             {
@@ -163,6 +165,28 @@ namespace Damselfly.Web
             indexService.StartService();
             thumbService.StartService();
             aiService.StartService();
+
+            CheckAdminUser(userManager).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Temp hack to get an admin user setup. TODO: Need to figure this out
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <returns></returns>
+        private async Task CheckAdminUser(UserManager<AppIdentityUser> userManager)
+        {
+            var user = await userManager.FindByNameAsync("mark@otway.com");
+            if (user != null)
+            {
+                // Is Admin@BlazorHelpWebsite.com in administrator role?
+                var UserResult = await userManager.IsInRoleAsync(user, "Admin");
+                if (!UserResult)
+                {
+                    // Put admin in Administrator role
+                    await userManager.AddToRoleAsync(user, "Admin");
+                }
+            }
         }
 
         /// <summary>
