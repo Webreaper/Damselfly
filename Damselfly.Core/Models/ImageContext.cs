@@ -112,6 +112,19 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
             AddSpecialisationIndexes(modelBuilder);
+
+            SeedRoles(modelBuilder);
+        }
+
+        /// <summary>
+        /// Seed the roles for the application.
+        /// </summary>
+        /// <param name="modelBuilder"></param>
+        private void SeedRoles( ModelBuilder modelBuilder )
+        {
+            modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole { Name = "User", NormalizedName = "USER", Id = 1, ConcurrencyStamp = Guid.NewGuid().ToString() });
+            modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole { Name = "Admin", NormalizedName = "ADMIN", Id = 2, ConcurrencyStamp = Guid.NewGuid().ToString() });
+            modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole { Name = "ReadOnly", NormalizedName = "READONLY", Id = 3, ConcurrencyStamp = Guid.NewGuid().ToString() });
         }
     }
 

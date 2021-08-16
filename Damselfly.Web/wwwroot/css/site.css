@@ -53,13 +53,12 @@ html, body {
     display: block;
 }
 
-/* ************************** */
 a, .btn-link {
-    color: #03d666;
+    color: var( --statusbar-text );
 }
 
 a:hover {
-    color: #23ff23;
+    color: var( -body-text) ;
 }
 
 .blazored-modal {

@@ -45,11 +45,13 @@
     <Folder Include="wwwroot\zoom\" />
     <Folder Include="wwwroot\vScroll\" />
     <Folder Include="wwwroot\objectrects\" />
+    <Folder Include="Pages\Shared\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="config\" />
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="Microsoft.AspNetCore.Identity.UI" />
+    <None Remove="Pages\Shared\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Shared\FolderList.razor">

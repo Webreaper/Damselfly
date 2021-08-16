@@ -24,6 +24,7 @@ using Damselfly.ML.Face.Emgu;
 using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
 using MudBlazor.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace Damselfly.Web
 {
@@ -58,7 +59,8 @@ namespace Damselfly.Web
             services.AddDbContext<ImageContext>();
             services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
             services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                                                            .AddEntityFrameworkStores<ImageContext>();
+                                 .AddRoles<ApplicationRole>()
+                                 .AddEntityFrameworkStores<ImageContext>();
 
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
