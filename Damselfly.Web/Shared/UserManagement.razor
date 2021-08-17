@@ -2,6 +2,7 @@
 
 @inject UserStatusService statusService
 @inject UserService userService
+@inject IDialogService DialogService
 
 <div>
     <MudText Typo="Typo.h6">Registered Users</MudText>
@@ -9,33 +10,20 @@
     <MudTable Items="@allUsers" FixedHeader="true" Dense="true" Hover="true" Bordered="false" Striped="true"
               Filter="new Func<AppIdentityUser,bool>(UserFilterFunc)">
         <ToolBarContent>
-            <MudTextField @bind-Value="searchText" Placeholder="User Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudTextField @bind-Value="searchText" Variant="Variant.Filled" Placeholder="User Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
         <HeaderContent>
             <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<AppIdentityUser, object>(x=>x.UserName)">User Name</MudTableSortLabel></MudTh>
             <MudTh><MudTableSortLabel SortBy="new Func<AppIdentityUser, object>(x=>x.Email)">Email</MudTableSortLabel></MudTh>
             <MudTh>Roles</MudTh>
-            <MudTh>Add Role</MudTh>
+            <MudTh>Edit User</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="User Name">@context.UserName</MudTd>
             <MudTd DataLabel="Email">@context.Email</MudTd>
-            <MudTd DataLabel="Roles">
-                <div class="damselfly-keywordlist">
-                    @{
-                        var roles = GetUserRoleList(context);
-                        foreach (var role in roles)
-                        {
-                            <div class="damselfly-keyword damselfly-addfavekeyword" @onclick="@(() => RemoveRole(context, role))">
-                                <div class="damselfly-addtag" title="Remove user from @role role"><i class="fas fa-ban" /></div>
-                                <div title="Remove User from @role role" class="damselfly-keywordtext">@role</div>
-                            </div>
-                        }
-                    }
-                </div>
-            </MudTd>
-            <MudTd DataLabel="Add User to Role">
-                <button class="btn btn-primary" @onclick="@(() => AddRole( context ) )">Add Role</button>
+            <MudTd DataLabel="Roles">@string.Join( ", ", GetUserRoleList(context) ) </MudTd>
+            <MudTd DataLabel="Edit User">
+                <button class="btn btn-primary" @onclick="@(() => OpenUserDialog( context ) )"><i class="fas fa-edit"/>Edit User</button>
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -45,6 +33,18 @@
 
     private string searchText;
     private List<AppIdentityUser> allUsers = new List<AppIdentityUser>();
+
+    private async Task OpenUserDialog( AppIdentityUser user)
+    {
+        var parameters = new DialogParameters { ["user"] = user };
+        var dialog = DialogService.Show<UserDialog>("User Dialog", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await LoadUsers();
+        }
+    }
 
     private ICollection<string> GetUserRoleList(AppIdentityUser user)
     {
@@ -72,12 +72,18 @@
              user.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase);
     }
 
+    private async Task LoadUsers()
+    {
+        allUsers.Clear();
+        allUsers.AddRange(await userService.GetUsers());
+        StateHasChanged();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            allUsers.AddRange( await userService.GetUsers() );
-            StateHasChanged();
+            await LoadUsers();
         }
     }
 }

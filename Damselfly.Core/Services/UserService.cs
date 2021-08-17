@@ -76,6 +76,20 @@ namespace Damselfly.Core.Services
             return users;
         }
 
+        public async Task<ICollection<ApplicationRole>> GetRoles()
+        {
+            var roles = await _roleManager.Roles.ToListAsync();
+            return roles;
+        }
+
+        public async Task<bool> UpdateUserAsync( AppIdentityUser user )
+        {
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded;
+        }
+
+
         /// <summary>
         /// If there are no admin users, make the Admin with the lowest ID
         /// an admin. 
