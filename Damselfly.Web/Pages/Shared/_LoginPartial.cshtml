@@ -2,6 +2,9 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
+<div>
+    <img src="damselfly-logo.png" height="200" title="Damselfly" />
+</div>
 <ul class="navbar-nav">
     @if (SignInManager.IsSignedIn(User))
     {
