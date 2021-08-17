@@ -165,6 +165,7 @@ namespace Damselfly.Web
             thumbService.StartService();
             aiService.StartService();
 
+            // Validation check to ensure at least one user is an Admin
             userService.CheckAdminUser().GetAwaiter().GetResult();
         }
 

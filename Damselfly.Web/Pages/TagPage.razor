@@ -34,12 +34,12 @@
                     <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd DataLabel="Nr">@context.TagId</MudTd>
-                    <MudTd DataLabel="Sign">
+                    <MudTd DataLabel="ID">@context.TagId</MudTd>
+                    <MudTd DataLabel="Keyword">
                         <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
                     </MudTd>
-                    <MudTd DataLabel="Name">@context.Favourite</MudTd>
-                    <MudTd DataLabel="Position">@context.TimeStamp</MudTd>
+                    <MudTd DataLabel="Favourite?">@context.Favourite</MudTd>
+                    <MudTd DataLabel="Date Created">@context.TimeStamp</MudTd>
                 </RowTemplate>
                 <PagerContent>
                     <MudTablePager />

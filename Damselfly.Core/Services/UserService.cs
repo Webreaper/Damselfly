@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels;
@@ -19,8 +20,8 @@ namespace Damselfly.Core.Services
         public Action<AppIdentityUser> OnChange;
 
         public UserService(AuthenticationStateProvider authenticationStateProvider,
-                        RoleManager<ApplicationRole> roleManager,
-                        UserManager<AppIdentityUser> userManager)
+                                RoleManager<ApplicationRole> roleManager,
+                                UserManager<AppIdentityUser> userManager)
         {
             _authenticationStateProvider = authenticationStateProvider;
             _userManager = userManager;
@@ -66,8 +67,22 @@ namespace Damselfly.Core.Services
             }
         }
 
+        public async Task<ICollection<AppIdentityUser>> GetUsers()
+        {
+            var users = await _userManager.Users
+                                    .Include( x => x.UserRoles )
+                                    .ThenInclude( y => y.Role )
+                                    .ToListAsync();
+            return users;
+        }
+
         /// <summary>
-        /// Temp hack to get an admin user setup. TODO: Need to figure this out
+        /// If there are no admin users, make the Admin with the lowest ID
+        /// an admin. 
+        /// TODO: This is a bit arbitrary, and whilst a reasonable fallback
+        /// it's not robust from a security perspective. A better option might
+        /// be to fail at startup, and provide a command-line option to set
+        /// a user to admin based on email address. 
         /// </summary>
         /// <param name="userManager"></param>
         /// <returns></returns>
@@ -75,29 +90,22 @@ namespace Damselfly.Core.Services
         {
             try
             {
-                var adminRole = await _roleManager.FindByNameAsync(RoleDefinitions.s_AdminRole);
+                var adminUsers = await _userManager.GetUsersInRoleAsync(RoleDefinitions.s_AdminRole);
 
-                if (adminRole != null)
+                if( !adminUsers.Any() )
                 {
-                    var users = _userManager.Users.Include(x => x.UserRoles).ThenInclude(x => x.Role).ToList(); ;
+                    var user = _userManager.Users.MinBy(x => x.Id);
 
-                    if( ! users.Any( x => x.UserRoles.Any( y => y.Role.Id == adminRole.Id )))
+                    if (user != null)
                     {
-                        var user = users.MinBy(x => x.Id);
+                        Logging.Log($"No user found with {RoleDefinitions.s_AdminRole} role. Adding user {user.UserName} to that role.");
 
-                        if (user != null)
-                        {
-                            Logging.Log($"No user found with {RoleDefinitions.s_AdminRole} role. Adding user {user.UserName} to that role.");
-
-                            // Put admin in Administrator role
-                            await _userManager.AddToRoleAsync(user, RoleDefinitions.s_AdminRole);
-                        }
-                        else
-                            Logging.LogWarning($"No user found that could be promoted to {RoleDefinitions.s_AdminRole} role.");
+                        // Put admin in Administrator role
+                        await _userManager.AddToRoleAsync(user, RoleDefinitions.s_AdminRole);
                     }
+                    else
+                        Logging.LogWarning($"No user found that could be promoted to {RoleDefinitions.s_AdminRole} role.");
                 }
-                else
-                    throw new InvalidOperationException("No Admin role found in database. Setup error.");
             }
             catch( Exception ex)
             {

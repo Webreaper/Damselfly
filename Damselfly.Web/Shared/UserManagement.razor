@@ -1,0 +1,84 @@
+﻿@using Damselfly.Core.DbModels;
+
+@inject UserStatusService statusService
+@inject UserService userService
+
+<div>
+    <MudText Typo="Typo.h6">Registered Users</MudText>
+    <MudSpacer />
+    <MudTable Items="@allUsers" FixedHeader="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+              Filter="new Func<AppIdentityUser,bool>(UserFilterFunc)">
+        <ToolBarContent>
+            <MudTextField @bind-Value="searchText" Placeholder="User Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<AppIdentityUser, object>(x=>x.UserName)">User Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AppIdentityUser, object>(x=>x.Email)">Email</MudTableSortLabel></MudTh>
+            <MudTh>Roles</MudTh>
+            <MudTh>Add Role</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="User Name">@context.UserName</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="Roles">
+                <div class="damselfly-keywordlist">
+                    @{
+                        var roles = GetUserRoleList(context);
+                        foreach (var role in roles)
+                        {
+                            <div class="damselfly-keyword damselfly-addfavekeyword" @onclick="@(() => RemoveRole(context, role))">
+                                <div class="damselfly-addtag" title="Remove user from @role role"><i class="fas fa-ban" /></div>
+                                <div title="Remove User from @role role" class="damselfly-keywordtext">@role</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </MudTd>
+            <MudTd DataLabel="Add User to Role">
+                <button class="btn btn-primary" @onclick="@(() => AddRole( context ) )">Add Role</button>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</div>
+
+@code {
+
+    private string searchText;
+    private List<AppIdentityUser> allUsers = new List<AppIdentityUser>();
+
+    private ICollection<string> GetUserRoleList(AppIdentityUser user)
+    {
+        var roles = user.UserRoles.Select(x => x.Role).Select(r => r.Name);
+        return roles.ToList();
+    }
+
+    private void AddRole(AppIdentityUser user)
+    {
+        // TODO: Popup here.
+    }
+
+    private void RemoveRole(AppIdentityUser user, string roleToRemove)
+    {
+        Logging.Log($"Removing user {user.UserName} from role '{roleToRemove}'");
+        // If admin, Only allow removal if another admin user exists.
+    }
+
+    private bool UserFilterFunc(AppIdentityUser user)
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+
+        return user.UserName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             user.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            allUsers.AddRange( await userService.GetUsers() );
+            StateHasChanged();
+        }
+    }
+}
+

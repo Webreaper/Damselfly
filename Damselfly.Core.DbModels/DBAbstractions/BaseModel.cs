@@ -67,7 +67,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
         /// <summary>
         /// Bulk insert weapper for the database specialisation type. 
         /// </summary>
-        /// <typeparam name="T">Type of the object to insert</typeparam>
+        /// <typeparam name="T">T   ype of the object to insert</typeparam>
         /// <param name="db">DB model</param>
         /// <param name="collection">DbSet into which we're inserting the objects</param>
         /// <param name="itemsToSave">Objects to insert</param>

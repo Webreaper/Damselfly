@@ -1,5 +1,4 @@
 ﻿@using Damselfly.Core.Services;
-@using Damselfly.Web.Shared;
 @using Damselfly.ML.Face.Azure;
 @using Damselfly.Core.Utils.Constants;
 @using Humanizer;
@@ -40,6 +39,11 @@
                     </div>
                     <button class="btn btn-primary" type="submit">Save Settings</button>
                 </EditForm>
+            </MudTabPanel>
+            <MudTabPanel Text="User Management">
+                <div>
+                    <UserManagement />
+                </div>
             </MudTabPanel>
         </AuthorizeView>
         <MudTabPanel Text="Admin Config">
@@ -187,6 +191,7 @@
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
+
         base.OnInitialized();
     }
 

@@ -103,9 +103,9 @@ docker run \
         restart: unless-stopped
 ```
 
-The default port is 6363. The /pictures volume is mapped to the root directory of your photographs. By 
+The default port is 6363. The /pictures volume is mapped to the root directory of your photographs. 
 
-Note that in order to set up inotify watchers on your folders, Damselfly will increase the number of inotify instances as follows:
+Note that in order to set up inotify watchers on your folders, you may need to increase the number of inotify instances as follows (where 524288 is any large number that's big enough for one watcher per folder):
 
 ```
 echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
