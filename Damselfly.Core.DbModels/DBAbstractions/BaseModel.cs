@@ -7,6 +7,7 @@ using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Damselfly.Core.DbModels.DBAbstractions
 {
@@ -14,8 +15,14 @@ namespace Damselfly.Core.DbModels.DBAbstractions
     /// Base model for DB interactions. Will be passed a model class instance with an
     /// implmentation of a DB type - e.g., SqlIe or MySql, kindof like a visitor
     /// pattern.
+    ///
+    /// 
     /// </summary>
-    public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, ApplicationRole, int>
+
+    
+    public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, ApplicationRole, int,
+                                        IdentityUserClaim<int>, ApplicationUserRole, IdentityUserLogin<int>,
+                                        IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public static readonly ILoggerFactory SqlLoggerFactory
             = LoggerFactory.Create(builder => { builder.AddConsole(); });

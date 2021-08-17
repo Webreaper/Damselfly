@@ -7,6 +7,9 @@ EF Migrations
 
     dotnet ef migrations add <migrationName> --project Damselfly.Migrations.Sqlite --startup-project Damselfly.Web
 
+    dotnet ef migrations remove --project Damselfly.Migrations.Sqlite --startup-project Damselfly.Web
+    dotnet ef migrations add AddMultiUser --project Damselfly.Migrations.Sqlite --startup-project Damselfly.Web
+
 3. Comment the Postgres line and uncomment the Sqlite line in OnConfiguring.
 
 4. Run the same migrations command, but for PostGres: 
