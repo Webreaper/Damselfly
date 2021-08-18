@@ -169,12 +169,12 @@ namespace Damselfly.Core.Services
 
             if (rolesToRemove.Any())
             {
-                prefix = $"User {user.UserName}";
+                prefix = $"User {user.UserName} ";
                 var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
 
                 if (removeResult.Succeeded)
                 {
-                    changes = $"removed from {string.Join(", ", $"'rolesToRemove'")} roles";
+                    changes = $"removed from {string.Join(", ", rolesToRemove.Select(x => $"'x'"))} roles";
                 }
                 else
                 {
@@ -185,7 +185,7 @@ namespace Damselfly.Core.Services
 
             if (rolesToAdd.Any())
             {
-                prefix = $"User {user.UserName}";
+                prefix = $"User {user.UserName} ";
                 var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
 
                 if (!string.IsNullOrEmpty(changes))
@@ -195,7 +195,7 @@ namespace Damselfly.Core.Services
 
                 if (addResult.Succeeded)
                 {
-                    changes += $"added to {string.Join(", ", $"'rolesToAdd'")} roles";
+                    changes += $"added to {string.Join(", ", rolesToAdd.Select( x => $"'x'"))} roles";
                 }
                 else
                 {
