@@ -22,14 +22,14 @@
     else
     {
         <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
-            <i class="fa fa-folder-open folder-icon" /> All Folders
+            <i class="fa @FolderIcon(-1) folder-icon" /> All Folders
         </div>
         <div class="folder-scroll-area">
             <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Name"
                      @onclick="@(() => SetFilterFolder(context.Folder))"
                      @oncontextmenu=@(args => ShowContextMenu(args, context.Folder)) @oncontextmenu:preventDefault="true">
-                    <i class="fa fa-folder-open folder-icon" /> @context.Folder.Name (@context.ImageCount)
+                    <i class="fa @FolderIcon(context.Folder.FolderId) folder-icon" /> @context.Folder.Name (@context.ImageCount)
                 </div>
             </Virtualize>
         </div>
@@ -67,7 +67,18 @@
         //Logging.Log($"Selected folder {f.FolderId}");
     }
 
-    string FolderStyle(int folderId)
+    string FolderIcon(int folderId)
+    {
+        if (folderId == -1 && searchService.Folder == null)
+            return "fa-folder-open";
+
+        if (searchService.Folder?.FolderId == folderId)
+            return "fa-folder-open";
+
+        return "fa-folder";
+    }
+
+    string FolderStyle(int folderId )
     {
         if (folderId == -1 && searchService.Folder == null)
             return "folder-entry-selected";
