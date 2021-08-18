@@ -58,6 +58,7 @@ namespace Damselfly.Web
 
             services.AddDbContext<ImageContext>();
             services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
+
             services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                                  .AddRoles<ApplicationRole>()
                                  .AddEntityFrameworkStores<ImageContext>();

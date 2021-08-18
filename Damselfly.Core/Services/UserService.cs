@@ -14,6 +14,7 @@ namespace Damselfly.Core.Services
     {
         private UserManager<AppIdentityUser> _userManager;
         private RoleManager<ApplicationRole> _roleManager;
+        private UserStatusService _statusService;
         private AuthenticationStateProvider _authenticationStateProvider;
         private AppIdentityUser _user;
         private bool _initialised;
@@ -21,11 +22,13 @@ namespace Damselfly.Core.Services
 
         public UserService(AuthenticationStateProvider authenticationStateProvider,
                                 RoleManager<ApplicationRole> roleManager,
-                                UserManager<AppIdentityUser> userManager)
+                                UserManager<AppIdentityUser> userManager,
+                                UserStatusService statusService)
         {
             _authenticationStateProvider = authenticationStateProvider;
             _userManager = userManager;
             _roleManager = roleManager;
+            _statusService = statusService;
         }
 
         private void AuthStateChanged(Task<AuthenticationState> newState)
@@ -82,11 +85,17 @@ namespace Damselfly.Core.Services
             return roles;
         }
 
-        public async Task<bool> UpdateUserAsync( AppIdentityUser user )
+        public async Task<bool> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoleSet)
         {
             var result = await _userManager.UpdateAsync(user);
 
-            return result.Succeeded;
+            if (result.Succeeded)
+            {
+                if (await SyncUserRoles(user, newRoleSet))
+                    return true;
+            }
+
+            return false;
         }
 
 
@@ -125,6 +134,74 @@ namespace Damselfly.Core.Services
             {
                 Logging.LogError($"Unexpected exception while checking Admin role members: {ex}");
             }
+        }
+
+        public async Task<bool> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles )
+        {
+            var roles = await _userManager.GetRolesAsync( user );
+
+            var rolesToRemove = roles.Except( newRoles );
+            var rolesToAdd = newRoles.Except( roles );
+            var errorMsg = string.Empty;
+
+            if (rolesToRemove.Contains(RoleDefinitions.s_AdminRole))
+            {
+                // Don't remove from Admin unless there's another admin
+                var adminUsers = await _userManager.GetUsersInRoleAsync(RoleDefinitions.s_AdminRole);
+
+                if (adminUsers.Count <= 1)
+                {
+                    rolesToRemove = rolesToRemove.Except(new List<string> { RoleDefinitions.s_AdminRole });
+                    errorMsg = $" Please ensure one other user has '{RoleDefinitions.s_AdminRole}'.";
+                }
+            }
+
+            string changes = string.Empty, prefix = string.Empty;
+            bool success = true;
+
+            if (rolesToRemove.Any())
+            {
+                prefix = $"User {user.UserName}";
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+
+                if (removeResult.Succeeded)
+                {
+                    changes = $"removed from {string.Join(", ", $"'rolesToRemove'")} roles";
+                }
+                else
+                {
+                    errorMsg = $"role removal failed: {removeResult.Errors}";
+                    success = false;
+                }
+            }
+
+            if (rolesToAdd.Any())
+            {
+                prefix = $"User {user.UserName}";
+                var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+
+                if (!string.IsNullOrEmpty(changes))
+                {
+                    changes += " and ";
+                }
+
+                if (addResult.Succeeded)
+                {
+                    changes += $"added to {string.Join(", ", $"'rolesToAdd'")} roles";
+                }
+                else
+                {
+                    errorMsg = $"role addition failed: {addResult.Errors}";
+                    success = false;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(changes))
+                changes += ". ";
+
+            _statusService.StatusText = $"{prefix}{changes}{errorMsg}";
+
+            return success;
         }
     }
 }

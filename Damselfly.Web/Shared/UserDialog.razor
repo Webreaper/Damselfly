@@ -35,7 +35,7 @@
 
     void Save()
     {
-        if (userService.UpdateUserAsync(User).GetAwaiter().GetResult())
+        if (userService.UpdateUserAsync(User, selectedRoles).GetAwaiter().GetResult())
         {
             MudDialog.Close(DialogResult.Ok(true));
         }

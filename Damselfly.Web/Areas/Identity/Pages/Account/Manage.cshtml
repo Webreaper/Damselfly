@@ -1,0 +1,12 @@
+﻿@page
+
+@functions {
+    public async Task<IActionResult> OnPost()
+    {
+        return RedirectToPage("Errors/Error404");
+    }
+    public async Task<IActionResult> OnGet()
+    {
+        return RedirectToPage("Errors/Error404");
+    }
+}
