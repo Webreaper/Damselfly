@@ -113,21 +113,29 @@ namespace Damselfly.Core.Services
         {
             try
             {
-                var adminUsers = await _userManager.GetUsersInRoleAsync(RoleDefinitions.s_AdminRole);
+                // First, check if there's any users at all yet.
+                var users = _userManager.Users.ToList();
 
-                if( !adminUsers.Any() )
+                if (users.Any())
                 {
-                    var user = _userManager.Users.MinBy(x => x.Id);
+                    // If we have users, see if any are Admins.
+                    var adminUsers = await _userManager.GetUsersInRoleAsync(RoleDefinitions.s_AdminRole);
 
-                    if (user != null)
+                    if (!adminUsers.Any())
                     {
-                        Logging.Log($"No user found with {RoleDefinitions.s_AdminRole} role. Adding user {user.UserName} to that role.");
+                        // For the moment, arbitrarily promote the first user to admin
+                        var user = users.MinBy(x => x.Id);
 
-                        // Put admin in Administrator role
-                        await _userManager.AddToRoleAsync(user, RoleDefinitions.s_AdminRole);
+                        if (user != null)
+                        {
+                            Logging.Log($"No user found with {RoleDefinitions.s_AdminRole} role. Adding user {user.UserName} to that role.");
+
+                            // Put admin in Administrator role
+                            await _userManager.AddToRoleAsync(user, RoleDefinitions.s_AdminRole);
+                        }
+                        else
+                            Logging.LogWarning($"No user found that could be promoted to {RoleDefinitions.s_AdminRole} role.");
                     }
-                    else
-                        Logging.LogWarning($"No user found that could be promoted to {RoleDefinitions.s_AdminRole} role.");
                 }
             }
             catch( Exception ex)
