@@ -98,6 +98,20 @@ namespace Damselfly.Core.Services
             return false;
         }
 
+        /// <summary>
+        /// Reset the user password
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="password">Unhashed password</param>
+        /// <returns></returns>
+        public async Task<bool> SetUserPasswordAsync(AppIdentityUser user, string password)
+        {
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
+
+            return result.Succeeded;
+        }
 
         /// <summary>
         /// If there are no admin users, make the Admin with the lowest ID

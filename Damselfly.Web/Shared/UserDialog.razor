@@ -1,11 +1,13 @@
 ﻿@using Damselfly.Core.DbModels
 
-@inject UserService userService 
+@inject UserService userService
 
 <MudDialog>
     <DialogContent>
         <MudTextField @bind-Value="@User.UserName" Label="User Name" ReadOnly="false" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="@User.Email" Label="Email" ReadOnly="false" Variant="Variant.Filled" />
+        <MudTextField @bind-Value="@User.Email" InputType="InputType.Email" Label="Email" ReadOnly="false" Variant="Variant.Filled" />
+        <MudTextField @bind-Value="@password" InputType="InputType.Password" Label="Password" ReadOnly="false" Variant="Variant.Filled" />
+        <MudTextField @bind-Value="@passwordConfirm" InputType="InputType.Password" Label="ConfirmPassword" ReadOnly="false" Variant="Variant.Filled" />
         @if (allRoles != null)
         {
             <MudSelect T="string" Label="User Roles" HelperText="Select the roles to which this user belongs" MultiSelection="true" @bind-SelectedValues="selectedRoles" Variant="Variant.Filled">
@@ -29,16 +31,26 @@
         [Parameter]
         public AppIdentityUser User { get; set; } = new AppIdentityUser();
 
+    private string password, passwordConfirm;
 
     private ICollection<ApplicationRole> allRoles;
     private HashSet<string> selectedRoles { get; set; } = new HashSet<string>();
 
-    void Save()
+    async Task Save()
     {
-        if (userService.UpdateUserAsync(User, selectedRoles).GetAwaiter().GetResult())
+        bool success = true;
+
+        if (!string.IsNullOrEmpty(password) && password.Equals(passwordConfirm))
         {
-            MudDialog.Close(DialogResult.Ok(true));
+            success = await userService.SetUserPasswordAsync(User, password);
         }
+        else
+        {
+            success = await userService.UpdateUserAsync(User, selectedRoles);
+        }
+
+        if( success )
+            MudDialog.Close(DialogResult.Ok(true));
     }
 
     void Cancel() => MudDialog.Cancel();
