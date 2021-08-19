@@ -1,5 +1,6 @@
 ﻿@using Damselfly.Core.Services;
 @using Damselfly.ML.Face.Azure;
+@using Damselfly.Core.DbModels;
 @using Damselfly.Core.Utils.Constants;
 @using Humanizer;
 
@@ -40,9 +41,11 @@
                     <button class="btn btn-primary" type="submit">Save Settings</button>
                 </EditForm>
             </MudTabPanel>
+        </AuthorizeView>
+        <AuthorizeView Policy="PolicyDefinitions.s_IsAdmin" >
             <MudTabPanel Text="User Management">
                 <div>
-                    <UserManagement />
+                <UserManagement />
                 </div>
             </MudTabPanel>
         </AuthorizeView>

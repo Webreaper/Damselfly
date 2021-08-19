@@ -33,6 +33,13 @@ namespace Damselfly.Core.DbModels
         public virtual ApplicationRole Role { get; set; }
     }
 
+    public class PolicyDefinitions
+    {
+        public const string s_IsEditor = "IsEditor";
+        public const string s_IsDownloader = "IsDownloader";
+        public const string s_IsAdmin = "IsAdmin";
+    }
+
     public class RoleDefinitions
     {
         // Role names

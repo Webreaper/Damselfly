@@ -2,6 +2,7 @@
 @page "/image/{ImageID}"
 
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.DbModels
 
 @inject ThumbnailService thumbService
 @inject NavigationService navContext
@@ -30,7 +31,9 @@ else
         <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image" />
         <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@EnableZoom" title="Toggle Zoom" />
         <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces" />
-        <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
+            <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
+        </AuthorizeView>
         <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
         <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
             window.open(

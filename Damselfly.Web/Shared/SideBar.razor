@@ -1,4 +1,6 @@
 ﻿@using Damselfly.Web.Shared
+@using Damselfly.Core.DbModels
+
 @inherits LayoutComponentBase
 @inject ViewDataService ViewDataService
 @inject NavigationService navContext
@@ -29,14 +31,12 @@
                 <Keywords />
             </ChildContent>
         </ToolWindow>
-        <AuthorizeView Roles="Admin,User">
-            <Authorized>
-                <ToolWindow Title="Add Keywords">
-                    <ChildContent>
-                        <KeywordFavourites />
-                    </ChildContent>
-                </ToolWindow>
-            </Authorized>
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+            <ToolWindow Title="Add Keywords">
+                <ChildContent>
+                    <KeywordFavourites />
+                </ChildContent>
+            </ToolWindow>
         </AuthorizeView>
     }
     @if (ViewDataService.ShowFolderList)

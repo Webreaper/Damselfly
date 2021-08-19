@@ -63,6 +63,19 @@ namespace Damselfly.Web
                                  .AddRoles<ApplicationRole>()
                                  .AddEntityFrameworkStores<ImageContext>();
 
+            services.AddAuthorization(config =>
+            {
+                // Users and Admins can edit content (keywords)
+                config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireRole(
+                                                                RoleDefinitions.s_AdminRole,
+                                                                RoleDefinitions.s_UserRole));
+                // Admins, Users and ReadOnly users can download
+                config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireRole(
+                                                                RoleDefinitions.s_AdminRole,
+                                                                RoleDefinitions.s_UserRole,
+                                                                RoleDefinitions.s_ReadOnlyRole));
+            });
+
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<ImageProcessorFactory>();

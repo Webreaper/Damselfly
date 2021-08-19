@@ -37,7 +37,9 @@
                         <div class="damselfly-keyword damselfly-addfavekeyword"
                              @onclick="@(() => QuickAddTag(tag))"
                              @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
-                            <div class="damselfly-addtag" title="Add @tag.Keyword to Selection"><i class="fa fa-plus-circle" /></div>
+                                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                                    <div class="damselfly-addtag" title="Add @tag.Keyword to Selection"><i class="fa fa-plus-circle" /></div>
+                                </AuthorizeView>
                             <div title="Add @tag.Keyword to image" class="damselfly-keywordtext">@tag.Keyword</div>
                         </div>
                     }
@@ -64,18 +66,22 @@
                     @foreach (var tag in theImageTags)
                     {
                         <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
-                            <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
-                                @if (tag.Favourite)
-                                {
-                                    <i class="fas fa-star" />
-                                }
-                                else
-                                {
-                                    <i class="far fa-star" />
-                                }
-                            </div>
+                            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                                <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await iptcService.ToggleFavourite(tag))">
+                                    @if (tag.Favourite)
+                                    {
+                                        <i class="fas fa-star" />
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star" />
+                                    }
+                                </div>
+                            </AuthorizeView>
                             <div class="damselfly-keywordtext">@tag.Keyword</div>
-                            <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
+                            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                                <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))"><i class="fa fa-times-circle" /></div>
+                            </AuthorizeView>
                         </div>
                     }
 
