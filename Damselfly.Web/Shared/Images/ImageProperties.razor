@@ -1,5 +1,6 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.DbModels 
 
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
@@ -75,11 +76,15 @@
         <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
         <div>
             Thumbs Generated: @ThumbnailUpdate
-            <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
+            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
+            </AuthorizeView>
         </div>
         <div>
             AI Processed: @AIProcessDate
-            <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
+            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
+            </AuthorizeView>
         </div>
 
         @if (CurrentImage.MetaData != null)
