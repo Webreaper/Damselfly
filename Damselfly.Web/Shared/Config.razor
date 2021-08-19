@@ -42,7 +42,7 @@
                 </EditForm>
             </MudTabPanel>
         </AuthorizeView>
-        <AuthorizeView Policy="PolicyDefinitions.s_IsAdmin" >
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
             <MudTabPanel Text="User Management">
                 <div>
                 <UserManagement />

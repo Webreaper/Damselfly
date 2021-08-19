@@ -4,17 +4,28 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Utils;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+
+// Avoid namespace clashes with IAuthorizationService extension methods
+using AuthenticationStateProvider = Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider;
+using AuthenticationState = Microsoft.AspNetCore.Components.Authorization.AuthenticationState;
+using System.Security.Claims;
 
 namespace Damselfly.Core.Services
 {
+    /// <summary>
+    /// User service to manage users and roles. We try and keep each user to a distinct
+    /// role - so they're either an Admin, User or ReadOnly. Roles can be combinatorial
+    /// but it's simpler to have a single role per user.
+    /// </summary>
     public class UserService
     {
         private UserManager<AppIdentityUser> _userManager;
         private RoleManager<ApplicationRole> _roleManager;
         private UserStatusService _statusService;
+        private IAuthorizationService _authService;
         private AuthenticationStateProvider _authenticationStateProvider;
         private AppIdentityUser _user;
         private bool _initialised;
@@ -23,25 +34,14 @@ namespace Damselfly.Core.Services
         public UserService(AuthenticationStateProvider authenticationStateProvider,
                                 RoleManager<ApplicationRole> roleManager,
                                 UserManager<AppIdentityUser> userManager,
-                                UserStatusService statusService)
+                                UserStatusService statusService,
+                                IAuthorizationService authService)
         {
             _authenticationStateProvider = authenticationStateProvider;
             _userManager = userManager;
             _roleManager = roleManager;
+            _authService = authService;
             _statusService = statusService;
-        }
-
-        private void AuthStateChanged(Task<AuthenticationState> newState)
-        {
-            var authState = newState.GetAwaiter().GetResult();
-            _user = _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
-
-            if( _user != null )
-                Logging.Log($"User changed to {_user.UserName}");
-            else
-                Logging.Log($"User state changed to logged out");
-
-            OnChange?.Invoke(_user);
         }
 
         public AppIdentityUser User
@@ -70,6 +70,45 @@ namespace Damselfly.Core.Services
             }
         }
 
+        /// <summary>
+        /// Handler for when the authentication state changes. 
+        /// </summary>
+        /// <param name="newState"></param>
+        private void AuthStateChanged(Task<AuthenticationState> newState)
+        {
+            var authState = newState.GetAwaiter().GetResult();
+            _user = _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
+
+            if (_user != null)
+                Logging.Log($"User changed to {_user.UserName}");
+            else
+                Logging.Log($"User state changed to logged out");
+
+            OnChange?.Invoke(_user);
+        }
+
+        /// <summary>
+        /// Returns true if the policy passed in applies to the currently
+        /// logged-in user.
+        /// </summary>
+        /// <param name="policy"></param>
+        /// <returns></returns>
+        public async Task<bool> PolicyApplies( string policy )
+        {
+            if (_user == null)
+                return false;
+
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+
+            var result = await _authService.AuthorizeAsync(authState.User, policy);
+
+            return result.Succeeded;
+        }
+
+        /// <summary>
+        /// Gets the list of users currently registered
+        /// </summary>
+        /// <returns></returns>
         public async Task<ICollection<AppIdentityUser>> GetUsers()
         {
             var users = await _userManager.Users
@@ -79,19 +118,43 @@ namespace Damselfly.Core.Services
             return users;
         }
 
+        /// <summary>
+        /// Gets the list of roles configured in the system
+        /// </summary>
+        /// <returns></returns>
         public async Task<ICollection<ApplicationRole>> GetRoles()
         {
             var roles = await _roleManager.Roles.ToListAsync();
             return roles;
         }
 
-        public async Task<bool> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoleSet)
+        /// <summary>
+        /// For newly registered users, check the role they're in
+        /// and add them to the default role(s).
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task AddUserToDefaultRoles(AppIdentityUser user)
+        {
+            // First, if they're the first user in the DB, make them Admin
+            await CheckAdminUser();
+
+            await _userManager.AddToRoleAsync(user, RoleDefinitions.s_UserRole);
+        }
+
+        /// <summary>
+        /// Updates a user's properties and syncs their roles. 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="newRoleSet"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdateUserAsync(AppIdentityUser user, string newRole)
         {
             var result = await _userManager.UpdateAsync(user);
 
             if (result.Succeeded)
             {
-                if (await SyncUserRoles(user, newRoleSet))
+                if (await SyncUserRoles(user, new List<string> { newRole }))
                     return true;
             }
 
@@ -108,9 +171,18 @@ namespace Damselfly.Core.Services
         {
             string token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            var result = await _userManager.ResetPasswordAsync(user, token, password);
+            // Now we've checked the admin status, see if the user has any roles.
+            var userRoles = await _userManager.GetRolesAsync(user);
 
-            return result.Succeeded;
+            // If the user doesn't have roles, it means they weren't the first so haven't
+            // been added to the admin role - in which case, add them to the user role.
+            if (!userRoles.Any())
+            {
+                var result = await _userManager.ResetPasswordAsync(user, token, password);
+                return result.Succeeded;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -145,7 +217,13 @@ namespace Damselfly.Core.Services
                             Logging.Log($"No user found with {RoleDefinitions.s_AdminRole} role. Adding user {user.UserName} to that role.");
 
                             // Put admin in Administrator role
-                            await _userManager.AddToRoleAsync(user, RoleDefinitions.s_AdminRole);
+                            var result = await _userManager.AddToRoleAsync(user, RoleDefinitions.s_AdminRole);
+
+                            if (result.Succeeded)
+                            {
+                                // Remove the other roles from the users
+                                await _userManager.RemoveFromRolesAsync(user, new List<string> { RoleDefinitions.s_ReadOnlyRole, RoleDefinitions.s_UserRole });
+                            }
                         }
                         else
                             Logging.LogWarning($"No user found that could be promoted to {RoleDefinitions.s_AdminRole} role.");
@@ -158,6 +236,17 @@ namespace Damselfly.Core.Services
             }
         }
 
+        /// <summary>
+        /// Syncs the user's roles to the set of roles passed in. Note that
+        /// if the 'Admin' role is removed, and there are no other admin users
+        /// in the system, the user won't be removed from the Admin roles, to
+        /// ensure we always have at least one Admin.
+        /// Note that this method works for multiple roles, but we only want
+        /// to have users with one role at a time.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="newRoles"></param>
+        /// <returns></returns>
         public async Task<bool> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles )
         {
             var roles = await _userManager.GetRolesAsync( user );

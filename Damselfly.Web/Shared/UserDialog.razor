@@ -7,10 +7,10 @@
         <MudTextField @bind-Value="@User.UserName" Label="User Name" ReadOnly="false" Variant="Variant.Filled" />
         <MudTextField @bind-Value="@User.Email" InputType="InputType.Email" Label="Email" ReadOnly="false" Variant="Variant.Filled" />
         <MudTextField @bind-Value="@password" InputType="InputType.Password" Label="Password" ReadOnly="false" Variant="Variant.Filled" autocomplete="off" />
-        <MudTextField @bind-Value="@passwordConfirm" InputType="InputType.Password" Label="ConfirmPassword" ReadOnly="false" Variant="Variant.Filled" autocomplete="off"/>
+        <MudTextField @bind-Value="@passwordConfirm" InputType="InputType.Password" Label="Confirm Password" ReadOnly="false" Variant="Variant.Filled" autocomplete="off"/>
         @if (allRoles != null)
         {
-            <MudSelect T="string" Label="User Roles" HelperText="Select the roles to which this user belongs" MultiSelection="true" @bind-SelectedValues="selectedRoles" Variant="Variant.Filled">
+            <MudSelect T="string" Label="User Roles" HelperText="Select the roles to which this user belongs" @bind-Value="selectedRole" Variant="Variant.Filled">
                 @foreach (var role in allRoles)
                 {
                     <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
@@ -25,28 +25,29 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+        [CascadingParameter]
+        MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public AppIdentityUser User { get; set; } = new AppIdentityUser();
+        [Parameter]
+        public AppIdentityUser User { get; set; } = new AppIdentityUser();
 
-    private string password, passwordConfirm;
+    private string password, passwordConfirm, selectedRole;
 
     private ICollection<ApplicationRole> allRoles;
-    private HashSet<string> selectedRoles { get; set; } = new HashSet<string>();
 
+    // TODO: Get better return values here and show errors if there are any.
     async Task Save()
     {
         bool success = true;
 
-        if (!string.IsNullOrEmpty(password) && password.Equals(passwordConfirm))
+        if (!string.IsNullOrEmpty(password) && !password.StartsWith( "*****" ) && password.Equals(passwordConfirm))
         {
             success = await userService.SetUserPasswordAsync(User, password);
         }
-        else
+
+        if( success )
         {
-            success = await userService.UpdateUserAsync(User, selectedRoles);
+            success = await userService.UpdateUserAsync(User, selectedRole);
         }
 
         if( success )
@@ -60,11 +61,12 @@
         if (firstRender)
         {
             allRoles = await userService.GetRoles();
-            foreach( var role in User.UserRoles )
+            if (User.UserRoles.Any())
             {
-                selectedRoles.Add(role.Role.Name);
+                var role = User.UserRoles.First();
+                selectedRole = role.Role.Name;
+                StateHasChanged();
             }
-            StateHasChanged();
         }
     }
 }

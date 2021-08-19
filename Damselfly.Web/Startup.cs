@@ -24,7 +24,6 @@ using Damselfly.ML.Face.Emgu;
 using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
 using MudBlazor.Services;
-using Microsoft.AspNetCore.Identity;
 
 namespace Damselfly.Web
 {
@@ -65,6 +64,10 @@ namespace Damselfly.Web
 
             services.AddAuthorization(config =>
             {
+                // Anyone in the Admin group is an admin (d'uh)
+                config.AddPolicy(PolicyDefinitions.s_IsAdmin, policy => policy.RequireRole(
+                                                                RoleDefinitions.s_AdminRole));
+
                 // Users and Admins can edit content (keywords)
                 config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireRole(
                                                                 RoleDefinitions.s_AdminRole,

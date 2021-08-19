@@ -15,8 +15,8 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
-@inject UserManager<AppIdentityUser> UserManager;
-
+@inject UserManager<AppIdentityUser> UserManager
+@inject UserService userService 
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -118,23 +118,23 @@
 </div>
 
 @code {
-    [Parameter]
-    public bool ShowFavourites { get; set; }
+        [Parameter]
+        public bool ShowFavourites { get; set; }
 
-    [Parameter]
-    public bool ShowAddKeywords { get; set; }
+        [Parameter]
+        public bool ShowAddKeywords { get; set; }
 
-    [Parameter]
-    public bool ShowImageKeywords { get; set; }
+        [Parameter]
+        public bool ShowImageKeywords { get; set; }
 
-    [Parameter]
-    public Image[] CurrentImages { get; set; }
+        [Parameter]
+        public Image[] CurrentImages { get; set; }
 
-    [Parameter]
-    public bool TrackSelection { get; set; }
+        [Parameter]
+        public bool TrackSelection { get; set; }
 
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
+        [CascadingParameter]
+        private Task<AuthenticationState> authenticationStateTask { get; set; }
 
     private IList<Tag> theImageTags { get; set; }
     private IList<ImageObject> theObjectTags { get; set; }
@@ -305,7 +305,7 @@
         InvokeAsync(StateHasChanged);
     }
 
-    void ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)
+    async Task ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)
     {
         var menuList = new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = "View Tag", Value = 0 },
@@ -314,19 +314,22 @@
 
         if (CurrentImages != null && CurrentImages.Any())
         {
-            if (favourite)
-                menuList.Insert(0, new ContextMenuItem { Text = "Add Tag to Selection", Value = 2 });
-            else
-                menuList.Insert(0, new ContextMenuItem { Text = "Remove Tag from Selection", Value = 3 });
+            if (await userService.PolicyApplies(PolicyDefinitions.s_IsEditor))
+            {
+                if (favourite)
+                    menuList.Insert(0, new ContextMenuItem { Text = "Add Tag to Selection", Value = 2 });
+                else
+                    menuList.Insert(0, new ContextMenuItem { Text = "Remove Tag from Selection", Value = 3 });
+            }
         }
 
-        contextMenuService.Open(args, menuList, (args) =>
+        contextMenuService.Open(args, menuList, async (args) =>
         {
             contextMenuService.Close();
             switch (args.Value)
             {
                 case 0: NavigationManager.NavigateTo("/tag/" + tag.Keyword); break;
-                case 1: _ = iptcService.ToggleFavourite(tag); break;
+                case 1: await iptcService.ToggleFavourite(tag); break;
                 case 2: QuickAddTag(tag); break;
                 case 3: DeleteTag(tag); break;
             }
