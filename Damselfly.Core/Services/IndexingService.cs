@@ -581,7 +581,7 @@ namespace Damselfly.Core.Services
 
                 // ...and then look for any DB folders that aren't included in the list of sub-folders.
                 // That means they've been removed from the disk, and should be removed from the DB.
-                var missingDirs = dbChildDirs.Where(f => !System.IO.Directory.Exists(f.Path)).ToList();
+                var missingDirs = dbChildDirs.Where(f => !new DirectoryInfo( f.Path ).IsMonitoredFolder() ).ToList();
 
                 if (missingDirs.Any())
                 {

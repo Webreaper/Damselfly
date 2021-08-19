@@ -64,6 +64,9 @@ namespace Damselfly.Core.Utils
         /// <returns></returns>
         public static bool IsMonitoredFolder( this DirectoryInfo folder )
         {
+            if (!folder.Exists)
+                return false;
+
             if((folder.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden )
                 return false;
 
@@ -71,6 +74,9 @@ namespace Damselfly.Core.Utils
                 return false;
 
             if (folder.Name.StartsWith("."))
+                return false;
+
+            if (File.Exists(Path.Combine(folder.FullName, ".nomedia")))
                 return false;
 
             // If the folder, or any of its descendents, start with a ., skip
