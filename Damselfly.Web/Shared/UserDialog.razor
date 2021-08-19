@@ -6,8 +6,8 @@
     <DialogContent>
         <MudTextField @bind-Value="@User.UserName" Label="User Name" ReadOnly="false" Variant="Variant.Filled" />
         <MudTextField @bind-Value="@User.Email" InputType="InputType.Email" Label="Email" ReadOnly="false" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="@password" InputType="InputType.Password" Label="Password" ReadOnly="false" Variant="Variant.Filled" />
-        <MudTextField @bind-Value="@passwordConfirm" InputType="InputType.Password" Label="ConfirmPassword" ReadOnly="false" Variant="Variant.Filled" />
+        <MudTextField @bind-Value="@password" InputType="InputType.Password" Label="Password" ReadOnly="false" Variant="Variant.Filled" autocomplete="off" />
+        <MudTextField @bind-Value="@passwordConfirm" InputType="InputType.Password" Label="ConfirmPassword" ReadOnly="false" Variant="Variant.Filled" autocomplete="off"/>
         @if (allRoles != null)
         {
             <MudSelect T="string" Label="User Roles" HelperText="Select the roles to which this user belongs" MultiSelection="true" @bind-SelectedValues="selectedRoles" Variant="Variant.Filled">
@@ -25,11 +25,11 @@
 </MudDialog>
 
 @code {
-        [CascadingParameter]
-        MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
 
-        [Parameter]
-        public AppIdentityUser User { get; set; } = new AppIdentityUser();
+    [Parameter]
+    public AppIdentityUser User { get; set; } = new AppIdentityUser();
 
     private string password, passwordConfirm;
 
