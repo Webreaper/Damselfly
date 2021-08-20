@@ -3,6 +3,13 @@
 
 [Return to Readme](../README.md)
 
+- [Damselfly Frequently Asked Questions](#damselfly-frequently-asked-questions)
+  - [Background/FAQ](#backgroundfaq)
+    - [Do I have to run it in Docker?](#do-i-have-to-run-it-in-docker)
+    - [Why 'Damselfly'?](#why-damselfly)
+    - [What is the Damselfly Architecture?](#what-is-the-damselfly-architecture)
+    - [How do I set up the Wordpress Integration?](#how-do-i-set-up-the-wordpress-integration)
+
 ## Background/FAQ
 
 Some common questions/answers.

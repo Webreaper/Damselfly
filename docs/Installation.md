@@ -2,6 +2,11 @@
 
 [Return to Readme](../README.md)
 
+- [Installing Damselfly](#installing-damselfly)
+  - [Docker](#docker)
+    - [Docker Command:](#docker-command)
+    - [Docker-Compose:](#docker-compose)
+
 ## Docker
 
 The easiest way to install Damselfly is via Docker. Mount your photos folder as the /pictures volume, and a config 

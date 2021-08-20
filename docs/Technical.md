@@ -3,6 +3,17 @@
 
 [Return to Readme](../README.md)
 
+- [Damselfly Technical Overview](#damselfly-technical-overview)
+  - [How does Damselfly Work?](#how-does-damselfly-work)
+    - [How does Damselfly index images?](#how-does-damselfly-index-images)
+  - [How does Damselfly's Image/Object/Face Recognition Work?](#how-does-damselflys-imageobjectface-recognition-work)
+    - [Object Recognition](#object-recognition)
+    - [Face Detection](#face-detection)
+    - [Face Recognition](#face-recognition)
+    - [How does Damselfly manage EXIF data?](#how-does-damselfly-manage-exif-data)
+    - [Why did you build Damsefly?](#why-did-you-build-damsefly)
+    - [Contributing to Damselfly](#contributing-to-damselfly)
+
 ## How does Damselfly Work?
 
 A lot of the UI/UX paradigms within Damselfly are based on the same sorts of functionality found in Google's highly popular, but now-defunct
