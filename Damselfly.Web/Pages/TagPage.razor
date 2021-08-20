@@ -20,7 +20,7 @@
         }
         else
         {
-            <MudTable Items="@Tags" FixedHeader="true" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+            <MudTable Items="@Tags" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
                       Filter="new Func<Tag,bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
                 <ToolBarContent>
                     <MudText Typo="Typo.h6">Keyword Tags</MudText>

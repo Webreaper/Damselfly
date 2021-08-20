@@ -18,24 +18,21 @@
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
         <AuthorizeView Context="auth">
             <MudTabPanel Text="User Config">
-                <h4>Settings for @auth.User.Identity.Name</h4>
+                <h2>Settings for @auth.User.Identity.Name</h2>
                 <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
                     <FluentValidationValidator />
                     <ValidationSummary />
 
                     <div class="damselfly-configsetting">
-                        <div class="damselfly-configlabel">
-                            <label>Theme: </label>
-                        </div>
                         <div class="damselfly-configfield">
-                            <InputSelect @bind-Value="selectedTheme">
+                            <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="Variant.Filled">
                                 @foreach (var choice in themeService.Themes)
                                 {
-                                    <option value="@choice">
+                                    <MudSelectItem T="string" Value="@choice">
                                         @choice.Transform(To.SentenceCase)
-                                    </option>
+                                    </MudSelectItem>
                                 }
-                            </InputSelect>
+                            </MudSelect>
                         </div>
                     </div>
                     <button class="btn btn-primary" type="submit">Save Settings</button>
@@ -54,39 +51,28 @@
                 <FluentValidationValidator />
                 <ValidationSummary />
 
+                <h2>SideCar Processing</h2>
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>Embed Sidecar (XMP/OM1) keywords during indexing:</label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputCheckbox @bind-Value="importSidecarKeywords" />
+                        <MudCheckBox @bind-Checked="@importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing" />
                     </div>
                 </div>
 
                 <h2>Wordpress Upload</h2>
 
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>URL:</label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputText placeholder="Wordpress URL" @bind-Value="wpSettings.URL" />
+                        <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="Variant.Filled" />
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>User Name:</label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputText placeholder="User Name" @bind-Value="wpSettings.UserName" />
+                        <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="Variant.Filled" />
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>Password:</label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputText type="password" placeholder="Password" @bind-Value="wpSettings.Password" />
+                        <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="Variant.Filled" />
                     </div>
                 </div>
 
@@ -106,40 +92,33 @@
                     <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
                     and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
                     recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
-                    month (Damselfly uses around 3 transactions per image processed). To use the tranaction limit efficiently
-                    you can elect to only submit images to Azure which have faces or people detected in them by Damselfly's
-                    offline detection.'
+                    month (Damselfly uses around 3 transactions per image processed). 
                 </p>
 
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>URL:</label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputText placeholder="Endpoint" @bind-Value="azureSettings.Endpoint" />
+                        <MudTextField @bind-Value="@azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="Variant.Filled" />
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>Key 1:</label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputText placeholder="API Key" @bind-Value="azureSettings.ApiKey" />
+                        <MudTextField @bind-Value="@azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="Variant.Filled" />
                     </div>
                 </div>
+                <p>
+                    To use the tranaction limit efficiently you can elect to only submit images to Azure which have faces
+                    or people detected in them by Damselfly's offline detection.
+                </p>
                 <div class="damselfly-configsetting">
-                    <div class="damselfly-configlabel">
-                        <label>Azure Detection: </label>
-                    </div>
                     <div class="damselfly-configfield">
-                        <InputSelect @bind-Value="azureSettings.DetectionType">
-                            @foreach (var choice in Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
+                        <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" HelperText="Select the roles to which this user belongs" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled">
+                            @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
                             {
-                                <option value="@choice">
+                                <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
                                     @choice.ToString().Humanize()
-                                </option>
+                                </MudSelectItem>
                             }
-                        </InputSelect>
+                        </MudSelect>
                     </div>
                 </div>
 
