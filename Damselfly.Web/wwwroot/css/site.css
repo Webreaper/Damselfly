@@ -1519,19 +1519,44 @@ hr.separator {
     padding-left: 4px;
 }
 
-.rz-tabview-panels {
-    background-color: var( --main-background);
+.container {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1;
+    margin-left: 50px;
 }
 
-.rz-tabview-nav .rz-tabview-selected {
-    background-color: var( --toolwindow-title-bg);
-    border-top-color: var( --tool-window-shadow);
+.login-container {
+    display: flex;
+    flex-direction: row;
+
+    flex: 1;
+    width: 50%;
+    margin: 50px;
 }
 
-.rz-tabview-nav li {
-    background-color: var( --toolwindow-title-bg);
-    border: solid 1px var( --tool-window-shadow);
+.login-fieldset {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1;
+    font-size: 14pt;
 }
-.rz-state-active a[role='tab'] {
-    color: var( --body-text );
+
+.login-fieldrow {
+    display: flex;
+    flex-direction: row;
+
+    flex: 1;
+}
+
+.login-fieldlabel {
+    flex: 1;
+}
+
+.login-fieldcontrol {
+    flex: 1;
+
+    font-size: 14pt;
 }

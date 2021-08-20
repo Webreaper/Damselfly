@@ -8,12 +8,7 @@
 @functions {
     public async Task<IActionResult> OnPost()
     {
-        if (SignInManager.IsSignedIn(User))
-        {
-            await SignInManager.SignOutAsync();
-        }
-
-        return Redirect("~/");
+        return await OnGet();
     }
 
     public async Task<IActionResult> OnGet()
@@ -23,6 +18,6 @@
             await SignInManager.SignOutAsync();
         }
 
-        return Redirect("~/");
+        return Redirect("~/Identity/Account/Login");
     }
 }

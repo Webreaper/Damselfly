@@ -6,31 +6,35 @@
 
 <h1>@ViewData["Title"]</h1>
 
-<div class="row">
-    <div class="col-md-4">
+<div class="login-container">
+
+    <div class="login-fieldset">
         <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h4><a href="~/Identity/Account/Register">Create a new account</a></h4>
-            <hr />
             <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control" />
+            <div class="login-fieldrow">
+                <label asp-for="Input.Email" class="login-fieldlabel"></label>
+                <input asp-for="Input.Email" placeholder="Email" class="login-fieldcontrol" />
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" />
+            <div class="login-fieldrow">
+                <label asp-for="Input.Password" class="login-fieldlabel"></label>
+                <input asp-for="Input.Password" placeholder="Password" class="login-fieldcontrol" />
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="login-fieldrow">
                 <div class="checkbox">
-                    <label asp-for="Input.RememberMe">
-                        <input asp-for="Input.RememberMe" />
+                    <label asp-for="Input.RememberMe" class="login-fieldlabel">
                         @Html.DisplayNameFor(m => m.Input.RememberMe)
                     </label>
+                    <input asp-for="Input.RememberMe" placeholder="Confirm Password" class="login-fieldcontrol" />
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <div class="login-fieldrow">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+            <div class="login-fieldrow">
+                <a href="~/Identity/Account/Register">Create a new account</a>
+            </div>
         </form>
     </div>
 </div>

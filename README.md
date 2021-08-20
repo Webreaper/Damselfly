@@ -53,13 +53,14 @@ be appreciated!
 
 ## Screenshots
 
-<img src="docs/Damselfly-browsing.jpg" alt="Browsing in Damselfly" width="800"/>
+<div>
+<img style="margin: 5px;" src="docs/Damselfly-browsing.jpg" alt="Browsing in Damselfly" width="600"/>
+<img style="margin: 5px;" src="docs/Damselfly-theme.jpg" alt="Themes in Damselfly" width="600"/>
 <br/>
 <br/>
-<img src="docs/Damselfly-imageview.jpg" alt="Viewing images in Damselfly" width="800"/>
-<br/>
-<br/>
-<img src="docs/Damselfly-theme.jpg" alt="Themes in Damselfly" width="800"/>
+<img style="margin: 5px;" src="docs/Damselfly-imageview.jpg" alt="Viewing images in Damselfly" width="600"/>
+<img style="margin: 5px;" src="docs/Damselfly-ai.jpg" alt="Face and Object Detection in Damselfly" width="600"/>
+<div>
 
 ## Planned Features/Enhancements
 
@@ -71,7 +72,6 @@ be appreciated!
 * Simple non-destructive editing/manipulation - cropping, colour adjustment etc
 * Synchronisation of local images back to the server
 * If you have ideas for other features - let me know by [raising an issue](https://github.com/Webreaper/Damselfly/issues)!
-
 
 # How should we I Damselfly? What's the workflow?
 
@@ -101,12 +101,16 @@ do this for you) where the server will re-index them to pick up your changes.
 ## Thanks and Credits
 
 * Microsoft [Blazor.Net](https://blazor.net) for allowing me to avoid writing Javascript. ;)
+* [PumpkinBeth](https://pumpkinbeth.com) (my wife) for taking the photo that appears in Damselfly's logo
 * [SkiaSharp](https://github.com/mono/SkiaSharp) Fast library for Thumbnail generation
 * [SixLabors ImageSharp](https://github.com/SixLabors/ImageSharp) Portable library for Thumbnail generation
 * Drew Noakes' [MetadataExtractor](https://github.com/drewnoakes/metadata-extractor-dotnet), for IPTC and other image meta-data indexing
-* IPTC Tag management using [ExifTool](https://exiftool.org/) by Phil Harvey
-* Face recognition by [Accord.Net](http://accord-framework.net), and [Azure Cognitive Services](https://azure.microsoft.com/en-gb/services/cognitive-services/face/)
-* Icons by [Font Awesome](https://fontawesome.com/)
+* Phil Harvey's [ExifTool](https://exiftool.org/) which Damselfly uses for all of the EXIF write operations
+* [MudBlazor](https://mudblazor.com/) for their excellent Blazor component library
+* [EmguCV](https://www.emgu.com) for their Face and Object detection Haar classifier models
+* [Azure Cognitive Services](https://azure.microsoft.com/en-gb/services/cognitive-services/face/) for their Face-recognition engine
+* [Accord.Net](http://accord-framework.net) for additional Face recognition libraries
+* [Font Awesome](https://fontawesome.com/) for their Awesome icons
 * Chris Sainty for [Blazored](https://github.com/Blazored) Modal and Typeahead, and all his excellent info on Blazor
 * [Serilog.Net](https://serilog.net/) for logging
 * Wisne for [Infinite Scroll](https://github.com/wisne/InfiniteScroll-BlazorServer) inspiration
