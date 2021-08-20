@@ -49,7 +49,7 @@ Faces and objects that are recognised will be displayed as special tags, alongsi
 images. You can distinguish them by the different icon (a lightbulb for objects, and a head/shoulders for faces - you can
 also hold your mouse over the icon for a description). 
 
-<img src="docs/Damselfly-AI.jpg" alt="Image Recognition in Damselfly" width="800"/>
+<img src="./Damselfly-AI.jpg" alt="Image Recognition in Damselfly" width="800"/>
 
 ### Object Recognition
 
