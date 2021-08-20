@@ -70,9 +70,9 @@
     <PackageReference Include="BlazorDateRangePicker" Version="3.6.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.2.0.21211" />
-    <PackageReference Include="Radzen.Blazor" Version="3.8.2" />
+    <PackageReference Include="Radzen.Blazor" Version="3.9.2" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.0.1" />
-    <PackageReference Include="FluentValidation" Version="10.3.0" />
+    <PackageReference Include="FluentValidation" Version="10.3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-preview.7.21378.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

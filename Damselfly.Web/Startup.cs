@@ -24,6 +24,7 @@ using Damselfly.ML.Face.Emgu;
 using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
 using MudBlazor.Services;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Damselfly.Web
 {
@@ -78,6 +79,10 @@ namespace Damselfly.Web
                                                                 RoleDefinitions.s_UserRole,
                                                                 RoleDefinitions.s_ReadOnlyRole));
             });
+
+            // Use transient here so that if the user preferences change, 
+            // we'll get a different instance the next time we send email. 
+            services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
