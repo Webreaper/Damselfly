@@ -56,7 +56,6 @@ namespace ImageClassification.ModelScorer
         {
             ConsoleWriteHeader("Read model");
             Console.WriteLine($"Model location: {modelLocation}");
-            Console.WriteLine($"Images folder: {imagesFolder}");
             Console.WriteLine($"Default parameters: image size=({ImageNetSettings.imageWidth},{ImageNetSettings.imageHeight}), image mean: {ImageNetSettings.mean}");
 
             var imageData = System.IO.Directory.GetFiles(imagesFolder, "*_m.jpg")

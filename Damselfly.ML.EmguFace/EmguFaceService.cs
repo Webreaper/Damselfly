@@ -37,34 +37,7 @@ namespace Damselfly.ML.Face.Emgu
             InitialiseClassifiers();
         }
 
-        private DirectoryInfo? GetModelFolder()
-        {
-            var modelFolder = Path.Combine( ".", "Models" );
-
-            if (!Directory.Exists(modelFolder))
-            {
-                var asm = Assembly.GetExecutingAssembly();
-
-                if (asm != null)
-                {
-                    var thisAsm = new FileInfo(asm.Location);
-
-                    if( thisAsm != null && thisAsm.Directory != null )
-                    {
-                        modelFolder = Path.Combine( thisAsm.Directory.FullName, "Models" );
-                    }
-                }
-            }
-
-            if( Directory.Exists(modelFolder) )
-            {
-                return new DirectoryInfo( modelFolder );
-            }
-
-            Logging.LogError($"Haar Models folder not found: {modelFolder}");
-
-            return null;
-        }
+       
 
         private bool IsSupported
         {
@@ -100,7 +73,7 @@ namespace Damselfly.ML.Face.Emgu
             if (! IsSupported)
                 return;
 
-            var modelDir = GetModelFolder();
+            var modelDir = MLUtils.GetModelFolder();
 
             if (modelDir != null)
             {
