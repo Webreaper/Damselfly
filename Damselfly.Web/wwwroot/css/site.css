@@ -25,6 +25,15 @@ html, body {
     font-weight: bold;
 }
 
+.imagegrid-loader {
+    width: 24px;
+    height: 24px;
+    background-color: var(--body-text);
+    border-radius: 100%;
+    -webkit-animation: sk-scaleout 1.0s infinite ease-in-out;
+    animation: sk-scaleout 1.0s infinite ease-in-out;
+}
+
 .components-reconnect-hide > div {
     display: none;
 }
@@ -1549,6 +1558,7 @@ hr.separator {
     flex-direction: row;
 
     flex: 1;
+    margin: 5px;
 }
 
 .login-fieldlabel {
@@ -1558,5 +1568,9 @@ hr.separator {
 .login-fieldcontrol {
     flex: 1;
 
-    font-size: 14pt;
+    font-size: 12pt;
+}
+
+.btn-login {
+    font-size: 12pt;
 }

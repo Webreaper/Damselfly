@@ -6,6 +6,8 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Threading.Tasks;
+using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services
 {
@@ -18,17 +20,36 @@ namespace Damselfly.Core.Services
         {
             public string SendGridUser { get; set; }
             public string SendGridKey { get; set; }
+
+            public void Load(ConfigService configService)
+            {
+                SendGridUser = configService.Get(ConfigSettings.SendGridUser);
+                SendGridKey = configService.Get(ConfigSettings.SendGridKey);
+            }
+
+            public void Save(ConfigService configService)
+            {
+                configService.Set(ConfigSettings.SendGridUser, SendGridUser);
+                configService.Set(ConfigSettings.SendGridKey, SendGridKey);
+            }
         }
 
-        public EmailSendGridService(IOptions<AuthMessageSenderOptions> optionsAccessor)
+        public EmailSendGridService(ConfigService configService)
         {
-            Options = optionsAccessor.Value;
+            Options.Load(configService);
+        }
+
+        public bool IsValid
+        {
+            get { return !string.IsNullOrEmpty(Options.SendGridUser) && !string.IsNullOrEmpty(Options.SendGridKey); }
         }
 
         public AuthMessageSenderOptions Options { get; } //set only via Secret Manager
 
         public Task SendEmailAsync(string email, string subject, string message)
         {
+            Logging.Log($"Sending email to {email} using SendGrid service.");
+
             return Execute(Options.SendGridKey, subject, message, email);
         }
 
@@ -64,17 +85,42 @@ namespace Damselfly.Core.Services
             public string SenderName { get; set; }
             public string Sender { get; set; }
             public string Password { get; set; }
+
+            public void Load( ConfigService configService )
+            {
+                MailServer = configService.Get(ConfigSettings.SmtpServer);
+                MailPort = configService.GetInt(ConfigSettings.SmtpServer);
+                Password = configService.Get(ConfigSettings.SmtpPassword);
+                Sender = configService.Get(ConfigSettings.SmtpSenderEmail);
+                SenderName = configService.Get(ConfigSettings.SmtpSenderName);
+            }
+
+            public void Save(ConfigService configService)
+            {
+                configService.Set(ConfigSettings.SmtpServer, MailServer);
+                configService.Set(ConfigSettings.SmtpServer, MailPort.ToString());
+                configService.Set(ConfigSettings.SmtpPassword, Password);
+                configService.Set(ConfigSettings.SmtpSenderEmail, Sender);
+                configService.Set(ConfigSettings.SmtpSenderName, SenderName);
+            }
         }
 
-        private readonly SmtpSettings _emailSettings;
-
-        public EmailSmtpService( IOptions<SmtpSettings> emailSettings)
+        public bool IsValid
         {
-            _emailSettings = emailSettings.Value;
+            get { return !string.IsNullOrEmpty(_emailSettings.MailServer) && !string.IsNullOrEmpty(_emailSettings.Password); }
+        }
+
+        private readonly SmtpSettings _emailSettings = new SmtpSettings();
+
+        public EmailSmtpService( ConfigService configService )
+        {
+            _emailSettings.Load(configService);
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
         {
+            Logging.Log($"Sending email to {email} using SMTP service.");
+
             try
             {
                 var mimeMessage = new MimeMessage();
@@ -117,8 +163,7 @@ namespace Damselfly.Core.Services
             }
             catch (Exception ex)
             {
-                // TODO: handle exception
-                throw new InvalidOperationException(ex.Message);
+                Logging.LogError($"SMTP send error: {ex}");
             }
         }
 

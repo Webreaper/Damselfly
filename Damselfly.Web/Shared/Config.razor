@@ -42,7 +42,7 @@
         <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
             <MudTabPanel Text="User Management">
                 <div>
-                <UserManagement />
+                    <UserManagement />
                 </div>
             </MudTabPanel>
         </AuthorizeView>
@@ -79,6 +79,43 @@
                 <button class="btn btn-primary" type="submit">Save Settings</button>
             </EditForm>
         </MudTabPanel>
+        <MudTabPanel Text="Email Config">
+            <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                <FluentValidationValidator />
+                <ValidationSummary />
+
+                <h2>Email Settings for Password Reminders, etc.</h2>
+
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+                <button class="btn btn-primary" type="submit">Save Settings</button>
+            </EditForm>
+        </MudTabPanel>
         <MudTabPanel Text="AI Config">
             <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
                 <FluentValidationValidator />
@@ -92,7 +129,7 @@
                     <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
                     and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
                     recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
-                    month (Damselfly uses around 3 transactions per image processed). 
+                    month (Damselfly uses around 3 transactions per image processed).
                 </p>
 
                 <div class="damselfly-configsetting">
@@ -106,12 +143,12 @@
                     </div>
                 </div>
                 <p>
-                    To use the tranaction limit efficiently you can elect to only submit images to Azure which have faces
-                    or people detected in them by Damselfly's offline detection.
+
                 </p>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" HelperText="Select the roles to which this user belongs" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled">
+                        <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled"
+                                   HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
                             @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
                             {
                                 <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
@@ -131,6 +168,7 @@
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
     private AzureSettings azureSettings = new AzureSettings();
+    private EmailSmtpService.SmtpSettings smtpSettings = new EmailSmtpService.SmtpSettings();
     private bool importSidecarKeywords = false;
     private string selectedTheme;
 
@@ -148,6 +186,8 @@
         configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
         configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
         configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
+
+        smtpSettings.Save(configService);
 
         if (themeService.CurrentTheme != selectedTheme)
         {
@@ -170,6 +210,8 @@
         azureSettings.Endpoint = configService.Get(ConfigSettings.AzureEndpoint);
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
+
+        smtpSettings.Load(configService);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
