@@ -5,6 +5,7 @@
     <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
     <UserSecretsId>d09fa775-aa27-45c8-a743-5b27d054d4dd</UserSecretsId>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <PropertyGroup>
     <StartArguments>/Users/markotway/Pictures --postgress</StartArguments>
@@ -64,7 +65,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.0-preview.7.21377.19" />
-    <PackageReference Include="MudBlazor" Version="5.1.0" />
+    <PackageReference Include="MudBlazor" Version="5.1.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.1-dev-00229" />
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="BlazorDateRangePicker" Version="3.6.0" />

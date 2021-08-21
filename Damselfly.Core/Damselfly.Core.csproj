@@ -34,6 +34,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0-preview.7.21378.6" />
     <PackageReference Include="SendGrid" Version="9.24.2" />
     <PackageReference Include="MailKit" Version="2.15.0" />
+    <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.8.64" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
