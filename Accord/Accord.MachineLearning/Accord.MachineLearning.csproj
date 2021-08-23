@@ -3,9 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Accord.MachineLearning</AssemblyName>
     <RootNamespace>Accord.MachineLearning</RootNamespace>
-    <TargetFrameworks>net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
 </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
