@@ -16,174 +16,182 @@
 
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
-        <AuthorizeView Context="auth">
-            <MudTabPanel Text="User Config">
-                <h2>Settings for @auth.User.Identity.Name</h2>
-                <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-                    <FluentValidationValidator />
-                    <ValidationSummary />
+    <AuthorizeView>
+        <NotAuthorized>
+            <p>Please <a href="/Identity/Account/Login">log in</a> to access user and system settings.</p>
+        </NotAuthorized>
+        <Authorized Context="auth">
+            <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
+                <MudTabPanel Text="User Settings">
+                    <h2>Settings for @auth.User.Identity.Name</h2>
+                    <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                        <FluentValidationValidator />
+                        <ValidationSummary />
 
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="Variant.Filled">
-                                @foreach (var choice in themeService.Themes)
-                                {
-                                    <MudSelectItem T="string" Value="@choice">
-                                        @choice.Transform(To.SentenceCase)
-                                    </MudSelectItem>
-                                }
-                            </MudSelect>
+                        <div class="damselfly-configsetting">
+                            <div class="damselfly-configfield">
+                                <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="Variant.Filled">
+                                    @foreach (var choice in themeService.Themes)
+                                    {
+                                        <MudSelectItem T="string" Value="@choice">
+                                            @choice.Transform(To.SentenceCase)
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
                         </div>
-                    </div>
-                    <button class="btn btn-primary" type="submit">Save Settings</button>
-                </EditForm>
-            </MudTabPanel>
-        </AuthorizeView>
-        <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
-            <MudTabPanel Text="User Management">
-                <div>
-                    <UserManagement />
-                </div>
-            </MudTabPanel>
-        </AuthorizeView>
-        <MudTabPanel Text="Admin Config">
-            <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-                <FluentValidationValidator />
-                <ValidationSummary />
+                        <button class="btn btn-primary" type="submit">Save Settings</button>
+                    </EditForm>
+                </MudTabPanel>
 
-                <h2>SideCar Processing</h2>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudCheckBox @bind-Checked="@importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing" />
-                    </div>
-                </div>
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin" Context="authPolicy">
+                    <MudTabPanel Text="System Settings">
+                        <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                            <FluentValidationValidator />
+                            <ValidationSummary />
 
-                <h2>Wordpress Upload</h2>
+                            <h2>SideCar Processing</h2>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing" />
+                                </div>
+                            </div>
 
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
+                            <h2>Wordpress Upload</h2>
 
-                <button class="btn btn-primary" type="submit">Save Settings</button>
-            </EditForm>
-        </MudTabPanel>
-        <MudTabPanel Text="Email Config">
-            <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-                <FluentValidationValidator />
-                <ValidationSummary />
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="Variant.Filled" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="Variant.Filled" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="Variant.Filled" />
+                                </div>
+                            </div>
 
-                <h2>Email Settings for Password Reminders, etc.</h2>
+                            <button class="btn btn-primary" type="submit">Save Settings</button>
+                        </EditForm>
+                    </MudTabPanel>
 
-                <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here.</a></p>
-                <MudSwitch T="bool" @bind-Checked="@useSmtp" Label="@(useSmtp ? "SMTP" : "SendGrid")" />
+                    <MudTabPanel Text="Face Recognition">
+                        <EditForm Model="@azureSettings" OnValidSubmit="@HandleValidSubmit">
+                            <FluentValidationValidator />
+                            <ValidationSummary />
 
-                @if (useSmtp)
-                {
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
+                            <h2>Azure Cognitive Services Face Recognition</h2>
+
+                            <p>
+                                <a href="https://azure.microsoft.com/services/cognitive-services/face/" target="_blank">Azure Face</a>
+                                is an online Face-recognition service provided by Microsoft.
+                                <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
+                                and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
+                                recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
+                                month (Damselfly uses around 3 transactions per image processed).
+                            </p>
+
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="Variant.Filled" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="Variant.Filled" />
+                                </div>
+                            </div>
+                            <p>
+
+                            </p>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled"
+                                               HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
+                                        @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
+                                        {
+                                            <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
+                                                @choice.ToString().Humanize()
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary" type="submit">Save Settings</button>
+                        </EditForm>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="User Management">
+                        <div>
+                            <UserManagement />
                         </div>
-                    </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="Variant.Filled" />
-                        </div>
-                    </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" ReadOnly="false" Variant="Variant.Filled" />
-                        </div>
-                    </div>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Email Notifications">
+                        <EditForm Model="@(useSmtp ? smtpSettings : sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
+                            <FluentValidationValidator />
+                            <ValidationSummary />
 
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" ReadOnly="false" Variant="Variant.Filled" />
-                        </div>
-                    </div>
+                            <h2>Email Settings for Password Reminders, etc.</h2>
 
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" Variant="Variant.Filled" />
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
-                        </div>
-                    </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" InputType="InputType.Email" ReadOnly="false"
-                                           Variant="Variant.Filled" HelperText="This should match the email address associated with your API key in your SendGrid account"/>
-                        </div>
-                    </div>
-                }
-                <button class="btn btn-primary" type="submit">Save Settings</button>
-            </EditForm>
-        </MudTabPanel>
-        <MudTabPanel Text="AI Config">
-            <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-                <FluentValidationValidator />
-                <ValidationSummary />
+                            <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here.</a></p>
+                            <MudSwitch T="bool" @bind-Checked="@useSmtp" Label="@(useSmtp ? "SMTP" : "SendGrid")" />
 
-                <h2>Azure Cognitive Services Face Recognition</h2>
-
-                <p>
-                    <a href="https://azure.microsoft.com/services/cognitive-services/face/" target="_blank">Azure Face</a>
-                    is an online Face-recognition service provided by Microsoft.
-                    <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
-                    and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
-                    recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
-                    month (Damselfly uses around 3 transactions per image processed).
-                </p>
-
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
-                <p>
-
-                </p>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled"
-                                   HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
-                            @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
+                            @if (useSmtp)
                             {
-                                <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
-                                    @choice.ToString().Humanize()
-                                </MudSelectItem>
-                            }
-                        </MudSelect>
-                    </div>
-                </div>
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
+                                    </div>
+                                </div>
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="Variant.Filled" />
+                                    </div>
+                                </div>
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" ReadOnly="false" Variant="Variant.Filled" />
+                                    </div>
+                                </div>
 
-                <button class="btn btn-primary" type="submit">Save Settings</button>
-            </EditForm>
-        </MudTabPanel>
-    </MudTabs>
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" ReadOnly="false" Variant="Variant.Filled" />
+                                    </div>
+                                </div>
+
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" Variant="Variant.Filled" />
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
+                                    </div>
+                                </div>
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" InputType="InputType.Email" ReadOnly="false"
+                                                      Variant="Variant.Filled" HelperText="This should match the email address associated with your API key in your SendGrid account" />
+                                    </div>
+                                </div>
+                            }
+                            <button class="btn btn-primary" type="submit">Save Settings</button>
+                        </EditForm>
+                    </MudTabPanel>
+                </AuthorizeView>
+            </MudTabs>
+        </Authorized>
+    </AuthorizeView>
 </div>
 
 @code {
