@@ -28,7 +28,7 @@ namespace Damselfly.Core.Services
         public string StatusText
         {
             get { return statusText; }
-            set { statusText = value; NotifyStateChanged(); }
+            set { if (statusText != value) { statusText = value; NotifyStateChanged(); } }
         }
     }
 }
