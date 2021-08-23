@@ -6,6 +6,7 @@
 <RadzenContextMenu />
 
 <CascadingAuthenticationState>
+    <LoginForcer/>
     <ThemeSwitcher />
     <div class="damselfly-container">
         <div class="damselfly-application">
@@ -24,6 +25,7 @@
 </CascadingAuthenticationState>
 
 @code{
+
     private MudTheme darkTheme = new MudTheme
     {
         Palette = new Palette

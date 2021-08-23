@@ -19,6 +19,7 @@ namespace Damselfly.Core.Utils.Constants
         public const string AzureApiKey = "AzureApiKey";
         public const string AzureDetectionType = "AzureDetectionType";
 
+        public const string ForceLogin = "ForceLogin";
         public const string UseSmtp = "UseSMTP";
 
         public const string SmtpServer = "SmtpServer";

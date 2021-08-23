@@ -57,6 +57,13 @@
                                 </div>
                             </div>
 
+                            <h2>Security</h2>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@forceLogin" Label="Force users to login before accessing Damselfly" />
+                                </div>
+                            </div>
+
                             <h2>Wordpress Upload</h2>
 
                             <div class="damselfly-configsetting">
@@ -138,7 +145,7 @@
 
                             <h2>Email Settings for Password Reminders, etc.</h2>
 
-                            <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here.</a></p>
+                            <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
                             <MudSwitch T="bool" @bind-Checked="@useSmtp" Label="@(useSmtp ? "SMTP" : "SendGrid")" />
 
                             @if (useSmtp)
@@ -202,6 +209,7 @@
     private bool importSidecarKeywords = false;
     private string selectedTheme;
     private bool useSmtp = true;
+    private bool forceLogin = false;
 
     private void HandleValidSubmit()
     {
@@ -218,6 +226,7 @@
             configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
             configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
+            configService.Set(ConfigSettings.ForceLogin, forceLogin.ToString());
 
             smtpSettings.Save(configService);
             sendGridSettings.Save(configService);
@@ -265,7 +274,9 @@
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
+        forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
+
         smtpSettings.Load(configService);
         sendGridSettings.Load(configService);
 

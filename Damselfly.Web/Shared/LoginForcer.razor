@@ -1,0 +1,28 @@
+﻿
+@using Damselfly.Core.Utils.Constants
+  
+@inject NavigationManager navigationManager
+@inject ConfigService configService
+
+@code {
+        [CascadingParameter]
+        protected Task<AuthenticationState> AuthStat { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
+
+        if (forceLogin)
+        {
+            var user = (await AuthStat).User;
+
+            if (!user.Identity.IsAuthenticated)
+            {
+                var localRedirect = "/" + navigationManager.ToBaseRelativePath(navigationManager.Uri);
+                navigationManager.NavigateTo($"/Identity/Account/Login?returnUrl={Uri.EscapeDataString(localRedirect)}");
+            }
+        }
+    }
+}
