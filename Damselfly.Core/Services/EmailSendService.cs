@@ -16,7 +16,7 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class EmailSendGridService : IEmailSender
     {
-        public class AuthMessageSenderOptions
+        public class SendGridSettings
         {
             public string SendGridUser { get; set; }
             public string SendGridKey { get; set; }
@@ -44,33 +44,45 @@ namespace Damselfly.Core.Services
             get { return !string.IsNullOrEmpty(_options.SendGridUser) && !string.IsNullOrEmpty(_options.SendGridKey); }
         }
 
-        private readonly AuthMessageSenderOptions _options = new AuthMessageSenderOptions();
+        private readonly SendGridSettings _options = new SendGridSettings();
 
 
-        public Task SendEmailAsync(string email, string subject, string message)
+        public async Task SendEmailAsync(string email, string subject, string message)
         {
             Logging.Log($"Sending email to {email} using SendGrid service.");
 
-            return Execute(_options.SendGridKey, subject, message, email);
+            await Execute(_options.SendGridKey, subject, message, email);
         }
 
-        public Task Execute(string apiKey, string subject, string message, string email)
+        public async Task Execute(string apiKey, string subject, string message, string email)
         {
-            var client = new SendGridClient(apiKey);
-            var msg = new SendGridMessage()
+            try
             {
-                From = new EmailAddress("mark@otway.com", _options.SendGridUser),
-                Subject = subject,
-                PlainTextContent = message,
-                HtmlContent = message
-            };
-            msg.AddTo(new EmailAddress(email));
+                var client = new SendGridClient(apiKey);
+                var msg = new SendGridMessage()
+                {
+                    From = new EmailAddress("mark@otway.com", _options.SendGridUser),
+                    Subject = subject,
+                    PlainTextContent = message,
+                    HtmlContent = message
+                };
+                msg.AddTo(new EmailAddress(email));
 
-            // Disable click tracking.
-            // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
-            msg.SetClickTracking(false, false);
+                // Disable click tracking.
+                // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
+                msg.SetClickTracking(false, false);
 
-            return client.SendEmailAsync(msg);
+                var response = await client.SendEmailAsync(msg);
+
+                if( response.IsSuccessStatusCode )
+                    Logging.Log($"Email send to {email} completed.");
+                else
+                    Logging.Log($"Email send to {email} failed with status {response.StatusCode}.");
+            }
+            catch ( Exception ex )
+            {
+                Logging.LogError($"SendGrid error: {ex}");
+            }
         }
     }
 
@@ -159,6 +171,8 @@ namespace Damselfly.Core.Services
                     await client.SendAsync(mimeMessage);
 
                     await client.DisconnectAsync(true);
+
+                    Logging.Log($"Email send to {email} complete.");
                 }
 
             }

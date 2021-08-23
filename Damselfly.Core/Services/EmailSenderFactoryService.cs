@@ -35,13 +35,10 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             if( _senderInstance != null )
-                return _senderInstance.SendEmailAsync(email, subject, htmlMessage);
-
-            // Nothing configured, so just return that we're complete.
-            return Task.CompletedTask;
+                await _senderInstance.SendEmailAsync(email, subject, htmlMessage);
         }
     }
 }

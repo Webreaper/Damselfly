@@ -86,6 +86,24 @@
 
                 <h2>Email Settings for Password Reminders, etc.</h2>
 
+                <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here.</a></p>
+                <MudSwitch T="bool" @bind-Checked="@useSmtp" Label="@(useSmtp ? "SMTP" : "SendGrid")" />
+
+                @if (!useSmtp)
+                {
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@sendGridSettings.SendGridUser" Label="SendGrid User" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
+                    </div>
+                </div>
+                }
+                else
+                {
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
                         <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
@@ -113,6 +131,7 @@
                         <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" Variant="Variant.Filled" />
                     </div>
                 </div>
+                }
                 <button class="btn btn-primary" type="submit">Save Settings</button>
             </EditForm>
         </MudTabPanel>
@@ -169,8 +188,10 @@
     private WordpressSettings wpSettings = new WordpressSettings();
     private AzureSettings azureSettings = new AzureSettings();
     private EmailSmtpService.SmtpSettings smtpSettings = new EmailSmtpService.SmtpSettings();
+    private EmailSendGridService.SendGridSettings sendGridSettings = new EmailSendGridService.SendGridSettings();
     private bool importSidecarKeywords = false;
     private string selectedTheme;
+    private bool useSmtp = true;
 
     private void HandleValidSubmit()
     {
@@ -188,6 +209,8 @@
         configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
         smtpSettings.Save(configService);
+        sendGridSettings.Save(configService);
+        configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
         if (themeService.CurrentTheme != selectedTheme)
         {
@@ -212,6 +235,8 @@
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
         smtpSettings.Load(configService);
+        sendGridSettings.Load(configService);
+        useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
