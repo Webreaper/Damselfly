@@ -208,9 +208,12 @@
         configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
         configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
-        smtpSettings.Save(configService);
-        sendGridSettings.Save(configService);
         configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
+
+        if( useSmtp)
+            smtpSettings.Save(configService);
+        else
+            sendGridSettings.Save(configService);
 
         if (themeService.CurrentTheme != selectedTheme)
         {
@@ -234,9 +237,11 @@
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
-        smtpSettings.Load(configService);
-        sendGridSettings.Load(configService);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
+        if( useSmtp )
+            smtpSettings.Load(configService);
+        else
+            sendGridSettings.Load(configService);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
