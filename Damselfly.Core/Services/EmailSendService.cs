@@ -36,21 +36,22 @@ namespace Damselfly.Core.Services
 
         public EmailSendGridService(ConfigService configService)
         {
-            Options.Load(configService);
+            _options.Load(configService);
         }
 
         public bool IsValid
         {
-            get { return !string.IsNullOrEmpty(Options.SendGridUser) && !string.IsNullOrEmpty(Options.SendGridKey); }
+            get { return !string.IsNullOrEmpty(_options.SendGridUser) && !string.IsNullOrEmpty(_options.SendGridKey); }
         }
 
-        public AuthMessageSenderOptions Options { get; } //set only via Secret Manager
+        private readonly AuthMessageSenderOptions _options = new AuthMessageSenderOptions();
+
 
         public Task SendEmailAsync(string email, string subject, string message)
         {
             Logging.Log($"Sending email to {email} using SendGrid service.");
 
-            return Execute(Options.SendGridKey, subject, message, email);
+            return Execute(_options.SendGridKey, subject, message, email);
         }
 
         public Task Execute(string apiKey, string subject, string message, string email)
@@ -58,7 +59,7 @@ namespace Damselfly.Core.Services
             var client = new SendGridClient(apiKey);
             var msg = new SendGridMessage()
             {
-                From = new EmailAddress("mark@otway.com", Options.SendGridUser),
+                From = new EmailAddress("mark@otway.com", _options.SendGridUser),
                 Subject = subject,
                 PlainTextContent = message,
                 HtmlContent = message
