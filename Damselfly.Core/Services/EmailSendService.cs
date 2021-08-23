@@ -102,7 +102,7 @@ namespace Damselfly.Core.Services
             public void Load( ConfigService configService )
             {
                 MailServer = configService.Get(ConfigSettings.SmtpServer);
-                MailPort = configService.GetInt(ConfigSettings.SmtpServer);
+                MailPort = configService.GetInt(ConfigSettings.SmtpPort);
                 Password = configService.Get(ConfigSettings.SmtpPassword);
                 Sender = configService.Get(ConfigSettings.SmtpSenderEmail);
                 SenderName = configService.Get(ConfigSettings.SmtpSenderName);
@@ -111,7 +111,7 @@ namespace Damselfly.Core.Services
             public void Save(ConfigService configService)
             {
                 configService.Set(ConfigSettings.SmtpServer, MailServer);
-                configService.Set(ConfigSettings.SmtpServer, MailPort.ToString());
+                configService.Set(ConfigSettings.SmtpPort, MailPort.ToString());
                 configService.Set(ConfigSettings.SmtpPassword, Password);
                 configService.Set(ConfigSettings.SmtpSenderEmail, Sender);
                 configService.Set(ConfigSettings.SmtpSenderName, SenderName);
