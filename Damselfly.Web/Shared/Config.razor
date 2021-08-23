@@ -210,15 +210,12 @@
 
         configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
-        if( useSmtp)
-            smtpSettings.Save(configService);
-        else
-            sendGridSettings.Save(configService);
+        smtpSettings.Save(configService);
+        sendGridSettings.Save(configService);
 
         if (themeService.CurrentTheme != selectedTheme)
         {
             themeService.CurrentTheme = selectedTheme;
-            //_ = JsRuntime.InvokeVoidAsync("window.location.reload");
         }
 
         // Init the azure service status based on config.
@@ -238,10 +235,8 @@
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
-        if( useSmtp )
-            smtpSettings.Load(configService);
-        else
-            sendGridSettings.Load(configService);
+        smtpSettings.Load(configService);
+        sendGridSettings.Load(configService);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
