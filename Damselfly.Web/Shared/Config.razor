@@ -2,6 +2,7 @@
 @using Damselfly.ML.Face.Azure;
 @using Damselfly.Core.DbModels;
 @using Damselfly.Core.Utils.Constants;
+@using Damselfly.Core.Interfaces;
 @using Humanizer;
 
 @inject IJSRuntime JsRuntime
@@ -89,48 +90,48 @@
                 <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here.</a></p>
                 <MudSwitch T="bool" @bind-Checked="@useSmtp" Label="@(useSmtp ? "SMTP" : "SendGrid")" />
 
-                @if (!useSmtp)
+                @if (useSmtp)
                 {
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@sendGridSettings.SendGridUser" Label="SendGrid User" ReadOnly="false" Variant="Variant.Filled" />
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
                     </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
                     </div>
-                </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
+                    </div>
+
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
+                    </div>
+
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
+                    </div>
                 }
                 else
                 {
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@sendGridSettings.SendGridUser" Label="SendGrid User" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
                     </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="Variant.Filled" />
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
+                        </div>
                     </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
-
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
-
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" Variant="Variant.Filled" />
-                    </div>
-                </div>
                 }
                 <button class="btn btn-primary" type="submit">Save Settings</button>
             </EditForm>
@@ -195,33 +196,54 @@
 
     private void HandleValidSubmit()
     {
-        configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
-
-        configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
-        configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
-        configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
-
-        // WP Settings have changed, so reset the client and token
-        wpService.ResetClient();
-
-        configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
-        configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
-        configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
-
-        configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
-
-        smtpSettings.Save(configService);
-        sendGridSettings.Save(configService);
-
-        if (themeService.CurrentTheme != selectedTheme)
+        try
         {
-            themeService.CurrentTheme = selectedTheme;
+            configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
+
+            configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
+            configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
+            configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
+
+            configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
+            configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
+            configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
+
+            configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
+
+            smtpSettings.Save(configService);
+            sendGridSettings.Save(configService);
+
+            if (themeService.CurrentTheme != selectedTheme)
+            {
+                themeService.CurrentTheme = selectedTheme;
+            }
+
+            statusService.StatusText = "Settings saved.";
+
+            UpdateServicesWithNewSettings();
         }
+        catch ( Exception ex )
+        {
+            statusService.StatusText = "Unable to save settings.";
+            Logging.LogError($"Error saving settings: {ex}");
+        }
+    }
 
-        // Init the azure service status based on config.
-        azureService.StartService(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
+    private void UpdateServicesWithNewSettings()
+    {
+        try
+        {
+            // Init the azure service status based on config.
+            azureService.StartService(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
 
-        statusService.StatusText = "Settings saved.";
+            // WP Settings have changed, so reset the client and token
+            wpService.ResetClient();
+
+        }
+        catch( Exception ex )
+        {
+            Logging.LogError($"Exception initialising services after settings update: {ex}");
+        }
     }
 
     protected override void OnInitialized()

@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Damselfly.Core.Services
@@ -18,20 +20,29 @@ namespace Damselfly.Core.Services
         {
             _senderInstance = null;
 
-            var sendGrid = new EmailSendGridService(configService);
+            var useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
 
-            if (sendGrid.IsValid)
+            if( useSmtp )
             {
-                _senderInstance = sendGrid;
-            }
-            else
-            {
-                var smtp = new EmailSmtpService( configService );
+                var smtp = new EmailSmtpService(configService);
 
-                if( smtp.IsValid )
+                if (smtp.IsValid)
                 {
                     _senderInstance = smtp;
                 }
+                else
+                    Logging.LogError("SMTP email provider selected but no valid SMTP settings configured.");
+            }
+            else
+            {
+                var sendGrid = new EmailSendGridService(configService);
+
+                if (sendGrid.IsValid)
+                {
+                    _senderInstance = sendGrid;
+                }
+                else
+                    Logging.LogError("SendGrid email provider selected but no valid SendGrid settings configured.");
             }
         }
 
