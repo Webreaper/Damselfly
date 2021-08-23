@@ -27,7 +27,7 @@ namespace Damselfly.Core.Utils.Constants
         public const string SmtpSenderName = "SmtpSenderName";
         public const string SmtpSenderEmail = "SmtpSenderEmail";
 
-        public const string SendGridUser = "SendGridUser";
+        public const string SendGridFromAddress = "SendGridFromAddress";
         public const string SendGridKey = "SendGridKey";
     }
 }

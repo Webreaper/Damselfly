@@ -110,7 +110,7 @@
 
                     <div class="damselfly-configsetting">
                         <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" ReadOnly="false" Variant="Variant.Filled" />
+                            <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" ReadOnly="false" Variant="Variant.Filled" />
                         </div>
                     </div>
 
@@ -124,12 +124,13 @@
                 {
                     <div class="damselfly-configsetting">
                         <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@sendGridSettings.SendGridUser" Label="SendGrid User" ReadOnly="false" Variant="Variant.Filled" />
+                            <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
                         </div>
                     </div>
                     <div class="damselfly-configsetting">
                         <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
+                            <MudTextField @bind-Value="@sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" InputType="InputType.Email" ReadOnly="false"
+                                           Variant="Variant.Filled" HelperText="This should match the email address associated with your API key in your SendGrid account"/>
                         </div>
                     </div>
                 }

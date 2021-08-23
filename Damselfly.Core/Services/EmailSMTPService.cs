@@ -1,9 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
 using MimeKit;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 using System;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils.Constants;
@@ -11,81 +8,6 @@ using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services
 {
-    /// <summary>
-    /// IEmailSender implementation that uses SendGrid
-    /// </summary>
-    public class EmailSendGridService : IEmailSender
-    {
-        public class SendGridSettings
-        {
-            public string SendGridUser { get; set; }
-            public string SendGridKey { get; set; }
-
-            public void Load(ConfigService configService)
-            {
-                SendGridUser = configService.Get(ConfigSettings.SendGridUser);
-                SendGridKey = configService.Get(ConfigSettings.SendGridKey);
-            }
-
-            public void Save(ConfigService configService)
-            {
-                configService.Set(ConfigSettings.SendGridUser, SendGridUser);
-                configService.Set(ConfigSettings.SendGridKey, SendGridKey);
-            }
-        }
-
-        public EmailSendGridService(ConfigService configService)
-        {
-            _options.Load(configService);
-        }
-
-        public bool IsValid
-        {
-            get { return !string.IsNullOrEmpty(_options.SendGridUser) && !string.IsNullOrEmpty(_options.SendGridKey); }
-        }
-
-        private readonly SendGridSettings _options = new SendGridSettings();
-
-
-        public async Task SendEmailAsync(string email, string subject, string message)
-        {
-            Logging.Log($"Sending email to {email} using SendGrid service.");
-
-            await Execute(_options.SendGridKey, subject, message, email);
-        }
-
-        public async Task Execute(string apiKey, string subject, string message, string email)
-        {
-            try
-            {
-                var client = new SendGridClient(apiKey);
-                var msg = new SendGridMessage()
-                {
-                    From = new EmailAddress("mark@otway.com", _options.SendGridUser),
-                    Subject = subject,
-                    PlainTextContent = message,
-                    HtmlContent = message
-                };
-                msg.AddTo(new EmailAddress(email));
-
-                // Disable click tracking.
-                // See https://sendgrid.com/docs/User_Guide/Settings/tracking.html
-                msg.SetClickTracking(false, false);
-
-                var response = await client.SendEmailAsync(msg);
-
-                if( response.IsSuccessStatusCode )
-                    Logging.Log($"Email send to {email} completed.");
-                else
-                    Logging.Log($"Email send to {email} failed with status {response.StatusCode}.");
-            }
-            catch ( Exception ex )
-            {
-                Logging.LogError($"SendGrid error: {ex}");
-            }
-        }
-    }
-
     /// <summary>
     /// IEmailSender implementation that uses SMTP
     /// </summary>
