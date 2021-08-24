@@ -71,7 +71,7 @@ namespace Damselfly.Core.Services
             List<Image> navigationItems = null;
 
             if (Context == NavigationContexts.Basket)
-                navigationItems = _basketService.SelectedImages;
+                navigationItems = _basketService.BasketImages;
             else if (Context == NavigationContexts.Search)
                 navigationItems = _searchService.SearchResults;
 

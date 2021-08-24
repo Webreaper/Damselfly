@@ -17,7 +17,7 @@
 
     public async Task ExportBasketToLocalFilesystem()
     {
-        await ExportToLocalFS(basketService.SelectedImages);
+        await ExportToLocalFS(basketService.BasketImages);
     }
 
     public async Task ExportImagesToLocalFilesystem(ICollection<Image> images)

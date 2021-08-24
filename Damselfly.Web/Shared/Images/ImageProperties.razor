@@ -133,13 +133,13 @@
             CollapseDisplay();
 
         navContext.OnChange += NavigationChanged;
-        basketService.OnChange += BasketStateChanged;
+        basketService.OnBasketChanged += BasketStateChanged;
     }
 
     public void Dispose()
     {
         navContext.OnChange -= NavigationChanged;
-        basketService.OnChange -= BasketStateChanged;
+        basketService.OnBasketChanged -= BasketStateChanged;
     }
 
     protected void BasketStateChanged()

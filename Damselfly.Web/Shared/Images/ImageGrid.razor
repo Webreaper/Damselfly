@@ -278,7 +278,7 @@
 
                 searchService.OnChange += SearchQueryChanged;
                 FileExporter.OnChange += StateHasChanged;
-                basketService.OnChange += BasketChanged;
+                basketService.OnBasketChanged += BasketChanged;
 
                 await LoadData(initialLoadCount);
                 await InitJsListenerAsync(scrollPos);
@@ -295,7 +295,7 @@
             selectionService.OnSelectionChanged -= SelectedImagesChanged;
             searchService.OnChange -= SearchQueryChanged;
             FileExporter.OnChange -= StateHasChanged;
-            basketService.OnChange -= BasketChanged;
+            basketService.OnBasketChanged -= BasketChanged;
         }
 
         public string NoResultsMessage

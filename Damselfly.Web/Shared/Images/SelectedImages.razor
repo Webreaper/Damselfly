@@ -76,15 +76,9 @@ else
 
     public bool ShowClearButton { get { return gridImages.Any(); } set { } }
 
-
-    private void BasketChanged(ChangeEventArgs e)
-    {
-        basketService.LoadBasket(e.Value.ToString());
-    }
-
     private void UploadToWordPress()
     {
-        _ = wpService.UploadBasketToWordpress( basketService.SelectedImages );
+        _ = wpService.UploadBasketToWordpress( basketService.BasketImages );
     }
 
     private void ShowDownloads()
@@ -103,7 +97,7 @@ else
     {
         if (firstRender)
         {
-            basketService.OnChange += BasketImagesChanged;
+            basketService.OnBasketChanged += BasketImagesChanged;
             selectionService.OnSelectionChanged += SelectedImagesChanged;
             await LoadData();
         }
@@ -111,7 +105,7 @@ else
 
     public void Dispose()
     {
-        basketService.OnChange -= BasketImagesChanged;
+        basketService.OnBasketChanged -= BasketImagesChanged;
         selectionService.OnSelectionChanged -= SelectedImagesChanged;
     }
 
@@ -130,7 +124,7 @@ else
     {
         var watch = new Stopwatch("SelectedLoadData");
         gridImages.Clear();
-        gridImages.AddRange(basketService.SelectedImages);
+        gridImages.AddRange(basketService.BasketImages);
         watch.Stop();
 
         await InvokeAsync(StateHasChanged);

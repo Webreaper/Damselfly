@@ -17,71 +17,31 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class BasketService
     {
+        private readonly DownloadService _downloadService;
+        private readonly UserStatusService _statusService;
+
         private const string s_DefaultBasket = "default";
         private const string s_MyBasket = "My Basket";
-        private readonly UserStatusService _statusService;
-        public event Action OnChange;
+
+        public event Action OnBasketChanged;
         public Basket CurrentBasket { get; set; }
-        private readonly DownloadService _downloadService;
+
+        /// <summary>
+        /// The list of selected images in the basket
+        /// </summary>
+        public List<Image> BasketImages { get; private set; } = new List<Image>();
+
 
         public BasketService( UserStatusService statusService, DownloadService downloadService)
         {
             _statusService = statusService;
             _downloadService = downloadService;
-
-            Initialise();
         }
 
         private void NotifyStateChanged()
         {
-            OnChange?.Invoke();
+            OnBasketChanged?.Invoke();
         }
-
-        /// <summary>
-        /// Sets up the default basket and loads
-        /// </summary>
-        public void Initialise()
-        {
-            using var db = new ImageContext();
-
-            CurrentBasket = db.Baskets.Where(x => x.Name.Equals(s_DefaultBasket)).FirstOrDefault();
-
-            if( CurrentBasket == null )
-            {
-                var defaultBasket = new Basket { Name = s_DefaultBasket };
-                db.Baskets.Add(defaultBasket);
-                db.SaveChanges("SaveBasket");
-
-                if (CurrentBasket == null)
-                    CurrentBasket = defaultBasket;
-            }
-
-            LoadSelectedImages();
-        }
-
-        /// <summary>
-        /// Load a current basket selection 
-        /// </summary>
-        /// <param name="name"></param>
-        public void LoadBasket( string name )
-        {
-            using var db = new ImageContext();
-            var watch = new Stopwatch("LoadBasket");
-
-            var basket = db.Baskets.Where(x => x.Name == name)
-                                .FirstOrDefault();
-
-            CurrentBasket = basket;
-
-            watch.Stop();
-
-            LoadSelectedImages();
-        }
-
-        /// <summary>
-        /// The list of selected images in the basket
-        /// </summary>
-        public List<Image> SelectedImages { get; private set; } = new List<Image>();
 
         /// <summary>
         /// Loads the selected images in the basket, and adds them to the in-memory
@@ -111,19 +71,23 @@ namespace Damselfly.Core.Services
 
             watch.Stop();
 
-            SelectedImages.Clear();
-            SelectedImages.AddRange(images);
+            BasketImages.Clear();
+            BasketImages.AddRange(images);
 
             NotifyStateChanged();
         }
 
+        /// <summary>
+        /// Clears the selection from the basket
+        /// </summary>
+        /// <returns></returns>
         public async Task Clear()
         {
             using var db = new ImageContext();
 
             try
             {
-                SelectedImages.Clear();
+                BasketImages.Clear();
                 await db.BatchDelete( db.BasketEntries.Where( x => x.BasketId.Equals( CurrentBasket.BasketId ) ) );
                 Logging.Log("Basket cleared.");
 
@@ -138,7 +102,7 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
-        /// Return the baskets for 
+        /// Return the baskets for a user
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
@@ -151,7 +115,10 @@ namespace Damselfly.Core.Services
 
             using var db = new ImageContext();
 
-            var myBaskets = await db.Baskets.Where(x => x.UserId == 0 || x.UserId == userId).ToListAsync();
+            var myBaskets = await db.Baskets.Where(x => x.UserId == null || x.UserId == userId)
+                                            .OrderBy( x => x.UserId == null ? 1 : 0 )
+                                            .ThenBy( x => x.Name.ToLower() )
+                                            .ToListAsync();
 
             if( userId != 0 && ! myBaskets.Any( x => x.UserId == userId ))
             {
@@ -176,9 +143,10 @@ namespace Damselfly.Core.Services
         /// <param name="keepPaths">True to keep folder structure, false for a flat zip of images.</param>
         /// <param name="OnProgress">Callback to give progress information to the UI</param>
         /// <returns>String path to the generated file, which is passed back to the doanload request</returns>
-        public async Task<string> DownloadSelection(ExportConfig config )
+        /// TODO: Maybe move this elsewhere. 
+        public async Task<string> DownloadSelection( ExportConfig config )
         {
-            var images = SelectedImages.Select(x => new FileInfo(x.FullPath)).ToArray();
+            var images = BasketImages.Select(x => new FileInfo(x.FullPath)).ToArray();
 
             var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images, config );
 
@@ -197,7 +165,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <param name="newState"></param>
-        public async void SetBasketState(ICollection<Image> images, bool newState)
+        public async void SetBasketState( ICollection<Image> images, bool newState )
         {
             try
             {
@@ -227,7 +195,7 @@ namespace Damselfly.Core.Services
                         imagesToAdd.ForEach(img =>
                         {
                             img.BasketEntry = basketEntries.First(x => x.ImageId == img.ImageId);
-                            SelectedImages.Add(img);
+                            BasketImages.Add(img);
                         });
 
                         changed = true;
@@ -241,7 +209,7 @@ namespace Damselfly.Core.Services
                     {
 
                         images.ToList().ForEach(x => { x.BasketEntry = null; });
-                        SelectedImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
+                        BasketImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
                         changed = true;
 
                         _statusService.StatusText = $"Removed {deleted} images from the basket.";
@@ -261,33 +229,37 @@ namespace Damselfly.Core.Services
 
         public bool IsSelected(Image image)
         {
-            return SelectedImages.Any(x => x.ImageId == image.ImageId);
+            return BasketImages.Any(x => x.ImageId == image.ImageId);
         }
 
-        public void CreateAndSelectNewBasket( string name, AppIdentityUser user )
+        // TODO: Async
+        public void CreateNewBasket( string name, AppIdentityUser user )
         {
             using var db = new ImageContext();
+
+            // TODO: check there isn't an existing basket with the same name and user?
             var newBasket = new Basket { Name = name, UserId = user?.Id };
             db.Baskets.Add(newBasket);
             db.SaveChanges("SaveBasket");
-
-            CurrentBasket = newBasket;
-
-            LoadSelectedImages();
-
-            NotifyStateChanged();
         }
 
         public void SwitchBasket( string name )
         {
             using var db = new ImageContext();
 
+            var watch = new Stopwatch("LoadBasket");
+
             CurrentBasket = db.Baskets.FirstOrDefault(x => x.Name.Equals(name));
 
-            if( CurrentBasket == null )
-                CurrentBasket = db.Baskets.FirstOrDefault(x => x.Name.Equals(s_DefaultBasket));
+            if (CurrentBasket == null)
+            {
+                // Not found. Pick the 'My Basket' default
+                CurrentBasket = db.Baskets.FirstOrDefault(x => x.Name.Equals(s_MyBasket));
+            }
 
             LoadSelectedImages();
+
+            watch.Stop();
         }
     }
 }

@@ -13,10 +13,10 @@
     <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
     @if (!AddingBasket)
     {
-        <select @onchange="BasketChanged" class="InputAddOn-field">
+        <select @onchange="BasketSelectionChanged" class="InputAddOn-field">
             @foreach (var basket in baskets)
             {
-                <option value="@basket.Name">@basket.Name</option>
+            <option value="@basket.Name">@basket.Name @PrivateIndicator(basket)</option>
             }
         </select>
         <button title="Add Basket" @onclick="@(() => AddBasket())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
@@ -34,11 +34,22 @@
     bool AddingBasket { get; set; }
     string NewBasketName { get; set; }
 
+    private string PrivateIndicator(Basket basket)
+    {
+        if (basket?.UserId == null)
+            return "(public)";
+
+        return string.Empty;
+    }
+
     private void SaveBasket()
     {
         AddingBasket = false;
+        var newName = NewBasketName;
+        NewBasketName = string.Empty;
 
-        basketService.CreateAndSelectNewBasket(NewBasketName, userService.User);
+        basketService.CreateNewBasket(newName, userService.User);
+        basketService.SwitchBasket(newName);
 
         StateHasChanged();
     }
@@ -55,9 +66,9 @@
         StateHasChanged();
     }
 
-    private void BasketChanged(ChangeEventArgs e)
+    private void BasketSelectionChanged(ChangeEventArgs e)
     {
-        basketService.LoadBasket(e.Value.ToString());
+        basketService.SwitchBasket(e.Value.ToString());
     }
 
 
@@ -65,23 +76,23 @@
     {
         if (firstRender)
         {
-            basketService.OnChange += BasketsChanged;
+            basketService.OnBasketChanged += BasketsChanged;
 
-            await LoadData();
+            await LoadBasketList();
         }
     }
 
     public void Dispose()
     {
-        basketService.OnChange -= BasketsChanged;
+        basketService.OnBasketChanged -= BasketsChanged;
     }
 
     private void BasketsChanged()
     {
-        _ = LoadData();
+        _ = LoadBasketList();
     }
 
-    public async Task LoadData()
+    public async Task LoadBasketList()
     {
         var watch = new Stopwatch("LoadBaskets");
 

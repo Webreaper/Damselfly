@@ -48,7 +48,7 @@
     {
         var watch = new Stopwatch("ExportLoadData");
         images.Clear();
-        images.AddRange(basketService.SelectedImages.Select(x => new ListableImage(x, ThumbSize.Small)));
+        images.AddRange(basketService.BasketImages.Select(x => new ListableImage(x, ThumbSize.Small)));
         watch.Stop();
 
         return Task.FromResult(images);
