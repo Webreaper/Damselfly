@@ -169,17 +169,22 @@ namespace Damselfly.Core.Services
         /// <param name="user"></param>
         /// <param name="newRoleSet"></param>
         /// <returns></returns>
-        public async Task<bool> UpdateUserAsync(AppIdentityUser user, string newRole)
+        public async Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, string newRole)
         {
             var result = await _userManager.UpdateAsync(user);
 
             if (result.Succeeded)
             {
-                if (await SyncUserRoles(user, new List<string> { newRole }))
-                    return true;
+                var syncResult = await SyncUserRoles(user, new List<string> { newRole });
+
+                if( syncResult != null )
+                {
+                    // Non-null result means we did something and it succeeded or failed.
+                    result = syncResult;
+                }
             }
 
-            return false;
+            return result;
         }
 
         /// <summary>
@@ -188,22 +193,11 @@ namespace Damselfly.Core.Services
         /// <param name="user"></param>
         /// <param name="password">Unhashed password</param>
         /// <returns></returns>
-        public async Task<bool> SetUserPasswordAsync(AppIdentityUser user, string password)
+        public async Task<IdentityResult> SetUserPasswordAsync(AppIdentityUser user, string password)
         {
             string token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            // Now we've checked the admin status, see if the user has any roles.
-            var userRoles = await _userManager.GetRolesAsync(user);
-
-            // If the user doesn't have roles, it means they weren't the first so haven't
-            // been added to the admin role - in which case, add them to the user role.
-            if (!userRoles.Any())
-            {
-                var result = await _userManager.ResetPasswordAsync(user, token, password);
-                return result.Succeeded;
-            }
-
-            return true;
+            return await _userManager.ResetPasswordAsync(user, token, password);
         }
 
         /// <summary>
@@ -268,8 +262,9 @@ namespace Damselfly.Core.Services
         /// <param name="user"></param>
         /// <param name="newRoles"></param>
         /// <returns></returns>
-        public async Task<bool> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles )
+        public async Task<IdentityResult> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles )
         {
+            IdentityResult result = null;
             var roles = await _userManager.GetRolesAsync( user );
 
             var rolesToRemove = roles.Except( newRoles );
@@ -289,42 +284,39 @@ namespace Damselfly.Core.Services
             }
 
             string changes = string.Empty, prefix = string.Empty;
-            bool success = true;
 
             if (rolesToRemove.Any())
             {
                 prefix = $"User {user.UserName} ";
-                var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                result = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
 
-                if (removeResult.Succeeded)
+                if (result.Succeeded)
                 {
                     changes = $"removed from {string.Join(", ", rolesToRemove.Select(x => $"'x'"))} roles";
                 }
                 else
                 {
-                    errorMsg = $"role removal failed: {removeResult.Errors}";
-                    success = false;
+                    errorMsg = $"role removal failed: {result.Errors}";
                 }
             }
 
-            if (rolesToAdd.Any())
+            if( (result == null || result.Succeeded) && rolesToAdd.Any())
             {
                 prefix = $"User {user.UserName} ";
-                var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+                result = await _userManager.AddToRolesAsync(user, rolesToAdd);
 
                 if (!string.IsNullOrEmpty(changes))
                 {
                     changes += " and ";
                 }
 
-                if (addResult.Succeeded)
+                if (result.Succeeded)
                 {
                     changes += $"added to {string.Join(", ", rolesToAdd.Select( x => $"'x'"))} roles";
                 }
                 else
                 {
-                    errorMsg = $"role addition failed: {addResult.Errors}";
-                    success = false;
+                    errorMsg = $"role addition failed: {result.Errors}";
                 }
             }
 
@@ -333,7 +325,7 @@ namespace Damselfly.Core.Services
 
             _statusService.StatusText = $"{prefix}{changes}{errorMsg}";
 
-            return success;
+            return result;
         }
     }
 }
