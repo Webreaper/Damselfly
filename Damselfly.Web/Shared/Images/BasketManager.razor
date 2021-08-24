@@ -1,11 +1,13 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
+@implements IDisposable
 
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject BasketService basketService
 @inject NavigationManager NavigationManager
-@inject WordpressService wpService;
+@inject WordpressService wpService
+@inject UserService userService   
 
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
@@ -34,9 +36,10 @@
 
     private void SaveBasket()
     {
-        basketService.CreateAndSelectNewBasket(NewBasketName);
-
         AddingBasket = false;
+
+        basketService.CreateAndSelectNewBasket(NewBasketName, userService.User);
+
         StateHasChanged();
     }
 
@@ -62,17 +65,30 @@
     {
         if (firstRender)
         {
+            basketService.OnChange += BasketsChanged;
+
             await LoadData();
         }
     }
 
+    public void Dispose()
+    {
+        basketService.OnChange -= BasketsChanged;
+    }
+
+    private void BasketsChanged()
+    {
+        _ = LoadData();
+    }
 
     public async Task LoadData()
     {
         var watch = new Stopwatch("LoadBaskets");
-        using var db = new ImageContext();
+
+        var myBaskets = await basketService.GetUserBaskets( userService.User );
+
         this.baskets.Clear();
-        this.baskets.AddRange(db.Baskets);
+        this.baskets.AddRange( myBaskets );
         watch.Stop();
 
         await InvokeAsync(StateHasChanged);

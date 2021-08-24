@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Services
 {
@@ -17,12 +18,13 @@ namespace Damselfly.Core.Services
     public class BasketService
     {
         private const string s_DefaultBasket = "default";
-        private readonly StatusService _statusService;
+        private const string s_MyBasket = "My Basket";
+        private readonly UserStatusService _statusService;
         public event Action OnChange;
         public Basket CurrentBasket { get; set; }
         private readonly DownloadService _downloadService;
 
-        public BasketService( StatusService statusService, DownloadService downloadService)
+        public BasketService( UserStatusService statusService, DownloadService downloadService)
         {
             _statusService = statusService;
             _downloadService = downloadService;
@@ -66,29 +68,14 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
             var watch = new Stopwatch("LoadBasket");
 
-            var basket = db.Baskets
-                                .Where(x => x.Name == name)
-                                .Include( x => x.BasketEntries )
-                                .ThenInclude(x => x.Image)
-                                .ThenInclude(x => x.Folder)
+            var basket = db.Baskets.Where(x => x.Name == name)
                                 .FirstOrDefault();
 
-            // TODO If basket not found, load default?
-
-            // We can't used ThenInclude to pull in the image tags due to this
-            // but in the EF framework: https://github.com/dotnet/efcore/issues/19418
-            // It's just too slow. So until they fix it (probably EF 5) we need
-            // to manually explicitly load the tags for each image, which is
-            // very quick.
-            foreach (var img in basket.BasketEntries.Select( x => x.Image ) )
-                db.LoadTags(img);
+            CurrentBasket = basket;
 
             watch.Stop();
 
-            SelectedImages.Clear();
-            SelectedImages.AddRange( basket.BasketEntries.Select(x => x.Image) );
-
-            NotifyStateChanged();
+            LoadSelectedImages();
         }
 
         /// <summary>
@@ -149,6 +136,36 @@ namespace Damselfly.Core.Services
                 Logging.LogError($"Error clearing basket: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Return the baskets for 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task<List<Basket>> GetUserBaskets( AppIdentityUser user )
+        {
+            int userId = 0;
+
+            if( user != null )
+                userId = user.Id;
+
+            using var db = new ImageContext();
+
+            var myBaskets = await db.Baskets.Where(x => x.UserId == 0 || x.UserId == userId).ToListAsync();
+
+            if( userId != 0 && ! myBaskets.Any( x => x.UserId == userId ))
+            {
+                // Create a user basket if none exists.
+                var userBasket = new Basket { Name = s_MyBasket, UserId = userId };
+                db.Baskets.Add(userBasket);
+                await db.SaveChangesAsync("SaveBasket");
+
+                myBaskets.Insert(0, userBasket);
+            }
+
+            return myBaskets;
+        }
+
 
         /// <summary>
         /// Async. Uses the download service to initiate a download of selected
@@ -247,16 +264,18 @@ namespace Damselfly.Core.Services
             return SelectedImages.Any(x => x.ImageId == image.ImageId);
         }
 
-        public void CreateAndSelectNewBasket( string name )
+        public void CreateAndSelectNewBasket( string name, AppIdentityUser user )
         {
             using var db = new ImageContext();
-            var newBasket = new Basket { Name = name };
+            var newBasket = new Basket { Name = name, UserId = user?.Id };
             db.Baskets.Add(newBasket);
             db.SaveChanges("SaveBasket");
 
             CurrentBasket = newBasket;
 
             LoadSelectedImages();
+
+            NotifyStateChanged();
         }
 
         public void SwitchBasket( string name )

@@ -34,11 +34,11 @@
 </MudDialog>
 
 @code {
-        [CascadingParameter]
-        MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
 
-        [Parameter]
-        public AppIdentityUser User { get; set; } = new AppIdentityUser();
+    [Parameter]
+    public AppIdentityUser User { get; set; } = new AppIdentityUser();
 
     public class UserForm
     {
@@ -83,42 +83,50 @@
     // TODO: Get better return values here and show errors if there are any.
     async Task Save()
     {
-        bool success = true;
-
-        if (!string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith( "*****" ) )
+        try
         {
-            success = model.Password.Equals(model.Password2);
+            bool success = true;
+
+            if (!string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith( "*****" ) )
+            {
+                success = model.Password.Equals(model.Password2);
+
+                if( success )
+                {
+                    var result = await userService.SetUserPasswordAsync(User, model.Password);
+
+                    success = result.Succeeded;
+
+                    if( ! success )
+                        DisplayIdentityResultError(result);
+                }
+                else
+                {
+                    DisplayError("Passwords do not match.");
+                }
+            }
 
             if( success )
             {
-                var result = await userService.SetUserPasswordAsync(User, model.Password);
+                User.UserName = model.Username;
+                User.Email = model.Email;
 
-                success = result.Succeeded;
+                var result = await userService.UpdateUserAsync(User, selectedRole);
+                // TODO: Messy
+                success = result != null && result.Succeeded;
 
                 if( ! success )
                     DisplayIdentityResultError(result);
             }
-            else
-            {
-                DisplayError("Passwords do not match.");
-            }
-        }
 
-        if( success )
+            if( success )
+                MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch( Exception ex )
         {
-            User.UserName = model.Username;
-            User.Email = model.Email;
-
-            var result = await userService.UpdateUserAsync(User, selectedRole);
-            // TODO: Messy
-            success = result != null && result.Succeeded;
-
-            if( ! success )
-                DisplayIdentityResultError(result);
+            Logging.LogError($"Exception when saving user settings: {ex}");
+            DisplayError("Unexpected error while saving user settings. Please try again.");
         }
-
-        if( success )
-            MudDialog.Close(DialogResult.Ok(true));
     }
 
     void Cancel() => MudDialog.Cancel();

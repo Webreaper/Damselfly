@@ -68,10 +68,6 @@ else
 </div>
 
 @code {
-    readonly List<Basket> baskets = new List<Basket>();
-    bool AddingBasket { get; set; }
-    string NewBasketName { get; set; }
-
     [Parameter]
     public bool ShowDownLoadButton { get; set; } = true;
 
@@ -80,26 +76,6 @@ else
 
     public bool ShowClearButton { get { return gridImages.Any(); } set { } }
 
-    private void SaveBasket()
-    {
-        basketService.CreateAndSelectNewBasket(NewBasketName);
-
-        AddingBasket = false;
-        SelectedImagesChanged();
-        StateHasChanged();
-    }
-
-    private void CancelAdding()
-    {
-        AddingBasket = false;
-        StateHasChanged();
-    }
-
-    private void AddBasket()
-    {
-        AddingBasket = true;
-        StateHasChanged();
-    }
 
     private void BasketChanged(ChangeEventArgs e)
     {
@@ -108,7 +84,7 @@ else
 
     private void UploadToWordPress()
     {
-        _ = wpService.UploadBasketToWordpress();
+        _ = wpService.UploadBasketToWordpress( basketService.SelectedImages );
     }
 
     private void ShowDownloads()
@@ -156,11 +132,6 @@ else
         gridImages.Clear();
         gridImages.AddRange(basketService.SelectedImages);
         watch.Stop();
-
-        using var db = new ImageContext();
-        // TODO: Do we need to load this every time?
-        this.baskets.Clear();
-        this.baskets.AddRange(db.Baskets);
 
         await InvokeAsync(StateHasChanged);
     }

@@ -92,7 +92,6 @@ namespace Damselfly.Web
             services.AddSingleton<ObjectDetector>();
             services.AddSingleton<IndexingService>();
             services.AddSingleton<ThumbnailService>();
-            services.AddSingleton<BasketService>();
             services.AddSingleton<MetaDataService>();
             services.AddSingleton<TaskService>();
             services.AddSingleton<FolderService>();
@@ -105,6 +104,7 @@ namespace Damselfly.Web
             services.AddSingleton<ImageRecognitionService>();
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
+            services.AddScoped<BasketService>();
             services.AddScoped<UserService>();
             services.AddScoped<UserStatusService>();
             services.AddScoped<UserConfigService>();
