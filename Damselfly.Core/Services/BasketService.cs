@@ -130,6 +130,11 @@ namespace Damselfly.Core.Services
                 myBaskets.Insert(0, userBasket);
             }
 
+            if( CurrentBasket == null )
+            {
+                SwitchBasket(s_MyBasket, user);
+            }
+
             return myBaskets;
         }
 
@@ -233,31 +238,58 @@ namespace Damselfly.Core.Services
         }
 
         // TODO: Async
-        public void CreateNewBasket( string name, AppIdentityUser user )
+        public void CreateNewBasket( string name, int? userId )
         {
             using var db = new ImageContext();
 
             // TODO: check there isn't an existing basket with the same name and user?
-            var newBasket = new Basket { Name = name, UserId = user?.Id };
+            var newBasket = new Basket { Name = name, UserId = userId };
             db.Baskets.Add(newBasket);
             db.SaveChanges("SaveBasket");
         }
 
-        public void SwitchBasket( string name )
+        public void SwitchBasket( string name, AppIdentityUser user )
         {
             using var db = new ImageContext();
 
             var watch = new Stopwatch("LoadBasket");
+            Basket backupDefault = null;
 
-            CurrentBasket = db.Baskets.FirstOrDefault(x => x.Name.Equals(name));
+            if (user != null)
+            {                
+                // First, look for a named basket belonging to this user
+                var userBaskets = db.Baskets.Where(x => x.UserId.Equals( user.Id )).ToList();
 
-            if (CurrentBasket == null)
-            {
-                // Not found. Pick the 'My Basket' default
-                CurrentBasket = db.Baskets.FirstOrDefault(x => x.Name.Equals(s_MyBasket));
+                CurrentBasket = userBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+                backupDefault = userBaskets.FirstOrDefault(x => x.Name.Equals(s_MyBasket, StringComparison.OrdinalIgnoreCase));
             }
 
-            LoadSelectedImages();
+            if( CurrentBasket == null )
+            {
+                // Still haven't found it, so look for a named global baskets
+                var globalBaskets = db.Baskets.Where(x => x.UserId == null).ToList();
+
+                CurrentBasket = globalBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+                if (CurrentBasket == null)
+                {
+                    CurrentBasket = backupDefault;
+
+                    if (CurrentBasket == null)
+                    {
+                        // Not found. Last resort - Pick first, alphabetically
+                        CurrentBasket = db.Baskets.OrderBy(x => x.Name).FirstOrDefault();
+                    }
+                }
+            }
+
+            if (CurrentBasket != null)
+            {
+                LoadSelectedImages();
+            }
+            else
+                Logging.LogError($"Unable to switch to basket {name}.");
 
             watch.Stop();
         }

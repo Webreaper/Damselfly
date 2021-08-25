@@ -1,9 +1,10 @@
 ﻿using System;
+using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services
 {
-    public class UserStatusService
+    public class UserStatusService : IStatusService
     {
         private string statusText;
         public event Action<string> OnChange;
@@ -20,15 +21,23 @@ namespace Damselfly.Core.Services
 
         private void NotifyStateChanged()
         {
-            Logging.Log($"Status: {statusText}");
-
             OnChange?.Invoke(statusText);
+        }
+
+        private void SetStatus(string newText)
+        {
+            if (statusText != newText)
+            {
+                statusText = newText;
+                NotifyStateChanged();
+                Logging.Log($"User Status: {statusText}");
+            }
         }
 
         public string StatusText
         {
             get { return statusText; }
-            set { if (statusText != value) { statusText = value; NotifyStateChanged(); } }
+            set { SetStatus(value); }
         }
     }
 }

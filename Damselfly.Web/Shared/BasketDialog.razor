@@ -1,0 +1,140 @@
+﻿
+@using System.ComponentModel.DataAnnotations
+@using Damselfly.Core.Interfaces
+
+@inject BasketService basketService 
+@inject UserService userService
+@inject UserStatusService userStatusService
+@inject StatusService statusService    
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Mode Basket</MudText> 
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudTextField @bind-Value="@model.BasketName" For="@(() => model.BasketName)" Label="Basket Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <MudCheckBox @bind-Checked="@model.IsPublic" Label="Make this basket public" />
+            @if (!string.IsNullOrEmpty(errorMsg))
+            {
+                <p>@errorMsg</p>
+            }
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Warning" OnClick="DeleteBasket">Delete Basket</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Save">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public Basket Basket { get; set; } = new Basket();
+
+    [Parameter]
+    public string Mode { get; set; }
+
+    public class BasketForm
+    {
+        [Required]
+        public string BasketName { get; set; }
+
+        public bool IsPublic { get; set; }
+    }
+
+    private BasketForm model = new BasketForm();
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await Save();
+    }
+
+    async Task DeleteBasket()
+    {
+        IStatusService statusAudience = model.IsPublic ? statusService : userStatusService;
+        var db = new ImageContext();
+
+        var existingBasket = db.Baskets.Where(x => x.BasketId == Basket.BasketId);
+
+        await db.BatchDelete(existingBasket);
+
+        statusAudience.StatusText = $"Basket '{model.BasketName}' was deleted.";
+
+        // Force it to reload
+        basketService.SwitchBasket(model.BasketName, userService.User);
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    async Task Save()
+    {
+        var db = new ImageContext();
+        IStatusService statusAudience = model.IsPublic ? statusService : userStatusService;
+
+        try
+        {
+            int? userId = null;
+
+            if (!model.IsPublic)
+                userId = userService.User?.Id;
+
+            if (Mode == "Add")
+            {
+                if (db.Baskets.Any(x => x.Name.Equals(model.BasketName) && userId.Equals(x.UserId)))
+                {
+                    DisplayError($"Basket '{model.BasketName}' already exists. Please choose another name.");
+                    return;
+                }
+                else
+                {
+                    basketService.CreateNewBasket(model.BasketName, userId);
+                    statusAudience.StatusText = $"New basket '{model.BasketName}' was created.";
+                }
+            }
+            else if (Mode == "Edit")
+            {
+                Basket.Name = model.BasketName;
+                Basket.UserId = userId;
+
+                db.Baskets.Update(this.Basket);
+                await db.SaveChangesAsync("EditBasket");
+
+                statusService.StatusText = $"Basket '{model.BasketName}' saved.";
+            }
+
+            // Force it to reload
+            basketService.SwitchBasket(model.BasketName, userService.User);
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch( Exception ex )
+        {
+            Logging.LogError($"Unexpected error saving basket details: {ex}");
+            DisplayError($"Unexpected error saving basket {ex.Message}");
+        }
+    }
+
+    private string errorMsg;
+
+    private void DisplayError( string errorText )
+    {
+        errorMsg = errorText;
+        StateHasChanged();
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        model.BasketName = Basket.Name;
+        model.IsPublic = Basket.UserId == null;
+    }
+
+}

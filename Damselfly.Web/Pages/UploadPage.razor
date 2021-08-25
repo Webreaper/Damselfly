@@ -8,7 +8,7 @@
     @foreach (var item in possibleOptions)
     {
         <label class="@defaultClasses @(item.IsActive() ? "active":"")" @key="item.Id">
-            <input type="radio" name="options" id="@item.Id" autocomplete="off" checked="@(item.IsActive() ? "checked":"")" @onclick="_ => OnChange(item.Id)"> @item.Description
+            <input type="radio" name="options" id="@item.Id" checked="@(item.IsActive() ? "checked":"")" @onclick="_ => OnChange(item.Id)"> @item.Description
         </label>
     }
 </div>

@@ -3,36 +3,52 @@
 @implements IDisposable
 
 @inject ImageService imageService
+@inject IDialogService DialogService
 @inject ThumbnailService thumbService
 @inject BasketService basketService
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService
-@inject UserService userService   
+@inject UserService userService
 
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
-    @if (!AddingBasket)
-    {
-        <select @onchange="BasketSelectionChanged" class="InputAddOn-field">
-            @foreach (var basket in baskets)
-            {
+    <select @bind="SelectedBasketName" class="InputAddOn-field">
+        @foreach (var basket in baskets)
+        {
             <option value="@basket.Name">@basket.Name @PrivateIndicator(basket)</option>
-            }
-        </select>
-        <button title="Add Basket" @onclick="@(() => AddBasket())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
-    }
-    else
-    {
-        <input placeholder="Basket Name" class="InputAddOn-field" @bind-value="NewBasketName" @bind-value:event="oninput" />
-        <button class="InputAddOn-item" title="Save Basket" @onclick="@(() => SaveBasket())"><i class="fa fa-save" /></button>
-        <button class="InputAddOn-item" title="Cancel Adding" @onclick="@(() => CancelAdding())"><i class="fa fa-times-circle" /></button>
-    }
+        }
+    </select>
+    <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="InputAddOn-item"><i class="fas fa-edit" /></button>
+    <button title="Add Basket" @onclick="@(() => OpenAddBasketDialog())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
 </div>
 
 @code {
     readonly List<Basket> baskets = new List<Basket>();
-    bool AddingBasket { get; set; }
     string NewBasketName { get; set; }
+
+    private string SelectedBasketName
+    {
+        get { return basketService.CurrentBasket?.Name;  }
+        set { basketService.SwitchBasket(value, userService.User); }
+    }
+
+    private async Task OpenAddBasketDialog()
+    {
+        var newBasket = new Basket { Name = "New Basket", UserId = userService.User?.Id };
+
+        var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
+        var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
+        var result = await dialog.Result;
+
+    }
+
+    private async Task OpenEditBasketDialog()
+    {
+        var parameters = new DialogParameters { { "basket", basketService.CurrentBasket }, { "mode", "Edit" } };
+        var dialog = DialogService.Show<BasketDialog>("Edit Basket", parameters);
+        var result = await dialog.Result;
+    }
+
 
     private string PrivateIndicator(Basket basket)
     {
@@ -41,36 +57,6 @@
 
         return string.Empty;
     }
-
-    private void SaveBasket()
-    {
-        AddingBasket = false;
-        var newName = NewBasketName;
-        NewBasketName = string.Empty;
-
-        basketService.CreateNewBasket(newName, userService.User);
-        basketService.SwitchBasket(newName);
-
-        StateHasChanged();
-    }
-
-    private void CancelAdding()
-    {
-        AddingBasket = false;
-        StateHasChanged();
-    }
-
-    private void AddBasket()
-    {
-        AddingBasket = true;
-        StateHasChanged();
-    }
-
-    private void BasketSelectionChanged(ChangeEventArgs e)
-    {
-        basketService.SwitchBasket(e.Value.ToString());
-    }
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -96,10 +82,10 @@
     {
         var watch = new Stopwatch("LoadBaskets");
 
-        var myBaskets = await basketService.GetUserBaskets( userService.User );
+        var myBaskets = await basketService.GetUserBaskets(userService.User);
 
         this.baskets.Clear();
-        this.baskets.AddRange( myBaskets );
+        this.baskets.AddRange(myBaskets);
         watch.Stop();
 
         await InvokeAsync(StateHasChanged);
