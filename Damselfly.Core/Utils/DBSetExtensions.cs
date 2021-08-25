@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -34,7 +35,7 @@ namespace Damselfly.Core.Utils
         /// </summary>
         /// <param name="db">Context</param>
         /// <param name="img">Image for which we want to load tags</param>
-        public static void LoadTags(this ImageContext db, Image img)
+        public static async Task LoadTags(this ImageContext db, Image img)
         {
             var watch = new Stopwatch("LoadImageTags");
 
@@ -47,19 +48,19 @@ namespace Damselfly.Core.Utils
                 if (!img.ImageTags.Any())
                 {
                     // Now load the tags
-                    db.Entry(img).Collection(e => e.ImageTags)
+                    await db.Entry(img).Collection(e => e.ImageTags)
                                 .Query()
                                 .Include(e => e.Tag)
-                                .Load();
+                                .LoadAsync();
                 }
 
                 if (!img.ImageObjects.Any())
                 {
-                    db.Entry(img).Collection(e => e.ImageObjects)
+                    await db.Entry(img).Collection(e => e.ImageObjects)
                                  .Query()
                                  .Include(x => x.Tag)
                                  .Include(x => x.Person)
-                                 .Load();
+                                 .LoadAsync();
                 }
             }
             catch (Exception ex)

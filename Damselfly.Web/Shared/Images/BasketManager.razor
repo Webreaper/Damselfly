@@ -1,5 +1,7 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.DbModels
+ 
 @implements IDisposable
 
 @inject ImageService imageService
@@ -18,8 +20,10 @@
             <option value="@basket.Name">@basket.Name @PrivateIndicator(basket)</option>
         }
     </select>
-    <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="InputAddOn-item"><i class="fas fa-edit" /></button>
-    <button title="Add Basket" @onclick="@(() => OpenAddBasketDialog())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
+    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+        <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="InputAddOn-item"><i class="fas fa-edit" /></button>
+        <button title="Add Basket" @onclick="@(() => OpenAddBasketDialog())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
+    </AuthorizeView>
 </div>
 
 @code {

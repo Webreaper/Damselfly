@@ -122,7 +122,7 @@ namespace Damselfly.Web.Data
             }
 
             if( includeTags )
-                db.LoadTags(image);
+                await db.LoadTags(image);
 
             return image;
         }

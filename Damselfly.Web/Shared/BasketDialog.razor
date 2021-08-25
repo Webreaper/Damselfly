@@ -9,7 +9,7 @@
 
 <MudDialog>
     <TitleContent>
-        <MudText Typo="Typo.h6">@Mode Basket</MudText> 
+        <MudText Typo="Typo.h6">@(Mode == "Edit" ? $"Edit Basket '{Basket.Name}'" : "Create New Basket") </MudText> 
     </TitleContent>
     <DialogContent>
         <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
@@ -23,9 +23,21 @@
         </EditForm>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Warning" OnClick="DeleteBasket">Delete Basket</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Save">Save</MudButton>
+        @if (Mode == "Edit")
+        {
+            <MudItem xs="12" md="12">
+                <MudPaper Elevation="0" Class="d-flex py-2 px-1">
+                    <MudButton Class="pa-2 ml-2 mr-auto" Color="Color.Warning" OnClick="DeleteBasket">Delete Basket</MudButton>
+                    <MudButton Class="pa-2 mx-2" OnClick="Cancel">Cancel</MudButton>
+                    <MudButton Class="pa-2 mx-2" Color="Color.Primary" OnClick="Save">Save</MudButton>
+                </MudPaper>
+            </MudItem>
+        }
+        else
+        {
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Save">Add Basket</MudButton>
+        }
     </DialogActions>
 </MudDialog>
 
@@ -66,7 +78,7 @@
         statusAudience.StatusText = $"Basket '{model.BasketName}' was deleted.";
 
         // Force it to reload
-        basketService.SwitchBasket(model.BasketName, userService.User);
+        await basketService.SwitchBasket(model.BasketName, userService.User);
 
         MudDialog.Close(DialogResult.Ok(true));
     }
@@ -92,23 +104,19 @@
                 }
                 else
                 {
-                    basketService.CreateNewBasket(model.BasketName, userId);
+                    await basketService.CreateNewBasket(model.BasketName, userId);
                     statusAudience.StatusText = $"New basket '{model.BasketName}' was created.";
                 }
+
+                // Force it to reload
+                await basketService.SwitchBasket(model.BasketName, userService.User);
             }
             else if (Mode == "Edit")
             {
-                Basket.Name = model.BasketName;
-                Basket.UserId = userId;
-
-                db.Baskets.Update(this.Basket);
-                await db.SaveChangesAsync("EditBasket");
+                await basketService.ModifyBasket(Basket, model.BasketName, userId);
 
                 statusService.StatusText = $"Basket '{model.BasketName}' saved.";
             }
-
-            // Force it to reload
-            basketService.SwitchBasket(model.BasketName, userService.User);
 
             MudDialog.Close(DialogResult.Ok(true));
         }

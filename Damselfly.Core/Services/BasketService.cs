@@ -47,19 +47,19 @@ namespace Damselfly.Core.Services
         /// Loads the selected images in the basket, and adds them to the in-memory
         /// SelectedImages collection. 
         /// </summary>
-        public void LoadSelectedImages()
+        public async Task LoadSelectedImages()
         {
             using var db = new ImageContext();
             var watch = new Stopwatch("GetSelectedImages");
 
             // TODO Assign current basket?
-            var images = db.Baskets.Where( x => x.BasketId == CurrentBasket.BasketId )
+            var images = await db.Baskets.Where( x => x.BasketId == CurrentBasket.BasketId )
                             .Include(x => x.BasketEntries)
                             .ThenInclude(x => x.Image)
                             .ThenInclude(x => x.Folder)
                             .SelectMany( x => x.BasketEntries )
                             .Select( x => x.Image )
-                            .ToList();
+                            .ToListAsync();
 
             // We can't used ThenInclude to pull in the image tags due to this
             // but in the EF framework: https://github.com/dotnet/efcore/issues/19418
@@ -67,7 +67,7 @@ namespace Damselfly.Core.Services
             // to manually explicitly load the tags for each image, which is
             // very quick.
             foreach (var img in images)
-                db.LoadTags(img);
+                await db.LoadTags(img);
 
             watch.Stop();
 
@@ -132,7 +132,7 @@ namespace Damselfly.Core.Services
 
             if( CurrentBasket == null )
             {
-                SwitchBasket(s_MyBasket, user);
+                await SwitchBasket(s_MyBasket, user);
             }
 
             return myBaskets;
@@ -238,55 +238,75 @@ namespace Damselfly.Core.Services
         }
 
         // TODO: Async
-        public void CreateNewBasket( string name, int? userId )
+        public async Task CreateNewBasket( string name, int? userId )
         {
             using var db = new ImageContext();
 
             // TODO: check there isn't an existing basket with the same name and user?
             var newBasket = new Basket { Name = name, UserId = userId };
             db.Baskets.Add(newBasket);
-            db.SaveChanges("SaveBasket");
+            await db.SaveChangesAsync("SaveBasket");
         }
 
-        public void SwitchBasket( string name, AppIdentityUser user )
+        public async Task ModifyBasket(Basket basket, string newName, int? newUserId )
+        {
+            using var db = new ImageContext();
+
+            basket.Name = newName;
+            basket.UserId = newUserId;
+            db.Baskets.Update(basket);
+            await db.SaveChangesAsync("EditBasket");
+
+            // Tell listeners so they can reload
+            NotifyStateChanged();
+        }
+
+        public async Task SwitchBasket( string name, AppIdentityUser user )
         {
             using var db = new ImageContext();
 
             var watch = new Stopwatch("LoadBasket");
-            Basket backupDefault = null;
+            Basket newBasket = null, backupDefault = null;
 
             if (user != null)
             {                
                 // First, look for a named basket belonging to this user
-                var userBaskets = db.Baskets.Where(x => x.UserId.Equals( user.Id )).ToList();
+                var userBaskets = await db.Baskets.Where(x => x.UserId.Equals( user.Id )).ToListAsync();
 
-                CurrentBasket = userBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                newBasket = userBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
                 backupDefault = userBaskets.FirstOrDefault(x => x.Name.Equals(s_MyBasket, StringComparison.OrdinalIgnoreCase));
             }
 
-            if( CurrentBasket == null )
+            if(newBasket == null )
             {
                 // Still haven't found it, so look for a named global baskets
-                var globalBaskets = db.Baskets.Where(x => x.UserId == null).ToList();
+                var globalBaskets = await db.Baskets.Where(x => x.UserId == null).ToListAsync();
 
-                CurrentBasket = globalBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                newBasket = globalBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-                if (CurrentBasket == null)
+                if (newBasket == null)
                 {
-                    CurrentBasket = backupDefault;
+                    newBasket = backupDefault;
 
-                    if (CurrentBasket == null)
+                    if (newBasket == null)
                     {
                         // Not found. Last resort - Pick first, alphabetically
-                        CurrentBasket = db.Baskets.OrderBy(x => x.Name).FirstOrDefault();
+                        newBasket = await db.Baskets.OrderBy(x => x.Name).FirstOrDefaultAsync();
                     }
                 }
             }
 
-            if (CurrentBasket != null)
+            if (newBasket != null )
             {
-                LoadSelectedImages();
+                // Only do something if anything's changed
+                if (CurrentBasket == null || newBasket.BasketId != CurrentBasket.BasketId)
+                {
+                    // Switch the actual basket
+                    CurrentBasket = newBasket;
+
+                    await LoadSelectedImages();
+                }
             }
             else
                 Logging.LogError($"Unable to switch to basket {name}.");

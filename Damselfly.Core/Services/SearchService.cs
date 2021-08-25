@@ -227,7 +227,7 @@ namespace Damselfly.Core.Services
                     foreach (var img in results)
                     {
                         imageCache[img.ImageId] = img;
-                        db.LoadTags(img);
+                        await db.LoadTags(img);
                     }
 
                     tagwatch.Stop();
