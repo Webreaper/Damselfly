@@ -166,11 +166,23 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Select or deselect an image - adding or removing it from the current basket.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="newState"></param>
+        /// <param name="basket"></param>
+        public async Task SetBasketState(ICollection<Image> images, bool newState )
+        {
+            await SetBasketState(images, newState, CurrentBasket);
+        }
+
+        /// <summary>
         /// Select or deselect an image - adding or removing it from the basket.
         /// </summary>
         /// <param name="image"></param>
         /// <param name="newState"></param>
-        public async void SetBasketState( ICollection<Image> images, bool newState )
+        /// <param name="basket"></param>
+        public async Task SetBasketState( ICollection<Image> images, bool newState, Basket basket )
         {
             try
             {
@@ -178,7 +190,7 @@ namespace Damselfly.Core.Services
                 bool changed = false;
                 var watch = new Stopwatch("SetSelection");
 
-                var existingEntries = db.BasketEntries.Where(x => x.BasketId == CurrentBasket.BasketId &&
+                var existingEntries = db.BasketEntries.Where(x => x.BasketId == basket.BasketId &&
                             images.Select(img => img.ImageId).Contains(x.ImageId));
 
                 if (newState)
@@ -189,7 +201,7 @@ namespace Damselfly.Core.Services
                     var basketEntries = imagesToAdd.Select(img => new BasketEntry
                                 {
                                     ImageId = img.ImageId,
-                                    BasketId = CurrentBasket.BasketId,
+                                    BasketId = basket.BasketId,
                                     DateAdded = DateTime.UtcNow
                                 }).ToList();
 
@@ -197,14 +209,17 @@ namespace Damselfly.Core.Services
                     {
                         await db.BulkInsert(db.BasketEntries, basketEntries);
 
-                        imagesToAdd.ForEach(img =>
+                        if (CurrentBasket.BasketId == basket.BasketId)
                         {
-                            img.BasketEntry = basketEntries.First(x => x.ImageId == img.ImageId);
-                            BasketImages.Add(img);
-                        });
+                            imagesToAdd.ForEach(img =>
+                                {
+                                    img.BasketEntry = basketEntries.First(x => x.ImageId == img.ImageId);
+                                    BasketImages.Add(img);
+                                });
 
-                        changed = true;
-                        _statusService.StatusText = $"Added {imagesToAdd.Count} image to the basket.";
+                            changed = true;
+                            _statusService.StatusText = $"Added {imagesToAdd.Count} image to the basket.";
+                        }
                     }
                 }
                 else if (!newState)
@@ -214,10 +229,14 @@ namespace Damselfly.Core.Services
                     {
 
                         images.ToList().ForEach(x => { x.BasketEntry = null; });
-                        BasketImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
-                        changed = true;
 
-                        _statusService.StatusText = $"Removed {deleted} images from the basket.";
+                        if (CurrentBasket.BasketId == basket.BasketId)
+                        {
+                            BasketImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
+                            changed = true;
+
+                            _statusService.StatusText = $"Removed {deleted} images from the basket.";
+                        }
                     }
                 }
 

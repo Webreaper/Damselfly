@@ -154,6 +154,7 @@ namespace Damselfly.Core.Services
             return false;
         }
 
+#pragma warning disable 1416
         private System.Drawing.Bitmap SafeLoadBitmap(string fileName)
         {
             System.Drawing.Bitmap bmp = null;
@@ -169,6 +170,7 @@ namespace Damselfly.Core.Services
 
             return bmp;
         }
+#pragma warning restore 1416
 
         /// <summary>
         /// Detect objects in the image.
@@ -404,8 +406,10 @@ namespace Damselfly.Core.Services
         /// <param name="thumbSize"></param>
         private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, System.Drawing.Bitmap bitmap)
         {
+#pragma warning disable 1416
             var bmpHeight = bitmap.Height;
             var bmpWidth = bitmap.Width;
+#pragma warning restore 1416
 
             if (bmpHeight == 0 || bmpWidth == 0)
                 return;

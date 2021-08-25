@@ -7,6 +7,8 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService
 @inject UserStatusService statusService
+@inject IDialogService DialogService
+
 @implements IDisposable
 @inherits ImageGridBase
 
@@ -25,7 +27,7 @@ else
         }
         else
         {
-            @for(int i = 0; i < gridImages.Count; i++ )
+            @for (int i = 0; i < gridImages.Count; i++)
             {
                 var info = new SelectionInfo { image = gridImages[i], index = i };
                 <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, info ); })">
@@ -42,6 +44,10 @@ else
     <div class="selection-toolbar">
         @if (gridImages != null && gridImages.Any())
         {
+            <button title="Copy/Move" @onclick="@(() => BasketCopy())" class="btn btn-primary">
+                <i class="fa fa-copy" />
+                &nbsp;Copy/Move
+            </button>
             @if (ShowDownLoadButton)
             {
                 <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary">
@@ -78,7 +84,13 @@ else
 
     private void UploadToWordPress()
     {
-        _ = wpService.UploadBasketToWordpress( basketService.BasketImages );
+        _ = wpService.UploadBasketToWordpress(basketService.BasketImages);
+    }
+
+    private async Task BasketCopy()
+    {
+        var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
+        var result = await dialog.Result;
     }
 
     private void ShowDownloads()

@@ -60,9 +60,9 @@ namespace Damselfly.Core.Services
                         var authState = _authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
                         _user = _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        Logging.LogError($"Failed to get auth state.");
+                        // We don't care - this will happen before the auth state is established.
                     }
                 }
 

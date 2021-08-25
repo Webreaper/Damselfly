@@ -1,7 +1,7 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
 @using Damselfly.Core.DbModels
- 
+
 @implements IDisposable
 
 @inject ImageService imageService
@@ -11,7 +11,7 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService
 @inject UserService userService
-
+    
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
     <select @bind="SelectedBasketName" class="InputAddOn-field">
@@ -32,8 +32,8 @@
 
     private string SelectedBasketName
     {
-        get { return basketService.CurrentBasket?.Name;  }
-        set { basketService.SwitchBasket(value, userService.User); }
+        get { return basketService.CurrentBasket?.Name; }
+        set { _ = basketService.SwitchBasket(value, userService.User); }
     }
 
     private async Task OpenAddBasketDialog()
