@@ -54,6 +54,11 @@
                 @CurrentImage.MetaData.Lens.Model
             </div>
         }
+
+        <div>ISO: @CurrentImage.MetaData.ISO</div>
+        <div>Aperture: @Aperture</div>
+        <div>Exposure: @Exposure </div>
+
     }
     else
     {
@@ -99,6 +104,8 @@
     private Image theImage;
     public Image CurrentImage { get { return theImage; } set { theImage = value; } }
     public string CurrentFolderLink => $"/folder/{CurrentImage.Folder.FolderId}";
+    public string Aperture => $"f{CurrentImage.MetaData.FNum}";
+    public string Exposure => $"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}";
 
     private bool Expanded { get; set; }
 
