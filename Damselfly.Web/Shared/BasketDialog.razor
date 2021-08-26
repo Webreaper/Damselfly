@@ -77,8 +77,8 @@
 
         statusAudience.StatusText = $"Basket '{model.BasketName}' was deleted.";
 
-        // Force it to reload
-        await basketService.SwitchBasket(model.BasketName, userService.User);
+        // Force it to reload a new basket
+        await basketService.SwitchToDefaultBasket(userService.User);
 
         MudDialog.Close(DialogResult.Ok(true));
     }
@@ -104,12 +104,12 @@
                 }
                 else
                 {
-                    await basketService.CreateNewBasket(model.BasketName, userId);
+                    var newBasket = await basketService.CreateNewBasket(model.BasketName, userId);
                     statusAudience.StatusText = $"New basket '{model.BasketName}' was created.";
-                }
 
-                // Force it to reload
-                await basketService.SwitchBasket(model.BasketName, userService.User);
+                    // Force it to reload
+                    await basketService.SwitchBasketById(newBasket.BasketId);
+                }
             }
             else if (Mode == "Edit")
             {

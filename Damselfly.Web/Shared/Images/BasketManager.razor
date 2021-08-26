@@ -1,6 +1,7 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
 @using Damselfly.Core.DbModels
+@using Damselfly.Core.Utils.Constants 
 
 @implements IDisposable
 
@@ -11,13 +12,14 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService
 @inject UserService userService
-    
+@inject UserConfigService configService
+
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
-    <select @bind="SelectedBasketName" class="InputAddOn-field">
+    <select @bind="SelectedBasketId" class="InputAddOn-field">
         @foreach (var basket in baskets)
         {
-            <option value="@basket.Name">@basket.Name @PrivateIndicator(basket)</option>
+            <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
         }
     </select>
     <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
@@ -29,10 +31,10 @@
     readonly List<Basket> baskets = new List<Basket>();
     string NewBasketName { get; set; }
 
-    private string SelectedBasketName
+    private int SelectedBasketId
     {
-        get { return basketService.CurrentBasket?.Name; }
-        set { _ = basketService.SwitchBasket(value, userService.User); }
+        get { return basketService.CurrentBasket == null ? -1 : basketService.CurrentBasket.BasketId; }
+        set { _ = NewBasketSelected(value); }
     }
 
     private async Task OpenEditBasketDialog()
@@ -42,6 +44,11 @@
         var result = await dialog.Result;
     }
 
+    private async Task NewBasketSelected(int selectedBasketId)
+    {
+        var newBasket = await basketService.SwitchBasketById(selectedBasketId);
+        configService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+    }
 
     private string PrivateIndicator(Basket basket)
     {
@@ -58,6 +65,13 @@
             basketService.OnBasketChanged += BasketsChanged;
 
             await LoadBasketList();
+
+            var selectedBasketId = configService.GetInt(ConfigSettings.SelectedBasketId, -1);
+            if (selectedBasketId > 0)
+                await basketService.SwitchBasketById(selectedBasketId);
+            else
+                await basketService.SwitchToDefaultBasket(userService.User);
+            StateHasChanged();
         }
     }
 
@@ -69,6 +83,7 @@
     private void BasketsChanged()
     {
         _ = LoadBasketList();
+        StateHasChanged();
     }
 
     public async Task LoadBasketList()
@@ -80,8 +95,6 @@
         this.baskets.Clear();
         this.baskets.AddRange(myBaskets);
         watch.Stop();
-
-        await InvokeAsync(StateHasChanged);
     }
 }
 

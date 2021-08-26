@@ -130,11 +130,6 @@ namespace Damselfly.Core.ScopedServices
                 myBaskets.Insert(0, userBasket);
             }
 
-            if( CurrentBasket == null )
-            {
-                await SwitchBasket(s_MyBasket, user);
-            }
-
             return myBaskets;
         }
 
@@ -264,7 +259,7 @@ namespace Damselfly.Core.ScopedServices
         }
 
         // TODO: Async
-        public async Task CreateNewBasket( string name, int? userId )
+        public async Task<Basket> CreateNewBasket( string name, int? userId )
         {
             using var db = new ImageContext();
 
@@ -272,6 +267,8 @@ namespace Damselfly.Core.ScopedServices
             var newBasket = new Basket { Name = name, UserId = userId };
             db.Baskets.Add(newBasket);
             await db.SaveChangesAsync("SaveBasket");
+
+            return newBasket;
         }
 
         public async Task ModifyBasket(Basket basket, string newName, int? newUserId )
@@ -287,43 +284,13 @@ namespace Damselfly.Core.ScopedServices
             NotifyStateChanged();
         }
 
-        public async Task SwitchBasket( string name, AppIdentityUser user )
+        public async Task<Basket> SwitchBasketById(int basketId)
         {
             using var db = new ImageContext();
 
-            var watch = new Stopwatch("LoadBasket");
-            Basket newBasket = null, backupDefault = null;
+            var newBasket = await db.Baskets.Where(x => x.BasketId.Equals(basketId)).FirstOrDefaultAsync();
 
-            if (user != null)
-            {                
-                // First, look for a named basket belonging to this user
-                var userBaskets = await db.Baskets.Where(x => x.UserId.Equals( user.Id )).ToListAsync();
-
-                newBasket = userBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-                backupDefault = userBaskets.FirstOrDefault(x => x.Name.Equals(s_MyBasket, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if(newBasket == null )
-            {
-                // Still haven't found it, so look for a named global baskets
-                var globalBaskets = await db.Baskets.Where(x => x.UserId == null).ToListAsync();
-
-                newBasket = globalBaskets.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-                if (newBasket == null)
-                {
-                    newBasket = backupDefault;
-
-                    if (newBasket == null)
-                    {
-                        // Not found. Last resort - Pick first, alphabetically
-                        newBasket = await db.Baskets.OrderBy(x => x.Name).FirstOrDefaultAsync();
-                    }
-                }
-            }
-
-            if (newBasket != null )
+            if (newBasket != null)
             {
                 // Only do something if anything's changed
                 if (CurrentBasket == null || newBasket.BasketId != CurrentBasket.BasketId)
@@ -334,10 +301,34 @@ namespace Damselfly.Core.ScopedServices
                     await LoadSelectedImages();
                 }
             }
-            else
-                Logging.LogError($"Unable to switch to basket {name}.");
 
-            watch.Stop();
+            return newBasket;
+        }
+
+        /// <summary>
+        /// Select a default basket - used to ensure we always
+        /// have a valid basket selected.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public async Task<Basket> SwitchToDefaultBasket( AppIdentityUser user )
+        {
+            // Get the list of user baskets. This will always return at
+            // least one (because if there are none, one will be created).
+            var userBaskets = await GetUserBaskets( user );
+
+            var defaultBasket = userBaskets.FirstOrDefault(x => x.Name == s_MyBasket && x.UserId != null);
+
+            if (defaultBasket == null)
+            {
+                // For some reason it's not there, perhaps we're not
+                // logged in or something. So just pick the first in
+                // the list
+                defaultBasket = userBaskets.First();
+            }
+            await SwitchBasketById(defaultBasket.BasketId);
+
+            return defaultBasket;
         }
     }
 }
