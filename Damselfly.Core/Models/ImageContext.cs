@@ -69,7 +69,7 @@ namespace Damselfly.Core.Models
             var io = modelBuilder.Entity<ImageObject>();
 
             io.HasOne(p => p.Image)
-                .WithMany(p => p.   ImageObjects)
+                .WithMany(p => p.ImageObjects)
                 .HasForeignKey(p => p.ImageId);
 
             modelBuilder.Entity<Image>()
@@ -77,11 +77,9 @@ namespace Damselfly.Core.Models
                 .WithOne()
                 .HasForeignKey<ImageClassification>(i => i.ClassificationId);
 
-            // Others
             modelBuilder.Entity<BasketEntry>()
                 .HasOne(a => a.Image)
-                .WithOne(b => b.BasketEntry)
-                .HasForeignKey<BasketEntry>(e => e.ImageId);
+                .WithMany(b => b.BasketEntries);
 
             modelBuilder.Entity<Image>()
                 .HasOne(img => img.MetaData)
@@ -164,16 +162,18 @@ namespace Damselfly.Core.Models
         // Damselfy state metadata
         public DateTime LastUpdated { get; set; }
 
-        public virtual BasketEntry BasketEntry { get; set; }
         public virtual ImageMetaData MetaData { get; set; }
-        public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
+        // An image can appear in many baskets
+        public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
+        // An image can have many tags
+        public virtual List<ImageTag> ImageTags { get; } = new List<ImageTag>();
 
         // Machine learning fields
         public int? ClassificationId { get; set; }
         public virtual ImageClassification Classification { get; set; }
         public double ClassificationScore { get; set; }
 
-        public virtual IList<ImageObject> ImageObjects { get; } = new List<ImageObject>();
+        public virtual List<ImageObject> ImageObjects { get; } = new List<ImageObject>();
 
         public override string ToString()
         {
@@ -286,8 +286,8 @@ namespace Damselfly.Core.Models
 
         public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
-        public virtual IList<ImageTag> ImageTags { get; } = new List<ImageTag>();
-        public virtual IList<ImageObject> ImageObjects { get; } = new List<ImageObject>();
+        public virtual List<ImageTag> ImageTags { get; } = new List<ImageTag>();
+        public virtual List<ImageObject> ImageObjects { get; } = new List<ImageObject>();
 
         public override string ToString()
         {

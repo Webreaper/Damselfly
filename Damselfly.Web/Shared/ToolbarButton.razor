@@ -1,10 +1,7 @@
 ﻿
-<span title="@title" class="fa-stack damselfly-toolbarbutton">
-    <i class="@EnabledStyle fa-circle fa-stack-2x"></i>
-    @if (Enabled)
-    {
-        <i class="fas @IconStyle fa-stack-1x fz-inverse" style="color: @TextColour;" @onclick="@OnClickCallback"></i>
-    }
+<span title="@title" class="fa-stack damselfly-toolbarbutton @EnabledStyle">
+    <i class="@IconEnabledStyle fa-circle fa-stack-2x"></i>
+    <i class="@StyleGroup @IconStyle fa-stack-1x fz-inverse" style="color: @TextColour;" @onclick="@OnClickCallback"></i>
 </span>
 
 @code {
@@ -18,11 +15,15 @@
     public string IconStyle { get; set; }
 
     [Parameter]
+    public string StyleGroup { get; set; } = "fas";
+
+    [Parameter]
     public bool Enabled { get; set; } = true;
 
     [Parameter]
     public string title { get; set; }
 
-    private string EnabledStyle => Selected ? "fas" : "far";
+    private string IconEnabledStyle => Selected ? "fas" : "far";
     private string TextColour => Selected ? " var( --keyword-text )" : " var( --body-text )";
+    private string EnabledStyle => Enabled ? string.Empty : "damselfly-toolbarbutton-disabled";
 }

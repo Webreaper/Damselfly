@@ -200,7 +200,7 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.MetaData);
-                    images = images.Include(x => x.BasketEntry);
+                    images = images.Include(x => x.BasketEntries);
 
                     if ( query.CameraId != -1 )
                     {

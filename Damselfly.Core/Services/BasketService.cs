@@ -213,7 +213,12 @@ namespace Damselfly.Core.Services
                         {
                             imagesToAdd.ForEach(img =>
                                 {
-                                    img.BasketEntry = basketEntries.First(x => x.ImageId == img.ImageId);
+                                    if (img.BasketEntries.Any(x => x.BasketId == basket.BasketId))
+                                    {
+                                        // Associate the basket entry with the image
+                                        img.BasketEntries.Add( basketEntries.First( x => x.ImageId == img.ImageId ) );
+                                    }
+
                                     BasketImages.Add(img);
                                 });
 
@@ -227,8 +232,10 @@ namespace Damselfly.Core.Services
                     int deleted = await db.BatchDelete( existingEntries );
                     if( deleted > 0 )
                     {
-
-                        images.ToList().ForEach(x => { x.BasketEntry = null; });
+                        foreach( var image in images )
+                        {
+                            image.BasketEntries.RemoveAll(x => x.BasketId == basket.BasketId);
+                        }
 
                         if (CurrentBasket.BasketId == basket.BasketId)
                         {

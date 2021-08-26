@@ -798,6 +798,7 @@ f
     align-content: center;
     align-items: center;
     justify-content: center;
+    padding: 5px;
     flex: 1;
 }
 
@@ -1503,6 +1504,14 @@ hr.separator {
 
 .damselfly-toolbarbutton:hover {
     color: var( --image-checkbox-checked-hover-bg );
+}
+
+.damselfly-toolbarbutton-disabled {
+    opacity: 65%;
+}
+
+.damselfly-toolbarbutton-disabled:hover {
+    color: var( --keyword-bg );
 }
 
 .damselfly-textsearchoptions {

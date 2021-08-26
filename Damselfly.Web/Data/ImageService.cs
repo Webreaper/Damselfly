@@ -105,7 +105,7 @@ namespace Damselfly.Web.Data
                     query = query.Include(x => x.MetaData)
                                  .Include(x => x.MetaData.Camera)
                                  .Include(x => x.MetaData.Lens)
-                                 .Include(x => x.BasketEntry);
+                                 .Include(x => x.BasketEntries);
                 }
 
                 // Now execute the actual query

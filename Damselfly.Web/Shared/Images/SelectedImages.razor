@@ -1,5 +1,6 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.DbModels
 
 @inject ImageService imageService
 @inject ThumbnailService thumbService
@@ -41,105 +42,83 @@ else
 <div class="damselfly-basketmanager">
     <BasketManager />
 
-    <div class="selection-toolbar">
-        @if (gridImages != null && gridImages.Any())
-        {
-            <button title="Copy/Move" @onclick="@(() => BasketCopy())" class="btn btn-primary">
-                <i class="fa fa-copy" />
-                &nbsp;Copy/Move
-            </button>
-            @if (ShowDownLoadButton)
-            {
-                <button title="Export basket images" @onclick="@(() => ShowDownloads())" class="btn btn-primary">
-                    <i class="fa fa-download" />
-                    &nbsp;Download
-                </button>
-            }
-            @if (ShowDownLoadButton)
-            {
-                <button title="Clear Basket" @onclick="@(() => basketService.Clear())" class="btn btn-primary">
-                    <i class="fas fa-shopping-basket" />
-                    &nbsp;Clear
-                </button>
-            }
-            @if (ShowDownLoadButton)
-            {
-                <button title="Upload To Wordpress" @onclick="@(() => UploadToWordPress())" class="btn btn-primary">
-                    <i class="fab fa-wordpress" />
-                    &nbsp;Upload to WP
-                </button>
-            }
-        }
+    <div class="damselfly-imagebuttons">
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+            <ToolbarButton IconStyle="fa-times-circle" OnClickCallback="@(()=>basketService.Clear())" Enabled="@BasketHasImages" title="Clear Basket" />
+            <ToolbarButton IconStyle="fa-copy" OnClickCallback="@BasketCopy" Enabled="@BasketHasImages" title="Copy/Move to another basket" />
+        </AuthorizeView>
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
+            <ToolbarButton IconStyle="fa-download" OnClickCallback="@ShowDownloads" Enabled="@BasketHasImages" title="Export/Download" />
+            <ToolbarButton StyleGroup="fab" IconStyle="fa-wordpress-simple" OnClickCallback="@UploadToWordPress" Enabled="@BasketHasImages" title="Upload to Wordpress" />
+        </AuthorizeView>
+
     </div>
-</div>
+    </div>
 
-@code {
-    [Parameter]
-    public bool ShowDownLoadButton { get; set; } = true;
+    @code {
+        [Parameter]
+        public bool ShowTags { get; set; } = true;
 
-    [Parameter]
-    public bool ShowTags { get; set; } = true;
+        public bool BasketHasImages => gridImages.Any();
 
-    public bool ShowClearButton { get { return gridImages.Any(); } set { } }
-
-    private void UploadToWordPress()
-    {
-        _ = wpService.UploadBasketToWordpress(basketService.BasketImages);
-    }
-
-    private async Task BasketCopy()
-    {
-        var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
-        var result = await dialog.Result;
-    }
-
-    private void ShowDownloads()
-    {
-        try
+        private void UploadToWordPress()
         {
-            NavigationManager.NavigateTo("/export");
+            _ = wpService.UploadBasketToWordpress(basketService.BasketImages);
         }
-        catch (Exception ex)
+
+        private async Task BasketCopy()
         {
-            Logging.LogError("Exception: " + ex.Message);
+            var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
+            var result = await dialog.Result;
         }
-    }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        private void ShowDownloads()
         {
-            basketService.OnBasketChanged += BasketImagesChanged;
-            selectionService.OnSelectionChanged += SelectedImagesChanged;
-            await LoadData();
+            try
+            {
+                NavigationManager.NavigateTo("/export");
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError("Exception: " + ex.Message);
+            }
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                basketService.OnBasketChanged += BasketImagesChanged;
+                selectionService.OnSelectionChanged += SelectedImagesChanged;
+                await LoadData();
+            }
+        }
+
+        public void Dispose()
+        {
+            basketService.OnBasketChanged -= BasketImagesChanged;
+            selectionService.OnSelectionChanged -= SelectedImagesChanged;
+        }
+
+        protected void SelectedImagesChanged()
+        {
+            InvokeAsync(StateHasChanged);
+        }
+
+        protected void BasketImagesChanged()
+        {
+            // Marshall onto the dispatcher thread
+            _ = LoadData();
+        }
+
+        public async Task LoadData()
+        {
+            var watch = new Stopwatch("SelectedLoadData");
+            gridImages.Clear();
+            gridImages.AddRange(basketService.BasketImages);
+            watch.Stop();
+
+            await InvokeAsync(StateHasChanged);
         }
     }
-
-    public void Dispose()
-    {
-        basketService.OnBasketChanged -= BasketImagesChanged;
-        selectionService.OnSelectionChanged -= SelectedImagesChanged;
-    }
-
-    protected void SelectedImagesChanged()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    protected void BasketImagesChanged()
-    {
-        // Marshall onto the dispatcher thread
-        _ = LoadData();
-    }
-
-    public async Task LoadData()
-    {
-        var watch = new Stopwatch("SelectedLoadData");
-        gridImages.Clear();
-        gridImages.AddRange(basketService.BasketImages);
-        watch.Stop();
-
-        await InvokeAsync(StateHasChanged);
-    }
-}
 
