@@ -41,6 +41,7 @@
     <Folder Include="ImageProcessing\" />
     <Folder Include="Models\SideCars\" />
     <Folder Include="Interfaces\" />
+    <Folder Include="ScopedServices\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj" />
@@ -54,5 +55,6 @@
     <None Remove="Microsoft.AspNetCore.Components.Authorization" />
     <None Remove="SendGrid" />
     <None Remove="MailKit" />
+    <None Remove="ScopedServices\" />
   </ItemGroup>
 </Project>

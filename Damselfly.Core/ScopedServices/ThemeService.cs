@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Utils.Constants;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     /// <summary>
     /// Service to generate download files for exporting images from the system. Zip files

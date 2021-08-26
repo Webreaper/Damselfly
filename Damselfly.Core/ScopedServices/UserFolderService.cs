@@ -5,8 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Services;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     /// <summary>
     /// Service to load all of the folders monitored by Damselfly, and present

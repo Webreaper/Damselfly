@@ -22,7 +22,6 @@
     </select>
     <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
         <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="InputAddOn-item"><i class="fas fa-edit" /></button>
-        <button title="Add Basket" @onclick="@(() => OpenAddBasketDialog())" class="InputAddOn-item"><i class="fa fa-plus-circle" /></button>
     </AuthorizeView>
 </div>
 
@@ -34,16 +33,6 @@
     {
         get { return basketService.CurrentBasket?.Name; }
         set { _ = basketService.SwitchBasket(value, userService.User); }
-    }
-
-    private async Task OpenAddBasketDialog()
-    {
-        var newBasket = new Basket { Name = "New Basket", UserId = userService.User?.Id };
-
-        var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
-        var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
-        var result = await dialog.Result;
-
     }
 
     private async Task OpenEditBasketDialog()

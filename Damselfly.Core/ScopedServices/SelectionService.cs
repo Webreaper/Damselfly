@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Damselfly.Core.Models;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     public class SelectionService
     {

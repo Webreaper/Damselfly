@@ -92,11 +92,11 @@
                         @grouping.Key
                     </div>
                     <div class="damselfly-imageseparatorbuttons">
-                        <button @onclick="() => { AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                        <button @onclick="async () => { await AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
                             <i class="fas fa-shopping-basket" />
                             &nbsp;Add
                         </button>
-                        <button @onclick="() => { RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                        <button @onclick="async () => { await RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
                             <i class="fas fa-shopping-basket" />
                             &nbsp;Remove
                         </button>
@@ -165,23 +165,23 @@
             // Todo - save an image to local storage
         }
 
-        void AddSelectedToBasket()
+        async Task AddSelectedToBasket()
         {
             var selected = selectionService.Selection.ToList();
-            basketService.SetBasketState(selected, true);
+            await basketService.SetBasketState(selected, true);
 
             statusService.StatusText = $"{selected.Count()} images added to the basket";
         }
 
-        void AddGroupToBasket(ImageGrouping grouping)
+        async Task AddGroupToBasket(ImageGrouping grouping)
         {
-            basketService.SetBasketState(grouping.Images, true);
+            await basketService.SetBasketState(grouping.Images, true);
             statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
         }
 
-        void RemoveGroupFromBasket(ImageGrouping grouping)
+        async Task RemoveGroupFromBasket(ImageGrouping grouping)
         {
-            basketService.SetBasketState(grouping.Images, false);
+            await basketService.SetBasketState(grouping.Images, false);
             statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
         }
 

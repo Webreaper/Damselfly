@@ -8,6 +8,7 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService
 @inject UserStatusService statusService
+@inject UserService userService 
 @inject IDialogService DialogService
 
 @implements IDisposable
@@ -46,6 +47,7 @@ else
         <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
             <ToolbarButton IconStyle="fa-times-circle" OnClickCallback="@(()=>basketService.Clear())" Enabled="@BasketHasImages" title="Clear Basket" />
             <ToolbarButton IconStyle="fa-copy" OnClickCallback="@BasketCopy" Enabled="@BasketHasImages" title="Copy/Move to another basket" />
+            <ToolbarButton IconStyle="fa-plus-circle" OnClickCallback="@OpenAddBasketDialog" title="Create a new basket" />
         </AuthorizeView>
         <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
             <ToolbarButton IconStyle="fa-download" OnClickCallback="@ShowDownloads" Enabled="@BasketHasImages" title="Export/Download" />
@@ -70,6 +72,16 @@ else
         {
             var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
             var result = await dialog.Result;
+        }
+
+        private async Task OpenAddBasketDialog()
+        {
+            var newBasket = new Basket { Name = "New Basket", UserId = userService.User?.Id };
+
+            var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
+            var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
+            var result = await dialog.Result;
+
         }
 
         private void ShowDownloads()

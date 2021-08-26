@@ -1,22 +1,30 @@
 ﻿using System;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Services;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
-    public class UserStatusService : IStatusService
+    public class UserStatusService : IStatusService, IDisposable
     {
+        private StatusService _statusService;
         private string statusText;
         public event Action<string> OnChange;
 
         public UserStatusService( StatusService statusService )
         {
-            statusService.OnChange += HandleGlobalStatus;
+            _statusService = statusService;
+            _statusService.OnChange += HandleGlobalStatus;
+        }
+
+        public void Dispose()
+        {
+            _statusService.OnChange -= HandleGlobalStatus;
         }
 
         private void HandleGlobalStatus( string text )
         {
-            StatusText = text;
+            SetStatus( text );
         }
 
         private void NotifyStateChanged()

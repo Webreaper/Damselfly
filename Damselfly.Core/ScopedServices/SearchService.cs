@@ -7,7 +7,7 @@ using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using static Damselfly.Core.Models.SearchQuery;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     /// <summary>
     /// The search service manages the current set of parameters that make up the search
@@ -200,7 +200,6 @@ namespace Damselfly.Core.Services
                     }
 
                     images = images.Include(x => x.MetaData);
-                    images = images.Include(x => x.BasketEntries);
 
                     if ( query.CameraId != -1 )
                     {

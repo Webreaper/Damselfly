@@ -2,10 +2,11 @@
 using System.Linq;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
+using Damselfly.Core.Services;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
-    public class UserConfigService : BaseConfigService
+    public class UserConfigService : BaseConfigService, IDisposable
     {
         private UserService _userService;
         private AppIdentityUser _user;
@@ -23,6 +24,11 @@ namespace Damselfly.Core.Services
         {
             _user = user;
             InitialiseCache();
+        }
+
+        public void Dispose()
+        {
+            _userService.OnChange -= UserChanged;
         }
 
         public override void InitialiseCache()

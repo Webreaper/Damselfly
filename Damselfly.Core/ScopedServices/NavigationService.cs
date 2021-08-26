@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     public enum NavigationContexts
     {

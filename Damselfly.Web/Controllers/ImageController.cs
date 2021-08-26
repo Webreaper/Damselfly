@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using Damselfly.Core.ScopedServices;
 
 namespace Damselfly.Web.Controllers
 {

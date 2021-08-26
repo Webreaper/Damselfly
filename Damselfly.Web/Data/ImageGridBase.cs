@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Models;
-using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;

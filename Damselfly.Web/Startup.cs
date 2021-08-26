@@ -10,6 +10,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Components.Authorization;
 using Damselfly.Web.Data;
 using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices;
 using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Tewr.Blazor.FileReader;

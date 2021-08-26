@@ -7,8 +7,9 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.Services;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     /// <summary>
     /// Singleton service which is responsible for maintaining the selection
@@ -20,7 +21,6 @@ namespace Damselfly.Core.Services
         private readonly DownloadService _downloadService;
         private readonly UserStatusService _statusService;
 
-        private const string s_DefaultBasket = "default";
         private const string s_MyBasket = "My Basket";
 
         public event Action OnBasketChanged;

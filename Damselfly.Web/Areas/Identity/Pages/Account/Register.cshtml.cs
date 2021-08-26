@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Damselfly.Core.DbModels;
-using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {

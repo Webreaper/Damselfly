@@ -16,8 +16,11 @@
     {
         InvokeAsync(() =>
         {
-            StatusText = newText;
-            StateHasChanged();
+            if (StatusText != newText)
+            {
+                StatusText = newText;
+                StateHasChanged();
+            }
         });
     }
 

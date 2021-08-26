@@ -13,7 +13,7 @@ using AuthenticationStateProvider = Microsoft.AspNetCore.Components.Authorizatio
 using AuthenticationState = Microsoft.AspNetCore.Components.Authorization.AuthenticationState;
 using System.Security.Claims;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.ScopedServices
 {
     /// <summary>
     /// User service to manage users and roles. We try and keep each user to a distinct
