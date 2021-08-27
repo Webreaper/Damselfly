@@ -11,7 +11,7 @@
 
 By default, Damselfly will allow anyone who can access it to browse, modify and download images via the web UI. Each browser session
 will have its own state (selection, search results, etc., etc) but that will be discarded when the browser session ends. Additionally,
-there's no control over who can download images, add keyword tags, and make other changes to the app. 
+there's no control over who can download images, add keyword tags, and make other changes to images within the app. 
 
 You can, however, enable user IDs, roles and entitlements by checking the 'Enable Authentication' checkbox in the 'System Settings'
 tab of the Config page (which is accessed via the 'cogs' icon on the right-hand side of the status bar). 
@@ -44,14 +44,15 @@ an incorrect tag to an image (for example).
 ## User Roles
 
 There are 3 different roles available in Damselfly:
-* User - a standard user, who can browse, add keyword tags to images, and can download hi-res images from the server.
-* ReadOnly - a user without permissions to make changes such as keyword tagging etc., and who does not have permission
+* **User** - a standard user, who can browse, add keyword tags to images, and can download hi-res images from the server.
+* **ReadOnly** - a user without permissions to make changes such as keyword tagging etc., and who does not have permission
   to download hi-res images from the server.
-* Admin - an administrative user who has access to system settings, and who can manage other users in the system
-  (including changing user roles, etc.). N
+* **Admin** - an administrative user who has access to system settings, and who can manage other users in the system
+  (including changing user roles, etc.).
 
 There must always be at least one Admin user to manage the system, so the first registered user is automatically granted the 
-'Admin' role. Also, if you attempt to change the last Admin user to another role, you will see an error. 
+'Admin' role. Also, if you attempt to change the last Admin user to another role, nothing will happen and the user will remain
+in the Admin role. 
 
 ## Baskets
 
