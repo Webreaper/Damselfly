@@ -105,7 +105,8 @@ do this for you) where the server will re-index them to pick up your changes.
 ## Thanks and Credits
 
 * Microsoft [Blazor.Net](https://blazor.net) for allowing me to avoid writing Javascript. ;)
-* [PumpkinBeth](https://pumpkinbeth.com) (my wife) for taking the photo that appears in Damselfly's logo
+* [PumpkinBeth](https://pumpkinbeth.com) (my wife) for taking the photo that appears in Damselfly's logo, and for providing the original
+  inspiration to build Damselfly - as well as the 600,000 photos and counting which make excellent test data!
 * [SkiaSharp](https://github.com/mono/SkiaSharp) Fast library for Thumbnail generation
 * [SixLabors ImageSharp](https://github.com/SixLabors/ImageSharp) Portable library for Thumbnail generation
 * Drew Noakes' [MetadataExtractor](https://github.com/drewnoakes/metadata-extractor-dotnet), for IPTC and other image meta-data indexing
