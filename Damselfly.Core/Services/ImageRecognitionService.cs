@@ -62,7 +62,7 @@ namespace Damselfly.Core.Services
             {
                 if (_peopleCache == null || force)
                 {
-                    var watch = new Stopwatch("LoadTagCache");
+                    var watch = new Stopwatch("LoadPersonCache");
 
                     using (var db = new ImageContext())
                     {
@@ -208,8 +208,12 @@ namespace Damselfly.Core.Services
                 // This is a user config.
                 bool useAzureDetection = false;
 
+                var objwatch = new Stopwatch("DetectObjects");
+
                 // First, look for Objects
                 var objects = await _objectDetector.DetectObjects(bitmap);
+
+                objwatch.Stop();
 
                 if (objects.Any())
                 {
@@ -246,7 +250,11 @@ namespace Damselfly.Core.Services
                 {
                     if (_emguFaceService.ServiceAvailable)
                     {
+                        var emguwatch = new Stopwatch("EmguFaceDetect");
+
                         var rects = _emguFaceService.DetectFaces(medThumb.FullName);
+
+                        emguwatch.Stop();
 
                         if (UseAzureForRecogition(rects))
                         {
@@ -281,8 +289,12 @@ namespace Damselfly.Core.Services
                     }
                     else
                     {
+                        var accordwatch = new Stopwatch("AccordFaceDetect");
+
                         // Emgu isn't available, so use Accord.Net instead
                         var rects = _accordFaceService.DetectFaces(bitmap);
+
+                        accordwatch.Stop();
 
                         if (rects.Any())
                         {
@@ -322,8 +334,12 @@ namespace Damselfly.Core.Services
                     var faceTag = await _indexingService.CreateTagsFromStrings(new List<string> { "Face" });
                     var faceTagId = faceTag.FirstOrDefault()?.TagId ?? 0;
 
+                    var azurewatch = new Stopwatch("AzureFaceDetect");
+
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
                     var azureFaces = await _azureFaceService.DetectFaces(bitmap);
+
+                    azurewatch.Stop();
 
                     if (azureFaces.Any())
                     {
@@ -375,6 +391,8 @@ namespace Damselfly.Core.Services
 
                 if (foundObjects.Any() || foundFaces.Any())
                 {
+                    var objWriteWatch = new Stopwatch("WriteDetectedObjects");
+
                     var allFound = foundObjects.Union(foundFaces).ToList();
 
                     // Write faces locally with rectangles - for debugging
@@ -388,6 +406,8 @@ namespace Damselfly.Core.Services
                     await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId)));
                     // Now add the objects and faces.
                     await db.BulkInsert(db.ImageObjects, allFound);
+
+                    objWriteWatch.Stop();
                 }
             }
             catch (Exception ex)
