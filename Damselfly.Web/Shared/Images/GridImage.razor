@@ -63,7 +63,6 @@ else
     void ShowContextMenu(MouseEventArgs args)
     {
         var selectedImages = selectionService.Selection;
-        var basketEntry = (InBasket ? "Remove from" : "Add to") + " Basket";
 
         contextMenuService.Open(args, ds =>
            @<RadzenMenu Click="OnMenuItemClick">
@@ -72,29 +71,36 @@ else
                 <RadzenMenuItem Text="View Image" Value="0" />
                 <RadzenMenuItem Text="Download" Value="1" />
                 <hr class="separator">}
-                <RadzenMenuItem Text="@basketEntry" Value="2" />
+                @if (InBasket)
+                {
+                    <RadzenMenuItem Text="Remove from basket" Value="2" />
+                }
+                else
+                {
+                    <RadzenMenuItem Text="Add to basket" Value="3" />
+                }
                 @if (FileExporter != null && FileExporter.IsDesktopHosted)
                 { 
-                    <RadzenMenuItem Text="Save Locally" Value="3" />
+                    <RadzenMenuItem Text="Save Locally" Value="4" />
                 }
-                <RadzenMenuItem Text="Regenerate Thumbnail" Value="3" />
-                <RadzenMenuItem Text="Rescan AI" Value="5" />
+                <RadzenMenuItem Text="Regenerate Thumbnail" Value="5" />
+                <RadzenMenuItem Text="Rescan AI" Value="6" />
             </RadzenMenu>
         );
     }
 
-    void OnMenuItemClick(MenuItemEventArgs args)
+    async Task OnMenuItemClick(MenuItemEventArgs args)
     {
         contextMenuService.Close();
         switch (args.Value)
         {
             case 0: NavigateToImage(); break;
-            case 1: _ = DownloadImage(); break;
-            // TODO: Async?
-            case 2: basketService.SetBasketState( selectionService.Selection, true ); break;
-            case 3: _ = FileExporter.ExportImagesToLocalFilesystem(selectionService.Selection); break;
-            case 4: _ = thumbService.MarkImagesForScan( selectionService.Selection); break;
-            case 5: _ = aiService.MarkImagesForScan(selectionService.Selection); break;
+            case 1: await DownloadImage(); break;
+            case 2: await basketService.SetBasketState( selectionService.Selection, false ); break;
+            case 3: await basketService.SetBasketState(selectionService.Selection, true); break;
+            case 4: await FileExporter.ExportImagesToLocalFilesystem(selectionService.Selection); break;
+            case 5: await thumbService.MarkImagesForScan( selectionService.Selection); break;
+            case 6: await aiService.MarkImagesForScan(selectionService.Selection); break;
         }
     }
 
