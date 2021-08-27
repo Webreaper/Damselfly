@@ -62,7 +62,7 @@ be appreciated!
 <br/>
 <br/>
 <img style="margin: 5px;" src="docs/Damselfly-imageview.jpg" alt="Viewing images in Damselfly" width="600"/>
-<img style="margin: 5px;" src="docs/Damselfly-ai.jpg" alt="Face and Object Detection in Damselfly" width="600"/>
+<img style="margin: 5px;" src="docs/Damselfly-AI.jpg" alt="Face and Object Detection in Damselfly" width="600"/>
 <div>
 
 ## Planned Features/Enhancements
