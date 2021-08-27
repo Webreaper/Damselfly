@@ -21,7 +21,7 @@ else
 <div class="grid-image" @ondblclick="NavigateToImage">
     @if (!string.IsNullOrEmpty(ImageUrl))
     {
-        <img @key="CurrentImage.ImageId" class="@SelectStyle" title="@CurrentImage.FileName" src="@ImageUrl"
+        <img @key="CurrentImage.ImageId" class="@SelectStyle" title="@ImgToolTip" src="@ImageUrl"
             @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
                     <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">}
 </div>
@@ -48,17 +48,20 @@ else
     public bool InBasket
     {
         get { return basketService.IsSelected(CurrentImage); }
-        set
-        {
-            basketService.SetBasketState(new[] { CurrentImage }, value);
-            // Notify the image list that the selection has changed
-            StateHasChanged();
-        }
+        set { _ = SetBasketState(value); }
     }
 
+    private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}";
     private LocalFileExporter FileExporter;
     string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
     string SelectStyle { get { return selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
+
+    private async Task SetBasketState( bool newState )
+    {
+        await basketService.SetBasketState(new[] { CurrentImage }, newState);
+        // Notify the image list that the selection has changed
+        StateHasChanged();
+    }
 
     void ShowContextMenu(MouseEventArgs args)
     {

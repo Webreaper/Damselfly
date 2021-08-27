@@ -7,10 +7,8 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="login-container">
-
     <div class="login-fieldset">
         <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
             <div class="login-fieldrow">
                 <label asp-for="Input.Email" class="login-fieldlabel"></label>
                 <input asp-for="Input.Email" placeholder="Email" class="login-fieldcontrol" />
@@ -23,20 +21,22 @@
             </div>
             <div class="login-fieldrow">
                 <div class="checkbox">
-                    <label asp-for="Input.RememberMe" class="login-fieldlabel">
+                    <label asp-for="Input.RememberMe" class="login-fieldcontrol">
                         @Html.DisplayNameFor(m => m.Input.RememberMe)
                     </label>
-                    <input asp-for="Input.RememberMe" placeholder="Confirm Password" class="login-fieldcontrol" />
+                    <input asp-for="Input.RememberMe" class="login-fieldcontrol" />
                 </div>
             </div>
+            <div asp-validation-summary="All" class="text-danger"></div>
             <div class="login-fieldrow">
                 <button type="submit" class="btn btn-primary btn-login">Login</button>
             </div>
+            <hr />
             <div class="login-fieldrow">
-                <a href="~/Identity/Account/ForgotPassword">I forgot my password</a>
-            </div>
-            <div class="login-fieldrow">
-                <a href="~/Identity/Account/Register">Create a new account</a>
+                <div class="login-fieldcontrol">
+                    <a href="~/Identity/Account/ForgotPassword">I forgot my password</a>
+                    <a href="~/Identity/Account/Register">Create a new account</a>
+                </div>
             </div>
         </form>
     </div>

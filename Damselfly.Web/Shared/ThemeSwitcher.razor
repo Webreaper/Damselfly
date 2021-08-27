@@ -10,6 +10,13 @@
     private long cacheBuster = 1;
     private MudTheme MudTheme;
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        MudTheme = darkTheme;
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)

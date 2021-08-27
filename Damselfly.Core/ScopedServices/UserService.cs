@@ -160,7 +160,14 @@ namespace Damselfly.Core.ScopedServices
             // First, if they're the first user in the DB, make them Admin
             await CheckAdminUser();
 
-            await _userManager.AddToRoleAsync(user, RoleDefinitions.s_UserRole);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            if (!userRoles.Any())
+            {
+                // If the user isn't a member of other roles (i.e., they haven't
+                // been added to Admin) then make them a 'user'.
+                await _userManager.AddToRoleAsync(user, RoleDefinitions.s_UserRole);
+            }
         }
 
         /// <summary>
