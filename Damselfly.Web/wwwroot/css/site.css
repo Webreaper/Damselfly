@@ -925,21 +925,24 @@ f
 }
 
 .wrapping-table-medium img {
-    width: 200px;
-    height: auto;
+    width: auto;
+    height: 200px;
     min-height: 200px;
+    min-width: 100px;
 }
 
 .wrapping-table-large img {
-    width: 350px;
-    height: auto;
+    width: auto;
+    height: 350px;
     min-height: 350px;
+    min-width: 100px;
 }
 
 .wrapping-table-x-large img {
-    width: 500px;
-    height: auto;
+    width: auto;
+    height: 500px;
     min-height: 500px;
+    min-width: 100px;
 }
 
 .damselfly-taglist {
