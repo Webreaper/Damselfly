@@ -26,6 +26,8 @@ using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Authorization;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Web
 {
@@ -64,23 +66,6 @@ namespace Damselfly.Web
                                  .AddRoles<ApplicationRole>()
                                  .AddEntityFrameworkStores<ImageContext>();
 
-            services.AddAuthorization(config =>
-            {
-                // Anyone in the Admin group is an admin (d'uh)
-                config.AddPolicy(PolicyDefinitions.s_IsAdmin, policy => policy.RequireRole(
-                                                                RoleDefinitions.s_AdminRole));
-
-                // Users and Admins can edit content (keywords)
-                config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireRole(
-                                                                RoleDefinitions.s_AdminRole,
-                                                                RoleDefinitions.s_UserRole));
-                // Admins, Users and ReadOnly users can download
-                config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireRole(
-                                                                RoleDefinitions.s_AdminRole,
-                                                                RoleDefinitions.s_UserRole,
-                                                                RoleDefinitions.s_ReadOnlyRole));
-            });
-
             // Use transient here so that if the user preferences change, 
             // we'll get a different instance the next time we send email. 
             services.AddTransient<IEmailSender, EmailSenderFactoryService>();
@@ -104,6 +89,9 @@ namespace Damselfly.Web
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ImageRecognitionService>();
 
+            // This needs to happen after ConfigService has been registered.
+            services.AddAuthorization(config => SetupPolicies(config, services));
+
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
             services.AddScoped<BasketService>();
             services.AddScoped<UserService>();
@@ -116,6 +104,50 @@ namespace Damselfly.Web
             services.AddScoped<ThemeService>();
             services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
+        }
+
+        private void SetupPolicies(AuthorizationOptions config, IServiceCollection services)
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            var configService = serviceProvider.GetService<ConfigService>();
+
+            var enablePolicies = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
+
+            if( enablePolicies )
+            {
+                Logging.Log("Polices and Roles are enabled.");
+
+                // Anyone in the Admin group is an admin (d'uh)
+                config.AddPolicy(PolicyDefinitions.s_IsLoggedIn, policy => policy.RequireAuthenticatedUser());
+
+                // Anyone in the Admin group is an admin (d'uh)
+                config.AddPolicy(PolicyDefinitions.s_IsAdmin, policy => policy.RequireRole(
+                                                                RoleDefinitions.s_AdminRole));
+
+                // Users and Admins can edit content (keywords)
+                config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireRole(
+                                                                RoleDefinitions.s_AdminRole,
+                                                                RoleDefinitions.s_UserRole));
+                // Admins, Users and ReadOnly users can download
+                config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireRole(
+                                                                RoleDefinitions.s_AdminRole,
+                                                                RoleDefinitions.s_UserRole,
+                                                                RoleDefinitions.s_ReadOnlyRole));
+            }
+            else
+            {
+                Logging.Log("Polices and Roles have been deactivated.");
+
+                config.AddPolicy(PolicyDefinitions.s_IsLoggedIn, policy => policy.RequireAssertion(
+                                                                    context => true));
+                config.AddPolicy(PolicyDefinitions.s_IsAdmin, policy => policy.RequireAssertion(
+                                                                    context => true));
+                config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireAssertion(
+                                                                context => true));
+                config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireAssertion(
+                                                                context => true));
+            }
+
         }
 
         /// <summary>

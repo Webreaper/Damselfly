@@ -16,9 +16,8 @@ namespace Damselfly.Core.ScopedServices
     public class ThemeService
     {
         private static DirectoryInfo themesFolder;
-        private long cacheBuster = 1;
         private readonly UserConfigService _configService;
-        public event Action<string> OnChangeCSS;
+        public event Action<string> OnChangeTheme;
         private string _currentTheme;
 
         public ThemeService( UserConfigService configService )
@@ -50,15 +49,14 @@ namespace Damselfly.Core.ScopedServices
                 {
                     _currentTheme = value;
                     _configService.Set(ConfigSettings.Theme, _currentTheme);
-                    cacheBuster++;
-                    OnChangeCSS?.Invoke(ThemeCSS);
+                    OnChangeTheme?.Invoke(Theme);
                 }
             }
         }
 
-        public string ThemeCSS
+        public string Theme
         {
-            get { return $"themes/{CurrentTheme}.css?j={cacheBuster}"; }
+            get { return _currentTheme; }
         }
 
         public List<string> Themes

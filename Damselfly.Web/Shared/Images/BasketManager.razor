@@ -1,7 +1,7 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
 @using Damselfly.Core.DbModels
-@using Damselfly.Core.Utils.Constants 
+@using Damselfly.Core.Utils.Constants
 
 @implements IDisposable
 
@@ -28,8 +28,8 @@
 </div>
 
 @code {
-    readonly List<Basket> baskets = new List<Basket>();
-    string NewBasketName { get; set; }
+        readonly List<Basket> baskets = new List<Basket>();
+        string NewBasketName { get; set; }
 
     private int SelectedBasketId
     {
@@ -52,9 +52,12 @@
 
     private string PrivateIndicator(Basket basket)
     {
-        if (basket?.UserId == null)
-            return "(public)";
-
+        // Shared baskets don't make sense if users and roles are disabled.
+        if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+        {
+            if (basket?.UserId == null)
+                return "(shared)";
+        }
         return string.Empty;
     }
 

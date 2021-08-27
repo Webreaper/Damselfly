@@ -120,10 +120,13 @@ namespace Damselfly.Core.ScopedServices
                                             .ThenBy( x => x.Name.ToLower() )
                                             .ToListAsync();
 
-            if( userId != 0 && ! myBaskets.Any( x => x.UserId == userId ))
+            if( ! myBaskets.Any( x => x.UserId == userId ))
             {
-                // Create a user basket if none exists.
-                var userBasket = new Basket { Name = s_MyBasket, UserId = userId };
+
+                var newBasketName = (user != null) ? s_MyBasket : "default";
+
+                // Create a default (user) basket if none exists.
+                var userBasket = new Basket { Name = newBasketName, UserId = user?.Id };
                 db.Baskets.Add(userBasket);
                 await db.SaveChangesAsync("SaveBasket");
 
@@ -317,7 +320,7 @@ namespace Damselfly.Core.ScopedServices
             // least one (because if there are none, one will be created).
             var userBaskets = await GetUserBaskets( user );
 
-            var defaultBasket = userBaskets.FirstOrDefault(x => x.Name == s_MyBasket && x.UserId != null);
+            var defaultBasket = userBaskets.FirstOrDefault(x => x.Name == s_MyBasket && x.UserId == user?.Id );
 
             if (defaultBasket == null)
             {

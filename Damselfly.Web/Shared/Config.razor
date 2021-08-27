@@ -16,10 +16,7 @@
 
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
-    <AuthorizeView>
-        <NotAuthorized>
-            <p>Please <a href="/Identity/Account/Login">log in</a> to access user and system settings.</p>
-        </NotAuthorized>
+    <AuthorizeView Policy="@PolicyDefinitions.s_IsLoggedIn">
         <Authorized Context="auth">
             <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
                 <MudTabPanel Text="User Settings">
@@ -60,7 +57,12 @@
                             <h2>Security</h2>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudCheckBox @bind-Checked="@forceLogin" Label="Force users to login before accessing Damselfly" />
+                                    <MudCheckBox @bind-Checked="@anableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@forceLogin" Disabled="@(! anableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
                                 </div>
                             </div>
 
@@ -133,11 +135,14 @@
                         </EditForm>
                     </MudTabPanel>
 
-                    <MudTabPanel Text="User Management">
-                        <div>
-                            <UserManagement />
-                        </div>
-                    </MudTabPanel>
+                    @if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+                    {
+                        <MudTabPanel Text="User Management">
+                            <div>
+                                <UserManagement />
+                            </div>
+                        </MudTabPanel>
+                    }
                     <MudTabPanel Text="Email Notifications">
                         <EditForm Model="@(useSmtp ? smtpSettings : sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
                             <FluentValidationValidator />
@@ -198,6 +203,9 @@
                 </AuthorizeView>
             </MudTabs>
         </Authorized>
+        <NotAuthorized>
+            <p>Please <a href="/Identity/Account/Login">log in</a> to access user and system settings.</p>
+        </NotAuthorized>
     </AuthorizeView>
 </div>
 
@@ -210,6 +218,7 @@
     private string selectedTheme;
     private bool useSmtp = true;
     private bool forceLogin = false;
+    private bool anableAuthAndRoles = false;
 
     private void HandleValidSubmit()
     {
@@ -226,7 +235,11 @@
             configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
             configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
-            configService.Set(ConfigSettings.ForceLogin, forceLogin.ToString());
+
+            configService.Set(ConfigSettings.EnablePoliciesAndRoles, anableAuthAndRoles.ToString());
+            // If roles are disabled, disable forced Login
+            var forceLoginProxy = anableAuthAndRoles && forceLogin;
+            configService.Set(ConfigSettings.ForceLogin, forceLoginProxy.ToString());
 
             smtpSettings.Save(configService);
             sendGridSettings.Save(configService);
@@ -274,6 +287,7 @@
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
+        anableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
 
