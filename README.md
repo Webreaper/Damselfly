@@ -27,22 +27,25 @@ editing etc.
 * Focus on extremely fast performance - searching a 500,000-image catalogue returns results in less than a second.
 * Fast keyword tagging workflow with non-destructive EXIF data updates (using ExifTool) - so JPEGs are not re-encoded 
   when keyword-tagged
-* [Multi-user support with user accounts](./docs/Multi-user.md)), and role-based entitlements (e.g., ReadOnly role prevents keyword tagging for a user)
+* [Multi-user support with user accounts](./docs/Multi-user.md), and role-based entitlements (e.g., users with ReadOnly 
+  role are prevented from keyword-tagging images)
 * Download/export processing to watermark images ready for social media, or sending via Email etc.
 * Selection basket for saving images from search results1
-    * Images within the basket can be downloaded, exported for use within Digikam/PhotoShop/etc., or uploaded to Wordpress
+    * Images within the basket can be downloaded, exported for use within Digikam/PhotoShop/etc., or 
+      uploaded to Wordpress
+    * Baskets can be user-specific, or shared with other users
 * Server-based deployment, with a web-based front-end UI, so the image library can be accessed via multiple 
   devices without having to copy catalogues or other DBs to local device storage.   
 * Themes
 * Completely automated background indexing of images, so that the collection is automatically and quickly updated 
   when new images are added or updated
 * Background thumbnail generation
-* Runs on Windows, Linux and OSX, and in Docker.
 * Electron.Net Desktop Client for hosted site to allow closer native integration with client OS
     * Desktop Client versions for MacOS (universal), Windows and Linux 
     * Synchronise images from server basket select to local filesystem for editing
     * Other integrations coming in future
-* Built with Microsoft .Net 6, so runs cross-platform on MacOS, Linux and Windows. 
+* Runs on Windows, Linux and OSX, and in Docker.
+* Built with Microsoft .Net 6 and Blazor Server. 
 
 ## Want to Support Damselfly?
 
