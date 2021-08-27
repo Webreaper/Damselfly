@@ -14,7 +14,11 @@ will have its own state (selection, search results, etc., etc) but that will be 
 there's no control over who can download images, add keyword tags, and make other changes to the app. 
 
 You can, however, enable user IDs, roles and entitlements by checking the 'Enable Authentication' checkbox in the 'System Settings'
-tab of the Config page (which is accessed via the 'cogs' icon on the right-hand side of the status bar). This setting only takes effect
+tab of the Config page (which is accessed via the 'cogs' icon on the right-hand side of the status bar). 
+
+<img style="margin: 5px;" src="./System-Settings.jpg" alt="System Settings" width="600"/>
+
+This setting only takes effect
 once the application has restarted, so once selected you'll need to shut down and restart the application (you can do this in Docker
 by executing `sudo docker restart damselfly`).
 
@@ -28,6 +32,8 @@ The first time you run Damselfy with authentication enabled, you should create a
 login page click 'Register an Account'. Enter your email and password, and you will be logged into Damselfly; you'll see your 
 email displayed on the status bar. By default new users' Usernames are set to be their email addresses, but as an Admin user you
 can change these to more meaningful names (e.g., 'Mark') via the Settings => User Management screen.
+
+<img style="margin: 5px;" src="./User-management.jpg" alt="User Management" width="600"/>
 
 Once users are logged in, some of their actions will be recorded for auditing purposes. So for example, if a user adds a Keyword
 to an image, their User ID will be associated with that operation - which means that it's possible to check why somebody added
