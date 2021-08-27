@@ -27,7 +27,7 @@ editing etc.
 * Focus on extremely fast performance - searching a 500,000-image catalogue returns results in less than a second.
 * Fast keyword tagging workflow with non-destructive EXIF data updates (using ExifTool) - so JPEGs are not re-encoded 
   when keyword-tagged
-* Multi-user support with user accounts, and role-based entitlements (e.g., ReadOnly role prevents keyword tagging for a user)
+* [Multi-user support with user accounts](./docs/Multi-user.md)), and role-based entitlements (e.g., ReadOnly role prevents keyword tagging for a user)
 * Download/export processing to watermark images ready for social media, or sending via Email etc.
 * Selection basket for saving images from search results1
     * Images within the basket can be downloaded, exported for use within Digikam/PhotoShop/etc., or uploaded to Wordpress
@@ -94,6 +94,7 @@ do this for you) where the server will re-index them to pick up your changes.
 ## More information
 
 * [Installation](./docs/Installation.md)
+* [Multi User and Roles](./docs/Multi-user.md)
 * [Technical Background](./docs/Technical.md)
 * [FAQ](./docs/FAQ.md)
 * [Contributing to Damselfly](./docs/Contributing.md)
