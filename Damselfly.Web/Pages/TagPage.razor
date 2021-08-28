@@ -52,23 +52,25 @@
         <div class="top-row">
             <h4>Tag: @TagName</h4>
         </div>
-        <div class="wrapping_table">
+        <div class="damselfly-imagegrid" id="scroll-area">
             @foreach (var image in images)
             {
-                <GridImage CurrentImage=@image />
+                <div class="damselfly-gridimage wrapping-table-small">
+                    <GridImage CurrentImage=@image />
+                </div>
             }
         </div>
     }
 </div>
 @code {
-    [Parameter]
-    public string TagName { get; set; }
+        [Parameter]
+        public string TagName { get; set; }
 
-    Image[] images;
-    Tag selectedTag;
-    string searchText;
+        Image[] images;
+        Tag selectedTag;
+        string searchText;
 
-    private string TagLink( Tag tag ) => $"/tag/{tag.Keyword}";
+        private string TagLink( Tag tag ) => $"/tag/{tag.Keyword}";
 
     private IEnumerable<Tag> Tags
     {
@@ -85,6 +87,14 @@
             return true;
 
         return tag.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowTags = true });
+        }
     }
 
     protected override async Task OnParametersSetAsync()
