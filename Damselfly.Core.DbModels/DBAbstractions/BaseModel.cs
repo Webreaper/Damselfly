@@ -251,6 +251,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             }
 
             int retriesRemaining = 3;
+            int recordsWritten = 0;
 
             while ( retriesRemaining > 0 )
             {
@@ -261,13 +262,13 @@ namespace Damselfly.Core.DbModels.DBAbstractions
 
                     LogChangeSummary();
 
-                    int written = await base.SaveChangesAsync();
+                    recordsWritten = await base.SaveChangesAsync();
 
-                    Logging.LogTrace("{0} changes written to the DB", written);
+                    Logging.LogTrace("{0} changes written to the DB", recordsWritten);
 
                     watch.Stop();
 
-                    return written;
+                    break;
                 }
                 catch (Exception ex)
                 {
@@ -282,11 +283,13 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                         Logging.LogError("Exception - DB WRITE FAILED: {0}", ex);
                         if (ex.InnerException != null)
                             Logging.LogError("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
+
                     }
                 }
 
-                return 0;
             }
+
+            return recordsWritten;
         }
 
         /// <summary>

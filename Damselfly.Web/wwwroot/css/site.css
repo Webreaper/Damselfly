@@ -1210,11 +1210,13 @@ padding: 0.4em 0.65em;
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    padding: 3px;
 }
 
 .damselfly-configsetting {
     display: flex;
     flex-direction: row;
+    padding: 3px;
 }
 
 .damselfly-configfield {
