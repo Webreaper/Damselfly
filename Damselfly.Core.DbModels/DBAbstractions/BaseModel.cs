@@ -267,10 +267,10 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             }
             catch (Exception ex)
             {
+                Logging.Log("Exception - DB WRITE FAILED: {0}", ex);
+
                 if (ex.InnerException != null)
                     Logging.Log("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
-                else
-                    Logging.Log("Exception - DB WRITE FAILED: {0}", ex.Message);
 
                 return 0;
             }
