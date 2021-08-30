@@ -35,25 +35,30 @@ etc - these will be coming.
 At startup, Damselfly will run a full index on the folder of images passed in as the only mandatory parameter (or the volume mapped to /pictures 
 if you're running in Docker). The process runs as follows:
 
-1. Damselfly will scan the entire folder tree for any images (currently JPEG, PNG, etc; HEIC and others will be added when Google's image processing
-library Skia supports them). This process is normally very quick - on my Synology NAS, around half a million images can be scanned in an hour or two).
-During this process, a filesystem iNotify watcher will be set up for each folder in the tree to watch for changes.
+1. Damselfly will scan the entire folder tree for any images (currently JPG, PNG, HEIC, TIFF, Webp, BMP and DNG/CR2 RAW). This process is normally 
+very quick - on my Synology NAS, around half a million images can be scanned in an hour or two). During this process, a filesystem iNotify watcher 
+will be set up for each folder in the tree to watch for changes.
 2. Next, Damselfly will then go back through all of the images, in newest (by file-modified-date) order first, and run the metadata scan. This is 
 more time-consuming, but will pull in all of the metadata such as the resolution, keyword tags, other EXIF data, when the photo was taken, etc.
 3. Lastly, the thumbnail generation process will run - generating the small previews used when browsing. This process is CPU-intensive, and can take
 some time; for my 4TB+ collection of half a million photos, it'll take 5+ days to run on my Synology NAS - processing around 100 images per minute.
 It'll also hammer the CPU while it runs, so be aware of that. 
-4. Image/object/face detection will run on the thumbnails after they've been generated. Thumbnails are used (rather than original images) because
-image recognition models usually work faster with lower-res images.
+4. Image/object/face detection will run on the thumbnails after they've been generated. Thumbnails are used (rather than original 
+images) because image recognition models usually work faster with lower-res images. Note that AI processing can be extremely CPU-intensive; 
+for this reason you may want to configure the time-range for processing so that AI processing will only happen during a period when your
+NAS isn't being used for much else.
 
 Once step #2 finishes, the first full-index is complete. From that point onwards, changes to the image library should be picked up almost instantly
 and processed quickly; adding a new folder of photos after a day out should only take a few seconds to be indexed, and a couple of minutes for the
 thumbnails to be generated.
 
+Note that if you want to exclude any folders from Damselfly's indexing process, just create a file named `.nomedia` in the folder, and it will
+be skipped.
+
 ## How does Damselfly's Image/Object/Face Recognition Work?
 
-The latest version of Damselfly includes machine-learning functionality to find objects and faces in your images, and tag 
-them. If you're interested in the technical design/implementation of this feature, there's an article about it 
+The latest version of Damselfly includes machine-learning functionality to find objects and faces in your images, and tag them. 
+If you're interested in the technical design/implementation of this feature, there's an article about it 
 [here](https://damselfly.info/face-recognition-in-net-the-good-the-bad-and-the-ugly/). 
 
 Faces and objects that are recognised will be displayed as special tags, alongside normal keyword-tags, when browsing the

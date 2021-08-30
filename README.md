@@ -36,6 +36,7 @@ editing etc.
     * Baskets can be user-specific, or shared with other users
 * Server-based deployment, with a web-based front-end UI, so the image library can be accessed via multiple 
   devices without having to copy catalogues or other DBs to local device storage.   
+* Exclude images from Damselfly scanning by adding a `.nomedia` file in any folder.
 * Themes
 * Completely automated background indexing of images, so that the collection is automatically and quickly updated 
   when new images are added or updated
