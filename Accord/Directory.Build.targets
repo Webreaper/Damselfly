@@ -1,6 +1,6 @@
 <Project>
  <PropertyGroup>
     <WarningLevel>0</WarningLevel>
-   <NoWarn>CA1416,MSB3245,SYSLIB0011,IL2026,IL3000</NoWarn>
+   <NoWarn>CA1416,MSB3245,SYSLIB0011,IL2026,IL3000,CS0436,MSB3245</NoWarn>
  </PropertyGroup>
 </Project>
