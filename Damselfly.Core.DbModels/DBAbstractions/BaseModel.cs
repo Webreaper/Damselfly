@@ -272,6 +272,11 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                 if (ex.InnerException != null)
                     Logging.Log("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
 
+                if (ex.Message.Contains("database is locked"))
+                {
+                    Logging.LogWarning("Database locked - sleeping for 5s...");
+                    await Task.Delay(5 * 1000);
+                }
                 return 0;
             }
         }
