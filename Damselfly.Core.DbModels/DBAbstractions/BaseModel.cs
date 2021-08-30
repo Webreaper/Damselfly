@@ -250,33 +250,41 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                 return 1;
             }
 
-            try
+            int retriesRemaining = 3;
+
+            while ( retriesRemaining > 0 )
             {
-                // Write to the DB
-                var watch = new Stopwatch("SaveChanges" + contextDesc);
-
-                LogChangeSummary();
-
-                int written = await base.SaveChangesAsync();
-
-                Logging.LogTrace("{0} changes written to the DB", written);
-
-                watch.Stop();
-
-                return written;
-            }
-            catch (Exception ex)
-            {
-                Logging.Log("Exception - DB WRITE FAILED: {0}", ex);
-
-                if (ex.InnerException != null)
-                    Logging.Log("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
-
-                if (ex.Message.Contains("database is locked"))
+                try
                 {
-                    Logging.LogWarning("Database locked - sleeping for 5s...");
-                    await Task.Delay(5 * 1000);
+                    // Write to the DB
+                    var watch = new Stopwatch("SaveChanges" + contextDesc);
+
+                    LogChangeSummary();
+
+                    int written = await base.SaveChangesAsync();
+
+                    Logging.LogTrace("{0} changes written to the DB", written);
+
+                    watch.Stop();
+
+                    return written;
                 }
+                catch (Exception ex)
+                {
+                    if (ex.Message.Contains("database is locked") && retriesRemaining > 0 )
+                    {
+                        Logging.LogWarning($"Database locked - sleeping for 5s and retying {retriesRemaining}...");
+                        retriesRemaining--;
+                        await Task.Delay(5 * 1000);
+                    }
+                    else
+                    {
+                        Logging.LogError("Exception - DB WRITE FAILED: {0}", ex);
+                        if (ex.InnerException != null)
+                            Logging.LogError("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
+                    }
+                }
+
                 return 0;
             }
         }
