@@ -22,6 +22,7 @@ namespace Damselfly.Core.ScopedServices
         private readonly UserStatusService _statusService;
 
         private const string s_MyBasket = "My Basket";
+        private const string s_DefaultBasket = "default";
 
         public event Action OnBasketChanged;
         public Basket CurrentBasket { get; set; }
@@ -123,7 +124,13 @@ namespace Damselfly.Core.ScopedServices
             if( ! myBaskets.Any( x => x.UserId == userId ))
             {
 
-                var newBasketName = (user != null) ? s_MyBasket : "default";
+                var newBasketName = (user != null) ? s_MyBasket : s_DefaultBasket;
+
+                if( user == null && myBaskets.Any( x => x.Name.Equals(s_DefaultBasket)))
+                {
+                    // Don't create another default basket if one already exists.
+                    return myBaskets;
+                }
 
                 // Create a default (user) basket if none exists.
                 var userBasket = new Basket { Name = newBasketName, UserId = user?.Id };
