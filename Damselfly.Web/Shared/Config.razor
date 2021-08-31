@@ -11,7 +11,6 @@
 @inject ThemeService themeService
 @inject UserStatusService statusService
 @inject WordpressService wpService
-@inject TaskService taskScheduler
 @inject ImageRecognitionService imageService  
 @inject AzureFaceService azureService
 
@@ -326,10 +325,5 @@
         }
 
         base.OnInitialized();
-    }
-
-    private void RunTask(ScheduledTask task)
-    {
-        taskScheduler.EnqueueTaskAsync(task);
     }
 }

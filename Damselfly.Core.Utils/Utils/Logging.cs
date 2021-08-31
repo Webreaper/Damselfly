@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using Serilog;
 using Serilog.Core;
@@ -45,34 +46,44 @@ namespace Damselfly.Core.Utils
         /// <returns></returns>
         public static Logger InitLogs()
         {
-            if (!Directory.Exists(LogFolder))
-                Directory.CreateDirectory(LogFolder);
+            try
+            {
+                if (!Directory.Exists(LogFolder))
+                {
+                    Console.WriteLine($"Creating log folder {LogFolder}");
+                    Directory.CreateDirectory(LogFolder);
+                }
 
-            logLevel.MinimumLevel = LogEventLevel.Information;
+                logLevel.MinimumLevel = LogEventLevel.Information;
 
-            if (Verbose)
-                logLevel.MinimumLevel = LogEventLevel.Verbose;
+                if (Verbose)
+                    logLevel.MinimumLevel = LogEventLevel.Verbose;
 
-            if (Trace)
-                logLevel.MinimumLevel = LogEventLevel.Debug;
+                if (Trace)
+                    logLevel.MinimumLevel = LogEventLevel.Debug;
 
-            string logFilePattern = Path.Combine(LogFolder, "Damselfly-.log");
+                string logFilePattern = Path.Combine(LogFolder, "Damselfly-.log");
 
-            logger = new LoggerConfiguration()
-                .MinimumLevel.ControlledBy(logLevel)
-                .Enrich.With( new ThreadIDEnricher() )
-                .WriteTo.Console(outputTemplate: template)
-                .WriteTo.File( logFilePattern,
-                               outputTemplate: template,
-                               rollingInterval: RollingInterval.Day,
-                               fileSizeLimitBytes:104857600,
-                               retainedFileCountLimit:10)
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .CreateLogger();
+                logger = new LoggerConfiguration()
+                    .MinimumLevel.ControlledBy(logLevel)
+                    .Enrich.With(new ThreadIDEnricher())
+                    .WriteTo.Console(outputTemplate: template)
+                    .WriteTo.File(logFilePattern,
+                                   outputTemplate: template,
+                                   rollingInterval: RollingInterval.Day,
+                                   fileSizeLimitBytes: 104857600,
+                                   retainedFileCountLimit: 10)
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                    .CreateLogger();
 
-            logger.Information("=== Damselfly Log Started ===");
-            logger.Information("Log folder: {0}", LogFolder);
-            logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
+                logger.Information("=== Damselfly Log Started ===");
+                logger.Information("Log folder: {0}", LogFolder);
+                logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
+            }
+            catch( Exception ex )
+            {
+                Console.WriteLine($"Unable to initialise logs: {ex}");
+            }
 
             return logger;
         }

@@ -77,7 +77,7 @@ be appreciated!
 * Synchronisation of local images back to the server
 * If you have ideas for other features - let me know by [raising an issue](https://github.com/Webreaper/Damselfly/issues)!
 
-# How should we I Damselfly? What's the workflow?
+# How should I use Damselfly? What's the workflow?
 
 The photos live in the library on the server, but whenever you want to work on a picture (e.g., in Photoshop, Digikam or your editing tool of 
 choice) you use the Damselfly Deskop app to add the images to the basket, and choose Download => Save Locally, to sync the pictures across 

@@ -67,85 +67,104 @@ namespace Damselfly.Web
 
         public static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<DamselflyOptions>(args).WithParsed( o =>
-                        {
-                            Logging.Verbose = o.Verbose;
-                            Logging.Trace = o.Trace;
-
-                            if (Directory.Exists(o.SourceDirectory))
-                            {
-                                if (!Directory.Exists(o.ConfigPath))
-                                    Directory.CreateDirectory(o.ConfigPath);
-
-                                Logging.LogFolder = Path.Combine(o.ConfigPath, "logs");
-
-                                Log.Logger = Logging.InitLogs();
-
-                                if (o.ReadOnly)
-                                {
-                                    o.NoEnableIndexing = true;
-                                    o.NoGenerateThumbnails = true;
-                                }
-
-                                // TODO: Do away with static members here. We should pass this
-                                // through to the config service and pick them up via DI
-                                IndexingService.EnableIndexing = ! o.NoEnableIndexing;
-                                IndexingService.RootFolder = o.SourceDirectory;
-                                ThumbnailService.PicturesRoot = o.SourceDirectory;
-                                ThumbnailService.Synology = o.Synology;
-                                ThumbnailService.SetThumbnailRoot(o.ThumbPath);
-                                ThumbnailService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
-
-                                Logging.Log("Startup State:");
-                                Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
-                                Logging.Log($" CLR Ver: {Environment.Version}");
-                                Logging.Log($" OS: {Environment.OSVersion}");
-                                Logging.Log($" CPU Arch: {RuntimeInformation.ProcessArchitecture}");
-                                Logging.Log($" Processor Count: {Environment.ProcessorCount}");
-                                Logging.Log($" Read-only mode: {o.ReadOnly}");
-                                Logging.Log($" Synology = {o.Synology}");
-                                Logging.Log($" Indexing = {!o.NoEnableIndexing}");
-                                Logging.Log($" ThumbGen = {!o.NoGenerateThumbnails}");
-                                Logging.Log($" Images Root set as {o.SourceDirectory}");
-
-                                IDataBase dbType = null;
-
-                                if (! o.UsePostgresDB ) 
-                                {
-                                    string dbFolder = Path.Combine(o.ConfigPath, "db");
-
-                                    if (!Directory.Exists(dbFolder))
-                                    {
-                                        Logging.Log(" Created DB folder: {0}", dbFolder);
-                                        Directory.CreateDirectory(dbFolder);
-                                    }
-
-                                    string dbPath = Path.Combine(dbFolder, "damselfly.db");
-                                    dbType = new SqlLiteModel(dbPath);
-                                    Logging.Log(" Sqlite Database location: {0}", dbPath);
-                                }
-                                else // Postgres
-                                {
-                                    // READ Postgres config json
-                                    dbType = PostgresModel.ReadSettings("settings.json");
-                                    Logging.Log(" Postgres Database location: {0}");
-                                }
-
-                                // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli
-                                BaseDBModel.InitDB<ImageContext>(dbType, o.ReadOnly);
-
-                                // Make ourselves low-priority.
-                                System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
-
-                                StartWebServer(o.Port, args);
-
-                                Logging.Log("Shutting down.");
-                            }
-                            else
-                                Logging.Log("Folder {0} did not exist. Exiting.", o.SourceDirectory);
-                        });
+            try
+            {
+                Parser.Default.ParseArguments<DamselflyOptions>(args).WithParsed(o =>
+                           {
+                               Startup(o, args);
+                           });
+            }
+            catch( Exception ex )
+            {
+                Console.WriteLine($"Startup exception: {ex}");
+            }
         }
 
+        /// <summary>
+        /// Process the startup args and initialise the logging.
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="args"></param>
+        private static void Startup(DamselflyOptions o, string[] args)
+        {
+            Logging.Verbose = o.Verbose;
+            Logging.Trace = o.Trace;
+
+            if (Directory.Exists(o.SourceDirectory))
+            {
+                if (!Directory.Exists(o.ConfigPath))
+                    Directory.CreateDirectory(o.ConfigPath);
+
+                Logging.LogFolder = Path.Combine(o.ConfigPath, "logs");
+
+                Log.Logger = Logging.InitLogs();
+
+                if (o.ReadOnly)
+                {
+                    o.NoEnableIndexing = true;
+                    o.NoGenerateThumbnails = true;
+                }
+
+                // TODO: Do away with static members here. We should pass this
+                // through to the config service and pick them up via DI
+                IndexingService.EnableIndexing = !o.NoEnableIndexing;
+                IndexingService.RootFolder = o.SourceDirectory;
+                ThumbnailService.PicturesRoot = o.SourceDirectory;
+                ThumbnailService.Synology = o.Synology;
+                ThumbnailService.SetThumbnailRoot(o.ThumbPath);
+                ThumbnailService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
+
+                Logging.Log("Startup State:");
+                Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
+                Logging.Log($" CLR Ver: {Environment.Version}");
+                Logging.Log($" OS: {Environment.OSVersion}");
+                Logging.Log($" CPU Arch: {RuntimeInformation.ProcessArchitecture}");
+                Logging.Log($" Processor Count: {Environment.ProcessorCount}");
+                Logging.Log($" Read-only mode: {o.ReadOnly}");
+                Logging.Log($" Synology = {o.Synology}");
+                Logging.Log($" Indexing = {!o.NoEnableIndexing}");
+                Logging.Log($" ThumbGen = {!o.NoGenerateThumbnails}");
+                Logging.Log($" Images Root set as {o.SourceDirectory}");
+
+                IDataBase dbType = null;
+
+                if (!o.UsePostgresDB)
+                {
+                    string dbFolder = Path.Combine(o.ConfigPath, "db");
+
+                    if (!Directory.Exists(dbFolder))
+                    {
+                        Logging.Log(" Created DB folder: {0}", dbFolder);
+                        Directory.CreateDirectory(dbFolder);
+                    }
+
+                    string dbPath = Path.Combine(dbFolder, "damselfly.db");
+                    dbType = new SqlLiteModel(dbPath);
+                    Logging.Log(" Sqlite Database location: {0}", dbPath);
+                }
+                else // Postgres
+                {
+                    // READ Postgres config json
+                    dbType = PostgresModel.ReadSettings("settings.json");
+                    Logging.Log(" Postgres Database location: {0}");
+                }
+
+                // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli
+                BaseDBModel.InitDB<ImageContext>(dbType, o.ReadOnly);
+
+                // Make ourselves low-priority.
+                System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
+
+                StartWebServer(o.Port, args);
+
+                Logging.Log("Shutting down.");
+            }
+            else
+            {
+                Console.WriteLine("Folder {0} did not exist. Exiting.", o.SourceDirectory);
+            }
+
+        }
         /// <summary>
         /// Main entry point. Creates a bunch of services, and then kicks off
         /// the webserver, which is a blocking call (since it's the dispatcher
