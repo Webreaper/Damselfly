@@ -51,7 +51,7 @@ else
         set { _ = SetBasketState(value); }
     }
 
-    private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}";
+    private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}";
     private LocalFileExporter FileExporter;
     string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
     string SelectStyle { get { return selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
