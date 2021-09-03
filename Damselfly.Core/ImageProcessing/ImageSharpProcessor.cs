@@ -95,6 +95,12 @@ namespace Damselfly.Core.ImageProcessing
             return result;
         }
 
+        /// <summary>
+        /// Draw rectangles onto a file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="rects"></param>
+        /// <param name="output"></param>
         public static void DrawRects( string path, List<Rectangle> rects, string output )
         {
             using var image = Image.Load<Rgba32>(path);
@@ -115,14 +121,14 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
         {
             var result = new ImageProcessResult();
             Stopwatch load = new Stopwatch("ImageSharpLoad");
 
             // Image.Load(string path) is a shortcut for our default type. 
             // Other pixel formats use Image.Load<TPixel>(string path))
-            using var image = Image.Load<Rgba32>(source.FullName);
+            using var image = await Image.LoadAsync<Rgba32>(source.FullName);
 
             // We've got the image in memory. Create the hash. 
             result.ImageHash = GetHash(image);
@@ -160,14 +166,26 @@ namespace Damselfly.Core.ImageProcessing
                 // So we always resize the previous image, which will be faster for each iteration
                 // because each previous image is progressively smaller. 
                 image.Mutate(x => x.Resize(opts));
-                image.Save(dest.FullName);
+                await image.SaveAsync(dest.FullName);
 
                 result.ThumbsGenerated = true;
             }
 
             thumbs.Stop();
 
-            return Task.FromResult(result);
+            return result;
+        }
+
+        public async Task GetCroppedFile( FileInfo source, int x, int y, int width, int height, FileInfo destFile )
+        {
+            // Image.Load(string path) is a shortcut for our default type. 
+            // Other pixel formats use Image.Load<TPixel>(string path))
+            using var image = Image.Load<Rgba32>(source.FullName);
+
+            var rect = new Rectangle(x, y, width, height);
+            image.Mutate(x => x.AutoOrient());
+            image.Mutate(x => x.Crop( rect ));
+            await image.SaveAsync(destFile.FullName);
         }
 
         /// <summary>

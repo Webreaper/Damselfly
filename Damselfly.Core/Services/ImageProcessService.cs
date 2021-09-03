@@ -57,6 +57,7 @@ namespace Damselfly.Core.Services
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="config"></param>
+        /// TODO: Async
         public void TransformDownloadImage(string input, Stream output, ExportConfig config)
         {
             var ext = Path.GetExtension(input);
@@ -82,6 +83,16 @@ namespace Damselfly.Core.Services
 
             // If we have a valid processor, we're good. 
             return processor != null;
+        }
+
+        public async Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile)
+        {
+            var ext = Path.GetExtension(source.Name);
+
+            var processor = _factory.GetProcessor(ext);
+
+            if (processor != null)
+                await processor.GetCroppedFile(source, x, y, width, height, destFile);
         }
     }
 }

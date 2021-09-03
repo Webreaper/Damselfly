@@ -49,7 +49,7 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source">Source.</param>
         /// <param name="sizes">Sizes.</param>
-        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles )
+        public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles )
         {
             // This processor doesn't support hash creation
             ImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false, ImageHash = string.Empty };
@@ -119,7 +119,7 @@ namespace Damselfly.Core.ImageProcessing
                     {
                         process.BeginErrorReadLine();
                         process.BeginOutputReadLine();
-                        process.WaitForExit();
+                        await process.WaitForExitAsync();
 
                         if (process.ExitCode == 0)
                         {
@@ -138,7 +138,7 @@ namespace Damselfly.Core.ImageProcessing
             else
                 Logging.LogVerbose("Thumbs already exist in all resolutions. Skipping...");
 
-            return Task.FromResult(result);
+            return result;
         }
 
         private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -151,6 +151,11 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         public void TransformDownloadImage(string input, Stream output, ExportConfig config)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile)
         {
             throw new NotImplementedException();
         }
