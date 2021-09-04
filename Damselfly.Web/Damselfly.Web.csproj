@@ -45,12 +45,15 @@
     <Folder Include="wwwroot\vScroll\" />
     <Folder Include="wwwroot\objectrects\" />
     <Folder Include="Pages\Shared\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="config\" />
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="Microsoft.AspNetCore.Identity.UI" />
     <None Remove="Pages\Shared\" />
+    <None Remove="Microsoft.AspNetCore.WebUtilities" />
+    <None Remove="Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Shared\FolderList.razor">
@@ -82,5 +85,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0-preview.7.21378.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.0-preview.7.21378.6" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,4 @@
 ﻿@page "/"
-@page "/folder/{FolderId}"
 
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services;
@@ -11,7 +10,8 @@
 @inject NavigationService navContext
 @inject SearchService searchService
 @inject UserStatusService statusService
-
+@inject NavigationManager navigationManager
+ 
 <div class="damselfly-imagebrowser">
     <ErrorBoundary>
         <SearchBar />
@@ -21,14 +21,25 @@
     </ErrorBoundary>
 </div>
 
-@code { [Parameter]
-    public string FolderId { get; set; }
+@code
+{
+    [QueryStringParameter]
+    public int FolderId { get; set; }
+
+    [QueryStringParameter]
+    public int TagId { get; set; }
+
+    [QueryStringParameter]
+    public int PersonId { get; set; }
+
+    [QueryStringParameter]
+    public DateTime Date { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (int.TryParse(FolderId, out var fID))
+        if( FolderId != 0 )
         {
-            var folder = await ImageService.GetFolderAsync(fID);
+            var folder = await ImageService.GetFolderAsync(FolderId);
 
             if (folder != null)
             {
@@ -36,6 +47,15 @@
                 searchService.Folder = folder;
             }
         }
+
+        //this.UpdateQueryString(navigationManager);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+
+        return base.SetParametersAsync(parameters);
     }
 
     protected override void OnInitialized()

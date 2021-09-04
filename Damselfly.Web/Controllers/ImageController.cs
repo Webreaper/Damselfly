@@ -188,6 +188,8 @@ namespace Damselfly.Web.Controllers
 
             IActionResult result = Redirect("/no-image.png");
 
+            // TODO: Use cache
+
             var query = db.ImageObjects
                 .Include(x => x.Image)
                 .ThenInclude(o => o.MetaData)

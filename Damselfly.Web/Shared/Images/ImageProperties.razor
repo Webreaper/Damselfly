@@ -106,7 +106,7 @@
 @code {
     private Image theImage;
     public Image CurrentImage { get { return theImage; } set { theImage = value; } }
-    public string CurrentFolderLink => $"/folder/{CurrentImage.Folder.FolderId}";
+    public string CurrentFolderLink => $"/?folderId={CurrentImage.Folder.FolderId}";
     public string Aperture => $"f{CurrentImage.MetaData.FNum}";
     public string Exposure => $"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}";
 
