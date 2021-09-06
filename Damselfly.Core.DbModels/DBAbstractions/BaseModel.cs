@@ -241,7 +241,10 @@ namespace Damselfly.Core.DbModels.DBAbstractions
         /// </summary>
         /// <param name="contextDesc"></param>
         /// <returns>The number of entities written to the DB</returns>
-        public async Task<int> SaveChangesAsync(string contextDesc)
+        public async Task<int> SaveChangesAsync(string contextDesc,
+                [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+                [System.Runtime.CompilerServices.CallerMemberNameAttribute] string sourceMethod = "",
+                [System.Runtime.CompilerServices.CallerLineNumber] int lineNumber = 0 )
         {
             if (ReadOnly)
             {
@@ -274,15 +277,16 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                 {
                     if (ex.Message.Contains("database is locked") && retriesRemaining > 0 )
                     {
-                        Logging.LogWarning($"Database locked - sleeping for 5s and retying {retriesRemaining}...");
+                        Logging.LogWarning($"Database locked for {contextDesc} - sleeping for 5s and retying {retriesRemaining}...");
                         retriesRemaining--;
                         await Task.Delay(5 * 1000);
                     }
                     else
                     {
-                        Logging.LogError("Exception - DB WRITE FAILED: {0}", ex);
+                        Logging.LogError($"Exception - DB WRITE FAILED for {contextDesc}: {ex.Message}" );
+                        Logging.LogError($"  Called from {sourceMethod} line {lineNumber} in {sourceFilePath}.");
                         if (ex.InnerException != null)
-                            Logging.LogError("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
+                            Logging.LogError("  Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
 
                     }
                 }

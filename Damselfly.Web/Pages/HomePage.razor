@@ -48,6 +48,17 @@
             }
         }
 
+        if( TagId != 0 )
+        {
+            searchService.TagId = TagId;
+        }
+
+        if( Date != DateTime.MinValue )
+        {
+            // searchService.MinDate 
+        }
+
+        // Don't need this yet
         //this.UpdateQueryString(navigationManager);
     }
 
