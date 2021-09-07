@@ -68,6 +68,9 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="db"></param>
         private void IncreasePerformance(BaseDBModel db)
         {
+            // Increase the timeout from the default (which I think is 30s)
+            // To help concurrency.
+            db.Database.SetCommandTimeout(60);
             // Enable journal mode - this will also improve
             // concurrent acces
             ExecutePragma(db, "PRAGMA journal_mode=WAL;");

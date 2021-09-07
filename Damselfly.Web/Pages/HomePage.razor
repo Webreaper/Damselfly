@@ -3,31 +3,35 @@
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services;
 @using Damselfly.Web.Shared.Images;
+@implements IDisposable
 
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
+@inject IndexingService indexingService
 @inject NavigationService navContext
 @inject SearchService searchService
 @inject UserStatusService statusService
 @inject NavigationManager navigationManager
- 
+
 <div class="damselfly-imagebrowser">
-    <ErrorBoundary>
-        <SearchBar />
-    </ErrorBoundary>
-    <ErrorBoundary>
-        <ImageGrid />
-    </ErrorBoundary>
+    <SearchBar />
+    <ImageGrid />
 </div>
 
 @code
 {
     [QueryStringParameter]
+    public string S { get; set; }
+
+    [QueryStringParameter]
     public int FolderId { get; set; }
 
     [QueryStringParameter]
     public int TagId { get; set; }
+
+    [QueryStringParameter]
+    public string Tag { get; set; }
 
     [QueryStringParameter]
     public int PersonId { get; set; }
@@ -37,7 +41,17 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if( FolderId != 0 )
+        await ApplyQueryParams();
+    }
+
+    private async Task ApplyQueryParams()
+    {
+        if( ! string.IsNullOrEmpty( S ) )
+        {
+            searchService.SearchText = S;
+        }
+
+        if (FolderId != 0)
         {
             var folder = await ImageService.GetFolderAsync(FolderId);
 
@@ -48,14 +62,24 @@
             }
         }
 
-        if( TagId != 0 )
+        if (TagId != 0)
         {
-            searchService.TagId = TagId;
+            var tag = indexingService.GetTag(TagId);
+
+            if (tag != null)
+                searchService.Tag = tag;
+        }
+        else if( ! string.IsNullOrEmpty( Tag ))
+        {
+            var tag = indexingService.GetTag(Tag);
+
+            if (tag != null)
+                searchService.Tag = tag;
         }
 
-        if( Date != DateTime.MinValue )
+        if (Date != DateTime.MinValue)
         {
-            // searchService.MinDate 
+            // searchService.MinDate
         }
 
         // Don't need this yet
@@ -75,6 +99,22 @@
         navContext.CurrentImage = null;
 
         ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
+
+        navigationManager.LocationChanged += HandleLocationChanged;
+
+    }
+
+    void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+        StateHasChanged();
+
+        _ = ApplyQueryParams();
+    }
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= HandleLocationChanged;
     }
 
     // TODO: Don't think we need this
@@ -84,4 +124,5 @@
     {
         Logging.Log($"Checking for update: {clientVersion}");
 
-    } }
+    }
+}

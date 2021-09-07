@@ -617,7 +617,7 @@ namespace Damselfly.Core.Models
         public bool TagsOnly { get; set; } = false;
         public bool IncludeAITags { get; set; } = true;
         public int CameraId { get; set; } = -1;
-        public int TagId { get; set; } = -1;
+        public Tag Tag { get; set; } = null;
         public int LensId { get; set; } = -1;
         public GroupingType Grouping { get; set; } = GroupingType.None;
         public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;

@@ -674,6 +674,14 @@ f
     align-items: center;
 }
 
+.damselfly-searchhint {
+    flex: 1 1 200px;
+    margin: 3px;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+}
+
 .damselfly-browsetoollabel {
     margin: 2px;
 }

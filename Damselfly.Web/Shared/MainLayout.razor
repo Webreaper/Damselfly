@@ -4,25 +4,24 @@
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <RadzenContextMenu />
 
-<CascadingAuthenticationState>
-    <LoginForcer/>
-    <ThemeSwitcher />
-    <div class="damselfly-container">
-        <div class="damselfly-application">
-            <ErrorBoundary>
-                <SideBar />
-            </ErrorBoundary>
-            <ErrorBoundary>
-                @Body
-            </ErrorBoundary>
-        </div>
-        <ErrorBoundary>
-            <Statusbar />
-        </ErrorBoundary>
-    </div>
-
-</CascadingAuthenticationState>
-
+<ErrorBoundary>
+    <ChildContent>
+        <CascadingAuthenticationState>
+            <LoginForcer />
+            <ThemeSwitcher />
+            <div class="damselfly-container">
+                <div class="damselfly-application">
+                    <SideBar />
+                    @Body
+                </div>
+                <Statusbar />
+            </div>
+        </CascadingAuthenticationState>
+    </ChildContent>
+    <ErrorContent>
+        <p>An error occurred. Please check the Damselfly logs and reload the page.</p>
+    </ErrorContent>
+</ErrorBoundary>
 @code{
 }
 
