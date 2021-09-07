@@ -46,8 +46,8 @@ namespace Damselfly.Core.ScopedServices
         public event Action OnChange;
 
         public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim() ) { query.SearchText = value.Trim(); QueryChanged(); } } }
-        public DateTime MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
-        public DateTime MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
+        public DateTime? MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
+        public DateTime? MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
         public ulong MaxSizeKB { get { return query.MaxSizeKB; } set { if (query.MaxSizeKB != value) { query.MaxSizeKB = value; QueryChanged(); } } }
         public ulong MinSizeKB { get { return query.MinSizeKB; } set { if (query.MinSizeKB != value) { query.MinSizeKB = value; QueryChanged(); } } }
         public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
@@ -59,7 +59,7 @@ namespace Damselfly.Core.ScopedServices
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
 
-        public void SetDateRange( DateTime min, DateTime max )
+        public void SetDateRange( DateTime? min, DateTime? max )
         {
             if (query.MinDate != min || query.MaxDate != max)
             {
@@ -179,12 +179,14 @@ namespace Damselfly.Core.ScopedServices
                             throw new ArgumentException("Unexpected grouping type.");
                     }
 
-                    if (query.MinDate > DateTime.MinValue || query.MaxDate < DateTime.MaxValue)
+                    if (query.MinDate.HasValue || query.MaxDate.HasValue)
                     {
+                        var minDate = query.MinDate.HasValue ? query.MinDate : DateTime.MinValue;
+                        var maxDate = query.MaxDate.HasValue ? query.MaxDate : DateTime.MaxValue;
                         // Always filter by date - because if there's no filter
                         // set then they'll be set to min/max date.
-                        images = images.Where(x => x.SortDate >= query.MinDate &&
-                                                   x.SortDate <= query.MaxDate);
+                        images = images.Where(x => x.SortDate >= minDate &&
+                                                   x.SortDate <= maxDate);
                     }
 
                     if( query.MinSizeKB > ulong.MinValue )
@@ -272,11 +274,11 @@ namespace Damselfly.Core.ScopedServices
                     hints.Add($"Tag: {Tag.Keyword}");
 
                 string dateRange = string.Empty;
-                if (MinDate.Date != DateTime.MinValue.Date)
+                if (MinDate.HasValue)
                     dateRange = $"{MinDate:dd-MMM-yyyy}";
 
-                if (MaxDate.Date != DateTime.MaxValue.Date &&
-                    MaxDate.Date != MinDate.Date)
+                if (MaxDate.HasValue &&
+                   (! MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date))
                 {
                     if (!string.IsNullOrEmpty(dateRange))
                         dateRange += " - ";

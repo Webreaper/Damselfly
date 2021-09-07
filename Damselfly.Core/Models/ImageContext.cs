@@ -609,8 +609,8 @@ namespace Damselfly.Core.Models
         };
 
         public string SearchText { get; set; }
-        public DateTime MaxDate { get; set; } = DateTime.MaxValue;
-        public DateTime MinDate { get; set; } = DateTime.MinValue;
+        public DateTime? MaxDate { get; set; } = null;
+        public DateTime? MinDate { get; set; } = null;
         public ulong MaxSizeKB { get; set; } = ulong.MaxValue;
         public ulong MinSizeKB { get; set; } = ulong.MinValue;
         public Folder Folder { get; set; } = null;
