@@ -58,5 +58,6 @@
         // Close the picker
         picker.Close();
         // Fire OnRangeSelectEvent
+        picker.Reset();
         picker.OnRangeSelect.InvokeAsync(null);
     }}
