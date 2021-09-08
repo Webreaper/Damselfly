@@ -24,6 +24,7 @@ namespace Damselfly.ML.Face.Azure
         private FaceClient _faceClient;
         private IList<FaceAttributeType> _attributes;
         private AzureDetection _detectionType;
+        private bool _useFreeTier = true;
         private int _persistedFaces;
         private ITransactionThrottle _transThrottle;
         private const string GroupId = "damselflypersondir";
@@ -45,9 +46,10 @@ namespace Damselfly.ML.Face.Azure
             ImagesWithFaces = 2
         }
 
-        public AzureFaceService(IConfigService configService)
+        public AzureFaceService(IConfigService configService, ITransactionThrottle transThrottle)
         {
             _configService = configService;
+            _transThrottle = transThrottle;
 
             _attributes = new FaceAttributeType[]
             {
@@ -69,6 +71,20 @@ namespace Damselfly.ML.Face.Azure
         {
             var endpoint = _configService.Get(ConfigSettings.AzureEndpoint);
             var key = _configService.Get(ConfigSettings.AzureApiKey);
+            var useFreeTier = _configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
+
+            if (useFreeTier)
+            {
+                // Free tier allows 20 trans/min, and a max of 30k per month
+                _transThrottle.SetLimits(20, 30000);
+            }
+            else
+            {
+                // Standard paid tier allows 10 trans/sec, and unlimited. But at 10 txn/sec,
+                // the actual max is 30 million per month (about 26784000 per month). So
+                // limit to 30 million.
+                _transThrottle.SetLimits(600, 30000000);
+            }
 
             if (!string.IsNullOrEmpty(endpoint) && !string.IsNullOrEmpty(key))
             {
@@ -113,11 +129,9 @@ namespace Damselfly.ML.Face.Azure
         /// Initialise the face training service
         /// </summary>
         /// <returns></returns>
-        public void StartService( ITransactionThrottle throttle )
+        public void StartService()
         {
             InitFromConfig();
-
-            _transThrottle = throttle;
 
             if (_faceClient != null && _detectionType != AzureDetection.Disabled)
             {

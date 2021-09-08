@@ -126,9 +126,13 @@
                                     <MudTextField @bind-Value="@azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="Variant.Filled" />
                                 </div>
                             </div>
-                            <p>
 
-                            </p>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@azureSettings.UsingFreeTier" Label="Throttle transactions for free tier. Note - only uncheck this if you have paid for Face services" />
+                                </div>
+                            </div>
+
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
                                     <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled"
@@ -248,6 +252,7 @@
 
             configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
             configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
+            configService.Set(ConfigSettings.AzureUseFreeTier, azureSettings.UsingFreeTier.ToString());
             configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
             configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
@@ -291,7 +296,7 @@
         try
         {
             // Init the azure service status based on config.
-            azureService.StartService(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
+            azureService.StartService();
 
             // WP Settings have changed, so reset the client and token
             wpService.ResetClient();
@@ -311,6 +316,7 @@
 
         azureSettings.Endpoint = configService.Get(ConfigSettings.AzureEndpoint);
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
+        azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
 
         anableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);

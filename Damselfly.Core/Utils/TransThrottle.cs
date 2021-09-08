@@ -35,8 +35,8 @@ namespace Damselfly.Core.Utils
         public TransThrottle(CloudTransaction.TransactionType serviceType, int maxTransPerMin = 20, int maxTransPerMonth = 30000 )
         {
             _serviceType = serviceType;
-            _maxTransPerMinute = maxTransPerMin;
-            _maxTransPerMonth = maxTransPerMonth;
+
+            SetLimits(maxTransPerMin, maxTransPerMonth);
 
             var date = DateTime.UtcNow.Date;
             using var db = new ImageContext();
@@ -47,6 +47,14 @@ namespace Damselfly.Core.Utils
             Logging.Log($"Monthly trans count initialised at {monthTrans} for {_serviceType}");
 
             _monthTransCount = new MonthTransCount { Year = date.Year, Month = date.Month, TransCount = monthTrans };
+        }
+
+        public void SetLimits(int maxTransPerMin, int maxTransPerMonth)
+        {
+            _maxTransPerMinute = maxTransPerMin;
+            _maxTransPerMonth = maxTransPerMonth;
+
+            Logging.Log($"Transaction limits set to {_maxTransPerMinute}/min, and {_maxTransPerMonth}/month");
         }
 
         public bool Disabled { get { return _monthTransCount.TransCount >= _maxTransPerMonth;  } }

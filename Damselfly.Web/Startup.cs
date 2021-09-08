@@ -70,6 +70,8 @@ namespace Damselfly.Web
             // we'll get a different instance the next time we send email. 
             services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
+            services.AddSingleton<TransThrottle>(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
+            services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<ImageProcessorFactory>();
@@ -215,7 +217,7 @@ namespace Damselfly.Web
             StartTaskScheduler(tasks, download, thumbService, metadata);
 
             // Start the face service before the thumbnail service
-            azureFace.StartService( new TransThrottle( CloudTransaction.TransactionType.AzureFace ) );
+            azureFace.StartService();
             indexService.StartService();
             thumbService.StartService();
             aiService.StartService();

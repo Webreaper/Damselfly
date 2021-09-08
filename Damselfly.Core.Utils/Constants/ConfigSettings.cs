@@ -19,6 +19,7 @@ namespace Damselfly.Core.Utils.Constants
         public const string AIProcessingTimeRange = "AIProcessingTimeRange";
         public const string AzureEndpoint = "AzureEndpoint";
         public const string AzureApiKey = "AzureApiKey";
+        public const string AzureUseFreeTier = "UseFreeTier";
         public const string AzureDetectionType = "AzureDetectionType";
 
         public const string EnablePoliciesAndRoles = "EnablePoliciesAndRoles";

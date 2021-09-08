@@ -9,5 +9,6 @@ namespace Damselfly.Core.Interfaces
         Task Run(string desc, Task method);
         void ProcessNewTransactions();
         bool Disabled { get;  }
+        void SetLimits(int maxTransPerMin, int maxTransPerMonth);
     }
 }
