@@ -241,7 +241,10 @@ namespace Damselfly.Core.DbModels.DBAbstractions
         /// </summary>
         /// <param name="contextDesc"></param>
         /// <returns>The number of entities written to the DB</returns>
-        public async Task<int> SaveChangesAsync(string contextDesc)
+        public async Task<int> SaveChangesAsync(string contextDesc,
+                [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
+                [System.Runtime.CompilerServices.CallerMemberNameAttribute] string sourceMethod = "",
+                [System.Runtime.CompilerServices.CallerLineNumber] int lineNumber = 0 )
         {
             if (ReadOnly)
             {
@@ -250,30 +253,47 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                 return 1;
             }
 
-            try
+            int retriesRemaining = 3;
+            int recordsWritten = 0;
+
+            while ( retriesRemaining > 0 )
             {
-                // Write to the DB
-                var watch = new Stopwatch("SaveChanges" + contextDesc);
+                try
+                {
+                    // Write to the DB
+                    var watch = new Stopwatch("SaveChanges" + contextDesc);
 
-                LogChangeSummary();
+                    LogChangeSummary();
 
-                int written = await base.SaveChangesAsync();
+                    recordsWritten = await base.SaveChangesAsync();
 
-                Logging.LogTrace("{0} changes written to the DB", written);
+                    Logging.LogTrace("{0} changes written to the DB", recordsWritten);
 
-                watch.Stop();
+                    watch.Stop();
 
-                return written;
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message.Contains("database is locked") && retriesRemaining > 0 )
+                    {
+                        Logging.LogWarning($"Database locked for {contextDesc} - sleeping for 5s and retying {retriesRemaining}...");
+                        retriesRemaining--;
+                        await Task.Delay(5 * 1000);
+                    }
+                    else
+                    {
+                        Logging.LogError($"Exception - DB WRITE FAILED for {contextDesc}: {ex.Message}" );
+                        Logging.LogError($"  Called from {sourceMethod} line {lineNumber} in {sourceFilePath}.");
+                        if (ex.InnerException != null)
+                            Logging.LogError("  Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
+
+                    }
+                }
+
             }
-            catch (Exception ex)
-            {
-                if (ex.InnerException != null)
-                    Logging.Log("Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
-                else
-                    Logging.Log("Exception - DB WRITE FAILED: {0}", ex.Message);
 
-                return 0;
-            }
+            return recordsWritten;
         }
 
         /// <summary>

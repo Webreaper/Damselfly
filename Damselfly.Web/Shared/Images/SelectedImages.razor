@@ -45,6 +45,7 @@ else
 
     <div class="damselfly-imagebuttons">
         <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+            <ToolbarButton IconStyle="fa-shopping-basket" OnClickCallback="@AddSelectedToBasket" Enabled="@ImagesSelected" title="Add Selection to Basket" />
             <ToolbarButton IconStyle="fa-times-circle" OnClickCallback="@(()=>basketService.Clear())" Enabled="@BasketHasImages" title="Clear Basket" />
             <ToolbarButton IconStyle="fa-copy" OnClickCallback="@BasketCopy" Enabled="@BasketHasImages" title="Copy/Move to another basket" />
             <ToolbarButton IconStyle="fa-plus-circle" OnClickCallback="@OpenAddBasketDialog" title="Create a new basket" />
@@ -62,6 +63,7 @@ else
         public bool ShowTags { get; set; } = true;
 
         public bool BasketHasImages => gridImages.Any();
+        public bool ImagesSelected => selectionService.Selection.Any();
 
         private void UploadToWordPress()
         {
@@ -82,6 +84,14 @@ else
             var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
             var result = await dialog.Result;
 
+        }
+
+        async Task AddSelectedToBasket()
+        {
+            var selected = selectionService.Selection.ToList();
+            await basketService.SetBasketState(selected, true);
+
+            statusService.StatusText = $"{selected.Count()} images added to the basket";
         }
 
         private void ShowDownloads()

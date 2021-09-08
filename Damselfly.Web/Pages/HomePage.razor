@@ -1,34 +1,59 @@
 ﻿@page "/"
-@page "/folder/{FolderId}"
 
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services;
 @using Damselfly.Web.Shared.Images;
+@implements IDisposable
 
 @inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
+@inject IndexingService indexingService
 @inject NavigationService navContext
 @inject SearchService searchService
 @inject UserStatusService statusService
+@inject NavigationManager navigationManager
 
 <div class="damselfly-imagebrowser">
-    <ErrorBoundary>
-        <SearchBar />
-    </ErrorBoundary>
-    <ErrorBoundary>
-        <ImageGrid />
-    </ErrorBoundary>
+    <SearchBar />
+    <ImageGrid />
 </div>
 
-@code { [Parameter]
-    public string FolderId { get; set; }
+@code
+{
+    [QueryStringParameter]
+    public string S { get; set; }
+
+    [QueryStringParameter]
+    public int FolderId { get; set; }
+
+    [QueryStringParameter]
+    public int TagId { get; set; }
+
+    [QueryStringParameter]
+    public string Tag { get; set; }
+
+    [QueryStringParameter]
+    public int PersonId { get; set; }
+
+    [QueryStringParameter]
+    public DateTime Date { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (int.TryParse(FolderId, out var fID))
+        await ApplyQueryParams();
+    }
+
+    private async Task ApplyQueryParams()
+    {
+        if( ! string.IsNullOrEmpty( S ) )
         {
-            var folder = await ImageService.GetFolderAsync(fID);
+            searchService.SearchText = S;
+        }
+
+        if (FolderId != 0)
+        {
+            var folder = await ImageService.GetFolderAsync(FolderId);
 
             if (folder != null)
             {
@@ -36,6 +61,36 @@
                 searchService.Folder = folder;
             }
         }
+
+        if (TagId != 0)
+        {
+            var tag = indexingService.GetTag(TagId);
+
+            if (tag != null)
+                searchService.Tag = tag;
+        }
+        else if( ! string.IsNullOrEmpty( Tag ))
+        {
+            var tag = indexingService.GetTag(Tag);
+
+            if (tag != null)
+                searchService.Tag = tag;
+        }
+
+        if (Date != DateTime.MinValue)
+        {
+            // searchService.MinDate
+        }
+
+        // Don't need this yet
+        //this.UpdateQueryString(navigationManager);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+
+        return base.SetParametersAsync(parameters);
     }
 
     protected override void OnInitialized()
@@ -44,6 +99,22 @@
         navContext.CurrentImage = null;
 
         ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
+
+        navigationManager.LocationChanged += HandleLocationChanged;
+
+    }
+
+    void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+        StateHasChanged();
+
+        _ = ApplyQueryParams();
+    }
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= HandleLocationChanged;
     }
 
     // TODO: Don't think we need this
@@ -53,4 +124,5 @@
     {
         Logging.Log($"Checking for update: {clientVersion}");
 
-    } }
+    }
+}

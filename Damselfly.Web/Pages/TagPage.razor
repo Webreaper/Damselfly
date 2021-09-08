@@ -1,9 +1,5 @@
 ﻿@page "/tags"
-@page "/tag/{TagName}"
 
-@using Damselfly.Web.Data
-@using System.IO;
-@using Damselfly.Web.Shared.Images;
 @using Damselfly.Core.Services;
 @using Damselfly.Core.Models;
 
@@ -12,65 +8,47 @@
 @inject IndexingService indexingService
 
 <div class="damselfly-tagview">
-    @if (images == null)
+    @if (Tags == null)
     {
-        if (Tags == null)
-        {
-            <p><em>Loading tags...</em></p>
-        }
-        else
-        {
-            <MudTable Items="@Tags" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
-                      Filter="new Func<Tag,bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Keyword Tags</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                </ToolBarContent>
-                <HeaderContent>
-                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TagId)">ID</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Tag, object>(x=>x.Keyword)">Keyword</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.Favourite)">Favourite</MudTableSortLabel></MudTh>
-                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="ID">@context.TagId</MudTd>
-                    <MudTd DataLabel="Keyword">
-                        <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
-                    </MudTd>
-                    <MudTd DataLabel="Favourite?">@context.Favourite</MudTd>
-                    <MudTd DataLabel="Date Created">@context.TimeStamp</MudTd>
-                </RowTemplate>
-                <PagerContent>
-                    <MudTablePager />
-                </PagerContent>
-            </MudTable>
-        }
+        <p><em>Loading tags...</em></p>
     }
     else
     {
-        <div class="top-row">
-            <h4>Tag: @TagName</h4>
-        </div>
-        <div class="damselfly-imagegrid" id="scroll-area">
-            @foreach (var image in images)
-            {
-                <div class="damselfly-gridimage wrapping-table-small">
-                    <GridImage CurrentImage=@image />
-                </div>
-            }
-        </div>
+        <MudTable Items="@Tags" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+                    Filter="new Func<Tag,bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Keyword Tags</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TagId)">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Tag, object>(x=>x.Keyword)">Keyword</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.Favourite)">Favourite</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.TagId</MudTd>
+                <MudTd DataLabel="Keyword">
+                    <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
+                </MudTd>
+                <MudTd DataLabel="Favourite?">@context.Favourite</MudTd>
+                <MudTd DataLabel="Date Created">@context.TimeStamp</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
     }
 </div>
 @code {
         [Parameter]
         public string TagName { get; set; }
 
-        Image[] images;
         Tag selectedTag;
         string searchText;
 
-        private string TagLink( Tag tag ) => $"/tag/{tag.Keyword}";
+        private string TagLink( Tag tag ) => $"/?tagid={tag.TagId}";
 
     private IEnumerable<Tag> Tags
     {
@@ -94,26 +72,6 @@
         if (firstRender)
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowTags = true });
-        }
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!string.IsNullOrEmpty(TagName))
-        {
-            images = await ImageService.GetTagImagesAsync(TagName);
-            StateHasChanged();
-        }
-
-        StateHasChanged();
-    }
-
-    protected override void OnInitialized()
-    {
-        if (string.IsNullOrEmpty(TagName))
-        {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true });
-            images = null;
         }
     }
 }

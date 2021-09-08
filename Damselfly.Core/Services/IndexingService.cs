@@ -386,6 +386,29 @@ namespace Damselfly.Core.Services
                 Logging.LogError($"Unexpected exception loading tag cache: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Return a tag by its ID.
+        /// TODO: Is this faster, or slower than a DB query, given it means iterating
+        /// a collection of, say, 10,000 tags. Probably faster, but perhaps we should
+        /// maintain a dict of ID => tag?
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <returns></returns>
+        public Models.Tag GetTag( int tagId )
+        {
+            var tag = _tagCache.Values.Where(x => x.TagId == tagId).FirstOrDefault();
+
+            return tag;
+        }
+
+        public Models.Tag GetTag(string keyword)
+        {
+            // TODO: Should we make the tag-cache key case-insensitive? What would happen?!
+            var tag = _tagCache.Values.Where(x => x.Keyword.Equals( keyword, StringComparison.OrdinalIgnoreCase) ).FirstOrDefault();
+
+            return tag;
+        }
         #endregion
 
         public async Task<List<Models.Tag>> CreateTagsFromStrings(IEnumerable<string> tags)

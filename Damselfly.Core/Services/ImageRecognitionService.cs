@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Utils.ML;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
@@ -26,13 +27,14 @@ namespace Damselfly.Core.Services
         private readonly StatusService _statusService;
         private readonly IndexingService _indexingService;
         private readonly ThumbnailService _thumbService;
+        private readonly ConfigService _configService;
         private IDictionary<string, Person> _peopleCache;
         public static bool EnableImageRecognition { get; set; } = true;
 
         public ImageRecognitionService(StatusService statusService, ObjectDetector objectDetector,
                         IndexingService indexingService, AzureFaceService azureFace,
                         AccordFaceService accordFace, EmguFaceService emguService,
-                        ThumbnailService thumbs)
+                        ThumbnailService thumbs, ConfigService configService)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
@@ -41,6 +43,7 @@ namespace Damselfly.Core.Services
             _objectDetector = objectDetector;
             _indexingService = indexingService;
             _emguFaceService = emguService;
+            _configService = configService;
         }
 
         public ImageRecognitionService()
@@ -50,6 +53,26 @@ namespace Damselfly.Core.Services
         public List<Person> GetCachedPeople()
         {
             return _peopleCache.Values.OrderBy(x => x.Name).ToList();
+        }
+
+        public (TimeSpan? start,TimeSpan? end) GetProcessingTimeRange()
+        {
+            TimeSpan? aiStartTime = null, aiEndTime = null;
+
+            string aiTimeRange = _configService.Get(ConfigSettings.AIProcessingTimeRange);
+
+            if (!string.IsNullOrEmpty(aiTimeRange))
+            {
+                var settings = aiTimeRange.Split("-");
+
+                if (settings.Length == 2)
+                {
+                    aiStartTime = TimeSpan.Parse(settings[0]);
+                    aiEndTime = TimeSpan.Parse(settings[1]);
+                }
+            }
+
+            return( aiStartTime, aiEndTime );
         }
 
         /// <summary>
@@ -524,7 +547,24 @@ namespace Damselfly.Core.Services
         {
             metadata.AILastUpdated = DateTime.UtcNow;
             await DetectObjects(metadata.Image);
-            await Task.Delay(500);
+        }
+
+        private bool WithinProcessingTimeRange()
+        {
+            var timeRange = GetProcessingTimeRange();
+
+            if (timeRange.start != null && timeRange.end != null)
+            {
+                var now = DateTime.UtcNow.TimeOfDay;
+
+                if (now < timeRange.start && now > timeRange.end)
+                {
+                    // AI scans are disabled at this time.
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -541,6 +581,12 @@ namespace Damselfly.Core.Services
 
             while (!complete)
             {
+                if( ! WithinProcessingTimeRange() )
+                {
+                    Logging.LogVerbose("AI Processing disabled at this time.");
+                    return;
+                }
+
                 Logging.LogVerbose("Querying DB for pending AI scans...");
 
                 var watch = new Stopwatch("GetAIQueue");

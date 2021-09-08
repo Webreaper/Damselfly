@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.ImageProcessing;
@@ -10,6 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.ScopedServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Web.Controllers
 {
@@ -177,5 +179,48 @@ namespace Damselfly.Web.Controllers
 
             return result;
         }
+
+        [HttpGet("/face/{faceId}")]
+        public async Task<IActionResult> Face(string faceId, CancellationToken cancel,
+                [FromServices] ImageProcessService imageProcessor, [FromServices] ThumbnailService thumbService)
+        {
+            using var db = new ImageContext();
+
+            IActionResult result = Redirect("/no-image.png");
+
+            // TODO: Use cache
+
+            var query = db.ImageObjects
+                .Include(x => x.Image)
+                .ThenInclude(o => o.MetaData)
+                .Include(x => x.Person)
+                .OrderByDescending(x => x.Image.MetaData.Width)
+                .ThenByDescending(x => x.Image.MetaData.Height);
+
+            ImageObject face = null;
+
+            if ( int.TryParse( faceId, out var personId ))
+            {
+                face = await query.Where( x => x.Person.PersonId == personId )
+                         .FirstOrDefaultAsync();
+            }
+            else
+            {
+                face = await query.Where(x => x.Person.AzurePersonId == faceId)
+                         .FirstOrDefaultAsync();
+            }
+
+            var file = new FileInfo(face.Image.FullPath);
+            var imagePath = new FileInfo( thumbService.GetThumbPath(file, ThumbSize.Large) );
+            var destFile = new FileInfo( "path" );
+
+            if (!destFile.Exists)
+            {
+                await imageProcessor.GetCroppedFile(imagePath, face.RectX, face.RectY, face.RectWidth, face.RectHeight, destFile );
+            }
+
+            return result;
+        }
+
     }
 }

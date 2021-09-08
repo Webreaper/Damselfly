@@ -12,7 +12,7 @@ namespace Damselfly.Core.Models.SideCars
         public List<string> Keywords { get; set; }
     }
 
-    public class Guid
+    public class Photo
     {
         public bool guid_locked { get; set; }
         public MetaData metadata { get; set; }
@@ -24,6 +24,8 @@ namespace Damselfly.Core.Models.SideCars
     /// </summary>
     public class On1Sidecar
     {
+        public Dictionary<string, Photo> photos { get; set; } = new Dictionary<string, Photo>();
+
         /// <summary>
         /// Load the on1 sidecar metadata for the image - if it exists.
         /// </summary>
@@ -38,19 +40,15 @@ namespace Damselfly.Core.Models.SideCars
                 string json = File.ReadAllText( sidecarPath.FullName );
 
                 // Deserialize.
-                var list = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                var sideCar = JsonSerializer.Deserialize<On1Sidecar>(json);
 
-                if (list.TryGetValue("photos", out var photos))
-                {
-                    // Unfortunately, On1 uses the slightly crazy method of a GUID as the field identifier,
-                    // which means we have to deserialise as a dictionary, and then just pick the first kvp. <sigh>
-                    var guid = JsonSerializer.Deserialize<Dictionary<string, object>>(photos.ToString()).First();
-
-                    // Now we can deserialise the actual object, and get the metadata.
-                    var data = JsonSerializer.Deserialize<Guid>(guid.Value.ToString());
-
+                if( sideCar != null )
+                { 
                     Logging.LogVerbose($"Successfully loaded on1 sidecar for {sidecarPath.FullName}");
-                    result = data.metadata;
+                    var photo = sideCar.photos.Values.FirstOrDefault();
+
+                    if( photo != null )
+                        result = photo.metadata;
                 }
             }
             catch( Exception ex )

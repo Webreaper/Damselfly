@@ -140,6 +140,39 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         /// <summary>
+        /// Crop a file
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="dest"></param>
+        /// <returns></returns>
+        public Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo dest)
+        {
+            try
+            {
+                using var sourceBitmap = LoadOrientedBitmap(source, width);
+
+                // setup crop rect
+                var cropRect = new SKRectI(x, y, x + width, y + height);
+                var cropped = Crop(sourceBitmap, cropRect);
+                using SKData data = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
+
+                using (var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write))
+                    data.SaveTo(stream);
+            }
+            catch (Exception ex)
+            {
+                Logging.Log($"Exception during Crop processing: {ex.Message}");
+                throw;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         /// Crop the image to fit within the dimensions specified. 
         /// </summary>
         /// <param name="original"></param>
@@ -167,13 +200,24 @@ namespace Damselfly.Core.ImageProcessing
                     Bottom = original.Height - cropTopBottom + cropTopBottom / 2
                 };
 
-                // crop
-                SKBitmap bitmap = new SKBitmap(cropRect.Width, cropRect.Height);
-                original.ExtractSubset(bitmap, cropRect);
-                return bitmap;
+                return Crop(original, cropRect);
             }
             else
                 return original.Copy();
+        }
+
+        /// <summary>
+        /// Crop to a rectangle
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="cropRect"></param>
+        /// <returns></returns>
+        private SKBitmap Crop( SKBitmap original, SKRectI cropRect)
+        {
+            // crop
+            SKBitmap bitmap = new SKBitmap(cropRect.Width, cropRect.Height);
+            original.ExtractSubset(bitmap, cropRect);
+            return bitmap;
         }
 
         /// <summary>

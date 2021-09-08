@@ -46,20 +46,20 @@ namespace Damselfly.Core.ScopedServices
         public event Action OnChange;
 
         public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim() ) { query.SearchText = value.Trim(); QueryChanged(); } } }
-        public DateTime MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
-        public DateTime MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
+        public DateTime? MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
+        public DateTime? MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
         public ulong MaxSizeKB { get { return query.MaxSizeKB; } set { if (query.MaxSizeKB != value) { query.MaxSizeKB = value; QueryChanged(); } } }
         public ulong MinSizeKB { get { return query.MinSizeKB; } set { if (query.MinSizeKB != value) { query.MinSizeKB = value; QueryChanged(); } } }
         public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
         public bool IncludeAITags { get { return query.IncludeAITags; } set { if (query.IncludeAITags != value) { query.IncludeAITags = value; QueryChanged(); } } }
         public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
-        public int TagId { get { return query.TagId; } set { if (query.TagId != value) { query.TagId = value; QueryChanged(); } } }
+        public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
 
-        public void SetDateRange( DateTime min, DateTime max )
+        public void SetDateRange( DateTime? min, DateTime? max )
         {
             if (query.MinDate != min || query.MaxDate != max)
             {
@@ -134,10 +134,10 @@ namespace Damselfly.Core.ScopedServices
 
                     images = images.Include(x => x.Folder);
 
-                    if ( query.TagId != -1 )
+                    if ( query.Tag != null )
                     {
-                        var tagImages = images.Where(x => x.ImageTags.Any(y => y.TagId == query.TagId));
-                        var objImages = images.Where(x => x.ImageObjects.Any(y => y.TagId == query.TagId));
+                        var tagImages = images.Where(x => x.ImageTags.Any(y => y.TagId == query.Tag.TagId));
+                        var objImages = images.Where(x => x.ImageObjects.Any(y => y.TagId == query.Tag.TagId));
 
                         images = tagImages.Union(objImages);
                     }
@@ -179,12 +179,14 @@ namespace Damselfly.Core.ScopedServices
                             throw new ArgumentException("Unexpected grouping type.");
                     }
 
-                    if (query.MinDate > DateTime.MinValue || query.MaxDate < DateTime.MaxValue)
+                    if (query.MinDate.HasValue || query.MaxDate.HasValue)
                     {
+                        var minDate = query.MinDate.HasValue ? query.MinDate : DateTime.MinValue;
+                        var maxDate = query.MaxDate.HasValue ? query.MaxDate : DateTime.MaxValue;
                         // Always filter by date - because if there's no filter
                         // set then they'll be set to min/max date.
-                        images = images.Where(x => x.SortDate >= query.MinDate &&
-                                                   x.SortDate <= query.MaxDate);
+                        images = images.Where(x => x.SortDate >= minDate &&
+                                                   x.SortDate <= maxDate);
                     }
 
                     if( query.MinSizeKB > ulong.MinValue )
@@ -254,6 +256,42 @@ namespace Damselfly.Core.ScopedServices
             await LoadMoreData(first, count);
 
             return SearchResults.Skip(first).Take(count).ToArray();
+        }
+
+        public string SearchBreadcrumbs
+        {
+            get
+            {
+                var hints = new List<string>();
+
+                if (!string.IsNullOrEmpty(SearchText))
+                    hints.Add($"Text: {SearchText}");
+
+                if (Folder != null)
+                    hints.Add($"Folder: {Folder.Name}");
+
+                if (Tag != null)
+                    hints.Add($"Tag: {Tag.Keyword}");
+
+                string dateRange = string.Empty;
+                if (MinDate.HasValue)
+                    dateRange = $"{MinDate:dd-MMM-yyyy}";
+
+                if (MaxDate.HasValue &&
+                   (! MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date))
+                {
+                    if (!string.IsNullOrEmpty(dateRange))
+                        dateRange += " - ";
+                    dateRange += $"{MaxDate:dd-MMM-yyyy}";
+                }
+
+                if (!string.IsNullOrEmpty(dateRange))
+                    hints.Add($"Date: {dateRange}");
+
+                // TODO: Need camera here.
+
+                return string.Join(", ", hints);
+            }
         }
     }
 }

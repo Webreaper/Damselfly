@@ -12,7 +12,6 @@
 @inherits ImageGridBase
 
 @using Damselfly.Web.Shared
-@using Damselfly.Web.Shared.Images
 @using Damselfly.Core.ImageProcessing
 @using Damselfly.Core.Utils.Constants
 
@@ -20,18 +19,12 @@
 
 <div class="damselfly-imagetools">
     <div class="damselfly-browsetool">
-        <button @onclick="AddSelectedToBasket" class="btn btn-primary" disabled="@NoImagesSelected">
-            <i class="fas fa-shopping-basket" />
-            &nbsp;Add Images
-        </button>
-    </div>
-    <div class="damselfly-browsetool">
         @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
         {
             <label class="damselfly-browsetoollabel">
                 <input name="thumbSize" type="radio" value="@choice"
-                        checked="@CurrentThumbSize.Equals( choice )"
-                        @onchange="@(() => { ChangeThumbSize( choice ); })" />
+                       checked="@CurrentThumbSize.Equals( choice )"
+                       @onchange="@(() => { ChangeThumbSize( choice ); })" />
                 @choice.ToString()
             </label>
         }
@@ -43,8 +36,8 @@
             {
                 <label class="damselfly-browsetoollabel">
                     <input name="grouping" value="@choice" type="radio"
-                            checked="@searchService.Grouping.Equals( choice )"
-                            @onchange="@(() => { ChangeGroupType( choice ); })" />
+                           checked="@searchService.Grouping.Equals( choice )"
+                           @onchange="@(() => { ChangeGroupType( choice ); })" />
                     @choice.ToString()
                 </label>
             }
@@ -57,12 +50,15 @@
             {
                 <label class="damselfly-browsetoollabel">
                     <input name="sortorder" value="@choice" type="radio"
-                            checked="@searchService.SortOrder.Equals( choice )"
-                            @onchange="@(() => { ChangeSortOrder( choice ); })" />
+                           checked="@searchService.SortOrder.Equals( choice )"
+                           @onchange="@(() => { ChangeSortOrder( choice ); })" />
                     @choice.ToString()
                 </label>
             }
         </label>
+    </div>
+    <div class="damselfly-searchhint">
+        <label class="damselfly-browsetoollabel"><i class="fas fa-search" title="Current Search Parameters" />&nbsp;@searchService.SearchBreadcrumbs</label>
     </div>
 </div>
 
@@ -163,14 +159,6 @@
         private void StoreImage(Image image)
         {
             // Todo - save an image to local storage
-        }
-
-        async Task AddSelectedToBasket()
-        {
-            var selected = selectionService.Selection.ToList();
-            await basketService.SetBasketState(selected, true);
-
-            statusService.StatusText = $"{selected.Count()} images added to the basket";
         }
 
         async Task AddGroupToBasket(ImageGrouping grouping)
@@ -302,12 +290,7 @@
         {
             get
             {
-                if (searchService.Folder != null)
-                {
-                    return $"No images were found in folder '{searchService.Folder.Name}' that match the current filter.";
-                }
-
-                return "No images were found that match the current filter.";
+                return $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
             }
         }
 
@@ -321,6 +304,8 @@
             selectionService.ClearSelection();
             gridImages.Clear();
             endOfImages = false;
+
+            _ = InvokeAsync( StateHasChanged );
 
             _ = LoadData(imagesPerPage);
         }

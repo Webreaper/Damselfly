@@ -23,10 +23,13 @@
     else
     {
 <div class="damselfly-imageproperties">
-    <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
+    @if( basketService.CurrentBasket != null )
+    {
+        <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
+    }
     <div>Date Taken: @CurrentImage.SortDate.Display()</div>
     <div>Filename: @CurrentImage.FileName</div>
-    <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink">@CurrentImage.Folder.Name</NavLink></div>
+    <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink" title="@CurrentImage.Folder.Path">@CurrentImage.Folder.Name</NavLink></div>
     @if (CurrentImage.MetaData != null)
     {
         @if (!string.IsNullOrEmpty(CurrentImage.MetaData.Description))
@@ -103,7 +106,7 @@
 @code {
     private Image theImage;
     public Image CurrentImage { get { return theImage; } set { theImage = value; } }
-    public string CurrentFolderLink => $"/folder/{CurrentImage.Folder.FolderId}";
+    public string CurrentFolderLink => $"/?folderId={CurrentImage.Folder.FolderId}";
     public string Aperture => $"f{CurrentImage.MetaData.FNum}";
     public string Exposure => $"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}";
 

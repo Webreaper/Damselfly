@@ -11,7 +11,7 @@
 @inject ThemeService themeService
 @inject UserStatusService statusService
 @inject WordpressService wpService
-@inject TaskService taskScheduler
+@inject ImageRecognitionService imageService  
 @inject AzureFaceService azureService
 
 <div class="damselfly-config">
@@ -88,10 +88,17 @@
                         </EditForm>
                     </MudTabPanel>
 
-                    <MudTabPanel Text="Face Recognition">
+                    <MudTabPanel Text="Image Recognition">
                         <EditForm Model="@azureSettings" OnValidSubmit="@HandleValidSubmit">
                             <FluentValidationValidator />
                             <ValidationSummary />
+
+                            <h2>AI Processing</h2>
+                            <MudSwitch T="bool" @bind-Checked="@enableAITimeLimit" Label="Only process image recognition between these times" />
+                            <div class="damselfly-configsetting">
+                                <MudTimePicker @bind-Time="aiStartTime" Disabled="@(!enableAITimeLimit)" Label="AI processing start time" AutoClose="true" />
+                                <MudTimePicker @bind-Time="aiEndTime" Disabled="@(!enableAITimeLimit)" Label="AI processing end time" AutoClose="true" />
+                            </div>
 
                             <h2>Azure Cognitive Services Face Recognition</h2>
 
@@ -219,6 +226,9 @@
     private bool useSmtp = true;
     private bool forceLogin = false;
     private bool anableAuthAndRoles = false;
+    TimeSpan? aiStartTime = new TimeSpan(23, 00, 00);
+    TimeSpan? aiEndTime = new TimeSpan(04, 30, 00);
+    private bool enableAITimeLimit = false;
 
     private void HandleValidSubmit()
     {
@@ -247,6 +257,14 @@
             if (themeService.CurrentTheme != selectedTheme)
             {
                 themeService.CurrentTheme = selectedTheme;
+            }
+
+            string aiSettings = string.Empty;
+
+            if( enableAITimeLimit )
+            {
+                string aiTimeRange = $"{aiStartTime.LocalTimeSpanToUTC()}-{aiEndTime.LocalTimeSpanToUTC()}";
+                configService.Set(ConfigSettings.AIProcessingTimeRange, aiTimeRange);
             }
 
             statusService.StatusText = "Settings saved.";
@@ -297,11 +315,15 @@
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = themeService.CurrentTheme;
 
-        base.OnInitialized();
-    }
+        var range = imageService.GetProcessingTimeRange();
 
-    private void RunTask(ScheduledTask task)
-    {
-        taskScheduler.EnqueueTaskAsync(task);
+        if( range.start != null && range.end != null )
+        {
+            aiStartTime = range.start.UTCTimeSpanToLocal();
+            aiEndTime = range.end.UTCTimeSpanToLocal();
+            enableAITimeLimit = true;
+        }
+
+        base.OnInitialized();
     }
 }

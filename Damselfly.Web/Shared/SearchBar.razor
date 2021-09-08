@@ -38,7 +38,10 @@
 
     public void OnRangeSelect(BlazorDateRangePicker.DateRange range)
     {
-        searchService.SetDateRange(range.Start.Date, range.End.Date);
+        if( range != null )
+            searchService.SetDateRange(range.Start.Date, range.End.Date);
+        else
+            searchService.SetDateRange(null, null);
     }
 
     private void KeyChangedMinSize(string newText)

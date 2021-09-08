@@ -609,15 +609,15 @@ namespace Damselfly.Core.Models
         };
 
         public string SearchText { get; set; }
-        public DateTime MaxDate { get; set; } = DateTime.MaxValue;
-        public DateTime MinDate { get; set; } = DateTime.MinValue;
+        public DateTime? MaxDate { get; set; } = null;
+        public DateTime? MinDate { get; set; } = null;
         public ulong MaxSizeKB { get; set; } = ulong.MaxValue;
         public ulong MinSizeKB { get; set; } = ulong.MinValue;
         public Folder Folder { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
         public bool IncludeAITags { get; set; } = true;
         public int CameraId { get; set; } = -1;
-        public int TagId { get; set; } = -1;
+        public Tag Tag { get; set; } = null;
         public int LensId { get; set; } = -1;
         public GroupingType Grouping { get; set; } = GroupingType.None;
         public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;

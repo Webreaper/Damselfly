@@ -328,7 +328,7 @@
             contextMenuService.Close();
             switch (args.Value)
             {
-                case 0: NavigationManager.NavigateTo("/tag/" + tag.Keyword); break;
+                case 0: NavigationManager.NavigateTo($"/?tagid={tag.TagId}"); break;
                 case 1: await iptcService.ToggleFavourite(tag); break;
                 case 2: QuickAddTag(tag); break;
                 case 3: DeleteTag(tag); break;
