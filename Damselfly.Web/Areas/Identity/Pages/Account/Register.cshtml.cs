@@ -12,9 +12,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
+using Damselfly.Core.Services;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {
@@ -24,20 +24,17 @@ namespace Damselfly.Areas.Identity.Pages.Account
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly UserManager<AppIdentityUser> _userManager;
         private readonly UserService _userService;
-        private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<AppIdentityUser> userManager,
             SignInManager<AppIdentityUser> signInManager,
             UserService userService,
-            ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userService = userService;
-            _logger = logger;
             _emailSender = emailSender;
         }
 
@@ -45,6 +42,8 @@ namespace Damselfly.Areas.Identity.Pages.Account
         public InputModel Input { get; set; }
 
         public string ReturnUrl { get; set; }
+
+        public bool CanRegister { get { return _userService.AllowPublicRegistration;  } }
 
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
@@ -73,22 +72,34 @@ namespace Damselfly.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+        /// <summary>
+        /// Register
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns></returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
+            if( ! _userService.AllowPublicRegistration )
+            {
+                ModelState.AddModelError(string.Empty, "Public Registration is disabled. Please contact the owner of this Damselfly instance to have an account created");
+                return Page();
+            }
+
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
                 var user = new AppIdentityUser { UserName = Input.Email, Email = Input.Email };
-                var result = await _userManager.CreateAsync(user, Input.Password);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
 
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var result = await _userService.CreateNewUser(user, Input.Password);
+
+                if( result.Succeeded )
+                {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync( user );
+
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
+
+                    var callbackUrl = Url.Page( "/Account/ConfirmEmail",
                         pageHandler: null,
                         values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);

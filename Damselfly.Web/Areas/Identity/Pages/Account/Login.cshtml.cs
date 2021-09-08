@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.ScopedServices;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {
@@ -19,15 +19,17 @@ namespace Damselfly.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly UserManager<AppIdentityUser> _userManager;
+        private readonly UserService _userService;
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(SignInManager<AppIdentityUser> signInManager,
-            ILogger<LoginModel> logger,
+            ILogger<LoginModel> logger, UserService userService,
             UserManager<AppIdentityUser> userManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userService = userService;
             _logger = logger;
         }
 
@@ -40,6 +42,8 @@ namespace Damselfly.Areas.Identity.Pages.Account
 
         [TempData]
         public string ErrorMessage { get; set; }
+
+        public bool CanRegister {  get { return _userService.AllowPublicRegistration;  } }
 
         public class InputModel
         {

@@ -29,7 +29,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Save">Save</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Save">@SaveButtonText</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -38,7 +38,10 @@
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public AppIdentityUser User { get; set; } = new AppIdentityUser();
+    public AppIdentityUser User { get; set; } = null;
+
+    bool AddingNewUser { get; set; } = false;
+    string SaveButtonText => AddingNewUser ? "Create User" : "Save";
 
     public class UserForm
     {
@@ -87,22 +90,35 @@
         {
             bool success = true;
 
-            if (!string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith( "*****" ) )
+            if (AddingNewUser)
             {
-                success = model.Password.Equals(model.Password2);
+                success = !string.IsNullOrEmpty(model.Password) && model.Password.Equals(model.Password2);
 
-                if( success )
+                if( ! success )
                 {
-                    var result = await userService.SetUserPasswordAsync(User, model.Password);
-
-                    success = result.Succeeded;
-
-                    if( ! success )
-                        DisplayIdentityResultError(result);
+                    DisplayError("Passwords empty or do not match.");
                 }
-                else
+            }
+            else
+            {
+                // For exsiting users, handle password reset.
+                if (!string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith("*****"))
                 {
-                    DisplayError("Passwords do not match.");
+                    success = model.Password.Equals(model.Password2);
+
+                    if (success)
+                    {
+                        var result = await userService.SetUserPasswordAsync(User, model.Password);
+
+                        success = result.Succeeded;
+
+                        if (!success)
+                            DisplayIdentityResultError(result);
+                    }
+                    else
+                    {
+                        DisplayError("Passwords do not match.");
+                    }
                 }
             }
 
@@ -111,8 +127,16 @@
                 User.UserName = model.Username;
                 User.Email = model.Email;
 
-                var result = await userService.UpdateUserAsync(User, selectedRole);
-                // TODO: Messy
+                IdentityResult result;
+                if (AddingNewUser)
+                {
+                    result = await userService.CreateNewUser(User, model.Password);
+                }
+                else
+                {
+                    result = await userService.UpdateUserAsync(User, selectedRole);
+                }
+
                 success = result != null && result.Succeeded;
 
                 if( ! success )
@@ -135,19 +159,29 @@
     {
         if (firstRender)
         {
+            // Default
+            selectedRole = RoleDefinitions.s_UserRole;
+
             allRoles = await userService.GetRoles();
-            if (User.UserRoles.Any())
+            if (User.UserRoles != null && User.UserRoles.Any())
             {
                 var role = User.UserRoles.First();
                 selectedRole = role.Role.Name;
-                StateHasChanged();
             }
+
+            StateHasChanged();
         }
     }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        if( User == null )
+        {
+            AddingNewUser = true;
+            User = new AppIdentityUser();
+        }
 
         model.Username = User.UserName;
         model.Email = User.Email;

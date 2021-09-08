@@ -21,12 +21,14 @@
         <RowTemplate>
             <MudTd DataLabel="User Name">@context.UserName</MudTd>
             <MudTd DataLabel="Email">@context.Email</MudTd>
-            <MudTd DataLabel="Roles">@string.Join( ", ", GetUserRoleList(context) ) </MudTd>
+            <MudTd DataLabel="Roles">@string.Join(", ", GetUserRoleList(context)) </MudTd>
             <MudTd DataLabel="Edit User">
-                <button class="btn btn-primary" @onclick="@(() => OpenUserDialog( context ) )"><i class="fas fa-edit"/>Edit User</button>
+                <button class="btn btn-primary" @onclick="@(() => OpenUserDialog( context ) )"><i class="fas fa-edit" />Edit User</button>
             </MudTd>
         </RowTemplate>
     </MudTable>
+    <div/>
+    <button class="btn btn-primary" @onclick="@(() => OpenUserDialog( null ) )"><i class="fas fa-plus-circle" />Add New User</button>
 </div>
 
 @code {

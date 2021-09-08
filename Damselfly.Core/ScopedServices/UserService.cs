@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 // Avoid namespace clashes with IAuthorizationService extension methods
 using AuthenticationStateProvider = Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider;
 using AuthenticationState = Microsoft.AspNetCore.Components.Authorization.AuthenticationState;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Damselfly.Core.Services;
 
 namespace Damselfly.Core.ScopedServices
 {
@@ -25,6 +26,7 @@ namespace Damselfly.Core.ScopedServices
         private UserManager<AppIdentityUser> _userManager;
         private RoleManager<ApplicationRole> _roleManager;
         private UserStatusService _statusService;
+        private ConfigService _configService;
         private IAuthorizationService _authService;
         private AuthenticationStateProvider _authenticationStateProvider;
         private AppIdentityUser _user;
@@ -35,6 +37,7 @@ namespace Damselfly.Core.ScopedServices
                                 RoleManager<ApplicationRole> roleManager,
                                 UserManager<AppIdentityUser> userManager,
                                 UserStatusService statusService,
+                                ConfigService configService,
                                 IAuthorizationService authService)
         {
             _authenticationStateProvider = authenticationStateProvider;
@@ -42,6 +45,7 @@ namespace Damselfly.Core.ScopedServices
             _roleManager = roleManager;
             _authService = authService;
             _statusService = statusService;
+            _configService = configService;
         }
 
         public AppIdentityUser User
@@ -124,6 +128,13 @@ namespace Damselfly.Core.ScopedServices
                             "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
             return View("ForgotPasswordConfirmation");
             */
+        }
+
+        public bool AllowPublicRegistration
+        {
+            get {
+                return false; // TODO Get from config
+            }
         }
 
         /// <summary>
@@ -256,6 +267,23 @@ namespace Damselfly.Core.ScopedServices
             {
                 Logging.LogError($"Unexpected exception while checking Admin role members: {ex}");
             }
+        }
+
+        public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null)
+        {
+            var result = await _userManager.CreateAsync(newUser, password);
+
+            if (result.Succeeded)
+            {
+                Logging.Log("User created a new account with password.");
+
+                if (roles == null || !roles.Any())
+                    await AddUserToDefaultRoles(newUser);
+                else
+                    await SyncUserRoles(newUser, roles);
+            }
+
+            return result;
         }
 
         /// <summary>
