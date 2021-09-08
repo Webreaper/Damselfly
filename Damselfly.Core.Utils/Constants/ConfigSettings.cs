@@ -23,6 +23,7 @@ namespace Damselfly.Core.Utils.Constants
 
         public const string EnablePoliciesAndRoles = "EnablePoliciesAndRoles";
         public const string ForceLogin = "ForceLogin";
+        public const string AllowExternalRegistration = "AllowExternalRegistration";
         public const string UseSmtp = "UseSMTP";
 
         public const string SmtpServer = "SmtpServer";

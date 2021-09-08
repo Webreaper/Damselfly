@@ -62,6 +62,11 @@
                             </div>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@allowExternalRegistration" Disabled="@(! anableAuthAndRoles)" Label="Enable public registration page" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
                                     <MudCheckBox @bind-Checked="@forceLogin" Disabled="@(! anableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
                                 </div>
                             </div>
@@ -225,6 +230,7 @@
     private string selectedTheme;
     private bool useSmtp = true;
     private bool forceLogin = false;
+    private bool allowExternalRegistration = false;
     private bool anableAuthAndRoles = false;
     TimeSpan? aiStartTime = new TimeSpan(23, 00, 00);
     TimeSpan? aiEndTime = new TimeSpan(04, 30, 00);
@@ -249,7 +255,9 @@
             configService.Set(ConfigSettings.EnablePoliciesAndRoles, anableAuthAndRoles.ToString());
             // If roles are disabled, disable forced Login
             var forceLoginProxy = anableAuthAndRoles && forceLogin;
+            var extRegistrationProxy = anableAuthAndRoles && allowExternalRegistration;
             configService.Set(ConfigSettings.ForceLogin, forceLoginProxy.ToString());
+            configService.Set(ConfigSettings.AllowExternalRegistration, extRegistrationProxy.ToString());
 
             smtpSettings.Save(configService);
             sendGridSettings.Save(configService);
@@ -307,6 +315,7 @@
 
         anableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
+        allowExternalRegistration = configService.GetBool(ConfigSettings.AllowExternalRegistration);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
 
         smtpSettings.Load(configService);

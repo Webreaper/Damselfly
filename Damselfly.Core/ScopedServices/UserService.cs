@@ -13,6 +13,7 @@ using AuthenticationStateProvider = Microsoft.AspNetCore.Components.Authorizatio
 using AuthenticationState = Microsoft.AspNetCore.Components.Authorization.AuthenticationState;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Damselfly.Core.Services;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.ScopedServices
 {
@@ -133,7 +134,7 @@ namespace Damselfly.Core.ScopedServices
         public bool AllowPublicRegistration
         {
             get {
-                return false; // TODO Get from config
+                return _configService.GetBool(ConfigSettings.AllowExternalRegistration, false);
             }
         }
 
