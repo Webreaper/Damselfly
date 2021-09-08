@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using System.IO;
 
 namespace Damselfly.Core.Services
 {
@@ -58,6 +59,7 @@ namespace Damselfly.Core.Services
                                     new FolderListItem
                                     {
                                         Folder = x,
+                                        DisplayName = GetFolderDisplayName( x ),
                                         ImageCount = x.Images.Count,
                                         // Not all images may have metadata yet.
                                         MaxImageDate = x.Images.Max(i => i.SortDate)
@@ -74,6 +76,37 @@ namespace Damselfly.Core.Services
 
             // Update the GUI
             NotifyStateChanged();
+        }
+
+        /// <summary>
+        /// Build up the folder display name from enough short or
+        /// numeric folder names to give us a meaningful display.
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        private static string GetFolderDisplayName( Folder folder )
+        {
+            string display = folder.Name;
+            DirectoryInfo dir = new DirectoryInfo(folder.Path).Parent;
+
+            while( dir != null && display.Length <= 10 )
+            {
+                // If the name is short, or it's an integer, add it
+                if (dir.Name.Length < 6 || int.TryParse(dir.Name, out var _))
+                {
+                    if (display.Length != 0)
+                        display = Path.DirectorySeparatorChar + display;
+
+                    display = dir.Name + display;
+
+                    // Now look at the parent
+                    dir = dir.Parent;
+                }
+                else
+                    break;
+            }
+
+            return display;
         }
 
         public void PreLoadFolderData()

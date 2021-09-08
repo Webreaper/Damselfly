@@ -11,6 +11,7 @@ namespace Damselfly.Core.Models
 	public class FolderListItem
 	{
 		public Folder Folder { get; set; }
+        public string DisplayName { get; set; }
 		public int ImageCount { get; set; }
 		public DateTime MaxImageDate { get; set; }
 

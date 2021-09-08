@@ -26,10 +26,10 @@
         </div>
         <div class="folder-scroll-area">
             <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
-                <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Name"
+                <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Path"
                      @onclick="@(() => SetFilterFolder(context.Folder))"
                      @oncontextmenu=@(args => ShowContextMenu(args, context.Folder)) @oncontextmenu:preventDefault="true">
-                    <i class="fa @FolderIcon(context.Folder.FolderId) folder-icon" /> @context.Folder.Name (@context.ImageCount)
+                    <i class="fa @FolderIcon(context.Folder.FolderId) folder-icon" /> @context.DisplayName (@context.ImageCount)
                 </div>
             </Virtualize>
         </div>
