@@ -104,7 +104,7 @@ namespace Damselfly.Core.Services
 
             if (addTags != null)
             {
-                var tagsToAdd = addTags.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                var tagsToAdd = addTags.Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
 
                 foreach (var image in images)
                 {
@@ -124,7 +124,7 @@ namespace Damselfly.Core.Services
 
             if (removeTags != null)
             {
-                var tagsToRemove = removeTags.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                var tagsToRemove = removeTags.Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
 
                 foreach (var image in images)
                 {
