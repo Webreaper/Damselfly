@@ -359,6 +359,8 @@ namespace Damselfly.Core.Services
 
                     var azurewatch = new Stopwatch("AzureFaceDetect");
 
+                    Logging.LogVerbose($"Processing {medThumb.FullName} with Azure Face Service");
+
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
                     var azureFaces = await _azureFaceService.DetectFaces(bitmap);
 

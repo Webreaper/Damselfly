@@ -3,6 +3,7 @@
 @using Damselfly.Core.DbModels;
 @using Damselfly.Core.Utils.Constants;
 @using Damselfly.Core.Interfaces;
+@using Serilog.Events;
 @using Humanizer;
 
 @inject IJSRuntime JsRuntime
@@ -68,6 +69,20 @@
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
                                     <MudCheckBox @bind-Checked="@forceLogin" Disabled="@(! anableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
+                                </div>
+                            </div>
+
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudSelect T="LogEventLevel" Label="Log Level" @bind-Value="logLevel" Variant="Variant.Filled"
+                                               HelperText="Select the logging verbosity">
+                                        @foreach (var choice in userLogLevels)
+                                        {
+                                            <MudSelectItem T="LogEventLevel" Value="@choice">
+                                                @choice.ToString().Humanize()
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
                                 </div>
                             </div>
 
@@ -230,6 +245,8 @@
     private AzureSettings azureSettings = new AzureSettings();
     private EmailSmtpService.SmtpSettings smtpSettings = new EmailSmtpService.SmtpSettings();
     private EmailSendGridService.SendGridSettings sendGridSettings = new EmailSendGridService.SendGridSettings();
+    private LogEventLevel logLevel;
+    private LogEventLevel[] userLogLevels = new[] { LogEventLevel.Information, LogEventLevel.Verbose, LogEventLevel.Debug };
     private bool importSidecarKeywords = false;
     private string selectedTheme;
     private bool useSmtp = true;
@@ -245,6 +262,7 @@
         try
         {
             configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
+            configService.Set(ConfigSettings.LogLevel, logLevel.ToString());
 
             configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
             configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
@@ -279,6 +297,8 @@
                 string aiTimeRange = $"{aiStartTime.LocalTimeSpanToUTC()}-{aiEndTime.LocalTimeSpanToUTC()}";
                 configService.Set(ConfigSettings.AIProcessingTimeRange, aiTimeRange);
             }
+
+            Logging.ChangeLogLevel(logLevel);
 
             statusService.StatusText = "Settings saved.";
 
@@ -323,6 +343,7 @@
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
         allowExternalRegistration = configService.GetBool(ConfigSettings.AllowExternalRegistration);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
+        logLevel = configService.Get<LogEventLevel>(ConfigSettings.LogLevel);
 
         smtpSettings.Load(configService);
         sendGridSettings.Load(configService);

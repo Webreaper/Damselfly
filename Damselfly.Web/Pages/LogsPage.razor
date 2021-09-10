@@ -58,7 +58,7 @@
     {
         if (firstRender)
         {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowLogs = true });
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState () );
 
             _ = GetLogLines();
         }

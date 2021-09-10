@@ -163,8 +163,12 @@ namespace Damselfly.Web
                         MetaDataService metadata, ThumbnailService thumbService,
                         IndexingService indexService, ImageProcessService imageProcessing,
                         AzureFaceService azureFace, ImageRecognitionService aiService,
-                        UserService userService)
+                        UserService userService, ConfigService configService)
         {
+            var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
+
+            Logging.ChangeLogLevel( logLevel );
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -19,7 +19,6 @@ namespace Damselfly.Core.ScopedServices
             public bool ShowBasket { get; set; } = false;
             public bool ShowExport { get; set; } = false;
             public bool ShowImageProps { get; set; } = false;
-            public bool ShowLogs { get; set; } = false;
 
             public override bool Equals(object obj)
             {
@@ -30,8 +29,7 @@ namespace Damselfly.Core.ScopedServices
                            ShowFolderList == other.ShowFolderList &&
                            ShowExport == other.ShowExport &&
                            ShowTags == other.ShowTags &&
-                           ShowImageProps == other.ShowImageProps &&
-                           ShowLogs == other.ShowLogs;
+                           ShowImageProps == other.ShowImageProps;
                 }
 
                 return false;
@@ -59,6 +57,5 @@ namespace Damselfly.Core.ScopedServices
         public bool ShowBasket { get => sidebarState.ShowBasket; }
         public bool ShowExport { get => sidebarState.ShowExport; }
         public bool ShowImageProps { get => sidebarState.ShowImageProps; }
-        public bool ShowLogs { get => sidebarState.ShowLogs; }
     }
 }

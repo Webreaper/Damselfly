@@ -91,12 +91,15 @@ namespace Damselfly.Core.Utils
         /// <summary>
         /// Allow runtime toggling of debug logs
         /// </summary>
-        /// <param name="enable"></param>
-        public static void ChangeLogLevel( LogEventLevel newLevel )
+        /// <param name="newLevel"></param>
+        public static void ChangeLogLevel(LogEventLevel newLevel)
         {
-            logLevel.MinimumLevel = newLevel;
+            if (newLevel != logLevel.MinimumLevel)
+            {
+                logLevel.MinimumLevel = newLevel;
 
-            logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
+                logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
+            }
         }
 
         public static void LogError(string fmt, params object[] args)
