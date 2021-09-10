@@ -212,7 +212,7 @@ namespace Damselfly.ML.Face.Azure
             image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
             memoryStream.Seek(0, SeekOrigin.Begin);
 
-            Logging.LogVerbose($"Calling Azure Detect...");
+            Logging.Log($"Calling Azure Face service...");
 
             var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(memoryStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
 
@@ -228,7 +228,13 @@ namespace Damselfly.ML.Face.Azure
         {
             var faces = new List<Face>();
 
-            if (_faceClient != null && _detectionType != AzureDetection.Disabled && ! _transThrottle.Disabled )
+            if( _transThrottle.Disabled )
+            {
+                Logging.LogWarning("Azure has reached maximum monthly transactions, so is disabled.");
+                return faces;
+            }
+
+            if (_faceClient != null && _detectionType != AzureDetection.Disabled )
             {
                 var watch = new Stopwatch("AzureFace");
 
@@ -265,7 +271,7 @@ namespace Damselfly.ML.Face.Azure
                 watch.Stop();
 
                 if( faces.Any() )
-                    Logging.Log($"Azure Detected {faces.Count()} faces in {watch.ElapsedTime}ms");
+                    Logging.Log($"  Azure Detected {faces.Count()} faces in {watch.ElapsedTime}ms");
 
                 _transThrottle.ProcessNewTransactions();
             }

@@ -10,9 +10,9 @@
     - [Object Recognition](#object-recognition)
     - [Face Detection](#face-detection)
     - [Face Recognition](#face-recognition)
-    - [How does Damselfly manage EXIF data?](#how-does-damselfly-manage-exif-data)
-    - [Why did you build Damsefly?](#why-did-you-build-damsefly)
-    - [Contributing to Damselfly](#contributing-to-damselfly)
+  - [How does Damselfly manage EXIF data?](#how-does-damselfly-manage-exif-data)
+  - [Why did you build Damsefly?](#why-did-you-build-damsefly)
+  - [Contributing to Damselfly](#contributing-to-damselfly)
 
 ## How does Damselfly Work?
 
@@ -112,7 +112,7 @@ will throttle them automatically). To ensure these transactions aren't wasted on
 has an option in the config page to allow you to only submit images to Azure when a face or person has already been detected 
 by Damselfly's offline processing.
 
-### How does Damselfly manage EXIF data?
+## How does Damselfly manage EXIF data?
 
 Adding Keywords to EXIF metadata is a critical part of the Damselfly workflow. This is done using the excellent 
 [ExifTool](https://exiftool.org/) - which is the fastest, cleanest and most powerful way to manage ExifData. ExifTool
@@ -130,7 +130,7 @@ many tags to hundreds of image. The other advantage of doing it this way is that
 some other problem, the queue of pending operations can continue to be processed, guaranteeing that a tag added via the UI 
 will be written to the underlying image file. 
 
-### Why did you build Damsefly?
+## Why did you build Damsefly?
 
 I wrote Damselfly mainly to cater for a personal use-case, but decided to open-source it to make it available for others to use if 
 it works for them. My wife is a horticultural writer and photographer ([pumpkinbeth.com](http://www.pumpkinbeth.com)) and over the 
@@ -182,6 +182,6 @@ In order to find and retrieve photographs efficiently when writing about a parti
   * Con: Search ignores IPTC tags
   * Con: Only supports Amazon's native apps. No support for _any_ third party clients.
 
-  ### Contributing to Damselfly
+  ## Contributing to Damselfly
 
   For information on how to contribute to Damselfly, [see here](./Contributing.md).
