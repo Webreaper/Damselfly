@@ -90,6 +90,7 @@
             // closest matches to the start of the string come first.
             var names = aiService.GetCachedPeople().Where(x => x.Name.StartsWith( searchText.Trim(), StringComparison.OrdinalIgnoreCase) )
                                                .Select( x => x.Name )
+                                               .Distinct()
                                                .OrderBy(x => x.ToUpper().IndexOf(searchText.ToUpper()))
                                                .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
                                                .ToList();
@@ -122,6 +123,7 @@
             }
             else
             {
+                // TODO: If this is an existing person/name, we might need to merge in Azure
                 theObject.Person.Name = name;
                 db.People.Update(theObject.Person);
             }
