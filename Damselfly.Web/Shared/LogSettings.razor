@@ -6,7 +6,7 @@
 
 <div class="damselfly-exportpanel">
     <label for="logLevel">Log Level: </label>
-    <select name="logLevel" value="@LogLevel">
+    <select name="logLevel" @bind="@LogLevel">
         @foreach (var choice in logLevels)
         {
             <option value="@choice">

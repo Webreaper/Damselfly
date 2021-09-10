@@ -216,6 +216,8 @@ namespace Damselfly.ML.Face.Azure
 
             var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(memoryStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
 
+            Logging.LogVerbose($"Azure Face service call complete.");
+
             return detectedFaces;
         }
 
