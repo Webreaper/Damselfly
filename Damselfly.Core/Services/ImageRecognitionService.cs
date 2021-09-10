@@ -359,6 +359,8 @@ namespace Damselfly.Core.Services
 
                     var azurewatch = new Stopwatch("AzureFaceDetect");
 
+                    Logging.Log($"Scanning faces with Azure...");
+
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
                     var azureFaces = await _azureFaceService.DetectFaces(bitmap);
 
@@ -398,7 +400,7 @@ namespace Damselfly.Core.Services
                     else
                     {
                         // If we're scanning because local face detection found a face, log the result.
-                        if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.ImagesWithFaces)
+                        //if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.ImagesWithFaces)
                             Logging.Log($"Azure found no faces in image {fileName}");
                     }
                 }
