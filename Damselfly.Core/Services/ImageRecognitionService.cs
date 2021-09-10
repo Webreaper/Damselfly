@@ -402,6 +402,8 @@ namespace Damselfly.Core.Services
                         // If we're scanning because local face detection found a face, log the result.
                         if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.ImagesWithFaces)
                             Logging.Log($"Azure found no faces in image {fileName}");
+                        else
+                            Logging.LogVerbose($"Azure found no faces in image {fileName}");
                     }
                 }
 
