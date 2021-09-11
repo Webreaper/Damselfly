@@ -22,8 +22,8 @@
   "author": "Mark Otway",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^11.0.0",
-    "electron-builder": "^22.11.4"
+    "electron": "^14.0.0",
+    "electron-builder": "^22.14.2"
   },
   "build": {
     "appId": "damselfly-desktop",
