@@ -9,6 +9,10 @@
     <StartArguments>/Users/markotway/Pictures --postgress</StartArguments>
   </PropertyGroup>
 
+<PropertyGroup>
+  <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
+</PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
