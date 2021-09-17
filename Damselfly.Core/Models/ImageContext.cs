@@ -217,6 +217,8 @@ namespace Damselfly.Core.Models
         public int Height { get; set; }
         public Stars Rating { get; set; }
         public string Caption { get; set; }
+        public string Copyright { get; set; }
+        public string Credit { get; set; }
         public string Description { get; set; }
         public string ISO { get; set; }
         public string FNum { get; set; }

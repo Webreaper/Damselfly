@@ -164,7 +164,7 @@ namespace Damselfly.Core.Models.DBAbstractions
             throw new NotImplementedException();
         }
 
-        public void FullTextTags(bool first)
+        public void GenFullText(bool first)
         {
             // TODO: What do we do here? Maybe something with LIKE?
             throw new NotImplementedException();

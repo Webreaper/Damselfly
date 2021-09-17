@@ -1,7 +1,8 @@
 ﻿
 @using Damselfly.Core.ImageProcessing
 @using Damselfly.Core.DbModels 
-
+@using Damselfly.Web.Shared.Images
+ 
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
 @inject BasketService basketService
@@ -22,8 +23,8 @@
     }
     else
     {
-<div class="damselfly-imageproperties">
-    @if( basketService.CurrentBasket != null )
+    <div class="damselfly-imageproperties">
+    @if (basketService.CurrentBasket != null)
     {
         <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
     }
@@ -32,36 +33,17 @@
     <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink" title="@CurrentImage.Folder.Path">@CurrentImage.Folder.Name</NavLink></div>
     @if (CurrentImage.MetaData != null)
     {
-        @if (!string.IsNullOrEmpty(CurrentImage.MetaData.Description))
-        {
-            <div>Description: @CurrentImage.MetaData.Description</div>
-        }
-        @if (!string.IsNullOrEmpty(CurrentImage.MetaData.Caption))
-        {
-            <div>Caption: @CurrentImage.MetaData.Caption</div>
-        }
-        <div>Width: @CurrentImage.MetaData.Width Height: @CurrentImage.MetaData.Height</div>
-        @if (CurrentImage.MetaData.Camera != null)
-        {
-            <div>
-                Camera:
-                @CurrentImage.MetaData.Camera.Make
-                @CurrentImage.MetaData.Camera.Model
-            </div>
-        }
-        @if (CurrentImage.MetaData.Lens != null)
-        {
-            <div>
-                Lens:
-                @CurrentImage.MetaData.Lens.Make
-                @CurrentImage.MetaData.Lens.Model
-            </div>
-        }
-
-        <div>ISO: @CurrentImage.MetaData.ISO</div>
-        <div>Aperture: @Aperture</div>
-        <div>Exposure: @Exposure </div>
-
+        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
+        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" />
+        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" />
+        <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
+        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
+        <ImageField FieldName="Size" FieldValue="@Size" />
+        <ImageField FieldName="Camera" FieldValue="@Camera" />
+        <ImageField FieldName="Lens" FieldValue="@Lens" />
+        <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
+        <ImageField FieldName="Aperture" FieldValue="@Aperture" />
+        <ImageField FieldName="Exposure" FieldValue="@Exposure" />
     }
     else
     {
@@ -107,8 +89,11 @@
     private Image theImage;
     public Image CurrentImage { get { return theImage; } set { theImage = value; } }
     public string CurrentFolderLink => $"/?folderId={CurrentImage.Folder.FolderId}";
-    public string Aperture => $"f{CurrentImage.MetaData.FNum}";
-    public string Exposure => $"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}";
+    public string Size => $"{CurrentImage.MetaData.Width} x {CurrentImage.MetaData.Height}";
+    public string Camera => CurrentImage.MetaData.Camera != null ? $"{CurrentImage.MetaData.Camera.Make} {CurrentImage.MetaData.Camera.Model}" : string.Empty;
+    public string Lens => CurrentImage.MetaData.Lens != null ? $"{CurrentImage.MetaData.Lens.Make} {CurrentImage.MetaData.Lens.Model}" : string.Empty;
+    public string Exposure => ! string.IsNullOrEmpty(CurrentImage.MetaData.Exposure ) ? ($"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}") : string.Empty;
+    public string Aperture => ! string.IsNullOrEmpty( CurrentImage.MetaData.FNum ) ? $"f{CurrentImage.MetaData.FNum}" : string.Empty;
 
     private bool Expanded { get; set; }
 

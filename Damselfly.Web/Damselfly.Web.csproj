@@ -60,6 +60,9 @@
     <None Remove="Extensions\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Remove="Shared\Images\ImagePropertyField.razor" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Update="Shared\FolderList.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>

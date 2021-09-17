@@ -1,0 +1,13 @@
+﻿
+@if (!string.IsNullOrEmpty(FieldValue))
+{
+    <div><label title="@FieldValue">@FieldName: @FieldValue</label></div>
+}
+
+@code {
+    [Parameter]
+    public string FieldName { get; set; }
+
+    [Parameter]
+    public string FieldValue { get; set; }
+}

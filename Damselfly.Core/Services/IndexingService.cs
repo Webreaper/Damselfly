@@ -181,8 +181,23 @@ namespace Damselfly.Core.Services
                     if (IPTCdir != null)
                     {
                         var caption = IPTCdir.SafeExifGetString(IptcDirectory.TagCaption);
+                        var byline = IPTCdir.SafeExifGetString(IptcDirectory.TagByLine);
+                        var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource);
 
                         imgMetaData.Caption = FilteredDescription(caption);
+                        imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice);
+                        imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit);
+
+                        if (string.IsNullOrEmpty(imgMetaData.Credit) && !string.IsNullOrEmpty(source))
+                            imgMetaData.Credit = source;
+
+                        if (!string.IsNullOrEmpty(byline))
+                        {
+                            if( ! string.IsNullOrEmpty( imgMetaData.Credit ))
+                                imgMetaData.Credit += $" ({byline})";
+                            else
+                                imgMetaData.Credit += $"{byline}";
+                        }
 
                         // Stash the keywords in the dict, they'll be stored later.
                         var keywordList = IPTCdir?.GetStringArray(IptcDirectory.TagKeywords);
@@ -497,7 +512,7 @@ namespace Damselfly.Core.Services
 
                         transaction.Commit();
 
-                        await db.FullTextTags(false);
+                        await db.GenFullText(false);
                     }
                 }
                 catch (Exception ex)
@@ -841,6 +856,8 @@ namespace Damselfly.Core.Services
             try
             {
                 using var db = new ImageContext();
+
+                await db.GenFullText(true);
 
                 const int batchSize = 100;
                 bool complete = false;

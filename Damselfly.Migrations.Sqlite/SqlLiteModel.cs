@@ -259,6 +259,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             foreach( var term in terms )
             {
                 var ftsTerm = $"\"{term}\"*";
+
                 var tagSubQuery = $"select distinct it.ImageId from FTSKeywords fts join ImageTags it on it.tagId = fts.TagId where fts.Keyword MATCH ('{ftsTerm}')";
                 var joinSubQuery = tagSubQuery;
 
@@ -268,6 +269,13 @@ namespace Damselfly.Migrations.Sqlite.Models
                     var nameSubQuery = $"select distinct io.ImageId from People p join ImageObjects io on io.PersonID = p.PersonID where p.Name like '%{term}%'";
                     joinSubQuery = $"{tagSubQuery} union {objectSubQuery} union {nameSubQuery}";
                 }
+
+                var imageSubQuery = $"select distinct fts.ImageId from FTSImages fts where ";
+                imageSubQuery += $"fts.Caption MATCH ('{ftsTerm}') OR ";
+                imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') OR ";
+                imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR ";
+                imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}')";
+                joinSubQuery = $"{joinSubQuery} union {imageSubQuery}";
 
                 // Subquery to produce the distinct set of images that match the term
                 var subQuery = $" join ({joinSubQuery}) term{i} on term{i}.ImageID = i.ImageId";
@@ -279,11 +287,21 @@ namespace Damselfly.Migrations.Sqlite.Models
         }
 
         /// <summary>
+        /// Prep the full text tables
+        /// </summary>
+        /// <param name="first"></param>
+        public void GenFullText(bool first)
+        {
+            FullTextImages(first);
+            FullTextTags(first);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="imageKeywords">A dictionary of images to keywords. Each image
         /// can have an array of multiple keywords.</param>
-        public void FullTextTags( bool first )
+        private void FullTextTags( bool first )
         {
             int retry = 0;
             while (retry++ < 5)
@@ -303,12 +321,58 @@ namespace Damselfly.Migrations.Sqlite.Models
 
                         string theSql = $"BEGIN TRANSACTION; {createSql}; {deleteSql}; {insertSql}; COMMIT;";
 
-                        Logging.LogVerbose($"FreeText SQL: {theSql}");
+                        Logging.LogVerbose($"FreeText Tags SQL: {theSql}");
 
                         // TODO: Can we do this less often?
                         db.Database.ExecuteSqlRaw(theSql);
 
-                        Logging.LogVerbose($"Free text table rebuilt.");
+                        Logging.LogVerbose($"Free text tag table rebuilt.");
+
+                        // Skip retries and return
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logging.LogError("'Exception adding freetext for tags: {0} (retry {1})", ex.Message, retry);
+                    }
+                }
+
+                Logging.LogWarning("Error writing tag freetext. Retrying...");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="imageKeywords">A dictionary of images to keywords. Each image
+        /// can have an array of multiple keywords.</param>
+        private void FullTextImages(bool first)
+        {
+            int retry = 0;
+            while (retry++ < 5)
+            {
+                using (var db = new ImageContext())
+                {
+                    try
+                    {
+                        // TODO - get the tablenames from the type
+                        // TODO - can we put this in a sqlite specific trigger to save having it in code? 
+                        string createSql = "CREATE VIRTUAL TABLE IF NOT EXISTS \"FTSImages\" USING fts5( \"ImageId\", \"Caption\", \"Description\", \"Copyright\", \"Credit\" )";
+                        string deleteSql = "DELETE FROM FTSImages";
+                        string insertSql = "INSERT INTO FTSImages SELECT distinct i.ImageId, i.Caption, i.Description, i.CopyRight, i.Credit FROM imageMetaData i ";
+                        insertSql += "WHERE coalesce(i.Caption, '') <> '' OR coalesce(i.Description, '') <> '' OR coalesce(i.Description, '') <> '' OR coalesce(i.CopyRight, '') <> ''";
+
+                        if (!first)
+                            createSql = string.Empty;
+
+                        string theSql = $"BEGIN TRANSACTION; {createSql}; {deleteSql}; {insertSql}; COMMIT;";
+
+                        Logging.LogVerbose($"FreeText Images SQL: {theSql}");
+
+                        // TODO: Can we do this less often?
+                        db.Database.ExecuteSqlRaw(theSql);
+
+                        Logging.LogVerbose($"Free text image table rebuilt.");
 
                         // Skip retries and return
                         return;
@@ -319,7 +383,7 @@ namespace Damselfly.Migrations.Sqlite.Models
                     }
                 }
 
-                Logging.LogWarning("Error writing freetext. Retrying...");
+                Logging.LogWarning("Error writing image freetext. Retrying...");
             }
         }
 

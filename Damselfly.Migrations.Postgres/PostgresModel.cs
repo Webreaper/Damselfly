@@ -112,7 +112,7 @@ namespace Damselfly.Migrations.Postgres.Models
 
 
             // Always rebuild the FTS table at startup
-            FullTextTags(true);
+            GenFullText(true);
 
             IncreasePerformance(db);
         }
@@ -240,7 +240,7 @@ namespace Damselfly.Migrations.Postgres.Models
         /// </summary>
         /// <param name="imageKeywords">A dictionary of images to keywords. Each image
         /// can have an array of multiple keywords.</param>
-        public void FullTextTags( bool first )
+        public void GenFullText( bool first )
         {
         }
 
