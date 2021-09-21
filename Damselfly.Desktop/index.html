@@ -12,12 +12,12 @@
 
     <script type="text/javascript">
 
-        function validate() {
+        window.validate = function() {
             urlVal = document.getElementById("url").value;
             document.getElementById('saveBtn').disabled = invalidUrl(urlVal);
         }
 
-        function saveSettings() {
+        window.saveSettings =  function() {
             urlVal = document.getElementById("url").value;
             folderVal = document.getElementById("folder").value;
             saveConfig(urlVal, folderVal);
