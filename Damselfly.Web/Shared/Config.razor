@@ -285,30 +285,31 @@
             smtpSettings.Save(configService);
             sendGridSettings.Save(configService);
 
+            string aiTimeRangeSettings = null;
+
+            if (enableAITimeLimit)
+                aiTimeRangeSettings = $"{aiStartTime.LocalTimeSpanToUTC()}-{aiEndTime.LocalTimeSpanToUTC()}";
+
+            configService.Set(ConfigSettings.AIProcessingTimeRange, aiTimeRangeSettings);
+
+            Logging.ChangeLogLevel(logLevel);
+
+            // Do this last as it has a material effect.
             if (themeService.CurrentTheme != selectedTheme)
             {
                 themeService.CurrentTheme = selectedTheme;
             }
 
-            string aiSettings = string.Empty;
-
-            if( enableAITimeLimit )
-            {
-                string aiTimeRange = $"{aiStartTime.LocalTimeSpanToUTC()}-{aiEndTime.LocalTimeSpanToUTC()}";
-                configService.Set(ConfigSettings.AIProcessingTimeRange, aiTimeRange);
-            }
-
-            Logging.ChangeLogLevel(logLevel);
-
-            statusService.StatusText = "Settings saved.";
-
             UpdateServicesWithNewSettings();
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             statusService.StatusText = "Unable to save settings.";
             Logging.LogError($"Error saving settings: {ex}");
+            return;
         }
+
+        statusService.StatusText = "Settings saved.";
     }
 
     private void UpdateServicesWithNewSettings()
