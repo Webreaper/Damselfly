@@ -270,7 +270,9 @@ function createWindow() {
     height: winStateKeeper.height,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: false
     }
+
   })
 
   // Set up the IPC handlers for the app
