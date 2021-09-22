@@ -46,7 +46,7 @@ editing etc.
     * Synchronise images from server basket select to local filesystem for editing
     * Other integrations coming in future
 * Runs on Windows, Linux and OSX, and in Docker.
-* Built with Microsoft .Net 6 and Blazor Server. 
+* Built with Microsoft .Net 6, Blazor Server and EFCore 6. 
 
 ## Want to Support Damselfly?
 
