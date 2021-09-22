@@ -49,11 +49,8 @@
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
 
-    <script>
-
-        function setStyleSheet(url) {
+    <script>function setStyleSheet(url) {
             var stylesheet = document.getElementById("themeStyleSheet");
-            console.log("Changing stylesheet to " + url);
             stylesheet.setAttribute('href', url);
         }
 
@@ -78,25 +75,8 @@
             });
         }
 
-        function getDesktopVersion() {
-            return window.desktopVersion;
-        }
-
-        window.checkDesktopUpgrade = function (desktopVersion, cb) {
-            try {
-                DotNet.invokeMethodAsync('Damselfly.Web', 'GetUpgradeVersion', desktopVersion).then(upgradeVersion => {
-                    if (upgradeVersion !== '') {
-                        cb(upgradeVersion);
-                    }
-                })
-            } catch (err) {
-                console.log("Error: " + err);
-            }
-        }
-
         /* END EXTERNAL SOURCE */
         /* BEGIN EXTERNAL SOURCE */</script>
-
 
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
@@ -108,5 +88,6 @@
     <script src="Cropper/damselflyCrop.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="desktop-interop/electron-interop.js"></script>
 </body>
 </html>
