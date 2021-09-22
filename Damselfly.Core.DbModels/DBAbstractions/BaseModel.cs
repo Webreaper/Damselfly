@@ -135,12 +135,12 @@ namespace Damselfly.Core.DbModels.DBAbstractions
         /// <param name="itemsToDelete">Objects to insert</param>
         /// <returns>True if the insert succeeded</returns>
         /// Note: Currently unused, hence private.
-        private bool BulkInsertOrUpdate<T>(DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
+        private async Task<bool> BulkInsertOrUpdate<T>(DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
         {
             if (ReadOnly)
                 return true;
 
-            return DatabaseSpecialisation.BulkInsertOrUpdate(this, collection, itemsToSave, isNew);
+            return await DatabaseSpecialisation.BulkInsertOrUpdate(this, collection, itemsToSave, isNew);
         }
 
         /// <summary>

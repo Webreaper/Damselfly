@@ -10,6 +10,7 @@ using System.IO;
 using Z.EntityFramework.Plus;
 using Z.EntityFramework.Extensions;
 using Damselfly.Core.Utils;
+using System.Threading.Tasks;
 
 namespace Damselfly.Migrations.Postgres.Models
 {
@@ -125,7 +126,7 @@ namespace Damselfly.Migrations.Postgres.Models
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
+        public async Task<bool> BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -137,7 +138,7 @@ namespace Damselfly.Migrations.Postgres.Models
             collection.AddRange(itemsToSave);
 
             // TODO: Set output identity here.
-            int ret = db.SaveChanges("BulkSave");
+            int ret = await db.SaveChangesAsync("BulkSave");
 
             return ret == itemsToSave.Count;
         }
@@ -150,7 +151,7 @@ namespace Damselfly.Migrations.Postgres.Models
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public async Task<bool> BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -161,7 +162,7 @@ namespace Damselfly.Migrations.Postgres.Models
 
             collection.UpdateRange(itemsToSave);
 
-            int ret = db.SaveChanges("BulkSave");
+            int ret = await db.SaveChangesAsync("BulkSave");
 
             return ret == itemsToSave.Count;
         }
@@ -174,7 +175,7 @@ namespace Damselfly.Migrations.Postgres.Models
         /// <param name="collection"></param>
         /// <param name="itemsToDelete"></param>
         /// <returns></returns>
-        public bool BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
+        public async Task<bool> BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -185,7 +186,7 @@ namespace Damselfly.Migrations.Postgres.Models
 
             collection.RemoveRange(itemsToDelete);
 
-            int ret = db.SaveChanges("BulkSave");
+            int ret = await db.SaveChangesAsync("BulkSave");
 
             return ret == itemsToDelete.Count;
         }
@@ -199,13 +200,13 @@ namespace Damselfly.Migrations.Postgres.Models
         /// <param name="itemsToSave"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public bool BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
+        public async Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
         {
             var result = false;
 
             itemsToSave.ForEach(x => { if (isNew(x)) collection.Add(x); else collection.Update(x); });
 
-            if( db.SaveChanges("BulkInsertOrUpdate") > 0 )
+            if( await db.SaveChangesAsync("BulkInsertOrUpdate") > 0 )
                 result = true;
 
             return result;
@@ -216,12 +217,12 @@ namespace Damselfly.Migrations.Postgres.Models
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
-            return query.Delete();
+            return await query.DeleteAsync();
         }
 
-        public IQueryable<T> Search<T>(string query, DbSet<T> collection) where T : class
+        public async Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
         {
             // Figure out FTS in Postgres
             // TODO: Implement with a Like Query?
@@ -240,7 +241,7 @@ namespace Damselfly.Migrations.Postgres.Models
         /// </summary>
         /// <param name="imageKeywords">A dictionary of images to keywords. Each image
         /// can have an array of multiple keywords.</param>
-        public void GenFullText( bool first )
+        public async Task GenFullText( bool first )
         {
         }
 

@@ -9,6 +9,7 @@ using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
 using Z.EntityFramework.Plus;
 using Z.EntityFramework.Extensions;
+using System.Threading.Tasks;
 
 namespace Damselfly.Migrations.Sqlite.Models
 {
@@ -119,7 +120,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
 
             // Always rebuild the FTS table at startup
-            FullTextTags(true);
+            Task.Run( () => FullTextTags(true) );
 
             IncreasePerformance(db);
         }
@@ -132,7 +133,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
+        public async Task<bool> BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
         {
             if (BaseDBModel.ReadOnly)
             {
@@ -149,7 +150,7 @@ namespace Damselfly.Migrations.Sqlite.Models
                 db.BulkInsert(itemsToSave, config);
 #else
                 itemsToSave.ForEach(x => db.Add(x));
-                db.SaveChanges();
+                await db.SaveChangesAsync();
 #endif
                 success = true;
             }
@@ -169,7 +170,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public async Task<bool> BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -185,7 +186,7 @@ namespace Damselfly.Migrations.Sqlite.Models
                 db.BulkUpdate(itemsToSave);
 #else
                 itemsToSave.ForEach(x => db.Update(x));
-                db.SaveChanges();
+                await db.SaveChangesAsync();
 #endif
                 success = true;
             }
@@ -205,7 +206,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="collection"></param>
         /// <param name="itemsToDelete"></param>
         /// <returns></returns>
-        public bool BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
+        public async Task<bool> BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
             if (BaseDBModel.ReadOnly)
             {
@@ -216,7 +217,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                db.BulkDelete(itemsToDelete);
+                await db.BulkDeleteAsync(itemsToDelete);
                 success = true;
             }
             catch (Exception ex)
@@ -236,18 +237,18 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="itemsToSave"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public bool BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
+        public async Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
         {
-            db.BulkInsertOrUpdate(itemsToSave);
+            await db.BulkInsertOrUpdateAsync(itemsToSave);
 
             return true;
         }
 
-        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
             var db = new ImageContext();
             db.RemoveRange(query);
-            return db.SaveChanges();
+            return await db.SaveChangesAsync();
 
 #if false
             // Call the EFCore Bulkextensions method once it's been fixed for .Net 6
@@ -298,10 +299,10 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// Prep the full text tables
         /// </summary>
         /// <param name="first"></param>
-        public void GenFullText(bool first)
+        public async Task GenFullText(bool first)
         {
-            FullTextImages(first);
-            FullTextTags(first);
+            await FullTextImages(first);
+            await FullTextTags(first);
         }
 
         /// <summary>
@@ -309,7 +310,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// </summary>
         /// <param name="imageKeywords">A dictionary of images to keywords. Each image
         /// can have an array of multiple keywords.</param>
-        private void FullTextTags( bool first )
+        private async Task FullTextTags( bool first )
         {
             int retry = 0;
             while (retry++ < 5)
@@ -332,7 +333,7 @@ namespace Damselfly.Migrations.Sqlite.Models
                         Logging.LogVerbose($"FreeText Tags SQL: {theSql}");
 
                         // TODO: Can we do this less often?
-                        db.Database.ExecuteSqlRaw(theSql);
+                        await db.Database.ExecuteSqlRawAsync(theSql);
 
                         Logging.LogVerbose($"Free text tag table rebuilt.");
 
@@ -354,7 +355,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// </summary>
         /// <param name="imageKeywords">A dictionary of images to keywords. Each image
         /// can have an array of multiple keywords.</param>
-        private void FullTextImages(bool first)
+        private async Task FullTextImages(bool first)
         {
             int retry = 0;
             while (retry++ < 5)
@@ -378,7 +379,7 @@ namespace Damselfly.Migrations.Sqlite.Models
                         Logging.LogVerbose($"FreeText Images SQL: {theSql}");
 
                         // TODO: Can we do this less often?
-                        db.Database.ExecuteSqlRaw(theSql);
+                        await db.Database.ExecuteSqlRawAsync(theSql);
 
                         Logging.LogVerbose($"Free text image table rebuilt.");
 

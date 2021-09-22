@@ -57,7 +57,7 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public async Task<bool> BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -68,7 +68,7 @@ namespace Damselfly.Core.Models.DBAbstractions
 
             collection.AddRange(itemsToSave);
 
-            int ret = db.SaveChanges("BulkSave");
+            int ret = await db.SaveChangesAsync("BulkSave");
 
             return ret == itemsToSave.Count;
         }
@@ -81,7 +81,7 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public bool BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public async Task<bool> BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -92,7 +92,7 @@ namespace Damselfly.Core.Models.DBAbstractions
 
             collection.UpdateRange(itemsToSave);
 
-            int ret = db.SaveChanges("BulkSave");
+            int ret = await db.SaveChangesAsync("BulkSave");
 
             return ret == itemsToSave.Count;
         }
@@ -105,7 +105,7 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="collection"></param>
         /// <param name="itemsToDelete"></param>
         /// <returns></returns>
-        public bool BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
+        public async Task<bool> BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -116,7 +116,7 @@ namespace Damselfly.Core.Models.DBAbstractions
 
             collection.RemoveRange(itemsToDelete);
 
-            int ret = db.SaveChanges("BulkSave");
+            int ret = await db.SaveChangesAsync("BulkSave");
 
             return ret == itemsToDelete.Count;
         }
@@ -130,24 +130,24 @@ namespace Damselfly.Core.Models.DBAbstractions
         /// <param name="itemsToSave"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public bool BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
+        public async Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
         {
             var result = false;
 
             itemsToSave.ForEach(x => { if (isNew(x)) collection.Add(x); else collection.Update(x); });
 
-            if (db.SaveChanges("BulkInsertOrUpdate") > 0)
+            if (await db.SaveChangesAsync("BulkInsertOrUpdate") > 0)
                 result = true;
 
             return result;
         }
 
-        public int BatchDelete<T>(IQueryable<T> query) where T : class
+        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
             throw new NotImplementedException();
         }
 
-        public IQueryable<T> Search<T>(string query, DbSet<T> collection) where T : class
+        public async Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
         {
             // Full text search not supported in MySQL
             // TODO: Implement with a Like Query?
@@ -165,7 +165,7 @@ namespace Damselfly.Core.Models.DBAbstractions
             throw new NotImplementedException();
         }
 
-        public void GenFullText(bool first)
+        public async Task GenFullText(bool first)
         {
             // TODO: What do we do here? Maybe something with LIKE?
             throw new NotImplementedException();
