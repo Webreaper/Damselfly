@@ -55,6 +55,10 @@ be appreciated!
 
 <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
+# Getting in Touch
+   
+You can follow Damselfly on [Twitter](https://twitter.com/damselflyphotos) or ask questions/get support on Reddit ([r/DamselflyPhotos](https://reddit.com/r/damselflyphotos)). If you have problems, feature requests or have found a bug, you can [raise an issue](https://github.com/Webreaper/Damselfly/issues). Or if you want to say hello, [email me](mailto:info@damselfly.info).
+
 ## Screenshots
 
 <div>
