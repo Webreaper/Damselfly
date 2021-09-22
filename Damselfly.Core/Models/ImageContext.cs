@@ -11,13 +11,14 @@ using Damselfly.Core.DbModels.DBAbstractions;
 using Humanizer;
 using Microsoft.AspNetCore.Identity;
 using Damselfly.Core.DbModels;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 
 namespace Damselfly.Core.Models
 {
     /// <summary>
     /// Our actual EF Core model describing a collection of images, lenses, 
     /// </summary>
-    public class ImageContext : BaseDBModel
+    public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     {
         public DbSet<Folder> Folders { get; set; }
         public DbSet<Image> Images { get; set; }
@@ -36,6 +37,7 @@ namespace Damselfly.Core.Models
         public DbSet<ConfigSetting> ConfigSettings { get; set; }
         public DbSet<ExifOperation> KeywordOperations { get; set; }
         public DbSet<CloudTransaction> CloudTransactions { get; set; }
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
         {

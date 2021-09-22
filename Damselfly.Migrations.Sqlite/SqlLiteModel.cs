@@ -7,6 +7,8 @@ using Damselfly.Core.Models;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
+using Z.EntityFramework.Plus;
+using Z.EntityFramework.Extensions;
 
 namespace Damselfly.Migrations.Sqlite.Models
 {
@@ -243,8 +245,14 @@ namespace Damselfly.Migrations.Sqlite.Models
 
         public int BatchDelete<T>(IQueryable<T> query) where T : class
         {
-            // Call the EFCore Bulkextensions method
-            return query.BatchDelete();
+            var db = new ImageContext();
+            db.RemoveRange(query);
+            return db.SaveChanges();
+
+#if false
+            // Call the EFCore Bulkextensions method once it's been fixed for .Net 6
+            return await query.BulkDeleteAsync();
+#endif 
         }
 
         public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class

@@ -28,6 +28,7 @@ using MudBlazor.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.Utils.Constants;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Damselfly.Web
 {
@@ -61,6 +62,8 @@ namespace Damselfly.Web
 
             services.AddDbContext<ImageContext>();
             services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
+
+            services.AddDataProtection().PersistKeysToDbContext<ImageContext>();
 
             services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                                  .AddRoles<ApplicationRole>()
