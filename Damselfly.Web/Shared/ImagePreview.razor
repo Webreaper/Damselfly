@@ -70,7 +70,19 @@
 
     private readonly List<string> browserRenderedExtensions = new List<string> { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
 
-    private IList<ImageObject> Objects { get { return theImage?.ImageObjects ?? new List<ImageObject>(); } }
+    private IList<ImageObject> Objects
+    {
+        get
+        {
+            var objects = theImage?.ImageObjects ?? new List<ImageObject>();
+
+            // Sort objects first, then faces, and largest first, so that smaller
+            // objects will appear on top, so they can be easily accessed.
+            return objects.OrderBy( x => x.IsFace ? 2 : 1 )
+                          .ThenByDescending(x => x.RectWidth * x.RectHeight)
+                          .ToList();
+        }
+    }
 
     private bool HiResImageLoaded { get; set; }
     private string ShowObjectsMenuText => ShowObjects ? "Hide Objects/Faces" : "Show Objects/Faces";
@@ -121,6 +133,16 @@
             await JsRuntime.InvokeAsync<string>("ScaleToFitImage", "theImage", "objectBox");
             StateHasChanged();
         });
+    }
+
+    public void ToggleShowObjects()
+    {
+        SetShowObjects(!showObjects);
+    }
+
+    public void ToggleZoomEnabled()
+    {
+        SetZoomEnabled(!zoomEnabled);
     }
 
     private void SetShowObjects(bool newState)

@@ -6,33 +6,36 @@ namespace Damselfly.Core.Utils.ML
 {
     public static class MLUtils
     {
-        public static DirectoryInfo? GetModelFolder()
+        public static DirectoryInfo? ModelFolder
         {
-            var modelFolder = Path.Combine(".", "Models");
-
-            if (!Directory.Exists(modelFolder))
+            get
             {
-                var asm = Assembly.GetExecutingAssembly();
+                var modelFolder = Path.Combine(".", "Models");
 
-                if (asm != null)
+                if (!Directory.Exists(modelFolder))
                 {
-                    var thisAsm = new FileInfo(asm.Location);
+                    var asm = Assembly.GetExecutingAssembly();
 
-                    if (thisAsm != null && thisAsm.Directory != null)
+                    if (asm != null)
                     {
-                        modelFolder = Path.Combine(thisAsm.Directory.FullName, "Models");
+                        var thisAsm = new FileInfo(asm.Location);
+
+                        if (thisAsm != null && thisAsm.Directory != null)
+                        {
+                            modelFolder = Path.Combine(thisAsm.Directory.FullName, "Models");
+                        }
                     }
                 }
+
+                if (Directory.Exists(modelFolder))
+                {
+                    return new DirectoryInfo(modelFolder);
+                }
+
+                Logging.LogError($"Models folder not found: {modelFolder}");
+
+                return null;
             }
-
-            if (Directory.Exists(modelFolder))
-            {
-                return new DirectoryInfo(modelFolder);
-            }
-
-            Logging.LogError($"Models folder not found: {modelFolder}");
-
-            return null;
         }
     }
 }

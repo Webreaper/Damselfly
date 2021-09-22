@@ -19,7 +19,7 @@
     <PackageReference Include="MetadataExtractor" Version="2.7.1" />
     <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
     <PackageReference Include="WordPressPCL" Version="1.9.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
@@ -30,7 +30,7 @@
     <PackageReference Include="System.Drawing.Common" Version="6.0.0-rc.1.21451.13" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0-rc.1.21452.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0-rc.1.21452.15" />
-    <PackageReference Include="SendGrid" Version="9.24.2" />
+    <PackageReference Include="SendGrid" Version="9.24.3" />
     <PackageReference Include="MailKit" Version="2.15.0" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.8.64" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.0-rc.1.21452.15" />

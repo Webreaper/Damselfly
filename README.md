@@ -46,7 +46,7 @@ editing etc.
     * Synchronise images from server basket select to local filesystem for editing
     * Other integrations coming in future
 * Runs on Windows, Linux and OSX, and in Docker.
-* Built with Microsoft .Net 6 and Blazor Server. 
+* Built with Microsoft .Net 6, Blazor Server and EFCore 6. 
 
 ## Want to Support Damselfly?
 
@@ -54,6 +54,10 @@ Damselfly is free, open-source software. But if you find it useful, and fancy bu
 be appreciated!
 
 <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+# Getting in Touch
+   
+You can follow Damselfly on [Twitter](https://twitter.com/damselflyphotos) or ask questions/get support on Reddit ([r/DamselflyPhotos](https://reddit.com/r/damselflyphotos)). If you have problems, feature requests or have found a bug, you can [raise an issue](https://github.com/Webreaper/Damselfly/issues). Or if you want to say hello, [email me](mailto:info@damselfly.info).
 
 ## Screenshots
 
@@ -98,7 +102,7 @@ do this for you) where the server will re-index them to pick up your changes.
 ## More information
 
 * [Installation](./docs/Installation.md)
-* [Multi User and Roles](./docs/Multi-user.md)
+* [Multi-User and Roles](./docs/Multi-user.md)
 * [Technical Background](./docs/Technical.md)
 * [FAQ](./docs/FAQ.md)
 * [Contributing to Damselfly](./docs/Contributing.md)
@@ -119,4 +123,4 @@ do this for you) where the server will re-index them to pick up your changes.
 * [Font Awesome](https://fontawesome.com/) for their Awesome icons
 * Chris Sainty for [Blazored](https://github.com/Blazored) Modal and Typeahead, and all his excellent info on Blazor
 * [Serilog.Net](https://serilog.net/) for logging
-* Wisne for [Infinite Scroll](https://github.com/wisne/InfiniteScroll-BlazorServer) inspiration
+* Wisne for [Infinite Scroll](https://github.com/wisne/InfiniteScroll-BlazorServer) inspiration 

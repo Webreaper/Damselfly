@@ -1,5 +1,4 @@
 ﻿
-@inject ImageService ImgService
 @inject SearchService searchService
 @inject ImageRecognitionService aiService
 @inject UserStatusService statusService;
@@ -13,7 +12,7 @@
                            @bind-Value="@TypeAheadName" @onblur="@LostFocus">
             <SelectedTemplate>
                 @{
-                    UpdateName(context);
+                    _ = UpdateName(context);
                 }
             </SelectedTemplate>
             <ResultTemplate>
@@ -104,7 +103,7 @@
         return Task.FromResult( results );
     }
 
-    private void UpdateName(string name)
+    private async Task UpdateName(string name)
     {
         if (!string.IsNullOrEmpty(name))
         {
@@ -113,22 +112,7 @@
             TypeAheadName = null;
             StateHasChanged();
 
-            using var db = new ImageContext();
-
-            if (theObject.Person == null)
-            {
-                theObject.Person = new Person { Name = name };
-                db.People.Add(theObject.Person);
-                db.ImageObjects.Update(theObject);
-            }
-            else
-            {
-                // TODO: If this is an existing person/name, we might need to merge in Azure
-                theObject.Person.Name = name;
-                db.People.Update(theObject.Person);
-            }
-
-            db.SaveChanges("SetName");
+            await aiService.UpdateName(theObject, name);
 
             // TODO: Update the cache
             statusService.StatusText = $"Name saved as '{name}'";

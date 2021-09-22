@@ -20,6 +20,7 @@ namespace Damselfly.Core.ScopedServices
     {
         private readonly DownloadService _downloadService;
         private readonly UserStatusService _statusService;
+        private readonly ImageCache _imageCache;
 
         private const string s_MyBasket = "My Basket";
         private const string s_DefaultBasket = "default";
@@ -33,9 +34,12 @@ namespace Damselfly.Core.ScopedServices
         public List<Image> BasketImages { get; private set; } = new List<Image>();
 
 
-        public BasketService( UserStatusService statusService, DownloadService downloadService)
+        public BasketService( UserStatusService statusService,
+                                DownloadService downloadService,
+                                ImageCache imageCache)
         {
             _statusService = statusService;
+            _imageCache = imageCache;
             _downloadService = downloadService;
         }
 
@@ -54,26 +58,20 @@ namespace Damselfly.Core.ScopedServices
             var watch = new Stopwatch("GetSelectedImages");
 
             // TODO Assign current basket?
-            var images = await db.Baskets.Where( x => x.BasketId == CurrentBasket.BasketId )
+            var images = await db.Baskets.Where(x => x.BasketId == CurrentBasket.BasketId)
                             .Include(x => x.BasketEntries)
-                            .ThenInclude(x => x.Image)
-                            .ThenInclude(x => x.Folder)
-                            .SelectMany( x => x.BasketEntries )
-                            .Select( x => x.Image )
+                            .ThenInclude(b => b.Image)
+                            .SelectMany(x => x.BasketEntries)
+                            .Select(x => x.ImageId)
                             .ToListAsync();
 
-            // We can't used ThenInclude to pull in the image tags due to this
-            // but in the EF framework: https://github.com/dotnet/efcore/issues/19418
-            // It's just too slow. So until they fix it (probably EF 5) we need
-            // to manually explicitly load the tags for each image, which is
-            // very quick.
-            foreach (var img in images)
-                await db.LoadTags(img);
+            // Cache and enrich the entries
+            var enrichedImages = await _imageCache.GetCachedImages(images); 
 
             watch.Stop();
 
             BasketImages.Clear();
-            BasketImages.AddRange(images);
+            BasketImages.AddRange(enrichedImages);
 
             NotifyStateChanged();
         }
@@ -196,7 +194,7 @@ namespace Damselfly.Core.ScopedServices
                 var watch = new Stopwatch("SetSelection");
 
                 var existingEntries = db.BasketEntries.Where(x => x.BasketId == basket.BasketId &&
-                            images.Select(img => img.ImageId).Contains(x.ImageId));
+                            images.Select(img => img.ImageId).Contains(x.ImageId)).ToList();
 
                 if (newState)
                 {
@@ -234,8 +232,7 @@ namespace Damselfly.Core.ScopedServices
                 }
                 else if (!newState)
                 {
-                    int deleted = await db.BatchDelete( existingEntries );
-                    if( deleted > 0 )
+                    if( await db.BulkDelete( db.BasketEntries, existingEntries ) )
                     {
                         foreach( var image in images )
                         {
@@ -247,7 +244,7 @@ namespace Damselfly.Core.ScopedServices
                             BasketImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
                             changed = true;
 
-                            _statusService.StatusText = $"Removed {deleted} images from the basket.";
+                            _statusService.StatusText = $"Removed {existingEntries.Count} images from the basket.";
                         }
                     }
                 }

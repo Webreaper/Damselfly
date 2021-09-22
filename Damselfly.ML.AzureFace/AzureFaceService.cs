@@ -129,22 +129,22 @@ namespace Damselfly.ML.Face.Azure
         /// Initialise the face training service
         /// </summary>
         /// <returns></returns>
-        public void StartService()
+        public async Task StartService()
         {
-            InitFromConfig();
-
-            if (_faceClient != null && _detectionType != AzureDetection.Disabled)
+            try
             {
-                try
+                InitFromConfig();
+
+                if (_faceClient != null && _detectionType != AzureDetection.Disabled)
                 {
-                    InitializeAzureService().Wait();
+                    await InitializeAzureService();
                 }
-                catch( Exception ex )
-                {
-                    Logging.LogError($"Unable to start Azure service: {ex.Message}");
-                    if (ex.InnerException != null)
-                        Logging.LogError($"Inner exception: {ex.InnerException}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Unable to start Azure service: {ex.Message}");
+                if (ex.InnerException != null)
+                    Logging.LogError($"Inner exception: {ex.InnerException}");
             }
         }
 

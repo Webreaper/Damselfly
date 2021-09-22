@@ -111,10 +111,6 @@ namespace Damselfly.Migrations.Postgres.Models
                 }
             }
 
-
-            // Always rebuild the FTS table at startup
-            GenFullText(true);
-
             IncreasePerformance(db);
         }
 
@@ -222,7 +218,7 @@ namespace Damselfly.Migrations.Postgres.Models
             return await query.DeleteAsync();
         }
 
-        public async Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
+        public Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
         {
             // Figure out FTS in Postgres
             // TODO: Implement with a Like Query?
@@ -234,15 +230,6 @@ namespace Damselfly.Migrations.Postgres.Models
             // Figure out FTS in postgres
             // TODO: Implement with a Like Query?
             throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="imageKeywords">A dictionary of images to keywords. Each image
-        /// can have an array of multiple keywords.</param>
-        public async Task GenFullText( bool first )
-        {
         }
 
         /// <summary>

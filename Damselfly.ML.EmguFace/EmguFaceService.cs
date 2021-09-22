@@ -73,7 +73,7 @@ namespace Damselfly.ML.Face.Emgu
             if (! IsSupported)
                 return;
 
-            var modelDir = MLUtils.GetModelFolder();
+            var modelDir = MLUtils.ModelFolder;
 
             if (modelDir != null)
             {

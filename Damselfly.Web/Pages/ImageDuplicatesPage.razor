@@ -1,7 +1,11 @@
 ﻿@page "/image/duplicates/{ImageID}"
 
+@using System.Linq;
+@using Microsoft.EntityFrameworkCore
+
 @inject NavigationService navContext
 @inject ViewDataService ViewDataService
+@inject ImageCache imageCache
 
 @using Damselfly.Core.ImageProcessing
 
@@ -51,21 +55,40 @@
     {
         if (Int32.TryParse(ImageID, out var imageId))
         {
-            CurrentImage = await ImageService.GetImage(imageId);
+            CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
         }
     }
 
+    public async Task<List<Image>> GetImageDuplicates(Image image)
+    {
+        using var db = new ImageContext();
+        var watch = new Stopwatch("GetImageDupes");
 
-    public Task<List<ListableImage>> LoadData()
+        var dupes = await db.ImageMetaData
+                        .Where(x => x.Hash.Equals(image.MetaData.Hash) && x.ImageId != image.ImageId)
+                        .Include(x => x.Image)
+                        .Select(x => x.Image.ImageId)
+                        .ToListAsync();
+
+        var cachedImages = await imageCache.GetCachedImages(dupes);
+
+        return cachedImages;
+    }
+
+
+    public async Task<List<ListableImage>> LoadData()
     {
         var watch = new Stopwatch("DupesLoadData");
         images.Clear();
 
-        images.AddRange(ImageService.GetImageDuplicates(CurrentImage).Select(x => new ListableImage(x, ThumbSize.Small)));
+        var dupeImages = await GetImageDuplicates(CurrentImage);
+
+        var selectableImages = dupeImages.Select(x => new ListableImage(x, ThumbSize.Small));
+        images.AddRange(selectableImages);
         watch.Stop();
 
-        return Task.FromResult(images);
+        return images;
     }
 
 

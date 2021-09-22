@@ -155,7 +155,7 @@ namespace Damselfly.Core.ImageProcessing
             throw new NotImplementedException();
         }
 
-        public async Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile)
+        public Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile)
         {
             throw new NotImplementedException();
         }

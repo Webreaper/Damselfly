@@ -97,6 +97,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<Image>().HasIndex(x => x.SortDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.FolderScanDate);
             modelBuilder.Entity<Folder>().HasIndex(x => x.Path);
+            modelBuilder.Entity<Person>().HasIndex(x => x.State);
             modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
 
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
@@ -154,7 +155,7 @@ namespace Damselfly.Core.Models
 
         // Image File metadata
         public string FileName { get; set; }
-        public ulong FileSizeBytes { get; set; }
+        public int FileSizeBytes { get; set; }
         public DateTime FileCreationDate { get; set; }
         public DateTime FileLastModDate { get; set; }
 
@@ -460,8 +461,7 @@ namespace Damselfly.Core.Models
         public enum PersonState
         {
             Unknown = 0,
-            Identified = 1,
-            Confirmed = 2
+            Identified = 1
         };
 
         [Key]
@@ -612,23 +612,42 @@ namespace Damselfly.Core.Models
             Date
         };
 
-        public string SearchText { get; set; }
+        public enum FaceSearchType
+        {
+            None,
+            Faces,
+            NoFaces,
+            IdentifiedFaces,
+            UnidentifiedFaces
+        }
+
+        public enum OrientationType
+        {
+            All,
+            Landscape,
+            Portrait
+        }
+
+        public string SearchText { get; set; } = string.Empty;
         public DateTime? MaxDate { get; set; } = null;
         public DateTime? MinDate { get; set; } = null;
-        public ulong MaxSizeKB { get; set; } = ulong.MaxValue;
-        public ulong MinSizeKB { get; set; } = ulong.MinValue;
-        public Folder Folder { get; set; } = null;
+        public int? MaxSizeKB { get; set; } = null;
+        public int? MinSizeKB { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
         public bool IncludeAITags { get; set; } = true;
+        public bool UntaggedImages { get; set; } = false;
         public int CameraId { get; set; } = -1;
-        public Tag Tag { get; set; } = null;
         public int LensId { get; set; } = -1;
+        public Folder Folder { get; set; } = null;
+        public Tag Tag { get; set; } = null;
         public GroupingType Grouping { get; set; } = GroupingType.None;
         public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;
+        public FaceSearchType FaceSearch { get; set; } = FaceSearchType.None;
+        public OrientationType Orientation { get; set; } = OrientationType.All;
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}";
         }
     }
 

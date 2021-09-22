@@ -26,51 +26,5 @@ namespace Damselfly.Core.Utils
         {
             return !set.Any(predicate) ? set.Add(entity) : null;
         }
-
-        /// <summary>
-        /// Because of this issue: https://github.com/dotnet/efcore/issues/19418
-        /// we have to explicitly load the tags, rather than using eager loading.
-        /// This helper method does that.
-        /// TODO: Remove this method when that issue is closed.
-        /// </summary>
-        /// <param name="db">Context</param>
-        /// <param name="img">Image for which we want to load tags</param>
-        public static async Task LoadTags(this ImageContext db, Image img)
-        {
-            var watch = new Stopwatch("LoadImageTags");
-
-            try
-            {
-                // Need to ensure the image is re-attached to the
-                // context if we didn't load it with this one
-                db.Attach(img);
-
-                if (!img.ImageTags.Any())
-                {
-                    // Now load the tags
-                    await db.Entry(img).Collection(e => e.ImageTags)
-                                .Query()
-                                .Include(e => e.Tag)
-                                .LoadAsync();
-                }
-
-                if (!img.ImageObjects.Any())
-                {
-                    await db.Entry(img).Collection(e => e.ImageObjects)
-                                 .Query()
-                                 .Include(x => x.Tag)
-                                 .Include(x => x.Person)
-                                 .LoadAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logging.Log($"Exception retrieving image {img.ImageId}'s tags: {ex.Message}");
-            }
-            finally
-            {
-                watch.Stop();
-            }
-        }
     }
 }

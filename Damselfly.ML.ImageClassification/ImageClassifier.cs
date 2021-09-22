@@ -12,7 +12,7 @@ namespace Damselfly.ML.ImageClassification
         public async Task<ImageDetectResult> DetectObjects(Bitmap image)
         {
 
-            var modelDir = MLUtils.GetModelFolder();
+            var modelDir = MLUtils.ModelFolder;
 
             ImageDetectResult result = null;
 

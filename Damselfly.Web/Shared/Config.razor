@@ -154,9 +154,9 @@
                                                HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
                                         @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
                                         {
-                                            <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
-                                                @choice.ToString().Humanize()
-                                            </MudSelectItem>
+                                        <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
+                                            @choice.ToString().Humanize()
+                                        </MudSelectItem>
                                         }
                                     </MudSelect>
                                 </div>
@@ -259,6 +259,8 @@
 
     private void HandleValidSubmit()
     {
+        statusService.StatusText = "Settings saved.";
+
         try
         {
             configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
@@ -304,12 +306,9 @@
         }
         catch (Exception ex)
         {
-            statusService.StatusText = "Unable to save settings.";
+            statusService.StatusText = "Error saving settings.";
             Logging.LogError($"Error saving settings: {ex}");
-            return;
         }
-
-        statusService.StatusText = "Settings saved.";
     }
 
     private void UpdateServicesWithNewSettings()
@@ -317,7 +316,7 @@
         try
         {
             // Init the azure service status based on config.
-            azureService.StartService();
+            _ = azureService.StartService();
 
             // WP Settings have changed, so reset the client and token
             wpService.ResetClient();

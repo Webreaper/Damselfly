@@ -6,11 +6,11 @@
 @using Damselfly.Core.DbModels
 
 @inject IJSRuntime JsRuntime
-@inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService iptcService
 @inject SelectionService selectionService
 @inject IndexingService indexService
+@inject ImageCache imageCache 
 @inject MetaDataService metadataService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
@@ -85,22 +85,13 @@
                         </div>
                     }
 
-                    @foreach (var obj in theObjectTags)
+                    @foreach (var obj in theObjectTags )
                     {
                         <div class="damselfly-keyword">
-                            @if (obj.IsFace)
-                            {
-                                <div class="damselfly-favouritetag" title="Detected Face">
-                                    <i class="fas fa-user" />
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="damselfly-favouritetag" title="Detected Object">
-                                    <i class="fas fa-lightbulb" />
-                                </div>
-                            }
-                            <div class="damselfly-keywordtext">@obj.GetTagName()</div>
+                            <div class="damselfly-favouritetag" title="Detected Object">
+                                <i class="fas @obj.Icon" />
+                            </div>
+                            <div class="damselfly-keywordtext">@obj.Name</div>
                         </div>
                     }
                 }
@@ -136,8 +127,14 @@
         [CascadingParameter]
         private Task<AuthenticationState> authenticationStateTask { get; set; }
 
+    private class AITag
+    {
+        public string Name { get; set; }
+        public string Icon { get; set; }
+    }
+
     private IList<Tag> theImageTags { get; set; }
-    private IList<ImageObject> theObjectTags { get; set; }
+    private IList<AITag> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
 
     private void CreateNewTag(string tagToAdd)
@@ -214,7 +211,7 @@
         return new Tag[0];
     }
 
-    private IList<ImageObject> GetObjectTags()
+    private IList<AITag> GetObjectTags()
     {
         if (CurrentImages != null)
         {
@@ -222,8 +219,15 @@
             {
                 using var db = new ImageContext();
 
-                var tagLists = CurrentImages.SelectMany(x => x.ImageObjects)
-                                            .ToArray();
+                var tagLists = CurrentImages.SelectMany(x => x.ImageObjects )
+                                             .Select( x => new AITag
+                                             {
+                                                 Icon = x.Type == "Face" ? "fa-user" : "fa-lightbulb",
+                                                 Name = x.GetTagName()
+                                             })
+                                             .DistinctBy( x => x.Name )
+                                             .OrderBy( x => x.Name )
+                                             .ToList();
 
                 return tagLists;
             }
@@ -233,7 +237,7 @@
             }
         }
 
-        return new List<ImageObject>();
+        return new List<AITag>();
     }
 
     protected override async Task OnInitializedAsync()
@@ -268,6 +272,13 @@
         InvokeAsync(() => { _ = OnParametersSetAsync(); });
     }
 
+    private async Task SetCurrentImages( List<int> imageIds )
+    {
+        var enriched = await imageCache.GetCachedImages( imageIds );
+        CurrentImages = enriched.ToArray();
+        await OnParametersSetAsync();
+    }
+
     public void Dispose()
     {
         selectionService.OnSelectionChanged -= SelectionChanged;
@@ -277,9 +288,8 @@
 
     protected void SelectionChanged()
     {
-        this.CurrentImages = selectionService.Selection.ToArray();
-
-        InvokeAsync(() => { _ = OnParametersSetAsync(); });
+        var selectedIds = selectionService.Selection.Select(x => x.ImageId).ToList();
+        _ = SetCurrentImages(selectedIds);
     }
 
     protected void FavouritesChanged()
@@ -289,20 +299,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await Task.Run(RefreshTagsForSelection);
-    }
-
-    private void RefreshTagsForSelection()
-    {
         using var db = new ImageContext();
-
-        // Enrich all the images with their with their tags
-        foreach (var img in CurrentImages)
-            db.LoadTags(img);
 
         theImageTags = GetImageTags();
         theObjectTags = GetObjectTags();
-        InvokeAsync(StateHasChanged);
+        await InvokeAsync(StateHasChanged);
     }
 
     async Task ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)
@@ -336,4 +337,4 @@
         });
     }
 
-}
+    }

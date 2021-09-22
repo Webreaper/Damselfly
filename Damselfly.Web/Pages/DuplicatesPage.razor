@@ -1,7 +1,11 @@
 ﻿@page "/image/duplicates"
 
+@using Microsoft.EntityFrameworkCore
+@using System.Collections.Generic;
+
 @inject NavigationService navContext
 @inject ViewDataService ViewDataService
+@inject ImageCache imageCache
 
 @using Damselfly.Core.ImageProcessing
 
@@ -50,15 +54,15 @@
         return $"/thumb/{ThumbSize.Small}/{image.ImageId}";
     }
 
-    public Task<List<List<Image>>> LoadData()
+    public async Task<List<List<Image>>> LoadData()
     {
         var watch = new Stopwatch("DupesLoadData");
         imageLists.Clear();
 
-        imageLists = ImageService.GetImagesWithDuplicates();
+        imageLists = await GetImagesWithDuplicates();
         watch.Stop();
 
-        return Task.FromResult(imageLists);
+        return imageLists;
     }
 
 
@@ -74,4 +78,35 @@
         }
     }
 
+    /// <summary>
+    /// TODO: Move to duplicatesService
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<List<Image>>> GetImagesWithDuplicates()
+    {
+        using var db = new ImageContext();
+        var watch = new Stopwatch("GetImagesWithDupes");
+
+        // Craft the SQL manually as server-side groupby isn't supported by EF Core.
+        // Select all images that have the same hash as more than one image.
+        var subQuery = "SELECT hash from ImageMetaData where hash is not null and hash <> \"\" group by hash having count( distinct ImageID ) > 1";
+        var sql = $"SELECT im.* from ImageMetaData im where im.hash in ({subQuery})";
+
+        var dupeImages = await db.ImageMetaData.FromSqlRaw(sql)
+                                .Where(x => x.Hash != null)
+                                .Include(x => x.Image)
+                                .Select(x => x.ImageId)
+                                .ToListAsync();
+
+        var cachedImages = await imageCache.GetCachedImages(dupeImages);
+
+        // Group by the hash and pick all of the images for each one.
+        var listOfLists = cachedImages.GroupBy(x => x.MetaData.Hash)
+                                  .Select(x => x.OrderBy(x => x.SortDate).ToList())
+                                  .ToList();
+
+        watch.Stop();
+
+        return listOfLists;
+    }
 }
