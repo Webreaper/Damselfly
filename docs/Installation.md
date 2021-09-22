@@ -41,7 +41,7 @@ docker run \
         restart: unless-stopped
 ```
 
-The default port is 6363. The /pictures volume is mapped to the root directory of your photographs. 
+The default port is 6363, so unless you've changed that, once the server is up and running you can go http://ip.address.of.server:6363 to access the Web UI. The /pictures volume is mapped to the root directory of your photographs. 
 
 Note that in order to set up inotify watchers on your folders, you may need to increase the number of inotify instances as follows (where 524288 is any large number that's big enough for one watcher per folder):
 
