@@ -116,6 +116,7 @@ do this for you) where the server will re-index them to pick up your changes.
 * [SixLabors ImageSharp](https://github.com/SixLabors/ImageSharp) Portable library for Thumbnail generation
 * Drew Noakes' [MetadataExtractor](https://github.com/drewnoakes/metadata-extractor-dotnet), for IPTC and other image meta-data indexing
 * Phil Harvey's [ExifTool](https://exiftool.org/) which Damselfly uses for all of the EXIF write operations
+* ZZZ Project's [Entity Framework Extensions](https://entityframework-extensions.net) for their excellent EFCore extensions.
 * [MudBlazor](https://mudblazor.com/) for their excellent Blazor component library
 * [EmguCV](https://www.emgu.com) for their Face and Object detection Haar classifier models
 * [Azure Cognitive Services](https://azure.microsoft.com/en-gb/services/cognitive-services/face/) for their Face-recognition engine
