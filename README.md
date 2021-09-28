@@ -17,7 +17,7 @@ editing etc.
 
 ## Features
 
-* Support for most impage formats including JPG, PNG, HEIC, TIFF, Webp, BMP and DNG/CR2 (RAW) files.
+* Support for most image formats including JPG, PNG, HEIC, TIFF, Webp, BMP and DNG/CR2 (RAW) files.
 * AI / Computer vision image recognition:
     * Facial detection
     * Object detection and recognition
