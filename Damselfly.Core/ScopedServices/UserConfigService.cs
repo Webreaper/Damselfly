@@ -51,10 +51,19 @@ namespace Damselfly.Core.ScopedServices
             }
         }
 
+        /// <summary>
+        /// Save the settings. Note that if there is no logged in
+        /// user, we store the settings in the cache with an ID of
+        /// zero, and we don't save to the DB (which would give a
+        /// FK constraint exception. Means that settings will work
+        /// but only for the current session.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         public override void Set(string name, string value)
         {
-            if (_user == null)
-                return;
+            // UserID of zero indicates "no user", so default global setting
+            int userId = _user != null ? _user.Id : 0;
 
             lock (_cache)
             {
@@ -64,16 +73,24 @@ namespace Damselfly.Core.ScopedServices
                 {
                     if (String.IsNullOrEmpty(value))
                     {
-                        // Setting set to null - delete from the DB and cache
-                        db.ConfigSettings.Remove(existing);
                         _cache.Remove(name);
+
+                        if (_user != null)
+                        {
+                            // Setting set to null - delete from the DB and cache
+                            db.ConfigSettings.Remove(existing);
+                        }
                     }
                     else
                     {
                         // Setting set to non-null - save in the DB and cache
                         existing.Value = value;
-                        existing.UserId = _user.Id;
-                        db.ConfigSettings.Update(existing);
+                        existing.UserId = userId;
+
+                        _cache[name] = existing;
+
+                        if( _user != null )
+                            db.ConfigSettings.Update(existing);
                     }
                 }
                 else
@@ -81,13 +98,16 @@ namespace Damselfly.Core.ScopedServices
                     if (!String.IsNullOrEmpty(value))
                     {
                         // Existing setting set to non-null - create in the DB and cache.
-                        existing = new ConfigSetting { Name = name, Value = value, UserId = _user.Id };
+                        existing = new ConfigSetting { Name = name, Value = value, UserId = userId };
                         _cache[name] = existing;
-                        db.ConfigSettings.Add(existing);
+
+                        if( _user != null )
+                            db.ConfigSettings.Add(existing);
                     }
                 }
 
-                db.SaveChanges("SaveConfig");
+                if( _user != null )
+                    db.SaveChanges("SaveConfig");
             }
         }
     }

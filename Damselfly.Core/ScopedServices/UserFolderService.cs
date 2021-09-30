@@ -30,7 +30,7 @@ namespace Damselfly.Core.ScopedServices
         /// </summary>
         /// <param name="filterTerm"></param>
         /// <returns></returns>
-        public async Task<List<FolderListItem>> GetFilteredFolders( string filterTerm, bool force )
+        public async Task<List<FolderListItem>> GetFilteredFolders( string filterTerm )
         {
             List<FolderListItem> items = null;
 

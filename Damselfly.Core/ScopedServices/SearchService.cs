@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.Services;
+using Humanizer;
 using static Damselfly.Core.Models.SearchQuery;
 
 namespace Damselfly.Core.ScopedServices
@@ -18,23 +20,18 @@ namespace Damselfly.Core.ScopedServices
     /// </summary>
     public class SearchService
     {
-        public SearchService( UserStatusService statusService )
+        public SearchService( UserStatusService statusService, ImageCache cache, IndexingService indexingService)
         {
             _statusService = statusService;
+            _imageCache = cache;
+            _indexingService = indexingService;
         }
 
         private readonly UserStatusService _statusService;
+        private readonly ImageCache _imageCache;
+        private readonly IndexingService _indexingService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
-        private IDictionary<int, Image> imageCache = new Dictionary<int, Image>();
-
-        public Image GetFromCache( int imageId )
-        {
-            if (imageCache.TryGetValue(imageId, out var Image))
-                return Image;
-
-            return null;
-        }
 
         public void NotifyStateChanged()
         {
@@ -48,16 +45,27 @@ namespace Damselfly.Core.ScopedServices
         public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim() ) { query.SearchText = value.Trim(); QueryChanged(); } } }
         public DateTime? MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
         public DateTime? MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
-        public ulong MaxSizeKB { get { return query.MaxSizeKB; } set { if (query.MaxSizeKB != value) { query.MaxSizeKB = value; QueryChanged(); } } }
-        public ulong MinSizeKB { get { return query.MinSizeKB; } set { if (query.MinSizeKB != value) { query.MinSizeKB = value; QueryChanged(); } } }
+        public int? MaxSizeKB { get { return query.MaxSizeKB; } set { if (query.MaxSizeKB != value) { query.MaxSizeKB = value; QueryChanged(); } } }
+        public int? MinSizeKB { get { return query.MinSizeKB; } set { if (query.MinSizeKB != value) { query.MinSizeKB = value; QueryChanged(); } } }
         public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
         public bool IncludeAITags { get { return query.IncludeAITags; } set { if (query.IncludeAITags != value) { query.IncludeAITags = value; QueryChanged(); } } }
+        public bool UntaggedImages { get { return query.UntaggedImages; } set { if (query.UntaggedImages != value) { query.UntaggedImages = value; QueryChanged(); } } }
         public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
         public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
+        public FaceSearchType FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
+        public OrientationType Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
+
+        public void ApplyQuery(SearchQuery newQuery)
+        {
+            if (newQuery.CopyPropertiesTo(query))
+            {
+                QueryChanged();
+            }
+        }
 
         public void SetDateRange( DateTime? min, DateTime? max )
         {
@@ -114,7 +122,7 @@ namespace Damselfly.Core.ScopedServices
                 using var db = new ImageContext();
                 var watch = new Stopwatch("ImagesLoadData");
                 Stopwatch tagwatch = null;
-                Image[] results = new Image[0];
+                List<int> results = new List<int>();
 
                 try
                 {
@@ -142,6 +150,11 @@ namespace Damselfly.Core.ScopedServices
                         images = tagImages.Union(objImages);
                     }
 
+                    if( query.UntaggedImages )
+                    {
+                        images = images.Where(x => ! x.ImageTags.Any() );
+                    }
+
                     // If selected, filter by the image filename/foldername
                     if (hasTextSearch && ! query.TagsOnly )
                     {
@@ -159,6 +172,60 @@ namespace Damselfly.Core.ScopedServices
                     {
                         // Filter by folderID
                         images = images.Where(x => x.FolderId == query.Folder.FolderId);
+                    }
+
+                    if (query.MinDate.HasValue || query.MaxDate.HasValue)
+                    {
+                        var minDate = query.MinDate.HasValue ? query.MinDate : DateTime.MinValue;
+                        var maxDate = query.MaxDate.HasValue ? query.MaxDate : DateTime.MaxValue;
+                        // Always filter by date - because if there's no filter
+                        // set then they'll be set to min/max date.
+                        images = images.Where(x => x.SortDate >= minDate &&
+                                                   x.SortDate <= maxDate);
+                    }
+
+                    if( query.MinSizeKB.HasValue )
+                    {
+                        int minSizeBytes = query.MinSizeKB.Value * 1024;
+                        images = images.Where(x => x.FileSizeBytes > minSizeBytes);
+                    }
+
+                    if (query.MaxSizeKB.HasValue )
+                    {
+                        int maxSizeBytes = query.MaxSizeKB.Value * 1024;
+                        images = images.Where(x => x.FileSizeBytes < maxSizeBytes);
+                    }
+
+                    if( query.Orientation != OrientationType.All )
+                    {
+                        if (query.Orientation == OrientationType.Landscape)
+                            images = images.Where(x => x.MetaData.Width > x.MetaData.Height);
+                        else
+                            images = images.Where(x => x.MetaData.Height > x.MetaData.Width);
+                    }
+
+                    if (query.CameraId != -1 || query.LensId != -1)
+                    {
+                        images = images.Include(x => x.MetaData);
+
+                        if (query.CameraId != -1)
+                            images = images.Where(x => x.MetaData.CameraId == query.CameraId);
+ 
+                        if (query.LensId != -1)
+                            images = images.Where(x => x.MetaData.LensId == query.LensId);
+                    }
+
+                    if( query.FaceSearch != FaceSearchType.None )
+                    {
+                        images = query.FaceSearch switch
+                        {
+                            FaceSearchType.Faces => images.Where(x => x.ImageObjects.Any(x => x.Type == ImageObject.ObjectTypes.Face.ToString() )),
+                            FaceSearchType.NoFaces => images.Where(x => !x.ImageObjects.Any(x => x.Type == ImageObject.ObjectTypes.Face.ToString() )),
+                            FaceSearchType.UnidentifiedFaces => images.Where(x => x.ImageObjects.Any(x => x.Person.State == Person.PersonState.Unknown)),
+                            FaceSearchType.IdentifiedFaces => images.Where(x => x.ImageObjects.Any(x => x.Person.State == Person.PersonState.Identified)),
+                            _ => images
+                        };
+                            
                     }
 
                     // Add in the ordering for the group by
@@ -179,57 +246,17 @@ namespace Damselfly.Core.ScopedServices
                             throw new ArgumentException("Unexpected grouping type.");
                     }
 
-                    if (query.MinDate.HasValue || query.MaxDate.HasValue)
-                    {
-                        var minDate = query.MinDate.HasValue ? query.MinDate : DateTime.MinValue;
-                        var maxDate = query.MaxDate.HasValue ? query.MaxDate : DateTime.MaxValue;
-                        // Always filter by date - because if there's no filter
-                        // set then they'll be set to min/max date.
-                        images = images.Where(x => x.SortDate >= minDate &&
-                                                   x.SortDate <= maxDate);
-                    }
-
-                    if( query.MinSizeKB > ulong.MinValue )
-                    {
-                        ulong minSizeBytes = query.MinSizeKB / 1024;
-                        images = images.Where(x => x.FileSizeBytes >= minSizeBytes);
-                    }
-
-                    if (query.MaxSizeKB < ulong.MaxValue )
-                    {
-                        ulong maxSizeBytes = query.MaxSizeKB / 1024;
-                        images = images.Where(x => x.FileSizeBytes <= maxSizeBytes);
-                    }
-
-                    images = images.Include(x => x.MetaData);
-
-                    if ( query.CameraId != -1 )
-                    {
-                        images = images.Where(x => x.MetaData.CameraId == query.CameraId);
-                    }
-
-                    if (query.LensId != -1)
-                    {
-                        images = images.Where(x => x.MetaData.LensId == query.LensId);
-                    }
-
-                    // Disable this for now - it's slow due to the EFCore subquery bug.
-                    // We mitigate it by loading the tags in a separate query below.
-                    // images = images.Include(x => x.ImageTags)
-                    //               .ThenInclude(x => x.Tag);
-
-                    results = await images.Skip(first)
+                    results = await images.Select( x => x.ImageId )
+                                    .Skip(first)
                                     .Take(count)
-                                    .ToArrayAsync();
+                                    .ToListAsync();
 
                     tagwatch = new Stopwatch("SearchLoadTags");
 
                     // Now load the tags....
-                    foreach (var img in results)
-                    {
-                        imageCache[img.ImageId] = img;
-                        await db.LoadTags(img);
-                    }
+                    var enrichedImages = await _imageCache.GetCachedImages( results );
+
+                    SearchResults.AddRange(enrichedImages);
 
                     tagwatch.Stop();
                 }
@@ -244,9 +271,6 @@ namespace Damselfly.Core.ScopedServices
 
                 Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms (Tags: {tagwatch.ElapsedTime}ms)");
                 _statusService.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
-
-                // Now save the results in our stored dataset
-                SearchResults.AddRange(results);
             }
         }
 
@@ -288,9 +312,33 @@ namespace Damselfly.Core.ScopedServices
                 if (!string.IsNullOrEmpty(dateRange))
                     hints.Add($"Date: {dateRange}");
 
-                // TODO: Need camera here.
+                if (UntaggedImages)
+                    hints.Add($"Untagged images");
 
-                return string.Join(", ", hints);
+                if (FaceSearch != FaceSearchType.None)
+                    hints.Add($"{FaceSearch.Humanize()}");
+
+                if (Orientation != OrientationType.All)
+                    hints.Add($"{Orientation.Humanize()}");
+
+                if ( CameraId > 0 )
+                {
+                    var cam = _indexingService.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
+                    if (cam != null)
+                        hints.Add($"Camera: {cam.Model}");
+                }
+
+                if (LensId > 0)
+                {
+                    var lens = _indexingService.Lenses.FirstOrDefault(x => x.LensId == LensId);
+                    if (lens != null)
+                        hints.Add($"Lens: {lens.Model}");
+                }
+
+                if( hints.Any() )
+                    return string.Join(", ", hints);
+
+                return "No Filter";
             }
         }
     }

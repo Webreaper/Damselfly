@@ -9,7 +9,8 @@
 @inject NavigationManager NavigationManager
 @inject ViewDataService ViewDataService
 @inject UserConfigService configService
-@inject IndexingService indexService            
+@inject IndexingService indexService
+@inject ImageCache imageCache         
 @inject IJSRuntime JsRuntime
 @implements ICropHelper
 
@@ -29,7 +30,7 @@ else
     </div>
     <div class="damselfly-imagebuttons">
         <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image" />
-        <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@EnableZoom" title="Toggle Zoom" />
+        <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@ZoomEnabled" title="Toggle Zoom" />
         <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces" />
         <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
             <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
@@ -52,19 +53,20 @@ else
     </div>
 </div>
 
-                <ImagePreview @ref="theImagePreview" Image="@image" ShowObjects="@ShowObjects" ZoomEnabled="@EnableZoom" />}
+    <ImagePreview @ref="theImagePreview" Image="@image" />}
 </div>
 
-@code { [Parameter]
+@code {
+    [Parameter]
     public string ImageID { get; set; }
-
-    private bool ShowObjects { get; set; }
-    private bool EnableZoom { get; set; }
 
     private Image image;
     private Image nextImage;
     private Image prevImage;
     private ElementReference ImageView;
+
+    private bool ZoomEnabled => theImagePreview == null ? false : theImagePreview.ZoomEnabled;
+    private bool ShowObjects => theImagePreview == null ? false : theImagePreview.ShowObjects;
 
     private ImagePreview theImagePreview;
     public string ImgKey => $"prev{image.ImageId}";
@@ -81,9 +83,6 @@ else
 
     protected override void OnInitialized()
     {
-        EnableZoom = configService.GetBool(ConfigSettings.ShowZoom, true);
-        ShowObjects = configService.GetBool(ConfigSettings.ShowObjects, false);
-
         base.OnInitialized();
 
         SetupPreload();
@@ -116,14 +115,12 @@ else
 
     private void ToggleShowObjects()
     {
-        ShowObjects = !ShowObjects;
-        StateHasChanged();
+        theImagePreview.ToggleShowObjects();
     }
 
     private void ToggleZoom()
     {
-        EnableZoom = !EnableZoom;
-        StateHasChanged();
+        theImagePreview.ToggleZoomEnabled();
     }
 
     private void SetupPreload()
@@ -159,7 +156,7 @@ else
     {
         if (Int32.TryParse(ImageID, out var imageId))
         {
-            image = await ImageService.GetImage(imageId, true, true);
+            image = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = image;
 
             nextImage = await navContext.GetNextImageAsync(true);

@@ -592,6 +592,26 @@ f
     background-image: linear-gradient(180deg, var( --statusbar-gradstart ), var( --statusbar-gradend ));
 }
 
+.damselfly-dialogrow {
+    display: flex;
+    margin-bottom: 7px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.damselfly-dialogctrl {
+    flex: 1 1 50%;
+    margin-right: 6px;
+}
+
+.damselfly-dialogctrl-v {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 50%;
+    margin-right: 6px;
+}
+
 .damselfly-statusitem {
     display: flex;
     flex: 0 0 auto;
@@ -609,9 +629,11 @@ f
 
 .damselfly-searchbar {
     display: flex;
-    align-items: stretch;
+    align-items: baseline;
     flex: 0 0 auto;
     flex-flow: row wrap;
+    margin-left: 4px;
+    margin-right: 4px;
     font-size: 10pt;
 }
 
@@ -665,17 +687,50 @@ f
     padding-left: 3px;
 }
 
-.damselfly-browsetool {
-    flex: 1;
+.damselfly-browsetools {
     margin: 3px;
+    margin-right: 6px;
     display: flex;
-    min-width: 200px;
     flex-flow: row;
     align-items: center;
+    font-size: 18px;
+}
+
+.damselfly-browsetool {
+    display: flex;
+    flex: 1;
+    margin: 4px;
+    flex-flow: row;
+}
+
+.damselfly-browsetool-select {
+    appearance: none;
+    font-size: 10pt;
+    padding-left: 3px;
+    padding-right: 3px;
+    margin: 3px;
+    border: 0.5px solid rgba( 0, 0, 0, 0);
+    background: var( --main-background );
+    color: var( --body-text );
+    opacity: 100%;
+}
+
+.damselfly-browsetool-select:hover {
+    opacity: 90%;
+    border: 0.5px solid var( --keyword-border);
+    animation: ease-in 0.5s;
+}
+
+.damselfly-browsetool:hover {
+    opacity: 100%;
+}
+
+.damselfly-browsetool-deselected {
+    opacity: 50%;
 }
 
 .damselfly-searchhint {
-    flex: 1 1 200px;
+    flex: 1 1 auto;
     margin: 3px;
     display: flex;
     flex-flow: row;
@@ -697,7 +752,7 @@ f
 
 
 .damselfly-searchfilter {
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-flow: row;
     margin-right: 3px;

@@ -3,6 +3,7 @@ using System;
 using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Damselfly.Core.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    partial class ImageContextModelSnapshot : ModelSnapshot
+    [Migration("20210928074900_FixPersonState")]
+    partial class FixPersonState
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.0-rc.1.21452.10");
@@ -117,21 +119,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "ddf4d227-28f9-43af-a72d-6f7778ea87a7",
+                            ConcurrencyStamp = "57ba482a-1757-4907-824b-8a0e32b0c325",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "33b555f9-1e38-4250-bdac-1d56fce31a78",
+                            ConcurrencyStamp = "48184797-ab82-44e8-91ff-8cf6c4931126",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "a0007d57-b34b-46c3-90f5-d4db384b2259",
+                            ConcurrencyStamp = "82edb408-85aa-4d03-9d93-1a8e97fb2492",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });

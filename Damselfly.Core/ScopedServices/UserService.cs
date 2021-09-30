@@ -110,7 +110,7 @@ namespace Damselfly.Core.ScopedServices
             return result.Succeeded;
         }
 
-        public async Task<string> GetUserPasswordResetLink( AppIdentityUser user )
+        public /*async*/ Task<string> GetUserPasswordResetLink( AppIdentityUser user )
         {
             // http://localhost:6363/Identity/Account/ResetPassword?user=12345&code=2134234
            throw new NotImplementedException();

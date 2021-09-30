@@ -3,9 +3,10 @@
 @using Damselfly.Web.Data
 @using Damselfly.Core.Services;
 @using Damselfly.Web.Shared.Images;
+@using Damselfly.Core.ImageProcessing;
+
 @implements IDisposable
 
-@inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
 @inject IndexingService indexingService
@@ -15,8 +16,8 @@
 @inject NavigationManager navigationManager
 
 <div class="damselfly-imagebrowser">
-    <SearchBar />
-    <ImageGrid />
+    <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
+    <ImageGrid CurrentThumbSize="@thumbSize"/>
 </div>
 
 @code
@@ -39,6 +40,14 @@
     [QueryStringParameter]
     public DateTime Date { get; set; }
 
+    private ThumbSize thumbSize { get; set; }
+
+    private void ThumbSizeChanged( ThumbSize newSize )
+    {
+        thumbSize = newSize;
+        StateHasChanged();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         await ApplyQueryParams();
@@ -53,7 +62,9 @@
 
         if (FolderId != 0)
         {
-            var folder = await ImageService.GetFolderAsync(FolderId);
+            using var db = new ImageContext();
+
+            var folder = await db.Folders.FindAsync(FolderId);
 
             if (folder != null)
             {

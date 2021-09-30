@@ -6,7 +6,6 @@ EF Migrations
 2. Run this from the root Damselfly folder
 
     dotnet ef migrations add <migrationName> --project Damselfly.Migrations.Sqlite --startup-project Damselfly.Web
-    dotnet ef migrations add AddDataProtectionKeys --project Damselfly.Migrations.Sqlite --startup-project Damselfly.Web
 
 3. Comment the Postgres line and uncomment the Sqlite line in OnConfiguring.
 

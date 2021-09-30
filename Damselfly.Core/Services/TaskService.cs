@@ -36,7 +36,9 @@ namespace Damselfly.Core.Services
         /// </summary>
         public void Start()
         {
-            timer = new Timer(ProcessPendingTasks, null, new TimeSpan( 0, 0, 0 ), timerFreq);
+            // Don't trigger an immediate process on startup - give everything a chance
+            // to initialise and settle down. Wait a cycle and then start checking/working
+            timer = new Timer(ProcessPendingTasks, null, timerFreq, timerFreq);
         }
 
         /// <summary>

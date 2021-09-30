@@ -36,15 +36,20 @@ namespace Damselfly.Core.Services
         private readonly StatusService _statusService;
         private readonly MetaDataService _metadataService;
         private readonly ConfigService _configService;
+        private readonly ImageCache _imageCache;
         private readonly ImageProcessService _imageProcessService;
 
+        public ICollection<Camera> Cameras {  get { return _cameraCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList();  } }
+        public ICollection<Lens> Lenses { get { return _lensCache.Values.OrderBy( x => x.Make ).ThenBy( x => x.Model ).ToList(); } }
+
         public IndexingService( StatusService statusService, MetaDataService metaData, 
-            ImageProcessService imageService, ConfigService config )
+            ImageProcessService imageService, ConfigService config, ImageCache imageCache )
         {
             _statusService = statusService;
             _configService = config;
             _metadataService = metaData;
             _imageProcessService = imageService;
+            _imageCache = imageCache;
         }
 
         public event Action OnFoldersChanged;
@@ -299,6 +304,25 @@ namespace Damselfly.Core.Services
         }
 
         #region Tag, Lens and Camera Caching
+        private void InitCameraAndLensCaches()
+        {
+            if (_lensCache == null)
+            {
+                using ImageContext db = new ImageContext();
+                _lensCache = new ConcurrentDictionary<string, Lens>(db.Lenses
+                                                                      .AsNoTracking()
+                                                                      .ToDictionary(x => x.Make + x.Model, y => y));
+            }
+
+            if (_cameraCache == null)
+            {
+                using var db = new ImageContext();
+                _cameraCache = new ConcurrentDictionary<string, Camera>(db.Cameras
+                                                                           .AsNoTracking() // We never update, so this is faster
+                                                                           .ToDictionary(x => x.Make + x.Model, y => y));
+            }
+        }
+
         /// <summary>
         /// Get a camera object, for each make/model. Uses an in-memory cache for speed.
         /// </summary>
@@ -307,14 +331,6 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         private Camera GetCamera( string make, string model, string serial)
         {
-            if (_cameraCache == null)
-            {
-                using var db = new ImageContext();
-                _cameraCache = new ConcurrentDictionary<string, Camera>( db.Cameras
-                                                                           .AsNoTracking() // We never update, so this is faster
-                                                                           .ToDictionary(x => x.Make + x.Model, y => y) );
-            }
-
             string cacheKey = make + model;
 
             if (string.IsNullOrEmpty(cacheKey))
@@ -343,14 +359,6 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         private Lens GetLens(string make, string model, string serial)
         {
-            if (_lensCache == null)
-            {
-                using ImageContext db = new ImageContext();
-                _lensCache = new ConcurrentDictionary<string, Lens>(db.Lenses
-                                                                      .AsNoTracking()
-                                                                      .ToDictionary(x => x.Make + x.Model, y => y)) ;
-            }
-
             string cacheKey = make + model;
 
             if (string.IsNullOrEmpty(cacheKey))
@@ -459,12 +467,13 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="imageKeywords"></param>
         /// <param name="type"></param>
-        private async Task AddTags( IDictionary<Image, string[]> imageKeywords )
+        private async Task<int> AddTags( IDictionary<Image, string[]> imageKeywords )
         {
             // See if we have any images that were written to the DB and have IDs
             if ( ! imageKeywords.Where( x => x.Key.ImageId != 0 ).Any())
-                return;
+                return 0;
 
+            int tagsAdded = 0;
             var watch = new Stopwatch("AddTags");
 
             using ImageContext db = new ImageContext();
@@ -512,7 +521,7 @@ namespace Damselfly.Core.Services
 
                         transaction.Commit();
 
-                        await db.GenFullText(false);
+                        tagsAdded = newImageTags.Count;
                     }
                 }
                 catch (Exception ex)
@@ -522,6 +531,8 @@ namespace Damselfly.Core.Services
             }
 
             watch.Stop();
+
+            return tagsAdded;
         }
 
         /// <summary>
@@ -731,7 +742,7 @@ namespace Damselfly.Core.Services
                     }
 
                     // Store some info about the disk file
-                    image.FileSizeBytes = (ulong)file.Length;
+                    image.FileSizeBytes = (int)file.Length;
                     image.FileCreationDate = file.CreationTimeUtc;
                     image.FileLastModDate = file.LastWriteTimeUtc;
 
@@ -754,6 +765,9 @@ namespace Damselfly.Core.Services
                     {
                         db.Images.Update(image);
                         updatedImages++;
+
+                        // Changed, so throw it out of the cache
+                        _imageCache.Evict(image.ImageId);
                     }
                 }
                 catch (Exception ex)
@@ -776,7 +790,7 @@ namespace Damselfly.Core.Services
 
                 // Removing these will remove the associated ImageTag and selection references.
                 db.Images.RemoveRange(imagesToDelete);
-
+                imagesToDelete.ForEach(x => _imageCache.Evict(x.ImageId));
                 imagesWereAddedOrRemoved = true;
             }
 
@@ -856,8 +870,6 @@ namespace Damselfly.Core.Services
             try
             {
                 using var db = new ImageContext();
-
-                await db.GenFullText(true);
 
                 const int batchSize = 100;
                 bool complete = false;
@@ -986,11 +998,13 @@ namespace Damselfly.Core.Services
                         var tagWatch = new Stopwatch("AddTagsSave");
 
                         // Now save the tags
-                        await AddTags( imageKeywords );
+                        var tagsAdded = await AddTags( imageKeywords );
 
                         tagWatch.Stop();
 
                         batchWatch.Stop();
+
+                        updatedEntries.ForEach(x => _imageCache.Evict(x.ImageId));
 
                         Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
                         Logging.LogVerbose($"Time for metadata scan batch: {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tag writes: {tagWatch.HumanElapsedTime}.");
@@ -1044,6 +1058,8 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
+            InitCameraAndLensCaches();
+
             if (EnableIndexing)
             {
                 Logging.Log("Starting indexing service.");
@@ -1054,10 +1070,16 @@ namespace Damselfly.Core.Services
                 indexthread.Priority = ThreadPriority.Lowest;
                 indexthread.Start();
 
-                Task.Run(() => RunMetaDataScans());
+                Logging.Log("Starting metadata service.");
+
+                var metadataThread = new Thread(new ThreadStart(async () => { await RunMetaDataScans(); }));
+                metadataThread.Name = "MetaDataThread";
+                metadataThread.IsBackground = true;
+                metadataThread.Priority = ThreadPriority.Lowest;
+                metadataThread.Start();
             }
             else
-                Logging.Log("Indexing service has been disabled.");
+                Logging.Log("Indexing has been disabled.");
         }
 
         private void ProcessIndexing()

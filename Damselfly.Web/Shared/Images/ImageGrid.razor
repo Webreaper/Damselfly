@@ -1,6 +1,5 @@
 ﻿
 @using Damselfly.Core.Models
-@inject ImageService imageService
 @inject ThumbnailService thumbService
 @inject MetaDataService keywordService
 @inject UserStatusService statusService
@@ -16,51 +15,6 @@
 @using Damselfly.Core.Utils.Constants
 
 <LocalFileExporter @ref="FileExporter" />
-
-<div class="damselfly-imagetools">
-    <div class="damselfly-browsetool">
-        @foreach (var choice in new[] { ThumbSize.Small, ThumbSize.Medium, ThumbSize.Large })
-        {
-            <label class="damselfly-browsetoollabel">
-                <input name="thumbSize" type="radio" value="@choice"
-                       checked="@CurrentThumbSize.Equals( choice )"
-                       @onchange="@(() => { ChangeThumbSize( choice ); })" />
-                @choice.ToString()
-            </label>
-        }
-    </div>
-    <div class="damselfly-browsetool">
-        <label class="damselfly-browsetoollabel">
-            Group By:
-            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.GroupingType)).Cast<SearchQuery.GroupingType>())
-            {
-                <label class="damselfly-browsetoollabel">
-                    <input name="grouping" value="@choice" type="radio"
-                           checked="@searchService.Grouping.Equals( choice )"
-                           @onchange="@(() => { ChangeGroupType( choice ); })" />
-                    @choice.ToString()
-                </label>
-            }
-        </label>
-    </div>
-    <div class="damselfly-browsetool">
-        <label class="damselfly-browsetoollabel">
-            Sort By:
-            @foreach (var choice in Enum.GetValues(typeof(SearchQuery.SortOrderType)).Cast<SearchQuery.SortOrderType>())
-            {
-                <label class="damselfly-browsetoollabel">
-                    <input name="sortorder" value="@choice" type="radio"
-                           checked="@searchService.SortOrder.Equals( choice )"
-                           @onchange="@(() => { ChangeSortOrder( choice ); })" />
-                    @choice.ToString()
-                </label>
-            }
-        </label>
-    </div>
-    <div class="damselfly-searchhint">
-        <label class="damselfly-browsetoollabel"><i class="fas fa-search" title="Current Search Parameters" />&nbsp;@searchService.SearchBreadcrumbs</label>
-    </div>
-</div>
 
 <div class="damselfly-imagegrid" id="scroll-area">
     @if (!gridImages.Any())
@@ -141,20 +95,15 @@
     @code {
         private LocalFileExporter FileExporter;
         const int imagesPerPage = 100;
-        private bool showDateSeparators;
         private bool NoImagesSelected => !selectionService.Selection.Any();
         bool IsLoading { get; set; } = false;
         bool endOfImages = false;
         string toastClass = string.Empty;
         private EventConflator conflator = new EventConflator(2000);
 
-        ThumbSize CurrentThumbSize = ThumbSize.Small;
-
-        protected override void OnInitialized()
-        {
-            showDateSeparators = configService.GetBool("DateSeparators", false);
-            CurrentThumbSize = configService.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
-        }
+        [Parameter]
+        public ThumbSize CurrentThumbSize { get {  return _currentThumbSize; } set{ ChangeThumbSize( value ); } }
+        private ThumbSize _currentThumbSize;
 
         private void StoreImage(Image image)
         {
@@ -190,14 +139,14 @@
                 // TODO: Order by
                 if (searchService.Grouping == SearchQuery.GroupingType.Folder)
                 {
-                    var result = gridImages.GroupBy(x => x.Folder);
+                    var result = gridImages.GroupBy(x => x.Folder.Path);
 
                     if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
-                        result = result.OrderByDescending(x => x.Key.Path);
+                        result = result.OrderByDescending(x => x.Key);
                     else
-                        result = result.OrderBy(x => x.Key.Path);
+                        result = result.OrderBy(x => x.Key);
 
-                    return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
+                    return result.Select(x => new ImageGrouping { Key = x.Key, Images = x.ToList() })
                                 .ToList();
                 }
                 else if (searchService.Grouping == SearchQuery.GroupingType.Date)
@@ -236,7 +185,7 @@
 
         protected void ChangeThumbSize(ThumbSize newSize)
         {
-            CurrentThumbSize = newSize;
+            _currentThumbSize = newSize;
 
             switch (newSize)
             {

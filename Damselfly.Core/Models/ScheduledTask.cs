@@ -21,7 +21,8 @@ namespace Damselfly.Core.Models
             MetadataScan,
             FlushDBWriteCache,
             DumpPerformance,
-            CleanupThumbs
+            CleanupThumbs,
+            FreeTextIndex
         }
 
         public TaskType Type { get; set; }

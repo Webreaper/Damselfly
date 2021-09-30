@@ -59,6 +59,8 @@ namespace Damselfly.Web
             services.AddServerSideBlazor();
             services.AddFileReaderService();
             services.AddMudServices();
+            // Cache up to 10,000 images. Should be enough given cache expiry.
+            services.AddMemoryCache( x => x.SizeLimit = 10000 );
 
             services.AddDbContext<ImageContext>();
             services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
@@ -78,7 +80,6 @@ namespace Damselfly.Web
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<ImageProcessorFactory>();
-            services.AddSingleton<ImageService>();
             services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
             services.AddSingleton<IndexingService>();
@@ -93,6 +94,7 @@ namespace Damselfly.Web
             services.AddSingleton<AzureFaceService>();
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ImageRecognitionService>();
+            services.AddSingleton<ImageCache>();
 
             // This needs to happen after ConfigService has been registered.
             services.AddAuthorization(config => SetupPolicies(config, services));
@@ -221,16 +223,16 @@ namespace Damselfly.Web
             download.SetDownloadPath(contentRootPath);
             themes.SetContentPath(contentRootPath);
 
-            StartTaskScheduler(tasks, download, thumbService, metadata);
-
             // Start the face service before the thumbnail service
-            azureFace.StartService();
+            azureFace.StartService().Wait();
             indexService.StartService();
             thumbService.StartService();
             aiService.StartService();
 
             // Validation check to ensure at least one user is an Admin
             userService.CheckAdminUser().GetAwaiter().GetResult();
+
+            StartTaskScheduler(tasks, download, thumbService, metadata);
         }
 
         /// <summary>
@@ -261,7 +263,7 @@ namespace Damselfly.Web
                 Type = ScheduledTask.TaskType.CleanupDownloads,
                 ExecutionFrequency = downloadCleanupFreq,
                 WorkMethod = () => download.CleanUpOldDownloads(downloadCleanupFreq),
-                ImmediateStart = true
+                ImmediateStart = false
             });
 
             // Purge keyword operation entries that have been processed
@@ -269,17 +271,18 @@ namespace Damselfly.Web
             tasks.Add(new ScheduledTask
             {
                 Type = ScheduledTask.TaskType.CleanupKeywordOps,
-                ExecutionFrequency = new TimeSpan(24,0,0),
+                ExecutionFrequency = new TimeSpan(12,0,0),
                 WorkMethod = () => metadata.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
-                ImmediateStart = true
+                ImmediateStart = false
             });
 
             // Dump performance stats out to the logfile
-            tasks.Add( new ScheduledTask
+            tasks.Add(new ScheduledTask
             {
                 Type = ScheduledTask.TaskType.DumpPerformance,
-                ExecutionFrequency = new TimeSpan(12, 0, 0),
-                WorkMethod = () => Stopwatch.WriteTotals(false)
+                ExecutionFrequency = new TimeSpan(24, 0, 0),
+                WorkMethod = () => Stopwatch.WriteTotals(false),
+                ImmediateStart = false
             });
 
             // Flush the DB WriteCache (currently a no-op except for SQLite

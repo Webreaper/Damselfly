@@ -107,6 +107,32 @@ namespace Damselfly.Core.Services
             }
         }
 
+        public async Task UpdateName( ImageObject faceObject, string name )
+        {
+            if (!faceObject.IsFace)
+                throw new ArgumentException("Image object passed to name update.");
+
+            using var db = new ImageContext();
+
+            if (faceObject.Person == null)
+            {
+                faceObject.Person = new Person();
+                db.People.Add(faceObject.Person);
+            }
+            else
+                db.People.Update(faceObject.Person);
+
+            // TODO: If this is an existing person/name, we might need to merge in Azure
+            faceObject.Person.Name = name;
+            faceObject.Person.State = Person.PersonState.Identified;
+            db.ImageObjects.Update(faceObject);
+
+            await db.SaveChangesAsync("SetName");
+
+            // Add/update the cache
+            _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
+        }
+
         /// <summary>
         /// Create the DB entries for people who we don't know about,
         /// and then pre-populate the cache with their entries.

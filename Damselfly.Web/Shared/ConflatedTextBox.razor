@@ -18,11 +18,8 @@
     [Parameter]
     public string id { get; set; }
 
-    // TODO: Hacky. Must be a better way than this.
     [Parameter]
-    public string TextValue { set { if (!initialValueSet) { tempValue = value; initialValueSet = true; } } }
-
-    bool initialValueSet = false;
+    public string TextValue { set { HandleChange(value); } }
 
     private EventConflator conflator = new EventConflator();
     private string tempValue;
@@ -41,15 +38,18 @@
 
     private void HandleChange(string newValue)
     {
-        if (OnKeyPressed != null)
-            OnKeyPressed(newValue);
+        if( tempValue != newValue )
+        {
+            if (OnKeyPressed != null)
+                OnKeyPressed(newValue);
 
-        tempValue = newValue;
-        conflator.HandleEvent(SearchCallback);
+            tempValue = newValue;
+            conflator.HandleEvent(SearchCallback);
+        }
     }
 
     private void SearchCallback(object state)
-    {       
+    {
         if (OnValueChanged != null)
             OnValueChanged(tempValue);
     }

@@ -102,7 +102,7 @@ do this for you) where the server will re-index them to pick up your changes.
 ## More information
 
 * [Installation](./docs/Installation.md)
-* [Multi User and Roles](./docs/Multi-user.md)
+* [Multi-User and Roles](./docs/Multi-user.md)
 * [Technical Background](./docs/Technical.md)
 * [FAQ](./docs/FAQ.md)
 * [Contributing to Damselfly](./docs/Contributing.md)
@@ -124,4 +124,4 @@ do this for you) where the server will re-index them to pick up your changes.
 * [Font Awesome](https://fontawesome.com/) for their Awesome icons
 * Chris Sainty for [Blazored](https://github.com/Blazored) Modal and Typeahead, and all his excellent info on Blazor
 * [Serilog.Net](https://serilog.net/) for logging
-* Wisne for [Infinite Scroll](https://github.com/wisne/InfiniteScroll-BlazorServer) inspiration
+* Wisne for [Infinite Scroll](https://github.com/wisne/InfiniteScroll-BlazorServer) inspiration 

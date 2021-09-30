@@ -22,13 +22,13 @@ namespace Damselfly.Web.Controllers
     public class ImageController : Controller
     {
         [HttpGet("/dlimage/{imageId}")]
-        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] SearchService searchService)
+        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache)
         {
-            return await Image(imageId, cancel, searchService, true);
+            return await Image(imageId, cancel, imageCache, true);
         }
 
         [HttpGet("/rawimage/{imageId}")]
-        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] SearchService searchService, bool isDownload = false )
+        public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache, bool isDownload = false )
         {
             Stopwatch watch = new Stopwatch("ControllerGetImage");
 
@@ -38,15 +38,10 @@ namespace Damselfly.Web.Controllers
             {
                 try
                 {
-                    var image = searchService.GetFromCache(id);
+                    var image = await imageCache.GetCachedImage(id);
 
                     if (cancel.IsCancellationRequested)
                         return result;
-
-                    if (image == null)
-                    {
-                        image = await ImageService.GetImage(id, false, false);
-                    }
 
                     if (image != null)
                     {
@@ -74,7 +69,7 @@ namespace Damselfly.Web.Controllers
 
         [HttpGet("/thumb/{thumbSize}/{imageId}")]
         public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel,
-                        [FromServices] SearchService searchService, [FromServices] ThumbnailService thumbService)
+                        [FromServices] ImageCache imageCache, [FromServices] ThumbnailService thumbService)
         {
             Stopwatch watch = new Stopwatch("ControllerGetThumb");
 
@@ -86,18 +81,10 @@ namespace Damselfly.Web.Controllers
                 {
                     Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
-                    using var db = new ImageContext();
-                    var image = searchService.GetFromCache( id );
+                    var image = await imageCache.GetCachedImage(id);
 
                     if (cancel.IsCancellationRequested)
                         return result;
-
-                    if (image == null)
-                    {
-                        Logging.LogTrace($" - Cache miss for image thumbnail: {id}");
-
-                        image = await ImageService.GetImage(id, true, false);
-                    }
 
                     if (image != null)
                     {
@@ -128,6 +115,8 @@ namespace Damselfly.Web.Controllers
                                 Logging.LogTrace($" - Updating metadata for {imageId}");
                                 try
                                 {
+                                    using var db = new ImageContext();
+
                                     if (image.MetaData != null)
                                     {
                                         db.Attach(image.MetaData);

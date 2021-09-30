@@ -24,7 +24,6 @@ namespace Damselfly.Core.DbModels.Interfaces
         Task<int> BatchDelete<T>(IQueryable<T> query) where T : class;
 
         IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class;
-        Task GenFullText(bool first);
         void CreateIndexes(ModelBuilder builder);
     }
 }

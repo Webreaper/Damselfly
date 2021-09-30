@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using EFCore.BulkExtensions;
 using Damselfly.Core.Models;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
 using Z.EntityFramework.Plus;
-using Z.EntityFramework.Extensions;
-using System.Threading.Tasks;
+using SqlParameter = Microsoft.Data.Sqlite.SqliteParameter;
 
 namespace Damselfly.Migrations.Sqlite.Models
 {
@@ -94,6 +93,8 @@ namespace Damselfly.Migrations.Sqlite.Models
             Logging.Log("Running Sqlite DB optimisation...");
             db.Database.ExecuteSqlRaw("VACUUM;");
             Logging.Log("DB optimisation complete.");
+
+            RebuildFreeText(db);
         }
 
         public void FlushDBWriteCache(BaseDBModel db)
@@ -119,9 +120,6 @@ namespace Damselfly.Migrations.Sqlite.Models
                 db.Database.EnsureCreated();
             }
 
-            // Always rebuild the FTS table at startup
-            Task.Run( () => FullTextTags(true) );
-
             IncreasePerformance(db);
         }
 
@@ -144,14 +142,9 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                var config = new BulkConfig { SetOutputIdentity = true };
-
-#if FALSE // https://github.com/borisdj/EFCore.BulkExtensions/issues/485
-                db.BulkInsert(itemsToSave, config);
-#else
-                itemsToSave.ForEach(x => db.Add(x));
+                collection.AddRange(itemsToSave);
                 await db.SaveChangesAsync();
-#endif
+
                 success = true;
             }
             catch (Exception ex)
@@ -182,12 +175,9 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-#if FALSE // Replace when https://github.com/borisdj/EFCore.BulkExtensions/issues/485 is available.
-                db.BulkUpdate(itemsToSave);
-#else
-                itemsToSave.ForEach(x => db.Update(x));
+                collection.UpdateRange(itemsToSave);
                 await db.SaveChangesAsync();
-#endif
+
                 success = true;
             }
             catch (Exception ex)
@@ -217,7 +207,8 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                await db.BulkDeleteAsync(itemsToDelete);
+                collection.RemoveRange(itemsToDelete);
+                await db.SaveChangesAsync();
                 success = true;
             }
             catch (Exception ex)
@@ -237,23 +228,20 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="itemsToSave"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public async Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
+        public Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
         {
-            await db.BulkInsertOrUpdateAsync(itemsToSave);
-
-            return true;
+            throw new NotImplementedException();
         }
 
         public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
-            var db = new ImageContext();
-            db.RemoveRange(query);
-            return await db.SaveChangesAsync();
+            // TODO Use bulk delete here?
+            return await query.DeleteAsync();
+        }
 
-#if false
-            // Call the EFCore Bulkextensions method once it's been fixed for .Net 6
-            return await query.BulkDeleteAsync();
-#endif 
+        private string Sanitize( string input )
+        {
+            return input.Replace(";", " ").Replace( "--", " ").Replace( "#", " ").Replace( "\'", "" ).Replace( "\"", "");
         }
 
         public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
@@ -264,18 +252,25 @@ namespace Damselfly.Migrations.Sqlite.Models
 
             var sql = "SELECT i.* from Images i";
             int i = 1;
+            var parms = new List<string>();
 
-            foreach( var term in terms )
+            /// Some hoop-jumping to escape the text terms, and then put them into parameters so we can pass to ExecuteSqlRaw
+            /// without risk of SQL injection. Unfortunately, though, it appears that MATCH doesn't support @param type params
+            /// and gives a syntax error. So it doesn't seem there's any way around doing this right now. We'll mitigate by
+            /// stripping out semi-colons etc from the search term.
+            foreach ( var term in terms.Select( x => Sanitize( x) ) )
             {
-                var ftsTerm = $"\"{term}\"*";
+                parms.Add(term);
 
-                var tagSubQuery = $"select distinct it.ImageId from FTSKeywords fts join ImageTags it on it.tagId = fts.TagId where fts.Keyword MATCH ('{ftsTerm}')";
+                var ftsTerm = $"\"{term}\"*"; 
+                var termParam = $"{{{i-1}}}"; // Param like {0}
+                var tagSubQuery = $"select distinct it.ImageId from FTSKeywords ftsKw join ImageTags it on it.tagId = ftsKw.TagId where ftsKw.Keyword MATCH ('{ftsTerm}')";
                 var joinSubQuery = tagSubQuery;
 
                 if (includeAITags)
                 {
-                    var objectSubQuery = $"select distinct io.ImageId from FTSKeywords fts join ImageObjects io on io.tagId = fts.TagId where fts.Keyword MATCH ('{ftsTerm}')";
-                    var nameSubQuery = $"select distinct io.ImageId from People p join ImageObjects io on io.PersonID = p.PersonID where p.Name like '%{term}%'";
+                    var objectSubQuery = $"select distinct io.ImageId from FTSKeywords ftsObj join ImageObjects io on io.tagId = ftsObj.TagId where ftsObj.Keyword MATCH ('{ftsTerm}')";
+                    var nameSubQuery = $"select distinct io.ImageId from FTSNames ftsName join ImageObjects io on io.PersonID = ftsName.PersonID where ftsName.Name MATCH ('{ftsTerm}')";
                     joinSubQuery = $"{tagSubQuery} union {objectSubQuery} union {nameSubQuery}";
                 }
 
@@ -292,113 +287,29 @@ namespace Damselfly.Migrations.Sqlite.Models
                 i++;
             }
 
-            return resultSet.FromSqlRaw(sql);
-        }
-
-        /// <summary>
-        /// Prep the full text tables
-        /// </summary>
-        /// <param name="first"></param>
-        public async Task GenFullText(bool first)
-        {
-            await FullTextImages(first);
-            await FullTextTags(first);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="imageKeywords">A dictionary of images to keywords. Each image
-        /// can have an array of multiple keywords.</param>
-        private async Task FullTextTags( bool first )
-        {
-            int retry = 0;
-            while (retry++ < 5)
-            {
-                using (var db = new ImageContext())
-                {
-                    try
-                    {
-                        // TODO - get the tablenames from the type
-                        // TODO - can we put this in a sqlite specific trigger to save having it in code? 
-                        string createSql = "CREATE VIRTUAL TABLE IF NOT EXISTS \"FTSKeywords\" USING fts5( \"TagId\", \"Keyword\")";
-                        string deleteSql = "DELETE FROM FTSKeywords";
-                        string insertSql = "INSERT INTO FTSKeywords SELECT TagId, Keyword FROM Tags";
-
-                        if (!first)
-                            createSql = string.Empty;
-
-                        string theSql = $"BEGIN TRANSACTION; {createSql}; {deleteSql}; {insertSql}; COMMIT;";
-
-                        Logging.LogVerbose($"FreeText Tags SQL: {theSql}");
-
-                        // TODO: Can we do this less often?
-                        await db.Database.ExecuteSqlRawAsync(theSql);
-
-                        Logging.LogVerbose($"Free text tag table rebuilt.");
-
-                        // Skip retries and return
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError("'Exception adding freetext for tags: {0} (retry {1})", ex.Message, retry);
-                    }
-                }
-
-                Logging.LogWarning("Error writing tag freetext. Retrying...");
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="imageKeywords">A dictionary of images to keywords. Each image
-        /// can have an array of multiple keywords.</param>
-        private async Task FullTextImages(bool first)
-        {
-            int retry = 0;
-            while (retry++ < 5)
-            {
-                using (var db = new ImageContext())
-                {
-                    try
-                    {
-                        // TODO - get the tablenames from the type
-                        // TODO - can we put this in a sqlite specific trigger to save having it in code? 
-                        string createSql = "CREATE VIRTUAL TABLE IF NOT EXISTS \"FTSImages\" USING fts5( \"ImageId\", \"Caption\", \"Description\", \"Copyright\", \"Credit\" )";
-                        string deleteSql = "DELETE FROM FTSImages";
-                        string insertSql = "INSERT INTO FTSImages SELECT distinct i.ImageId, i.Caption, i.Description, i.CopyRight, i.Credit FROM imageMetaData i ";
-                        insertSql += "WHERE coalesce(i.Caption, '') <> '' OR coalesce(i.Description, '') <> '' OR coalesce(i.Description, '') <> '' OR coalesce(i.CopyRight, '') <> ''";
-
-                        if (!first)
-                            createSql = string.Empty;
-
-                        string theSql = $"BEGIN TRANSACTION; {createSql}; {deleteSql}; {insertSql}; COMMIT;";
-
-                        Logging.LogVerbose($"FreeText Images SQL: {theSql}");
-
-                        // TODO: Can we do this less often?
-                        await db.Database.ExecuteSqlRawAsync(theSql);
-
-                        Logging.LogVerbose($"Free text image table rebuilt.");
-
-                        // Skip retries and return
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError("'Exception adding freetext for images: {0} (retry {1})", ex.Message, retry);
-                    }
-                }
-
-                Logging.LogWarning("Error writing image freetext. Retrying...");
-            }
+            return resultSet.FromSqlRaw(sql, terms);
         }
 
         public void CreateIndexes(ModelBuilder builder)
         {
             // Nothing to do here.
+        }
+
+        private void RebuildFreeText(BaseDBModel db)
+        {
+            const string delete = @"DELETE from FTSKeywords; DELETE from FTSImages; DELETE from FTSNames;";
+            const string insertTags = @"INSERT INTO FTSKeywords (TagId, Keyword) SELECT t.TagId, t.Keyword FROM Tags t;";
+            const string insertPeople = @"INSERT INTO FTSNames (PersonID, Name) SELECT PersonId, Name FROM people p where p.State = 1;";
+            const string insertImages = @"INSERT INTO FTSImages ( ImageId, Caption, Description, Copyright, Credit ) 
+                                SELECT i.ImageId, i.Caption, i.Description, i.CopyRight, i.Credit FROM imagemetadata i 
+                                WHERE (coalesce(i.Caption, '') <> '' OR coalesce(i.Description, '') <> '' 
+                                     OR coalesce(i.Copyright, '') <> '' OR coalesce(i.Credit, '') <> '');";
+
+            string sql = $"{delete} {insertTags} {insertPeople} {insertImages}";
+
+            Logging.LogVerbose("Rebuilding Free Text Index.");
+            db.Database.ExecuteSqlRaw(sql);
+            Logging.Log("Full-text search index rebuilt.");
         }
     }
 }

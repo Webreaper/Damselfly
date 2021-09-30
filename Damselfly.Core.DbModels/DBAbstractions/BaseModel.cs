@@ -306,14 +306,6 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             return SaveChangesAsync(contextDesc).GetAwaiter().GetResult();
         }
 
-        public async Task GenFullText( bool first )
-        {
-            if (ReadOnly)
-                return;
-
-            await Task.Run(() => DatabaseSpecialisation.GenFullText(first));
-        }
-
         // TODO - this is Sqlite specific and should move down into the MySqlite provider.
         public async Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T:class
         {
