@@ -139,14 +139,14 @@
                 // TODO: Order by
                 if (searchService.Grouping == SearchQuery.GroupingType.Folder)
                 {
-                    var result = gridImages.GroupBy(x => x.Folder);
+                    var result = gridImages.GroupBy(x => x.Folder.Path);
 
                     if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
-                        result = result.OrderByDescending(x => x.Key.Path);
+                        result = result.OrderByDescending(x => x.Key);
                     else
-                        result = result.OrderBy(x => x.Key.Path);
+                        result = result.OrderBy(x => x.Key);
 
-                    return result.Select(x => new ImageGrouping { Key = x.Key.Path, Images = x.ToList() })
+                    return result.Select(x => new ImageGrouping { Key = x.Key, Images = x.ToList() })
                                 .ToList();
                 }
                 else if (searchService.Grouping == SearchQuery.GroupingType.Date)
