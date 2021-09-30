@@ -294,7 +294,8 @@
 
     protected void FavouritesChanged()
     {
-        StateHasChanged();
+        // We might not be called from the dispatcher thread.
+        InvokeAsync( StateHasChanged );
     }
 
     protected override async Task OnParametersSetAsync()
