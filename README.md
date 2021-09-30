@@ -24,6 +24,18 @@ editing etc.
     * Image Classification
     * Facial Recognition (requires a [free Azure Face Services account](https://azure.microsoft.com/free/cognitive-services/))
 * Full-text search with multi-phrase partial-word searches
+* Advanced search - filter by:
+  * Date ranges
+  * Objects/Faces/Identified faces
+  * Camera/Lens Make/Model
+  * File Size
+  * Orientation
+  * Images with no keyword tags
+
+<div>
+<img style="margin: 5px;" src="docs/Damselfly-search.jpg" alt="Advanced Search in Damselfly" width="800"/>
+<div>
+
 * Focus on extremely fast performance - searching a 500,000-image catalogue returns results in less than a second.
 * Fast keyword tagging workflow with non-destructive EXIF data updates (using ExifTool) - so JPEGs are not re-encoded 
   when keyword-tagged
