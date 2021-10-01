@@ -6,8 +6,9 @@
 @inject NavigationService navContext
 @inject ContextMenuService contextMenuService
 @inject BasketService basketService
-@inject ImageRecognitionService aiService;
+@inject ImageRecognitionService aiService
 @inject SelectionService selectionService
+@inject DownloadService downloadService 
  
 @inject IJSRuntime JsRuntime
 
@@ -69,27 +70,40 @@ else
 
         contextMenuService.Open(args, ds =>
            @<RadzenMenu Click="OnMenuItemClick">
-            @if (selectedImages.Count == 1)
+            <RadzenMenuItem Text="View Image" Value="0" />
+            <RadzenMenuItem Text="Download" Value="1" />
+            <hr class="separator">
+            @if (InBasket)
             {
-                <RadzenMenuItem Text="View Image" Value="0" />
-                <RadzenMenuItem Text="Download" Value="1" />
-                <hr class="separator">}
-                @if (InBasket)
-                {
-                    <RadzenMenuItem Text="Remove from basket" Value="2" />
-                }
-                else
-                {
-                    <RadzenMenuItem Text="Add to basket" Value="3" />
-                }
-                @if (FileExporter != null && FileExporter.IsDesktopHosted)
-                { 
-                    <RadzenMenuItem Text="Save Locally" Value="4" />
-                }
-                <RadzenMenuItem Text="Regenerate Thumbnail" Value="5" />
-                <RadzenMenuItem Text="Rescan AI" Value="6" />
+                <RadzenMenuItem Text="Remove from basket" Value="2" />
+            }
+            else
+            {
+                <RadzenMenuItem Text="Add to basket" Value="3" />
+            }
+            @if (FileExporter != null && FileExporter.IsDesktopHosted)
+            { 
+                <RadzenMenuItem Text="Save Locally" Value="4" />
+            }
+            <RadzenMenuItem Text="Regenerate Thumbnail" Value="5" />
+            <RadzenMenuItem Text="Rescan AI" Value="6" />
             </RadzenMenu>
         );
+    }
+
+    private ICollection<Image> ContextSelection
+    {
+        get
+        {
+            if( selectionService.Selection.Any() )
+            {
+                return selectionService.Selection;
+            }
+            else
+            {
+                return new List<Image> { CurrentImage };
+            }
+        }
     }
 
     async Task OnMenuItemClick(MenuItemEventArgs args)
@@ -99,11 +113,11 @@ else
         {
             case 0: NavigateToImage(); break;
             case 1: await DownloadImage(); break;
-            case 2: await basketService.SetBasketState( selectionService.Selection, false ); break;
-            case 3: await basketService.SetBasketState(selectionService.Selection, true); break;
-            case 4: await FileExporter.ExportImagesToLocalFilesystem(selectionService.Selection); break;
-            case 5: await thumbService.MarkImagesForScan( selectionService.Selection); break;
-            case 6: await aiService.MarkImagesForScan(selectionService.Selection); break;
+            case 2: await basketService.SetBasketState(ContextSelection, false ); break;
+            case 3: await basketService.SetBasketState(ContextSelection, true); break;
+            case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
+            case 5: await thumbService.MarkImagesForScan(ContextSelection); break;
+            case 6: await aiService.MarkImagesForScan(ContextSelection); break;
         }
     }
 
@@ -111,7 +125,15 @@ else
     {
         try
         {
-            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.DownloadImageUrl);
+            string downloadFile = CurrentImage.DownloadImageUrl;
+
+            if (selectionService.Selection.Count() > 1)
+            {
+                var config = new ExportConfig { KeepFolders = true };
+                downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection, config);
+            }
+
+            await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
         }
         catch (Exception ex)
         {
@@ -124,4 +146,4 @@ else
         navContext.Context = NavContext;
         NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
     }
-}
+    }

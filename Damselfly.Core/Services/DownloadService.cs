@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
+using System.Collections.Generic;
 
 namespace Damselfly.Core.Services
 {
@@ -140,6 +141,20 @@ namespace Damselfly.Core.Services
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
 
         }
+
+        /// <summary>
+        /// Download a collection of images.
+        /// </summary>
+        /// <param name="imagesToZip"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public async Task<string> CreateDownloadZipAsync(ICollection<Image> imagesToZip, ExportConfig config)
+        {
+            var images = imagesToZip.Select(x => new FileInfo(x.FullPath)).ToArray();
+
+            return await CreateDownloadZipAsync(images, config);
+        }
+
         /// <summary>
         /// Async method to create a download zip file, given a set of files on disk. Optionally
         /// pass a watermark to stamp all images as they're written into the zip file. 

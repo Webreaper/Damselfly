@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Text.RegularExpressions;
 using Humanizer;
 
 namespace Damselfly.Core.Utils
@@ -95,6 +96,34 @@ namespace Damselfly.Core.Utils
                 result.Append(bytes[i].ToString(upperCase ? "X2" : "x2"));
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// General string sanitisation - used for IPTC keywords and 
+        /// other places that don't handle unicode characters so well.
+        /// Based on:
+        /// https://docs.microsoft.com/en-us/dotnet/standard/base-types/how-to-strip-invalid-characters-from-a-string
+        /// </summary>
+        /// <param name="strIn"></param>
+        /// <returns></returns>
+        public static string Sanitise(this string strIn)
+        {
+            var input = RemoveSmartQuotes(strIn);
+
+            input = input.Replace("\u0096", "-");
+
+            // Replace invalid characters with empty strings.
+            try
+            {
+                return Regex.Replace(input, @"[^\w\.@-]", "",
+                                     RegexOptions.None, TimeSpan.FromSeconds(1.5));
+            }
+            // If we timeout when replacing invalid characters,
+            // we should return Empty.
+            catch (RegexMatchTimeoutException)
+            {
+                return String.Empty;
+            }
         }
     }
 }
