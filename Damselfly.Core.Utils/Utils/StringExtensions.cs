@@ -115,7 +115,7 @@ namespace Damselfly.Core.Utils
             // Replace invalid characters with empty strings.
             try
             {
-                return Regex.Replace(input, @"[^\w\.@-]", "",
+                return Regex.Replace(input, @"[^\x00-\x7F]+", "",
                                      RegexOptions.None, TimeSpan.FromSeconds(1.5));
             }
             // If we timeout when replacing invalid characters,
