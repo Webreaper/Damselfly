@@ -11,7 +11,7 @@
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService
 @inject UserService userService
-@inject UserConfigService configService
+@inject UserConfigService userConfigService
 
 <div class="InputAddOn">
     <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
@@ -27,8 +27,8 @@
 </div>
 
 @code {
-        readonly List<Basket> baskets = new List<Basket>();
-        string NewBasketName { get; set; }
+    readonly List<Basket> baskets = new List<Basket>();
+    string NewBasketName { get; set; }
 
     private int SelectedBasketId
     {
@@ -46,17 +46,20 @@
     private async Task NewBasketSelected(int selectedBasketId)
     {
         var newBasket = await basketService.SwitchBasketById(selectedBasketId);
-        configService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+        userConfigService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
     }
 
     private string PrivateIndicator(Basket basket)
     {
-        // Shared baskets don't make sense if users and roles are disabled.
-        if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+        if (userService.RolesEnabled)
         {
-            if (basket?.UserId == null)
+            // Shared baskets don't make sense if users and roles are disabled.
+            if (basket != null && ! basket.UserId.HasValue)
+            {
                 return "(shared)";
+            }
         }
+
         return string.Empty;
     }
 
@@ -68,7 +71,7 @@
 
             await LoadBasketList();
 
-            var selectedBasketId = configService.GetInt(ConfigSettings.SelectedBasketId, -1);
+            var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId, -1);
             if (selectedBasketId > 0)
                 await basketService.SwitchBasketById(selectedBasketId);
             else
