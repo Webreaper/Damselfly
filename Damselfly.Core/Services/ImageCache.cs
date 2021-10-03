@@ -204,7 +204,7 @@ namespace Damselfly.Core.Services
 
         public void Evict(int imageId)
         {
-            Logging.Log($"Evicting from cache: {imageId}");
+            Logging.LogVerbose($"Evicting from cache: {imageId}");
             _memoryCache.Remove(imageId);
         }
     }
