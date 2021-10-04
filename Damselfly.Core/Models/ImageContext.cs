@@ -5,13 +5,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Services;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.DBAbstractions;
 using Humanizer;
-using Microsoft.AspNetCore.Identity;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Models
 {
@@ -654,7 +654,7 @@ namespace Damselfly.Core.Models
     /// <summary>
     /// Config associated with an export or download
     /// </summary>
-    public class ExportConfig
+    public class ExportConfig : IExportSettings
     {
         public int ExportConfigId { get; set; }
         public string Name { get; set; }

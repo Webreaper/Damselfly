@@ -3,19 +3,42 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Damselfly.Core.Interfaces;
+using Damselfly.ML.Face.Emgu;
 
 namespace Damselfly.Core.ImageProcessing
 {
-    public class ImageProcessorFactory
+    public class ImageProcessorFactory : IImageProcessorFactory
     {
         private ImageMagickProcessor imProcessor;
         private SkiaSharpProcessor skiaProcessor;
         private ImageSharpProcessor isharpProcessor;
-        private string rootContentPath;
+        private EmguFaceService _emguHashProvider;
+
+        public ImageProcessorFactory( EmguFaceService emguFaceService )
+        {
+            _emguHashProvider = emguFaceService;
+            skiaProcessor = new SkiaSharpProcessor();
+            isharpProcessor = new ImageSharpProcessor();
+            imProcessor = new ImageMagickProcessor();
+        }
 
         public void SetContentPath(string path)
         {
-            rootContentPath = path;
+            isharpProcessor.SetFontPath(Path.Combine(path, "fonts"));
+        }
+
+        /// <summary>
+        /// Get a perceptual hash provider.
+        /// </summary>
+        /// <returns></returns>
+        public IHashProvider GetHashProvider()
+        {
+            // EMGU is better because the algo is more accurate, but
+            // ImageSharp works on the Mac.
+            if (_emguHashProvider.ServiceAvailable)
+                return _emguHashProvider;
+            else
+                return isharpProcessor;
         }
 
         /// <summary>
@@ -34,29 +57,18 @@ namespace Damselfly.Core.ImageProcessing
             // Skiasharp first. As of 12-Aug-2021, it can do thumbs for 100 images in about 23 seconds
             if (SkiaSharpProcessor.SupportedFileExtensions.Any(x => x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
             {
-                if (skiaProcessor == null)
-                    skiaProcessor = new SkiaSharpProcessor();
-
                 return skiaProcessor;
             }
 
             // ImageSharp next. As of 12-Aug-2021, it can do thumbs for 100 images in about 60 seconds
             if (ImageSharpProcessor.SupportedFileExtensions.Any(x => x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
             {
-                if (isharpProcessor == null)
-                {
-                    isharpProcessor = new ImageSharpProcessor();
-                    isharpProcessor.SetFontPath(Path.Combine(rootContentPath, "fonts"));
-                }
                 return isharpProcessor;
             }
 
             // ImageSharp next. As of 12-Aug-2021, it can do thumbs for 100 images in about 33 seconds. It can also handle HEIC
             if (ImageMagickProcessor.SupportedFileExtensions.Any(x => x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)))
             {
-                if (imProcessor == null)
-                    imProcessor = new ImageMagickProcessor();
-
                 return imProcessor;
             }
 

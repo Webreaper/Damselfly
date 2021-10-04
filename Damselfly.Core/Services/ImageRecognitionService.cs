@@ -5,10 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Utils.Images;
 using Damselfly.Core.Utils.ML;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
@@ -519,7 +519,8 @@ namespace Damselfly.Core.Services
                     var output = Path.Combine(outDir, Path.GetFileName(fullPath));
 
                     var rects = imgObjs.Select(x => new SixLabors.ImageSharp.Rectangle(x.RectX, x.RectY, x.RectWidth, x.RectHeight)).ToList();
-                    ImageSharpProcessor.DrawRects(fullPath, rects, output);
+                    // TODO:
+                    // ImageSharpProcessor.DrawRects(fullPath, rects, output);
                 }
                 catch (Exception ex)
                 {

@@ -6,27 +6,10 @@ using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Collections.Generic;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Services
 {
-    public enum ExportType
-    {
-        Download = 1,
-        Email = 2,
-        Wordpress = 3,
-        Facebook = 4,
-        Twitter = 5,
-        Instagram = 6,
-    };
-
-    public enum ExportSize
-    {
-        FullRes = 1,
-        Large = 2,
-        Medium = 3,
-        Small = 4,
-    };
-
     /// <summary>
     /// Service to generate download files for exporting images from the system. Zip files
     /// are built from the basket or other selection sets, and then created on disk in the

@@ -3,15 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Damselfly.Core.ImageProcessing;
-using Damselfly.Core.Services;
-using Damselfly.Web.Data;
-using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.Services;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
-using Damselfly.Core.ScopedServices;
-using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Web.Controllers
 {

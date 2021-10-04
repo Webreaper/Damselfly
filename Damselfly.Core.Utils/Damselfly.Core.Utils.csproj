@@ -14,6 +14,7 @@
     <Folder Include="Utils\" />
     <Folder Include="Constants\" />
     <Folder Include="ML\" />
+    <Folder Include="Images\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Humanizer" />
@@ -21,5 +22,6 @@
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="System.Drawing.Common" />
     <None Remove="Classes\" />
+    <None Remove="Images\" />
   </ItemGroup>
 </Project>

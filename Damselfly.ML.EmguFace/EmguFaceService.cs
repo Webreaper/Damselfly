@@ -1,19 +1,21 @@
 ﻿using System;
-using Emgu.CV;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using Emgu.CV.CvEnum;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
 using Humanizer;
 using Damselfly.Core.Utils;
-using System.Collections.Generic;
 using Damselfly.Core.Utils.ML;
-using System.Reflection;
+using Damselfly.Core.Interfaces;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.ImgHash;
 
 namespace Damselfly.ML.Face.Emgu
 {
-    public class EmguFaceService
+    public class EmguFaceService : IHashProvider
     {
         private class ClassifierModel
         {
@@ -37,7 +39,22 @@ namespace Damselfly.ML.Face.Emgu
             InitialiseClassifiers();
         }
 
-       
+        public string GetPerceptualHash( string path )
+        {
+            using var img = CvInvoke.Imread(path);
+            var hashAlgorithm = new MarrHildrethHash();
+            var hash = new Mat();
+            hashAlgorithm.Compute(img, hash);
+
+            // Get the data from the unmanage memeory
+            var data = new byte[hash.Width * hash.Height];
+            Marshal.Copy(hash.DataPointer, data, 0, hash.Width * hash.Height);
+
+            // Concatenate the Hex values representation
+            var hashHex = BitConverter.ToString(data).Replace("-", string.Empty);
+
+            return hashHex;
+        }
 
         private bool IsSupported
         {

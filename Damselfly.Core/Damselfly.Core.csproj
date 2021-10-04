@@ -34,6 +34,7 @@
     <PackageReference Include="MailKit" Version="2.15.0" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.8.64" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.0-rc.1.21452.15" />
+    <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
@@ -57,5 +58,6 @@
     <None Remove="SendGrid" />
     <None Remove="MailKit" />
     <None Remove="ScopedServices\" />
+    <None Remove="CoenM.ImageSharp.ImageHash" />
   </ItemGroup>
 </Project>

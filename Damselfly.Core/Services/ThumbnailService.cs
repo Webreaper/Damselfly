@@ -8,10 +8,9 @@ using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.EntityFrameworkCore;
 using MetadataExtractor.Formats.Jpeg;
-using Damselfly.Core.ImageProcessing;
 using System.Threading.Tasks;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Services
 {
@@ -387,9 +386,11 @@ namespace Damselfly.Core.Services
         {
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
-            sourceImage.ThumbLastUpdated = DateTime.UtcNow;
-            sourceImage.Hash = result.ImageHash;
-
+            if (result.ThumbsGenerated)
+            {
+                sourceImage.ThumbLastUpdated = DateTime.UtcNow;
+                sourceImage.Hash = result.ImageHash;
+            }
             return result;
         }
 

@@ -34,6 +34,9 @@
     <ProjectReference Include="..\Damselfly.ML.EmguFace\Damselfly.ML.EmguFace.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Core.ImageProcessing\Damselfly.Core.ImageProcessing.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\Images\" />

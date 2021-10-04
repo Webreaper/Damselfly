@@ -20,6 +20,7 @@
    </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
   </ItemGroup>
 
   <ItemGroup>
