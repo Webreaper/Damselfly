@@ -95,6 +95,7 @@ namespace Damselfly.Core.Services
                             .Where(x => imageIds.Contains( x.ImageId) )
                             .Include(x => x.Folder)
                             .Include(x => x.MetaData)
+                            .Include(x => x.Hash)
                             .Include(x => x.MetaData.Camera)
                             .Include(x => x.MetaData.Lens)
                             .Include(x => x.BasketEntries)
@@ -156,6 +157,10 @@ namespace Damselfly.Core.Services
                                    .Query()
                                    .Include(x => x.Camera)
                                    .Include(x => x.Lens)
+                                   .LoadAsync();
+
+                    if (!entry.Reference(x => x.Hash).IsLoaded)
+                        await entry.Reference(x => x.Hash)
                                    .LoadAsync();
 
                     if (!entry.Collection(x => x.BasketEntries).IsLoaded)

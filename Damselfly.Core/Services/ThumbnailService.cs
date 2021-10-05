@@ -389,14 +389,39 @@ namespace Damselfly.Core.Services
             if (result.ThumbsGenerated)
             {
                 sourceImage.ThumbLastUpdated = DateTime.UtcNow;
-                sourceImage.Hash = result.ImageHash;
+
+                await AddHashToImage(sourceImage.Image, result.ImageHash);
             }
+
             return result;
         }
 
+        /// <summary>
+        /// Saves an MD5 Image hash against an image. 
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="md5Hash"></param>
+        /// <returns></returns>
+        public async Task AddHashToImage( Image image, string md5Hash )
+        {
+            var db = new ImageContext();
+            Hash hash = image.Hash;
 
+            if (hash == null)
+            {
+                hash = new Hash { ImageId = image.ImageId, MD5ImageHash = md5Hash };
+                image.Hash = hash;
+                db.Hashes.Add(hash);
+            }
+            else
+            {
+                hash.MD5ImageHash = md5Hash;
+                db.Hashes.Update(hash);
+            }
 
-        
+            await db.SaveChangesAsync("SaveHash");
+        }
+
 
         /// <summary>
         /// Process the file on disk to create a set of thumbnails.
@@ -492,9 +517,10 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
 
             string imageIds = string.Join(",", images.Select(x => x.ImageId));
+            string sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})";
 
             // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})");
+            await db.Database.ExecuteSqlRawAsync(sql);
 
             var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
             _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";

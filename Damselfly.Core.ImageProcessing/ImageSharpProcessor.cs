@@ -63,6 +63,11 @@ namespace Damselfly.Core.ImageProcessing
             }
         }
 
+        /// <summary>
+        /// Get the perceptual hash
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public string GetPerceptualHash(string path)
         {
             // PerceptualHash, DifferenceHash, AverageHash
@@ -71,6 +76,8 @@ namespace Damselfly.Core.ImageProcessing
             using var stream = File.OpenRead(path);
 
             ulong imageHash = hashAlgorithm.Hash(stream);
+
+            var binaryString = Convert.ToString((long)imageHash, 2);
 
             return imageHash.ToString();
         }
@@ -81,8 +88,8 @@ namespace Damselfly.Core.ImageProcessing
 
             if (image1.MetaData != null && image2.MetaData != null)
             {
-                ulong hash1 = Convert.ToUInt64(image1.MetaData.Hash);
-                ulong hash2 = Convert.ToUInt64(image2.MetaData.Hash);
+                ulong hash1 = Convert.ToUInt64(image1.Hash.PerceptualHash);
+                ulong hash2 = Convert.ToUInt64(image2.Hash.PerceptualHash);
 
                 percentageImageSimilarity = CompareHash.Similarity(hash1, hash2);
             }

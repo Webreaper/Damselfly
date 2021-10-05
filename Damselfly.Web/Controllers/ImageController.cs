@@ -118,7 +118,6 @@ namespace Damselfly.Web.Controllers
                                     if (image.MetaData != null)
                                     {
                                         db.Attach(image.MetaData);
-                                        image.MetaData.Hash = conversionResult.ImageHash;
                                         image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
                                         db.ImageMetaData.Update(image.MetaData);
                                     }
@@ -127,7 +126,6 @@ namespace Damselfly.Web.Controllers
                                         var metadata = new ImageMetaData
                                         {
                                             ImageId = image.ImageId,
-                                            Hash = conversionResult.ImageHash,
                                             ThumbLastUpdated = DateTime.UtcNow
                                         };
                                         db.ImageMetaData.Add(metadata);
@@ -135,6 +133,8 @@ namespace Damselfly.Web.Controllers
                                     }
 
                                     await db.SaveChangesAsync("ThumbUpdate");
+
+                                    await thumbService.AddHashToImage(image, conversionResult.ImageHash);
                                 }
                                 catch (Exception ex)
                                 {

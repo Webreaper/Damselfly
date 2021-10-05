@@ -23,6 +23,7 @@ namespace Damselfly.Core.Models
         public DbSet<Folder> Folders { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<ImageMetaData> ImageMetaData { get; set; }
+        public DbSet<Hash> Hashes { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ImageTag> ImageTags { get; set; }
         public DbSet<ImageObject> ImageObjects { get; set; }
@@ -102,13 +103,13 @@ namespace Damselfly.Core.Models
 
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
-            modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Hash);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AILastUpdated);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
             modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
+            modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
 
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
@@ -166,6 +167,8 @@ namespace Damselfly.Core.Models
         public DateTime LastUpdated { get; set; }
 
         public virtual ImageMetaData MetaData { get; set; }
+        public virtual Hash Hash { get; set; }
+
         // An image can appear in many baskets
         public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
         // An image can have many tags
@@ -228,7 +231,6 @@ namespace Damselfly.Core.Models
         public string Exposure { get; set; }
         public bool FlashFired { get; set; }
         public DateTime DateTaken { get; set; }
-        public string Hash { get; set; }
 
         public int? CameraId { get; set; }
         public virtual Camera Camera { get; set; }
@@ -674,6 +676,38 @@ namespace Damselfly.Core.Models
                     ExportSize.Small => 800,
                     _ => int.MaxValue,
                 };
+            }
+        }
+    }
+
+    /// <summary>
+    /// Store hashes for an image.
+    /// </summary>
+    public class Hash
+    {
+        [Key]
+        public int HashId { get; set; }
+
+        [Required]
+        public virtual Image Image { get; set; }
+        public int ImageId { get; set; }
+
+        // The MD5 image hash. 
+        public string MD5ImageHash { get; set; }
+
+        // Four slices of the perceptual hash (split to allow
+        // us to precalculate matches so we only have to calc
+        // hamming distance on a subset of images.
+        public string PerceptualHex1 { get; set; }
+        public string PerceptualHex2 { get; set; }
+        public string PerceptualHex3 { get; set; }
+        public string PerceptualHex4 { get; set; }
+
+        public string PerceptualHash
+        {
+            get
+            {
+                return PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
             }
         }
     }

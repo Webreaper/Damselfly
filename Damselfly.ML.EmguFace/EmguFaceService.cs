@@ -38,7 +38,13 @@ namespace Damselfly.ML.Face.Emgu
         {
             InitialiseClassifiers();
         }
+        
 
+        /// <summary>
+        /// Created a perceptual hash for an image
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns>Binary string of the hash</returns>
         public string GetPerceptualHash( string path )
         {
             using var img = CvInvoke.Imread(path);
@@ -51,9 +57,9 @@ namespace Damselfly.ML.Face.Emgu
             Marshal.Copy(hash.DataPointer, data, 0, hash.Width * hash.Height);
 
             // Concatenate the Hex values representation
-            var hashHex = BitConverter.ToString(data).Replace("-", string.Empty);
+            string binaryString = BitConverter.ToString(data);
 
-            return hashHex;
+            return binaryString;
         }
 
         private bool IsSupported

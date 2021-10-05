@@ -75,9 +75,9 @@
             </AuthorizeView>
         </div>
 
-        @if (CurrentImage.MetaData != null)
+        @if (CurrentImage.Hash != null)
         {
-            <div>Hash: @CurrentImage.MetaData.Hash</div>
+            <div>Hash: @CurrentImage.Hash.MD5ImageHash</div>
         }
     }
 </div>

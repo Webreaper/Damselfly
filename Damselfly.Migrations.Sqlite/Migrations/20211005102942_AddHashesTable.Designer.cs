@@ -3,6 +3,7 @@ using System;
 using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Damselfly.Core.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    partial class ImageContextModelSnapshot : ModelSnapshot
+    [Migration("20211005102942_AddHashesTable")]
+    partial class AddHashesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.0-rc.1.21452.10");
@@ -117,21 +119,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "82b60d90-9f24-4a12-a246-bc6e1f529102",
+                            ConcurrencyStamp = "fa3a79e1-2a02-4fde-b26a-1498bd911931",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "adc5f5b1-cc1c-4827-abe8-0c7c5fdbbc68",
+                            ConcurrencyStamp = "f9bb3be3-1fb4-4a1a-bbcb-1d71ca3e198c",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "3d168dfe-134e-4802-a6c0-923f450b99c9",
+                            ConcurrencyStamp = "e2f1656c-d1eb-4db3-b3a0-efffab6ff171",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -507,6 +509,9 @@ namespace Damselfly.Core.Migrations
 
                     b.Property<bool>("FlashFired")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Hash")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
