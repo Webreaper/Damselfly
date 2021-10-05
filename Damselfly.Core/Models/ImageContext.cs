@@ -715,21 +715,22 @@ namespace Damselfly.Core.Models
             return Utils.HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
         }
 
+        /// <summary>
+        /// Property accessor to set and get the sliced perceptual hash via a single Hex has string.
+        /// </summary>
         [NotMapped]
         public string PerceptualHash
         {
             get
             {
-                var binary = PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
-                var int64 = Convert.ToInt64(binary, 2);
-                return Convert.ToString(int64, 16);
+                return PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
             }
 
             set
             {
-                var binaryValue = Convert.ToString(Convert.ToInt64(value, 16), 2).PadLeft(64, '0'); ;
+                var fullHex = value.PadLeft(16, '0');
 
-                var chunks = binaryValue.Chunk(16).Select(x => new string(x)).ToArray();
+                var chunks = fullHex.Chunk(4).Select(x => new string(x)).ToArray();
 
                 PerceptualHex1 = chunks[0];
                 PerceptualHex2 = chunks[1];

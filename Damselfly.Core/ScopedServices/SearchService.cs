@@ -61,6 +61,9 @@ namespace Damselfly.Core.ScopedServices
         public FaceSearchType FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
         public OrientationType Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
 
+        public void Reset() { ApplyQuery(new SearchQuery()); }
+        public void Refresh() { QueryChanged(); }
+
         public void ApplyQuery(SearchQuery newQuery)
         {
             if (newQuery.CopyPropertiesTo(query))

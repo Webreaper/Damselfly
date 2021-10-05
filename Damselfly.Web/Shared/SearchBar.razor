@@ -15,11 +15,13 @@
         <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate" />
     </div>
     <div class="damselfly-searchhint">
+        <button class="btn btn-primary damselfly-searchtools" title="Advanced Search" @onclick="@(() => OpenAdvancedSearch())"><i class="fas fa-search" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="Refresh Search" @onclick="@(() => searchService.Refresh())"><i class="fas fa-redo-alt" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="Reset Search" @onclick="@(() => searchService.Reset())"><i class="fas fa-times" /></button>
         <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
     </div>
 
     <div class="damselfly-browsetools">
-        <button class="damselfly-browsetool btn btn-primary" title="Advanced Search" @onclick="@(() => OpenAdvancedSearch())"><i class="fas fa-search" /></button>
         <select class="damselfly-browsetool damselfly-browsetool-select" @bind="SelectedGrouping">
             <option value="@SearchQuery.GroupingType.None">Timeline</option>
             <option value="@SearchQuery.GroupingType.Date">Date</option>

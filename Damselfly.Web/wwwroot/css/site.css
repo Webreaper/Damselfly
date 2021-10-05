@@ -688,6 +688,15 @@ f
     padding-left: 3px;
 }
 
+.damselfly-searchtools {
+    margin: 2px;
+    margin-right: 4px;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    min-width: 26px;
+}
+
 .damselfly-browsetools {
     margin: 3px;
     margin-right: 6px;

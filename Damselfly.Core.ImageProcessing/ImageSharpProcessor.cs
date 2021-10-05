@@ -83,27 +83,6 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         /// <summary>
-        /// Return a percentage match for two images based on a perceptual hash
-        /// </summary>
-        /// <param name="image1"></param>
-        /// <param name="image2"></param>
-        /// <returns></returns>
-        public double GetImageSimilarity( Models.Image image1, Models.Image image2 )
-        {
-            double percentageImageSimilarity = 0;
-
-            if (image1.Hash != null && image2.Hash != null)
-            {
-                ulong hash1 = Convert.ToUInt64(image1.Hash.PerceptualHash);
-                ulong hash2 = Convert.ToUInt64(image2.Hash.PerceptualHash);
-
-                percentageImageSimilarity = CompareHash.Similarity(hash1, hash2);
-            }
-
-            return percentageImageSimilarity;
-        }
-
-        /// <summary>
         /// Create an SHA1 hash from the image data (pixels only) to allow us to find
         /// duplicate images. Note that this ignores EXIF metadata, so the hash will
         /// find duplicate images even if the metadata is different.
