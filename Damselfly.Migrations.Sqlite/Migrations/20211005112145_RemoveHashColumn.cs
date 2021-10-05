@@ -11,10 +11,6 @@ namespace Damselfly.Core.Migrations
             // Copy data
             const string sql = "INSERT INTO Hashes (ImageId, MD5ImageHash) SELECT i.ImageId, i.Hash FROM ImageMetaData i;";
             migrationBuilder.Sql(sql);
-            // Blank out old data pre-drop
-            const string sql2 = "UPDATE ImageMetaData set Hash = null;";
-            migrationBuilder.Sql(sql2);
-
 
             migrationBuilder.DropColumn(
                 name: "Hash",
