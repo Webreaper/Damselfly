@@ -9,7 +9,7 @@ namespace Damselfly.Core.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Copy data
-            const string sql = "INSERT INTO Hashes (ImageId, MD5ImageHash) SELECT i.ImageId, i.Hash FROM ImageMetaData i;";
+            const string sql = "INSERT INTO Hashes (ImageId, MD5ImageHash) SELECT i.ImageId, i.Hash FROM ImageMetaData i WHERE i.ImageID not in (select imageid from hashes);";
             migrationBuilder.Sql(sql);
 
             migrationBuilder.DropColumn(
