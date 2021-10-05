@@ -330,7 +330,8 @@ namespace Damselfly.Core.Services
                                         .OrderByDescending(x => x.LastUpdated)
                                         .Take(100)
                                         .Include(x => x.Image)
-                                        .ThenInclude( x => x.Folder )
+                                        .Include(x => x.Image.Hash)
+                                        .Include(x => x.Image.Folder)
                                         .ToArray();
 
                 watch.Stop();

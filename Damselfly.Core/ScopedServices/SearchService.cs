@@ -32,6 +32,7 @@ namespace Damselfly.Core.ScopedServices
         private readonly IndexingService _indexingService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
+        private const double s_similarityThreshold = 0.75;
 
         public void NotifyStateChanged()
         {
@@ -54,6 +55,7 @@ namespace Damselfly.Core.ScopedServices
         public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
         public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
         public FaceSearchType FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
@@ -153,6 +155,15 @@ namespace Damselfly.Core.ScopedServices
                     if( query.UntaggedImages )
                     {
                         images = images.Where(x => ! x.ImageTags.Any() );
+                    }
+
+                    if( query.SimilarTo != null )
+                    {
+                        images = images.Where(x => x.ImageId != SimilarTo.ImageId &&
+                                   (x.Hash.PerceptualHex1 == SimilarTo.Hash.PerceptualHex1 ||
+                                    x.Hash.PerceptualHex2 == SimilarTo.Hash.PerceptualHex2 ||
+                                    x.Hash.PerceptualHex3 == SimilarTo.Hash.PerceptualHex3 ||
+                                    x.Hash.PerceptualHex4 == SimilarTo.Hash.PerceptualHex4));
                     }
 
                     // If selected, filter by the image filename/foldername
@@ -256,6 +267,14 @@ namespace Damselfly.Core.ScopedServices
                     // Now load the tags....
                     var enrichedImages = await _imageCache.GetCachedImages( results );
 
+                    if( query.SimilarTo != null )
+                    {
+                        // Complete the hamming distance calculation here:
+                        var similarToHash = query.SimilarTo.Hash.PerceptualHashValue;
+
+                        enrichedImages = enrichedImages.Where(x => x.Hash.SimilarityTo(query.SimilarTo.Hash) > s_similarityThreshold).ToList();
+                    }
+
                     SearchResults.AddRange(enrichedImages);
 
                     tagwatch.Stop();
@@ -293,6 +312,9 @@ namespace Damselfly.Core.ScopedServices
 
                 if (Folder != null)
                     hints.Add($"Folder: {Folder.Name}");
+
+                if (SimilarTo != null)
+                    hints.Add($"Looks Like: {SimilarTo.FileName}");
 
                 if (Tag != null)
                     hints.Add($"Tag: {Tag.Keyword}");

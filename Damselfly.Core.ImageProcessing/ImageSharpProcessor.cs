@@ -82,11 +82,17 @@ namespace Damselfly.Core.ImageProcessing
             return binaryString;
         }
 
+        /// <summary>
+        /// Return a percentage match for two images based on a perceptual hash
+        /// </summary>
+        /// <param name="image1"></param>
+        /// <param name="image2"></param>
+        /// <returns></returns>
         public double GetImageSimilarity( Models.Image image1, Models.Image image2 )
         {
             double percentageImageSimilarity = 0;
 
-            if (image1.MetaData != null && image2.MetaData != null)
+            if (image1.Hash != null && image2.Hash != null)
             {
                 ulong hash1 = Convert.ToUInt64(image1.Hash.PerceptualHash);
                 ulong hash2 = Convert.ToUInt64(image2.Hash.PerceptualHash);

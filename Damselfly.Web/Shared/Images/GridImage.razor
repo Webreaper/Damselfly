@@ -6,7 +6,8 @@
 @inject BasketService basketService
 @inject ImageRecognitionService aiService
 @inject SelectionService selectionService
-@inject DownloadService downloadService 
+@inject DownloadService downloadService
+@inject SearchService searchService 
  
 @inject IJSRuntime JsRuntime
 
@@ -70,6 +71,7 @@ else
            @<RadzenMenu Click="OnMenuItemClick">
             <RadzenMenuItem Text="View Image" Value="0" />
             <RadzenMenuItem Text="Download" Value="1" />
+            <RadzenMenuItem Text="Find Similar Images" Value="7" />
             <hr class="separator">
             @if (InBasket)
             {
@@ -116,7 +118,13 @@ else
             case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
             case 5: await thumbService.MarkImagesForScan(ContextSelection); break;
             case 6: await aiService.MarkImagesForScan(ContextSelection); break;
+            case 7: FindImageSimilarTo(); break;
         }
+    }
+
+    private void FindImageSimilarTo()
+    {
+        searchService.SimilarTo = CurrentImage;
     }
 
     public async Task DownloadImage()

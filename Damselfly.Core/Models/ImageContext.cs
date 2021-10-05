@@ -640,6 +640,7 @@ namespace Damselfly.Core.Models
         public bool UntaggedImages { get; set; } = false;
         public int CameraId { get; set; } = -1;
         public int LensId { get; set; } = -1;
+        public Image SimilarTo { get; set; } = null;
         public Folder Folder { get; set; } = null;
         public Tag Tag { get; set; } = null;
         public GroupingType Grouping { get; set; } = GroupingType.None;
@@ -649,7 +650,7 @@ namespace Damselfly.Core.Models
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, SimilarTo={SimilarTo?.ImageId}";
         }
     }
 
@@ -702,6 +703,17 @@ namespace Damselfly.Core.Models
         public string PerceptualHex2 { get; set; }
         public string PerceptualHex3 { get; set; }
         public string PerceptualHex4 { get; set; }
+
+        [NotMapped]
+        public ulong PerceptualHashValue
+        {
+            get { return (ulong)Convert.ToInt64(PerceptualHash, 16); }
+        }
+
+        public double SimilarityTo( Hash other )
+        {
+            return Utils.HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
+        }
 
         [NotMapped]
         public string PerceptualHash
