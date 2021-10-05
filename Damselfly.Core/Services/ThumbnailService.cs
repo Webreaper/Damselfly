@@ -390,7 +390,7 @@ namespace Damselfly.Core.Services
             {
                 sourceImage.ThumbLastUpdated = DateTime.UtcNow;
 
-                await AddHashToImage(sourceImage.Image, result.ImageHash);
+                await AddHashToImage(sourceImage.Image, result);
             }
 
             return result;
@@ -400,24 +400,24 @@ namespace Damselfly.Core.Services
         /// Saves an MD5 Image hash against an image. 
         /// </summary>
         /// <param name="image"></param>
-        /// <param name="md5Hash"></param>
+        /// <param name="processResult"></param>
         /// <returns></returns>
-        public async Task AddHashToImage( Image image, string md5Hash )
+        public async Task AddHashToImage( Image image, ImageProcessResult processResult )
         {
             var db = new ImageContext();
             Hash hash = image.Hash;
 
             if (hash == null)
             {
-                hash = new Hash { ImageId = image.ImageId, MD5ImageHash = md5Hash };
+                hash = new Hash { ImageId = image.ImageId };
                 image.Hash = hash;
                 db.Hashes.Add(hash);
             }
             else
-            {
-                hash.MD5ImageHash = md5Hash;
                 db.Hashes.Update(hash);
-            }
+
+            hash.MD5ImageHash = processResult.ImageHash;
+            hash.PerceptualHash = processResult.PerceptualHash;
 
             await db.SaveChangesAsync("SaveHash");
         }

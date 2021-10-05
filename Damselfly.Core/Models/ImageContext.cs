@@ -703,11 +703,26 @@ namespace Damselfly.Core.Models
         public string PerceptualHex3 { get; set; }
         public string PerceptualHex4 { get; set; }
 
+        [NotMapped]
         public string PerceptualHash
         {
             get
             {
-                return PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
+                var binary = PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
+                var int64 = Convert.ToInt64(binary, 2);
+                return Convert.ToString(int64, 16);
+            }
+
+            set
+            {
+                var binaryValue = Convert.ToString(Convert.ToInt64(value, 16), 2).PadLeft(64, '0'); ;
+
+                var chunks = binaryValue.Chunk(16).Select(x => new string(x)).ToArray();
+
+                PerceptualHex1 = chunks[0];
+                PerceptualHex2 = chunks[1];
+                PerceptualHex3 = chunks[2];
+                PerceptualHex4 = chunks[3];
             }
         }
     }

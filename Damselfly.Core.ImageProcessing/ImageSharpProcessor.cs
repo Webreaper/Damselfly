@@ -67,7 +67,7 @@ namespace Damselfly.Core.ImageProcessing
         /// Get the perceptual hash
         /// </summary>
         /// <param name="path"></param>
-        /// <returns></returns>
+        /// <returns>A hex string representing the hash</returns>
         public string GetPerceptualHash(string path)
         {
             // PerceptualHash, DifferenceHash, AverageHash
@@ -77,9 +77,9 @@ namespace Damselfly.Core.ImageProcessing
 
             ulong imageHash = hashAlgorithm.Hash(stream);
 
-            var binaryString = Convert.ToString((long)imageHash, 2);
+            var binaryString = Convert.ToString((long)imageHash, 16);
 
-            return imageHash.ToString();
+            return binaryString;
         }
 
         public double GetImageSimilarity( Models.Image image1, Models.Image image2 )

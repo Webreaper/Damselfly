@@ -134,7 +134,7 @@ namespace Damselfly.Web.Controllers
 
                                     await db.SaveChangesAsync("ThumbUpdate");
 
-                                    await thumbService.AddHashToImage(image, conversionResult.ImageHash);
+                                    await thumbService.AddHashToImage(image, conversionResult);
                                 }
                                 catch (Exception ex)
                                 {

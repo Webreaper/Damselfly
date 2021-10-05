@@ -60,6 +60,8 @@ namespace Damselfly.Core.Services
                 {
                     result.PerceptualHash = GetPerceptualHash(source.FullName);
                 }
+
+                return result;
             }
 
             return new ImageProcessResult { ThumbsGenerated = false };
