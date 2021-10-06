@@ -41,8 +41,8 @@
                         <div class="damselfly-configsetting">
                             <div class="damselfly-configfield">
                                 <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="Variant.Filled"
-                                           HelperText="Select percentage threshold for image similarity searches.">
-                                    @foreach (var choice in new[] { 100, 75, 50, 25 } )
+                                           HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
+                                    @foreach (var choice in new[] { 100, 90, 75, 50, 25 } )
                                         {
                                         <MudSelectItem T="int" Value="@choice">
                                             @choice.ToString()

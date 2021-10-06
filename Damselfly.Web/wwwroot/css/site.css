@@ -595,14 +595,15 @@ f
 
 .damselfly-dialogrow {
     display: flex;
+    flex-wrap: wrap;
     margin-bottom: 7px;
     flex-direction: row;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: flex-start;
 }
 
 .damselfly-dialogctrl {
-    flex: 1 1 50%;
+    flex: 1 1 15%;
     margin-right: 6px;
 }
 
