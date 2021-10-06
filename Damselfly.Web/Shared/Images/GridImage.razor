@@ -71,7 +71,10 @@ else
            @<RadzenMenu Click="OnMenuItemClick">
             <RadzenMenuItem Text="View Image" Value="0" />
             <RadzenMenuItem Text="Download" Value="1" />
-            <RadzenMenuItem Text="Find Similar Images" Value="7" />
+            @if (CurrentImage.Hash != null && !string.IsNullOrEmpty(CurrentImage.Hash.PerceptualHash))
+            {
+                <RadzenMenuItem Text="Find Similar Images" Value="7" />
+            }
             <hr class="separator">
             @if (InBasket)
             {

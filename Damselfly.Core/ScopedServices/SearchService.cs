@@ -159,7 +159,7 @@ namespace Damselfly.Core.ScopedServices
                         images = images.Where(x => ! x.ImageTags.Any() );
                     }
 
-                    if( query.SimilarTo != null )
+                    if( query.SimilarTo != null && query.SimilarTo.Hash != null )
                     {
                         images = images.Where(x => x.ImageId != SimilarTo.ImageId &&
                                    (x.Hash.PerceptualHex1 == SimilarTo.Hash.PerceptualHex1 ||
@@ -288,7 +288,7 @@ namespace Damselfly.Core.ScopedServices
                         // Complete the hamming distance calculation here:
                         var searchHash = query.SimilarTo.Hash;
 
-                        var similarImages = enrichedImages.Where(x => x.Hash.SimilarityTo(searchHash) > s_similarityThreshold).ToList();
+                        var similarImages = enrichedImages.Where(x => x.Hash != null && x.Hash.SimilarityTo(searchHash) > s_similarityThreshold).ToList();
 
                         Logging.Log($"Found {similarImages.Count} images that match image ID {query.SimilarTo.ImageId} with a threshold of {s_similarityThreshold:P1} or more.");
 
