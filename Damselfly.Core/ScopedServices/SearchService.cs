@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
 using Humanizer;
 using static Damselfly.Core.Models.SearchQuery;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.ScopedServices
 {
@@ -20,8 +21,10 @@ namespace Damselfly.Core.ScopedServices
     /// </summary>
     public class SearchService
     {
-        public SearchService( UserStatusService statusService, ImageCache cache, IndexingService indexingService)
+        public SearchService( UserStatusService statusService, ImageCache cache,
+                                IndexingService indexingService, UserConfigService configService)
         {
+            _configService = configService;
             _statusService = statusService;
             _imageCache = cache;
             _indexingService = indexingService;
@@ -29,6 +32,7 @@ namespace Damselfly.Core.ScopedServices
 
         private readonly UserStatusService _statusService;
         private readonly ImageCache _imageCache;
+        private readonly UserConfigService _configService;
         private readonly IndexingService _indexingService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
@@ -285,12 +289,14 @@ namespace Damselfly.Core.ScopedServices
                     // If it's a 'similar to' query, filter out the ones that don't pass the threshold.
                     if (query.SimilarTo != null)
                     {
+                        double threshold = _configService.GetInt(ConfigSettings.SimilarityThreshold, 75) / 100.0;
+
                         // Complete the hamming distance calculation here:
                         var searchHash = query.SimilarTo.Hash;
 
-                        var similarImages = enrichedImages.Where(x => x.Hash != null && x.Hash.SimilarityTo(searchHash) > s_similarityThreshold).ToList();
+                        var similarImages = enrichedImages.Where(x => x.Hash != null && x.Hash.SimilarityTo(searchHash) > threshold).ToList();
 
-                        Logging.Log($"Found {similarImages.Count} images that match image ID {query.SimilarTo.ImageId} with a threshold of {s_similarityThreshold:P1} or more.");
+                        Logging.Log($"Found {similarImages.Count} images that match image ID {query.SimilarTo.ImageId} with a threshold of {threshold:P1} or more.");
 
                         enrichedImages = similarImages;
                     }

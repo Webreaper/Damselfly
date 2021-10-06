@@ -94,7 +94,6 @@ namespace Damselfly.Core.Services
             return metadata;
         }
 
-
         /// <summary>
         /// Scans an image file on disk for its metadata, using the MetaDataExtractor
         /// library. The image object is populated with the metadata, and the IPTC

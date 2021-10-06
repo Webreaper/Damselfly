@@ -38,6 +38,19 @@
                                 </MudSelect>
                             </div>
                         </div>
+                        <div class="damselfly-configsetting">
+                            <div class="damselfly-configfield">
+                                <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="Variant.Filled"
+                                           HelperText="Select percentage threshold for image similarity searches.">
+                                    @foreach (var choice in new[] { 100, 75, 50, 25 } )
+                                        {
+                                        <MudSelectItem T="int" Value="@choice">
+                                            @choice.ToString()
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+                        </div>
                         <button class="btn btn-primary" type="submit">Save Settings</button>
                     </EditForm>
                 </MudTabPanel>
@@ -253,6 +266,7 @@
     private bool forceLogin = false;
     private bool allowExternalRegistration = false;
     private bool anableAuthAndRoles = false;
+    private int similarityThreshold = 75;
     TimeSpan? aiStartTime = new TimeSpan(23, 00, 00);
     TimeSpan? aiEndTime = new TimeSpan(04, 30, 00);
     private bool enableAITimeLimit = false;
@@ -302,6 +316,8 @@
                 themeService.CurrentTheme = selectedTheme;
             }
 
+            userConfigService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString() );
+
             UpdateServicesWithNewSettings();
         }
         catch (Exception ex)
@@ -330,6 +346,8 @@
 
     protected override void OnInitialized()
     {
+        similarityThreshold = userConfigService.GetInt(ConfigSettings.SimilarityThreshold, 75);
+
         wpSettings.URL = configService.Get(ConfigSettings.WordpressURL);
         wpSettings.UserName = configService.Get(ConfigSettings.WordpressUser);
         wpSettings.Password = configService.Get(ConfigSettings.WordpressPassword);
