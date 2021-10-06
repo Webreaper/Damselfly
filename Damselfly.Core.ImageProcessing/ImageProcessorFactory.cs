@@ -33,12 +33,11 @@ namespace Damselfly.Core.ImageProcessing
         /// <returns></returns>
         public IHashProvider GetHashProvider()
         {
-            // EMGU is better because the algo is more accurate, but
-            // ImageSharp works on the Mac.
-            if (_emguHashProvider.ServiceAvailable)
-                return _emguHashProvider;
-            else
-                return isharpProcessor;
+            return isharpProcessor;
+
+            // EMGU may be faster or better, but needs testing etc.
+            // if (_emguHashProvider.ServiceAvailable)
+            //    return _emguHashProvider;
         }
 
         /// <summary>
