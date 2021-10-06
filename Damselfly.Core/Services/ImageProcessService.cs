@@ -39,7 +39,11 @@ namespace Damselfly.Core.Services
         {
             var provider = _factory.GetHashProvider();
 
-            return provider.GetPerceptualHash(path);
+            var watch = new Stopwatch("GenPerceptualHash");
+            var hash = provider.GetPerceptualHash(path);
+            watch.Stop();
+
+            return hash;
         }
 
         /// <summary>

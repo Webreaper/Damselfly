@@ -57,9 +57,11 @@ namespace Damselfly.ML.Face.Emgu
             Marshal.Copy(hash.DataPointer, data, 0, hash.Width * hash.Height);
 
             // Concatenate the Hex values representation
-            string binaryString = BitConverter.ToString(data);
+            string hexString = BitConverter.ToString(data);
 
-            return binaryString;
+            Logging.Log($"EMGU created a hash: {hexString}");
+
+            return hexString.Replace( "-", "");
         }
 
         private bool IsSupported
