@@ -21,14 +21,17 @@ namespace Damselfly.Core.Services
         private const string _requestRoot = "/images";
         private static int s_maxThreads = GetMaxThreads();
         private readonly StatusService _statusService;
+        private readonly ImageCache _imageCache;
         private readonly ImageProcessService _imageProcessingService;
 
 
         public ThumbnailService( StatusService statusService,
-                        ImageProcessService imageService)
+                        ImageProcessService imageService,
+                        ImageCache imageCache)
         {
             _statusService = statusService;
             _imageProcessingService = imageService;
+            _imageCache = imageCache;
         }
 
         /// <summary>
@@ -392,6 +395,8 @@ namespace Damselfly.Core.Services
                 sourceImage.ThumbLastUpdated = DateTime.UtcNow;
 
                 await AddHashToImage(sourceImage.Image, result);
+
+                _imageCache.Evict(sourceImage.ImageId);
             }
 
             return result;
@@ -415,7 +420,10 @@ namespace Damselfly.Core.Services
                 db.Hashes.Add(hash);
             }
             else
+            {
+                db.Attach(hash);
                 db.Hashes.Update(hash);
+            }
 
             hash.MD5ImageHash = processResult.ImageHash;
             hash.PerceptualHash = processResult.PerceptualHash;
