@@ -52,23 +52,30 @@ namespace Damselfly.Core.Services
         {
             var result = new List<Image>();
 
-            // First, get the list that aren't in the cache
-            var needLoad = imgIds.Where( x => ! _memoryCache
-                                    .TryGetValue( x, out var _ ) )
-                                    .ToList();
-
-            // Now load and cache them
-            if (needLoad.Any())
-                await EnrichAndCache(needLoad);
-
-            // Now, re-enumerate the list - everything should be in the cache this time
-            foreach ( var imgId in imgIds )
+            try
             {
-                Image image;
-                if (_memoryCache.TryGetValue(imgId, out image))
-                    result.Add(image);
-                else
-                    Logging.LogError("Cached image was not found in cache.");
+                // First, get the list that aren't in the cache
+                var needLoad = imgIds.Where(x => !_memoryCache
+                                       .TryGetValue(x, out var _))
+                                        .ToList();
+
+                // Now load and cache them
+                if (needLoad.Any())
+                    await EnrichAndCache(needLoad);
+
+                // Now, re-enumerate the list - everything should be in the cache this time
+                foreach (var imgId in imgIds)
+                {
+                    Image image;
+                    if (_memoryCache.TryGetValue(imgId, out image))
+                        result.Add(image);
+                    else
+                        Logging.LogError("Cached image was not found in cache.");
+                }
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during caching/enrichment: {ex}");
             }
 
             return result;
@@ -77,6 +84,7 @@ namespace Damselfly.Core.Services
         public async Task<Image> GetCachedImage( Image img )
         {
             Image cachedImage;
+
 
             if( ! _memoryCache.TryGetValue(img.ImageId, out cachedImage) )
             {
@@ -89,6 +97,11 @@ namespace Damselfly.Core.Services
 
         private async Task<List<Image>> EnrichAndCache( List<int> imageIds )
         {
+            if (!imageIds.Any())
+                return new List<Image>();
+
+            var tagwatch = new Stopwatch("EnrichCache");
+
             using var db = new ImageContext();
 
             var images = await db.Images
@@ -111,6 +124,10 @@ namespace Damselfly.Core.Services
             {
                 _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
             }
+
+            tagwatch.Stop();
+
+            Logging.Log($"Enriched and cached {images.Count()} in {tagwatch.ElapsedTime}ms");
 
             return images;
         }

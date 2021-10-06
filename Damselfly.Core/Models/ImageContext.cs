@@ -715,7 +715,7 @@ namespace Damselfly.Core.Models
         {
             double similarity = HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
 
-            Logging.Log($"Hash similarity {PerceptualHash} vs {other.PerceptualHash} = {similarity:P1} ({PerceptualHashValue} v {other.PerceptualHashValue})");
+            Logging.LogVerbose($"Hash similarity {PerceptualHash} vs {other.PerceptualHash} = {similarity:P1} ({PerceptualHashValue} v {other.PerceptualHashValue})");
 
             return similarity;
         }

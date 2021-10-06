@@ -126,7 +126,6 @@ namespace Damselfly.Core.ScopedServices
             {
                 using var db = new ImageContext();
                 var watch = new Stopwatch("ImagesLoadData");
-                Stopwatch tagwatch = null;
                 List<int> results = new List<int>();
 
                 try
@@ -265,22 +264,9 @@ namespace Damselfly.Core.ScopedServices
                                     .Take(count)
                                     .ToListAsync();
 
-                    tagwatch = new Stopwatch("SearchLoadTags");
+                    watch.Stop();
 
-                    // Now load the tags....
-                    var enrichedImages = await _imageCache.GetCachedImages( results );
-
-                    if( query.SimilarTo != null )
-                    {
-                        // Complete the hamming distance calculation here:
-                        var similarToHash = query.SimilarTo.Hash.PerceptualHashValue;
-
-                        enrichedImages = enrichedImages.Where(x => x.Hash.SimilarityTo(query.SimilarTo.Hash) > s_similarityThreshold).ToList();
-                    }
-
-                    SearchResults.AddRange(enrichedImages);
-
-                    tagwatch.Stop();
+                    Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms");
                 }
                 catch (Exception ex)
                 {
@@ -291,8 +277,33 @@ namespace Damselfly.Core.ScopedServices
                     watch.Stop();
                 }
 
-                Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms (Tags: {tagwatch.ElapsedTime}ms)");
-                _statusService.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
+                // Now load the tags....
+                var enrichedImages = await _imageCache.GetCachedImages(results);
+
+                try
+                {
+                    // If it's a 'similar to' query, filter out the ones that don't pass the threshold.
+                    if (query.SimilarTo != null)
+                    {
+                        // Complete the hamming distance calculation here:
+                        var searchHash = query.SimilarTo.Hash;
+
+                        var similarImages = enrichedImages.Where(x => x.Hash.SimilarityTo(searchHash) > s_similarityThreshold).ToList();
+
+                        Logging.Log($"Found {similarImages.Count} images that match image ID {query.SimilarTo.ImageId} with a threshold of {s_similarityThreshold:P1} or more.");
+
+                        enrichedImages = similarImages;
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    Logging.LogError($"Similarity threshold calculation failed: {ex}");
+                }
+
+                // Set the results on the service property
+                SearchResults.AddRange(enrichedImages);
+
+                _statusService.StatusText = $"Found at least {enrichedImages.Count} images that match the search query.";
             }
         }
 
