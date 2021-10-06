@@ -9,16 +9,20 @@ namespace Damselfly.Core.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            Logging.Log("Migrating hashes to new table...");
             // Copy data
-            const string sql = @"INSERT INTO Hashes (ImageId, MD5ImageHash)
+            const string migrateSql = @"INSERT INTO Hashes (ImageId, MD5ImageHash)
                                 SELECT i.ImageId, i.Hash FROM ImageMetaData i
                                 WHERE i.ImageID not in
                                     (SELECT imageid FROM hashes);";
-            migrationBuilder.Sql(sql);
+            migrationBuilder.Sql(migrateSql);
+
+            const string clearSql = @"UPDATE ImageMetadata set Hash = null;";
+            migrationBuilder.Sql(clearSql);
 
             /*
-                migrationBuilder.DropColumn(
+               For some reason, dropping this column causes a FOREIGN Key constraint, so leave it for now.
+
+            migrationBuilder.DropColumn(
                 name: "Hash",
                 table: "ImageMetaData");
             */
@@ -27,7 +31,7 @@ namespace Damselfly.Core.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             /*
-            Logging.Log("Calling migration Down()...");
+             
             migrationBuilder.AddColumn<string>(
                 name: "Hash",
                 table: "ImageMetaData",
