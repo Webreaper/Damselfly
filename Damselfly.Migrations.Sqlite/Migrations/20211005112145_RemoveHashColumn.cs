@@ -9,6 +9,7 @@ namespace Damselfly.Core.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            /*
             Logging.Log("Migrating hashes to new table...");
             // Copy data
             const string sql = @"INSERT INTO Hashes (ImageId, MD5ImageHash)
@@ -17,7 +18,7 @@ namespace Damselfly.Core.Migrations
                                     (SELECT imageid FROM hashes);";
             migrationBuilder.Sql(sql);
             Logging.Log("Hash migration complete. Dropping column...");
-
+            */
             migrationBuilder.DropColumn(
                 name: "Hash",
                 table: "ImageMetaData");
@@ -44,6 +45,8 @@ namespace Damselfly.Core.Migrations
                 keyValue: 3,
                 column: "ConcurrencyStamp",
                 value: "3d168dfe-134e-4802-a6c0-923f450b99c9");
+
+            Logging.Log("Migration complete.");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

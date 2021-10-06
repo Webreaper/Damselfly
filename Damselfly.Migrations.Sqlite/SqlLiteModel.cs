@@ -116,7 +116,12 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
             catch( Exception ex )
             {
-                Logging.LogWarning($"Migrations failed - creating DB. Exception: {ex}");
+                Logging.LogWarning($"Migrations failed with exception: {ex}");
+
+                if( ex.InnerException != null )
+                    Logging.LogWarning($"InnerException: {ex.InnerException}");
+
+                Logging.Log($"Creating DB.");
                 db.Database.EnsureCreated();
             }
 
