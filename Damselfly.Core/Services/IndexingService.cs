@@ -123,7 +123,7 @@ namespace Damselfly.Core.Services
                     if (jpegDirectory != null)
                     {
                         imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
-                        imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
+                        imgMetaData.Height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
                     }
 
                     var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
