@@ -12,6 +12,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Models
 {
@@ -712,7 +713,11 @@ namespace Damselfly.Core.Models
 
         public double SimilarityTo( Hash other )
         {
-            return Utils.HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
+            double similarity = HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
+
+            Logging.Log($"Hash similarity {PerceptualHash} vs {other.PerceptualHash} = {similarity:P1} ({PerceptualHashValue} v {other.PerceptualHashValue})");
+
+            return similarity;
         }
 
         /// <summary>

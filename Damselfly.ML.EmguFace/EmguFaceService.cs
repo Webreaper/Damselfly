@@ -59,7 +59,7 @@ namespace Damselfly.ML.Face.Emgu
             // Concatenate the Hex values representation
             string hexString = BitConverter.ToString(data);
 
-            Logging.Log($"EMGU created a hash: {hexString}");
+            Logging.LogVerbose($"EMGU created a hash: {hexString}");
 
             return hexString.Replace( "-", "");
         }
