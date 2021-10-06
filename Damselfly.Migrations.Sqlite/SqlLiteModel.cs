@@ -147,8 +147,10 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                collection.AddRange(itemsToSave);
-                await db.SaveChangesAsync();
+                //collection.AddRange(itemsToSave);
+                //await db.SaveChangesAsync();
+
+                await db.BulkInsertAsync(itemsToSave);
 
                 success = true;
             }
@@ -180,8 +182,10 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                collection.UpdateRange(itemsToSave);
-                await db.SaveChangesAsync();
+                //collection.UpdateRange(itemsToSave);
+                //await db.SaveChangesAsync();
+
+                await db.BulkUpdateAsync(itemsToSave);
 
                 success = true;
             }
@@ -212,8 +216,11 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                collection.RemoveRange(itemsToDelete);
-                await db.SaveChangesAsync();
+                //collection.RemoveRange(itemsToDelete);
+                //await db.SaveChangesAsync();
+
+                await db.BulkDeleteAsync(itemsToDelete);
+
                 success = true;
             }
             catch (Exception ex)

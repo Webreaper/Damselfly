@@ -77,7 +77,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return true;
 
-            return await Task.Run(() => DatabaseSpecialisation.BulkInsert(this, collection, itemsToSave));
+            return await DatabaseSpecialisation.BulkInsert(this, collection, itemsToSave);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return true;
 
-            return await Task.Run(() => DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave));
+            return await DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return true;
 
-            return await Task.Run( () => DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete) );
+            return await DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete);
         }
 
         /// <summary>

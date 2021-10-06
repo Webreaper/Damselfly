@@ -127,7 +127,8 @@ namespace Damselfly.Core.Services
 
             tagwatch.Stop();
 
-            Logging.Log($"Enriched and cached {images.Count()} in {tagwatch.ElapsedTime}ms");
+            if( images.Count() > 1 )
+                Logging.Log($"Enriched and cached {images.Count()} in {tagwatch.ElapsedTime}ms");
 
             return images;
         }
