@@ -166,10 +166,14 @@ namespace Damselfly.Core.ScopedServices
                     if( query.SimilarTo != null && query.SimilarTo.Hash != null )
                     {
                         images = images.Where(x => x.ImageId != SimilarTo.ImageId &&
-                                   (x.Hash.PerceptualHex1 == SimilarTo.Hash.PerceptualHex1 ||
-                                    x.Hash.PerceptualHex2 == SimilarTo.Hash.PerceptualHex2 ||
-                                    x.Hash.PerceptualHex3 == SimilarTo.Hash.PerceptualHex3 ||
-                                    x.Hash.PerceptualHex4 == SimilarTo.Hash.PerceptualHex4));
+                                   ((x.Hash.PerceptualHex1.Substring(0, 2) == SimilarTo.Hash.PerceptualHex1.Substring(0, 2)) ||
+                                    (x.Hash.PerceptualHex1.Substring(2, 2) == SimilarTo.Hash.PerceptualHex1.Substring(2, 2)) ||
+                                    (x.Hash.PerceptualHex2.Substring(0, 2) == SimilarTo.Hash.PerceptualHex2.Substring(0, 2)) ||
+                                    (x.Hash.PerceptualHex2.Substring(2, 2) == SimilarTo.Hash.PerceptualHex2.Substring(2, 2)) ||
+                                    (x.Hash.PerceptualHex3.Substring(0, 2) == SimilarTo.Hash.PerceptualHex3.Substring(0, 2)) ||
+                                    (x.Hash.PerceptualHex3.Substring(2, 2) == SimilarTo.Hash.PerceptualHex3.Substring(2, 2)) ||
+                                    (x.Hash.PerceptualHex4.Substring(0, 2) == SimilarTo.Hash.PerceptualHex4.Substring(0, 2)) ||
+                                    (x.Hash.PerceptualHex4.Substring(2, 2) == SimilarTo.Hash.PerceptualHex4.Substring(2, 2))));
                     }
 
                     // If selected, filter by the image filename/foldername
@@ -287,7 +291,7 @@ namespace Damselfly.Core.ScopedServices
                 try
                 {
                     // If it's a 'similar to' query, filter out the ones that don't pass the threshold.
-                    if (query.SimilarTo != null)
+                    if (query.SimilarTo != null && enrichedImages.Any() )
                     {
                         double threshold = _configService.GetInt(ConfigSettings.SimilarityThreshold, 75) / 100.0;
 
@@ -296,7 +300,7 @@ namespace Damselfly.Core.ScopedServices
 
                         var similarImages = enrichedImages.Where(x => x.Hash != null && x.Hash.SimilarityTo(searchHash) > threshold).ToList();
 
-                        Logging.Log($"Found {similarImages.Count} images that match image ID {query.SimilarTo.ImageId} with a threshold of {threshold:P1} or more.");
+                        Logging.Log($"Found {similarImages.Count} of {enrichedImages.Count} prefiltered images that match image ID {query.SimilarTo.ImageId} with a threshold of {threshold:P1} or more.");
 
                         enrichedImages = similarImages;
                     }

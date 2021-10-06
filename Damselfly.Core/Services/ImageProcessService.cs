@@ -62,6 +62,8 @@ namespace Damselfly.Core.Services
 
                 if( result.ThumbsGenerated )
                 {
+                    // TODO: move this down into the imageprocessor libs? Also,
+                    // generate using the large thumb?
                     result.PerceptualHash = GetPerceptualHash(source.FullName);
                 }
 
