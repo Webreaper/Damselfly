@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Damselfly.Core.Utils;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -8,13 +9,20 @@ namespace Damselfly.Core.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            Logging.Log("Migrating hashes to new table...");
             // Copy data
-            const string sql = "INSERT INTO Hashes (ImageId, MD5ImageHash) SELECT i.ImageId, i.Hash FROM ImageMetaData i WHERE i.ImageID not in (select imageid from hashes);";
+            const string sql = @"INSERT INTO Hashes (ImageId, MD5ImageHash)
+                                SELECT i.ImageId, i.Hash FROM ImageMetaData i
+                                WHERE i.ImageID not in
+                                    (SELECT imageid FROM hashes);";
             migrationBuilder.Sql(sql);
+            Logging.Log("Hash migration complete. Dropping column...");
 
             migrationBuilder.DropColumn(
                 name: "Hash",
                 table: "ImageMetaData");
+
+            Logging.Log("Column dropped.");
 
             migrationBuilder.UpdateData(
                 table: "Roles",
