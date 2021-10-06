@@ -17,19 +17,23 @@ namespace Damselfly.Core.Migrations
                                     (SELECT imageid FROM hashes);";
             migrationBuilder.Sql(sql);
 
-            migrationBuilder.DropColumn(
+            /*
+                migrationBuilder.DropColumn(
                 name: "Hash",
                 table: "ImageMetaData");
+            */
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            /*
             Logging.Log("Calling migration Down()...");
             migrationBuilder.AddColumn<string>(
                 name: "Hash",
                 table: "ImageMetaData",
                 type: "TEXT",
                 nullable: true);
+            */
         }
     }
 }
