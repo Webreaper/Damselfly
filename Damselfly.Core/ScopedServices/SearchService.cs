@@ -181,8 +181,7 @@ namespace Damselfly.Core.ScopedServices
                         string likeTerm = $"%{query.SearchText}%";
 
                         // Now, search folder/filenames
-                        var fileImages = db.Images.Include(x => x.Folder)
-                                                    .Where(x => EF.Functions.Like(x.Folder.Path, likeTerm)
+                        var fileImages = db.Images.Where(x => EF.Functions.Like(x.Folder.Path, likeTerm)
                                                             || EF.Functions.Like(x.FileName, likeTerm));
                         images = images.Union(fileImages);
                     }
