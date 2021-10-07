@@ -617,7 +617,6 @@ namespace Damselfly.Core.Models
 
         public enum FaceSearchType
         {
-            None,
             Faces,
             NoFaces,
             IdentifiedFaces,
@@ -626,28 +625,28 @@ namespace Damselfly.Core.Models
 
         public enum OrientationType
         {
-            All,
             Landscape,
             Portrait
         }
 
         public string SearchText { get; set; } = string.Empty;
-        public DateTime? MaxDate { get; set; } = null;
-        public DateTime? MinDate { get; set; } = null;
-        public int? MaxSizeKB { get; set; } = null;
-        public int? MinSizeKB { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
         public bool IncludeAITags { get; set; } = true;
         public bool UntaggedImages { get; set; } = false;
-        public int CameraId { get; set; } = -1;
-        public int LensId { get; set; } = -1;
+        public int? MaxSizeKB { get; set; } = null;
+        public int? MinSizeKB { get; set; } = null;
+        public int? CameraId { get; set; } = null;
+        public int? LensId { get; set; } = null;
         public Image SimilarTo { get; set; } = null;
         public Folder Folder { get; set; } = null;
         public Tag Tag { get; set; } = null;
+        public DateTime? MaxDate { get; set; } = null;
+        public DateTime? MinDate { get; set; } = null;
+        public FaceSearchType? FaceSearch { get; set; } = null;
+        public OrientationType? Orientation { get; set; } = null;
+
         public GroupingType Grouping { get; set; } = GroupingType.None;
         public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;
-        public FaceSearchType FaceSearch { get; set; } = FaceSearchType.None;
-        public OrientationType Orientation { get; set; } = OrientationType.All;
 
         public override string ToString()
         {

@@ -28,7 +28,7 @@
 
                         <div class="damselfly-configsetting">
                             <div class="damselfly-configfield">
-                                <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="Variant.Filled">
+                                <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
                                     @foreach (var choice in themeService.Themes)
                                     {
                                         <MudSelectItem T="string" Value="@choice">
@@ -40,7 +40,7 @@
                         </div>
                         <div class="damselfly-configsetting">
                             <div class="damselfly-configfield">
-                                <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="Variant.Filled"
+                                <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="UIConstants.MudVariant"
                                            HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
                                     @foreach (var choice in new[] { 100, 90, 75, 50, 25 } )
                                         {
@@ -87,7 +87,7 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudSelect T="LogEventLevel" Label="Log Level" @bind-Value="logLevel" Variant="Variant.Filled"
+                                    <MudSelect T="LogEventLevel" Label="Log Level" @bind-Value="logLevel" Variant="UIConstants.MudVariant"
                                                HelperText="Select the logging verbosity">
                                         @foreach (var choice in userLogLevels)
                                         {
@@ -103,17 +103,17 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="Variant.Filled" />
+                                    <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                 </div>
                             </div>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="Variant.Filled" />
+                                    <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                 </div>
                             </div>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="Variant.Filled" />
+                                    <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                 </div>
                             </div>
 
@@ -146,12 +146,12 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="Variant.Filled" />
+                                    <MudTextField @bind-Value="@azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                 </div>
                             </div>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="Variant.Filled" />
+                                    <MudTextField @bind-Value="@azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                 </div>
                             </div>
 
@@ -163,7 +163,7 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="Variant.Filled"
+                                    <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="UIConstants.MudVariant"
                                                HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
                                         @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
                                         {
@@ -201,29 +201,29 @@
                             {
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
-                                        <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="Variant.Filled" />
+                                        <MudTextField @bind-Value="@smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                     </div>
                                 </div>
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
-                                        <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="Variant.Filled" />
+                                        <MudTextField @bind-Value="@smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                     </div>
                                 </div>
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
-                                        <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="Variant.Filled" />
-                                    </div>
-                                </div>
-
-                                <div class="damselfly-configsetting">
-                                    <div class="damselfly-configfield">
-                                        <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="Variant.Filled" />
+                                        <MudTextField @bind-Value="@smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                     </div>
                                 </div>
 
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
-                                        <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" UserAttributes="@MudNoAutofill.noAutoFillAttr" Variant="Variant.Filled" />
+                                        <MudTextField @bind-Value="@smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                                    </div>
+                                </div>
+
+                                <div class="damselfly-configsetting">
+                                    <div class="damselfly-configfield">
+                                        <MudTextField @bind-Value="@smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" UserAttributes="@MudNoAutofill.noAutoFillAttr" Variant="UIConstants.MudVariant" />
                                     </div>
                                 </div>
                             }
@@ -231,13 +231,13 @@
                             {
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
-                                        <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="Variant.Filled" />
+                                        <MudTextField @bind-Value="@sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                     </div>
                                 </div>
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
                                         <MudTextField @bind-Value="@sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" UserAttributes="@MudNoAutofill.noAutoFillAttr" InputType="InputType.Email" ReadOnly="false"
-                                                      Variant="Variant.Filled" HelperText="This should match the email address associated with your API key in your SendGrid account" />
+                                                      Variant="UIConstants.MudVariant" HelperText="This should match the email address associated with your API key in your SendGrid account" />
                                     </div>
                                 </div>
                             }

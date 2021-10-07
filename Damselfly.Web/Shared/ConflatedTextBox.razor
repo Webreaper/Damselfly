@@ -1,9 +1,9 @@
 ﻿@using Damselfly.Web.Data
 
-<div class="InputAddOn">
-    <div class="InputAddOn-item" title="@placeholder"><i class="fa @IconClass" /></div>
-    <input class="InputAddOn-field" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
-    <button class="InputAddOn-item" title="Clear Filter" @onclick="@(() => ClearText())"><i class="fa fa-times-circle" /></button>
+<div class="SearchBox">
+    <div class="SearchFieldIcon" title="@placeholder"><i class="fa @IconClass" /></div>
+    <input class="SearchField" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
+    <div class="SearchFieldClear" title="Clear Filter" @onclick="@(() => ClearText())"><i class="fa fa-times" /></div>
 </div>
 
 @code {

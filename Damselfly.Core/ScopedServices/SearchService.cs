@@ -56,14 +56,14 @@ namespace Damselfly.Core.ScopedServices
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
         public bool IncludeAITags { get { return query.IncludeAITags; } set { if (query.IncludeAITags != value) { query.IncludeAITags = value; QueryChanged(); } } }
         public bool UntaggedImages { get { return query.UntaggedImages; } set { if (query.UntaggedImages != value) { query.UntaggedImages = value; QueryChanged(); } } }
-        public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
+        public int? CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
         public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
-        public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public int? LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
         public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
-        public FaceSearchType FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
-        public OrientationType Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
+        public FaceSearchType? FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
+        public OrientationType? Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
 
         public void Reset() { ApplyQuery(new SearchQuery()); }
         public void Refresh() { QueryChanged(); }
@@ -148,8 +148,6 @@ namespace Damselfly.Core.ScopedServices
                         images = await db.ImageSearch(searchText, query.IncludeAITags);
                     }
 
-                    images = images.Include(x => x.Folder);
-
                     if ( query.Tag != null )
                     {
                         var tagImages = images.Where(x => x.ImageTags.Any(y => y.TagId == query.Tag.TagId));
@@ -217,7 +215,7 @@ namespace Damselfly.Core.ScopedServices
                         images = images.Where(x => x.FileSizeBytes < maxSizeBytes);
                     }
 
-                    if( query.Orientation != OrientationType.All )
+                    if( query.Orientation.HasValue )
                     {
                         if (query.Orientation == OrientationType.Landscape)
                             images = images.Where(x => x.MetaData.Width > x.MetaData.Height);
@@ -225,18 +223,13 @@ namespace Damselfly.Core.ScopedServices
                             images = images.Where(x => x.MetaData.Height > x.MetaData.Width);
                     }
 
-                    if (query.CameraId != -1 || query.LensId != -1)
-                    {
-                        images = images.Include(x => x.MetaData);
-
-                        if (query.CameraId != -1)
-                            images = images.Where(x => x.MetaData.CameraId == query.CameraId);
+                    if (query.CameraId.HasValue)
+                        images = images.Where(x => x.MetaData.CameraId == query.CameraId);
  
-                        if (query.LensId != -1)
-                            images = images.Where(x => x.MetaData.LensId == query.LensId);
-                    }
+                    if (query.LensId.HasValue)
+                        images = images.Where(x => x.MetaData.LensId == query.LensId);
 
-                    if( query.FaceSearch != FaceSearchType.None )
+                    if( query.FaceSearch.HasValue )
                     {
                         images = query.FaceSearch switch
                         {
@@ -361,10 +354,10 @@ namespace Damselfly.Core.ScopedServices
                 if (UntaggedImages)
                     hints.Add($"Untagged images");
 
-                if (FaceSearch != FaceSearchType.None)
+                if (FaceSearch.HasValue)
                     hints.Add($"{FaceSearch.Humanize()}");
 
-                if (Orientation != OrientationType.All)
+                if (Orientation.HasValue)
                     hints.Add($"{Orientation.Humanize()}");
 
                 if ( CameraId > 0 )

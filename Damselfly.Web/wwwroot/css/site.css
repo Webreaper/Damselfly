@@ -68,7 +68,7 @@ a, .btn-link {
 }
 
 a:hover {
-    color: var( -body-text) ;
+    color: var( --body-text) ;
 }
 
 .blazored-modal {
@@ -603,7 +603,7 @@ f
 }
 
 .damselfly-dialogctrl {
-    flex: 1 1 15%;
+    flex: 1 1 200px;
     margin-right: 6px;
 }
 
@@ -1117,6 +1117,40 @@ f
     max-height: 22px;
     height: 22px;
     margin: 1px;
+}
+
+.SearchBox {
+    min-width: 300px;
+    display: flex;
+    background: transparent;
+    padding: 2px;
+    margin: 2px;
+    margin-top: 4px;
+    border: 0;
+    border-bottom: 1px solid var( --button-border );
+}
+
+.SearchField {
+    flex: 1 1 300px;
+    border: 0;
+    outline: 0;
+    margin: 2px;
+    background: transparent;
+    color: var( --body-text);
+}
+
+.SearchFieldIcon {
+    color: var( --button-border );
+    font-size: larger;
+    margin-right: 4px;
+    margin-right: 3px;
+}
+
+.SearchFieldClear {
+    color: var( --button-border );
+    font-size: larger;
+    margin-right: 2px;
+    margin-right: 4px;
 }
 
 .InputAddOn {
