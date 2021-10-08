@@ -127,7 +127,7 @@
                             <ValidationSummary />
 
                             <h2>AI Processing</h2>
-                            <MudSwitch T="bool" @bind-Checked="@enableAITimeLimit" Label="Only process image recognition between these times" />
+                            <MudCheckBox @bind-Checked="@enableAITimeLimit" Label="Only process image recognition between these times" />
                             <div class="damselfly-configsetting">
                                 <MudTimePicker @bind-Time="aiStartTime" Disabled="@(!enableAITimeLimit)" Label="AI processing start time" AutoClose="true" />
                                 <MudTimePicker @bind-Time="aiEndTime" Disabled="@(!enableAITimeLimit)" Label="AI processing end time" AutoClose="true" />

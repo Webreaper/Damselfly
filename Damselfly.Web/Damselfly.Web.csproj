@@ -57,6 +57,7 @@
     <None Remove="Pages\Shared\" />
     <None Remove="Microsoft.AspNetCore.WebUtilities" />
     <None Remove="Extensions\" />
+    <None Remove="ExCSS" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="Shared\Images\ImagePropertyField.razor" />

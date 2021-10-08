@@ -31,19 +31,88 @@
         themeService.OnChangeTheme -= SwitchTheme;
     }
 
+    /// <summary>
+    /// We parse the variables out of the CSS theme file. This will
+    /// give us a dictionary of variable name => colour
+    /// </summary>
+    /// <returns></returns>
+    private IDictionary<string, string> ParseCSS()
+    {
+        var lines = File.ReadAllLines( themeService.CurrentThemeFullPath );
+
+        // Pull out the variables
+        return lines.Select(x => x.Trim())
+                            .Where(x => x.StartsWith("--"))
+                            .Select(x => x.Substring(2, x.Length - 3))
+                            .Select(x => x.Split(':', 2))
+                            .ToDictionary(x => x.First().Trim(), y => y.Last().Trim());
+    }
+
+    /// <summary>
+    /// Given the new theme, parse its colours and variable names out, and
+    /// then map them to Mud colours.
+    /// </summary>
+    /// <param name="newTheme"></param>
+    /// <returns></returns>
+    private Palette CreateMudThemeFromCSS(string newTheme)
+    {
+        try
+        {
+            var dict = ParseCSS();
+
+            return new Palette
+            {
+                Black = dict["main-background"],
+                Surface = dict["keyword-bg"],
+                Primary = dict["body-text"], // Primary highlighted text, such as selected tab text
+                PrimaryDarken = dict["keyword-border"],
+                PrimaryLighten = dict["statusbar-text"],
+                TextPrimary = dict["body-text"],
+                TextSecondary = dict["tool-window-text"],
+                ActionDefault = dict["statusbar-text"],
+                ActionDisabled = "rgba(255,255,255, 0.26)",
+                Background = dict["main-background"],
+                BackgroundGrey = dict["tool-window-bg"],
+                DrawerBackground = "#2f2f2f",
+                DrawerText = "rgba(255,255,255, 0.50)",
+                DrawerIcon = "rgba(255,255,255, 0.50)",
+                AppbarBackground = dict["statusbar-text"],
+                AppbarText = "rgba(255,255,255, 0.70)",
+                Divider = dict["tool-window-title"],
+                DividerLight = dict["tool-window-title-bg"],
+                TableLines = dict["keyword-border"],
+                LinesDefault = dict["keyword-border"],
+                LinesInputs = dict["keyword-border"],
+                ActionDisabledBackground = "rgba(255,255,255, 0.4)",
+                TextDisabled = "rgba(255,255,255, 0.4)"
+            };
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogWarning($"Unable to parse theme CSS: {ex.Message}");
+            return null;
+        }
+    }
+
     private void SwitchTheme(string newTheme)
     {
         var themeCSS = $"themes/{newTheme}.css?j={cacheBuster++}";
-
         _ = JsRuntime.InvokeAsync<string>("setStyleSheet", themeCSS);
 
-        // TODO: This is hacky. We should either include the --mud* vars in the
-        // theme, or we should have some sort of automated way to determine if
-        // the theme should be dark or light (e.g., dark subfolder).
-        if (newTheme == "white" || newTheme == "flat")
-            MudTheme = lightTheme;
+        var palette = CreateMudThemeFromCSS(newTheme);
+
+        if( palette != null )
+        {
+            MudTheme = new MudTheme { Palette = palette };
+        }
         else
-            MudTheme = darkTheme;
+        {
+            // Fallback position just in case we can't parse the theme.
+            if (newTheme == "white" || newTheme == "flat")
+                MudTheme = lightTheme;
+            else
+                MudTheme = darkTheme;
+        }
 
         // Trigger a statechanged for Mud
         StateHasChanged();
@@ -53,12 +122,12 @@
     {
         Palette = new Palette
         {
-            Primary = "#cccccc",
-            PrimaryDarken = "#888888",
+            Primary = "#dddddd",
+            PrimaryDarken = "#aaaaaa",
             PrimaryLighten = "#FFFFFF",
-            Black = "#272727",
-            Background = "#323232",
-            BackgroundGrey = "#2f2f2f",
+            Black = "#222222",
+            Background = "#000000",
+            BackgroundGrey = "#232323",
             Surface = "#272727",
             DrawerBackground = "#2f2f2f",
             DrawerText = "rgba(255,255,255, 0.50)",

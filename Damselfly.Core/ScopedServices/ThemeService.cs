@@ -54,6 +54,14 @@ namespace Damselfly.Core.ScopedServices
             }
         }
 
+        public string CurrentThemeFullPath
+        {
+            get {
+                var themeFileName = Path.ChangeExtension(CurrentTheme, ".css");
+                return Path.Combine(themesFolder.FullName, themeFileName);
+            }
+        }
+
         public string Theme
         {
             get { return _currentTheme; }
