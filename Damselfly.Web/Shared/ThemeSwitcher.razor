@@ -33,34 +33,17 @@
         themeService.OnChangeTheme -= SwitchTheme;
     }
 
-    /// <summary>
-    /// We parse the variables out of the CSS theme file. This will
-    /// give us a dictionary of variable name => colour
-    /// </summary>
-    /// <returns></returns>
-    private IDictionary<string, string> ParseCSS()
-    {
-        var lines = File.ReadAllLines( themeService.CurrentThemeFullPath );
-
-        // Pull out the variables
-        return lines.Select(x => x.Trim())
-                            .Where(x => x.StartsWith("--"))
-                            .Select(x => x.Substring(2, x.Length - 3))
-                            .Select(x => x.Split(':', 2))
-                            .ToDictionary(x => x.First().Trim(), y => y.Last().Trim());
-    }
-
-    private static MudColor Color(IDictionary<string, string> dict, string name )
+    private MudColor Color(string name )
     {
         var color = "not found";
         try
         {
-            color = dict[name];
+            color = themeService.GetColor(name);
             return new MudColor(color);
         }
         catch( Exception ex)
         {
-            Logging.LogWarning($"Color '{color}' was not valid for MudPalette: {ex.Message}");
+            Logging.LogWarning($"Color {name} with value '{color}' was not valid for MudBlazor: {ex.Message}");
             return null;
         }
     }
@@ -75,34 +58,32 @@
     {
         try
         {
-            var dict = ParseCSS();
-
             return new Palette
             {
-                Black = Color(dict, "main-background"),
-                Primary = Color( dict, "body-text" ), // Primary highlighted text, such as selected tab text
-                Surface = Color( dict, "statusbar-gradend" ), // Tab backgrounds, dropdown control backgrounds
-                TextPrimary = Color( dict, "body-text" ), // Main text on controls
-                TextSecondary = Color( dict, "tool-window-text" ), // Help text on controls
-                ActionDefault = Color( dict, "statusbar-text" ), // Checkboxes 
-                TableLines = Color( dict, "keyword-border" ), // Table row separator lines
-                LinesInputs = Color( dict, "keyword-border" ), // Underline for enabled controls
-                TextDisabled = Color( dict, "tag-editor-border" ), // Disabled controls and labels
+                Black = Color("main-background"),
+                Primary = Color( "body-text" ), // Primary highlighted text, such as selected tab text
+                Surface = Color( "statusbar-gradend" ), // Tab backgrounds, dropdown control backgrounds
+                TextPrimary = Color( "body-text" ), // Main text on controls
+                TextSecondary = Color( "tool-window-shadow"), // Help text on controls
+                ActionDefault = Color( "statusbar-text" ), // Checkboxes 
+                TableLines = Color( "keyword-border" ), // Table row separator lines
+                LinesInputs = Color( "keyword-border" ), // Underline for enabled controls
+                TextDisabled = Color( "tag-editor-border" ), // Disabled controls and labels
 
                 ActionDisabledBackground = "rgba(255,255,255, 0.4)", // Unknown
                 //PrimaryDarken = Color( dict, "keyword-bg" ), // Unknown
                 //PrimaryLighten = Color( dict,"keyword-text" ), // Unknown
                 ActionDisabled = "rgba(255,255,255, 0.5)", // Unknown (disabled checkboxes?)
-                Background = Color( dict, "main-background" ), // Unknown
-                BackgroundGrey = Color( dict, "tool-window-bg" ), // Unknown
+                Background = Color( "main-background" ), // Unknown
+                BackgroundGrey = Color( "tool-window-bg" ), // Unknown
                 DrawerBackground = "#2f2f2f", // Unknown
                 DrawerText = "rgba(255,255,255, 0.50)", // Unknown
                 DrawerIcon = "rgba(255,255,255, 0.50)", // Unknown
-                AppbarBackground = Color( dict, "statusbar-text" ),  // Unknown
+                AppbarBackground = Color( "statusbar-text" ),  // Unknown
                 AppbarText = "rgba(255,255,255, 0.70)", // Unknown
-                Divider = Color( dict, "tool-window-title" ), // Unknown
-                DividerLight = Color( dict, "tool-window-title-bg" ), // Unknown
-                LinesDefault = Color( dict, "keyword-border" ), // Unknown
+                Divider = Color( "tool-window-title" ), // Unknown
+                DividerLight = Color( "tool-window-title-bg" ), // Unknown
+                LinesDefault = Color( "keyword-border" ), // Unknown
             };
         }
         catch ( Exception ex )
@@ -125,11 +106,8 @@
         }
         else
         {
-            // Fallback position just in case we can't parse the theme.
-            if (newTheme == "white" || newTheme == "flat")
-                MudTheme = lightTheme;
-            else
-                MudTheme = darkTheme;
+            Logging.Log("No palatte - defaulting");
+            MudTheme = darkTheme;
         }
 
         // Trigger a statechanged for Mud

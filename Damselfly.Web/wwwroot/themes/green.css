@@ -3,8 +3,8 @@
     --body-text: #aaffaa;
     --statusbar-text: #62ff62;
     --statusbar-gradstart: rgb(50, 103, 64);
-    --statusbar-gradend: rgb(40, 63, 44, 0.7);
-    --statusbar-topborder: rgba(130,155,130,0.75);
+    --statusbar-gradend: rgb(40, 63, 44);
+    --statusbar-topborder: rgba(130,155,130,0.85);
     --button-colour: #1ba96e;
     --button-text-colour: #ccffcc;
     --button-border: #18ac61;
@@ -30,7 +30,7 @@
     --tag-editor-text: #aaffaa;
     --tag-editor-border: #557755;
     --tag-editor-bg: #557755;
-    --tool-window-text: #ddeddd;
+    --tool-window-text: #ddedd;
     --tool-window-bg: rgba(100, 140, 100, 0.3);
     --tool-window-shadow: rgba(225, 255, 225, 0.7);
     --tool-window-title: #92CF92;

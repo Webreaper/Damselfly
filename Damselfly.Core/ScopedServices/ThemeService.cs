@@ -19,6 +19,7 @@ namespace Damselfly.Core.ScopedServices
         private readonly UserConfigService _configService;
         public event Action<string> OnChangeTheme;
         private string _currentTheme;
+        private IDictionary<string, string> _nameColourPairs;
 
         public ThemeService( UserConfigService configService )
         {
@@ -49,16 +50,9 @@ namespace Damselfly.Core.ScopedServices
                 {
                     _currentTheme = value;
                     _configService.Set(ConfigSettings.Theme, _currentTheme);
+                    ParseCSSColourPairs();
                     OnChangeTheme?.Invoke(Theme);
                 }
-            }
-        }
-
-        public string CurrentThemeFullPath
-        {
-            get {
-                var themeFileName = Path.ChangeExtension(CurrentTheme, ".css");
-                return Path.Combine(themesFolder.FullName, themeFileName);
             }
         }
 
@@ -75,6 +69,42 @@ namespace Damselfly.Core.ScopedServices
                                              .Select(x => Path.GetFileNameWithoutExtension(x.Name))
                                              .ToList();
             }
+        }
+
+        /// <summary>
+        /// Get a colour by its variable name
+        /// </summary>
+        /// <param name="colourName"></param>
+        /// <returns></returns>
+        public string GetColor( string colourName )
+        {
+            if(_nameColourPairs == null )
+                ParseCSSColourPairs();
+
+            if (_nameColourPairs.TryGetValue(colourName, out var color))
+                return color;
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// We parse the variables out of the CSS theme file. This will
+        /// give us a dictionary of variable name => colour
+        /// TODO: Do this once centrally...
+        /// </summary>
+        /// <returns></returns>
+        private void ParseCSSColourPairs()
+        {
+            var themeFileName = Path.ChangeExtension(CurrentTheme, ".css");
+            var themeFullPath = Path.Combine(themesFolder.FullName, themeFileName);
+            var lines = File.ReadAllLines(themeFullPath);
+
+            // Pull out the variables
+            _nameColourPairs = lines.Select(x => x.Trim())
+                                .Where(x => x.StartsWith("--"))
+                                .Select(x => x.Substring(2, x.Length - 3))
+                                .Select(x => x.Split(':', 2))
+                                .ToDictionary(x => x.First().Trim(), y => y.Last().Trim());
         }
     }
 }
