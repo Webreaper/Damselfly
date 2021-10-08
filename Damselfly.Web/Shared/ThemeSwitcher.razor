@@ -1,4 +1,6 @@
 ﻿
+@using MudBlazor.Utilities;
+
 @inject ThemeService themeService
 @inject ConfigService configService
 @inject IJSRuntime JsRuntime
@@ -48,6 +50,21 @@
                             .ToDictionary(x => x.First().Trim(), y => y.Last().Trim());
     }
 
+    private static MudColor Color(IDictionary<string, string> dict, string name )
+    {
+        var color = "not found";
+        try
+        {
+            color = dict[name];
+            return new MudColor(color);
+        }
+        catch( Exception ex)
+        {
+            Logging.LogWarning($"Color '{color}' was not valid for MudPalette: {ex.Message}");
+            return null;
+        }
+    }
+
     /// <summary>
     /// Given the new theme, parse its colours and variable names out, and
     /// then map them to Mud colours.
@@ -62,29 +79,30 @@
 
             return new Palette
             {
-                Black = dict["main-background"],
-                Surface = dict["keyword-bg"],
-                Primary = dict["body-text"], // Primary highlighted text, such as selected tab text
-                PrimaryDarken = dict["keyword-border"],
-                PrimaryLighten = dict["statusbar-text"],
-                TextPrimary = dict["body-text"],
-                TextSecondary = dict["tool-window-text"],
-                ActionDefault = dict["statusbar-text"],
-                ActionDisabled = "rgba(255,255,255, 0.26)",
-                Background = dict["main-background"],
-                BackgroundGrey = dict["tool-window-bg"],
-                DrawerBackground = "#2f2f2f",
-                DrawerText = "rgba(255,255,255, 0.50)",
-                DrawerIcon = "rgba(255,255,255, 0.50)",
-                AppbarBackground = dict["statusbar-text"],
-                AppbarText = "rgba(255,255,255, 0.70)",
-                Divider = dict["tool-window-title"],
-                DividerLight = dict["tool-window-title-bg"],
-                TableLines = dict["keyword-border"],
-                LinesDefault = dict["keyword-border"],
-                LinesInputs = dict["keyword-border"],
-                ActionDisabledBackground = "rgba(255,255,255, 0.4)",
-                TextDisabled = "rgba(255,255,255, 0.4)"
+                Black = Color(dict, "main-background"),
+                Primary = Color( dict, "body-text" ), // Primary highlighted text, such as selected tab text
+                Surface = Color( dict, "statusbar-gradend" ), // Tab backgrounds, dropdown control backgrounds
+                TextPrimary = Color( dict, "body-text" ), // Main text on controls
+                TextSecondary = Color( dict, "tool-window-text" ), // Help text on controls
+                ActionDefault = Color( dict, "statusbar-text" ), // Checkboxes 
+                TableLines = Color( dict, "keyword-border" ), // Table row separator lines
+                LinesInputs = Color( dict, "keyword-border" ), // Underline for enabled controls
+                TextDisabled = Color( dict, "tag-editor-border" ), // Disabled controls and labels
+
+                ActionDisabledBackground = "rgba(255,255,255, 0.4)", // Unknown
+                //PrimaryDarken = Color( dict, "keyword-bg" ), // Unknown
+                //PrimaryLighten = Color( dict,"keyword-text" ), // Unknown
+                ActionDisabled = "rgba(255,255,255, 0.5)", // Unknown (disabled checkboxes?)
+                Background = Color( dict, "main-background" ), // Unknown
+                BackgroundGrey = Color( dict, "tool-window-bg" ), // Unknown
+                DrawerBackground = "#2f2f2f", // Unknown
+                DrawerText = "rgba(255,255,255, 0.50)", // Unknown
+                DrawerIcon = "rgba(255,255,255, 0.50)", // Unknown
+                AppbarBackground = Color( dict, "statusbar-text" ),  // Unknown
+                AppbarText = "rgba(255,255,255, 0.70)", // Unknown
+                Divider = Color( dict, "tool-window-title" ), // Unknown
+                DividerLight = Color( dict, "tool-window-title-bg" ), // Unknown
+                LinesDefault = Color( dict, "keyword-border" ), // Unknown
             };
         }
         catch ( Exception ex )
