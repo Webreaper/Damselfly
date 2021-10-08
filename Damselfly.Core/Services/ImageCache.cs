@@ -9,6 +9,29 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Damselfly.Core.Services
 {
+    /// <summary>
+    /// This is the big that drives the performance. The bottleneck for performance
+    /// is hitting the DB to pull back image metadata, etc., because there's a lot
+    /// of joins, particularly when it comes to ImageTags (which is many-to-many,
+    /// and for a large collection can have several million rows). So we cache, hard.
+    ///
+    /// This is basically a read-through cache - whenever we pull images back from
+    /// the DB, we get their IDs (which makes the query fast) and then call
+    /// EnricheAndCache, whose job it is to separate the IDs for which we already
+    /// have cached data, and those which we don't, and load only the ones from the
+    /// DB that are new.
+    ///
+    /// The key point is that this is a system-wide cache, so if multiple users are
+    /// using the system at once, most of their access will be from in-memory cached
+    /// image data, not from the DB. This massively improves performance, and reduces
+    /// DB concurrency, which SQLite isn't very good at.
+    ///
+    /// The key thing to remember is that:
+    ///   1. We have to call db.Attach before updating any of the EF Core objects
+    ///      in the cache, because they won't have a valid DB context and
+    ///   2. We need to be careful to explicitly evict images when things change,
+    ///      such as re-indexing, keywords being added, thumbnails regenerated, etc.
+    /// </summary>
     public class ImageCache
     {
         private readonly IMemoryCache _memoryCache;
@@ -104,6 +127,9 @@ namespace Damselfly.Core.Services
 
             using var db = new ImageContext();
 
+            // This is THE query. It has to be fast. The ImageTags many-to-many
+            // join is *really* slow on a standard EFCore query, so we have to
+            // filter using a list of ImageIDs. 
             var images = await db.Images
                             .Where(x => imageIds.Contains( x.ImageId) )
                             .Include(x => x.Folder)
@@ -225,6 +251,10 @@ namespace Damselfly.Core.Services
             return image;
         }
 
+        /// <summary>
+        /// Remove an item from the cache so it'll be reloaded from the DB.
+        /// </summary>
+        /// <param name="imageId"></param>
         public void Evict(int imageId)
         {
             Logging.LogVerbose($"Evicting from cache: {imageId}");

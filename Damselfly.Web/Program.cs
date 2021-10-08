@@ -178,9 +178,13 @@ namespace Damselfly.Web
             {
                 Logging.Log("Starting Damselfly Webserver");
 
-                BuildWebHost(listeningPort, args).Run();
+                var host = BuildWebHost(listeningPort, args);
 
-                Logging.Log("Damselfly Webserver stopped. Exiting");
+                Logging.StartupCompleted();
+
+                host.Run();
+
+                Logging.LogWarning("Damselfly Webserver stopped. Exiting");
             }
             catch ( Exception ex )
             {
