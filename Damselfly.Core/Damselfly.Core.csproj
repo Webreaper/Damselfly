@@ -35,6 +35,7 @@
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="5.8.64" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.0-rc.1.21452.15" />
     <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.0.0" />
+    <PackageReference Include="MudBlazor" Version="5.1.5" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
@@ -59,5 +60,6 @@
     <None Remove="MailKit" />
     <None Remove="ScopedServices\" />
     <None Remove="CoenM.ImageSharp.ImageHash" />
+    <None Remove="MudBlazor" />
   </ItemGroup>
 </Project>

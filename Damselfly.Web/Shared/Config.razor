@@ -9,7 +9,8 @@
 @inject IJSRuntime JsRuntime
 @inject ConfigService configService
 @inject UserConfigService userConfigService
-@inject ThemeService themeService
+@inject UserThemeService userThemeService
+@inject ThemeService themeService 
 @inject UserStatusService statusService
 @inject WordpressService wpService
 @inject ImageRecognitionService imageService  
@@ -31,8 +32,8 @@
                                 <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
                                     @foreach (var choice in themeService.Themes)
                                     {
-                                        <MudSelectItem T="string" Value="@choice">
-                                            @choice.Transform(To.SentenceCase)
+                                        <MudSelectItem T="string" Value="@choice.Name">
+                                            @choice.Name.Transform(To.SentenceCase)
                                         </MudSelectItem>
                                     }
                                 </MudSelect>
@@ -311,9 +312,9 @@
             Logging.ChangeLogLevel(logLevel);
 
             // Do this last as it has a material effect.
-            if (themeService.CurrentTheme != selectedTheme)
+            if (userThemeService.CurrentThemeName != selectedTheme)
             {
-                themeService.CurrentTheme = selectedTheme;
+                userThemeService.CurrentThemeName = selectedTheme;
             }
 
             userConfigService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString() );
@@ -367,7 +368,7 @@
         sendGridSettings.Load(configService);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
-        selectedTheme = themeService.CurrentTheme;
+        selectedTheme = userThemeService.CurrentThemeName;
 
         var range = imageService.GetProcessingTimeRange();
 

@@ -94,6 +94,7 @@ namespace Damselfly.Web
             services.AddSingleton<AccordFaceService>();
             services.AddSingleton<AzureFaceService>();
             services.AddSingleton<EmguFaceService>();
+            services.AddSingleton<ThemeService>();
             services.AddSingleton<ImageRecognitionService>();
             services.AddSingleton<ImageCache>();
 
@@ -109,7 +110,7 @@ namespace Damselfly.Web
             services.AddScoped<NavigationService>();
             services.AddScoped<UserFolderService>();
             services.AddScoped<ViewDataService>();
-            services.AddScoped<ThemeService>();
+            services.AddScoped<UserThemeService>();
             services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
         }

@@ -2,6 +2,7 @@
 @using MudBlazor.Utilities;
 
 @inject ThemeService themeService
+@inject UserThemeService userthemeService
 @inject ConfigService configService
 @inject IJSRuntime JsRuntime
 @implements IDisposable
@@ -16,162 +17,48 @@
     {
         base.OnInitialized();
 
-        MudTheme = darkTheme;
+        MudTheme = userthemeService.CurrentTheme.MudTheme;
+
+        if (MudTheme == null)
+            MudTheme = themeService.DarkTheme;
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            themeService.OnChangeTheme += SwitchTheme;
-            SwitchTheme(themeService.Theme);
+            userthemeService.OnChangeTheme += SwitchTheme;
+            SwitchTheme(userthemeService.CurrentTheme);
         }
     }
 
     public void Dispose()
     {
-        themeService.OnChangeTheme -= SwitchTheme;
+        userthemeService.OnChangeTheme -= SwitchTheme;
     }
 
-    private MudColor Color(string name )
+    private void SwitchTheme(ThemeService.ThemeConfig newTheme)
     {
-        var color = "not found";
-        try
-        {
-            color = themeService.GetColor(name);
-            return new MudColor(color);
-        }
-        catch( Exception ex)
-        {
-            Logging.LogWarning($"Color {name} with value '{color}' was not valid for MudBlazor: {ex.Message}");
-            return null;
-        }
-    }
 
-    /// <summary>
-    /// Given the new theme, parse its colours and variable names out, and
-    /// then map them to Mud colours.
-    /// </summary>
-    /// <param name="newTheme"></param>
-    /// <returns></returns>
-    private Palette CreateMudThemeFromCSS(string newTheme)
-    {
-        try
+        if (newTheme != null)
         {
-            return new Palette
+            // Apply the new stylesheet to Damselfly
+            var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
+            _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);
+
+            if (newTheme.MudTheme != null)
             {
-                Black = Color("main-background"),
-                Primary = Color( "body-text" ), // Primary highlighted text, such as selected tab text
-                Surface = Color( "statusbar-gradend" ), // Tab backgrounds, dropdown control backgrounds
-                TextPrimary = Color( "body-text" ), // Main text on controls
-                TextSecondary = Color( "tool-window-shadow"), // Help text on controls
-                ActionDefault = Color( "statusbar-text" ), // Checkboxes 
-                TableLines = Color( "keyword-border" ), // Table row separator lines
-                LinesInputs = Color( "keyword-border" ), // Underline for enabled controls
-                TextDisabled = Color( "tag-editor-border" ), // Disabled controls and labels
-
-                ActionDisabledBackground = "rgba(255,255,255, 0.4)", // Unknown
-                //PrimaryDarken = Color( dict, "keyword-bg" ), // Unknown
-                //PrimaryLighten = Color( dict,"keyword-text" ), // Unknown
-                ActionDisabled = "rgba(255,255,255, 0.5)", // Unknown (disabled checkboxes?)
-                Background = Color( "main-background" ), // Unknown
-                BackgroundGrey = Color( "tool-window-bg" ), // Unknown
-                DrawerBackground = "#2f2f2f", // Unknown
-                DrawerText = "rgba(255,255,255, 0.50)", // Unknown
-                DrawerIcon = "rgba(255,255,255, 0.50)", // Unknown
-                AppbarBackground = Color( "statusbar-text" ),  // Unknown
-                AppbarText = "rgba(255,255,255, 0.70)", // Unknown
-                Divider = Color( "tool-window-title" ), // Unknown
-                DividerLight = Color( "tool-window-title-bg" ), // Unknown
-                LinesDefault = Color( "keyword-border" ), // Unknown
-            };
+                MudTheme = newTheme.MudTheme;
+            }
         }
-        catch ( Exception ex )
-        {
-            Logging.LogWarning($"Unable to parse theme CSS: {ex.Message}");
-            return null;
-        }
-    }
 
-    private void SwitchTheme(string newTheme)
-    {
-        var themeCSS = $"themes/{newTheme}.css?j={cacheBuster++}";
-        _ = JsRuntime.InvokeAsync<string>("setStyleSheet", themeCSS);
-
-        var palette = CreateMudThemeFromCSS(newTheme);
-
-        if( palette != null )
-        {
-            MudTheme = new MudTheme { Palette = palette };
-        }
-        else
+        if (MudTheme == null)
         {
             Logging.Log("No palatte - defaulting");
-            MudTheme = darkTheme;
+            MudTheme = themeService.DarkTheme;
         }
 
         // Trigger a statechanged for Mud
         StateHasChanged();
     }
-
-    private MudTheme darkTheme = new MudTheme
-    {
-        Palette = new Palette
-        {
-            Primary = "#dddddd",
-            PrimaryDarken = "#aaaaaa",
-            PrimaryLighten = "#FFFFFF",
-            Black = "#222222",
-            Background = "#000000",
-            BackgroundGrey = "#232323",
-            Surface = "#272727",
-            DrawerBackground = "#2f2f2f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#2f2f2f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(255,255,255, 0.50)",
-            TextSecondary = "rgba(255,255,255, 0.70)",
-            ActionDefault = "#adadad",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            Divider = "rgba(255,255,255, 0.12)",
-            DividerLight = "rgba(255,255,255, 0.06)",
-            TableLines = "rgba(255,255,255, 0.12)",
-            LinesDefault = "rgba(255,255,255, 0.12)",
-            LinesInputs = "rgba(255,255,255, 0.3)",
-            TextDisabled = "rgba(255,255,255, 0.2)"
-        }
-    };
-
-    private MudTheme lightTheme = new MudTheme
-    {
-        Palette = new Palette
-        {
-            Primary = "#444444",
-            PrimaryDarken = "#222222",
-            PrimaryLighten = "#777777",
-            Black = "#A7A7A7",
-            Background = "#f2f2f2",
-            BackgroundGrey = "#cfcfcf",
-            Surface = "#f7f7f7",
-            DrawerBackground = "#9f9f9f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#9f9f9f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(40,40,40, 0.80)",
-            TextSecondary = "rgba(100,100,100, 0.80)",
-            ActionDefault = "#2d2d2d",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            Divider = "rgba(100,100,100, 0.12)",
-            DividerLight = "rgba(150,150,150, 0.06)",
-            TableLines = "rgba(100,100,100, 0.12)",
-            LinesDefault = "rgba(200,200,200, 0.12)",
-            LinesInputs = "rgba(255,255,255, 0.3)",
-            TextDisabled = "rgba(100,100,100, 0.2)",
-            Warning = "#666600"
-        }
-    };
 }
