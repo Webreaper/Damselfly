@@ -50,15 +50,15 @@
             {
                 MudTheme = newTheme.MudTheme;
             }
-        }
 
-        if (MudTheme == null)
-        {
-            Logging.Log("No palatte - defaulting");
-            MudTheme = themeService.DarkTheme;
-        }
+            if (MudTheme == null)
+            {
+                Logging.Log("No palatte - defaulting");
+                MudTheme = themeService.DarkTheme;
+            }
 
-        // Trigger a statechanged for Mud
-        StateHasChanged();
+            // Trigger a statechanged for Mud
+            StateHasChanged();
+        }
     }
 }
