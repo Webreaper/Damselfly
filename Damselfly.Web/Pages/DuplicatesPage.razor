@@ -1,4 +1,4 @@
-﻿@page "/image/duplicates"
+﻿@page "/duplicates"
 
 @using Microsoft.EntityFrameworkCore
 @using System.Collections.Generic;
@@ -87,7 +87,7 @@
 
         // Craft the SQL manually as server-side groupby isn't supported by EF Core.
         // Select all images that have the same hash as more than one image.
-        var subQuery = "SELECT hash from Hashes where MD5ImageHash is not null and MD5ImageHash <> \"\" group by hash having count( distinct ImageID ) > 1";
+        var subQuery = "SELECT MD5ImageHash from Hashes where MD5ImageHash is not null and MD5ImageHash <> \"\" group by MD5ImageHash having count( distinct ImageID ) > 1";
         var sql = $"SELECT h.* from hashes h where h.MD5ImageHash in ({subQuery})";
 
         var dupeImages = await db.Hashes.FromSqlRaw(sql)
