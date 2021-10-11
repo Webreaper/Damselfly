@@ -12,16 +12,16 @@
 @inject UserService userService
 @inject UserConfigService userConfigService
 
-<div class="InputAddOn">
-    <div class="InputAddOn-item" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
-    <select @bind="SelectedBasketId" class="InputAddOn-field">
+<div class="SearchBox">
+    <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
+    <select @bind="SelectedBasketId" class="SearchField">
         @foreach (var basket in baskets)
         {
             <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
         }
     </select>
     <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-        <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="InputAddOn-item"><i class="fas fa-edit" /></button>
+        <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="SearchFieldClear"><i class="fas fa-edit" /></button>
     </AuthorizeView>
 </div>
 

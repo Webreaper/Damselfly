@@ -1,6 +1,5 @@
 ﻿@using Damselfly.Web.Data
 @using Damselfly.Core.Utils.Images;
-@using BlazorDateRangePicker
 
 @inject IDialogService DialogService
 @inject SearchService searchService
@@ -101,14 +100,6 @@
     protected void SearchQueryChanged()
     {
         _ = InvokeAsync(StateHasChanged);
-    }
-
-    public void OnRangeSelect(BlazorDateRangePicker.DateRange range)
-    {
-        if (range != null)
-            searchService.SetDateRange(range.Start.Date, range.End.Date);
-        else
-            searchService.SetDateRange(null, null);
     }
 
     private void DoSearch(string searchTerm)

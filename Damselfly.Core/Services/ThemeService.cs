@@ -127,7 +127,7 @@ namespace Damselfly.Core.ScopedServices
                     TableLines = Color(pairs, "keyword-border"), // Table row separator lines
                     LinesInputs = Color(pairs, "keyword-border"), // Underline for enabled controls
                     TextDisabled = Color(pairs, "tag-editor-border"), // Disabled controls and labels
-
+                    Tertiary = Color(pairs, "statusbar-gradstart"), // Date Picker header background
                     ActionDisabledBackground = "rgba(255,255,255, 0.4)", // Unknown
                     //PrimaryDarken = Color( dict, "keyword-bg" ), // Unknown
                     //PrimaryLighten = Color( dict,"keyword-text" ), // Unknown

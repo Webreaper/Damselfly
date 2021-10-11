@@ -1,0 +1,71 @@
+﻿
+@using System.Linq
+
+@inject BasketService basketService
+@inject UserService userService
+@inject UserStatusService userStatusService
+@inject StatusService statusService    
+
+<MudDialog>
+    <DialogContent>
+        <MudSelect T="Basket" Label="Destination Basket" HelperText="Select destination basket for the current basket items" @bind-Value="selectedBasket" Variant="Variant.Filled">
+            @foreach (var basket in allBaskets)
+            {
+                <MudSelectItem T="Basket" Value="@basket">@basket.Name</MudSelectItem>
+            }
+        </MudSelect>
+        @if (!string.IsNullOrEmpty(errorMsg))
+        {
+            <p>@errorMsg</p>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Copy">Copy</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Move">Move</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    List<Basket> allBaskets = new List<Basket>();
+
+    private Basket selectedBasket;
+
+    async Task Move()
+    {
+        await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
+        await basketService.Clear();
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    async Task Copy()
+    {
+        await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private string errorMsg;
+
+    private void DisplayError( string errorText )
+    {
+        errorMsg = errorText;
+        StateHasChanged();
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var baskets = await basketService.GetUserBaskets(userService.User);
+        var destBaskets = baskets.Where(x => x.BasketId != basketService.CurrentBasket.BasketId)
+                                   .ToList();
+
+        allBaskets.AddRange(destBaskets);
+    }
+}

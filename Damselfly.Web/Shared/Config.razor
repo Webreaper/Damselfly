@@ -196,7 +196,11 @@
                             <h2>Email Settings for Password Reminders, etc.</h2>
 
                             <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
-                            <MudSwitch T="bool" @bind-Checked="@useSmtp" Label="@(useSmtp ? "SMTP" : "SendGrid")" />
+                            <MudRadioGroup @bind-SelectedOption="@useSmtp">
+                                <MudRadio Option="@true">SMTP</MudRadio>
+                                <MudRadio Option="@false">SendGrid</MudRadio>
+                            </MudRadioGroup>
+
 
                             @if (useSmtp)
                             {

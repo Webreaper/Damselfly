@@ -14,7 +14,9 @@
 
 <div class="damselfly-dialogrow">
     <div class="damselfly-dialogctrl">
-        <MudDateRangePicker @ref="_picker" Label="Date range" DateFormat="dd-MMM-yy" TitleDateFormat="dd-MMM-yyyy" @bind-DateRange="DateRange" Variant="UIConstants.MudVariant">
+        <MudDateRangePicker @ref="_picker" Label="Date range" DateFormat="dd-MMM-yy" TitleDateFormat="dd-MMM-yyyy"
+                            @bind-DateRange="DateRange" Variant="UIConstants.MudVariant"
+                            Color="Color.Tertiary">
             <PickerActions>
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.Clear())">Clear</MudButton>
                 <select class="mr-auto align-self-start" @onchange="ShortCutChanged">
