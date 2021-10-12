@@ -359,7 +359,7 @@ namespace Damselfly.Core.Services
                     }
                     catch( Exception ex )
                     {
-                        Logging.LogError($"Exception during parallelised thumbnail generation: {ex.Message}");
+                        Logging.LogError($"Exception during parallelised thumbnail generation: {ex}");
                     }
 
                     // Write the timestamps for the newly-generated thumbs.
@@ -371,7 +371,8 @@ namespace Damselfly.Core.Services
 
                     watch.Stop();
 
-                    _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
+                    if( imagesToScan.Length > 1 )
+                        _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
 
                     Stopwatch.WriteTotals();
                 }
@@ -388,16 +389,17 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task<ImageProcessResult> CreateThumbs(ImageMetaData sourceImage, bool forceRegeneration )
         {
+            // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
+            sourceImage.ThumbLastUpdated = DateTime.UtcNow;
+
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
             if (result.ThumbsGenerated)
             {
-                sourceImage.ThumbLastUpdated = DateTime.UtcNow;
-
                 await AddHashToImage(sourceImage.Image, result);
-
-                _imageCache.Evict(sourceImage.ImageId);
             }
+
+            _imageCache.Evict(sourceImage.ImageId);
 
             return result;
         }
@@ -410,25 +412,32 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task AddHashToImage( Image image, ImageProcessResult processResult )
         {
-            var db = new ImageContext();
-            Hash hash = image.Hash;
-
-            if (hash == null)
+            try
             {
-                hash = new Hash { ImageId = image.ImageId };
-                image.Hash = hash;
-                db.Hashes.Add(hash);
+                var db = new ImageContext();
+                Hash hash = image.Hash;
+
+                if (hash == null)
+                {
+                    hash = new Hash { ImageId = image.ImageId };
+                    image.Hash = hash;
+                    db.Hashes.Add(hash);
+                }
+                else
+                {
+                    db.Attach(hash);
+                    db.Hashes.Update(hash);
+                }
+
+                hash.MD5ImageHash = processResult.ImageHash;
+                hash.PerceptualHash = processResult.PerceptualHash;
+
+                await db.SaveChangesAsync("SaveHash");
             }
-            else
+            catch( Exception ex )
             {
-                db.Attach(hash);
-                db.Hashes.Update(hash);
+                Logging.LogError($"Exception during perceptual hash calc: {ex}");
             }
-
-            hash.MD5ImageHash = processResult.ImageHash;
-            hash.PerceptualHash = processResult.PerceptualHash;
-
-            await db.SaveChangesAsync("SaveHash");
         }
 
 
