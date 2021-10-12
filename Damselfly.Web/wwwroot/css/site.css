@@ -1333,54 +1333,6 @@ padding: 0.4em 0.65em;
     display: none;
 }
 
-.blazored-typeahead__results {
-    background: #fff;
-    color: #004400;
-}
-
-.blazored-typeahead {
-    border-radius: 0px;
-}
-
-.blazored-typeahead__input {
-    border-radius: 0px;
-}
-
-.blazored-typeahead__selected-item {
-    background-color: #006600;
-    font-weight: bold;
-}
-
-.blazored-typeahead__selected-item-highlighted {
-    background-color: #006600;
-}
-
-.blazored-typeahead__active-item,
-.blazored-typeahead__result:hover,
-.blazored-typeahead__result:focus {
-    color: #efe;
-    background-color: #006600;
-    border-top: 1px solid #007600;
-    border-bottom: 1px solid #007600;
-}
-
-.blazored-typeahead__input-mask-wrapper--disabled {
-    border-radius: 0px;
-    background: rgb( 200, 200, 200 );
-    color: lightgrey;
-    height: 28px;
-}
-
-.blazored-typeahead__input-mask {
-    border-radius: 0px;
-    padding: 0;
-}
-
-.blazored-typeahead__input-icon--disabled ,
-.blazored-typeahead__input-icon--disabled:hover {
-    display: none;
-}
-
 
 .damselfly-dupelist {
     display: flex;
@@ -1700,4 +1652,76 @@ hr.separator {
     font-size: 12pt;
     width: 200px;
     margin: 3px;
+}
+
+
+/* Autocomplete */
+
+.blazored-typeahead__results {
+    background: var( --folder-entry-text-selected-bg );
+    color: var( --folder-entry-text-selected );
+}
+
+.blazored-typeahead {
+    border: 0;
+}
+
+.blazored-typeahead__input {
+    border: 0;
+    color: var( --body-text );
+    background: transparent;
+    padding: 2px;
+    outline-color: var( --statusbar-topborder);
+}
+
+.blazored-typeahead__selected-item {
+    background-color: var( --folder-entry-text);
+    font-weight: bold;
+}
+
+.blazored-typeahead__selected-item-highlighted {
+    background-color: var( --folder-entry-text-selected );
+}
+
+.blazored-typeahead__active-item,
+.blazored-typeahead__result:hover,
+.blazored-typeahead__result:focus {
+    color: var( --tag-editor-text );
+    background-color: var( --image-checkbox-hover-bg );
+    border-top: 1px solid var( --tag-editor-border );
+    border-bottom: 1px solid var( --tag-editor-border );
+}
+
+.blazored-typeahead__input-mask-wrapper--disabled {
+    border: 0;
+    background: transparent;
+    color: lightgrey;
+    min-height: 20px;
+}
+
+.blazored-typeahead__input-mask {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    min-height: 20px;
+}
+
+.blazored-typeahead__input-icon--disabled,
+.blazored-typeahead__input-icon--disabled:hover {
+    display: none;
+}
+
+.blazored-typeahead__input-mask-wrapper {
+    display: flex;
+    width: 100%;
+    background: transparent;
+}
+
+.blazored-typeahead__multi-value {
+    background-color: var(--tag-editor-bg);
+}
+
+.blazored-typeahead__clear {
+    color: var( --button-border );
+    display: none;
 }

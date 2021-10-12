@@ -10,11 +10,11 @@
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
-<div class="InputAddOn">
-    <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-    <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
+<div class="SearchBox">
+    <div class="SearchFieldIcon" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+    <BlazoredTypeahead disabled="@IsDisabled" class="SearchField" SearchMethod="SearchTags" EnableDropDown="false"
                        placeholder="Add a keyword" Debounce="100"
-                       @bind-Value="@TypeAheadTag">
+                       @bind-Value="@TypeAheadTag" @ref="_typeaheadCtrl">
         <SelectedTemplate>
             @{
                 CreateNewTags(context);
@@ -39,6 +39,8 @@
     [Parameter]
     public Action<string> OnAddNewtag { private get; set; }
 
+    private BlazoredTypeahead<string, string> _typeaheadCtrl;
+
     protected override void OnParametersSet()
     {
         // TODO https://github.com/dotnet/aspnetcore/issues/11815
@@ -60,6 +62,9 @@
 
             // Call the callback
             OnAddNewtag(tag);
+
+            if (_typeaheadCtrl != null)
+                _ = _typeaheadCtrl.Focus();
         }
     }
 
