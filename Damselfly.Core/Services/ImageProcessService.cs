@@ -60,13 +60,6 @@ namespace Damselfly.Core.Services
             {
                 var result = await processor.CreateThumbs(source, destFiles);
 
-                if( result.ThumbsGenerated )
-                {
-                    // TODO: move this down into the imageprocessor libs? Also,
-                    // generate using the large thumb?
-                    result.PerceptualHash = GetPerceptualHash(source.FullName);
-                }
-
                 return result;
             }
 

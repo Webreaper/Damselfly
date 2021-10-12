@@ -394,11 +394,6 @@ namespace Damselfly.Core.Services
 
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
-            if (result.ThumbsGenerated)
-            {
-                await AddHashToImage(sourceImage.Image, result);
-            }
-
             _imageCache.Evict(sourceImage.ImageId);
 
             return result;
@@ -500,6 +495,20 @@ namespace Damselfly.Core.Services
                         {
                             watch.Stop();
                             Logging.LogVerbose($"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
+                        }
+
+                        if (result.ThumbsGenerated)
+                        {
+                            // Generate the perceptual hash from the large thumbnail.
+                            var largeThumbPath = GetThumbPath(imagePath, ThumbSize.Large);
+
+                            if (File.Exists(largeThumbPath))
+                            {
+                                result.PerceptualHash = _imageProcessingService.GetPerceptualHash(largeThumbPath);
+
+                                // Store the hash with the image.
+                                await AddHashToImage(image, result);
+                            }
                         }
                     }
                     else
