@@ -111,7 +111,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
             modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
             modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
-
+            modelBuilder.Entity<Hash>().HasIndex(x => new { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 } );
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
             AddSpecialisationIndexes(modelBuilder);
