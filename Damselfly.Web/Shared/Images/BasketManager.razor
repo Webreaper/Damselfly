@@ -20,9 +20,6 @@
             <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
         }
     </select>
-    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-        <button title="Edit Basket" @onclick="@(() => OpenEditBasketDialog())" class="SearchFieldClear"><i class="fas fa-edit" /></button>
-    </AuthorizeView>
 </div>
 
 @code {
@@ -35,12 +32,7 @@
         set { _ = NewBasketSelected(value); }
     }
 
-    private async Task OpenEditBasketDialog()
-    {
-        var parameters = new DialogParameters { { "basket", basketService.CurrentBasket }, { "mode", "Edit" } };
-        var dialog = DialogService.Show<BasketDialog>("Edit Basket", parameters);
-        var result = await dialog.Result;
-    }
+    
 
     private async Task NewBasketSelected(int selectedBasketId)
     {
