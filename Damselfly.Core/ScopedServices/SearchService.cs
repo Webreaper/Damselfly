@@ -164,14 +164,11 @@ namespace Damselfly.Core.ScopedServices
                     if( query.SimilarTo != null && query.SimilarTo.Hash != null )
                     {
                         images = images.Where(x => x.ImageId != SimilarTo.ImageId &&
-                                   ((x.Hash.PerceptualHex1.Substring(0, 2) == SimilarTo.Hash.PerceptualHex1.Substring(0, 2)) ||
-                                    (x.Hash.PerceptualHex1.Substring(2, 2) == SimilarTo.Hash.PerceptualHex1.Substring(2, 2)) ||
-                                    (x.Hash.PerceptualHex2.Substring(0, 2) == SimilarTo.Hash.PerceptualHex2.Substring(0, 2)) ||
-                                    (x.Hash.PerceptualHex2.Substring(2, 2) == SimilarTo.Hash.PerceptualHex2.Substring(2, 2)) ||
-                                    (x.Hash.PerceptualHex3.Substring(0, 2) == SimilarTo.Hash.PerceptualHex3.Substring(0, 2)) ||
-                                    (x.Hash.PerceptualHex3.Substring(2, 2) == SimilarTo.Hash.PerceptualHex3.Substring(2, 2)) ||
-                                    (x.Hash.PerceptualHex4.Substring(0, 2) == SimilarTo.Hash.PerceptualHex4.Substring(0, 2)) ||
-                                    (x.Hash.PerceptualHex4.Substring(2, 2) == SimilarTo.Hash.PerceptualHex4.Substring(2, 2))));
+                                   (x.Hash.PerceptualHex1 == SimilarTo.Hash.PerceptualHex1 ||
+                                    x.Hash.PerceptualHex2 == SimilarTo.Hash.PerceptualHex2 ||
+                                    x.Hash.PerceptualHex3 == SimilarTo.Hash.PerceptualHex3 ||
+                                    x.Hash.PerceptualHex4 == SimilarTo.Hash.PerceptualHex4)
+                                   );
                     }
 
                     // If selected, filter by the image filename/foldername
