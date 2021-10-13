@@ -448,9 +448,6 @@ namespace Damselfly.Core.Services
 
                     var allFound = foundObjects.Union(foundFaces).ToList();
 
-                    // Write faces locally with rectangles - for debugging
-                    DrawRects(medThumb.FullName, allFound);
-
                     using var db = new ImageContext();
 
                     // First, clear out the existing faces and objects - we don't want dupes
@@ -499,36 +496,6 @@ namespace Damselfly.Core.Services
                 imgObj.RectHeight = (int)(imgObj.RectHeight * ratio);
             };
         }
-
-        /// <summary>
-        /// Debugging tool - writes the images out to disk with the detected
-        /// facess/objects highlighted with a rectangle.
-        /// </summary>
-        /// <param name="fullPath"></param>
-        /// <param name="imgObj"></param>
-        private void DrawRects(string fullPath, List<ImageObject> imgObjs)
-        {
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                try
-                {
-                    string outDir = "/Users/markotway/Desktop/Faces";
-                    if (!System.IO.Directory.Exists(outDir))
-                        System.IO.Directory.CreateDirectory(outDir);
-
-                    var output = Path.Combine(outDir, Path.GetFileName(fullPath));
-
-                    var rects = imgObjs.Select(x => new SixLabors.ImageSharp.Rectangle(x.RectX, x.RectY, x.RectWidth, x.RectHeight)).ToList();
-                    // TODO:
-                    // ImageSharpProcessor.DrawRects(fullPath, rects, output);
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogError($"Exception while drawing rects for {fullPath}: {ex}");
-                }
-            }
-        }
-
 
         public void StartService()
         {
