@@ -25,6 +25,7 @@ editing etc.
     * Facial Recognition (requires a [free Azure Face Services account](https://azure.microsoft.com/free/cognitive-services/))
 * Full-text search with multi-phrase partial-word searches
 * Advanced search - filter by:
+  * Find visually similar images
   * Date ranges
   * Objects/Faces/Identified faces
   * Camera/Lens Make/Model
@@ -80,6 +81,8 @@ You can follow Damselfly on [Twitter](https://twitter.com/damselflyphotos) or as
 <br/>
 <img style="margin: 5px;" src="docs/Damselfly-imageview.jpg" alt="Viewing images in Damselfly" width="600"/>
 <img style="margin: 5px;" src="docs/Damselfly-AI.jpg" alt="Face and Object Detection in Damselfly" width="600"/>
+<br/>
+<img style="margin: 5px;" src="docs/Damselfly-grouping.jpg" alt="Browsing images grouped by date Damselfly" width="600"/>
 <div>
 
 ## Planned Features/Enhancements
