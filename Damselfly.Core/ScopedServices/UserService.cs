@@ -131,6 +131,14 @@ namespace Damselfly.Core.ScopedServices
             */
         }
 
+        public bool RolesEnabled
+        {
+            get
+            {
+                return _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
+            }
+        }
+
         public bool AllowPublicRegistration
         {
             get {

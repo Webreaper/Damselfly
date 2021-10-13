@@ -1,7 +1,4 @@
 ﻿
-@using Damselfly.Core.ImageProcessing
-@using Damselfly.Core.DbModels
-
 @inject ThumbnailService thumbService
 @inject BasketService basketService
 @inject NavigationManager NavigationManager
@@ -47,6 +44,7 @@ else
             <ToolbarButton IconStyle="fa-shopping-basket" OnClickCallback="@AddSelectedToBasket" Enabled="@ImagesSelected" title="Add Selection to Basket" />
             <ToolbarButton IconStyle="fa-times-circle" OnClickCallback="@(()=>basketService.Clear())" Enabled="@BasketHasImages" title="Clear Basket" />
             <ToolbarButton IconStyle="fa-copy" OnClickCallback="@BasketCopy" Enabled="@BasketHasImages" title="Copy/Move to another basket" />
+            <ToolbarButton IconStyle="fa-edit" OnClickCallback="@OpenEditBasketDialog" title="Edit basket" />
             <ToolbarButton IconStyle="fa-plus-circle" OnClickCallback="@OpenAddBasketDialog" title="Create a new basket" />
         </AuthorizeView>
         <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
@@ -83,6 +81,13 @@ else
             var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
             var result = await dialog.Result;
 
+        }
+
+        private async Task OpenEditBasketDialog()
+        {
+            var parameters = new DialogParameters { { "basket", basketService.CurrentBasket }, { "mode", "Edit" } };
+            var dialog = DialogService.Show<BasketDialog>("Edit Basket", parameters);
+            var result = await dialog.Result;
         }
 
         async Task AddSelectedToBasket()

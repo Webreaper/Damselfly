@@ -1,5 +1,5 @@
-﻿using Damselfly.Core.ImageProcessing;
-using Damselfly.Core.Models;
+﻿using Damselfly.Core.Models;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Web.Data
 {

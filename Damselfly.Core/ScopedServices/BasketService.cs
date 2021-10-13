@@ -154,9 +154,7 @@ namespace Damselfly.Core.ScopedServices
         /// TODO: Maybe move this elsewhere. 
         public async Task<string> DownloadSelection( ExportConfig config )
         {
-            var images = BasketImages.Select(x => new FileInfo(x.FullPath)).ToArray();
-
-            var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images, config );
+            var virtualZipPath = await _downloadService.CreateDownloadZipAsync(BasketImages, config );
 
             if (!string.IsNullOrEmpty(virtualZipPath))
             {

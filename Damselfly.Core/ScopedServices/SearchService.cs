@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
 using Humanizer;
 using static Damselfly.Core.Models.SearchQuery;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.ScopedServices
 {
@@ -20,8 +21,10 @@ namespace Damselfly.Core.ScopedServices
     /// </summary>
     public class SearchService
     {
-        public SearchService( UserStatusService statusService, ImageCache cache, IndexingService indexingService)
+        public SearchService( UserStatusService statusService, ImageCache cache,
+                                IndexingService indexingService, UserConfigService configService)
         {
+            _configService = configService;
             _statusService = statusService;
             _imageCache = cache;
             _indexingService = indexingService;
@@ -29,9 +32,11 @@ namespace Damselfly.Core.ScopedServices
 
         private readonly UserStatusService _statusService;
         private readonly ImageCache _imageCache;
+        private readonly UserConfigService _configService;
         private readonly IndexingService _indexingService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
+        private const double s_similarityThreshold = 0.75;
 
         public void NotifyStateChanged()
         {
@@ -51,13 +56,17 @@ namespace Damselfly.Core.ScopedServices
         public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
         public bool IncludeAITags { get { return query.IncludeAITags; } set { if (query.IncludeAITags != value) { query.IncludeAITags = value; QueryChanged(); } } }
         public bool UntaggedImages { get { return query.UntaggedImages; } set { if (query.UntaggedImages != value) { query.UntaggedImages = value; QueryChanged(); } } }
-        public int CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
+        public int? CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
         public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
-        public int LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public int? LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
-        public FaceSearchType FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
-        public OrientationType Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
+        public FaceSearchType? FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
+        public OrientationType? Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
+
+        public void Reset() { ApplyQuery(new SearchQuery()); }
+        public void Refresh() { QueryChanged(); }
 
         public void ApplyQuery(SearchQuery newQuery)
         {
@@ -121,7 +130,6 @@ namespace Damselfly.Core.ScopedServices
             {
                 using var db = new ImageContext();
                 var watch = new Stopwatch("ImagesLoadData");
-                Stopwatch tagwatch = null;
                 List<int> results = new List<int>();
 
                 try
@@ -140,8 +148,6 @@ namespace Damselfly.Core.ScopedServices
                         images = await db.ImageSearch(searchText, query.IncludeAITags);
                     }
 
-                    images = images.Include(x => x.Folder);
-
                     if ( query.Tag != null )
                     {
                         var tagImages = images.Where(x => x.ImageTags.Any(y => y.TagId == query.Tag.TagId));
@@ -155,6 +161,30 @@ namespace Damselfly.Core.ScopedServices
                         images = images.Where(x => ! x.ImageTags.Any() );
                     }
 
+                    if( query.SimilarTo != null && query.SimilarTo.Hash != null )
+                    {
+                        var hash1A = $"{SimilarTo.Hash.PerceptualHex1.Substring(0, 2)}%";
+                        var hash1B = $"%{SimilarTo.Hash.PerceptualHex1.Substring(2, 2)}";
+                        var hash2A = $"{SimilarTo.Hash.PerceptualHex2.Substring(0, 2)}%";
+                        var hash2B = $"%{SimilarTo.Hash.PerceptualHex2.Substring(2, 2)}";
+                        var hash3A = $"{SimilarTo.Hash.PerceptualHex3.Substring(0, 2)}%";
+                        var hash3B = $"%{SimilarTo.Hash.PerceptualHex3.Substring(2, 2)}";
+                        var hash4A = $"{SimilarTo.Hash.PerceptualHex4.Substring(0, 2)}%";
+                        var hash4B = $"%{SimilarTo.Hash.PerceptualHex4.Substring(2, 2)}";
+
+                        images = images.Where(x => x.ImageId != SimilarTo.ImageId &&
+                                   (
+                                    EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex2, hash2A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex2, hash2B) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex3, hash3A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex3, hash3B) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex4, hash4A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex4, hash4B)
+                                   ));
+                    }
+
                     // If selected, filter by the image filename/foldername
                     if (hasTextSearch && ! query.TagsOnly )
                     {
@@ -162,8 +192,7 @@ namespace Damselfly.Core.ScopedServices
                         string likeTerm = $"%{query.SearchText}%";
 
                         // Now, search folder/filenames
-                        var fileImages = db.Images.Include(x => x.Folder)
-                                                    .Where(x => EF.Functions.Like(x.Folder.Path, likeTerm)
+                        var fileImages = db.Images.Where(x => EF.Functions.Like(x.Folder.Path, likeTerm)
                                                             || EF.Functions.Like(x.FileName, likeTerm));
                         images = images.Union(fileImages);
                     }
@@ -196,7 +225,7 @@ namespace Damselfly.Core.ScopedServices
                         images = images.Where(x => x.FileSizeBytes < maxSizeBytes);
                     }
 
-                    if( query.Orientation != OrientationType.All )
+                    if( query.Orientation.HasValue )
                     {
                         if (query.Orientation == OrientationType.Landscape)
                             images = images.Where(x => x.MetaData.Width > x.MetaData.Height);
@@ -204,18 +233,13 @@ namespace Damselfly.Core.ScopedServices
                             images = images.Where(x => x.MetaData.Height > x.MetaData.Width);
                     }
 
-                    if (query.CameraId != -1 || query.LensId != -1)
-                    {
-                        images = images.Include(x => x.MetaData);
-
-                        if (query.CameraId != -1)
-                            images = images.Where(x => x.MetaData.CameraId == query.CameraId);
+                    if (query.CameraId.HasValue)
+                        images = images.Where(x => x.MetaData.CameraId == query.CameraId);
  
-                        if (query.LensId != -1)
-                            images = images.Where(x => x.MetaData.LensId == query.LensId);
-                    }
+                    if (query.LensId.HasValue)
+                        images = images.Where(x => x.MetaData.LensId == query.LensId);
 
-                    if( query.FaceSearch != FaceSearchType.None )
+                    if( query.FaceSearch.HasValue )
                     {
                         images = query.FaceSearch switch
                         {
@@ -251,14 +275,9 @@ namespace Damselfly.Core.ScopedServices
                                     .Take(count)
                                     .ToListAsync();
 
-                    tagwatch = new Stopwatch("SearchLoadTags");
+                    watch.Stop();
 
-                    // Now load the tags....
-                    var enrichedImages = await _imageCache.GetCachedImages( results );
-
-                    SearchResults.AddRange(enrichedImages);
-
-                    tagwatch.Stop();
+                    Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms");
                 }
                 catch (Exception ex)
                 {
@@ -269,8 +288,35 @@ namespace Damselfly.Core.ScopedServices
                     watch.Stop();
                 }
 
-                Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms (Tags: {tagwatch.ElapsedTime}ms)");
-                _statusService.StatusText = $"Found at least {first + results.Count()} images that match the search query.";
+                // Now load the tags....
+                var enrichedImages = await _imageCache.GetCachedImages(results);
+
+                try
+                {
+                    // If it's a 'similar to' query, filter out the ones that don't pass the threshold.
+                    if (query.SimilarTo != null && enrichedImages.Any() )
+                    {
+                        double threshold = _configService.GetInt(ConfigSettings.SimilarityThreshold, 75) / 100.0;
+
+                        // Complete the hamming distance calculation here:
+                        var searchHash = query.SimilarTo.Hash;
+
+                        var similarImages = enrichedImages.Where(x => x.Hash != null && x.Hash.SimilarityTo(searchHash) > threshold).ToList();
+
+                        Logging.Log($"Found {similarImages.Count} of {enrichedImages.Count} prefiltered images that match image ID {query.SimilarTo.ImageId} with a threshold of {threshold:P1} or more.");
+
+                        enrichedImages = similarImages;
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    Logging.LogError($"Similarity threshold calculation failed: {ex}");
+                }
+
+                // Set the results on the service property
+                SearchResults.AddRange(enrichedImages);
+
+                _statusService.StatusText = $"Found at least {enrichedImages.Count} images that match the search query.";
             }
         }
 
@@ -294,6 +340,9 @@ namespace Damselfly.Core.ScopedServices
                 if (Folder != null)
                     hints.Add($"Folder: {Folder.Name}");
 
+                if (SimilarTo != null)
+                    hints.Add($"Looks Like: {SimilarTo.FileName}");
+
                 if (Tag != null)
                     hints.Add($"Tag: {Tag.Keyword}");
 
@@ -315,10 +364,10 @@ namespace Damselfly.Core.ScopedServices
                 if (UntaggedImages)
                     hints.Add($"Untagged images");
 
-                if (FaceSearch != FaceSearchType.None)
+                if (FaceSearch.HasValue)
                     hints.Add($"{FaceSearch.Humanize()}");
 
-                if (Orientation != OrientationType.All)
+                if (Orientation.HasValue)
                     hints.Add($"{Orientation.Humanize()}");
 
                 if ( CameraId > 0 )

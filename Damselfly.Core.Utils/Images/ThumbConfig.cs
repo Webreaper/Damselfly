@@ -1,5 +1,5 @@
-﻿using System;
-namespace Damselfly.Core.ImageProcessing
+﻿
+namespace Damselfly.Core.Utils.Images
 {
     public enum ThumbSize
     {

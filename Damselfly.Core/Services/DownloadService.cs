@@ -5,27 +5,11 @@ using System.IO.Compression;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
+using System.Collections.Generic;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Services
 {
-    public enum ExportType
-    {
-        Download = 1,
-        Email = 2,
-        Wordpress = 3,
-        Facebook = 4,
-        Twitter = 5,
-        Instagram = 6,
-    };
-
-    public enum ExportSize
-    {
-        FullRes = 1,
-        Large = 2,
-        Medium = 3,
-        Small = 4,
-    };
-
     /// <summary>
     /// Service to generate download files for exporting images from the system. Zip files
     /// are built from the basket or other selection sets, and then created on disk in the
@@ -140,6 +124,20 @@ namespace Damselfly.Core.Services
                 DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
 
         }
+
+        /// <summary>
+        /// Download a collection of images.
+        /// </summary>
+        /// <param name="imagesToZip"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public async Task<string> CreateDownloadZipAsync(ICollection<Image> imagesToZip, ExportConfig config)
+        {
+            var images = imagesToZip.Select(x => new FileInfo(x.FullPath)).ToArray();
+
+            return await CreateDownloadZipAsync(images, config);
+        }
+
         /// <summary>
         /// Async method to create a download zip file, given a set of files on disk. Optionally
         /// pass a watermark to stamp all images as they're written into the zip file. 

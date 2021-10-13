@@ -10,11 +10,11 @@
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
-<div class="InputAddOn">
-    <div class="InputAddOn-item" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
-    <BlazoredTypeahead disabled="@IsDisabled" class="InputAddOn-field" SearchMethod="SearchTags" EnableDropDown="false"
+<div class="SearchBox">
+    <div class="SearchFieldIcon" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+    <BlazoredTypeahead disabled="@IsDisabled" class="SearchField" SearchMethod="SearchTags" EnableDropDown="false"
                        placeholder="Add a keyword" Debounce="100"
-                       @bind-Value="@TypeAheadTag">
+                       @bind-Value="@TypeAheadTag" @ref="_typeaheadCtrl">
         <SelectedTemplate>
             @{
                 CreateNewTags(context);
@@ -39,6 +39,8 @@
     [Parameter]
     public Action<string> OnAddNewtag { private get; set; }
 
+    private BlazoredTypeahead<string, string> _typeaheadCtrl;
+
     protected override void OnParametersSet()
     {
         // TODO https://github.com/dotnet/aspnetcore/issues/11815
@@ -60,6 +62,9 @@
 
             // Call the callback
             OnAddNewtag(tag);
+
+            if (_typeaheadCtrl != null)
+                _ = _typeaheadCtrl.Focus();
         }
     }
 
@@ -73,15 +78,18 @@
         // Only query the DB if we have more than 2 chars.
         if (searchText.Length > 1)
         {
+            // We include any keyword that contains the search term - but exclude 
+            // the actual search term, as we'll add it explicitly at the top of the list. 
             var results = await Task.FromResult(indexService.CachedTags
-                                    .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-                                    .OrderBy(x => x.Keyword)
-                                    .Take( 30 ) // Don't go mad
-                                    .Select(t => t.Keyword)
-                                    .ToList());
+                                .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                                            && ! x.Keyword.Equals( searchText, StringComparison.OrdinalIgnoreCase))
+                                .OrderBy(x => x.Favourite ? 0 : 1 ) // Favourites first
+                                .ThenBy(x => x.Keyword) // Then order alphabetically
+                                .Take( 30 ) // Don't go mad with the number we return
+                                .Select(t => t.Keyword)
+                                .ToList());
 
-            if (!results.Contains(searchText, StringComparer.OrdinalIgnoreCase))
-                results.Insert(0, searchText);
+            results.Insert(0, searchText);
 
             return results;
         }

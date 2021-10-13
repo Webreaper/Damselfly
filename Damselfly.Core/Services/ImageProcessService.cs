@@ -1,12 +1,12 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Services
 {
@@ -21,18 +21,29 @@ namespace Damselfly.Core.Services
     /// SkiaSharp requires C++ binaries, we'll provide both for
     /// compatibility (slower performance is better than none...).
     /// </summary>
-    public class ImageProcessService : IImageProcessor
+    public class ImageProcessService : IImageProcessor, IHashProvider
     {
-        private readonly ImageProcessorFactory _factory;
+        private readonly IImageProcessorFactory _factory;
 
-        public ImageProcessService()
+        public ImageProcessService( IImageProcessorFactory factory )
         {
-            _factory = new ImageProcessorFactory();
+            _factory = factory;
         }
 
         public void SetContentPath( string path )
         {
             _factory.SetContentPath(path);
+        }
+
+        public string GetPerceptualHash( string path )
+        {
+            var provider = _factory.GetHashProvider();
+
+            var watch = new Stopwatch("GenPerceptualHash");
+            var hash = provider.GetPerceptualHash(path);
+            watch.Stop();
+
+            return hash;
         }
 
         /// <summary>
@@ -45,8 +56,12 @@ namespace Damselfly.Core.Services
         {
             var processor = _factory.GetProcessor(source.Extension);
 
-            if( processor != null )
-                return await processor.CreateThumbs(source, destFiles);
+            if (processor != null)
+            {
+                var result = await processor.CreateThumbs(source, destFiles);
+
+                return result;
+            }
 
             return new ImageProcessResult { ThumbsGenerated = false };
         }
@@ -58,14 +73,14 @@ namespace Damselfly.Core.Services
         /// <param name="output"></param>
         /// <param name="config"></param>
         /// TODO: Async
-        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
+        public void TransformDownloadImage(string input, Stream output, IExportSettings exportConfig)
         {
             var ext = Path.GetExtension(input);
 
             var processor = _factory.GetProcessor(ext);
 
             if (processor != null)
-                processor.TransformDownloadImage(input, output, config);
+                processor.TransformDownloadImage(input, output, exportConfig);
         }
 
         /// <summary>

@@ -35,6 +35,7 @@ namespace Damselfly.Core.Utils
         /// </summary>
         public static bool Trace { get; set; } = false;
 
+        private static readonly LoggingLevelSwitch consoleLogLevel = new LoggingLevelSwitch();
         private static readonly LoggingLevelSwitch logLevel = new LoggingLevelSwitch();
         private const string template = "[{Timestamp:HH:mm:ss.fff}-{ThreadID}-{Level:u3}] {Message:lj}{NewLine}{Exception}";
         private static Logger logger;
@@ -55,6 +56,7 @@ namespace Damselfly.Core.Utils
                 }
 
                 logLevel.MinimumLevel = LogEventLevel.Information;
+                consoleLogLevel.MinimumLevel = LogEventLevel.Information;
 
                 if (Verbose)
                     logLevel.MinimumLevel = LogEventLevel.Verbose;
@@ -65,14 +67,15 @@ namespace Damselfly.Core.Utils
                 string logFilePattern = Path.Combine(LogFolder, "Damselfly-.log");
 
                 logger = new LoggerConfiguration()
-                    .MinimumLevel.ControlledBy(logLevel)
                     .Enrich.With(new ThreadIDEnricher())
-                    .WriteTo.Console(outputTemplate: template)
+                    .WriteTo.Console(outputTemplate: template,
+                                    levelSwitch: consoleLogLevel)
                     .WriteTo.File(logFilePattern,
                                    outputTemplate: template,
                                    rollingInterval: RollingInterval.Day,
                                    fileSizeLimitBytes: 104857600,
-                                   retainedFileCountLimit: 10)
+                                   retainedFileCountLimit: 10,
+                                   levelSwitch: logLevel)
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                     .CreateLogger();
 
@@ -86,6 +89,19 @@ namespace Damselfly.Core.Utils
             }
 
             return logger;
+        }
+
+        /// <summary>
+        /// Once we've successfully started, reduce the console log level
+        /// to warnings only, so we don't overwhelm the console log.
+        /// </summary>
+        public static void StartupCompleted()
+        {
+            Log("Startup complete. Reducing console logging level to [Warning/Error].");
+
+#if !DEBUG
+            consoleLogLevel.MinimumLevel = LogEventLevel.Warning;
+#endif
         }
 
         /// <summary>

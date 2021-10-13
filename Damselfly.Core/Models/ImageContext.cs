@@ -5,13 +5,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Services;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.DBAbstractions;
 using Humanizer;
-using Microsoft.AspNetCore.Identity;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Damselfly.Core.Interfaces;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Models
 {
@@ -23,6 +24,7 @@ namespace Damselfly.Core.Models
         public DbSet<Folder> Folders { get; set; }
         public DbSet<Image> Images { get; set; }
         public DbSet<ImageMetaData> ImageMetaData { get; set; }
+        public DbSet<Hash> Hashes { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<ImageTag> ImageTags { get; set; }
         public DbSet<ImageObject> ImageObjects { get; set; }
@@ -102,14 +104,14 @@ namespace Damselfly.Core.Models
 
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
-            modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Hash);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AILastUpdated);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
             modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
-
+            modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
+            modelBuilder.Entity<Hash>().HasIndex(x => new { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 } );
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
             AddSpecialisationIndexes(modelBuilder);
@@ -166,6 +168,8 @@ namespace Damselfly.Core.Models
         public DateTime LastUpdated { get; set; }
 
         public virtual ImageMetaData MetaData { get; set; }
+        public virtual Hash Hash { get; set; }
+
         // An image can appear in many baskets
         public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
         // An image can have many tags
@@ -228,7 +232,6 @@ namespace Damselfly.Core.Models
         public string Exposure { get; set; }
         public bool FlashFired { get; set; }
         public DateTime DateTaken { get; set; }
-        public string Hash { get; set; }
 
         public int? CameraId { get; set; }
         public virtual Camera Camera { get; set; }
@@ -614,7 +617,6 @@ namespace Damselfly.Core.Models
 
         public enum FaceSearchType
         {
-            None,
             Faces,
             NoFaces,
             IdentifiedFaces,
@@ -623,38 +625,39 @@ namespace Damselfly.Core.Models
 
         public enum OrientationType
         {
-            All,
             Landscape,
             Portrait
         }
 
         public string SearchText { get; set; } = string.Empty;
-        public DateTime? MaxDate { get; set; } = null;
-        public DateTime? MinDate { get; set; } = null;
-        public int? MaxSizeKB { get; set; } = null;
-        public int? MinSizeKB { get; set; } = null;
         public bool TagsOnly { get; set; } = false;
         public bool IncludeAITags { get; set; } = true;
         public bool UntaggedImages { get; set; } = false;
-        public int CameraId { get; set; } = -1;
-        public int LensId { get; set; } = -1;
+        public int? MaxSizeKB { get; set; } = null;
+        public int? MinSizeKB { get; set; } = null;
+        public int? CameraId { get; set; } = null;
+        public int? LensId { get; set; } = null;
+        public Image SimilarTo { get; set; } = null;
         public Folder Folder { get; set; } = null;
         public Tag Tag { get; set; } = null;
+        public DateTime? MaxDate { get; set; } = null;
+        public DateTime? MinDate { get; set; } = null;
+        public FaceSearchType? FaceSearch { get; set; } = null;
+        public OrientationType? Orientation { get; set; } = null;
+
         public GroupingType Grouping { get; set; } = GroupingType.None;
         public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;
-        public FaceSearchType FaceSearch { get; set; } = FaceSearchType.None;
-        public OrientationType Orientation { get; set; } = OrientationType.All;
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, SimilarTo={SimilarTo?.ImageId}";
         }
     }
 
     /// <summary>
     /// Config associated with an export or download
     /// </summary>
-    public class ExportConfig
+    public class ExportConfig : IExportSettings
     {
         public int ExportConfigId { get; set; }
         public string Name { get; set; }
@@ -674,6 +677,69 @@ namespace Damselfly.Core.Models
                     ExportSize.Small => 800,
                     _ => int.MaxValue,
                 };
+            }
+        }
+    }
+
+    /// <summary>
+    /// Store hashes for an image.
+    /// </summary>
+    public class Hash
+    {
+        [Key]
+        public int HashId { get; set; }
+
+        [Required]
+        public virtual Image Image { get; set; }
+        public int ImageId { get; set; }
+
+        // The MD5 image hash. 
+        public string MD5ImageHash { get; set; }
+
+        // Four slices of the perceptual hash (split to allow
+        // us to precalculate matches so we only have to calc
+        // hamming distance on a subset of images.
+        public string PerceptualHex1 { get; set; }
+        public string PerceptualHex2 { get; set; }
+        public string PerceptualHex3 { get; set; }
+        public string PerceptualHex4 { get; set; }
+
+        [NotMapped]
+        public ulong PerceptualHashValue
+        {
+            get { return (ulong)Convert.ToInt64(PerceptualHash, 16); }
+        }
+
+        public double SimilarityTo( Hash other )
+        {
+            double similarity = HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
+
+            Logging.LogVerbose($"Hash similarity {PerceptualHash} vs {other.PerceptualHash} = {similarity:P1} ({PerceptualHashValue} v {other.PerceptualHashValue})");
+
+            return similarity;
+        }
+
+        /// <summary>
+        /// Property accessor to set and get the sliced perceptual hash via a single Hex has string.
+        /// </summary>
+        [NotMapped]
+        public string PerceptualHash
+        {
+            get
+            {
+                return PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
+            }
+
+            set
+            {
+                var fullHex = value.PadLeft(16, '0');
+
+                var chunks = fullHex.Chunk(4).Select(x => new string(x)).ToArray();
+
+                PerceptualHex1 = chunks[0];
+                PerceptualHex2 = chunks[1];
+                PerceptualHex3 = chunks[2];
+                PerceptualHex4 = chunks[3];
             }
         }
     }

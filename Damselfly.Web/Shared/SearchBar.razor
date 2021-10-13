@@ -1,7 +1,5 @@
 ﻿@using Damselfly.Web.Data
-@using Damselfly.Core.Services;
-@using BlazorDateRangePicker
-@using Damselfly.Core.ImageProcessing
+@using Damselfly.Core.Utils.Images;
 
 @inject IDialogService DialogService
 @inject SearchService searchService
@@ -12,15 +10,23 @@
     <div class="damselfly-searchfilter">
         <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnValueChanged="@DoSearch" TextValue="@searchService.SearchText" />
     </div>
-    <div class="damselfly-searchfilter">
-        <DatePickerEx OnRangeSelect="@OnRangeSelect" StartDate="@searchService.MinDate" EndDate="@searchService.MaxDate" />
-    </div>
     <div class="damselfly-searchhint">
+        <button class="btn btn-primary damselfly-searchtools" title="Refresh Search" @onclick="@(() => searchService.Refresh())"><i class="fas fa-redo-alt" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="Reset Search" @onclick="@(() => searchService.Reset())"><i class="fas fa-times" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="Advanced Search" @onclick="@(() => ToggleAdvancedSearch())">
+            @if (ShowAdvancedSearch)
+            {
+                <i class="fas fa-chevron-up" />
+            }
+            else
+            {
+                <i class="fas fa-chevron-down" />
+            }
+        </button>
         <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
     </div>
 
     <div class="damselfly-browsetools">
-        <button class="damselfly-browsetool btn btn-primary" title="Advanced Search" @onclick="@(() => OpenAdvancedSearch())"><i class="fas fa-search" /></button>
         <select class="damselfly-browsetool damselfly-browsetool-select" @bind="SelectedGrouping">
             <option value="@SearchQuery.GroupingType.None">Timeline</option>
             <option value="@SearchQuery.GroupingType.Date">Date</option>
@@ -38,6 +44,10 @@
             <div class="damselfly-browsetool"><i title="Sort Descending" class="fas fa-sort-amount-down" @onclick="() => ChangeSortOrder(SearchQuery.SortOrderType.Descending)" /></div>
         }
     </div>
+    @if (ShowAdvancedSearch)
+    {
+        <AdvancedSearchPanel/>
+    }
 </div>
 
 @code {
@@ -46,6 +56,7 @@
     public Action<ThumbSize> OnThumbSizeChanged { get; set; }
 
     ThumbSize CurrentThumbSize = ThumbSize.Small;
+    bool ShowAdvancedSearch { get; set; } = false;
 
     private SearchQuery.GroupingType SelectedGrouping { get { return searchService.Grouping;  } set { ChangeGroupType(value); } }
 
@@ -67,11 +78,9 @@
         OnThumbSizeChanged?.Invoke(CurrentThumbSize);
     }
 
-    private async Task OpenAdvancedSearch()
+    private void ToggleAdvancedSearch()
     {
-        var options = new MudBlazor.DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
-        var dialog = DialogService.Show<AdvancedSearchDialog>("Advanced Search", options: options );
-        var result = await dialog.Result;
+        ShowAdvancedSearch = !ShowAdvancedSearch;
         StateHasChanged();
     }
 
@@ -91,14 +100,6 @@
     protected void SearchQueryChanged()
     {
         _ = InvokeAsync(StateHasChanged);
-    }
-
-    public void OnRangeSelect(BlazorDateRangePicker.DateRange range)
-    {
-        if (range != null)
-            searchService.SetDateRange(range.Start.Date, range.End.Date);
-        else
-            searchService.SetDateRange(null, null);
     }
 
     private void DoSearch(string searchTerm)

@@ -1,16 +1,17 @@
 ﻿using System.IO;
 using System.Collections.Generic;
-using Damselfly.Core.ImageProcessing;
 using System.Threading.Tasks;
-using Damselfly.Core.Models;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Interfaces
 {
-    public class ImageProcessResult
+    public interface IImageProcessorFactory
     {
-        public bool ThumbsGenerated { get; set; }
-        public string ImageHash { get; set; }
+        IImageProcessor GetProcessor(string fileExtension);
+        IHashProvider GetHashProvider();
+        void SetContentPath(string contentPath);
     }
+
     /// <summary>
     /// Interface representing a generic image processing pipeline. This
     /// allows us to swap out different implementations etc depending on
@@ -19,8 +20,8 @@ namespace Damselfly.Core.Interfaces
     public interface IImageProcessor
     {
         Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles );
-        void TransformDownloadImage(string input, Stream output, ExportConfig config);
         Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile);
+        void TransformDownloadImage(string input, Stream output, IExportSettings exportConfig);
         static ICollection<string> SupportedFileExtensions { get; }
     }
 }

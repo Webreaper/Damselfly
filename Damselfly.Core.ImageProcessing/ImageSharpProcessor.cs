@@ -4,9 +4,13 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using CoenM.ImageHash;
+using CoenM.ImageHash.HashAlgorithms;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Utils.Images;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -18,7 +22,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Damselfly.Core.ImageProcessing
 {
-    public class ImageSharpProcessor : IImageProcessor
+    public class ImageSharpProcessor : IImageProcessor, IHashProvider
     {
         private static FontCollection fontCollection;
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".tga", ".gif", ".bmp" };
@@ -57,6 +61,25 @@ namespace Damselfly.Core.ImageProcessing
             {
                 Logging.LogError($"Exception installing watermark font: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Get the perceptual hash
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns>A hex string representing the hash</returns>
+        public string GetPerceptualHash(string path)
+        {
+            // PerceptualHash, DifferenceHash, AverageHash
+            var hashAlgorithm = new PerceptualHash();
+
+            using var stream = File.OpenRead(path);
+
+            ulong imageHash = hashAlgorithm.Hash(stream);
+
+            var binaryString = Convert.ToString((long)imageHash, 16);
+
+            return binaryString;
         }
 
         /// <summary>
@@ -194,13 +217,13 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
+        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
         {
             Logging.Log($" Running image transform for Watermark: {config.WatermarkText}");
 
             using var img = Image.Load(input, out IImageFormat fmt);
 
-            if (config.Size != Services.ExportSize.FullRes)
+            if (config.Size != ExportSize.FullRes)
             {
                 int maxSize = config.MaxImageSize;
 

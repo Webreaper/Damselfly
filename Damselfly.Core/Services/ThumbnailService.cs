@@ -8,10 +8,9 @@ using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using Microsoft.EntityFrameworkCore;
 using MetadataExtractor.Formats.Jpeg;
-using Damselfly.Core.ImageProcessing;
 using System.Threading.Tasks;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Services
 {
@@ -22,14 +21,17 @@ namespace Damselfly.Core.Services
         private const string _requestRoot = "/images";
         private static int s_maxThreads = GetMaxThreads();
         private readonly StatusService _statusService;
+        private readonly ImageCache _imageCache;
         private readonly ImageProcessService _imageProcessingService;
 
 
         public ThumbnailService( StatusService statusService,
-                        ImageProcessService imageService)
+                        ImageProcessService imageService,
+                        ImageCache imageCache)
         {
             _statusService = statusService;
             _imageProcessingService = imageService;
+            _imageCache = imageCache;
         }
 
         /// <summary>
@@ -331,7 +333,8 @@ namespace Damselfly.Core.Services
                                         .OrderByDescending(x => x.LastUpdated)
                                         .Take(100)
                                         .Include(x => x.Image)
-                                        .ThenInclude( x => x.Folder )
+                                        .Include(x => x.Image.Hash)
+                                        .Include(x => x.Image.Folder)
                                         .ToArray();
 
                 watch.Stop();
@@ -356,7 +359,7 @@ namespace Damselfly.Core.Services
                     }
                     catch( Exception ex )
                     {
-                        Logging.LogError($"Exception during parallelised thumbnail generation: {ex.Message}");
+                        Logging.LogError($"Exception during parallelised thumbnail generation: {ex}");
                     }
 
                     // Write the timestamps for the newly-generated thumbs.
@@ -368,7 +371,8 @@ namespace Damselfly.Core.Services
 
                     watch.Stop();
 
-                    _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
+                    if( imagesToScan.Length > 1 )
+                        _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
 
                     Stopwatch.WriteTotals();
                 }
@@ -385,17 +389,52 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task<ImageProcessResult> CreateThumbs(ImageMetaData sourceImage, bool forceRegeneration )
         {
+            // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
+            sourceImage.ThumbLastUpdated = DateTime.UtcNow;
+
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
-            sourceImage.ThumbLastUpdated = DateTime.UtcNow;
-            sourceImage.Hash = result.ImageHash;
+            _imageCache.Evict(sourceImage.ImageId);
 
             return result;
         }
 
+        /// <summary>
+        /// Saves an MD5 Image hash against an image. 
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="processResult"></param>
+        /// <returns></returns>
+        public async Task AddHashToImage( Image image, ImageProcessResult processResult )
+        {
+            try
+            {
+                var db = new ImageContext();
+                Hash hash = image.Hash;
 
+                if (hash == null)
+                {
+                    hash = new Hash { ImageId = image.ImageId };
+                    image.Hash = hash;
+                    db.Hashes.Add(hash);
+                }
+                else
+                {
+                    db.Attach(hash);
+                    db.Hashes.Update(hash);
+                }
 
-        
+                hash.MD5ImageHash = processResult.ImageHash;
+                hash.PerceptualHash = processResult.PerceptualHash;
+
+                await db.SaveChangesAsync("SaveHash");
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during perceptual hash calc: {ex}");
+            }
+        }
+
 
         /// <summary>
         /// Process the file on disk to create a set of thumbnails.
@@ -457,6 +496,20 @@ namespace Damselfly.Core.Services
                             watch.Stop();
                             Logging.LogVerbose($"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
                         }
+
+                        if (result.ThumbsGenerated)
+                        {
+                            // Generate the perceptual hash from the large thumbnail.
+                            var largeThumbPath = GetThumbPath(imagePath, ThumbSize.Large);
+
+                            if (File.Exists(largeThumbPath))
+                            {
+                                result.PerceptualHash = _imageProcessingService.GetPerceptualHash(largeThumbPath);
+
+                                // Store the hash with the image.
+                                await AddHashToImage(image, result);
+                            }
+                        }
                     }
                     else
                     {
@@ -491,9 +544,10 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
 
             string imageIds = string.Join(",", images.Select(x => x.ImageId));
+            string sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})";
 
             // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})");
+            await db.Database.ExecuteSqlRawAsync(sql);
 
             var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
             _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";

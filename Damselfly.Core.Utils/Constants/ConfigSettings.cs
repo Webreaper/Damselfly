@@ -5,6 +5,7 @@ namespace Damselfly.Core.Utils.Constants
     {
         public const string ThumbSize = "ThumbSize";
         public const string Theme = "Theme";
+        public const string SimilarityThreshold = "SimilarityThreshold";
         public const string ZoomLevel = "ZoomLevel";
         public const string ShowZoom = "ShowZoom";
         public const string ShowObjects = "ShowObjects";

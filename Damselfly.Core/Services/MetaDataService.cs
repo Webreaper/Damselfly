@@ -111,7 +111,7 @@ namespace Damselfly.Core.Services
                     keywordOps.AddRange(tagsToAdd.Select(keyword => new ExifOperation
                     {
                         ImageId = image.ImageId,
-                        Text = keyword.RemoveSmartQuotes(),
+                        Text = keyword.Sanitise(),
                         Type = ExifOperation.ExifType.Keyword,
                         Operation = ExifOperation.OperationType.Add,
                         TimeStamp = timestamp,

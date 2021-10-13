@@ -116,7 +116,12 @@ namespace Damselfly.Migrations.Sqlite.Models
             }
             catch( Exception ex )
             {
-                Logging.LogWarning($"Migrations failed - creating DB. Exception: {ex}");
+                Logging.LogWarning($"Migrations failed with exception: {ex}");
+
+                if( ex.InnerException != null )
+                    Logging.LogWarning($"InnerException: {ex.InnerException}");
+
+                Logging.Log($"Creating DB.");
                 db.Database.EnsureCreated();
             }
 
@@ -142,8 +147,10 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                collection.AddRange(itemsToSave);
-                await db.SaveChangesAsync();
+                //collection.AddRange(itemsToSave);
+                //await db.SaveChangesAsync();
+
+                await db.BulkInsertAsync(itemsToSave);
 
                 success = true;
             }
@@ -175,8 +182,10 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                collection.UpdateRange(itemsToSave);
-                await db.SaveChangesAsync();
+                //collection.UpdateRange(itemsToSave);
+                //await db.SaveChangesAsync();
+
+                await db.BulkUpdateAsync(itemsToSave);
 
                 success = true;
             }
@@ -207,8 +216,11 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                collection.RemoveRange(itemsToDelete);
-                await db.SaveChangesAsync();
+                //collection.RemoveRange(itemsToDelete);
+                //await db.SaveChangesAsync();
+
+                await db.BulkDeleteAsync(itemsToDelete);
+
                 success = true;
             }
             catch (Exception ex)

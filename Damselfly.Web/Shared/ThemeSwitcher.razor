@@ -1,5 +1,8 @@
 ﻿
+@using MudBlazor.Utilities;
+
 @inject ThemeService themeService
+@inject UserThemeService userthemeService
 @inject ConfigService configService
 @inject IJSRuntime JsRuntime
 @implements IDisposable
@@ -14,99 +17,48 @@
     {
         base.OnInitialized();
 
-        MudTheme = darkTheme;
+        MudTheme = userthemeService.CurrentTheme.MudTheme;
+
+        if (MudTheme == null)
+            MudTheme = themeService.DarkTheme;
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            themeService.OnChangeTheme += SwitchTheme;
-            SwitchTheme(themeService.Theme);
+            userthemeService.OnChangeTheme += SwitchTheme;
+            SwitchTheme(userthemeService.CurrentTheme);
         }
     }
 
     public void Dispose()
     {
-        themeService.OnChangeTheme -= SwitchTheme;
+        userthemeService.OnChangeTheme -= SwitchTheme;
     }
 
-    private void SwitchTheme(string newTheme)
+    private void SwitchTheme(ThemeService.ThemeConfig newTheme)
     {
-        var themeCSS = $"themes/{newTheme}.css?j={cacheBuster++}";
 
-        _ = JsRuntime.InvokeAsync<string>("setStyleSheet", themeCSS);
+        if (newTheme != null)
+        {
+            // Apply the new stylesheet to Damselfly
+            var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
+            _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);
 
-        // TODO: This is hacky. We should either include the --mud* vars in the
-        // theme, or we should have some sort of automated way to determine if
-        // the theme should be dark or light (e.g., dark subfolder).
-        if (newTheme == "white" || newTheme == "flat")
-            MudTheme = lightTheme;
-        else
-            MudTheme = darkTheme;
+            if (newTheme.MudTheme != null)
+            {
+                MudTheme = newTheme.MudTheme;
+            }
 
-        // Trigger a statechanged for Mud
-        StateHasChanged();
+            if (MudTheme == null)
+            {
+                Logging.Log("No palatte - defaulting");
+                MudTheme = themeService.DarkTheme;
+            }
+
+            // Trigger a statechanged for Mud
+            StateHasChanged();
+        }
     }
-
-    private MudTheme darkTheme = new MudTheme
-    {
-        Palette = new Palette
-        {
-            Primary = "#cccccc",
-            PrimaryDarken = "#888888",
-            PrimaryLighten = "#FFFFFF",
-            Black = "#272727",
-            Background = "#323232",
-            BackgroundGrey = "#2f2f2f",
-            Surface = "#272727",
-            DrawerBackground = "#2f2f2f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#2f2f2f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(255,255,255, 0.50)",
-            TextSecondary = "rgba(255,255,255, 0.70)",
-            ActionDefault = "#adadad",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            Divider = "rgba(255,255,255, 0.12)",
-            DividerLight = "rgba(255,255,255, 0.06)",
-            TableLines = "rgba(255,255,255, 0.12)",
-            LinesDefault = "rgba(255,255,255, 0.12)",
-            LinesInputs = "rgba(255,255,255, 0.3)",
-            TextDisabled = "rgba(255,255,255, 0.2)"
-        }
-    };
-
-    private MudTheme lightTheme = new MudTheme
-    {
-        Palette = new Palette
-        {
-            Primary = "#444444",
-            PrimaryDarken = "#222222",
-            PrimaryLighten = "#777777",
-            Black = "#A7A7A7",
-            Background = "#f2f2f2",
-            BackgroundGrey = "#cfcfcf",
-            Surface = "#f7f7f7",
-            DrawerBackground = "#9f9f9f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#9f9f9f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(40,40,40, 0.80)",
-            TextSecondary = "rgba(100,100,100, 0.80)",
-            ActionDefault = "#2d2d2d",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            Divider = "rgba(100,100,100, 0.12)",
-            DividerLight = "rgba(150,150,150, 0.06)",
-            TableLines = "rgba(100,100,100, 0.12)",
-            LinesDefault = "rgba(200,200,200, 0.12)",
-            LinesInputs = "rgba(255,255,255, 0.3)",
-            TextDisabled = "rgba(100,100,100, 0.2)",
-            Warning = "#666600"
-        }
-    };
 }

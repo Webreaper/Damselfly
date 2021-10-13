@@ -94,7 +94,6 @@ namespace Damselfly.Core.Services
             return metadata;
         }
 
-
         /// <summary>
         /// Scans an image file on disk for its metadata, using the MetaDataExtractor
         /// library. The image object is populated with the metadata, and the IPTC
@@ -123,7 +122,7 @@ namespace Damselfly.Core.Services
                     if (jpegDirectory != null)
                     {
                         imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
-                        imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
+                        imgMetaData.Height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
                     }
 
                     var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();

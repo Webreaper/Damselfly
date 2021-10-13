@@ -7,6 +7,7 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -15,10 +16,30 @@ namespace Damselfly.Core.ImageProcessing
         // SkiaSharp doesn't handle .heic files... yet
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp" };
 
-        public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
+        public static ICollection<string> SupportedFileExtensions {
+            get {
+                if( imAvailable )
+                    return s_imageExtensions;
+
+                return new string[0];
+            }
+        }
+
+        public string IMVersion
+        {
+            get
+            {
+                if (imAvailable)
+                    return verString;
+
+                return "N/A";
+            }
+        }
 
         const string imageMagickExe = "convert";
         const string graphicsMagickExe = "gm";
+        private static bool imAvailable = false;
+        private string verString = "(not found)";
         private bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
 
         public ImageMagickProcessor()
@@ -32,12 +53,22 @@ namespace Damselfly.Core.ImageProcessing
         private void CheckToolStatus()
         {
             ProcessStarter improcess = new ProcessStarter();
-            bool imAvailable = improcess.StartProcess("convert", "--version");
+            imAvailable = improcess.StartProcess("convert", "--version");
 
             if (imAvailable)
             {
-                var verString = improcess.OutputText?.Split('\n').FirstOrDefault();
-                Logging.Log($"ImageMagick found: {verString}");
+                var version = improcess.OutputText?.Split('\n').FirstOrDefault() ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(version))
+                {
+                    verString = $"v{version}";
+                    Logging.Log($"ImageMagick found: {verString}");
+                }
+                else
+                {
+                    Logging.LogWarning("No ImageMagick Version returned.");
+                    imAvailable = false;
+                }
             }
             else
                 Logging.LogError("ImageMagick not found.");
@@ -150,7 +181,7 @@ namespace Damselfly.Core.ImageProcessing
                 Logging.LogVerbose(e.Data);
         }
 
-        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
+        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
         {
             throw new NotImplementedException();
         }

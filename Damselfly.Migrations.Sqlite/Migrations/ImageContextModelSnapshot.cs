@@ -117,21 +117,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "ddf4d227-28f9-43af-a72d-6f7778ea87a7",
+                            ConcurrencyStamp = "edb1b335-1ffc-40ee-a3a5-5bd96a555044",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "33b555f9-1e38-4250-bdac-1d56fce31a78",
+                            ConcurrencyStamp = "b43d08d3-89cb-4162-b0c2-26eaf6b38c30",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "a0007d57-b34b-46c3-90f5-d4db384b2259",
+                            ConcurrencyStamp = "95858e91-470e-4154-bf23-43699746aa68",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -371,6 +371,42 @@ namespace Damselfly.Core.Migrations
                     b.ToTable("FTSTags");
                 });
 
+            modelBuilder.Entity("Damselfly.Core.Models.Hash", b =>
+                {
+                    b.Property<int>("HashId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ImageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("MD5ImageHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerceptualHex1")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerceptualHex2")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerceptualHex3")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PerceptualHex4")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("HashId");
+
+                    b.HasIndex("ImageId")
+                        .IsUnique();
+
+                    b.HasIndex("MD5ImageHash");
+
+                    b.HasIndex("PerceptualHex1", "PerceptualHex2", "PerceptualHex3", "PerceptualHex4");
+
+                    b.ToTable("Hashes");
+                });
+
             modelBuilder.Entity("Damselfly.Core.Models.Image", b =>
                 {
                     b.Property<int>("ImageId")
@@ -474,9 +510,6 @@ namespace Damselfly.Core.Migrations
                     b.Property<bool>("FlashFired")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Hash")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Height")
                         .HasColumnType("INTEGER");
 
@@ -508,8 +541,6 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("CameraId");
 
                     b.HasIndex("DateTaken");
-
-                    b.HasIndex("Hash");
 
                     b.HasIndex("ImageId")
                         .IsUnique();
@@ -841,6 +872,17 @@ namespace Damselfly.Core.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Damselfly.Core.Models.Hash", b =>
+                {
+                    b.HasOne("Damselfly.Core.Models.Image", "Image")
+                        .WithOne("Hash")
+                        .HasForeignKey("Damselfly.Core.Models.Hash", "ImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("Damselfly.Core.Models.Image", b =>
                 {
                     b.HasOne("Damselfly.Core.Models.Folder", "Folder")
@@ -991,6 +1033,8 @@ namespace Damselfly.Core.Migrations
                     b.Navigation("BasketEntries");
 
                     b.Navigation("Classification");
+
+                    b.Navigation("Hash");
 
                     b.Navigation("ImageObjects");
 

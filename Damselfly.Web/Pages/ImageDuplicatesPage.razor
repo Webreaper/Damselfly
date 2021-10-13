@@ -7,8 +7,6 @@
 @inject ViewDataService ViewDataService
 @inject ImageCache imageCache
 
-@using Damselfly.Core.ImageProcessing
-
 <div class="damselfly-pagetitlebar">
     <NavBack />
     <div class="damselfly-imagetitle">
@@ -65,10 +63,9 @@
         using var db = new ImageContext();
         var watch = new Stopwatch("GetImageDupes");
 
-        var dupes = await db.ImageMetaData
-                        .Where(x => x.Hash.Equals(image.MetaData.Hash) && x.ImageId != image.ImageId)
-                        .Include(x => x.Image)
-                        .Select(x => x.Image.ImageId)
+        var dupes = await db.Hashes
+                        .Where(x => x.MD5ImageHash.Equals(image.Hash.MD5ImageHash) && x.ImageId != image.ImageId)
+                        .Select(x => x.ImageId)
                         .ToListAsync();
 
         var cachedImages = await imageCache.GetCachedImages(dupes);

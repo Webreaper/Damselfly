@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -364,7 +365,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, ExportConfig config)
+        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
         {
             using SKImage img = SKImage.FromEncodedData(input);
             using var bitmap = SKBitmap.FromImage(img);

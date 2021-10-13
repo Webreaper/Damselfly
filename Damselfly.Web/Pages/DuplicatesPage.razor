@@ -1,4 +1,4 @@
-﻿@page "/image/duplicates"
+﻿@page "/duplicates"
 
 @using Microsoft.EntityFrameworkCore
 @using System.Collections.Generic;
@@ -6,8 +6,6 @@
 @inject NavigationService navContext
 @inject ViewDataService ViewDataService
 @inject ImageCache imageCache
-
-@using Damselfly.Core.ImageProcessing
 
 <div class="damselfly-export">
     <div class="damselfly-pagetitlebar">
@@ -89,11 +87,13 @@
 
         // Craft the SQL manually as server-side groupby isn't supported by EF Core.
         // Select all images that have the same hash as more than one image.
-        var subQuery = "SELECT hash from ImageMetaData where hash is not null and hash <> \"\" group by hash having count( distinct ImageID ) > 1";
-        var sql = $"SELECT im.* from ImageMetaData im where im.hash in ({subQuery})";
+        var subQuery = @"SELECT MD5ImageHash FROM Hashes
+                        WHERE MD5ImageHash IS NOT NULL AND MD5ImageHash <> ""
+                        GROUP BY MD5ImageHash HAVING COUNT( DISTINCT ImageID ) > 1";
+        var sql = $"SELECT h.* FROM hashes h WHERE h.MD5ImageHash IN ({subQuery})";
 
-        var dupeImages = await db.ImageMetaData.FromSqlRaw(sql)
-                                .Where(x => x.Hash != null)
+        var dupeImages = await db.Hashes.FromSqlRaw(sql)
+                                .Where(x => x.MD5ImageHash != null)
                                 .Include(x => x.Image)
                                 .Select(x => x.ImageId)
                                 .ToListAsync();
@@ -101,7 +101,7 @@
         var cachedImages = await imageCache.GetCachedImages(dupeImages);
 
         // Group by the hash and pick all of the images for each one.
-        var listOfLists = cachedImages.GroupBy(x => x.MetaData.Hash)
+        var listOfLists = cachedImages.GroupBy(x => x.Hash.MD5ImageHash)
                                   .Select(x => x.OrderBy(x => x.SortDate).ToList())
                                   .ToList();
 
