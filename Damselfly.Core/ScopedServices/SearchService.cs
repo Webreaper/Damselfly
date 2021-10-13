@@ -163,12 +163,26 @@ namespace Damselfly.Core.ScopedServices
 
                     if( query.SimilarTo != null && query.SimilarTo.Hash != null )
                     {
+                        var hash1A = $"{SimilarTo.Hash.PerceptualHex1.Substring(0, 2)}%";
+                        var hash1B = $"%{SimilarTo.Hash.PerceptualHex1.Substring(2, 2)}";
+                        var hash2A = $"{SimilarTo.Hash.PerceptualHex2.Substring(0, 2)}%";
+                        var hash2B = $"%{SimilarTo.Hash.PerceptualHex2.Substring(2, 2)}";
+                        var hash3A = $"{SimilarTo.Hash.PerceptualHex3.Substring(0, 2)}%";
+                        var hash3B = $"%{SimilarTo.Hash.PerceptualHex3.Substring(2, 2)}";
+                        var hash4A = $"{SimilarTo.Hash.PerceptualHex4.Substring(0, 2)}%";
+                        var hash4B = $"%{SimilarTo.Hash.PerceptualHex4.Substring(2, 2)}";
+
                         images = images.Where(x => x.ImageId != SimilarTo.ImageId &&
-                                   (x.Hash.PerceptualHex1 == SimilarTo.Hash.PerceptualHex1 ||
-                                    x.Hash.PerceptualHex2 == SimilarTo.Hash.PerceptualHex2 ||
-                                    x.Hash.PerceptualHex3 == SimilarTo.Hash.PerceptualHex3 ||
-                                    x.Hash.PerceptualHex4 == SimilarTo.Hash.PerceptualHex4)
-                                   );
+                                   (
+                                    EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex2, hash2A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex2, hash2B) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex3, hash3A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex3, hash3B) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex4, hash4A) ||
+                                    EF.Functions.Like(x.Hash.PerceptualHex4, hash4B)
+                                   ));
                     }
 
                     // If selected, filter by the image filename/foldername
