@@ -21,7 +21,7 @@
     }
     else
     {
-    <div class="damselfly-imageproperties">
+<div class="damselfly-imageproperties">
     @if (basketService.CurrentBasket != null)
     {
         <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
@@ -42,6 +42,19 @@
         <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
         <ImageField FieldName="Aperture" FieldValue="@Aperture" />
         <ImageField FieldName="Exposure" FieldValue="@Exposure" />
+
+        if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
+        {
+            <div>
+                <label title="Dominant Color">
+                    Colors:
+                </label>
+                <div>
+                    <div class="dominant-color" style="@DominantColorStyle">Dominant</div>
+                    <div class="dominant-color" style="@AverageColorStyle">Average</div>
+                </div>
+            </div>
+        }
     }
     else
     {
@@ -92,7 +105,8 @@
     public string Lens => CurrentImage.MetaData.Lens != null ? $"{CurrentImage.MetaData.Lens.Make} {CurrentImage.MetaData.Lens.Model}" : string.Empty;
     public string Exposure => ! string.IsNullOrEmpty(CurrentImage.MetaData.Exposure ) ? ($"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}") : string.Empty;
     public string Aperture => ! string.IsNullOrEmpty( CurrentImage.MetaData.FNum ) ? $"f{CurrentImage.MetaData.FNum}" : string.Empty;
-
+    public string AverageColorStyle => $"background-color:{CurrentImage.MetaData.AverageColor}";
+    public string DominantColorStyle => $"background-color:{CurrentImage.MetaData.DominantColor}";
     private bool Expanded { get; set; }
 
     private void ExpandDisplay()

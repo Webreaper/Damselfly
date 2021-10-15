@@ -22,6 +22,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
+using Damselfly.ML.ImageClassification;
 using Damselfly.Areas.Identity;
 using Damselfly.Core.DbModels;
 using MudBlazor.Services;
@@ -93,6 +94,7 @@ namespace Damselfly.Web
             services.AddSingleton<WordpressService>();
             services.AddSingleton<AccordFaceService>();
             services.AddSingleton<AzureFaceService>();
+            services.AddSingleton<ImageClassifier>();
             services.AddSingleton<EmguFaceService>();
             services.AddSingleton<ThemeService>();
             services.AddSingleton<ImageRecognitionService>();

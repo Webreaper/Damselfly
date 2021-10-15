@@ -46,7 +46,7 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="fileExtension"></param>
         /// <returns></returns>
-        public IImageProcessor GetProcessor( string fileExtension )
+        public IImageProcessor? GetProcessor( string fileExtension )
         {
             if( ! fileExtension.StartsWith( "." ) )
             {

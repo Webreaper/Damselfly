@@ -24,7 +24,7 @@ namespace Damselfly.Core.ImageProcessing
 {
     public class ImageSharpProcessor : IImageProcessor, IHashProvider
     {
-        private static FontCollection fontCollection;
+        private static FontCollection? fontCollection;
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".tga", ".gif", ".bmp" };
 
         public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions;  } }
@@ -91,7 +91,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <returns>String hash of the image data</returns>
         public static string GetHash(Image<Rgba32> image)
         {
-            string result = null;
+            string result = String.Empty;
 
             try
             {

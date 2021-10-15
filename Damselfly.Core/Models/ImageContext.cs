@@ -239,6 +239,9 @@ namespace Damselfly.Core.Models
         public int? LensId { get; set; }
         public virtual Lens Lens { get; set; }
 
+        public string DominantColor { get; set; }
+        public string AverageColor { get; set; }
+
         // The date that this metadata was read from the image
         public DateTime LastUpdated { get; set; }
         // Date the thumbs were last created

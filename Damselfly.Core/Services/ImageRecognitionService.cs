@@ -14,6 +14,7 @@ using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.ObjectDetection;
+using Damselfly.ML.ImageClassification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Core.Services
@@ -28,13 +29,18 @@ namespace Damselfly.Core.Services
         private readonly IndexingService _indexingService;
         private readonly ThumbnailService _thumbService;
         private readonly ConfigService _configService;
+        private readonly ImageClassifier _imageClassifier;
+        private readonly ImageCache _imageCache;
+
         private IDictionary<string, Person> _peopleCache;
+
         public static bool EnableImageRecognition { get; set; } = true;
 
         public ImageRecognitionService(StatusService statusService, ObjectDetector objectDetector,
                         IndexingService indexingService, AzureFaceService azureFace,
                         AccordFaceService accordFace, EmguFaceService emguService,
-                        ThumbnailService thumbs, ConfigService configService)
+                        ThumbnailService thumbs, ConfigService configService,
+                        ImageClassifier imageClassifier, ImageCache imageCache)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
@@ -44,7 +50,9 @@ namespace Damselfly.Core.Services
             _indexingService = indexingService;
             _emguFaceService = emguService;
             _configService = configService;
-        }
+            _imageClassifier = imageClassifier;
+            _imageCache = imageCache;
+         }
 
         public ImageRecognitionService()
         {
@@ -226,12 +234,18 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <returns></returns>
-        private async Task DetectObjects(Image image)
+        private async Task DetectObjects(ImageMetaData metadata)
         {
+            var image = metadata.Image;
             var file = new FileInfo(image.FullPath);
             var thumbSize = ThumbSize.Large;
             var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
             var fileName = Path.Combine(image.Folder.Path, image.FileName);
+
+            // First, update the timestamp. We do this first, so that even if something
+            // fails, it'll be set, avoiding infinite loops of failed processing.
+            // The caller will update the DB with a SaveChanges call.
+            metadata.AILastUpdated = DateTime.UtcNow;
 
             try
             {
@@ -249,6 +263,21 @@ namespace Damselfly.Core.Services
 
                 if (bitmap == null)
                     return;
+
+                if( _imageClassifier != null )
+                {
+                    var colorWatch = new Stopwatch("DetectObjects");
+
+                    var dominant = _imageClassifier.DetectDominantColour(bitmap);
+                    var average = _imageClassifier.DetectAverageColor(bitmap);
+
+                    colorWatch.Stop();
+
+                    image.MetaData.AverageColor = average.ToHex();
+                    image.MetaData.DominantColor = dominant.ToHex();
+
+                    Logging.LogVerbose($"Image {image.FullPath} has dominant colour {dominant.ToHex()}, average {average.ToHex()}");
+                }
 
                 // Next, look for faces. We need to determine if we:
                 //  a) Use only local (Accord.Net) detection
@@ -541,12 +570,6 @@ namespace Damselfly.Core.Services
             }
         }
 
-        private async Task ProcessImage(ImageMetaData metadata)
-        {
-            metadata.AILastUpdated = DateTime.UtcNow;
-            await DetectObjects(metadata.Image);
-        }
-
         private bool WithinProcessingTimeRange()
         {
             var timeRange = GetProcessingTimeRange();
@@ -611,7 +634,7 @@ namespace Damselfly.Core.Services
 
                     try
                     {
-                        await imagesToScan.ExecuteInParallel(async img => await ProcessImage(img), 1);
+                        await imagesToScan.ExecuteInParallel(async metadata => await DetectObjects(metadata), 1);
                     }
                     catch (Exception ex)
                     {
@@ -626,6 +649,8 @@ namespace Damselfly.Core.Services
                     updateWatch.Stop();
 
                     watch.Stop();
+
+                    _imageCache.Evict( imagesToScan.Select( x => x.ImageId).ToList() );
 
                     _statusService.StatusText = $"Completed AI generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
 

@@ -27,9 +27,9 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <returns>String hash of the image data</returns>
-        public static string GetHash(SKBitmap sourceBitmap)
+        public static string? GetHash(SKBitmap sourceBitmap)
         {
-            string result = null;
+            string? result = null;
 
             try
             {

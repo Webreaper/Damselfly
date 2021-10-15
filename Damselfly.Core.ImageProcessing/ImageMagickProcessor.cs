@@ -97,7 +97,7 @@ namespace Damselfly.Core.ImageProcessing
             else
                 args = string.Format(" -define jpeg:size={0}x{1} \"{2}\" -quality 90 -unsharp 0.5x0.5+1.25+0.0 ", maxHeight, maxWidth, source.FullName);
 
-            FileInfo altSource = null;
+            FileInfo? altSource = null;
 
             List<string> argsList = new List<string>();
 

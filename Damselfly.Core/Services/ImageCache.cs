@@ -260,6 +260,15 @@ namespace Damselfly.Core.Services
             Logging.LogVerbose($"Evicting from cache: {imageId}");
             _memoryCache.Remove(imageId);
         }
+
+        /// <summary>
+        /// Remote a set of images from the cache   
+        /// </summary>
+        /// <param name="imageId"></param>
+        public void Evict(List<int> imageId)
+        {
+            imageId.ForEach(x => Evict(x));
+        }
     }
 }
 

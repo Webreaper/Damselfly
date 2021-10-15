@@ -620,6 +620,12 @@ f
     padding: 5px;
 }
 
+.dominant-color {
+    display: flex;
+    padding: 2px;
+    border: 1px solid black;
+}
+
 .status {
     flex: 6 0 auto;
     margin-left: 5px;
