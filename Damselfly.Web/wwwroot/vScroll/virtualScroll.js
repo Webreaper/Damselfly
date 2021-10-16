@@ -26,6 +26,7 @@
             if (markerVisibleState != visible) {
                 markerVisibleState = visible;
                 if (visible) {
+                    console.log("Scroll marker visible - calling back into .Net to laod more data...")
                     DotNetRef.invokeMethodAsync("LoadMoreData");
                 }
             }
