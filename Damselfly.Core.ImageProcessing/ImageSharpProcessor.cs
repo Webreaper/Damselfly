@@ -153,10 +153,10 @@ namespace Damselfly.Core.ImageProcessing
             // Other pixel formats use Image.Load<TPixel>(string path))
             using var image = await Image.LoadAsync<Rgba32>(source.FullName);
 
+            load.Stop();
+
             // We've got the image in memory. Create the hash. 
             result.ImageHash = GetHash(image);
-
-            load.Stop();
 
             Stopwatch orient = new Stopwatch("ImageSharpOrient");
 
