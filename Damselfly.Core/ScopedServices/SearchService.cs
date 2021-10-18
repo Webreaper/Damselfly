@@ -130,6 +130,7 @@ namespace Damselfly.Core.ScopedServices
                 return moreDataAvailable;
             }
 
+            // Calculate how many results we have already
             if (SearchResults.Count > first)
             {
                 int firstOffset = SearchResults.Count - first;
@@ -137,10 +138,11 @@ namespace Damselfly.Core.ScopedServices
                 count -= firstOffset;
             }
 
-            if (count <= 0)
+            if (count == 0)
             {
-                // If we requested zero, there can't be any more.
-                return false;
+                // If we have exactly the right number of results,
+                // assume there's more to come
+                return true;
             }
 
             using var db = new ImageContext();

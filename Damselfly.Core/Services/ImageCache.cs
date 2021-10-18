@@ -78,8 +78,7 @@ namespace Damselfly.Core.Services
             try
             {
                 // First, get the list that aren't in the cache
-                var needLoad = imgIds.Where(x => !_memoryCache
-                                       .TryGetValue(x, out var _))
+                var needLoad = imgIds.Where(x => !_memoryCache.TryGetValue(x, out var _))
                                         .ToList();
 
                 // Now load and cache them
