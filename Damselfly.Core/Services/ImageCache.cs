@@ -93,7 +93,7 @@ namespace Damselfly.Core.Services
                     if (_memoryCache.TryGetValue(imgId, out image))
                         result.Add(image);
                     else
-                        Logging.LogError("Cached image was not found in cache.");
+                        Logging.LogError($"Cached image {imgId} was not found in cache.");
                 }
             }
             catch( Exception ex )

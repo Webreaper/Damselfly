@@ -286,7 +286,7 @@
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public async Task LoadMoreData()
     {
-        Logging.Log("Javscript callback triggered to load more data.");
+        Logging.LogVerbose("Javscript callback triggered to load more data.");
 
         await LoadData(imagesPerPage);
     }
