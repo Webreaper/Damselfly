@@ -1,10 +1,12 @@
 ﻿
 @inject SearchService searchService
 @inject IndexingService indexService
-@inject FolderService folderService 
+@inject FolderService folderService
 @inject UserFolderService userFolderService
 @inject ImageRecognitionService aiService
 @inject ContextMenuService contextMenuService
+@inject IDialogService DialogService
+
 @implements IDisposable
 
 <div class="damselfly-folderlist">
@@ -27,7 +29,7 @@
             <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Path"
                      @onclick="@(() => SetFilterFolder(context.Folder))"
-                     @oncontextmenu=@(args => ShowContextMenu(args, context.Folder)) @oncontextmenu:preventDefault="true">
+                     @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
                     <i class="fa @FolderIcon(context.Folder.FolderId) folder-icon" /> @context.DisplayName (@context.ImageCount)
                 </div>
             </Virtualize>
@@ -42,23 +44,29 @@
     private List<FolderListItem> folderItems;
     Folder SelectedItem { get; set; }
 
-    void ShowContextMenu(MouseEventArgs args, Folder folder)
+    void ShowContextMenu(MouseEventArgs args, FolderListItem folder)
     {
         contextMenuService.Open(args,
         new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = "Select Folder", Value = 0 },
-                new ContextMenuItem(){ Text = "Re-index Folder", Value = 1 },
-                new ContextMenuItem(){ Text = "Run AI on Folder", Value = 2 }
-         }, (args) =>
+                new ContextMenuItem(){ Text = "Refresh Folder", Value = 1 },
+             }, (args) =>
          {
              contextMenuService.Close();
              switch (args.Value)
              {
-                 case 0: SetFilterFolder(folder); break;
-                 case 1: _ = indexService.FlagFoldersForRescan(new List<Folder> { folder } ); break;
-                 case 2: _ = aiService.MarkFolderForScan( folder ); break;
+                 case 0: SetFilterFolder(folder.Folder); break;
+                 case 1: _ = ShowRescanDialog( folder ); break;
              }
          });
+    }
+
+    private async Task ShowRescanDialog( FolderListItem folderItem )
+    {
+        var parameters = new DialogParameters { { "folder", folderItem.Folder }, { "count", folderItem.ImageCount } };
+        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
     }
 
     protected void SelectionChanged(Folder f)
@@ -77,7 +85,7 @@
         return "fa-folder";
     }
 
-    string FolderStyle(int folderId )
+    string FolderStyle(int folderId)
     {
         if (folderId == -1 && searchService.Folder == null)
             return "folder-entry-selected";

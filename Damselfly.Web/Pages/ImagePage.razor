@@ -176,7 +176,7 @@ else
 
     public void RefreshImage()
     {
-        _ = indexService.MarkImageForScan(image);
+        _ = indexService.MarkImagesForScan(new List<Image>() { image });
     }
 
     public async Task DownloadImage()

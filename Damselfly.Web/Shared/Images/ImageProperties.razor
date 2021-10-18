@@ -26,9 +26,11 @@
     {
         <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
     }
-    <div>Date Taken: @CurrentImage.SortDate.Display()</div>
-    <div>Filename: @CurrentImage.FileName</div>
-    <div>Folder:&nbsp;<NavLink href="@CurrentFolderLink" title="@CurrentImage.Folder.Path">@CurrentImage.Folder.Name</NavLink></div>
+
+    <ImageField FieldName="Date Taken" FieldValue="@CurrentImage.SortDate.Display()" />
+    <ImageField FieldName="Filename" FieldValue="@CurrentImage.FileName" />
+    <ImageField FieldName="Folder" FieldValue="@CurrentImage.Folder.Name" Title="@CurrentImage.Folder.Path" Href="@CurrentFolderLink" />
+
     @if (CurrentImage.MetaData != null)
     {
         <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
@@ -50,8 +52,8 @@
                     Colors:
                 </label>
                 <div>
-                    <div class="dominant-color" style="@DominantColorStyle">Dominant</div>
-                    <div class="dominant-color" style="@AverageColorStyle">Average</div>
+                    <div title="Dominant Colour" class="dominant-color" style="@DominantColorStyle"><p>D</p></div>
+                    <div title="Average Color" class="dominant-color" style="@AverageColorStyle"><p>A</p></div>
                 </div>
             </div>
         }
@@ -74,15 +76,15 @@
     }
     @if (Expanded)
     {
-        <div>File Modified: @CurrentImage.FileLastModDate.Display()</div>
+        <ImageField FieldName="File Modified" FieldValue="@CurrentImage.FileLastModDate.Display()" />
         <div>
-            Thumbs Generated: @ThumbnailUpdate
+            <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate" />
             <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
                 <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
             </AuthorizeView>
         </div>
         <div>
-            AI Processed: @AIProcessDate
+            <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate" />
             <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
                 <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
             </AuthorizeView>
@@ -90,7 +92,7 @@
 
         @if (CurrentImage.Hash != null)
         {
-            <div>Hash: @CurrentImage.Hash.MD5ImageHash</div>
+            <ImageField FieldName="Hash" FieldValue="@CurrentImage.Hash.MD5ImageHash" />
         }
     }
 </div>

@@ -333,6 +333,7 @@ app {
     border: 2px solid var(--image-checkbox );
     -webkit-appearance: none;
     outline: none;
+    margin: 2px;
     cursor: pointer;
 }
 
@@ -567,8 +568,8 @@ f
 }
 .damselfly-imageproperties div {
     display: flex;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
     max-width: 250px;
     overflow-x: hidden;
     white-space: nowrap;
@@ -620,10 +621,33 @@ f
     padding: 5px;
 }
 
+.imagefield-label{
+    margin-left: 3px;
+    opacity: 0.8;
+}
+
+.imagefield-val {
+    opacity: 1;
+    font-weight: bold;
+}
+
 .dominant-color {
     display: flex;
     padding: 2px;
     border: 1px solid black;
+    width: 25px;
+    height: 25px;
+    overflow-x: clip;
+    border-radius: 50%;
+    outline: none;
+}
+
+.dominant-color p {
+    padding: 1px;
+    mix-blend-mode: difference;
+    font-weight: bold;
+    font-size: larger;
+    color: #ffffff;
 }
 
 .status {

@@ -1,28 +1,28 @@
 ﻿
 @using System.Linq
 
-@inject BasketService basketService
-@inject UserService userService
 @inject UserStatusService userStatusService
-@inject StatusService statusService    
+@inject ThumbnailService thumbService
+@inject IndexingService indexService
+@inject ImageRecognitionService aiService
 
 <MudDialog>
     <DialogContent>
-        <MudSelect T="Basket" Label="Destination Basket" HelperText="Select destination basket for the current basket items" @bind-Value="selectedBasket" Variant="Variant.Filled">
-            @foreach (var basket in allBaskets)
-            {
-                <MudSelectItem T="Basket" Value="@basket">@basket.Name</MudSelectItem>
-            }
-        </MudSelect>
-        @if (!string.IsNullOrEmpty(errorMsg))
+        @if (Folder != null)
         {
-            <p>@errorMsg</p>
+            <MudText>Re-scan folder @Folder.Name (@Count @ImageText):</MudText>
         }
+        else
+        {
+            <MudText>Re-scan @Count @ImageText:</MudText>
+        }
+        <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files" />
+        <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails" />
+        <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects" />
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Copy">Copy</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Move">Move</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Rescan">Rescan</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -30,42 +30,51 @@
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
-    List<Basket> allBaskets = new List<Basket>();
+    [Parameter]
+    public ICollection<Image> Images { get; set; }
 
-    private Basket selectedBasket;
+    [Parameter]
+    public Folder Folder { get; set; }
 
-    async Task Move()
+    [Parameter]
+    public int Count { get; set; }
+
+    private string ImageText => Count > 1 ? "images" : "image";
+
+    private bool ReIndex { get; set; }
+    private bool RegenThumbs { get; set; }
+    private bool RescanAI { get; set; }
+
+    async Task Rescan()
     {
-        await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
-        await basketService.Clear();
-
+        if( Folder == null )
+        {
+            if( ReIndex )
+                await indexService.MarkImagesForScan(Images);
+            if( RegenThumbs )
+                await thumbService.MarkImagesForScan(Images);
+            if( RescanAI )
+                await aiService.MarkImagesForScan(Images);
+        }
+        else
+        {
+            if (ReIndex)
+                await indexService.MarkFolderForScan(Folder);
+            if (RegenThumbs)
+                await thumbService.MarkFolderForScan(Folder);
+            if (RescanAI)
+                await aiService.MarkFolderForScan(Folder);
+        }
         MudDialog.Close(DialogResult.Ok(true));
-    }
-
-    async Task Copy()
-    {
-        await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
-        MudDialog.Close(DialogResult.Ok(true));
-    }
-
-    private string errorMsg;
-
-    private void DisplayError( string errorText )
-    {
-        errorMsg = errorText;
-        StateHasChanged();
     }
 
     void Cancel() => MudDialog.Cancel();
 
     protected override async Task OnInitializedAsync()
     {
+        if (Images != null)
+            Count = Images.Count;
+
         await base.OnInitializedAsync();
-
-        var baskets = await basketService.GetUserBaskets(userService.User);
-        var destBaskets = baskets.Where(x => x.BasketId != basketService.CurrentBasket.BasketId)
-                                   .ToList();
-
-        allBaskets.AddRange(destBaskets);
     }
 }

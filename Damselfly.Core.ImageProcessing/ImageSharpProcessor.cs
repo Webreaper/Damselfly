@@ -242,7 +242,7 @@ namespace Damselfly.Core.ImageProcessing
                 img.Mutate(x => x.AutoOrient());
             }
 
-            if (!string.IsNullOrEmpty(config.WatermarkText))
+            if (!string.IsNullOrEmpty(config.WatermarkText) && fontCollection != null)
             {
                 // Apply the watermark if one's been specified.
                 Font font = fontCollection.CreateFont("Arial", 10);

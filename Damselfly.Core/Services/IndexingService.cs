@@ -1309,12 +1309,14 @@ namespace Damselfly.Core.Services
             await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set Lastupdated = null where imageid in (select imageid from folders where folderid = {folder.FolderId})");
         }
 
-        public async Task MarkImageForScan(Image image)
+        public async Task MarkImagesForScan(ICollection<Image> images)
         {
             using var db = new ImageContext();
 
+            string ids = string.Join(",", images.Select(x => x.ImageId));
+
             // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set Lastupdated = null where imageid = {image.ImageId}");
+            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set Lastupdated = null where imageid in ({ids})");
         }
     }
 }
