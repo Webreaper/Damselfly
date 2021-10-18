@@ -86,14 +86,20 @@ namespace Damselfly.Core.Services
                 if (needLoad.Any())
                     await EnrichAndCache(needLoad);
 
-                // Now, re-enumerate the list - everything should be in the cache this time
+                // Now, re-enumerate the list, but in-order. Note that everything
+                // should be in the cache this time
                 foreach (var imgId in imgIds)
                 {
                     Image image;
-                    if (_memoryCache.TryGetValue(imgId, out image))
-                        result.Add(image);
-                    else
+                    if (!_memoryCache.TryGetValue(imgId, out image))
+                    {
+                        // Somehow an item which we just supposedly cached, is no
+                        // longer in the cache. This is very bad indeed.
                         Logging.LogError($"Cached image {imgId} was not found in cache.");
+                        continue;
+                    }
+
+                    result.Add(image);
                 }
             }
             catch( Exception ex )

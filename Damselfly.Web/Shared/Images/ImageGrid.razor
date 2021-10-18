@@ -300,15 +300,15 @@
             IsLoading = true;
 
             ChangeThumbSize(CurrentThumbSize);
-            var newImages = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
-            if (newImages.Any())
+            if (response.SearchResults.Any())
             {
-                gridImages.AddRange(newImages);
+                gridImages.AddRange(response.SearchResults);
             }
 
             // Flag the 'more' div if we loaded at least as many as we requested.
-            endOfImages = newImages.Count() < imagesToLoad;
+            endOfImages = ! response.MoreDataAvailable;
 
             // If we've tried to load data and there isn't any more, show the toast.
             toastClass = endOfImages ? "show" : string.Empty;
