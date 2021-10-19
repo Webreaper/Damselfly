@@ -30,12 +30,12 @@
     <PackageReference Include="System.Drawing.Common" Version="6.0.0-rc.2.21480.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.0-rc.2.21480.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.0-rc.2.21480.10" />
-    <PackageReference Include="SendGrid" Version="9.24.3" />
+    <PackageReference Include="SendGrid" Version="9.24.4" />
     <PackageReference Include="MailKit" Version="3.0.0-preview1" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.0-rc.2.21480.10" />
     <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.0.0" />
-    <PackageReference Include="MudBlazor" Version="5.2.0-rc2" />
+    <PackageReference Include="MudBlazor" Version="5.2.0-rc4" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />

@@ -16,9 +16,15 @@
         {
             <MudText>Re-scan @Count @ImageText:</MudText>
         }
-        <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files" />
-        <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails" />
-        <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects" />
+        <div>
+            <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files" />
+        </div>
+        <div>
+            <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails" />
+        </div>
+        <div>
+            <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects" />
+        </div>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>

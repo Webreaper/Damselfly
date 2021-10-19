@@ -172,7 +172,7 @@ namespace Damselfly.Web
                         MetaDataService metadata, ThumbnailService thumbService,
                         IndexingService indexService, ImageProcessService imageProcessing,
                         AzureFaceService azureFace, ImageRecognitionService aiService,
-                        UserService userService, ConfigService configService)
+                        UserService userService, ConfigService configService, ImageCache imageCache)
         {
             var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 
@@ -219,6 +219,9 @@ namespace Damselfly.Web
                 endpoints.MapFallbackToPage("/_Host");
             });
 
+            // Prime the cache
+            imageCache.WarmUp().Wait();
+
             // TODO: Save this in ConfigService
             string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
 
@@ -234,7 +237,7 @@ namespace Damselfly.Web
             aiService.StartService();
 
             // Validation check to ensure at least one user is an Admin
-            userService.CheckAdminUser().GetAwaiter().GetResult();
+            userService.CheckAdminUser().Wait();
 
             StartTaskScheduler(tasks, download, thumbService, metadata);
         }

@@ -1,102 +1,108 @@
 ﻿
 @using Damselfly.Web.Shared.Images
- 
+
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
 @inject BasketService basketService
-@inject SearchService searchService 
+@inject SearchService searchService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject UserConfigService configService
+@inject UserService userService
 @inject ImageRecognitionService aiService
- 
+
 @inject IJSRuntime JsRuntime
-@implements IDisposable 
+@implements IDisposable
 
-    @if (CurrentImage == null)
-    {
-        <div class="damselfly-imageproperties">
-            <p><em>Loading image properties...</em></p>
-        </div>
-    }
-    else
-    {
-<div class="damselfly-imageproperties">
-    @if (basketService.CurrentBasket != null)
-    {
-        <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
-    }
-
-    <ImageField FieldName="Date Taken" FieldValue="@CurrentImage.SortDate.Display()" />
-    <ImageField FieldName="Filename" FieldValue="@CurrentImage.FileName" />
-    <ImageField FieldName="Folder" FieldValue="@CurrentImage.Folder.Name" Title="@CurrentImage.Folder.Path" Href="@CurrentFolderLink" />
-
-    @if (CurrentImage.MetaData != null)
-    {
-        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
-        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" />
-        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" />
-        <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
-        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
-        <ImageField FieldName="Size" FieldValue="@Size" />
-        <ImageField FieldName="Camera" FieldValue="@Camera" />
-        <ImageField FieldName="Lens" FieldValue="@Lens" />
-        <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
-        <ImageField FieldName="Aperture" FieldValue="@Aperture" />
-        <ImageField FieldName="Exposure" FieldValue="@Exposure" />
-
-        if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
+@if (CurrentImage == null)
+{
+    <div class="damselfly-imageproperties">
+        <p><em>Loading image properties...</em></p>
+    </div>
+}
+else
+{
+    <div class="damselfly-imageproperties">
+        @if (basketService.CurrentBasket != null)
         {
-            <div>
-                <label title="Dominant Color">
-                    Colors:
-                </label>
+            <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
+        }
+
+        <ImageField FieldName="Date Taken" FieldValue="@CurrentImage.SortDate.Display()" />
+        <ImageField FieldName="Filename" FieldValue="@CurrentImage.FileName" />
+        <ImageField FieldName="Folder" FieldValue="@CurrentImage.Folder.Name" Title="@CurrentImage.Folder.Path" Href="@CurrentFolderLink" />
+
+        @if (CurrentImage.MetaData != null)
+        {
+            <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
+            <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" />
+            <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" />
+            <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
+            <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
+            <div title="@RatingTitle">
+                <label class="imagefield-label" title="Rating">Rating:</label>
+                <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
+                            SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)"/>
+            </div>
+            <ImageField FieldName="Size" FieldValue="@Size" />
+            <ImageField FieldName="Camera" FieldValue="@Camera" />
+            <ImageField FieldName="Lens" FieldValue="@Lens" />
+            <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
+            <ImageField FieldName="Aperture" FieldValue="@Aperture" />
+            <ImageField FieldName="Exposure" FieldValue="@Exposure" />
+
+            if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
+            {
                 <div>
-                    <div title="Dominant Colour" class="dominant-color" style="@DominantColorStyle"><p>D</p></div>
-                    <div title="Average Color" class="dominant-color" style="@AverageColorStyle"><p>A</p></div>
+                    <label title="Dominant Color">
+                        Colors:
+                    </label>
+                    <div>
+                        <div title="Dominant Colour" class="dominant-color" style="@DominantColorStyle"><p>D</p></div>
+                        <div title="Average Color" class="dominant-color" style="@AverageColorStyle"><p>A</p></div>
+                    </div>
                 </div>
+            }
+        }
+        else
+        {
+            <div>No metadata available yet.</div>
+        }
+        @if (Expanded)
+        {
+            <div @onclick="@(() => CollapseDisplay())">
+                Show Less... &nbsp;<i class="fas fa-chevron-up" />
             </div>
         }
-    }
-    else
-    {
-        <div>No metadata available yet.</div>
-    }
-    @if (Expanded)
-    {
-        <div @onclick="@(() => CollapseDisplay())">
-            Show Less... &nbsp;<i class="fas fa-chevron-up" />
-        </div>
-    }
-    else
-    {
-        <div @onclick="@(() => ExpandDisplay())">
-            Show More... &nbsp; <i class="fas fa-chevron-down" />
-        </div>
-    }
-    @if (Expanded)
-    {
-        <ImageField FieldName="File Modified" FieldValue="@CurrentImage.FileLastModDate.Display()" />
-        <div>
-            <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate" />
-            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
-            </AuthorizeView>
-        </div>
-        <div>
-            <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate" />
-            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
-            </AuthorizeView>
-        </div>
-
-        @if (CurrentImage.Hash != null)
+        else
         {
-            <ImageField FieldName="Hash" FieldValue="@CurrentImage.Hash.MD5ImageHash" />
+            <div @onclick="@(() => ExpandDisplay())">
+                Show More... &nbsp; <i class="fas fa-chevron-down" />
+            </div>
         }
-    }
-</div>
-    }
+        @if (Expanded)
+        {
+            <ImageField FieldName="File Modified" FieldValue="@CurrentImage.FileLastModDate.Display()" />
+            <div>
+                <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate" />
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
+                </AuthorizeView>
+            </div>
+            <div>
+                <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate" />
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
+                </AuthorizeView>
+            </div>
+
+            @if (CurrentImage.Hash != null)
+            {
+                <ImageField FieldName="Hash" FieldValue="@CurrentImage.Hash.MD5ImageHash" />
+            }
+        }
+    </div>
+}
 
 @code {
     private Image theImage;
@@ -105,11 +111,13 @@
     public string Size => $"{CurrentImage.MetaData.Width} x {CurrentImage.MetaData.Height}";
     public string Camera => CurrentImage.MetaData.Camera != null ? $"{CurrentImage.MetaData.Camera.Make} {CurrentImage.MetaData.Camera.Model}" : string.Empty;
     public string Lens => CurrentImage.MetaData.Lens != null ? $"{CurrentImage.MetaData.Lens.Make} {CurrentImage.MetaData.Lens.Model}" : string.Empty;
-    public string Exposure => ! string.IsNullOrEmpty(CurrentImage.MetaData.Exposure ) ? ($"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}") : string.Empty;
-    public string Aperture => ! string.IsNullOrEmpty( CurrentImage.MetaData.FNum ) ? $"f{CurrentImage.MetaData.FNum}" : string.Empty;
+    public string Exposure => !string.IsNullOrEmpty(CurrentImage.MetaData.Exposure) ? ($"{CurrentImage.MetaData.Exposure} {(CurrentImage.MetaData.FlashFired ? "(flash)" : string.Empty)}") : string.Empty;
+    public string Aperture => !string.IsNullOrEmpty(CurrentImage.MetaData.FNum) ? $"f{CurrentImage.MetaData.FNum}" : string.Empty;
     public string AverageColorStyle => $"background-color:{CurrentImage.MetaData.AverageColor}";
     public string DominantColorStyle => $"background-color:{CurrentImage.MetaData.DominantColor}";
+    public string RatingTitle => CurrentImage.MetaData?.Rating == 0 ? "Unrated" : $"Rating: {CurrentImage.MetaData?.Rating} stars";
     private bool Expanded { get; set; }
+    private bool CanEdit = false;
 
     private void ExpandDisplay()
     {
@@ -123,10 +131,23 @@
         configService.Set("ShowExtendedProps", Expanded.ToString());
     }
 
+    private async Task OnRatingChanged(int newValue)
+    {
+        if (newValue != CurrentImage.MetaData.Rating)
+        {
+            var db = new ImageContext();
+            var metadata = CurrentImage.MetaData;
+            db.Attach(metadata);
+            metadata.Rating = newValue;
+            db.Update(metadata);
+            await db.SaveChangesAsync("UpdateRating");
+        }
+    }
+
     public bool InBasket
     {
         get { return basketService.IsSelected(CurrentImage); }
-        set{ _ = SetBasketState(value );}
+        set { _ = SetBasketState(value); }
     }
 
     private async Task SetBasketState(bool newState)
@@ -137,11 +158,13 @@
         StateHasChanged();
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        CanEdit = await userService.PolicyApplies(PolicyDefinitions.s_IsEditor);
+
         Expanded = configService.GetBool("ShowExtendedProps", false);
 
-        if( ! Expanded )
+        if (!Expanded)
             CollapseDisplay();
 
         navContext.OnChange += NavigationChanged;
@@ -165,7 +188,7 @@
         if (CurrentImage == null || image == null || image.ImageId != CurrentImage.ImageId)
         {
             CurrentImage = image;
-            InvokeAsync( StateHasChanged );
+            InvokeAsync(StateHasChanged);
             if (CurrentImage != null)
                 Logging.LogVerbose($"ImageProperties: Set current image to {CurrentImage.ImageId} ({CurrentImage.FileName})");
         }

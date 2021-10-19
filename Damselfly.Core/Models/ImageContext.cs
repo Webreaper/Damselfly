@@ -203,16 +203,6 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class ImageMetaData
     {
-        public enum Stars
-        {
-            One,
-            Two,
-            Three,
-            Four,
-            Five
-        };
-
-
         [Key]
         public int MetaDataId { get; set; }
 
@@ -222,7 +212,7 @@ namespace Damselfly.Core.Models
 
         public int Width { get; set; }
         public int Height { get; set; }
-        public Stars Rating { get; set; }
+        public int Rating { get; set; } // 1-5, stars
         public string Caption { get; set; }
         public string Copyright { get; set; }
         public string Credit { get; set; }

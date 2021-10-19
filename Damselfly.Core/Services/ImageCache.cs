@@ -41,8 +41,30 @@ namespace Damselfly.Core.Services
         {
             _memoryCache = memoryCache;
             _cacheOptions = new MemoryCacheEntryOptions()
-                            .SetSize( 1 )
-                            .SetSlidingExpiration(TimeSpan.FromDays( 2 ));
+                            .SetSize(1)
+                            .SetSlidingExpiration(TimeSpan.FromDays(2));
+        }
+
+        /// <summary>
+        /// Prime the cache with a load of most recent images
+        /// </summary>
+        /// <returns></returns>
+        public async Task WarmUp()
+        {
+            const int warmupCount = 2000;
+
+            Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
+
+            var db = new ImageContext();
+
+            var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
+                     .Take(warmupCount)
+                     .Select(x => x.ImageId)
+                     .ToListAsync();
+
+            await EnrichAndCache( warmupIds );
+
+            Logging.Log($"Image Cache primed with {warmupIds.Count} images.");
         }
 
         /// <summary>
