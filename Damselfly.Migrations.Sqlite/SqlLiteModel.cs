@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Models;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
+using System.Linq.Expressions;
 using Damselfly.Core.Utils;
 using Z.EntityFramework.Plus;
 using SqlParameter = Microsoft.Data.Sqlite.SqliteParameter;
+using EFCore.BulkExtensions;
 
 namespace Damselfly.Migrations.Sqlite.Models
 {
@@ -249,6 +251,12 @@ namespace Damselfly.Migrations.Sqlite.Models
         {
             // TODO Use bulk delete here?
             return await query.DeleteAsync();
+        }
+
+        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
+        {
+            // TODO Use bulk delete here?
+            return await query.BatchUpdateAsync( updateExpression );
         }
 
         private string Sanitize( string input )

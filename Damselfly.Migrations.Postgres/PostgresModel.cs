@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
@@ -217,6 +218,12 @@ namespace Damselfly.Migrations.Postgres.Models
         {
             return await query.DeleteAsync();
         }
+
+        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
+        {
+            return await query.UpdateAsync(updateExpression);
+        }
+
 
         public Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.Utils;
@@ -151,6 +152,12 @@ namespace Damselfly.Core.Models.DBAbstractions
         {
             // Full text search not supported in MySQL
             // TODO: Implement with a Like Query?
+            throw new NotImplementedException();
+        }
+
+
+        public Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
+        {
             throw new NotImplementedException();
         }
 

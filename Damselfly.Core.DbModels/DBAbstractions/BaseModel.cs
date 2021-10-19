@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Damselfly.Core.DbModels.Interfaces;
@@ -123,7 +124,21 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return 1;
 
-            return await Task.Run(() => DatabaseSpecialisation.BatchDelete(query));
+            return await DatabaseSpecialisation.BatchDelete(query);
+        }
+
+        /// <summary>
+        /// Wrapper to extract the underlying BatchDelete implementation depending on the
+        /// DB model being used.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
+        {
+            if (ReadOnly)
+                return 1;
+
+            return await DatabaseSpecialisation.BatchUpdate(query, updateExpression);
         }
 
         /// <summary>

@@ -1307,8 +1307,8 @@ namespace Damselfly.Core.Services
             {
                 using var db = new ImageContext();
 
-                // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-                await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE images SET lastupdated = date('now') where folderid = {folder.FolderId}");
+                var queryable = db.Images.Where(img => img.FolderId == folder.FolderId );
+                await db.BatchUpdate(queryable, x => new Image { LastUpdated = DateTime.Now });
 
                 _statusService.StatusText = $"Folder {folder.Name} flagged for re-indexing.";
             }
@@ -1324,10 +1324,10 @@ namespace Damselfly.Core.Services
             {
                 using var db = new ImageContext();
 
-                string ids = string.Join(",", images.Select(x => x.ImageId));
+                var ids = images.Select( x => x.ImageId ).ToList();
+                var queryable = db.Images.Where(img => ids.Contains(img.ImageId));
 
-                // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-                await db.Database.ExecuteSqlInterpolatedAsync($"Update images Set Lastupdated = date('now') where imageid in ({ids})");
+                await db.BatchUpdate( queryable, x => new Image { LastUpdated = DateTime.Now } );
 
                 _statusService.StatusText = $"{images.Count} images flagged for re-indexing.";
             }
