@@ -1303,20 +1303,38 @@ namespace Damselfly.Core.Services
 
         public async Task MarkFolderForScan( Folder folder )
         {
-            using var db = new ImageContext();
+            try
+            {
+                using var db = new ImageContext();
 
-            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set Lastupdated = null where imageid in (select imageid from folders where folderid = {folder.FolderId})");
+                // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+                await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE images SET lastupdated = date('now') where folderid = {folder.FolderId}");
+
+                _statusService.StatusText = $"Folder {folder.Name} flagged for re-indexing.";
+            }
+            catch ( Exception ex)
+            {
+                Logging.LogError($"Exception when marking folder for reindexing: {ex}");
+            }
         }
 
         public async Task MarkImagesForScan(ICollection<Image> images)
         {
-            using var db = new ImageContext();
+            try
+            {
+                using var db = new ImageContext();
 
-            string ids = string.Join(",", images.Select(x => x.ImageId));
+                string ids = string.Join(",", images.Select(x => x.ImageId));
 
-            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set Lastupdated = null where imageid in ({ids})");
+                // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+                await db.Database.ExecuteSqlInterpolatedAsync($"Update images Set Lastupdated = date('now') where imageid in ({ids})");
+
+                _statusService.StatusText = $"{images.Count} images flagged for re-indexing.";
+            }
+            catch ( Exception ex)
+            {
+                Logging.LogError($"Exception when marking images for reindexing: {ex}");
+            }
         }
     }
 }

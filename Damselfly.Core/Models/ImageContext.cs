@@ -233,10 +233,16 @@ namespace Damselfly.Core.Models
         public string AverageColor { get; set; }
 
         // The date that this metadata was read from the image
+        // If this is older than Image.LastUpdated, the image
+        // will be re-indexed
         public DateTime LastUpdated { get; set; }
-        // Date the thumbs were last created
+
+        // Date the thumbs were last created. If this is null
+        // the thumbs will be regenerated
         public DateTime? ThumbLastUpdated { get; set; }
+
         // Date we last performed face/object/image recognition
+        // If this is null, AI will be reprocessed
         public DateTime? AILastUpdated { get; set; }
     }
 
