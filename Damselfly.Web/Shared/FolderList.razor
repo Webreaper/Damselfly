@@ -9,6 +9,8 @@
 
 @implements IDisposable
 
+<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" OnScrollPositionSet="ScrollChanged"/>
+
 <div class="damselfly-folderlist">
     <div class="folder-search">
         <label for="searchBox">
@@ -25,7 +27,7 @@
         <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
             <i class="fa @FolderIcon(-1) folder-icon" /> All Folders
         </div>
-        <div class="folder-scroll-area">
+        <div class="folder-scroll-area" id="folderscrollarea">
             <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.Folder.FolderId)" title="@context.Folder.Path"
                      @onclick="@(() => SetFilterFolder(context.Folder))"
@@ -51,14 +53,22 @@
                 new ContextMenuItem(){ Text = "Select Folder", Value = 0 },
                 new ContextMenuItem(){ Text = "Refresh Folder", Value = 1 },
              }, (args) =>
-         {
-             contextMenuService.Close();
-             switch (args.Value)
              {
-                 case 0: SetFilterFolder(folder.Folder); break;
-                 case 1: _ = ShowRescanDialog( folder ); break;
-             }
-         });
+                 contextMenuService.Close();
+                 switch (args.Value)
+                 {
+                     case 0: SetFilterFolder(folder.Folder); break;
+                     case 1: _ = ShowRescanDialog( folder ); break;
+                 }
+             });
+    }
+
+    private async Task ScrollChanged()
+    {
+        if (folderContainer != null)
+            await folderContainer.RefreshDataAsync();
+        await InvokeAsync(StateHasChanged);
+
     }
 
     private async Task ShowRescanDialog( FolderListItem folderItem )

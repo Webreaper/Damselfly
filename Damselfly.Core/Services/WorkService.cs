@@ -9,111 +9,250 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
 using System.Threading;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Services
 {
+    /// <summary>
+    /// Background processing service that is fed jobs, with various priorities,
+    /// from the services (indexing, exif keywords, AI, thumbnails, etc). It pulls
+    /// those jobs and processes them in priority order in the background.
+    /// 
+    /// This class also has the option to throttle CPU usage, so that the processor
+    /// won't get absolutely hammered.
+    /// </summary>
     public class WorkService
     {
-        private readonly ConcurrentQueue<IProcessJob> _jobQueue = new ConcurrentQueue<IProcessJob>();
-
-        private readonly StatusService _statusService;
-        private readonly ImageCache _imageCache;
-
-        // Setting this to > 1 may improve performance if we're IO-bound
-        const int maxThreads = 1;
-
-        private readonly List<IProcessJobFactory> _jobSources = new List<IProcessJobFactory>();
-
-        public WorkService(StatusService statusService, ImageRecognitionService aiService,
-                            ThumbnailService thumbService, IndexingService indexingService,
-                            MetaDataService metadataService, ExifService exifService,
-                            ImageCache imageCache)
+        public enum JobStatus
         {
-            _imageCache = imageCache;
-            _statusService = statusService;
-
-            _jobSources.Add(indexingService);
-            _jobSources.Add(metadataService);
-            _jobSources.Add(thumbService);
-            //_jobSources.Add(exifService);
-            _jobSources.Add(aiService);
+            Idle,
+            Running,
+            Paused,
+            Disabled,
+            Error
         }
 
-        private string _statusText = string.Empty;
-        private const int _maxQueueSize = 2000;
-
-        public event Action<string> OnChange;
-
-        private void SetStatus(string newStatus)
+        public class ServiceStatus
         {
-            OnChange?.Invoke(newStatus);
+            public string StatusText { get; set; } = "Initialising";
+            public JobStatus Status { get; set; } = JobStatus.Idle;
+            public int CPULevel { get; set; }
+        };
+
+
+#if DEBUG
+        private const int jobFetchSleep = 10;
+#else
+        private const int jobFetchSleep = 30;
+#endif
+
+        private readonly ConcurrentPriorityQueue<IProcessJob> _jobQueue = new ConcurrentPriorityQueue<IProcessJob>();
+        private readonly ConcurrentBag<IProcessJobFactory> _jobSources = new ConcurrentBag<IProcessJobFactory>();
+        private readonly ImageCache _imageCache;
+        private readonly ConfigService _configService;
+        private string _statusText = string.Empty;
+        private const int _maxQueueSize = 500;
+        private CPULevelSettings _cpuSettings = new CPULevelSettings();
+
+        public bool Paused { get; set; }
+        public ServiceStatus Status { get; private set; } = new ServiceStatus();
+        public event Action<ServiceStatus> OnStatusChanged;
+
+        public WorkService(ImageCache imageCache, ConfigService configService)
+        {
+            _imageCache = imageCache;
+            _configService = configService;
+
+            _cpuSettings.Load(configService);
+        }
+
+        public void SetCPUSchedule( CPULevelSettings cpuSettings )
+        {
+            Logging.Log($"Work service updated with new CPU settings: {cpuSettings}");
+            _cpuSettings = cpuSettings;
+        }
+
+        public void AddJobSource( IProcessJobFactory source )
+        {
+            Logging.Log($"Registered job processing source: {source.GetType().Name}");
+            _jobSources.Add(source);
+        }
+
+        private void SetStatus(string newStatusText, JobStatus newStatus, int newCPULevel)
+        {
+            if( newStatusText != Status.StatusText || newStatus != Status.Status || newCPULevel != Status.CPULevel )
+            {
+                Status.StatusText = newStatusText;
+                Status.Status = newStatus;
+                Status.CPULevel = newCPULevel;
+                OnStatusChanged?.Invoke(Status);
+            }
         }
 
         public void StartService()
         {
-            Logging.Log("Started Work service.");
+            Logging.Log("Started Work service thread.");
 
-            var thread = new Thread(new ThreadStart(WorkerThread));
-            thread.Name = "WorkThread";
-            thread.IsBackground = true;
-            thread.Priority = ThreadPriority.Lowest;
+            var thread = new Thread(new ThreadStart(ProcessJobs))
+            {
+                Name = "WorkThread",
+                IsBackground = true,
+                Priority = ThreadPriority.Lowest
+            };
             thread.Start();
         }
 
-        private void WorkerThread()
+        /// <summary>
+        /// The thread loop for the job processing queue. Processes
+        /// jobs in sequence - we never process jobs in parallel as
+        /// it's too complex to avoid data integrity and concurrency
+        /// problems (although we could perhaps allow that when a
+        /// DB like PostGres is in use. For SQLite, definitely not.
+        /// </summary>
+        private void ProcessJobs()
         {
             while (true)
             {
-                ProcessJobs().Wait();
+                int cpuPercentage = _cpuSettings.CurrentCPULimit;
+
+                if ( Paused || cpuPercentage == 0 )
+                {
+                    if( Paused )
+                        SetStatus("Paused", JobStatus.Paused, cpuPercentage);
+                    else
+                        SetStatus("Disabled", JobStatus.Disabled, cpuPercentage);
+
+                    // Nothing to do, so have a kip.
+                    Thread.Sleep(jobFetchSleep * 1000);
+                    continue;
+                }
+
+                var item = _jobQueue.TryDequeue();
+
+                if ( item != null )
+                {
+                    ProcessJob(item, cpuPercentage);
+                }
+                else
+                {
+                    if (!PopulateJobQueue())
+                    {
+                        SetStatus("Idle", JobStatus.Idle, cpuPercentage);
+
+                        // Nothing to do, so have a kip.
+                        Thread.Sleep(jobFetchSleep * 1000);
+                    }
+                }
             }
         }
 
-        // Job may be an individua,image (thumbnails, AI) or a batch of
-        // many images (indexing, for keyword efficiency?)?
-        // Context menu on Status to pause the queue processing. 
-
-        private async Task ProcessJobs()
+        /// <summary>
+        /// Callback to notify the work service to look for new jobs. 
+        /// Will be called async, from another thread
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="waitSeconds"></param>
+        public void HandleNewJobs( IProcessJobFactory source, int waitForSecs = 5 )
         {
-            await PopulateJobQueue();
+            Logging.Log($"Checking new jobs for {source.GetType().Name}");
 
-            // Need to refill the queue while consuming it. 
-            await _jobQueue.ExecuteInParallel(async job => await ProcessJob(job), maxThreads);
-
-            await Task.Delay(5 * 1000);
+            // Trigger the work service to look for new jobs - but after a small pause
+            _ = Task.Delay(waitForSecs * 1000).ContinueWith(x =>
+                    {
+                        // Get more jobs from the DB
+                        PopulateJobsForService(source, _maxQueueSize);
+                    });
         }
 
-        private async Task PopulateJobQueue()
+        /// <summary>
+        /// Check with the work providers and see if there's any work to do.
+        /// </summary>
+        /// <returns></returns>
+        private bool PopulateJobQueue()
         {
-            foreach (var service in _jobSources)
+            Logging.LogVerbose("Looking for new jobs...");
+
+            Stopwatch watch = new Stopwatch("PopulateJobQueue");
+
+            bool newJobs = false;
+
+            foreach (var source in _jobSources.OrderBy( x => x.Priority ) )
+            {
+                if (PopulateJobsForService(source, _maxQueueSize - _jobSources.Count))
+                    newJobs = true;
+            }
+
+            watch.Stop();
+
+            return newJobs;
+        }
+
+        /// <summary>
+        /// For the given service, checks for new jobs that might be 
+        /// processed, and adds any that are found into the queue.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="maxCount"></param>
+        /// <returns></returns>
+        private bool PopulateJobsForService(IProcessJobFactory source, int maxCount)
+        {
+            bool newJobs = false;
+
+            if (maxCount > 0)
             {
                 try
                 {
-                    var jobs = await service.GetPendingJobs(_maxQueueSize - _jobSources.Count);
+                    var jobs = source.GetPendingJobs(maxCount).GetAwaiter().GetResult();
 
                     foreach (var job in jobs)
-                        _jobQueue.Enqueue(job);
+                    {
+                        _jobQueue.Enqueue(job, source.Priority);
+                        newJobs = true;
+                    }
                 }
-                catch ( Exception ex )
+                catch (Exception ex)
                 {
-                    Logging.LogError($"Exception getting jobs...");
+                    Logging.LogError($"Exception getting jobs: {ex.Message}");
                 }
             }
+
+            return newJobs;
         }
 
         /// <summary>
         /// Do the actual work in processing a task in the queue
         /// </summary>
         /// <param name="job"></param>
+        /// <param name="cpuPercentage"></param>
         /// <returns></returns>
-        private async Task ProcessJob(IProcessJob job)
+        private void ProcessJob(IProcessJob job, int cpuPercentage)
         {
             // If we can't process, we'll discard this job, and pick it 
             // up again in future during the next GetPendingJobs call.
-            if (job.CanProcess)
+            if( job.CanProcess )
             {
-                await job.Process();
+                string jobName = job.GetType().Name;
 
-                SetStatus($"Queue: {_jobQueue.Count}");
+                SetStatus($"{job.Description}", JobStatus.Running, cpuPercentage);
+
+                Logging.LogVerbose($"Processing job type: {jobName}");
+
+                Stopwatch stopwatch = new Stopwatch($"ProcessJob{jobName}");
+                job.Process().Wait();
+                stopwatch.Stop();
+
+                // Now, decide how much we need to sleep, in order to throttle CPU to the desired percentage
+                // E.g., if the job took 2.5s to execute, then in order to maintain 25% CPU usage, we need to
+                // sleep for 7.5s. Similarly, if the job took 0.5s, and we want to maintain 75% CPU usage,
+                // we'd sleep for 0.33s.
+                double sleepFactor = (1.0 / (cpuPercentage / 100.0)) - 1;
+
+                if (sleepFactor > 0)
+                {
+                    int waitTime = (int)(sleepFactor * stopwatch.ElapsedTime);
+                    Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
+                    Thread.Sleep(waitTime);
+                }
             }
         }
     }

@@ -24,22 +24,26 @@ namespace Damselfly.Core.Services
         public static string RootFolder { get; set; }
         public static bool EnableIndexing { get; set; } = true;
         private readonly StatusService _statusService;
-        private readonly ExifService _exifService;
         private readonly ConfigService _configService;
         private readonly ImageCache _imageCache;
         private readonly ImageProcessService _imageProcessService;
         private readonly FolderWatcherService _watcherService;
+        private readonly WorkService _workService;
+        private bool _fullIndexComplete = false;
 
-        public IndexingService( StatusService statusService, ExifService exifService, 
-            ImageProcessService imageService, ConfigService config, ImageCache imageCache,
-            FolderWatcherService watcherService )
+        public IndexingService( StatusService statusService, ImageProcessService imageService,
+            ConfigService config, ImageCache imageCache, FolderWatcherService watcherService,
+            WorkService workService)
         {
             _statusService = statusService;
             _configService = config;
-            _exifService = exifService;
             _imageProcessService = imageService;
             _imageCache = imageCache;
+            _workService = workService;
             _watcherService = watcherService;
+
+            // Slight hack to work around circular dependencies
+            _watcherService.LinkIndexingServiceInstance(this);
         }
 
         public event Action OnFoldersChanged;
@@ -62,6 +66,8 @@ namespace Damselfly.Core.Services
         {
             Folder folderToScan = null;
             bool foldersChanged = false;
+
+            Logging.LogVerbose($"Indexing {folder.FullName}...");
 
             // Get all the sub-folders on the disk, but filter out
             // ones we're not interested in.
@@ -87,12 +93,13 @@ namespace Damselfly.Core.Services
                     else
                         Logging.LogVerbose("Scanning existing folder: {0}\\{1} ({2} images in DB)", folder.Parent.Name, folder.Name, folderToScan.Images.Count());
 
-                    if (parent != null)
-                        folderToScan.ParentFolderId = parent.FolderId;
-
                     if (folderToScan.FolderId == 0)
                     {
                         Logging.Log($"Adding new folder: {folderToScan.Path}");
+
+                        if (parent != null)
+                            folderToScan.ParentFolderId = parent.FolderId;
+
                         // New folder, add it. 
                         db.Folders.Add(folderToScan);
                         await db.SaveChangesAsync("AddFolders");
@@ -107,7 +114,7 @@ namespace Damselfly.Core.Services
 
                 // Now scan the images. If there's changes it could mean the folder
                 // should now be included in the folderlist, so flag it.
-                await ScanFolderImages( folderToScan );
+                await ScanFolderImages( folderToScan.FolderId );
             }
             catch (Exception ex)
             {
@@ -184,13 +191,25 @@ namespace Damselfly.Core.Services
         /// <param name="folderToScan"></param>
         /// <param name="force">Force the folder to be scanned</param>
         /// <returns></returns>
-        private async Task<bool> ScanFolderImages(Folder folderToScan)
+        private async Task<bool> ScanFolderImages(int folderIdToScan)
         {
             bool imagesWereAddedOrRemoved = false;
             int folderImageCount = 0;
 
             using var db = new ImageContext();
-            var folder = new DirectoryInfo(folderToScan.Path);
+
+            var dbFolder = await db.Folders.Where(x => x.FolderId == folderIdToScan)
+                                .Include(x => x.Images)
+                                .FirstOrDefaultAsync();
+
+            if( dbFolder == null || dbFolder.FolderScanDate != null )
+            {
+                // Scan date is null which means this folder already got
+                // processed. So it's a no-op update. Do nothing and return.
+                return false;
+            }
+
+            var folder = new DirectoryInfo(dbFolder.Path);
             var allImageFiles = SafeGetImageFiles( folder );
 
             if (allImageFiles == null)
@@ -204,16 +223,16 @@ namespace Damselfly.Core.Services
             // by comparing the list of known image filenames with what's on disk.
             // If they're different, we disregard the last scan date of the folder and
             // force the update. 
-            bool fileListIsEqual = allImageFiles.Select(x => x.Name).ArePermutations(folderToScan.Images.Select(y => y.FileName));
+            bool fileListIsEqual = allImageFiles.Select(x => x.Name).ArePermutations(dbFolder.Images.Select(y => y.FileName));
 
-            if( fileListIsEqual && folderToScan.FolderScanDate != null )
+            if( fileListIsEqual && dbFolder.FolderScanDate != null )
             {
                 // Number of images is the same, and the folder has a scan date
                 // which implies it's been scanned previously, so nothing to do.
                 return true;
             }
 
-            Logging.LogVerbose($"New or removed images in folder {folderToScan.Name}.");
+            Logging.LogVerbose($"New or removed images in folder {dbFolder.Name}.");
 
             var watch = new Stopwatch("ScanFolderFiles");
 
@@ -225,7 +244,7 @@ namespace Damselfly.Core.Services
             {
                 try
                 {
-                    var dbImage = folderToScan.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
+                    var dbImage = dbFolder.Images.FirstOrDefault(x => x.FileName.Equals(file.Name, StringComparison.OrdinalIgnoreCase));
 
                     if (dbImage != null)
                     {
@@ -263,7 +282,7 @@ namespace Damselfly.Core.Services
                     image.FileCreationDate = file.CreationTimeUtc;
                     image.FileLastModDate = file.LastWriteTimeUtc;
 
-                    image.Folder = folderToScan;
+                    image.Folder = dbFolder;
                     image.FlagForMetadataUpdate();
 
                     if (dbImage == null)
@@ -274,7 +293,7 @@ namespace Damselfly.Core.Services
                         image.SortDate = image.FileCreationDate.ToUniversalTime();
 
                         Logging.LogTrace("Adding new image {0}", image.FileName);
-                        folderToScan.Images.Add(image);
+                        dbFolder.Images.Add(image);
                         newImages++;
                         imagesWereAddedOrRemoved = true;
                     }
@@ -295,9 +314,9 @@ namespace Damselfly.Core.Services
 
             // Now look for files to remove.
             // TODO - Sanity check that these don't hit the DB
-            var filesToRemove = folderToScan.Images.Select(x => x.FileName).Except(allImageFiles.Select(x => x.Name));
-            var dbImages = folderToScan.Images.Select(x => x.FileName);
-            var imagesToDelete = folderToScan.Images
+            var filesToRemove = dbFolder.Images.Select(x => x.FileName).Except(allImageFiles.Select(x => x.Name));
+            var dbImages = dbFolder.Images.Select(x => x.FileName);
+            var imagesToDelete = dbFolder.Images
                                 .Where(x => filesToRemove.Contains(x.FileName))
                                 .ToList();
 
@@ -311,16 +330,16 @@ namespace Damselfly.Core.Services
                 imagesWereAddedOrRemoved = true;
             }
 
-            // Now update the folder to say we've processed it
-            folderToScan.FolderScanDate = DateTime.UtcNow;
-            db.Folders.Update(folderToScan);
+            // Flag/update the folder to say we've processed it
+            dbFolder.FolderScanDate = DateTime.UtcNow;
+            db.Folders.Update(dbFolder);
 
             await db.SaveChangesAsync("FolderScan");
 
             watch.Stop();
 
             _statusService.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
-                    folderToScan.Name, folderToScan.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
+                    dbFolder.Name, dbFolder.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
 
             // Do this after we scan for images, because we only load folders if they have images.
             if (imagesWereAddedOrRemoved)
@@ -329,7 +348,55 @@ namespace Damselfly.Core.Services
             return imagesWereAddedOrRemoved;
         }
 
+        /// <summary>
+        /// Marks the FolderScanDate as null, which will cause the 
+        /// indexing service to pick it up and scan it for any changes. 
+        /// </summary>
+        /// <param name="folders"></param>
+        /// <returns></returns>
+        public async Task MarkFoldersForScan(List<Folder> folders)
+        {
+            try
+            {
+                using var db = new ImageContext();
 
+                var ids = folders.Select(x => x.FolderId).Distinct();
+
+                var queryable = db.Folders.Where(f => ids.Contains(f.FolderId));
+                await db.BatchUpdate(queryable, x => new Folder { FolderScanDate = null });
+
+                if (folders.Count == 1)
+                    _statusService.StatusText = $"Folder {folders.First().Name} flagged for re-indexing.";
+                else
+                    _statusService.StatusText = $"{folders.Count} folders flagged for re-indexing.";
+
+                _workService.HandleNewJobs(this);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception when marking folder for reindexing: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Flags a set of images for reindexing by marking their containing
+        /// folders for rescan.
+        /// </summary>
+        /// <param name="images"></param>
+        /// <returns></returns>
+        public async Task MarkImagesForScan(ICollection<Image> images)
+        {
+            try
+            {
+                var folders = images.Select(x => x.Folder).ToList();
+
+                await MarkFoldersForScan(folders);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception when marking images for reindexing: {ex}");
+            }
+        }
 
         /// <summary>
         /// Get all image files in a subfolder, and return them, ordered by
@@ -362,119 +429,65 @@ namespace Damselfly.Core.Services
             }
         }
 
-        /// <summary>
-        /// Index an individual folder
-        /// </summary>
-        /// <param name="folder"></param>
-        /// <returns></returns>
-        public async Task<bool> IndexFolder(Folder folder)
-        {
-            try
-            {
-                return await ScanFolderImages(folder);
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError($"Exception during IndexFolder:ScanFolderImages: {ex}");
-                return false;
-            }
-        }
-
-
-
         public void StartService()
         {
             if (EnableIndexing)
             {
-                // We always perform a full index at startup. This checks the
-                // state of the folders/images, and also creates the filewatchers
-                PerformFullIndex();
+                _workService.AddJobSource(this);
             }
             else
                 Logging.Log("Indexing has been disabled.");
         }
 
-        public void PerformFullIndex()
-        {
-            // Perform a full index at startup
-            _statusService.StatusText = "Full Indexing starting...";
-            var root = new DirectoryInfo(RootFolder);
-
-            var watch = new Stopwatch("CompleteIndex", -1);
-
-            try
-            {
-                IndexFolder(root, null).Wait();
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError($"Exception during full indexing: {ex}");
-            }
-            watch.Stop();
-
-            _statusService.StatusText = "Full Indexing Complete.";
-        }
-
-        public async Task MarkFolderForScan( Folder folder )
-        {
-            try
-            {
-                using var db = new ImageContext();
-
-                var queryable = db.Images.Where(img => img.FolderId == folder.FolderId );
-                await db.BatchUpdate(queryable, x => new Image { LastUpdated = DateTime.Now });
-
-                _statusService.StatusText = $"Folder {folder.Name} flagged for re-indexing.";
-            }
-            catch ( Exception ex)
-            {
-                Logging.LogError($"Exception when marking folder for reindexing: {ex}");
-            }
-        }
-
-        public async Task MarkImagesForScan(ICollection<Image> images)
-        {
-            try
-            {
-                using var db = new ImageContext();
-
-                var ids = images.Select( x => x.ImageId ).ToList();
-                var queryable = db.Images.Where(img => ids.Contains(img.ImageId));
-
-                await db.BatchUpdate( queryable, x => new Image { LastUpdated = DateTime.Now } );
-
-                _statusService.StatusText = $"{images.Count} images flagged for re-indexing.";
-            }
-            catch ( Exception ex)
-            {
-                Logging.LogError($"Exception when marking images for reindexing: {ex}");
-            }
-        }
-
         public class IndexProcess : IProcessJob
         {
-            public Folder Folder { get; set; }
+            public DirectoryInfo Path { get; set; }
             public IndexingService Service { get; set; }
             public bool CanProcess => true;
+            public string Description { get; set; }
 
             public async Task Process()
             {
-                await Service.IndexFolder(Folder);
+                await Service.IndexFolder(Path, null);
             }
         }
 
+        public int Priority => 1;
+
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxCount )
         {
-            var db = new ImageContext();
+            if (_fullIndexComplete)
+            {
+                var db = new ImageContext();
 
-            // Now, see if there's any folders that have a null scan date.
-            var folders = await db.Folders.Where(x => x.FolderScanDate == null)
-                                           .Take(maxCount)
-                                           .ToArrayAsync();
+                // Now, see if there's any folders that have a null scan date.
+                var folders = await db.Folders.Where(x => x.FolderScanDate == null)
+                                               .Take(maxCount)
+                                               .ToArrayAsync();
 
-            var jobs = folders.Select(x => new IndexProcess { Folder = x, Service = this }).ToArray();
+                var jobs = folders.Select(x => new IndexProcess {
+                                            Path = new DirectoryInfo(x.Path),
+                                            Service = this,
+                                            Description = "Indexing" })
+                                  .ToArray();
 
-            return jobs;
+                return jobs;
+            }
+            else
+            {
+                // We always perform a full index at startup. This checks the
+                // state of the folders/images, and also creates the filewatchers
+
+                _fullIndexComplete = true;
+                Logging.Log("Performing full index.");
+
+                return new[] { new IndexProcess
+                {
+                    Path = new DirectoryInfo( RootFolder ),
+                    Service = this,
+                    Description = "Full Index"
+                } };
+            }
         }
     }
 }

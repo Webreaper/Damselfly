@@ -3,8 +3,8 @@
 
 @inject UserStatusService userStatusService
 @inject ThumbnailService thumbService
-@inject IndexingService indexService
 @inject ImageRecognitionService aiService
+@inject IndexingService indexingService 
 @inject ImageCache imageCache
 
 <MudDialog>
@@ -65,7 +65,7 @@
         if( Folder == null )
         {
             if( ReIndex )
-                await indexService.MarkImagesForScan(Images);
+                await indexingService.MarkImagesForScan(Images);
             if( RegenThumbs )
                 await thumbService.MarkImagesForScan(Images);
             if( RescanAI )
@@ -74,7 +74,7 @@
         else
         {
             if (ReIndex)
-                await indexService.MarkFolderForScan(Folder);
+                await indexingService.MarkFoldersForScan(new List<Folder> { Folder });
             if (RegenThumbs)
                 await thumbService.MarkFolderForScan(Folder);
             if (RescanAI)

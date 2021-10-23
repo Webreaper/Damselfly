@@ -635,9 +635,8 @@ f
     display: flex;
     padding: 2px;
     border: 1px solid black;
-    width: 25px;
-    height: 25px;
-    overflow-x: clip;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     outline: none;
 }
@@ -698,6 +697,12 @@ f
     justify-content: center;
     align-content: center;
     align-items: center;
+}
+
+.processing-icon {
+    margin-right: 3px;
+    margin-left: 3px;
+    font-size: larger;
 }
 
 .image-scroll-area {
@@ -1302,7 +1307,6 @@ padding: 0.4em 0.65em;
     flex: 0 1 auto;
 }
 
-
 .damselfly-keyword :not(:first-child) {
     border-left: 0;
 }
@@ -1581,6 +1585,8 @@ hr.separator {
     font-size: 10pt;
     min-width: 200px;
     min-height: 20px;
+    max-height: 28px;
+    background: var( --keyword-bg );
 }
 
 .damselfly-toolbarbutton {
@@ -1591,6 +1597,24 @@ hr.separator {
 .damselfly-toolbarbutton:hover {
     color: var( --image-checkbox-checked-hover-bg );
 }
+
+.damselfly-statusbarpanel {
+    flex: 0 1 auto;
+    display: flex;
+    align-items: center;
+    margin: 2px;
+    padding: 2px 3px 1px 3px;
+    flex-wrap: nowrap;
+    font-size: 9pt;
+    cursor: default;
+    border: 0.5px solid var( --keyword-border);
+    border-radius: 1px;
+    color: var( --keyword-text );
+    background-color: var( --keyword-bg );
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
 
 .damselfly-toolbarbutton-disabled {
     opacity: 65%;

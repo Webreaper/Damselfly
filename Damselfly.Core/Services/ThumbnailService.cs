@@ -24,15 +24,18 @@ namespace Damselfly.Core.Services
         private readonly StatusService _statusService;
         private readonly ImageCache _imageCache;
         private readonly ImageProcessService _imageProcessingService;
-
+        private readonly WorkService _workService;
 
         public ThumbnailService( StatusService statusService,
                         ImageProcessService imageService,
-                        ImageCache imageCache)
+                        ImageCache imageCache, WorkService workService)
         {
             _statusService = statusService;
             _imageProcessingService = imageService;
             _imageCache = imageCache;
+            _workService = workService;
+
+            _workService.AddJobSource(this);
         }
 
         /// <summary>
@@ -267,50 +270,6 @@ namespace Damselfly.Core.Services
             }
         }
 
-
-        public void StartService()
-        {
-            if (EnableThumbnailGeneration)
-            {
-                Logging.Log("Started thumbnail service.");
-
-                var thread = new Thread(new ThreadStart(RunThumbnailScan));
-                thread.Name = "ThumbnailThread";
-                thread.IsBackground = true;
-                thread.Priority = ThreadPriority.Lowest;
-                thread.Start();
-            }
-            else
-            {
-                Logging.Log("Thumbnail service was disabled.");
-            }
-        }
-
-        private void RunThumbnailScan()
-        {
-            while (true)
-            {
-#if DEBUG
-                const int sleepSecs = 5;
-#else
-                const int sleepSecs = 60;
-#endif
-                try
-                {
-                    ProcessThumbnailScan().Wait();
-                }
-                catch( Exception ex )
-                {
-                    Logging.LogError($"Exception during thumbnail processing: {ex.Message}");
-                }
-                finally
-                {
-                    Thread.Sleep(1000 * sleepSecs);
-                }
-            }
-        }
-
-        
         /// <summary>
         /// Queries the database to find any images that haven't had a thumbnail
         /// generated, and queues them up to process the thumb generation.
@@ -577,6 +536,8 @@ namespace Damselfly.Core.Services
 
             var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
             _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";
+
+            _workService.HandleNewJobs(this);
         }
 
         public class ThumbProcess : IProcessJob
@@ -584,12 +545,15 @@ namespace Damselfly.Core.Services
             public int ImageId { get; set; }
             public ThumbnailService Service { get; set; }
             public bool CanProcess => true;
+            public string Description => "Thumbnail generation";
 
             public async Task Process()
             {
                 await Service.CreateThumb(ImageId);
             }
         }
+
+        public int Priority => 4;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
         {

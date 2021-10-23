@@ -6,6 +6,7 @@ using System.IO;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Damselfly.Core.Services
 {
@@ -17,33 +18,58 @@ namespace Damselfly.Core.Services
         private bool _fileWatchersDisabled = false;
         private readonly ImageProcessService _imageProcessService;
         private readonly StatusService _statusService;
+        private IndexingService _indexingService;
+        private Task _queueTask;
 
-
-        public FolderWatcherService(StatusService statusService, ImageProcessService imageService)
+        public FolderWatcherService(StatusService statusService,
+                                    ImageProcessService imageService)
         {
             _statusService = statusService;
             _imageProcessService = imageService;
+
+            // Start a thread which will periodically drain the queue
+            _queueTask = Task.Run(FolderQueueProcessor);
         }
 
-        private void ProcessPendingFolderQueue()
+        public void LinkIndexingServiceInstance( IndexingService indexingService )
         {
-            using var db = new ImageContext();
+            _indexingService = indexingService;
+        }
 
-            // First, take all the queued folder changes and persist them to the DB
-            // by setting the FolderScanDate to null.
-            var folders = new List<string>();
+        /// <summary>
+        /// Processor to drain the folder queue and update the DB. This
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private async Task FolderQueueProcessor()
+        {
+            // Process the queue every 30s
+            var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
 
-            while (folderQueue.TryDequeue(out var folder))
+            while (true)
             {
-                Logging.Log($"Flagging change for folder: {folder}");
-                folders.Add(folder);
-            }
+                // Wait until the next iteration
+                await timer.WaitForNextTickAsync();
 
-            if (folders.Any())
-            {
-                var pendingFolders = db.Folders.Where(f => folders.Contains(f.Path));
+                // First, take all the queued folder changes and persist them to the DB
+                // by setting the FolderScanDate to null.
+                var folders = new List<string>();
 
-                FlagFoldersForRescan(pendingFolders).GetAwaiter().GetResult();
+                while (folderQueue.TryDequeue(out var folder))
+                {
+                    Logging.Log($"Flagging change for folder: {folder}");
+                    folders.Add(folder);
+                }
+
+                if (_indexingService != null && folders.Any())
+                {
+                    using var db = new ImageContext();
+
+                    var uniqueFolders = folders.Distinct(StringComparer.OrdinalIgnoreCase);
+                    var pendingFolders = db.Folders.Where(f => uniqueFolders.Contains(f.Path)).ToList();
+
+                    _indexingService.MarkFoldersForScan(pendingFolders).Wait();
+                }
             }
         }
 
@@ -125,27 +151,6 @@ namespace Damselfly.Core.Services
                 Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
                 folderQueue.Enqueue(folder);
             }
-        }
-
-        /// <summary>
-        /// Marks the FolderScanDate as null, which will cause the 
-        /// indexing service to pick it up and scan it for any changes. 
-        /// </summary>
-        /// <param name="folders"></param>
-        /// <returns></returns>
-        public async Task FlagFoldersForRescan(IEnumerable<Folder> folders)
-        {
-            using var db = new ImageContext();
-
-            var updatedFolders = folders.ToList();
-
-            if (updatedFolders.Count == 1)
-                Logging.Log($"Flagged folder {updatedFolders.First().Path} for re-scan...");
-            else
-                Logging.Log($"Flagged {updatedFolders.Count} folders for re-scan...");
-
-            updatedFolders.ForEach(x => x.FolderScanDate = null);
-            await db.BulkUpdate(db.Folders, updatedFolders);
         }
 
         private static void WatcherError(object sender, ErrorEventArgs e)

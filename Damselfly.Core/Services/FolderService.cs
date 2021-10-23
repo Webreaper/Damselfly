@@ -17,15 +17,23 @@ namespace Damselfly.Core.Services
     {
         private List<FolderListItem> allFolderItems = new List<FolderListItem>();
         public event Action OnChange;
+        private EventConflator conflator = new EventConflator(10 * 1000);
 
         public FolderService( IndexingService _indexingService)
         {
+            // After we've loaded the data, start listening
             _indexingService.OnFoldersChanged += OnFoldersChanged;
 
-            PreLoadFolderData();
+            // Trigger a change now to initiate pre-loading the folders.
+            OnFoldersChanged();
         }
 
         private void OnFoldersChanged()
+        {
+            conflator.HandleEvent(ConflatedCallback);
+        }
+
+        private void ConflatedCallback(object state)
         {
             _ = LoadFolders();
         }
@@ -34,7 +42,7 @@ namespace Damselfly.Core.Services
 
         private void NotifyStateChanged()
         {
-            Logging.LogVerbose($"Folders changed: {allFolderItems.Count}");
+            Logging.Log($"Folders changed: {allFolderItems.Count}");
 
             OnChange?.Invoke();
         }
@@ -49,6 +57,7 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
             var watch = new Stopwatch("GetFolders");
 
+            Logging.Log("Loading folder data...");
             Folder[] folders = new Folder[0];
 
             try
@@ -107,11 +116,6 @@ namespace Damselfly.Core.Services
             }
 
             return display;
-        }
-
-        public void PreLoadFolderData()
-        {
-            _ = LoadFolders();
         }
     }
 }

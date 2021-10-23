@@ -31,6 +31,7 @@ namespace Damselfly.Core.Services
         private readonly ThumbnailService _thumbService;
         private readonly ConfigService _configService;
         private readonly ImageClassifier _imageClassifier;
+        private readonly WorkService _workService;
         private readonly ImageCache _imageCache;
 
         private IDictionary<string, Person> _peopleCache;
@@ -41,7 +42,8 @@ namespace Damselfly.Core.Services
                         MetaDataService metadataService, AzureFaceService azureFace,
                         AccordFaceService accordFace, EmguFaceService emguService,
                         ThumbnailService thumbs, ConfigService configService,
-                        ImageClassifier imageClassifier, ImageCache imageCache)
+                        ImageClassifier imageClassifier, ImageCache imageCache,
+                        WorkService workService)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
@@ -53,6 +55,7 @@ namespace Damselfly.Core.Services
             _configService = configService;
             _imageClassifier = imageClassifier;
             _imageCache = imageCache;
+            _workService = workService;
          }
 
         public ImageRecognitionService()
@@ -62,26 +65,6 @@ namespace Damselfly.Core.Services
         public List<Person> GetCachedPeople()
         {
             return _peopleCache.Values.OrderBy(x => x.Name).ToList();
-        }
-
-        public (TimeSpan? start,TimeSpan? end) GetProcessingTimeRange()
-        {
-            TimeSpan? aiStartTime = null, aiEndTime = null;
-
-            string aiTimeRange = _configService.Get(ConfigSettings.AIProcessingTimeRange);
-
-            if (!string.IsNullOrEmpty(aiTimeRange))
-            {
-                var settings = aiTimeRange.Split("-");
-
-                if (settings.Length == 2)
-                {
-                    aiStartTime = TimeSpan.Parse(settings[0]);
-                    aiEndTime = TimeSpan.Parse(settings[1]);
-                }
-            }
-
-            return( aiStartTime, aiEndTime );
         }
 
         /// <summary>
@@ -529,64 +512,14 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            LoadPersonCache();
-
-            if (EnableImageRecognition)
-            {
-                Logging.Log("Started AI image recognition service.");
-
-                var thread = new Thread(new ThreadStart(RunImageRecogntion));
-                thread.Name = "ImageRecognitionThread";
-                thread.IsBackground = true;
-                thread.Priority = ThreadPriority.Lowest;
-                thread.Start();
-            }
-            else
+            if (!EnableImageRecognition)
             {
                 Logging.Log("AI Image recognition service was disabled.");
-            }
-        }
-
-        private void RunImageRecogntion()
-        {
-            while (true)
-            {
-#if DEBUG
-                const int sleepSecs = 5;
-#else
-                const int sleepSecs = 60;
-#endif
-                try
-                {
-                    ProcessAIScan().Wait();
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogError($"Exception during AI processing: {ex.Message}");
-                }
-                finally
-                {
-                    Thread.Sleep(1000 * sleepSecs);
-                }
-            }
-        }
-
-        private bool WithinProcessingTimeRange()
-        {
-            var timeRange = GetProcessingTimeRange();
-
-            if (timeRange.start != null && timeRange.end != null)
-            {
-                var now = DateTime.UtcNow.TimeOfDay;
-
-                if (now < timeRange.start && now > timeRange.end)
-                {
-                    // AI scans are disabled at this time.
-                    return false;
-                }
+                return;
             }
 
-            return true;
+            LoadPersonCache();
+            _workService.AddJobSource(this);
         }
 
         /// <summary>
@@ -597,11 +530,12 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         private async Task DetectObjects(int imageId)
         {
+            var db = new ImageContext();
+
             var image = await _imageCache.GetCachedImage(imageId);
+            db.Attach(image);
 
             await DetectObjects(image.MetaData);
-
-            var db = new ImageContext();
 
             // The DetectObjects method will set the metadata AILastUpdated
             // timestamp. It may also update other fields.
@@ -609,79 +543,6 @@ namespace Damselfly.Core.Services
             await db.SaveChangesAsync("UpdateAIGenDate");
 
             _imageCache.Evict(imageId);
-        }
-
-        /// <summary>
-        /// Queries the database to find any images that haven't had a thumbnail
-        /// generated, and queues them up to process the thumb generation.
-        /// </summary>
-        private async Task ProcessAIScan()
-        {
-            using var db = new ImageContext();
-
-            Logging.LogVerbose("Starting image recognition scan...");
-
-            bool complete = false;
-
-            while (!complete)
-            {
-                if( ! WithinProcessingTimeRange() )
-                {
-                    Logging.LogVerbose("AI Processing disabled at this time.");
-                    return;
-                }
-
-                Logging.LogVerbose("Querying DB for pending AI scans...");
-
-                var watch = new Stopwatch("GetAIQueue");
-
-                // TODO: Change this to a consumer/producer thread model
-                var imagesToScan = db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
-                                        .OrderByDescending(x => x.LastUpdated)
-                                        .Take(100)
-                                        .Include(x => x.Image)
-                                        .ThenInclude(x => x.Folder)
-                                        .ToArray();
-
-                watch.Stop();
-
-                complete = !imagesToScan.Any();
-
-                if (!complete)
-                {
-                    Logging.LogVerbose($"Found {imagesToScan.Count()} images requiring AI processing. First image is {imagesToScan[0].Image.FullPath}.");
-
-                    watch = new Stopwatch("ImageRecognitionBatch", 100000);
-
-                    Logging.LogVerbose($"Executing DetectObjects with one thread.");
-
-                    try
-                    {
-                        await imagesToScan.ExecuteInParallel(async metadata => await DetectObjects(metadata), 1);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError($"Exception during parallelised AI generation: {ex.Message}");
-                    }
-
-                    // Write the timestamps for the newly-generated thumbs.
-                    Logging.LogVerbose("Writing AI generation timestamp updates to DB.");
-
-                    var updateWatch = new Stopwatch("BulkUpdateAIGenDate");
-                    await db.BulkUpdate(db.ImageMetaData, imagesToScan.ToList());
-                    updateWatch.Stop();
-
-                    watch.Stop();
-
-                    _imageCache.Evict( imagesToScan.Select( x => x.ImageId).ToList() );
-
-                    _statusService.StatusText = $"Completed AI generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
-
-                    Stopwatch.WriteTotals();
-                }
-                else
-                    Logging.LogVerbose("No images found to scan.");
-            }
         }
 
         public async Task MarkFolderForScan(Folder folder)
@@ -693,6 +554,8 @@ namespace Damselfly.Core.Services
 
             // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
             _statusService.StatusText = $"Folder {folder.Name} flagged for AI reprocessing.";
+
+            _workService.HandleNewJobs(this);
         }
 
         public async Task MarkImagesForScan(ICollection<Image> images)
@@ -712,33 +575,33 @@ namespace Damselfly.Core.Services
         {
             public int ImageId { get; set; }
             public ImageRecognitionService Service { get; set; }
+            public string Description => "AI processing";
 
             public async Task Process()
             {
                 await Service.DetectObjects(ImageId);
             }
 
-            public bool CanProcess { get { return Service.WithinProcessingTimeRange(); } }
+            public bool CanProcess { get { return true; } }
         }
+
+        public int Priority => 5;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
         {
             var db = new ImageContext();
 
-            if (WithinProcessingTimeRange())
-            {
-                var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
-                               .OrderByDescending(x => x.LastUpdated)
-                               .Take(maxJobs)
-                               .Select(x => x.ImageId)
-                               .ToListAsync();
+            var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
+                            .OrderByDescending(x => x.LastUpdated)
+                            .Take(maxJobs)
+                            .Select(x => x.ImageId)
+                            .ToListAsync();
 
-                if (images.Any())
-                {
-                    var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
-                                    .ToArray();
-                    return jobs;
-                }
+            if (images.Any())
+            {
+                var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
+                                .ToArray();
+                return jobs;
             }
 
             return new AIProcess[0];

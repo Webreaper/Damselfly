@@ -1,0 +1,49 @@
+﻿@using Damselfly.Core.DbModels
+@using Microsoft.AspNetCore.Identity
+@using Damselfly.Core.Utils.Constants
+
+@inject UserConfigService configService
+@inject IJSRuntime JsRuntime
+
+@code{
+    [Parameter]
+    [EditorRequired]
+    public string ScrollElementId { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string ScrollConfigName { get; set; }
+
+    [Parameter]
+    public EventCallback OnScrollPositionSet { get; set; }
+
+    private EventConflator conflator = new EventConflator(2000);
+
+    private void SaveScrollState(int scrollTop)
+    {
+        configService.Set(ScrollConfigName, scrollTop.ToString());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            int scrollPos = 0;
+
+            if (!int.TryParse(configService.Get(ScrollConfigName), out scrollPos))
+                scrollPos = 0;
+
+            Logging.LogTrace($"Setting scroll position to {scrollPos}.");
+            await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
+
+            await OnScrollPositionSet.InvokeAsync();
+        }
+    }
+
+    [JSInvokable]
+    // Debugging method to help us differentiate between JS calls and other data loads
+    public void HandleScroll(int scrollTop)
+    {
+        conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
+    }
+}

@@ -29,6 +29,7 @@ namespace Damselfly.Core.Services
         private readonly StatusService _statusService;
         private readonly ExifService _exifService;
         private readonly ConfigService _configService;
+        private readonly WorkService _workService;
         private readonly ImageCache _imageCache;
 
         public ICollection<Camera> Cameras { get { return _cameraCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList(); } }
@@ -36,18 +37,21 @@ namespace Damselfly.Core.Services
         public IEnumerable<Models.Tag> CachedTags { get { return _tagCache.Values.ToList(); } }
 
         public MetaDataService(StatusService statusService, ExifService exifService,
-                                    ConfigService config, ImageCache imageCache)
+                                    ConfigService config, ImageCache imageCache, WorkService workService)
         {
             _statusService = statusService;
             _configService = config;
             _exifService = exifService;
             _imageCache = imageCache;
+            _workService = workService;
         }
 
         public void StartService()
         {
             InitCameraAndLensCaches();
             LoadTagCache();
+
+            _workService.AddJobSource(this);
         }
 
         /// <summary>
@@ -135,6 +139,7 @@ namespace Damselfly.Core.Services
                         imgMetaData.ISO = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagIsoEquivalent);
                         imgMetaData.FNum = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagFNumber);
                         imgMetaData.Exposure = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagExposureTime);
+                        imgMetaData.Rating = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagRating);
 
                         var lensMake = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagLensMake);
                         var lensModel = subIfdDirectory.SafeExifGetString("Lens Model");
@@ -275,6 +280,7 @@ namespace Damselfly.Core.Services
                 if (imgMetaData == null)
                 {
                     imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
+                    img.MetaData = imgMetaData;
                     db.ImageMetaData.Add(imgMetaData);
                 }
                 else
@@ -333,166 +339,6 @@ namespace Damselfly.Core.Services
             _imageCache.Evict(imageId);
 
             //Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
-        }
-
-        /// <summary>
-        /// No longer used
-        /// </summary>
-        /// <returns></returns>
-        public async Task RunMetaDataScans()
-        {
-            Logging.LogVerbose("Metadata scan thread starting...");
-
-            try
-            {
-                using var db = new ImageContext();
-
-                const int batchSize = 100;
-                bool complete = false;
-
-                while (true)
-                {
-                    var queueQueryWatch = new Stopwatch("MetaDataQueueQuery", -1);
-
-                    // Find all images where there's either no metadata, or where the image or sidecar file 
-                    // was updated more recently than the image metadata
-                    var imagesToScan = db.Images.Where(x => x.MetaData == null ||
-                                                       x.LastUpdated > x.MetaData.LastUpdated)
-                                            .OrderByDescending(x => x.LastUpdated)
-                                            .ThenByDescending(x => x.FileLastModDate)
-                                            .Take(batchSize)
-                                            .Include(x => x.Folder)
-                                            .Include(x => x.MetaData)
-                                            .ToArray();
-
-                    queueQueryWatch.Stop();
-
-                    complete = !imagesToScan.Any();
-
-                    if (!complete)
-                    {
-                        var batchWatch = new Stopwatch("MetaDataBatch", 100000);
-                        var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
-
-                        // Aggregate stuff that we'll collect up as we scan
-                        var imageKeywords = new ConcurrentDictionary<Image, string[]>();
-
-                        var newMetadataEntries = new List<ImageMetaData>();
-                        var updatedEntries = new List<ImageMetaData>();
-                        var updatedImages = new List<Image>();
-                        var updateTimeStamp = DateTime.UtcNow;
-
-                        foreach (var img in imagesToScan)
-                        {
-                            try
-                            {
-                                var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
-
-                                if (lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
-                                {
-                                    // If the last-write time is within 30s of now,
-                                    // skip it, as it's possible it might still be
-                                    // mid-copy.
-                                    Logging.Log($"Skipping metadata scan for {img.FileName} - write time is too recent.");
-                                    continue;
-                                }
-
-                                ImageMetaData imgMetaData = img.MetaData;
-
-                                if (imgMetaData == null)
-                                {
-                                    imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
-                                    newMetadataEntries.Add(imgMetaData);
-                                }
-                                else
-                                    updatedEntries.Add(imgMetaData);
-
-                                // Scan the image from the 
-                                GetImageMetaData(ref imgMetaData, out var exifKeywords);
-
-                                // Update the timestamp
-                                imgMetaData.LastUpdated = updateTimeStamp;
-
-                                // Scan for sidecar files
-                                var sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
-
-                                if (sideCarTags.Any())
-                                {
-                                    // See if we've enabled the option to write any sidecar keywords to IPTC keywords
-                                    // if they're missing in the EXIF data of the image.
-                                    if (writeSideCarTagsToImages)
-                                    {
-                                        // Now, submit the tags; note they won't get created immediately, but in batch.
-                                        Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-                                        // Fire and forget this asynchronously - we don't care about waiting for it
-                                        _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
-                                    }
-                                }
-
-                                // Now combine - with case insensitivity.
-                                var allKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase);
-
-                                // Now we have a list of all of the keywords found in the image
-                                // and the sidecar.
-                                if (allKeywords.Any())
-                                    imageKeywords[img] = allKeywords.ToArray();
-
-                                if (imgMetaData.DateTaken != img.SortDate)
-                                {
-                                    Logging.LogTrace($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
-                                    // Always update the image sort date with the date taken,
-                                    // if one was found in the metadata
-                                    img.SortDate = imgMetaData.DateTaken;
-                                    img.LastUpdated = updateTimeStamp;
-                                    updatedImages.Add(img);
-                                }
-                                else
-                                {
-                                    if (imgMetaData.DateTaken == DateTime.MinValue)
-                                        Logging.LogTrace($"Not updating image {img.FileName} with DateTaken as no valid value.");
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
-                            }
-                        }
-
-                        var saveWatch = new Stopwatch("MetaDataSave");
-                        Logging.LogVerbose($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
-                        await db.BulkInsert(db.ImageMetaData, newMetadataEntries);
-                        await db.BulkUpdate(db.ImageMetaData, updatedEntries);
-
-                        if (updatedImages.Any())
-                        {
-                            Logging.LogTrace($"Updating {updatedImages.Count()} image with new sort date.");
-                            await db.BulkUpdate(db.Images, updatedImages);
-                        }
-
-                        saveWatch.Stop();
-
-                        var tagWatch = new Stopwatch("AddTagsSave");
-
-                        // Now save the tags
-                        var tagsAdded = await AddTags(imageKeywords);
-
-                        tagWatch.Stop();
-
-                        batchWatch.Stop();
-
-                        updatedEntries.ForEach(x => _imageCache.Evict(x.ImageId));
-
-                        Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
-                        Logging.LogVerbose($"Time for metadata scan batch: {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tag writes: {tagWatch.HumanElapsedTime}.");
-                    }
-
-                    Thread.Sleep(28 * 1000);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError($"Exception caught during metadata scan: {ex}");
-            }
         }
 
         /// <summary>
@@ -817,12 +663,15 @@ namespace Damselfly.Core.Services
             public int ImageId { get; set; }
             public MetaDataService Service { get; set; }
             public bool CanProcess => true;
+            public string Description => "Metadata scanning";
 
             public async Task Process()
             {
                 await Service.ScanMetaData(ImageId);
             }
         }
+
+        public int Priority => 2;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
         {

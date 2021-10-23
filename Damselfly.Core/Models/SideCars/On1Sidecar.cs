@@ -10,6 +10,7 @@ namespace Damselfly.Core.Models.SideCars
     public class MetaData
     {
         public List<string> Keywords { get; set; }
+        public int Rating { get; set; }
     }
 
     public class Photo

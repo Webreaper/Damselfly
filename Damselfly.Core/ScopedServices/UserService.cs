@@ -100,6 +100,9 @@ namespace Damselfly.Core.ScopedServices
         /// <returns></returns>
         public async Task<bool> PolicyApplies( string policy )
         {
+            if (!RolesEnabled)
+                return true;
+
             if (_user == null)
                 return false;
 
@@ -368,6 +371,7 @@ namespace Damselfly.Core.ScopedServices
                 changes += ". ";
 
             _statusService.StatusText = $"{prefix}{changes}{errorMsg}";
+            Logging.Log( $"SyncUserRoles: {prefix}{changes}{errorMsg}");
 
             return result;
         }

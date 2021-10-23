@@ -176,11 +176,9 @@ namespace Damselfly.Web
         {
             try
             {
-                Logging.Log("Starting Damselfly Webserver");
+                Logging.Log("Initialising Damselfly...");
 
                 var host = BuildWebHost(listeningPort, args);
-
-                Logging.StartupCompleted();
 
                 host.Run();
 

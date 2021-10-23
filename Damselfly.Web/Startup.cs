@@ -241,11 +241,15 @@ namespace Damselfly.Web
             azureFace.StartService().Wait();
             metaDataService.StartService();
             indexService.StartService();
+            aiService.StartService();
 
             // Validation check to ensure at least one user is an Admin
             userService.CheckAdminUser().Wait();
 
             StartTaskScheduler(tasks, download, thumbService, exifService);
+
+            Logging.StartupCompleted();
+            Logging.Log("Starting Damselfly webserver...");
         }
 
         /// <summary>

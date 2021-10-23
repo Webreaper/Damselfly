@@ -8,6 +8,7 @@ using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using System.Threading;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
@@ -19,26 +20,34 @@ namespace Damselfly.Core.Services
     /// (which would be lossy, and therefore destructive). Plus ExifTool
     /// is FAST!
     /// </summary>
-    public class ExifService
+    public class ExifService : IProcessJobFactory
     {
         public static string ExifToolVer { get; private set; }
         private readonly StatusService _statusService;
+        private readonly ImageCache _imageCache;
+        private readonly IndexingService _indexingService;
+        private readonly WorkService _workService;
 
         public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
         public event Action OnFavouritesChanged;
+        private const int s_exifWriteDelay = 15;
 
         private void NotifyFavouritesChanged()
         {
             OnFavouritesChanged?.Invoke();
         }
 
-        public ExifService( StatusService statusService )
+        public ExifService( StatusService statusService, WorkService  workService,
+                IndexingService indexingService, ImageCache imageCache )
         {
             _statusService = statusService;
+            _imageCache = imageCache;
+            _indexingService = indexingService;
+            _workService = workService;
 
             GetExifToolVersion();
 
-            StartService();
+            _workService.AddJobSource(this);
         }
 
         /// <summary>
@@ -156,6 +165,9 @@ namespace Damselfly.Core.Services
             {
                 Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
             }
+
+            // Trigger the work service to look for new jobs
+            _workService.HandleNewJobs(this, s_exifWriteDelay);
         }
 
         /// <summary>
@@ -165,11 +177,13 @@ namespace Damselfly.Core.Services
         /// <param name="tagsToAdd"></param>
         /// <param name="tagsToRemove"></param>
         /// <returns></returns>
-        private bool ProcessExifOperations(string imagePath, List<ExifOperation> exifOperations )
+        private async Task<bool> ProcessExifOperations(int imageId, List<ExifOperation> exifOperations )
         {
             bool success = false;
-            Logging.LogVerbose("Updating tags for file {0}", imagePath);
 
+            var image = await _imageCache.GetCachedImage(imageId);
+
+            Logging.LogVerbose("Updating tags for file {0}", image.FullPath);
             string args = string.Empty;
             List<ExifOperation> processedOps = new List<ExifOperation>();
 
@@ -219,7 +233,7 @@ namespace Damselfly.Core.Services
             // us to do things like write tags that are too long for the
             // IPTC specification.
             args += " -m ";
-            args += " \"" + imagePath + "\"";
+            args += " \"" + image.FullPath + "\"";
 
             var process = new ProcessStarter();
 
@@ -231,17 +245,32 @@ namespace Damselfly.Core.Services
 
             success = process.StartProcess("exiftool", args, env);
 
-            if (!success)
-            {
-                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
-                Logging.LogError("ExifTool Tag update failed for image: {0}", imagePath);
+            var db = new ImageContext();
 
-                RestoreTempExifImage(imagePath);
+            if (success)
+            {
+                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
+
+                // Updating the timestamp on the image to newer than its metadata will
+                // trigger its metadata and tags to be refreshed during the next scan
+                await _indexingService.MarkImagesForScan(new [] { image });
             }
             else
             {
-                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
+                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
+                Logging.LogError("ExifTool Tag update failed for image: {0}", image.FullPath);
+
+                RestoreTempExifImage(image.FullPath);
             }
+
+            // Now write the updates
+            await db.BulkUpdate(db.KeywordOperations, processedOps);
+
+            var totals = string.Join(",", exifOperations.GroupBy(x => x.State)
+                               .Select(x => $"{x.Key}: {x.Count()}")
+                               .ToList());
+
+            _statusService.StatusText = $"Keywords written for {image.FileName}. {totals}";
 
             return success;
         }
@@ -296,101 +325,6 @@ namespace Damselfly.Core.Services
             }
         }
 
-        /// <summary>
-        /// Process a batch of pending keyword tag operations.
-        /// </summary>
-        public void RunExifOpProcessing()
-        {
-            Logging.LogVerbose("Processing pending exif operations");
-
-            try
-            {
-                while (true)
-                {
-                    Thread.Sleep(27 * 1000);
-
-                    using var db = new ImageContext();
-
-                    var queueQueryWatch = new Stopwatch("ExifOpsQuery", -1);
-
-                    // We skip any operations where the timestamp is more recent than 30s
-                    var timeThreshold = DateTime.UtcNow.AddSeconds( -30 );
-
-                    // Find all images where there's either no metadata, or where the image
-                    // was updated more recently than the image metadata
-                    var opsToProcess = db.KeywordOperations.AsQueryable()
-                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending && x.TimeStamp < timeThreshold )
-                                            .OrderByDescending(x => x.TimeStamp)
-                                            .Take(100)
-                                            .Include( x => x.Image )
-                                            .Include( x => x.Image.Folder )
-                                            .ToList();
-
-                    queueQueryWatch.Stop();
-
-                    if( opsToProcess.Any() )
-                    {
-                        var conflatedOps = ConflateOperations(opsToProcess);
-
-                        var batchWatch = new Stopwatch("ExifOpBatch", 100000);
-
-                        foreach (var imageOpList in conflatedOps)
-                        {
-                            var image = imageOpList.Key;
-                            var operations = imageOpList.Value;
-
-                            if( ! File.Exists( image.FullPath ))
-                            { 
-                                Logging.LogWarning($"Unable to process pending tag operations for {image.FullPath} - image not found. Pending tag operation will be discarded.");
-                                operations.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
-                                continue;
-                            }
-
-                            // Write the actual tags to the image file on disk
-                            if (ProcessExifOperations(image.FullPath, operations))
-                            {
-                                // Updating the timestamp on the image to newer than its metadata will
-                                // trigger its metadata and tags to be refreshed during the next scan
-                                image.FlagForMetadataUpdate();
-                            }
-                        }
-
-                        var totals = string.Join(",", opsToProcess.GroupBy(x => x.State)
-                                        .Select(x => $"{x.Key}: {x.Count()}" )
-                                        .ToList() );
-
-                        Logging.Log($"Tag update complete: {string.Join(",", totals )}");
-
-                        foreach( var op in opsToProcess)
-                        {
-                            if (op.State == ExifOperation.FileWriteState.Pending)
-                            {
-                                Logging.Log("Logic exception - pending tag after processing.");
-                                continue;
-                            }
-
-                            // Flag the ops as updated. They should be either
-                            // written, discarded or failed.
-                            db.KeywordOperations.Update( op );
-                        }
-
-                        // TODO: Bulk update here.
-                        db.SaveChanges("KeywordOpProcessed");
-
-                        batchWatch.Stop();
-
-                        Logging.Log($"Completed keyword op batch ({opsToProcess.Count()} operations on {conflatedOps.Count()} images in {batchWatch.HumanElapsedTime}).");
-
-                        _statusService.StatusText = $"Keywords processed. {totals}";
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError($"Exception caught during keyword op scan: {ex}");
-            }
-        }
 
         /// <summary>
         /// Takes a list of time-ordered keyword operations (add/remove) and for
@@ -470,6 +404,11 @@ namespace Damselfly.Core.Services
                 pair.Discarded.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
             }
 
+            var db = new ImageContext();
+
+            // Write the discarded states back to the DB
+            db.SaveChanges("ConflateExifOps");
+
             return result;
         }
 
@@ -513,18 +452,50 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public void StartService()
+        public class ExifProcess : IProcessJob
         {
-            Logging.Log("Starting Exif Operation service.");
+            public int ImageId { get; set; }
+            public List<ExifOperation> ExifOps { get; set; }
+            public ExifService Service { get; set; }
+            public bool CanProcess => true;
+            public string Description => "Keyword Updates";
 
-            // Load the favourites 
-            _ = LoadFavouriteTagsAsync();
-
-            var indexthread = new Thread(new ThreadStart(() => { RunExifOpProcessing(); }));
-            indexthread.Name = "ExifOpThread";
-            indexthread.IsBackground = true;
-            indexthread.Priority = ThreadPriority.Lowest;
-            indexthread.Start();
+            public async Task Process()
+            {
+                await Service.ProcessExifOperations(ImageId, ExifOps);
+            }
         }
+
+        public int Priority => 3;
+
+        public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
+        {
+            var db = new ImageContext();
+
+            // We skip any operations where the timestamp is more recent than 30s
+            var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * s_exifWriteDelay);
+
+            // Find all images where there's either no metadata, or where the image
+            // was updated more recently than the image metadata
+            var opsToProcess = await db.KeywordOperations.AsQueryable()
+                                    .Where(x => x.State == ExifOperation.FileWriteState.Pending && x.TimeStamp < timeThreshold)
+                                    .OrderByDescending(x => x.TimeStamp)
+                                    .Take(maxCount)
+                                    .Include(x => x.Image)
+                                    .Include(x => x.Image.Folder)
+                                    .ToListAsync();
+
+            var conflatedOps = ConflateOperations(opsToProcess);
+
+            var jobs = conflatedOps.Select(x => new ExifProcess
+            {
+                ImageId = x.Key.ImageId,
+                ExifOps = x.Value,
+                Service = this
+            }).ToArray();
+
+            return jobs;
+        }
+
     }
 }

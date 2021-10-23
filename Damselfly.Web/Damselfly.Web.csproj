@@ -76,14 +76,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.0-rc.2.21480.5" />
-    <PackageReference Include="MudBlazor" Version="5.2.0-rc4" />
+    <PackageReference Include="MudBlazor" Version="5.2.0-rc5" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.1-dev-00229" />
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.2.0.21211" />
-    <PackageReference Include="Radzen.Blazor" Version="3.11.8" />
-    <PackageReference Include="Blazored.FluentValidation" Version="2.0.1" />
-    <PackageReference Include="FluentValidation" Version="10.3.3" />
+    <PackageReference Include="Radzen.Blazor" Version="3.11.9" />
+    <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
+    <PackageReference Include="FluentValidation" Version="10.3.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0-rc.2.21480.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
