@@ -15,15 +15,22 @@ namespace Damselfly.Core.Utils
                                    Func<T, Task> processor, int degreeOfParallelism)
         {
             var queue = new ConcurrentQueue<T>(collection);
+
+            await queue.ExecuteInParallel(processor, degreeOfParallelism);
+        }
+
+        public static async Task ExecuteInParallel<T>(this ConcurrentQueue<T> queue,
+                                   Func<T, Task> processor, int degreeOfParallelism)
+        {
             var tasks = Enumerable.Range(0, degreeOfParallelism)
                                   .Select(async _ =>
-                            {
-                                while (queue.TryDequeue(out var item))
-                                {
-                                    await processor(item).ConfigureAwait(false);
-                                    await Task.Delay(100); // Don't thrash.
-                                }
-                            });
+                                  {
+                                      while (queue.TryDequeue(out var item))
+                                      {
+                                          await processor(item).ConfigureAwait(false);
+                                          // await Task.Delay(100); // Don't thrash.
+                                      }
+                                  });
 
             Logging.LogTrace("Waiting for Parallel processing to complete...");
 

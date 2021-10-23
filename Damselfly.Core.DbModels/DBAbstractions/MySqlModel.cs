@@ -143,12 +143,12 @@ namespace Damselfly.Core.Models.DBAbstractions
             return result;
         }
 
-        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
+        public Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
+        public Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
         {
             // Full text search not supported in MySQL
             // TODO: Implement with a Like Query?

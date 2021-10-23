@@ -11,11 +11,12 @@ using MetadataExtractor.Formats.Jpeg;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils.Images;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
     
-    public class ThumbnailService
+    public class ThumbnailService : IProcessJobFactory
     {
         private static string _thumbnailRootFolder;
         private const string _requestRoot = "/images";
@@ -400,6 +401,31 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Generates thumbnails for an image.
+        /// </summary>
+        /// <param name="sourceImage"></param>
+        /// <param name="forceRegeneration"></param>
+        /// <returns></returns>
+        public async Task<ImageProcessResult> CreateThumb(int imageId)
+        {
+            var db = new ImageContext();
+
+            var image = await _imageCache.GetCachedImage(imageId);
+
+            // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
+            image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
+
+            var result = await ConvertFile(image, false);
+
+            db.ImageMetaData.Update(image.MetaData);
+            await db.SaveChangesAsync("UpdateThumbTimeStamp");
+
+            _imageCache.Evict(image.ImageId);
+
+            return result;
+        }
+
+        /// <summary>
         /// Saves an MD5 Image hash against an image. 
         /// </summary>
         /// <param name="image"></param>
@@ -551,6 +577,37 @@ namespace Damselfly.Core.Services
 
             var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
             _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";
+        }
+
+        public class ThumbProcess : IProcessJob
+        {
+            public int ImageId { get; set; }
+            public ThumbnailService Service { get; set; }
+            public bool CanProcess => true;
+
+            public async Task Process()
+            {
+                await Service.CreateThumb(ImageId);
+            }
+        }
+
+        public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
+        {
+            if (!EnableThumbnailGeneration)
+                return new ThumbProcess[0];
+            
+            var db = new ImageContext();
+
+            var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
+                                    .OrderByDescending(x => x.LastUpdated)
+                                    .Take(maxJobs)
+                                    .Select(x => x.ImageId)
+                                    .ToListAsync();
+
+            var jobs = images.Select( x => new ThumbProcess { ImageId = x, Service = this})
+                            .ToArray();
+
+            return jobs;
         }
     }
 }

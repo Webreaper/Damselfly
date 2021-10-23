@@ -5,6 +5,7 @@
 @inject ThumbnailService thumbService
 @inject IndexingService indexService
 @inject ImageRecognitionService aiService
+@inject ImageCache imageCache
 
 <MudDialog>
     <DialogContent>
@@ -28,7 +29,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Rescan">Rescan</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OkayClicked">Rescan</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -51,7 +52,15 @@
     private bool RegenThumbs { get; set; }
     private bool RescanAI { get; set; }
 
-    async Task Rescan()
+    void OkayClicked()
+    {
+        // Fire and forget; we don't need to block/await
+        _ = Rescan();
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private async Task Rescan()
     {
         if( Folder == null )
         {
@@ -71,7 +80,8 @@
             if (RescanAI)
                 await aiService.MarkFolderForScan(Folder);
         }
-        MudDialog.Close(DialogResult.Ok(true));
+
+        imageCache.Evict( Images.Select( x => x.ImageId).ToList() );
     }
 
     void Cancel() => MudDialog.Cancel();

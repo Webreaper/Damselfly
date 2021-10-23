@@ -1,530 +1,848 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Models;
-using Damselfly.Core.Utils;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Utils;
+using Damselfly.Core.Models;
+using MetadataExtractor;
+using MetadataExtractor.Formats.Exif;
+using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.Iptc;
+using System.Linq;
 using System.Threading;
-using Damselfly.Core.DbModels;
+using TagTypes = Damselfly.Core.Models.Tag.TagTypes;
+using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
-    /// <summary>
-    /// Service to add/remove/update tags on image files on disk. This uses
-    /// ExifTool to do the actual EXIF tag manipulation on the disk files,
-    /// since there aren't currently any native C# libraries which can
-    /// efficiently write tags to images without re-encoding the JPEG data
-    /// (which would be lossy, and therefore destructive). Plus ExifTool
-    /// is FAST!
-    /// </summary>
-    public class MetaDataService
+    public class MetaDataService : IProcessJobFactory
     {
-        public static string ExifToolVer { get; private set; }
+        // Some caching to avoid repeatedly reading tags, cameras and lenses
+        // from the DB.
+        private IDictionary<string, Models.Tag> _tagCache;
+        private IDictionary<string, Camera> _cameraCache;
+        private IDictionary<string, Lens> _lensCache;
+
         private readonly StatusService _statusService;
+        private readonly ExifService _exifService;
+        private readonly ConfigService _configService;
+        private readonly ImageCache _imageCache;
 
-        public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
-        public event Action OnFavouritesChanged;
+        public ICollection<Camera> Cameras { get { return _cameraCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList(); } }
+        public ICollection<Lens> Lenses { get { return _lensCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList(); } }
+        public IEnumerable<Models.Tag> CachedTags { get { return _tagCache.Values.ToList(); } }
 
-        private void NotifyFavouritesChanged()
-        {
-            OnFavouritesChanged?.Invoke();
-        }
-
-        public MetaDataService( StatusService statusService )
+        public MetaDataService(StatusService statusService, ExifService exifService,
+                                    ConfigService config, ImageCache imageCache)
         {
             _statusService = statusService;
-
-            GetExifToolVersion();
-
-            StartService();
-        }
-
-        /// <summary>
-        /// Check the ExifTool at startup
-        /// </summary>
-        private void GetExifToolVersion()
-        {
-            var process = new ProcessStarter();
-            if (process.StartProcess("exiftool", "-ver") )
-            {
-                ExifToolVer = $"v{process.OutputText}";
-            }
-
-            if (string.IsNullOrEmpty(ExifToolVer))
-            {
-                ExifToolVer = "Unavailable - ExifTool Not found";
-            }
-
-            Logging.Log($"ExifVersion: {ExifToolVer}");
-        }
-
-        /// <summary>
-        /// Add a list of IPTC tags to an image on the disk.
-        /// </summary>
-        /// <param name="images"></param>
-        /// <param name="tagToAdd"></param>
-        /// <returns></returns>
-        public async Task AddTagAsync(Image[] images, string tagToAdd)
-        {
-            var tagList = new List<string> { tagToAdd };
-            await UpdateTagsAsync(images, tagList, null);
-        }
-
-        /// <summary>
-        /// Takes an image and a set of keywords, and writes them to the DB queue for
-        /// keywords to be added. These will then be processed asynchronously.
-        /// </summary>
-        /// <param name="images"></param>
-        /// <param name="tagsToAdd"></param>
-        /// <param name="tagsToRemove"></param>
-        /// <returns></returns>
-        public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null)
-        {
-            await UpdateTagsAsync(new[] { image }, addTags, removeTags, user);
-        }
-
-        /// <summary>
-        /// Takes an image and a set of keywords, and writes them to the DB queue for
-        /// keywords to be added. These will then be processed asynchronously.
-        /// </summary>
-        /// <param name="images"></param>
-        /// <param name="tagsToAdd"></param>
-        /// <param name="tagsToRemove"></param>
-        /// <returns></returns>
-        public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null )
-        {
-            // TODO: Split tags with commas here?
-            var timestamp = DateTime.UtcNow;
-            var changeDesc = string.Empty;
-
-            using var db = new ImageContext();
-            var keywordOps = new List<ExifOperation>();
-
-            if (addTags != null)
-            {
-                var tagsToAdd = addTags.Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
-
-                foreach (var image in images)
-                {
-                    keywordOps.AddRange(tagsToAdd.Select(keyword => new ExifOperation
-                    {
-                        ImageId = image.ImageId,
-                        Text = keyword.Sanitise(),
-                        Type = ExifOperation.ExifType.Keyword,
-                        Operation = ExifOperation.OperationType.Add,
-                        TimeStamp = timestamp,
-                        UserId = user?.Id
-                    }));
-                }
-
-                changeDesc += $"added: {string.Join(',', tagsToAdd)}";
-            }
-
-            if (removeTags != null)
-            {
-                var tagsToRemove = removeTags.Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
-
-                foreach (var image in images)
-                {
-                    keywordOps.AddRange( tagsToRemove.Select(keyword => 
-                        new ExifOperation
-                        {
-                            ImageId = image.ImageId,
-                            Text = keyword.RemoveSmartQuotes(),
-                            Type = ExifOperation.ExifType.Keyword,
-                            Operation = ExifOperation.OperationType.Remove,
-                            TimeStamp = timestamp
-                        } ) );
-                }
-
-                if (!string.IsNullOrEmpty(changeDesc))
-                    changeDesc += ", ";
-                changeDesc += $"removed: {string.Join(',', tagsToRemove)}";
-            }
-
-            Logging.LogVerbose($"Bulk inserting {keywordOps.Count()} keyword operations (for {images.Count()}) into queue. ");
-
-            try
-            {
-                await db.BulkInsert(db.KeywordOperations, keywordOps);
-
-                _statusService.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Helper method to actually run ExifTool and update the tags on disk.
-        /// </summary>
-        /// <param name="imagePath"></param>
-        /// <param name="tagsToAdd"></param>
-        /// <param name="tagsToRemove"></param>
-        /// <returns></returns>
-        private bool ProcessExifOperations(string imagePath, List<ExifOperation> exifOperations )
-        {
-            bool success = false;
-            Logging.LogVerbose("Updating tags for file {0}", imagePath);
-
-            string args = string.Empty;
-            List<ExifOperation> processedOps = new List<ExifOperation>();
-
-            foreach (var op in exifOperations)
-            {
-                var operationText = op.Text.RemoveSmartQuotes();
-
-                if ( String.IsNullOrEmpty( operationText ) )
-                {
-                    Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
-                    continue;
-                }
-
-                if (op.Type == ExifOperation.ExifType.Keyword)
-                {
-                    // Weird but important: we *alwaya* add a -= for the keyword,
-                    // whether we're removing or adding it. Removing is self-evident,
-                    // but adding is less intuitive. The reason is to avoid duplicate
-                    // keywords. So if we do
-                    //      "-keywords-=Banana -keywords+=Banana",
-                    // this will remove the tag and re-add it if it already exists
-                    // (creating a no-op) but the remove will do nothing if it doesn't
-                    // exist. Thus, we ensure we don't add keywords twice.
-                    // See: https://stackoverflow.com/questions/67282388/adding-multiple-keywords-with-exiftool-but-only-if-theyre-not-already-present
-                    args += $" -keywords-=\"{operationText}\" ";
-
-                    if (op.Operation == ExifOperation.OperationType.Remove)
-                    {
-                        Logging.LogVerbose($" Removing keyword {operationText} from {op.Image.FileName}");
-                        processedOps.Add(op);
-                    }
-                    else if (op.Operation == ExifOperation.OperationType.Add)
-                    {
-                        Logging.LogVerbose($" Adding keyword '{operationText}' to {op.Image.FileName}");
-                        args += $" -keywords+=\"{operationText}\" ";
-                        processedOps.Add(op);
-                    }
-                }
-            }
-
-            // Note: we could do this to preserve the last-mod-time:
-            //   args += " -P -overwrite_original_in_place";
-            // However, we rely on the last-mod-time changing to pick up
-            // changes to keywords and to subsequently re-index images.
-            args += " -overwrite_original ";
-            // We enable the 'ignore minor warnings' flag which will allow
-            // us to do things like write tags that are too long for the
-            // IPTC specification.
-            args += " -m ";
-            args += " \"" + imagePath + "\"";
-
-            var process = new ProcessStarter();
-
-            // Fix perl local/env issues for exiftool
-            var env = new Dictionary<string, string>();
-            env["LANGUAGE"] = "en_US.UTF-8";
-            env["LANG"] = "en_US.UTF-8";
-            env["LC_ALL"] = "en_US.UTF-8";
-
-            success = process.StartProcess("exiftool", args, env);
-
-            if (!success)
-            {
-                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
-                Logging.LogError("ExifTool Tag update failed for image: {0}", imagePath);
-
-                RestoreTempExifImage(imagePath);
-            }
-            else
-            {
-                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
-            }
-
-            return success;
-        }
-
-        /// <summary>
-        /// If ExifTool fails, sometimes it can leave the temp file in place, meaning our image
-        /// will go missing. So try and put it back.
-        /// See: https://stackoverflow.com/questions/65870251/make-exiftool-overwrite-original-is-transactional-and-atomic
-        /// </summary>
-        /// <param name="imagePath"></param>
-        private void RestoreTempExifImage(string imagePath)
-        {
-            FileInfo path = new FileInfo(imagePath);
-            var newExtension = path.Extension + "_exiftool_tmp";
-            var tempPath = new FileInfo( Path.ChangeExtension(imagePath, newExtension) );
-
-            if (!path.Exists && tempPath.Exists)
-            {
-                Logging.Log($"Moving {tempPath.FullName} to {path.Name}...");
-                try
-                {
-                    File.Move(tempPath.FullName, path.FullName);
-                }
-                catch( Exception ex )
-                {
-                    Logging.LogWarning($"Unable to move file: {ex.Message}");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Clean up processed keyword operations
-        /// </summary>
-        /// <param name="cleanupFreq"></param>
-        public async Task CleanUpKeywordOperations(TimeSpan cleanupFreq)
-        {
-            using var db = new ImageContext();
-
-            // Clean up completed operations older than 24hrs
-            var cutOff = DateTime.UtcNow.AddDays(-1);
-
-            try
-            {
-                int cleanedUp = await db.BatchDelete(db.KeywordOperations.Where(op => op.State == ExifOperation.FileWriteState.Written
-                                                                         && op.TimeStamp < cutOff));
-
-                Logging.LogVerbose($"Cleaned up {cleanedUp} completed Keyword Operations.");
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError($"Exception whilst cleaning up keyword operations: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Process a batch of pending keyword tag operations.
-        /// </summary>
-        public void RunExifOpProcessing()
-        {
-            Logging.LogVerbose("Processing pending exif operations");
-
-            try
-            {
-                while (true)
-                {
-                    Thread.Sleep(27 * 1000);
-
-                    using var db = new ImageContext();
-
-                    var queueQueryWatch = new Stopwatch("ExifOpsQuery", -1);
-
-                    // We skip any operations where the timestamp is more recent than 30s
-                    var timeThreshold = DateTime.UtcNow.AddSeconds( -30 );
-
-                    // Find all images where there's either no metadata, or where the image
-                    // was updated more recently than the image metadata
-                    var opsToProcess = db.KeywordOperations.AsQueryable()
-                                            .Where( x => x.State == ExifOperation.FileWriteState.Pending && x.TimeStamp < timeThreshold )
-                                            .OrderByDescending(x => x.TimeStamp)
-                                            .Take(100)
-                                            .Include( x => x.Image )
-                                            .Include( x => x.Image.Folder )
-                                            .ToList();
-
-                    queueQueryWatch.Stop();
-
-                    if( opsToProcess.Any() )
-                    {
-                        var conflatedOps = ConflateOperations(opsToProcess);
-
-                        var batchWatch = new Stopwatch("ExifOpBatch", 100000);
-
-                        foreach (var imageOpList in conflatedOps)
-                        {
-                            var image = imageOpList.Key;
-                            var operations = imageOpList.Value;
-
-                            if( ! File.Exists( image.FullPath ))
-                            { 
-                                Logging.LogWarning($"Unable to process pending tag operations for {image.FullPath} - image not found. Pending tag operation will be discarded.");
-                                operations.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
-                                continue;
-                            }
-
-                            // Write the actual tags to the image file on disk
-                            if (ProcessExifOperations(image.FullPath, operations))
-                            {
-                                // Updating the timestamp on the image to newer than its metadata will
-                                // trigger its metadata and tags to be refreshed during the next scan
-                                image.FlagForMetadataUpdate();
-                            }
-                        }
-
-                        var totals = string.Join(",", opsToProcess.GroupBy(x => x.State)
-                                        .Select(x => $"{x.Key}: {x.Count()}" )
-                                        .ToList() );
-
-                        Logging.Log($"Tag update complete: {string.Join(",", totals )}");
-
-                        foreach( var op in opsToProcess)
-                        {
-                            if (op.State == ExifOperation.FileWriteState.Pending)
-                            {
-                                Logging.Log("Logic exception - pending tag after processing.");
-                                continue;
-                            }
-
-                            // Flag the ops as updated. They should be either
-                            // written, discarded or failed.
-                            db.KeywordOperations.Update( op );
-                        }
-
-                        // TODO: Bulk update here.
-                        db.SaveChanges("KeywordOpProcessed");
-
-                        batchWatch.Stop();
-
-                        Logging.Log($"Completed keyword op batch ({opsToProcess.Count()} operations on {conflatedOps.Count()} images in {batchWatch.HumanElapsedTime}).");
-
-                        _statusService.StatusText = $"Keywords processed. {totals}";
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError($"Exception caught during keyword op scan: {ex}");
-            }
-        }
-
-        /// <summary>
-        /// Takes a list of time-ordered keyword operations (add/remove) and for
-        /// each keyword conflates down to a single distinct operation. So if there
-        /// was:
-        ///     Image1 Add 'cat'
-        ///     Image2 Add 'cat'
-        ///     Image2 Remove 'cat'
-        ///     Image2 Add 'dog'
-        ///     Image2 Add 'cat'
-        ///     Image1 Remove 'cat'
-        /// THen this would conflate down to: 
-        ///     Image2 Add 'cat'
-        ///     Image2 Add 'dog'
-        ///     Image1 Remove 'cat'
-        /// </summary>
-        /// <param name="tagsToProcess"></param>
-        /// <returns></returns>
-        private IDictionary<Image, List<ExifOperation>> ConflateOperations(List<ExifOperation> opsToProcess )
-        {
-            var result = new Dictionary<Image, List<ExifOperation>>();
-
-            // First, conflate the keywords.
-            var imageKeywords = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Keyword )
-                                            .GroupBy(x => x.Image);
-
-            foreach( var imageOpList in imageKeywords )
-            {
-                var theImage = imageOpList.Key;
-                var keywordOps = imageOpList.GroupBy(x => x.Text );
-
-                // Now, for each exif change for this image, collect up the most
-                // recent operation and store it in a dictionary. Note, text in
-                // operations are case-sensitive (so ops for tag 'Cat' do not
-                // conflate with ops for tag 'cat'
-                var exifOpDict = new Dictionary<string, ExifOperation>();
-
-                foreach( var op in keywordOps )
-                {
-                    var orderedOps = op.OrderBy(x => x.TimeStamp).ToList();
-
-                    foreach( var imageKeywordOp in orderedOps )
-                    {
-                        // Store the most recent op for each operation,
-                        // over-writing the previous
-                        if( exifOpDict.TryGetValue( imageKeywordOp.Text, out var existing ) )
-                        {
-                            // Update the state before it's replaced in the dict.
-                            existing.State = ExifOperation.FileWriteState.Discarded; 
-                        }
-
-                        exifOpDict[imageKeywordOp.Text] = imageKeywordOp;
-                    }
-                }
-
-                // By now we've got a dictionary of keywords/operations. Now we just
-                // add them into the final result.
-                result[theImage] = exifOpDict.Values.ToList();
-            }
-
-            // Now the captions. Group by image + list of ops, sorted newest first, and then the
-            // one we want is the most recent.
-            var imageCaptions = opsToProcess.Where(x => x.Type == ExifOperation.ExifType.Caption)
-                                            .GroupBy( x => x.Image )
-                                            .Select(x => new { Image = x.Key, NewestFirst = x.OrderByDescending(d => d.TimeStamp) } )
-                                            .Select( x => new {
-                                                   Image = x.Image,
-                                                   Newest = x.NewestFirst.Take(1).ToList(),
-                                                   Discarded = x.NewestFirst.Skip(1).ToList() })
-                                            .ToList();
-
-            // Now collect up the caption updates, and mark the rest as discarded.
-            foreach( var pair in imageCaptions )
-            {
-                // Add the most recent to the result
-                result[pair.Image] = pair.Newest;
-                pair.Discarded.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Switches a tag from favourite, to not favourite, or back
-        /// </summary>
-        /// <param name="tag"></param>
-        /// <returns></returns>
-        public async Task ToggleFavourite( Tag tag )
-        {
-            using var db = new ImageContext();
-            // TODO: Async - use BulkUpdateAsync?
-            tag.Favourite = !tag.Favourite;
-
-            db.Tags.Update(tag);
-            await db.SaveChangesAsync("Tag favourite");
-
-            await LoadFavouriteTagsAsync();
-        }
-
-        /// <summary>
-        /// Loads the favourite tags from the DB.
-        /// </summary>
-        /// <returns></returns>
-        private async Task LoadFavouriteTagsAsync()
-        {
-            using var db = new ImageContext();
-
-            // TODO: Clear the tag cache and reload, and get this from the cache
-            var faves = await Task.FromResult(db.Tags
-                                        .Where(x => x.Favourite)
-                                        .OrderBy(x => x.Keyword)
-                                        .ToList());
-
-            if (!faves.SequenceEqual(FavouriteTags))
-            {
-                FavouriteTags.Clear();
-                FavouriteTags.AddRange(faves);
-
-                NotifyFavouritesChanged();
-            }
+            _configService = config;
+            _exifService = exifService;
+            _imageCache = imageCache;
         }
 
         public void StartService()
         {
-            Logging.Log("Starting Exif Operation service.");
+            InitCameraAndLensCaches();
+            LoadTagCache();
+        }
 
-            // Load the favourites 
-            _ = LoadFavouriteTagsAsync();
+        /// <summary>
+        /// Read the metadata, and handle any exceptions.
+        /// </summary>
+        /// <param name="imagePath"></param>
+        /// <returns>Metadata, or Null if there was an error</returns>
+        private IReadOnlyList<MetadataExtractor.Directory> SafeReadImageMetadata(string imagePath)
+        {
+            IReadOnlyList<MetadataExtractor.Directory> metadata = null;
 
-            var indexthread = new Thread(new ThreadStart(() => { RunExifOpProcessing(); }));
-            indexthread.Name = "ExifOpThread";
-            indexthread.IsBackground = true;
-            indexthread.Priority = ThreadPriority.Lowest;
-            indexthread.Start();
+            if (File.Exists(imagePath))
+            {
+                try
+                {
+                    metadata = ImageMetadataReader.ReadMetadata(imagePath);
+                }
+                catch (ImageProcessingException ex)
+                {
+                    Logging.Log("Metadata read for image {0}: {1}", imagePath, ex.Message);
+
+                }
+                catch (IOException ex)
+                {
+                    Logging.Log("File error reading metadata for {0}: {1}", imagePath, ex.Message);
+
+                }
+            }
+
+            return metadata;
+        }
+
+        /// <summary>
+        /// Scans an image file on disk for its metadata, using the MetaDataExtractor
+        /// library. The image object is populated with the metadata, and the IPTC
+        /// keywords are returned back to the caller for processing and ingestion
+        /// into the DB.
+        /// </summary>
+        /// <param name="image">Image object, which will be updated with metadata</param>
+        /// <param name="keywords">Array of keyword tags in the image EXIF data</param>
+        private void GetImageMetaData(ref ImageMetaData imgMetaData, out string[] keywords)
+        {
+            var image = imgMetaData.Image;
+            keywords = new string[0];
+
+            try
+            {
+                var watch = new Stopwatch("ReadMetaData");
+
+                IReadOnlyList<MetadataExtractor.Directory> metadata = SafeReadImageMetadata(image.FullPath);
+
+                watch.Stop();
+
+                if (metadata != null)
+                {
+                    var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
+
+                    if (jpegDirectory != null)
+                    {
+                        imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
+                        imgMetaData.Height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
+                    }
+
+                    var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+
+                    if (subIfdDirectory != null)
+                    {
+                        var desc = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription);
+
+                        imgMetaData.Description = FilteredDescription(desc);
+
+                        imgMetaData.DateTaken = subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeDigitized);
+
+                        if (imgMetaData.DateTaken == DateTime.MinValue)
+                            imgMetaData.DateTaken = subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeOriginal);
+
+                        imgMetaData.Height = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
+                        imgMetaData.Width = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
+
+                        if (imgMetaData.Width == 0)
+                            imgMetaData.Width = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagImageWidth);
+                        if (imgMetaData.Height == 0)
+                            imgMetaData.Height = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagImageHeight);
+
+                        imgMetaData.ISO = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagIsoEquivalent);
+                        imgMetaData.FNum = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagFNumber);
+                        imgMetaData.Exposure = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagExposureTime);
+
+                        var lensMake = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagLensMake);
+                        var lensModel = subIfdDirectory.SafeExifGetString("Lens Model");
+                        var lensSerial = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagLensSerialNumber);
+
+                        // If there was no lens make/model, it may be because it's in the Makernotes. So attempt
+                        // to extract it. This code definitely works for a Leica Panasonic lens on a Panasonic body.
+                        // It may not work for other things.
+                        if (string.IsNullOrEmpty(lensMake) || string.IsNullOrEmpty(lensModel))
+                        {
+                            var makerNoteDir = metadata.FirstOrDefault(x => x.Name.Contains("Makernote", StringComparison.OrdinalIgnoreCase));
+                            if (makerNoteDir != null)
+                            {
+                                if (string.IsNullOrEmpty(lensModel))
+                                    lensModel = makerNoteDir.SafeExifGetString("Lens Type");
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(lensMake) || !string.IsNullOrEmpty(lensModel))
+                        {
+                            if (string.IsNullOrEmpty(lensModel) || lensModel == "N/A")
+                                lensModel = "Generic " + lensMake;
+
+                            imgMetaData.LensId = GetLens(lensMake, lensModel, lensSerial).LensId;
+                        }
+
+                        var flash = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagFlash);
+
+                        imgMetaData.FlashFired = ((flash & 0x1) != 0x0);
+                    }
+
+                    var IPTCdir = metadata.OfType<IptcDirectory>().FirstOrDefault();
+
+                    if (IPTCdir != null)
+                    {
+                        var caption = IPTCdir.SafeExifGetString(IptcDirectory.TagCaption);
+                        var byline = IPTCdir.SafeExifGetString(IptcDirectory.TagByLine);
+                        var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource);
+
+                        imgMetaData.Caption = FilteredDescription(caption);
+                        imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice);
+                        imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit);
+
+                        if (string.IsNullOrEmpty(imgMetaData.Credit) && !string.IsNullOrEmpty(source))
+                            imgMetaData.Credit = source;
+
+                        if (!string.IsNullOrEmpty(byline))
+                        {
+                            if (!string.IsNullOrEmpty(imgMetaData.Credit))
+                                imgMetaData.Credit += $" ({byline})";
+                            else
+                                imgMetaData.Credit += $"{byline}";
+                        }
+
+                        // Stash the keywords in the dict, they'll be stored later.
+                        var keywordList = IPTCdir?.GetStringArray(IptcDirectory.TagKeywords);
+                        if (keywordList != null)
+                            keywords = keywordList;
+                    }
+
+                    var IfdDirectory = metadata.OfType<ExifIfd0Directory>().FirstOrDefault();
+
+                    if (IfdDirectory != null)
+                    {
+                        var orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
+                        var camMake = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagMake);
+                        var camModel = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagModel);
+                        var camSerial = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagBodySerialNumber);
+
+                        if (!string.IsNullOrEmpty(camMake) || !string.IsNullOrEmpty(camModel))
+                        {
+                            imgMetaData.CameraId = GetCamera(camMake, camModel, camSerial).CameraId;
+                        }
+
+                        if (NeedToSwitchWidthAndHeight(orientation))
+                        {
+                            // It's orientated rotated. So switch the height and width
+                            var temp = imgMetaData.Width;
+                            imgMetaData.Width = imgMetaData.Height;
+                            imgMetaData.Height = temp;
+                        }
+                    }
+                }
+
+                if (imgMetaData.DateTaken == DateTime.MinValue)
+                    DumpMetaData(image, metadata);
+            }
+            catch (Exception ex)
+            {
+                Logging.Log("Error reading image metadata for {0}: {1}", image.FullPath, ex.Message);
+            }
+        }
+
+        private string FilteredDescription(string desc)
+        {
+            if (!string.IsNullOrEmpty(desc))
+            {
+                // No point clogging up the DB with thousands
+                // of identical default descriptions
+                if (desc.Trim().Equals("OLYMPUS DIGITAL CAMERA"))
+                    return string.Empty;
+            }
+
+            return desc;
+        }
+
+        /// <summary>
+        /// Scan the metadata for an image - including the EXIF data, keywords
+        /// and any XMP/ON1 sidecars. Then the metadata is written to the DB.
+        /// </summary>
+        /// <param name="imageId"></param>
+        /// <returns></returns>
+        public async Task ScanMetaData( int imageId )
+        {
+            var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
+            var db = new ImageContext();
+            var updateTimeStamp = DateTime.UtcNow;
+            var allKeywords = new Dictionary<Image, string[]>();
+
+            var img = await _imageCache.GetCachedImage(imageId);
+            db.Attach(img);
+
+            try
+            {
+                var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
+
+                if (lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
+                {
+                    // If the last-write time is within 30s of now,
+                    // skip it, as it's possible it might still be
+                    // mid-copy.
+                    Logging.Log($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+                    return;
+                }
+
+                ImageMetaData imgMetaData = img.MetaData;
+
+                if (imgMetaData == null)
+                {
+                    imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
+                    db.ImageMetaData.Add(imgMetaData);
+                }
+                else
+                    db.ImageMetaData.Update(imgMetaData);
+
+                // Scan the image from the 
+                GetImageMetaData(ref imgMetaData, out var exifKeywords);
+
+                // Update the timestamp
+                imgMetaData.LastUpdated = updateTimeStamp;
+
+                // Scan for sidecar files
+                var sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
+
+                if (sideCarTags.Any())
+                {
+                    // See if we've enabled the option to write any sidecar keywords to IPTC keywords
+                    // if they're missing in the EXIF data of the image.
+                    if (writeSideCarTagsToImages)
+                    {
+                        // Now, submit the tags; note they won't get created immediately, but in batch.
+                        Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+
+                        // Fire and forget this asynchronously - we don't care about waiting for it
+                        _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
+                    }
+                }
+
+                allKeywords[img] = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToArray();
+
+                if (imgMetaData.DateTaken != img.SortDate)
+                {
+                    Logging.LogTrace($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
+                    // Always update the image sort date with the date taken,
+                    // if one was found in the metadata
+                    img.SortDate = imgMetaData.DateTaken;
+                    img.LastUpdated = updateTimeStamp;
+                    db.Images.Update(img);
+                }
+                else
+                {
+                    if (imgMetaData.DateTaken == DateTime.MinValue)
+                        Logging.LogTrace($"Not updating image {img.FileName} with DateTaken as no valid value.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
+            }
+
+            await db.SaveChangesAsync("ImageMetaDataSave");
+
+            // Now save the tags
+            var tagsAdded = await AddTags(allKeywords);
+
+            _imageCache.Evict(imageId);
+
+            //Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
+        }
+
+        /// <summary>
+        /// No longer used
+        /// </summary>
+        /// <returns></returns>
+        public async Task RunMetaDataScans()
+        {
+            Logging.LogVerbose("Metadata scan thread starting...");
+
+            try
+            {
+                using var db = new ImageContext();
+
+                const int batchSize = 100;
+                bool complete = false;
+
+                while (true)
+                {
+                    var queueQueryWatch = new Stopwatch("MetaDataQueueQuery", -1);
+
+                    // Find all images where there's either no metadata, or where the image or sidecar file 
+                    // was updated more recently than the image metadata
+                    var imagesToScan = db.Images.Where(x => x.MetaData == null ||
+                                                       x.LastUpdated > x.MetaData.LastUpdated)
+                                            .OrderByDescending(x => x.LastUpdated)
+                                            .ThenByDescending(x => x.FileLastModDate)
+                                            .Take(batchSize)
+                                            .Include(x => x.Folder)
+                                            .Include(x => x.MetaData)
+                                            .ToArray();
+
+                    queueQueryWatch.Stop();
+
+                    complete = !imagesToScan.Any();
+
+                    if (!complete)
+                    {
+                        var batchWatch = new Stopwatch("MetaDataBatch", 100000);
+                        var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
+
+                        // Aggregate stuff that we'll collect up as we scan
+                        var imageKeywords = new ConcurrentDictionary<Image, string[]>();
+
+                        var newMetadataEntries = new List<ImageMetaData>();
+                        var updatedEntries = new List<ImageMetaData>();
+                        var updatedImages = new List<Image>();
+                        var updateTimeStamp = DateTime.UtcNow;
+
+                        foreach (var img in imagesToScan)
+                        {
+                            try
+                            {
+                                var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
+
+                                if (lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
+                                {
+                                    // If the last-write time is within 30s of now,
+                                    // skip it, as it's possible it might still be
+                                    // mid-copy.
+                                    Logging.Log($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+                                    continue;
+                                }
+
+                                ImageMetaData imgMetaData = img.MetaData;
+
+                                if (imgMetaData == null)
+                                {
+                                    imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
+                                    newMetadataEntries.Add(imgMetaData);
+                                }
+                                else
+                                    updatedEntries.Add(imgMetaData);
+
+                                // Scan the image from the 
+                                GetImageMetaData(ref imgMetaData, out var exifKeywords);
+
+                                // Update the timestamp
+                                imgMetaData.LastUpdated = updateTimeStamp;
+
+                                // Scan for sidecar files
+                                var sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
+
+                                if (sideCarTags.Any())
+                                {
+                                    // See if we've enabled the option to write any sidecar keywords to IPTC keywords
+                                    // if they're missing in the EXIF data of the image.
+                                    if (writeSideCarTagsToImages)
+                                    {
+                                        // Now, submit the tags; note they won't get created immediately, but in batch.
+                                        Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+                                        // Fire and forget this asynchronously - we don't care about waiting for it
+                                        _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
+                                    }
+                                }
+
+                                // Now combine - with case insensitivity.
+                                var allKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase);
+
+                                // Now we have a list of all of the keywords found in the image
+                                // and the sidecar.
+                                if (allKeywords.Any())
+                                    imageKeywords[img] = allKeywords.ToArray();
+
+                                if (imgMetaData.DateTaken != img.SortDate)
+                                {
+                                    Logging.LogTrace($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
+                                    // Always update the image sort date with the date taken,
+                                    // if one was found in the metadata
+                                    img.SortDate = imgMetaData.DateTaken;
+                                    img.LastUpdated = updateTimeStamp;
+                                    updatedImages.Add(img);
+                                }
+                                else
+                                {
+                                    if (imgMetaData.DateTaken == DateTime.MinValue)
+                                        Logging.LogTrace($"Not updating image {img.FileName} with DateTaken as no valid value.");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
+                            }
+                        }
+
+                        var saveWatch = new Stopwatch("MetaDataSave");
+                        Logging.LogVerbose($"Adding {newMetadataEntries.Count()} and updating {updatedEntries.Count()} metadata entries.");
+                        await db.BulkInsert(db.ImageMetaData, newMetadataEntries);
+                        await db.BulkUpdate(db.ImageMetaData, updatedEntries);
+
+                        if (updatedImages.Any())
+                        {
+                            Logging.LogTrace($"Updating {updatedImages.Count()} image with new sort date.");
+                            await db.BulkUpdate(db.Images, updatedImages);
+                        }
+
+                        saveWatch.Stop();
+
+                        var tagWatch = new Stopwatch("AddTagsSave");
+
+                        // Now save the tags
+                        var tagsAdded = await AddTags(imageKeywords);
+
+                        tagWatch.Stop();
+
+                        batchWatch.Stop();
+
+                        updatedEntries.ForEach(x => _imageCache.Evict(x.ImageId));
+
+                        Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
+                        Logging.LogVerbose($"Time for metadata scan batch: {batchWatch.HumanElapsedTime}, save: {saveWatch.HumanElapsedTime}, tag writes: {tagWatch.HumanElapsedTime}.");
+                    }
+
+                    Thread.Sleep(28 * 1000);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception caught during metadata scan: {ex}");
+            }
+        }
+
+        /// <summary>
+        /// Given a collection of images and their keywords, performs a bulk insert
+        /// of them all. This is way more performant than adding the keywords as
+        /// each image is indexed, and allows us to bulk-update the freetext search
+        /// too.
+        /// </summary>
+        /// <param name="imageKeywords"></param>
+        /// <param name="type"></param>
+        private async Task<int> AddTags(IDictionary<Image, string[]> imageKeywords)
+        {
+            // See if we have any images that were written to the DB and have IDs
+            if (!imageKeywords.Where(x => x.Key.ImageId != 0).Any())
+                return 0;
+
+            int tagsAdded = 0;
+            var watch = new Stopwatch("AddTags");
+
+            using ImageContext db = new ImageContext();
+
+            try
+            {
+                // First, find all the distinct keywords, and check whether
+                // they're in the cache. If not, create them in the DB.
+                var allKeywords = imageKeywords.Where(x => x.Value != null && x.Value.Any())
+                                               .SelectMany(x => x.Value).Distinct();
+
+                await CreateTagsFromStrings(allKeywords);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError("Exception adding Tags: {0}", ex);
+            }
+
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var newImageTags = imageKeywords.SelectMany(i => i.Value.Select(
+                                                                    v => new ImageTag
+                                                                    {
+                                                                        ImageId = i.Key.ImageId,
+                                                                        TagId = _tagCache[v].TagId
+                                                                    }))
+                                                                .ToList();
+
+                    // Note that we need to delete all of the existing tags for an image,
+                    // and then insert all of the new tags. This is so that if somebody adds
+                    // one tag, and removes another, we maintain the list correctly.
+                    Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
+
+                    // TODO: This should be in the abstract model
+                    if (!ImageContext.ReadOnly)
+                    {
+
+                        // TODO: Push these down to the abstract model
+                        await db.BatchDelete(db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
+                               .Contains(y.ImageId)));
+
+                        await db.BulkInsert(db.ImageTags, newImageTags); ;
+
+                        transaction.Commit();
+
+                        tagsAdded = newImageTags.Count;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError("Exception adding ImageTags: {0}", ex);
+                }
+            }
+
+            watch.Stop();
+
+            return tagsAdded;
+        }
+
+        /// <summary>
+        /// Some image editing apps such as Lightroom, On1, etc., do not persist the keyword metadata
+        /// in the images by default. This can mean you keyword-tag them, but those keywords are only
+        /// stored in the sidecars. Damselfly only scans keyword metadata from the EXIF image data
+        /// itself.
+        /// So to rectify this, we can either read the sidecar files for those keywords, and optionally
+        /// write the missing keywords to the Exif Metadata as we index them.
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="keywords"></param>
+        private List<string> GetSideCarKeywords(Image img, string[] keywords, bool tagsWillBeWritten)
+        {
+            var sideCarTags = new List<string>();
+
+            var sidecar = img.GetSideCar();
+
+            if (sidecar != null)
+            {
+                var imageKeywords = keywords.Select(x => x.RemoveSmartQuotes());
+                var sidecarKeywords = sidecar.GetKeywords().Select(x => x.RemoveSmartQuotes());
+
+                var missingKeywords = sidecarKeywords
+                                         .Except(imageKeywords, StringComparer.OrdinalIgnoreCase)
+                                         .ToList();
+
+                if (missingKeywords.Any())
+                {
+                    var messagePredicate = tagsWillBeWritten ? "" : "not ";
+                    // Only write this log entry if we're actually going to write sidecar files.
+                    Logging.Log($"Image {img.FileName} is missing {missingKeywords.Count} keywords present in the {sidecar.Type} sidecar ({sidecar.Filename.Name}). Tags will {messagePredicate}be written to images.");
+                    sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                }
+            }
+
+            return sideCarTags;
+        }
+
+        /// <summary>
+        /// These are the orientation strings:
+        ///    "Top, left side (Horizontal / normal)",
+        ///    "Top, right side (Mirror horizontal)",
+        ///    "Bottom, right side (Rotate 180)", "Bottom, left side (Mirror vertical)",
+        ///    "Left side, top (Mirror horizontal and rotate 270 CW)",
+        ///    "Right side, top (Rotate 90 CW)",
+        ///    "Right side, bottom (Mirror horizontal and rotate 90 CW)",
+        ///    "Left side, bottom (Rotate 270 CW)"
+        /// </summary>
+        /// <param name="orientation"></param>
+        /// <returns></returns>
+        private bool NeedToSwitchWidthAndHeight(string orientation) =>
+            orientation switch
+            {
+                "5" => true,
+                "6" => true,
+                "7" => true,
+                "8" => true,
+                "Top, left side (Horizontal / normal)" => false,
+                "Top, right side (Mirror horizontal)" => false,
+                "Bottom, right side (Rotate 180)" => false,
+                "Bottom, left side (Mirror vertical)" => false,
+                "Left side, top (Mirror horizontal and rotate 270 CW)" => true,
+                "Right side, top (Rotate 90 CW)" => true,
+                "Right side, bottom (Mirror horizontal and rotate 90 CW)" => true,
+                "Left side, bottom (Rotate 270 CW)" => true,
+                _ => false
+            };
+
+        /// <summary>
+        /// Dump metadata out in tracemode.
+        /// </summary>
+        /// <param name="metadata"></param>
+        private void DumpMetaData(Image img, IReadOnlyList<MetadataExtractor.Directory> metadata)
+        {
+            Logging.LogVerbose($"Metadata dump for: {img.FileName}:");
+            foreach (var dir in metadata)
+            {
+                Logging.LogVerbose($" Directory: {dir.Name}:");
+                foreach (var tag in dir.Tags)
+                {
+                    Logging.LogVerbose($"  Tag: {tag.Name} = {tag.Description}");
+                }
+            }
+        }
+
+        #region Tag, Lens and Camera Caching
+        private void InitCameraAndLensCaches()
+        {
+            if (_lensCache == null)
+            {
+                using ImageContext db = new ImageContext();
+                _lensCache = new ConcurrentDictionary<string, Lens>(db.Lenses
+                                                                      .AsNoTracking()
+                                                                      .ToDictionary(x => x.Make + x.Model, y => y));
+            }
+
+            if (_cameraCache == null)
+            {
+                using var db = new ImageContext();
+                _cameraCache = new ConcurrentDictionary<string, Camera>(db.Cameras
+                                                                           .AsNoTracking() // We never update, so this is faster
+                                                                           .ToDictionary(x => x.Make + x.Model, y => y));
+            }
+        }
+
+        /// <summary>
+        /// Get a camera object, for each make/model. Uses an in-memory cache for speed.
+        /// </summary>
+        /// <param name="make"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private Camera GetCamera(string make, string model, string serial)
+        {
+            string cacheKey = make + model;
+
+            if (string.IsNullOrEmpty(cacheKey))
+                return null;
+
+            if (!_cameraCache.TryGetValue(cacheKey, out Camera cam))
+            {
+                // It's a new one.
+                cam = new Camera { Make = make, Model = model, Serial = serial };
+
+                using var db = new ImageContext();
+                db.Cameras.Add(cam);
+                db.SaveChanges("SaveCamera");
+
+                _cameraCache[cacheKey] = cam;
+            }
+
+            return cam;
+        }
+
+        /// <summary>
+        /// Get a lens object, for each make/model. Uses an in-memory cache for speed.
+        /// </summary>
+        /// <param name="make"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        private Lens GetLens(string make, string model, string serial)
+        {
+            string cacheKey = make + model;
+
+            if (string.IsNullOrEmpty(cacheKey))
+                return null;
+
+            if (!_lensCache.TryGetValue(cacheKey, out Lens lens))
+            {
+                // It's a new one.
+                lens = new Lens { Make = make, Model = model, Serial = serial };
+
+                using var db = new ImageContext();
+                db.Lenses.Add(lens);
+                db.SaveChanges("SaveLens");
+
+                _lensCache[cacheKey] = lens;
+            }
+
+            return lens;
+        }
+
+        /// <summary>
+        /// Initialise the in-memory cache of tags.
+        /// </summary>
+        /// <param name="force"></param>
+        private void LoadTagCache(bool force = false)
+        {
+            try
+            {
+                if (_tagCache == null || force)
+                {
+                    var watch = new Stopwatch("LoadTagCache");
+
+                    using (var db = new ImageContext())
+                    {
+                        // Pre-cache tags from DB.
+                        _tagCache = new ConcurrentDictionary<string, Models.Tag>(db.Tags
+                                                                                    .AsNoTracking()
+                                                                                    .ToDictionary(k => k.Keyword, v => v));
+                        if (_tagCache.Any())
+                            Logging.LogTrace("Pre-loaded cach with {0} tags.", _tagCache.Count());
+                    }
+
+                    watch.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Unexpected exception loading tag cache: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Return a tag by its ID.
+        /// TODO: Is this faster, or slower than a DB query, given it means iterating
+        /// a collection of, say, 10,000 tags. Probably faster, but perhaps we should
+        /// maintain a dict of ID => tag?
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <returns></returns>
+        public Models.Tag GetTag(int tagId)
+        {
+            var tag = _tagCache.Values.Where(x => x.TagId == tagId).FirstOrDefault();
+
+            return tag;
+        }
+
+        public Models.Tag GetTag(string keyword)
+        {
+            // TODO: Should we make the tag-cache key case-insensitive? What would happen?!
+            var tag = _tagCache.Values.Where(x => x.Keyword.Equals(keyword, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+
+            return tag;
+        }
+
+        public async Task<List<Models.Tag>> CreateTagsFromStrings(IEnumerable<string> tags)
+        {
+            using ImageContext db = new ImageContext();
+
+            // Find the tags that aren't already in the cache
+            var newTags = tags.Where(x => !_tagCache.ContainsKey(x))
+                        .Select(x => new Models.Tag { Keyword = x, TagType = TagTypes.IPTC })
+                        .ToList();
+
+
+            if (newTags.Any())
+            {
+
+                Logging.LogTrace("Adding {0} tags", newTags.Count());
+
+                await db.BulkInsert(db.Tags, newTags);
+
+                // Add the new items to the cache. 
+                newTags.ForEach(x => _tagCache[x.Keyword] = x);
+            }
+
+            var allTags = tags.Select(x => _tagCache[x]).ToList();
+            return allTags;
+        }
+
+        #endregion
+
+        public class MetadataProcess : IProcessJob
+        {
+            public int ImageId { get; set; }
+            public MetaDataService Service { get; set; }
+            public bool CanProcess => true;
+
+            public async Task Process()
+            {
+                await Service.ScanMetaData(ImageId);
+            }
+        }
+
+        public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
+        {
+            var db = new ImageContext();
+
+            // Find all images where there's either no metadata, or where the image or sidecar file 
+            // was updated more recently than the image metadata
+            var imageIds = await db.Images.Where(x => x.MetaData == null ||
+                                               x.LastUpdated > x.MetaData.LastUpdated)
+                                    .OrderByDescending(x => x.LastUpdated)
+                                    .ThenByDescending(x => x.FileLastModDate)
+                                    .Take(maxJobs)
+                                    .Select(x => x.ImageId)
+                                    .ToListAsync();
+
+            var jobs = imageIds.Select(x => new MetadataProcess { ImageId = x, Service = this })
+                            .ToArray();
+
+            return jobs;
         }
     }
 }
+

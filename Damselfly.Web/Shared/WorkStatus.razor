@@ -1,0 +1,39 @@
+﻿@using Damselfly.Core.DbModels
+@using Microsoft.AspNetCore.Identity
+@using Damselfly.Core.Utils.Constants 
+
+@inject NavigationManager Navigation
+@inject ConfigService configService
+@inject WorkService workService
+
+@implements IDisposable
+
+<div>
+    <label>@Status</label>
+</div>
+
+@code{
+
+    private string Status { get; set; }
+
+    private void StatusChanged( string newStatus )
+    {
+        if( newStatus != Status )
+        {
+            Status = newStatus;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        workService.OnChange += StatusChanged;
+    }
+
+    public void Dispose()
+    {
+        workService.OnChange -= StatusChanged;
+    }
+}

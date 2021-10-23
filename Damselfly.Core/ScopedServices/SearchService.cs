@@ -22,12 +22,12 @@ namespace Damselfly.Core.ScopedServices
     public class SearchService
     {
         public SearchService( UserStatusService statusService, ImageCache cache,
-                                IndexingService indexingService, UserConfigService configService)
+                                MetaDataService metadataService, UserConfigService configService)
         {
             _configService = configService;
             _statusService = statusService;
             _imageCache = cache;
-            _indexingService = indexingService;
+            _metadataService = metadataService;
         }
 
         public class SearchResponse
@@ -39,7 +39,7 @@ namespace Damselfly.Core.ScopedServices
         private readonly UserStatusService _statusService;
         private readonly ImageCache _imageCache;
         private readonly UserConfigService _configService;
-        private readonly IndexingService _indexingService;
+        private readonly MetaDataService _metadataService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
         private const double s_similarityThreshold = 0.75;
@@ -403,14 +403,14 @@ namespace Damselfly.Core.ScopedServices
 
                 if ( CameraId > 0 )
                 {
-                    var cam = _indexingService.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
+                    var cam = _metadataService.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
                     if (cam != null)
                         hints.Add($"Camera: {cam.Model}");
                 }
 
                 if (LensId > 0)
                 {
-                    var lens = _indexingService.Lenses.FirstOrDefault(x => x.LensId == LensId);
+                    var lens = _metadataService.Lenses.FirstOrDefault(x => x.LensId == LensId);
                     if (lens != null)
                         hints.Add($"Lens: {lens.Model}");
                 }

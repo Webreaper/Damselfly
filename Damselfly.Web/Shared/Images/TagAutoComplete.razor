@@ -4,8 +4,8 @@
 @using Blazored.Typeahead
 
 @inject ThumbnailService thumbService
-@inject MetaDataService iptcService
-@inject IndexingService indexService
+@inject ExifService iptcService
+@inject MetaDataService metadataService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
@@ -80,7 +80,7 @@
         {
             // We include any keyword that contains the search term - but exclude 
             // the actual search term, as we'll add it explicitly at the top of the list. 
-            var results = await Task.FromResult(indexService.CachedTags
+            var results = await Task.FromResult(metadataService.CachedTags
                                 .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
                                             && ! x.Keyword.Equals( searchText, StringComparison.OrdinalIgnoreCase))
                                 .OrderBy(x => x.Favourite ? 0 : 1 ) // Favourites first

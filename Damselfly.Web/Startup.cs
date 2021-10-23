@@ -84,9 +84,11 @@ namespace Damselfly.Web
             services.AddSingleton<IImageProcessorFactory>(x => x.GetRequiredService<ImageProcessorFactory>());
             services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
+            services.AddSingleton<FolderWatcherService>();
             services.AddSingleton<IndexingService>();
-            services.AddSingleton<ThumbnailService>();
             services.AddSingleton<MetaDataService>();
+            services.AddSingleton<ThumbnailService>();
+            services.AddSingleton<ExifService>();
             services.AddSingleton<TaskService>();
             services.AddSingleton<FolderService>();
             services.AddSingleton<DownloadService>();
@@ -99,6 +101,7 @@ namespace Damselfly.Web
             services.AddSingleton<ThemeService>();
             services.AddSingleton<ImageRecognitionService>();
             services.AddSingleton<ImageCache>();
+            services.AddSingleton<WorkService>();
 
             // This needs to happen after ConfigService has been registered.
             services.AddAuthorization(config => SetupPolicies(config, services));
@@ -169,10 +172,11 @@ namespace Damselfly.Web
         /// <param name="env"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
                         DownloadService download, ThemeService themes, TaskService tasks,
-                        MetaDataService metadata, ThumbnailService thumbService,
+                        ExifService exifService, ThumbnailService thumbService,
                         IndexingService indexService, ImageProcessService imageProcessing,
                         AzureFaceService azureFace, ImageRecognitionService aiService,
-                        UserService userService, ConfigService configService, ImageCache imageCache)
+                        UserService userService, ConfigService configService, WorkService workService,
+                        ImageCache imageCache,  MetaDataService metaDataService)
         {
             var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 
@@ -230,16 +234,18 @@ namespace Damselfly.Web
             download.SetDownloadPath(contentRootPath);
             themes.SetContentPath(contentRootPath);
 
+            // Start the work processing queue for AI, Thumbs, etc
+            workService.StartService();
+
             // Start the face service before the thumbnail service
             azureFace.StartService().Wait();
+            metaDataService.StartService();
             indexService.StartService();
-            thumbService.StartService();
-            aiService.StartService();
 
             // Validation check to ensure at least one user is an Admin
             userService.CheckAdminUser().Wait();
 
-            StartTaskScheduler(tasks, download, thumbService, metadata);
+            StartTaskScheduler(tasks, download, thumbService, exifService);
         }
 
         /// <summary>
@@ -248,7 +254,7 @@ namespace Damselfly.Web
         /// cleanup of temporary download files, etc., etc.
         /// </summary>
         private static void StartTaskScheduler(TaskService taskScheduler, DownloadService download,
-                                            ThumbnailService thumbService, MetaDataService metadata)
+                                            ThumbnailService thumbService, ExifService exifService)
         {
             var tasks = new List<ScheduledTask>();
 
@@ -279,7 +285,7 @@ namespace Damselfly.Web
             {
                 Type = ScheduledTask.TaskType.CleanupKeywordOps,
                 ExecutionFrequency = new TimeSpan(12,0,0),
-                WorkMethod = () => metadata.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
+                WorkMethod = () => exifService.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
                 ImmediateStart = false
             });
 

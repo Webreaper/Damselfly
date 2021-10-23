@@ -9,7 +9,7 @@
 
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
-@inject IndexingService indexingService
+@inject MetaDataService metadataService
 @inject NavigationService navContext
 @inject SearchService searchService
 @inject UserStatusService statusService
@@ -75,14 +75,14 @@
 
         if (TagId != 0)
         {
-            var tag = indexingService.GetTag(TagId);
+            var tag = metadataService.GetTag(TagId);
 
             if (tag != null)
                 searchService.Tag = tag;
         }
         else if( ! string.IsNullOrEmpty( Tag ))
         {
-            var tag = indexingService.GetTag(Tag);
+            var tag = metadataService.GetTag(Tag);
 
             if (tag != null)
                 searchService.Tag = tag;
