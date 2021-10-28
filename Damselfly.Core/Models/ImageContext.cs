@@ -203,16 +203,6 @@ namespace Damselfly.Core.Models
     /// </summary>
     public class ImageMetaData
     {
-        public enum Stars
-        {
-            One,
-            Two,
-            Three,
-            Four,
-            Five
-        };
-
-
         [Key]
         public int MetaDataId { get; set; }
 
@@ -222,7 +212,7 @@ namespace Damselfly.Core.Models
 
         public int Width { get; set; }
         public int Height { get; set; }
-        public Stars Rating { get; set; }
+        public int Rating { get; set; } // 1-5, stars
         public string Caption { get; set; }
         public string Copyright { get; set; }
         public string Credit { get; set; }
@@ -239,11 +229,20 @@ namespace Damselfly.Core.Models
         public int? LensId { get; set; }
         public virtual Lens Lens { get; set; }
 
+        public string DominantColor { get; set; }
+        public string AverageColor { get; set; }
+
         // The date that this metadata was read from the image
+        // If this is older than Image.LastUpdated, the image
+        // will be re-indexed
         public DateTime LastUpdated { get; set; }
-        // Date the thumbs were last created
+
+        // Date the thumbs were last created. If this is null
+        // the thumbs will be regenerated
         public DateTime? ThumbLastUpdated { get; set; }
+
         // Date we last performed face/object/image recognition
+        // If this is null, AI will be reprocessed
         public DateTime? AILastUpdated { get; set; }
     }
 

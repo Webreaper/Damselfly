@@ -7,8 +7,9 @@
 @inject ImageRecognitionService aiService
 @inject SelectionService selectionService
 @inject DownloadService downloadService
-@inject SearchService searchService 
- 
+@inject SearchService searchService
+@inject IDialogService DialogService
+
 @inject IJSRuntime JsRuntime
 
 <LocalFileExporter @ref="FileExporter" />
@@ -21,8 +22,8 @@ else
 <div class="grid-image" @ondblclick="NavigateToImage">
     @if (!string.IsNullOrEmpty(ImageUrl))
     {
-        <img @key="CurrentImage.ImageId" class="@SelectStyle" title="@ImgToolTip" src="@ImageUrl"
-            @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+<img @key="CurrentImage.ImageId" class="@SelectStyle" title="@ImgToolTip" src="@ImageUrl"
+     @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
                     <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">}
 </div>
                 @if (DisplayFileName)
@@ -32,73 +33,67 @@ else
 </div>}}
 
 @code
-{
-    [Parameter]
-    public NavigationContexts NavContext { get; set; }
+{[Parameter]
+            public NavigationContexts NavContext { get; set; }
 
-    [Parameter]
-    public Image CurrentImage { get; set;  }
+            [Parameter]
+            public Image CurrentImage { get; set; }
 
-    [Parameter]
-    public bool DisplayFileName { get; set; } = false;
+            [Parameter]
+            public bool DisplayFileName { get; set; } = false;
 
-    [Parameter]
-    public ThumbSize ThumbnailSize { get; set; } = ThumbSize.Small;
+            [Parameter]
+            public ThumbSize ThumbnailSize { get; set; } = ThumbSize.Small;
 
-    public bool InBasket
-    {
-        get { return basketService.IsSelected(CurrentImage); }
-        set { _ = SetBasketState(value); }
-    }
-
-    private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}";
-    private LocalFileExporter FileExporter;
-    string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
-    string SelectStyle { get { return selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
-
-    private async Task SetBasketState( bool newState )
-    {
-        await basketService.SetBasketState(new[] { CurrentImage }, newState);
-        // Notify the image list that the selection has changed
-        StateHasChanged();
-    }
-
-    void ShowContextMenu(MouseEventArgs args)
-    {
-        var selectedImages = selectionService.Selection;
-
-        contextMenuService.Open(args, ds =>
-           @<RadzenMenu Click="OnMenuItemClick">
-            <RadzenMenuItem Text="View Image" Value="0" />
-            <RadzenMenuItem Text="Download" Value="1" />
-            @if (CurrentImage.Hash != null && !string.IsNullOrEmpty(CurrentImage.Hash.PerceptualHash))
+            public bool InBasket
             {
-                <RadzenMenuItem Text="Find Similar Images (Experimental)"Value="7"/>
+                get { return basketService.IsSelected(CurrentImage); }
+                set { _ = SetBasketState(value); }
             }
-            <hr class="separator">
-            @if (InBasket)
+
+            private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}";
+            private LocalFileExporter FileExporter;
+            string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
+            string SelectStyle { get { return selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected"; } }
+
+            private async Task SetBasketState(bool newState)
             {
-                <RadzenMenuItem Text="Remove from basket" Value="2" />
+                await basketService.SetBasketState(new[] { CurrentImage }, newState);
+                // Notify the image list that the selection has changed
+                StateHasChanged();
             }
-            else
+
+            void ShowContextMenu(MouseEventArgs args)
             {
-                <RadzenMenuItem Text="Add to basket" Value="3" />
-            }
-            @if (FileExporter != null && FileExporter.IsDesktopHosted)
-            { 
-                <RadzenMenuItem Text="Save Locally" Value="4" />
-            }
-            <RadzenMenuItem Text="Regenerate Thumbnail" Value="5" />
-            <RadzenMenuItem Text="Rescan AI" Value="6" />
-            </RadzenMenu>
-        );
+                var selectedImages = selectionService.Selection;
+
+                contextMenuService.Open(args, ds =>
+    @<RadzenMenu Click="OnMenuItemClick">
+        <RadzenMenuItem Text="View Image" Value="0" />
+        <RadzenMenuItem Text="Download" Value="1" />
+        @if (CurrentImage.Hash != null && !string.IsNullOrEmpty(CurrentImage.Hash.PerceptualHash))
+        {
+            <RadzenMenuItem Text="Find Similar Images (Experimental)" Value="6" />
+        }
+        <hr class="separator">
+        @if (InBasket)
+        {
+<RadzenMenuItem Text="Remove from basket" Value="2" /> }
+                else
+                {
+                    <RadzenMenuItem Text="Add to basket" Value="3" />}
+        @if (FileExporter != null && FileExporter.IsDesktopHosted)
+        {
+            <RadzenMenuItem Text="Save Locally" Value="4" />}
+        <RadzenMenuItem Text="Refresh" Value="5" />
+    </RadzenMenu>);
     }
 
     private ICollection<Image> ContextSelection
     {
         get
         {
-            if( selectionService.Selection.Any() )
+            if (selectionService.Selection.Any())
             {
                 return selectionService.Selection;
             }
@@ -116,13 +111,20 @@ else
         {
             case 0: NavigateToImage(); break;
             case 1: await DownloadImage(); break;
-            case 2: await basketService.SetBasketState(ContextSelection, false ); break;
+            case 2: await basketService.SetBasketState(ContextSelection, false); break;
             case 3: await basketService.SetBasketState(ContextSelection, true); break;
             case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
-            case 5: await thumbService.MarkImagesForScan(ContextSelection); break;
-            case 6: await aiService.MarkImagesForScan(ContextSelection); break;
-            case 7: FindImageSimilarTo(); break;
+            case 5: await ShowRescanDialog(); break;
+            case 6: FindImageSimilarTo(); break;
         }
+    }
+
+    private async Task ShowRescanDialog()
+    {
+        var parameters = new DialogParameters { { "images", ContextSelection } };
+        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
     }
 
     private void FindImageSimilarTo()
@@ -155,4 +157,4 @@ else
         navContext.Context = NavContext;
         NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
     }
-    }
+}

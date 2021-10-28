@@ -44,11 +44,11 @@ namespace ImageClassification.ModelScorer
             public const string outputTensorName = "softmax2";
         }
 
-        public void Score()
+        public void Score( List<ImageNetData> images )
         {
             var model = LoadModel(imagesFolder, modelLocation);
 
-            var predictions = PredictDataUsingModel(imagesFolder, labelsLocation, model).ToArray();
+            var predictions = PredictDataUsingModel(images, labelsLocation, model).ToArray();
 
         }
 
@@ -81,7 +81,7 @@ namespace ImageClassification.ModelScorer
             return predictionEngine;
         }
 
-        protected IEnumerable<ImageNetData> PredictDataUsingModel(string imagesFolder, 
+        protected IEnumerable<ImageNetData> PredictDataUsingModel(List<ImageNetData> imageData, 
                                                                   string labelsLocation, 
                                                                   PredictionEngine<ImageNetData, ImageNetPrediction> model)
         {
@@ -90,13 +90,6 @@ namespace ImageClassification.ModelScorer
             Console.WriteLine($"Labels file: {labelsLocation}");
 
             var labels = ModelHelpers.ReadLabels(labelsLocation);
-
-            var imageExtensions = new[] { ".jpg", ".png" };
-
-            var imageData = System.IO.Directory.GetFiles(imagesFolder, "*_m.jpg")
-                                              .Where( x => imageExtensions.Contains( System.IO.Path.GetExtension( x ) ))
-                                              .OrderBy(x => x)
-                                              .Select(x => new ImageNetData { ImagePath = x });
 
             foreach (var sample in imageData)
             {

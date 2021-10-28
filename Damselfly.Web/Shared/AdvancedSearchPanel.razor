@@ -7,7 +7,7 @@
 @inject UserService userService
 @inject UserStatusService userStatusService
 @inject ConfigService configService
-@inject IndexingService indexingService
+@inject MetaDataService metadataService
 @inject SearchService searchService
 
 @implements IDisposable
@@ -53,7 +53,7 @@
     </div>
     <div class="damselfly-dialogctrl">
         <MudSelect T="int?" Label="Camera Make/Model" @bind-Value="searchService.CameraId" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var cam in indexingService.Cameras)
+            @foreach (var cam in metadataService.Cameras)
             {
                 <MudSelectItem T="int?" Value="@cam.CameraId">
                     @cam.Make @cam.Model
@@ -63,7 +63,7 @@
     </div>
     <div class="damselfly-dialogctrl">
         <MudSelect T="int?" Label="Lens Make/Model" @bind-Value="searchService.LensId" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var lens in indexingService.Lenses)
+            @foreach (var lens in metadataService.Lenses)
             {
                 <MudSelectItem T="int?" Value="@lens.LensId">
                     @lens.Make @lens.Model

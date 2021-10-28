@@ -18,11 +18,15 @@ namespace Damselfly.Core.Utils.Constants
         public const string ImportSidecarKeywords = "ImportSidecarKeywords";
         public const string LogLevel = "LogLevel";
 
-        public const string AIProcessingTimeRange = "AIProcessingTimeRange";
         public const string AzureEndpoint = "AzureEndpoint";
         public const string AzureApiKey = "AzureApiKey";
         public const string AzureUseFreeTier = "UseFreeTier";
         public const string AzureDetectionType = "AzureDetectionType";
+
+        public const string AltCPULimitEnabled = "AltCPULimitEnabled";
+        public const string CPULimit = "CPULimit";
+        public const string AltCPULimit = "AltCPULimit";
+        public const string AltCPULimitTimes = "AltCPULimitTimes";
 
         public const string EnablePoliciesAndRoles = "EnablePoliciesAndRoles";
         public const string ForceLogin = "ForceLogin";

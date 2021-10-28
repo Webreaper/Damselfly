@@ -159,6 +159,7 @@ namespace Damselfly.Core.ScopedServices
             if (!string.IsNullOrEmpty(virtualZipPath))
             {
                 _statusService.StatusText = $"Basket selection downloaded to {virtualZipPath}.";
+                Logging.Log($"Basket selection downloaded to {virtualZipPath}.");
 
                 return virtualZipPath;
             }

@@ -5,7 +5,7 @@
 
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
-@inject IndexingService indexingService
+@inject MetaDataService metadataService
 
 <div class="damselfly-tagview">
     @if (Tags == null)
@@ -54,7 +54,7 @@
     {
         get
         {
-            return indexingService.CachedTags.OrderBy(x => x.Favourite)
+            return metadataService.CachedTags.OrderBy(x => x.Favourite)
                                              .ThenBy(x => x.Keyword, StringComparer.OrdinalIgnoreCase);
         }
     }

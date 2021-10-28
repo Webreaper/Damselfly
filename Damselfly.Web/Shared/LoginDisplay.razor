@@ -10,7 +10,10 @@
 {
     <AuthorizeView>
         <Authorized>
-            <div><NavLink href="/config">@context.User.Identity?.Name</NavLink></div>
+            <div class="damselfly-statusbarpanel" title="Logged in as @context.User.Identity?.Name">
+                <i class="processing-icon fas fa-user" />
+                <NavLink href="/config">@context.User.Identity?.Name</NavLink>
+            </div>
             <div>
                 <button class="btn btn-primary" onclick="location.href='/Identity/Account/Logout'" type="button">Log Out</button>
             </div>

@@ -16,6 +16,7 @@ namespace Damselfly.Core.Utils
         {
             return (64 - BitOperations.PopCount(hash1 ^ hash2)) / 64.0;
         }
+
     }
 }
 

@@ -24,7 +24,7 @@ namespace Damselfly.Core.ImageProcessing
 {
     public class ImageSharpProcessor : IImageProcessor, IHashProvider
     {
-        private static FontCollection fontCollection;
+        private static FontCollection? fontCollection;
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".tga", ".gif", ".bmp" };
 
         public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions;  } }
@@ -91,7 +91,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <returns>String hash of the image data</returns>
         public static string GetHash(Image<Rgba32> image)
         {
-            string result = null;
+            string result = String.Empty;
 
             try
             {
@@ -153,10 +153,10 @@ namespace Damselfly.Core.ImageProcessing
             // Other pixel formats use Image.Load<TPixel>(string path))
             using var image = await Image.LoadAsync<Rgba32>(source.FullName);
 
+            load.Stop();
+
             // We've got the image in memory. Create the hash. 
             result.ImageHash = GetHash(image);
-
-            load.Stop();
 
             Stopwatch orient = new Stopwatch("ImageSharpOrient");
 
@@ -242,7 +242,7 @@ namespace Damselfly.Core.ImageProcessing
                 img.Mutate(x => x.AutoOrient());
             }
 
-            if (!string.IsNullOrEmpty(config.WatermarkText))
+            if (!string.IsNullOrEmpty(config.WatermarkText) && fontCollection != null)
             {
                 // Apply the watermark if one's been specified.
                 Font font = fontCollection.CreateFont("Arial", 10);

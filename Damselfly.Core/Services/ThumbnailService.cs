@@ -11,11 +11,12 @@ using MetadataExtractor.Formats.Jpeg;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils.Images;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
     
-    public class ThumbnailService
+    public class ThumbnailService : IProcessJobFactory
     {
         private static string _thumbnailRootFolder;
         private const string _requestRoot = "/images";
@@ -23,15 +24,18 @@ namespace Damselfly.Core.Services
         private readonly StatusService _statusService;
         private readonly ImageCache _imageCache;
         private readonly ImageProcessService _imageProcessingService;
-
+        private readonly WorkService _workService;
 
         public ThumbnailService( StatusService statusService,
                         ImageProcessService imageService,
-                        ImageCache imageCache)
+                        ImageCache imageCache, WorkService workService)
         {
             _statusService = statusService;
             _imageProcessingService = imageService;
             _imageCache = imageCache;
+            _workService = workService;
+
+            _workService.AddJobSource(this);
         }
 
         /// <summary>
@@ -266,50 +270,6 @@ namespace Damselfly.Core.Services
             }
         }
 
-
-        public void StartService()
-        {
-            if (EnableThumbnailGeneration)
-            {
-                Logging.Log("Started thumbnail service.");
-
-                var thread = new Thread(new ThreadStart(RunThumbnailScan));
-                thread.Name = "ThumbnailThread";
-                thread.IsBackground = true;
-                thread.Priority = ThreadPriority.Lowest;
-                thread.Start();
-            }
-            else
-            {
-                Logging.Log("Thumbnail service was disabled.");
-            }
-        }
-
-        private void RunThumbnailScan()
-        {
-            while (true)
-            {
-#if DEBUG
-                const int sleepSecs = 5;
-#else
-                const int sleepSecs = 60;
-#endif
-                try
-                {
-                    ProcessThumbnailScan().Wait();
-                }
-                catch( Exception ex )
-                {
-                    Logging.LogError($"Exception during thumbnail processing: {ex.Message}");
-                }
-                finally
-                {
-                    Thread.Sleep(1000 * sleepSecs);
-                }
-            }
-        }
-
-        
         /// <summary>
         /// Queries the database to find any images that haven't had a thumbnail
         /// generated, and queues them up to process the thumb generation.
@@ -395,6 +355,31 @@ namespace Damselfly.Core.Services
             var result = await ConvertFile(sourceImage.Image, forceRegeneration);
 
             _imageCache.Evict(sourceImage.ImageId);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Generates thumbnails for an image.
+        /// </summary>
+        /// <param name="sourceImage"></param>
+        /// <param name="forceRegeneration"></param>
+        /// <returns></returns>
+        public async Task<ImageProcessResult> CreateThumb(int imageId)
+        {
+            var db = new ImageContext();
+
+            var image = await _imageCache.GetCachedImage(imageId);
+
+            // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
+            image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
+
+            var result = await ConvertFile(image, false);
+
+            db.ImageMetaData.Update(image.MetaData);
+            await db.SaveChangesAsync("UpdateThumbTimeStamp");
+
+            _imageCache.Evict(image.ImageId);
 
             return result;
         }
@@ -551,6 +536,42 @@ namespace Damselfly.Core.Services
 
             var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
             _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";
+
+            _workService.HandleNewJobs(this);
+        }
+
+        public class ThumbProcess : IProcessJob
+        {
+            public int ImageId { get; set; }
+            public ThumbnailService Service { get; set; }
+            public bool CanProcess => true;
+            public string Description => "Thumbnail generation";
+
+            public async Task Process()
+            {
+                await Service.CreateThumb(ImageId);
+            }
+        }
+
+        public int Priority => 4;
+
+        public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
+        {
+            if (!EnableThumbnailGeneration)
+                return new ThumbProcess[0];
+            
+            var db = new ImageContext();
+
+            var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
+                                    .OrderByDescending(x => x.LastUpdated)
+                                    .Take(maxJobs)
+                                    .Select(x => x.ImageId)
+                                    .ToListAsync();
+
+            var jobs = images.Select( x => new ThumbProcess { ImageId = x, Service = this})
+                            .ToArray();
+
+            return jobs;
         }
     }
 }

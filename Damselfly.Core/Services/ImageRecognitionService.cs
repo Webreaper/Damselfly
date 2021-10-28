@@ -14,37 +14,49 @@ using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.ObjectDetection;
+using Damselfly.ML.ImageClassification;
 using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services
 {
-    public class ImageRecognitionService
+    public class ImageRecognitionService : IProcessJobFactory
     {
         private readonly ObjectDetector _objectDetector;
         private readonly AccordFaceService _accordFaceService;
         private readonly AzureFaceService _azureFaceService;
         private readonly EmguFaceService _emguFaceService;
         private readonly StatusService _statusService;
-        private readonly IndexingService _indexingService;
+        private readonly MetaDataService _metdataService;
         private readonly ThumbnailService _thumbService;
         private readonly ConfigService _configService;
+        private readonly ImageClassifier _imageClassifier;
+        private readonly WorkService _workService;
+        private readonly ImageCache _imageCache;
+
         private IDictionary<string, Person> _peopleCache;
+
         public static bool EnableImageRecognition { get; set; } = true;
 
         public ImageRecognitionService(StatusService statusService, ObjectDetector objectDetector,
-                        IndexingService indexingService, AzureFaceService azureFace,
+                        MetaDataService metadataService, AzureFaceService azureFace,
                         AccordFaceService accordFace, EmguFaceService emguService,
-                        ThumbnailService thumbs, ConfigService configService)
+                        ThumbnailService thumbs, ConfigService configService,
+                        ImageClassifier imageClassifier, ImageCache imageCache,
+                        WorkService workService)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
             _azureFaceService = azureFace;
             _statusService = statusService;
             _objectDetector = objectDetector;
-            _indexingService = indexingService;
+            _metdataService = metadataService;
             _emguFaceService = emguService;
             _configService = configService;
-        }
+            _imageClassifier = imageClassifier;
+            _imageCache = imageCache;
+            _workService = workService;
+         }
 
         public ImageRecognitionService()
         {
@@ -53,26 +65,6 @@ namespace Damselfly.Core.Services
         public List<Person> GetCachedPeople()
         {
             return _peopleCache.Values.OrderBy(x => x.Name).ToList();
-        }
-
-        public (TimeSpan? start,TimeSpan? end) GetProcessingTimeRange()
-        {
-            TimeSpan? aiStartTime = null, aiEndTime = null;
-
-            string aiTimeRange = _configService.Get(ConfigSettings.AIProcessingTimeRange);
-
-            if (!string.IsNullOrEmpty(aiTimeRange))
-            {
-                var settings = aiTimeRange.Split("-");
-
-                if (settings.Length == 2)
-                {
-                    aiStartTime = TimeSpan.Parse(settings[0]);
-                    aiEndTime = TimeSpan.Parse(settings[1]);
-                }
-            }
-
-            return( aiStartTime, aiEndTime );
         }
 
         /// <summary>
@@ -178,7 +170,7 @@ namespace Damselfly.Core.Services
         private async Task<IDictionary<string, int>> CreateNewTags(IList<ImageDetectResult> objects)
         {
             var allLabels = objects.Select(x => x.Tag).Distinct().ToList();
-            var tags = await _indexingService.CreateTagsFromStrings(allLabels);
+            var tags = await _metdataService.CreateTagsFromStrings(allLabels);
 
             return tags.ToDictionary(x => x.Keyword, y => y.TagId, StringComparer.OrdinalIgnoreCase);
         }
@@ -226,12 +218,18 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <returns></returns>
-        private async Task DetectObjects(Image image)
+        private async Task DetectObjects(ImageMetaData metadata)
         {
+            var image = metadata.Image;
             var file = new FileInfo(image.FullPath);
             var thumbSize = ThumbSize.Large;
             var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
             var fileName = Path.Combine(image.Folder.Path, image.FileName);
+
+            // First, update the timestamp. We do this first, so that even if something
+            // fails, it'll be set, avoiding infinite loops of failed processing.
+            // The caller will update the DB with a SaveChanges call.
+            metadata.AILastUpdated = DateTime.UtcNow;
 
             try
             {
@@ -249,6 +247,21 @@ namespace Damselfly.Core.Services
 
                 if (bitmap == null)
                     return;
+
+                if( _imageClassifier != null )
+                {
+                    var colorWatch = new Stopwatch("DetectObjects");
+
+                    var dominant = _imageClassifier.DetectDominantColour(bitmap);
+                    var average = _imageClassifier.DetectAverageColor(bitmap);
+
+                    colorWatch.Stop();
+
+                    image.MetaData.AverageColor = average.ToHex();
+                    image.MetaData.DominantColor = dominant.ToHex();
+
+                    Logging.LogVerbose($"Image {image.FullPath} has dominant colour {dominant.ToHex()}, average {average.ToHex()}");
+                }
 
                 // Next, look for faces. We need to determine if we:
                 //  a) Use only local (Accord.Net) detection
@@ -380,7 +393,7 @@ namespace Damselfly.Core.Services
 
                 if (useAzureDetection)
                 {
-                    var faceTag = await _indexingService.CreateTagsFromStrings(new List<string> { "Face" });
+                    var faceTag = await _metdataService.CreateTagsFromStrings(new List<string> { "Face" });
                     var faceTagId = faceTag.FirstOrDefault()?.TagId ?? 0;
 
                     var azurewatch = new Stopwatch("AzureFaceDetect");
@@ -437,7 +450,7 @@ namespace Damselfly.Core.Services
                 {
                     // We've found some faces. Add a tagID.
                     const string faceTagName = "Face";
-                    var tags = await _indexingService.CreateTagsFromStrings(new List<string> { faceTagName });
+                    var tags = await _metdataService.CreateTagsFromStrings(new List<string> { faceTagName });
                     var faceTagId = tags.Single().TagId;
                     foundFaces.ForEach(x => x.TagId = faceTagId);
                 }
@@ -499,163 +512,99 @@ namespace Damselfly.Core.Services
 
         public void StartService()
         {
-            LoadPersonCache();
-
-            if (EnableImageRecognition)
-            {
-                Logging.Log("Started AI image recognition service.");
-
-                var thread = new Thread(new ThreadStart(RunImageRecogntion));
-                thread.Name = "ImageRecognitionThread";
-                thread.IsBackground = true;
-                thread.Priority = ThreadPriority.Lowest;
-                thread.Start();
-            }
-            else
+            if (!EnableImageRecognition)
             {
                 Logging.Log("AI Image recognition service was disabled.");
-            }
-        }
-
-        private void RunImageRecogntion()
-        {
-            while (true)
-            {
-#if DEBUG
-                const int sleepSecs = 5;
-#else
-                const int sleepSecs = 60;
-#endif
-                try
-                {
-                    ProcessAIScan().Wait();
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogError($"Exception during AI processing: {ex.Message}");
-                }
-                finally
-                {
-                    Thread.Sleep(1000 * sleepSecs);
-                }
-            }
-        }
-
-        private async Task ProcessImage(ImageMetaData metadata)
-        {
-            metadata.AILastUpdated = DateTime.UtcNow;
-            await DetectObjects(metadata.Image);
-        }
-
-        private bool WithinProcessingTimeRange()
-        {
-            var timeRange = GetProcessingTimeRange();
-
-            if (timeRange.start != null && timeRange.end != null)
-            {
-                var now = DateTime.UtcNow.TimeOfDay;
-
-                if (now < timeRange.start && now > timeRange.end)
-                {
-                    // AI scans are disabled at this time.
-                    return false;
-                }
+                return;
             }
 
-            return true;
+            LoadPersonCache();
+            _workService.AddJobSource(this);
         }
 
         /// <summary>
-        /// Queries the database to find any images that haven't had a thumbnail
-        /// generated, and queues them up to process the thumb generation.
+        /// Work processing method for AI processing for a single
+        /// Image.
         /// </summary>
-        private async Task ProcessAIScan()
+        /// <param name="imageId"></param>
+        /// <returns></returns>
+        private async Task DetectObjects(int imageId)
         {
-            using var db = new ImageContext();
+            var db = new ImageContext();
 
-            Logging.LogVerbose("Starting image recognition scan...");
+            var image = await _imageCache.GetCachedImage(imageId);
+            db.Attach(image);
 
-            bool complete = false;
+            await DetectObjects(image.MetaData);
 
-            while (!complete)
-            {
-                if( ! WithinProcessingTimeRange() )
-                {
-                    Logging.LogVerbose("AI Processing disabled at this time.");
-                    return;
-                }
+            // The DetectObjects method will set the metadata AILastUpdated
+            // timestamp. It may also update other fields.
+            db.ImageMetaData.Update(image.MetaData);
+            await db.SaveChangesAsync("UpdateAIGenDate");
 
-                Logging.LogVerbose("Querying DB for pending AI scans...");
-
-                var watch = new Stopwatch("GetAIQueue");
-
-                // TODO: Change this to a consumer/producer thread model
-                var imagesToScan = db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
-                                        .OrderByDescending(x => x.LastUpdated)
-                                        .Take(100)
-                                        .Include(x => x.Image)
-                                        .ThenInclude(x => x.Folder)
-                                        .ToArray();
-
-                watch.Stop();
-
-                complete = !imagesToScan.Any();
-
-                if (!complete)
-                {
-                    Logging.LogVerbose($"Found {imagesToScan.Count()} images requiring AI processing. First image is {imagesToScan[0].Image.FullPath}.");
-
-                    watch = new Stopwatch("ImageRecognitionBatch", 100000);
-
-                    Logging.LogVerbose($"Executing DetectObjects with one thread.");
-
-                    try
-                    {
-                        await imagesToScan.ExecuteInParallel(async img => await ProcessImage(img), 1);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logging.LogError($"Exception during parallelised AI generation: {ex.Message}");
-                    }
-
-                    // Write the timestamps for the newly-generated thumbs.
-                    Logging.LogVerbose("Writing AI generation timestamp updates to DB.");
-
-                    var updateWatch = new Stopwatch("BulkUpdateAIGenDate");
-                    await db.BulkUpdate(db.ImageMetaData, imagesToScan.ToList());
-                    updateWatch.Stop();
-
-                    watch.Stop();
-
-                    _statusService.StatusText = $"Completed AI generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
-
-                    Stopwatch.WriteTotals();
-                }
-                else
-                    Logging.LogVerbose("No images found to scan.");
-            }
+            _imageCache.Evict(imageId);
         }
 
         public async Task MarkFolderForScan(Folder folder)
         {
             using var db = new ImageContext();
 
-            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set AILastUpdated = null where imageid in (select imageid from images where folderid = {folder.FolderId})");
+            var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
+            await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
+            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
             _statusService.StatusText = $"Folder {folder.Name} flagged for AI reprocessing.";
+
+            _workService.HandleNewJobs(this);
         }
 
         public async Task MarkImagesForScan(ICollection<Image> images)
         {
             using var db = new ImageContext();
 
-            string imageIds = string.Join(",", images.Select(x => x.ImageId) );
-            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set AILastUpdated = null where imageid in ({imageIds})");
+            var ids = images.Select(x => x.ImageId).ToList();
+            var queryable = db.ImageMetaData.Where(i => ids.Contains(i.ImageId));
 
-            var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
+            int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
+
+            var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
             _statusService.StatusText = $"{msgText} flagged for AI reprocessing.";
+        }
+
+        public class AIProcess : IProcessJob
+        {
+            public int ImageId { get; set; }
+            public ImageRecognitionService Service { get; set; }
+            public string Description => "AI processing";
+
+            public async Task Process()
+            {
+                await Service.DetectObjects(ImageId);
+            }
+
+            public bool CanProcess { get { return true; } }
+        }
+
+        public int Priority => 5;
+
+        public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
+        {
+            var db = new ImageContext();
+
+            var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
+                            .OrderByDescending(x => x.LastUpdated)
+                            .Take(maxJobs)
+                            .Select(x => x.ImageId)
+                            .ToListAsync();
+
+            if (images.Any())
+            {
+                var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
+                                .ToArray();
+                return jobs;
+            }
+
+            return new AIProcess[0];
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using Damselfly.Core.Utils;
 
-namespace Damselfly.Web.Data
+namespace Damselfly.Core.Utils
 {
     /// <summary>
     /// Event conflator. Ensures we don't call methods many times for
@@ -10,16 +10,17 @@ namespace Damselfly.Web.Data
     /// within that time, we cancel it and start again. If we get to the
     /// end of the timer without another key being pressed, only then do
     /// we call the callback passed into us.
+    /// This can be used for any type of event we want to conflate.
     /// </summary>
     public class EventConflator
     {
-        private readonly long interval;
-        private Timer searchTimer;
+        private readonly long intervalMS;
+        private Timer eventTimer;
         private TimerCallback theCallback;
 
-        public EventConflator( int delay = 1000 )
+        public EventConflator( int delayMs = 1000 )
         {
-            interval = delay;
+            intervalMS = delayMs;
         }
 
         /// <summary>
@@ -33,15 +34,15 @@ namespace Damselfly.Web.Data
         {
             theCallback = callback;
 
-            if (searchTimer != null)
+            if (eventTimer != null)
             {
-                Logging.LogTrace("New keypress - cancelled timer");
-                var oldTimer = searchTimer;
-                searchTimer = null;
+                Logging.LogTrace("New event - cancelled timer");
+                var oldTimer = eventTimer;
+                eventTimer = null;
                 oldTimer.Dispose();
             }
 
-            searchTimer = new Timer(TimerCallback, null, interval, Timeout.Infinite);
+            eventTimer = new Timer(TimerCallback, null, intervalMS, Timeout.Infinite);
         }
 
         /// <summary>
@@ -52,8 +53,8 @@ namespace Damselfly.Web.Data
         /// <param name="state"></param>
         private void TimerCallback( object state )
         {
-            var oldTimer = searchTimer;
-            searchTimer = null;
+            var oldTimer = eventTimer;
+            eventTimer = null;
             if( oldTimer != null )
                 oldTimer.Dispose();
             theCallback(state);

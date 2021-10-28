@@ -10,11 +10,14 @@
 @inject ConfigService configService
 @inject UserConfigService userConfigService
 @inject UserThemeService userThemeService
-@inject ThemeService themeService 
+@inject ThemeService themeService
 @inject UserStatusService statusService
+@inject UserService userService
 @inject WordpressService wpService
-@inject ImageRecognitionService imageService  
+@inject ImageRecognitionService imageService
 @inject AzureFaceService azureService
+@inject WorkService workService
+@inject IDialogService DialogService
 
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
@@ -22,11 +25,8 @@
         <Authorized Context="auth">
             <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
                 <MudTabPanel Text="User Settings">
-                    <h2>Settings for @auth.User.Identity.Name</h2>
-                    <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
-                        <FluentValidationValidator />
-                        <ValidationSummary />
-
+                    <div>
+                        <h2>Settings for @auth.User.Identity.Name</h2>
                         <div class="damselfly-configsetting">
                             <div class="damselfly-configfield">
                                 <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
@@ -43,8 +43,8 @@
                             <div class="damselfly-configfield">
                                 <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="UIConstants.MudVariant"
                                            HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
-                                    @foreach (var choice in new[] { 100, 90, 75, 50, 25 } )
-                                        {
+                                    @foreach (var choice in new[] { 100, 90, 75, 50, 25 })
+                                    {
                                         <MudSelectItem T="int" Value="@choice">
                                             @choice.ToString()
                                         </MudSelectItem>
@@ -53,16 +53,14 @@
                             </div>
                         </div>
                         <button class="btn btn-primary" type="submit">Save Settings</button>
-                    </EditForm>
+                    </div>
                 </MudTabPanel>
 
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin" Context="authPolicy">
                     <MudTabPanel Text="System Settings">
-                        <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                        <EditForm Model="@cpuSettings" OnValidSubmit="@HandleValidSubmit">
                             <FluentValidationValidator />
-                            <ValidationSummary />
-
-                            <h2>SideCar Processing</h2>
+                            <ValidationSummary />                            <h2>SideCar Processing</h2>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
                                     <MudCheckBox @bind-Checked="@importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing" />
@@ -86,10 +84,53 @@
                                 </div>
                             </div>
 
+                            <h2>CPU Usage</h2>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudSelect T="int" Label="CPU Usage Limit" @bind-Value="cpuSettings.CPULevel" Variant="UIConstants.MudVariant"
+                                                HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
+                                        @foreach (var choice in CPULevels.OrderBy(x => x.Key))
+                                        {
+                                            <MudSelectItem T="int" Value="@choice.Key">
+                                                @choice.Value
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
+                            </div>
+
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@cpuSettings.EnableAltCPULevel"
+                                                       Label="Adjust CPU usage limits during these times." />
+                                    <div class="damselfly-configsetting">
+                                        <MudTimePicker @bind-Time="cpuSettings.AltTimeStart" Disabled="@(!cpuSettings.EnableAltCPULevel)"
+                                                       Label="Alternate CPU level start time" AutoClose="true" Color="Color.Tertiary"/>
+                                        <MudTimePicker @bind-Time="cpuSettings.AltTimeEnd" Disabled="@(!cpuSettings.EnableAltCPULevel)"
+                                                       Label="Alternate CPU level end time" AutoClose="true" Color="Color.Tertiary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudSelect T="int" Label="Alternate CPU Usage Limit" @bind-Value="cpuSettings.CPULevelAlt" Disabled="@(!cpuSettings.EnableAltCPULevel)" Variant="UIConstants.MudVariant"
+                                                HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
+                                        @foreach (var choice in CPULevels.OrderBy(x => x.Key))
+                                        {
+                                            <MudSelectItem T="int" Value="@choice.Key">
+                                                @choice.Value
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
+                            </div>
+
+                            <h2>Logging</h2>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
                                     <MudSelect T="LogEventLevel" Label="Log Level" @bind-Value="logLevel" Variant="UIConstants.MudVariant"
-                                               HelperText="Select the logging verbosity">
+                                                HelperText="Select the logging verbosity">
                                         @foreach (var choice in userLogLevels)
                                         {
                                             <MudSelectItem T="LogEventLevel" Value="@choice">
@@ -97,24 +138,6 @@
                                             </MudSelectItem>
                                         }
                                     </MudSelect>
-                                </div>
-                            </div>
-
-                            <h2>Wordpress Upload</h2>
-
-                            <div class="damselfly-configsetting">
-                                <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                                </div>
-                            </div>
-                            <div class="damselfly-configsetting">
-                                <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                                </div>
-                            </div>
-                            <div class="damselfly-configsetting">
-                                <div class="damselfly-configfield">
-                                    <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant" />
                                 </div>
                             </div>
 
@@ -126,13 +149,6 @@
                         <EditForm Model="@azureSettings" OnValidSubmit="@HandleValidSubmit">
                             <FluentValidationValidator />
                             <ValidationSummary />
-
-                            <h2>AI Processing</h2>
-                            <MudCheckBox @bind-Checked="@enableAITimeLimit" Label="Only process image recognition between these times" />
-                            <div class="damselfly-configsetting">
-                                <MudTimePicker @bind-Time="aiStartTime" Disabled="@(!enableAITimeLimit)" Label="AI processing start time" AutoClose="true" />
-                                <MudTimePicker @bind-Time="aiEndTime" Disabled="@(!enableAITimeLimit)" Label="AI processing end time" AutoClose="true" />
-                            </div>
 
                             <h2>Azure Cognitive Services Face Recognition</h2>
 
@@ -168,9 +184,9 @@
                                                HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
                                         @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
                                         {
-                                        <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
-                                            @choice.ToString().Humanize()
-                                        </MudSelectItem>
+                                            <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
+                                                @choice.ToString().Humanize()
+                                            </MudSelectItem>
                                         }
                                     </MudSelect>
                                 </div>
@@ -249,6 +265,29 @@
                             <button class="btn btn-primary" type="submit">Save Settings</button>
                         </EditForm>
                     </MudTabPanel>
+
+                    <MudTabPanel Text="Wordpress">
+                        <EditForm Model="@wpSettings" OnValidSubmit="@HandleValidSubmit">
+                            <FluentValidationValidator />
+                            <ValidationSummary />
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                                </div>
+                            </div>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudTextField @bind-Value="@wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" type="submit">Save Settings</button>
+                        </EditForm>
+                    </MudTabPanel>
                 </AuthorizeView>
             </MudTabs>
         </Authorized>
@@ -261,6 +300,7 @@
 @code {
     private WordpressSettings wpSettings = new WordpressSettings();
     private AzureSettings azureSettings = new AzureSettings();
+    private CPULevelSettings cpuSettings = new CPULevelSettings();
     private EmailSmtpService.SmtpSettings smtpSettings = new EmailSmtpService.SmtpSettings();
     private EmailSendGridService.SendGridSettings sendGridSettings = new EmailSendGridService.SendGridSettings();
     private LogEventLevel logLevel;
@@ -272,9 +312,27 @@
     private bool allowExternalRegistration = false;
     private bool anableAuthAndRoles = false;
     private int similarityThreshold = 75;
-    TimeSpan? aiStartTime = new TimeSpan(23, 00, 00);
-    TimeSpan? aiEndTime = new TimeSpan(04, 30, 00);
-    private bool enableAITimeLimit = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (anableAuthAndRoles && !userService.GetUsers().GetAwaiter().GetResult().Any())
+            {
+                var dialog = DialogService.Show<UserDialog>("Create Admin User");
+                var result = await dialog.Result;
+            }
+        }
+    }
+
+    private Dictionary<int, string> CPULevels = new Dictionary<int, string>
+    {
+        { 0, "0% (Disabled)" },
+        { 25, "25%" },
+        { 50, "50%" },
+        { 75, "75%" },
+        { 100, "100% (unlimited)" },
+    };
 
     private void HandleValidSubmit()
     {
@@ -306,12 +364,7 @@
             smtpSettings.Save(configService);
             sendGridSettings.Save(configService);
 
-            string aiTimeRangeSettings = null;
-
-            if (enableAITimeLimit)
-                aiTimeRangeSettings = $"{aiStartTime.LocalTimeSpanToUTC()}-{aiEndTime.LocalTimeSpanToUTC()}";
-
-            configService.Set(ConfigSettings.AIProcessingTimeRange, aiTimeRangeSettings);
+            cpuSettings.Save(configService);
 
             Logging.ChangeLogLevel(logLevel);
 
@@ -321,13 +374,13 @@
                 userThemeService.CurrentThemeName = selectedTheme;
             }
 
-            userConfigService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString() );
+            userConfigService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString());
 
             UpdateServicesWithNewSettings();
         }
         catch (Exception ex)
         {
-            statusService.StatusText = "Error saving settings.";
+            statusService.StatusText = $"Error saving settings: {ex.Message}";
             Logging.LogError($"Error saving settings: {ex}");
         }
     }
@@ -336,6 +389,8 @@
     {
         try
         {
+            workService.SetCPUSchedule( cpuSettings );
+
             // Init the azure service status based on config.
             _ = azureService.StartService();
 
@@ -343,7 +398,7 @@
             wpService.ResetClient();
 
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Exception initialising services after settings update: {ex}");
         }
@@ -374,14 +429,7 @@
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         selectedTheme = userThemeService.CurrentThemeName;
 
-        var range = imageService.GetProcessingTimeRange();
-
-        if( range.start != null && range.end != null )
-        {
-            aiStartTime = range.start.UTCTimeSpanToLocal();
-            aiEndTime = range.end.UTCTimeSpanToLocal();
-            enableAITimeLimit = true;
-        }
+        cpuSettings.Load(configService);
 
         base.OnInitialized();
     }

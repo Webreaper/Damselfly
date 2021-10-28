@@ -7,7 +7,7 @@
     @if (Editing)
     {
     <div class="object-editor">
-        <BlazoredTypeahead class="InputAddOn-field" SearchMethod="SearchNames" EnableDropDown="false"
+        <BlazoredTypeahead SearchMethod="SearchNames" EnableDropDown="false"
                            placeholder="Enter a Name" Debounce="100" 
                            @bind-Value="@TypeAheadName" @onblur="@LostFocus">
             <SelectedTemplate>

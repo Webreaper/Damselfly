@@ -38,7 +38,6 @@ namespace Damselfly.Core.ScopedServices
             {
                 statusText = newText;
                 NotifyStateChanged();
-                Logging.Log($"User Status: {statusText}");
             }
         }
 

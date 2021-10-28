@@ -1,7 +1,18 @@
 ﻿
 @if (!string.IsNullOrEmpty(FieldValue))
 {
-    <div><label title="@FieldValue">@FieldName: @FieldValue</label></div>
+    <div>
+        <label class="imagefield-label" title="@Title">@FieldName:
+            @if (string.IsNullOrEmpty(Href))
+            {
+                <span class="imagefield-val">@FieldValue</span>
+            }
+            else
+            {
+                <NavLink href="@Href">@FieldValue</NavLink>
+            }
+        </label>
+    </div>
 }
 
 @code {
@@ -9,5 +20,19 @@
     public string FieldName { get; set; }
 
     [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string Href { get; set; }
+
+    [Parameter]
     public string FieldValue { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(Title))
+            Title = FieldValue;
+
+        base.OnInitialized();
+    }
 }

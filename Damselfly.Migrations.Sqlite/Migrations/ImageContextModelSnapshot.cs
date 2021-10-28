@@ -15,7 +15,7 @@ namespace Damselfly.Core.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.0-rc.1.21452.10");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.0-rc.2.21480.5");
 
             modelBuilder.Entity("Damselfly.Core.DbModels.AppIdentityUser", b =>
                 {
@@ -117,21 +117,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "edb1b335-1ffc-40ee-a3a5-5bd96a555044",
+                            ConcurrencyStamp = "ab611f0e-a0c4-4e1e-9722-433659211d36",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "b43d08d3-89cb-4162-b0c2-26eaf6b38c30",
+                            ConcurrencyStamp = "32d02d44-c9d4-449f-8c6d-cd1e8d1896b5",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "95858e91-470e-4154-bf23-43699746aa68",
+                            ConcurrencyStamp = "3b9995cf-22c0-47df-9c19-2c110b4146c7",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -176,7 +176,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Baskets");
+                    b.ToTable("Baskets", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.BasketEntry", b =>
@@ -201,7 +201,7 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("ImageId", "BasketId")
                         .IsUnique();
 
-                    b.ToTable("BasketEntries");
+                    b.ToTable("BasketEntries", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Camera", b =>
@@ -221,7 +221,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("CameraId");
 
-                    b.ToTable("Cameras");
+                    b.ToTable("Cameras", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.CloudTransaction", b =>
@@ -243,7 +243,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("Date", "TransType");
 
-                    b.ToTable("CloudTransactions");
+                    b.ToTable("CloudTransactions", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ConfigSetting", b =>
@@ -265,7 +265,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ConfigSettings");
+                    b.ToTable("ConfigSettings", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ExifOperation", b =>
@@ -304,7 +304,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("ImageId", "Text");
 
-                    b.ToTable("KeywordOperations");
+                    b.ToTable("KeywordOperations", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ExportConfig", b =>
@@ -330,7 +330,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("ExportConfigId");
 
-                    b.ToTable("DownloadConfigs");
+                    b.ToTable("DownloadConfigs", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Folder", b =>
@@ -354,7 +354,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("Path");
 
-                    b.ToTable("Folders");
+                    b.ToTable("Folders", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.FTSTag", b =>
@@ -368,7 +368,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("FTSTagId");
 
-                    b.ToTable("FTSTags");
+                    b.ToTable("FTSTags", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Hash", b =>
@@ -404,7 +404,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("PerceptualHex1", "PerceptualHex2", "PerceptualHex3", "PerceptualHex4");
 
-                    b.ToTable("Hashes");
+                    b.ToTable("Hashes", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Image", b =>
@@ -455,7 +455,7 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("FileName", "FolderId")
                         .IsUnique();
 
-                    b.ToTable("Images");
+                    b.ToTable("Images", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageClassification", b =>
@@ -471,7 +471,7 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("Label")
                         .IsUnique();
 
-                    b.ToTable("ImageClassifications");
+                    b.ToTable("ImageClassifications", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageMetaData", b =>
@@ -481,6 +481,9 @@ namespace Damselfly.Core.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("AILastUpdated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AverageColor")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("CameraId")
@@ -499,6 +502,9 @@ namespace Damselfly.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DominantColor")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Exposure")
@@ -549,7 +555,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("ThumbLastUpdated");
 
-                    b.ToTable("ImageMetaData");
+                    b.ToTable("ImageMetaData", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageObject", b =>
@@ -596,7 +602,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("ImageObjects");
+                    b.ToTable("ImageObjects", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageTag", b =>
@@ -614,7 +620,7 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("ImageId", "TagId")
                         .IsUnique();
 
-                    b.ToTable("ImageTags");
+                    b.ToTable("ImageTags", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Lens", b =>
@@ -634,7 +640,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("LensId");
 
-                    b.ToTable("Lenses");
+                    b.ToTable("Lenses", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Person", b =>
@@ -657,7 +663,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasIndex("State");
 
-                    b.ToTable("People");
+                    b.ToTable("People", (string)null);
                 });
 
             modelBuilder.Entity("Damselfly.Core.Models.Tag", b =>
@@ -684,7 +690,7 @@ namespace Damselfly.Core.Migrations
                     b.HasIndex("Keyword")
                         .IsUnique();
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
@@ -701,7 +707,7 @@ namespace Damselfly.Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys");
+                    b.ToTable("DataProtectionKeys", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

@@ -41,8 +41,30 @@ namespace Damselfly.Core.Services
         {
             _memoryCache = memoryCache;
             _cacheOptions = new MemoryCacheEntryOptions()
-                            .SetSize( 1 )
-                            .SetSlidingExpiration(TimeSpan.FromDays( 2 ));
+                            .SetSize(1)
+                            .SetSlidingExpiration(TimeSpan.FromDays(2));
+        }
+
+        /// <summary>
+        /// Prime the cache with a load of most recent images
+        /// </summary>
+        /// <returns></returns>
+        public async Task WarmUp()
+        {
+            const int warmupCount = 2000;
+
+            Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
+
+            var db = new ImageContext();
+
+            var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
+                     .Take(warmupCount)
+                     .Select(x => x.ImageId)
+                     .ToListAsync();
+
+            await EnrichAndCache( warmupIds );
+
+            Logging.Log($"Image Cache primed with {warmupIds.Count} images.");
         }
 
         /// <summary>
@@ -78,22 +100,27 @@ namespace Damselfly.Core.Services
             try
             {
                 // First, get the list that aren't in the cache
-                var needLoad = imgIds.Where(x => !_memoryCache
-                                       .TryGetValue(x, out var _))
+                var needLoad = imgIds.Where(x => !_memoryCache.TryGetValue(x, out var _))
                                         .ToList();
 
                 // Now load and cache them
                 if (needLoad.Any())
                     await EnrichAndCache(needLoad);
 
-                // Now, re-enumerate the list - everything should be in the cache this time
+                // Now, re-enumerate the list, but in-order. Note that everything
+                // should be in the cache this time
                 foreach (var imgId in imgIds)
                 {
                     Image image;
-                    if (_memoryCache.TryGetValue(imgId, out image))
-                        result.Add(image);
-                    else
-                        Logging.LogError("Cached image was not found in cache.");
+                    if (!_memoryCache.TryGetValue(imgId, out image))
+                    {
+                        // Somehow an item which we just supposedly cached, is no
+                        // longer in the cache. This is very bad indeed.
+                        Logging.LogError($"Cached image {imgId} was not found in cache.");
+                        continue;
+                    }
+
+                    result.Add(image);
                 }
             }
             catch( Exception ex )
@@ -259,6 +286,15 @@ namespace Damselfly.Core.Services
         {
             Logging.LogVerbose($"Evicting from cache: {imageId}");
             _memoryCache.Remove(imageId);
+        }
+
+        /// <summary>
+        /// Remote a set of images from the cache   
+        /// </summary>
+        /// <param name="imageId"></param>
+        public void Evict(List<int> imageId)
+        {
+            imageId.ForEach(x => Evict(x));
         }
     }
 }
