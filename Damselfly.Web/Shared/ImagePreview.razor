@@ -43,7 +43,8 @@
 
 @code
 {
-    [Parameter] // TODO Change to required with .Net 6 preview 6
+    [Parameter]
+    [EditorRequired]
     public Image Image { get { return theImage; } set { ChangeImage(value); } }
 
     [Parameter]
@@ -214,7 +215,7 @@
 
     }
 
-    protected void ReplaceUrl(ProgressEventArgs args)
+    protected async Task ReplaceUrl(ProgressEventArgs args)
     {
         ImageUrl = ImageUrlHighRes;
 

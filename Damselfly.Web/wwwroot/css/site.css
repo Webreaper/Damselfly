@@ -368,20 +368,30 @@ app {
     position: relative;
     font-size: 12px;
     border-radius: 4px;
+    background-repeat: no-repeat;
+    background-size: auto;
+    background: url('/no-image.png'), var(--grid-image-bg);
 }
 
 .grid-image img {
     padding: 3px;
 }
 
-
 .grid-image-unselected {
     background-color: var(--grid-image-bg);
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
 }
 
 .grid-image-selected {
     background-color: var(--grid-image-selected-bg);
     box-shadow: 1px 1px 0 var( --grid-image-selected-box) inset;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+}
+
+.grid-image-fadein {
+    opacity: 1;
 }
 
 .centered-and-cropped {
