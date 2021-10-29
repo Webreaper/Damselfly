@@ -14,6 +14,7 @@
 @using Damselfly.Core.Utils.Constants
 
 <LocalFileExporter @ref="FileExporter" />
+<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" />
 
 <div class="damselfly-imagegrid" id="scroll-area">
     @if (!gridImages.Any())
@@ -99,9 +100,10 @@
     bool endOfImages = false;
     string toastClass = string.Empty;
     private EventConflator conflator = new EventConflator(2000);
+    private ScrollMonitor ScrollMonitor;
 
     [Parameter]
-    public ThumbSize CurrentThumbSize { get {  return _currentThumbSize; } set{ ChangeThumbSize( value ); } }
+    public ThumbSize CurrentThumbSize { get { return _currentThumbSize; } set { ChangeThumbSize(value); } }
     private ThumbSize _currentThumbSize;
 
     private void StoreImage(Image image)
@@ -184,7 +186,7 @@
 
     protected void ChangeThumbSize(ThumbSize newSize)
     {
-        if( _currentThumbSize != newSize)
+        if (_currentThumbSize != newSize)
         {
             _currentThumbSize = newSize;
 
@@ -207,20 +209,15 @@
         {
             selectionService.OnSelectionChanged += SelectedImagesChanged;
 
-            int initialLoadCount, scrollPos;
-
-            if (!int.TryParse(configService.Get("LoadedImages"), out initialLoadCount) || initialLoadCount < imagesPerPage)
-                initialLoadCount = imagesPerPage;
-
-            if (!int.TryParse(configService.Get("ImageScrollTop"),out scrollPos))
-                scrollPos = 0;
+            int initialLoadCount = Math.Max(configService.GetInt("LoadedImages", imagesPerPage), imagesPerPage);
 
             searchService.OnChange += SearchQueryChanged;
             FileExporter.OnChange += StateHasChanged;
             basketService.OnBasketChanged += BasketChanged;
 
+            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
             await LoadData(initialLoadCount);
-            await InitJsListenerAsync(scrollPos);
+            await ScrollMonitor.InitScrollPosition();
         }
     }
 
@@ -256,21 +253,14 @@
         gridImages.Clear();
         endOfImages = false;
 
-        _ = InvokeAsync( StateHasChanged );
+        _ = InvokeAsync(StateHasChanged);
 
         _ = LoadData(imagesPerPage);
     }
 
-    protected async Task InitJsListenerAsync(int initialScrollPos)
-    {
-        Logging.LogTrace($"Setting scroll position to {initialScrollPos}.");
-        await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this), initialScrollPos);
-    }
 
     private void SaveScrollState(int scrollTop)
     {
-        Logging.LogTrace($"Saving scroll position: {scrollTop}");
-        configService.Set("ImageScrollTop", scrollTop.ToString());
         configService.Set("LoadedImages", gridImages.Count.ToString());
     }
 
@@ -307,7 +297,7 @@
             }
 
             // Flag the 'more' div if we loaded at least as many as we requested.
-            endOfImages = ! response.MoreDataAvailable;
+            endOfImages = !response.MoreDataAvailable;
 
             // If we've tried to load data and there isn't any more, show the toast.
             toastClass = endOfImages ? "show" : string.Empty;

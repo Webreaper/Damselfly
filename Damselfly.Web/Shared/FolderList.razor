@@ -9,7 +9,7 @@
 
 @implements IDisposable
 
-<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" OnScrollPositionSet="ScrollChanged"/>
+<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
 
 <div class="damselfly-folderlist">
     <div class="folder-search">
@@ -45,6 +45,7 @@
     private Virtualize<FolderListItem> folderContainer;
     private List<FolderListItem> folderItems;
     Folder SelectedItem { get; set; }
+    private ScrollMonitor ScrollMonitor;
 
     void ShowContextMenu(MouseEventArgs args, FolderListItem folder)
     {
@@ -61,14 +62,6 @@
                      case 1: _ = ShowRescanDialog( folder ); break;
                  }
              });
-    }
-
-    private async Task ScrollChanged()
-    {
-        if (folderContainer != null)
-            await folderContainer.RefreshDataAsync();
-        await InvokeAsync(StateHasChanged);
-
     }
 
     private async Task ShowRescanDialog( FolderListItem folderItem )
@@ -136,13 +129,14 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
             folderService.OnChange += OnFoldersChanged;
             // Kick off the data load
-            _ = ProcessUpdatedFilter();
+            await ProcessUpdatedFilter();
+            await ScrollMonitor.InitScrollPosition();
         }
     }
 

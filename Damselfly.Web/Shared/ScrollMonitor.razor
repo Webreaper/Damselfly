@@ -14,30 +14,19 @@
     [EditorRequired]
     public string ScrollConfigName { get; set; }
 
-    [Parameter]
-    public EventCallback OnScrollPositionSet { get; set; }
-
-    private EventConflator conflator = new EventConflator(2000);
+    private EventConflator conflator = new EventConflator(1000);
 
     private void SaveScrollState(int scrollTop)
     {
         configService.Set(ScrollConfigName, scrollTop.ToString());
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    public async Task InitScrollPosition()
     {
-        if (firstRender)
-        {
-            int scrollPos = 0;
+        int scrollPos = configService.GetInt(ScrollConfigName, 0);
 
-            if (!int.TryParse(configService.Get(ScrollConfigName), out scrollPos))
-                scrollPos = 0;
-
-            Logging.LogTrace($"Setting scroll position to {scrollPos}.");
-            await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
-
-            await OnScrollPositionSet.InvokeAsync();
-        }
+        Logging.Log("Data loaded - initialising scroll position");
+        await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
     }
 
     [JSInvokable]
