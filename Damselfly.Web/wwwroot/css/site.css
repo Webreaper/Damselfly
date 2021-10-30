@@ -368,9 +368,8 @@ app {
     position: relative;
     font-size: 12px;
     border-radius: 4px;
-    background-repeat: no-repeat;
-    background-size: auto;
-    background: url('/no-image.png'), var(--grid-image-bg);
+    background: var(--grid-image-bg);
+    animation: fadeIn ease 1s;
 }
 
 .grid-image img {
