@@ -4,9 +4,11 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
-    padding: 0;
     background: var(--main-background);
     color: var(--body-text);
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* Reconnection Scrreen stuff */
@@ -472,24 +474,35 @@ f
     height: 60px;
 }
 
-.damsefly-container {
+.damselfly-container {
+    height: calc( 100vh - 30px );
     display: flex;
     flex-direction: column;
 }
 
-.damselfly-application {
+.damselfly-statusbar {
+    flex: 0 1 30px;
+    align-items: center;
+    min-height: 30px;
+    padding: 5px;
+    background-image: linear-gradient(180deg, var( --statusbar-gradstart ), var( --statusbar-gradend ));
     display: flex;
     flex-direction: row;
-    min-height: calc( 100vh - 40px);
-    max-height: calc( 100vh - 40px);
+}
+
+.damselfly-application {
+    flex: 1 0 100%;
+    display: flex;
+    min-height: 100%;
+    flex-direction: row;
 }
 
 .damselfly-sidebar {
     order: 1;
+    flex: 0 0 350px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    flex: 0 0 20%;
-    overflow-y: auto;
 }
 
 .damselfly-tagview {
@@ -593,16 +606,6 @@ f
 }
 
 
-.damselfly-statusbar {
-    display: flex;
-    flex: 0 0 20%;
-    flex-direction: row;
-    align-items: center;
-    min-height: 30px;
-    padding: 5px;
-    background-image: linear-gradient(180deg, var( --statusbar-gradstart ), var( --statusbar-gradend ));
-}
-
 .damselfly-dialogrow {
     display: flex;
     flex-wrap: wrap;
@@ -688,13 +691,13 @@ f
 
 .damselfly-imagegrid {
     display: flex;
-    flex: 1 1;
+    flex: 0 1 auto;
     justify-content: flex-start;
     align-content: flex-start;
     align-items: center;
     flex-flow: row wrap;
     overflow-y: auto;
-    max-height: calc( 100vh - 100px);
+    max-height: calc( 100vh - 70px);
 }
 
 .damselfly-searchmsg {
