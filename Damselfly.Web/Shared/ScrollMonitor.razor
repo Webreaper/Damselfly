@@ -18,6 +18,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
+        Logging.Log($"Saving scroll position to {scrollTop}");
         configService.Set(ScrollConfigName, scrollTop.ToString());
     }
 
@@ -25,7 +26,7 @@
     {
         int scrollPos = configService.GetInt(ScrollConfigName, 0);
 
-        Logging.LogTrace("Data loaded - initialising scroll position");
+        Logging.Log($"Data loaded - initialising scroll position to {scrollPos}");
         await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
     }
 

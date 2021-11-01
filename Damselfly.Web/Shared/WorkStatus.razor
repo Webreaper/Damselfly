@@ -42,8 +42,10 @@
 
     private void StatusChanged(WorkService.ServiceStatus status)
     {
-        ProcessingStatus = status;
-        InvokeAsync(StateHasChanged);
+        InvokeAsync( () => {
+            ProcessingStatus = status;
+            StateHasChanged();
+        } );
     }
 
     protected override void OnInitialized()

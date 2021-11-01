@@ -249,7 +249,11 @@ namespace Damselfly.Core.Services
 
                 if (sleepFactor > 0)
                 {
-                    int waitTime = (int)(sleepFactor * stopwatch.ElapsedTime);
+                    // Never ever sleep for more than 10s. Otherwise a long-running job that takes a minute
+                    // to complete could end up freezing the worker thread for 3 minutes, which makes no
+                    // sense whatsoeever. :)
+                    const int maxWaitTime = 10 * 1000;
+                    int waitTime = Math.Min( (int)(sleepFactor * stopwatch.ElapsedTime), maxWaitTime);
                     Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
                     Thread.Sleep(waitTime);
                 }
