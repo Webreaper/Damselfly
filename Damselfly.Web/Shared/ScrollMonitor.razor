@@ -25,7 +25,7 @@
     {
         int scrollPos = configService.GetInt(ScrollConfigName, 0);
 
-        Logging.Log("Data loaded - initialising scroll position");
+        Logging.LogTrace("Data loaded - initialising scroll position");
         await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
     }
 

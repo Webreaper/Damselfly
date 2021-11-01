@@ -550,10 +550,20 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
 
             var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
-            await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
+            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
-            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            _statusService.StatusText = $"Folder {folder.Name} flagged for AI reprocessing.";
+            _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for AI reprocessing.";
+
+            _workService.HandleNewJobs(this);
+        }
+
+        public async Task MarkAllImagesForScan()
+        {
+            using var db = new ImageContext();
+
+            int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { AILastUpdated = null });
+
+            _statusService.StatusText = $"All {updated} images flagged for AI reprocessing.";
 
             _workService.HandleNewJobs(this);
         }

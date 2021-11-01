@@ -24,7 +24,8 @@
     }
     else
     {
-        <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())">
+        <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())"
+             @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
             <i class="fa @FolderIcon(-1) folder-icon" /> All Folders
         </div>
         <div class="folder-scroll-area" id="folderscrollarea">
@@ -49,16 +50,25 @@
 
     void ShowContextMenu(MouseEventArgs args, FolderListItem folder)
     {
+        string refreshText = "Refresh Folder";
+        string selectText = "Select Folder";
+
+        if( folder == null )
+        {
+            refreshText = "Refresh All Folders";
+            selectText = "Clear Folder Selection";
+        }
+
         contextMenuService.Open(args,
         new List<ContextMenuItem>() {
-                new ContextMenuItem(){ Text = "Select Folder", Value = 0 },
-                new ContextMenuItem(){ Text = "Refresh Folder", Value = 1 },
+                new ContextMenuItem(){ Text = selectText, Value = 0 },
+                new ContextMenuItem(){ Text = refreshText, Value = 1 },
              }, (args) =>
              {
                  contextMenuService.Close();
                  switch (args.Value)
                  {
-                     case 0: SetFilterFolder(folder.Folder); break;
+                     case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder.Folder); break;
                      case 1: _ = ShowRescanDialog( folder ); break;
                  }
              });
@@ -66,7 +76,11 @@
 
     private async Task ShowRescanDialog( FolderListItem folderItem )
     {
-        var parameters = new DialogParameters { { "folder", folderItem.Folder }, { "count", folderItem.ImageCount } };
+        var parameters = new DialogParameters { { "allimages", true } };
+
+        if( folderItem != null )
+            parameters = new DialogParameters { { "folder", folderItem.Folder }, { "count", folderItem.ImageCount } };
+
         var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;

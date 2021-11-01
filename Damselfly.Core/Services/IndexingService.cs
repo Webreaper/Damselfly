@@ -378,6 +378,24 @@ namespace Damselfly.Core.Services
             }
         }
 
+        public async Task MarkAllFoldersForScan()
+        {
+            try
+            {
+                using var db = new ImageContext();
+
+                int updated = await db.BatchUpdate(db.Folders, x => new Folder { FolderScanDate = null });
+
+                _statusService.StatusText = $"All {updated} folders flagged for re-indexing.";
+
+                _workService.HandleNewJobs(this);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception when marking folder for reindexing: {ex}");
+            }
+        }
+
         /// <summary>
         /// Flags a set of images for reindexing by marking their containing
         /// folders for rescan.
@@ -462,7 +480,8 @@ namespace Damselfly.Core.Services
 
                 // Now, see if there's any folders that have a null scan date.
                 var folders = await db.Folders.Where(x => x.FolderScanDate == null)
-                                               .Take(maxCount)
+                                               .OrderBy( x => x.Path )
+                                               .Take( maxCount )
                                                .ToArrayAsync();
 
                 var jobs = folders.Select(x => new IndexProcess {
