@@ -222,7 +222,7 @@
         HiResImageLoaded = true;
 
         if (zoomEnabled)
-            _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
+            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
         statusService.StatusText = "Hi-res image loaded.";
         StateHasChanged();

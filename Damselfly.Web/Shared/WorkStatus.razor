@@ -28,7 +28,8 @@
         WorkService.JobStatus.Paused => "fa-pause-circle",
         WorkService.JobStatus.Idle => "fa-check-circle",
         WorkService.JobStatus.Disabled => "fa-stop-circle",
-        WorkService.JobStatus.Error => "fa-exclamation-circle"
+        WorkService.JobStatus.Error => "fa-exclamation-circle",
+        _ => throw new ArgumentException("StatusIcon: Unexpected Switch option")
     };
 
     private string SpinSpeed => ProcessingStatus.CPULevel switch
@@ -36,7 +37,8 @@
         25 => "fa-spin-25",
         50 => "fa-spin-50",
         75 => "fa-spin-75",
-        100 => "fa-spin-100"
+        100 => "fa-spin-100",
+        _ => throw new ArgumentException("SpinSpeed: Unexpected Switch option")
     };
 
     private string StatusTitle => ProcessingStatus.Status switch
@@ -46,6 +48,7 @@
         WorkService.JobStatus.Idle => "Background processing idle",
         WorkService.JobStatus.Disabled => "Background processing disabled",
         WorkService.JobStatus.Error => "Background processing error"
+        _ => throw new ArgumentException("StatusTitle: Unexpected Switch option")
     };
 
     private void StatusChanged(WorkService.ServiceStatus status)

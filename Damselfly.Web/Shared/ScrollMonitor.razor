@@ -54,7 +54,7 @@
 
     [JSInvokable]
     // Debugging method to help us differentiate between JS calls and other data loads
-    public void HandleScroll(int scrollTop)
+    private void HandleScroll(int scrollTop)
     {
         conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
     }
