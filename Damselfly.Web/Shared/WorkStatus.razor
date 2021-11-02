@@ -24,11 +24,19 @@
 
     private string StatusIcon => ProcessingStatus.Status switch
     {
-        WorkService.JobStatus.Running => "fa-cog fa-spin",
+        WorkService.JobStatus.Running => $"fa-cog {SpinSpeed}",
         WorkService.JobStatus.Paused => "fa-pause-circle",
         WorkService.JobStatus.Idle => "fa-check-circle",
         WorkService.JobStatus.Disabled => "fa-stop-circle",
         WorkService.JobStatus.Error => "fa-exclamation-circle"
+    };
+
+    private string SpinSpeed => ProcessingStatus.CPULevel switch
+    {
+        25 => "fa-spin-25",
+        50 => "fa-spin-50",
+        75 => "fa-spin-75",
+        100 => "fa-spin-100"
     };
 
     private string StatusTitle => ProcessingStatus.Status switch

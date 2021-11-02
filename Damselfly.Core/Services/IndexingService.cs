@@ -227,7 +227,7 @@ namespace Damselfly.Core.Services
                 return true;
             }
 
-            Logging.Log($"New or removed images found in folder {dbFolder.Name}.");
+            Logging.LogVerbose($"New or removed images found in folder {dbFolder.Name}.");
 
             var watch = new Stopwatch("ScanFolderFiles");
 

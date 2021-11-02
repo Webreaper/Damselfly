@@ -1791,3 +1791,23 @@ hr.separator {
     color: var( --button-border );
     display: none;
 }
+
+.fa-spin-25 {
+    -webkit-animation: fa-spin 3s infinite linear;
+    animation: fa-spin 3s infinite linear;
+}
+
+.fa-spin-50 {
+    -webkit-animation: fa-spin 2s infinite linear;
+    animation: fa-spin 2s infinite linear;
+}
+
+.fa-spin-75 {
+    -webkit-animation: fa-spin 1s infinite linear;
+    animation: fa-spin 1s infinite linear;
+}
+
+.fa-spin-100 {
+    -webkit-animation: fa-spin 0.5s infinite linear;
+    animation: fa-spin 0.5s infinite linear;
+}
