@@ -207,17 +207,18 @@
     {
         if (firstRender)
         {
-            selectionService.OnSelectionChanged += SelectedImagesChanged;
-
             int initialLoadCount = Math.Max(configService.GetInt("LoadedImages", imagesPerPage), imagesPerPage);
 
+            Logging.Log($"Loading {initialLoadCount} images into grid.");
+            await LoadData(initialLoadCount);
+
+            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
+
+            selectionService.OnSelectionChanged += SelectedImagesChanged;
             searchService.OnChange += SearchQueryChanged;
             FileExporter.OnChange += StateHasChanged;
             basketService.OnBasketChanged += BasketChanged;
-
-            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
-            await LoadData(initialLoadCount);
-            await ScrollMonitor.InitScrollPosition();
+            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
         }
     }
 
@@ -232,6 +233,7 @@
         searchService.OnChange -= SearchQueryChanged;
         FileExporter.OnChange -= StateHasChanged;
         basketService.OnBasketChanged -= BasketChanged;
+        ScrollMonitor.OnScrollPositionChanged -= SaveScrollState;
     }
 
     public string NoResultsMessage
@@ -262,13 +264,6 @@
     private void SaveScrollState(int scrollTop)
     {
         configService.Set("LoadedImages", gridImages.Count.ToString());
-    }
-
-    [JSInvokable]
-    // Debugging method to help us differentiate between JS calls and other data loads
-    public void HandleScroll(int scrollTop)
-    {
-        conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
     }
 
     [JSInvokable]
