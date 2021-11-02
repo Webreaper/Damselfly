@@ -47,7 +47,7 @@
         WorkService.JobStatus.Paused => "Background processing paused",
         WorkService.JobStatus.Idle => "Background processing idle",
         WorkService.JobStatus.Disabled => "Background processing disabled",
-        WorkService.JobStatus.Error => "Background processing error"
+        WorkService.JobStatus.Error => "Background processing error",
         _ => throw new ArgumentException("StatusTitle: Unexpected Switch option")
     };
 
