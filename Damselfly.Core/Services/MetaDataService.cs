@@ -658,6 +658,42 @@ namespace Damselfly.Core.Services
 
         #endregion
 
+        public async Task MarkFolderForScan(Folder folder)
+        {
+            using var db = new ImageContext();
+
+            var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
+            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+
+            _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for Metadata scanning.";
+
+            _workService.HandleNewJobs(this);
+        }
+
+        public async Task MarkAllImagesForScan()
+        {
+            using var db = new ImageContext();
+
+            int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+
+            _statusService.StatusText = $"All {updated} images flagged for Metadata scanning.";
+
+            _workService.HandleNewJobs(this);
+        }
+
+        public async Task MarkImagesForScan(ICollection<Image> images)
+        {
+            using var db = new ImageContext();
+
+            var ids = images.Select(x => x.ImageId).ToList();
+            var queryable = db.ImageMetaData.Where(i => ids.Contains(i.ImageId));
+
+            int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+
+            var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
+            _statusService.StatusText = $"{msgText} flagged for Metadata scanning.";
+        }
+
         public class MetadataProcess : IProcessJob
         {
             public int ImageId { get; set; }
@@ -680,7 +716,7 @@ namespace Damselfly.Core.Services
             // Find all images where there's either no metadata, or where the image or sidecar file 
             // was updated more recently than the image metadata
             var imageIds = await db.Images.Where(x => x.MetaData == null ||
-                                               x.LastUpdated > x.MetaData.LastUpdated)
+                                                 x.LastUpdated > x.MetaData.LastUpdated)
                                     .OrderByDescending(x => x.LastUpdated)
                                     .ThenByDescending(x => x.FileLastModDate)
                                     .Take(maxJobs)

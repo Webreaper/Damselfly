@@ -1,10 +1,10 @@
 ﻿window.InfiniteScroll =
 {
-    Init: function (scrollAreaID, endMarkerId, DotNetRef, initialScrollPos) {
+    Init: function (scrollAreaID, endMarkerId, DotNetRef) {
         var scrollArea = document.getElementById(scrollAreaID);
-        scrollArea.scrollTop = initialScrollPos;
 
-        var markerIsVisible = function () {
+        var markerIsVisible = function ()
+        {
             var endMarker = document.getElementById(endMarkerId);
 
             if (endMarker === null)
@@ -20,13 +20,13 @@
         var markerVisibleState = null;
 
         function loadIfMoreVisible() {
-            DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
             var visible = markerIsVisible();
 
-            if (markerVisibleState != visible) {
+            if (markerVisibleState != visible)
+            {
                 markerVisibleState = visible;
-                if (visible) {
-                    console.log("Scroll marker visible - calling back into .Net to laod more data...")
+                if (visible)
+                {
                     DotNetRef.invokeMethodAsync("LoadMoreData");
                 }
             }

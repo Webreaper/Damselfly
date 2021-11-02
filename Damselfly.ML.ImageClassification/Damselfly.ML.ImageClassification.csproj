@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ML" Version="1.6.0" />
-    <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.6.0" />
-    <PackageReference Include="Microsoft.ML.TensorFlow" Version="1.6.0" />
+    <PackageReference Include="Microsoft.ML" Version="1.7.0-preview.final" />
+    <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="1.7.0-preview.final" />
+    <PackageReference Include="Microsoft.ML.TensorFlow" Version="1.7.0-preview.final" />
     <PackageReference Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
   </ItemGroup>

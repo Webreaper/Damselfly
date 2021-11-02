@@ -514,6 +514,16 @@ namespace Damselfly.Core.Services
             return result;
         }
 
+        public async Task MarkAllImagesForScan()
+        {
+            using var db = new ImageContext();
+
+            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+            int updated = await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null");
+
+            _statusService.StatusText = $"All {updated} images flagged for thumbnail re-generation.";
+        }
+
         public async Task MarkFolderForScan(Folder folder)
         {
             using var db = new ImageContext();

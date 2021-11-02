@@ -198,17 +198,12 @@ namespace Damselfly.Core.Services
 
             using var db = new ImageContext();
 
+            // Get the folder with the image list from the DB. 
             var dbFolder = await db.Folders.Where(x => x.FolderId == folderIdToScan)
                                 .Include(x => x.Images)
                                 .FirstOrDefaultAsync();
 
-            if( dbFolder == null || dbFolder.FolderScanDate != null )
-            {
-                // Scan date is null which means this folder already got
-                // processed. So it's a no-op update. Do nothing and return.
-                return false;
-            }
-
+            // Get the list of files from disk
             var folder = new DirectoryInfo(dbFolder.Path);
             var allImageFiles = SafeGetImageFiles( folder );
 
@@ -232,7 +227,7 @@ namespace Damselfly.Core.Services
                 return true;
             }
 
-            Logging.LogVerbose($"New or removed images in folder {dbFolder.Name}.");
+            Logging.LogVerbose($"New or removed images found in folder {dbFolder.Name}.");
 
             var watch = new Stopwatch("ScanFolderFiles");
 
@@ -378,6 +373,24 @@ namespace Damselfly.Core.Services
             }
         }
 
+        public async Task MarkAllFoldersForScan()
+        {
+            try
+            {
+                using var db = new ImageContext();
+
+                int updated = await db.BatchUpdate(db.Folders, x => new Folder { FolderScanDate = null });
+
+                _statusService.StatusText = $"All {updated} folders flagged for re-indexing.";
+
+                _workService.HandleNewJobs(this);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception when marking folder for reindexing: {ex}");
+            }
+        }
+
         /// <summary>
         /// Flags a set of images for reindexing by marking their containing
         /// folders for rescan.
@@ -441,6 +454,7 @@ namespace Damselfly.Core.Services
 
         public class IndexProcess : IProcessJob
         {
+            public bool IsFullIndex { get; set; }
             public DirectoryInfo Path { get; set; }
             public IndexingService Service { get; set; }
             public bool CanProcess => true;
@@ -449,6 +463,9 @@ namespace Damselfly.Core.Services
             public async Task Process()
             {
                 await Service.IndexFolder(Path, null);
+
+                if (IsFullIndex)
+                    Logging.Log("Full index compelete.");
             }
         }
 
@@ -462,7 +479,8 @@ namespace Damselfly.Core.Services
 
                 // Now, see if there's any folders that have a null scan date.
                 var folders = await db.Folders.Where(x => x.FolderScanDate == null)
-                                               .Take(maxCount)
+                                               .OrderBy( x => x.Path )
+                                               .Take( maxCount )
                                                .ToArrayAsync();
 
                 var jobs = folders.Select(x => new IndexProcess {
@@ -485,7 +503,8 @@ namespace Damselfly.Core.Services
                 {
                     Path = new DirectoryInfo( RootFolder ),
                     Service = this,
-                    Description = "Full Index"
+                    Description = "Full Index",
+                    IsFullIndex = true
                 } };
             }
         }

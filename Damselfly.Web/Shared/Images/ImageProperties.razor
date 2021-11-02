@@ -22,86 +22,87 @@
 }
 else
 {
-    <div class="damselfly-imageproperties">
-        @if (basketService.CurrentBasket != null)
+<div class="damselfly-imageproperties">
+    @if (basketService.CurrentBasket != null)
+    {
+        <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
+    }
+
+    <ImageField FieldName="Date Taken" FieldValue="@CurrentImage.SortDate.Display()" />
+    <ImageField FieldName="Filename" FieldValue="@CurrentImage.FileName" />
+    <ImageField FieldName="Folder" FieldValue="@CurrentImage.Folder.Name" Title="@CurrentImage.Folder.Path" Href="@CurrentFolderLink" />
+
+    @if (CurrentImage.MetaData != null)
+    {
+        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
+        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" />
+        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" />
+        <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
+        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
+        <div title="@RatingTitle">
+            <label class="imagefield-label" title="Rating">Rating:</label>
+            <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
+                       SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)" />
+        </div>
+        <ImageField FieldName="Size" FieldValue="@Size" />
+        <ImageField FieldName="Camera" FieldValue="@Camera" />
+        <ImageField FieldName="Lens" FieldValue="@Lens" />
+        <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
+        <ImageField FieldName="Aperture" FieldValue="@Aperture" />
+        <ImageField FieldName="Exposure" FieldValue="@Exposure" />
+
+        if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
         {
-            <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
-        }
-
-        <ImageField FieldName="Date Taken" FieldValue="@CurrentImage.SortDate.Display()" />
-        <ImageField FieldName="Filename" FieldValue="@CurrentImage.FileName" />
-        <ImageField FieldName="Folder" FieldValue="@CurrentImage.Folder.Name" Title="@CurrentImage.Folder.Path" Href="@CurrentFolderLink" />
-
-        @if (CurrentImage.MetaData != null)
-        {
-            <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
-            <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" />
-            <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" />
-            <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
-            <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
-            <div title="@RatingTitle">
-                <label class="imagefield-label" title="Rating">Rating:</label>
-                <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
-                            SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)"/>
-            </div>
-            <ImageField FieldName="Size" FieldValue="@Size" />
-            <ImageField FieldName="Camera" FieldValue="@Camera" />
-            <ImageField FieldName="Lens" FieldValue="@Lens" />
-            <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
-            <ImageField FieldName="Aperture" FieldValue="@Aperture" />
-            <ImageField FieldName="Exposure" FieldValue="@Exposure" />
-
-            if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
-            {
+            <div>
+                <label title="Dominant Color">
+                    Colors:
+                </label>
                 <div>
-                    <label title="Dominant Color">
-                        Colors:
-                    </label>
-                    <div>
-                        <div title="Dominant Colour" class="dominant-color" style="@DominantColorStyle" />
-                        <div title="Average Colour" class="dominant-color" style="@AverageColorStyle" />
-                    </div>
+                    <div title="Dominant Colour" class="dominant-color" style="@DominantColorStyle" />
+                    <div title="Average Colour" class="dominant-color" style="@AverageColorStyle" />
                 </div>
-            }
-        }
-        else
-        {
-            <div>No metadata available yet.</div>
-        }
-        @if (Expanded)
-        {
-            <div @onclick="@(() => CollapseDisplay())">
-                Show Less... &nbsp;<i class="fas fa-chevron-up" />
             </div>
         }
-        else
-        {
-            <div @onclick="@(() => ExpandDisplay())">
-                Show More... &nbsp; <i class="fas fa-chevron-down" />
-            </div>
-        }
-        @if (Expanded)
-        {
-            <ImageField FieldName="File Modified" FieldValue="@CurrentImage.FileLastModDate.Display()" />
-            <div>
-                <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate" />
-                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
-                </AuthorizeView>
-            </div>
-            <div>
-                <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate" />
-                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
-                </AuthorizeView>
-            </div>
+    }
+    else
+    {
+        <div>No metadata available yet.</div>
+    }
+    @if (Expanded)
+    {
+        <div @onclick="@(() => CollapseDisplay())">
+            Show Less... &nbsp;<i class="fas fa-chevron-up" />
+        </div>
+    }
+    else
+    {
+        <div @onclick="@(() => ExpandDisplay())">
+            Show More... &nbsp; <i class="fas fa-chevron-down" />
+        </div>
+    }
+    @if (Expanded)
+    {
+        <ImageField FieldName="File Modified" FieldValue="@CurrentImage.FileLastModDate.Display()" />
+        <div>
+            <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate" />
+            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
+            </AuthorizeView>
+        </div>
+        <ImageField FieldName="Metadata Scanned:" FieldValue="@MetadataScanDate" />
+        <div>
+            <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate" />
+            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
+            </AuthorizeView>
+        </div>
 
-            @if (CurrentImage.Hash != null)
-            {
-                <ImageField FieldName="Hash" FieldValue="@CurrentImage.Hash.MD5ImageHash" />
-            }
+        @if (CurrentImage.Hash != null)
+        {
+            <ImageField FieldName="Hash" FieldValue="@CurrentImage.Hash.MD5ImageHash" />
         }
-    </div>
+    }
+</div>
 }
 
 @code {
@@ -218,6 +219,21 @@ else
                 var age = DateTime.UtcNow - CurrentImage.MetaData.AILastUpdated;
 
                 return age.Value.ToHumanReadableString() + " ago";
+            }
+
+            return "Never";
+        }
+    }
+
+    public string MetadataScanDate
+    {
+        get
+        {
+            if (CurrentImage != null && CurrentImage.MetaData != null && CurrentImage.MetaData.LastUpdated != DateTime.MinValue)
+            {
+                var age = DateTime.UtcNow - CurrentImage.MetaData.LastUpdated;
+
+                return age.ToHumanReadableString() + " ago";
             }
 
             return "Never";

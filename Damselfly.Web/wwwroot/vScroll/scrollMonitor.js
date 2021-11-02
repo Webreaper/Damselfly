@@ -4,8 +4,6 @@
         var scrollArea = document.getElementById(scrollAreaID);
         scrollArea.scrollTop = initialScrollPos;
 
-        var markerVisibleState = null;
-
         function onScroll() {
             DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
         }

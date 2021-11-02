@@ -131,7 +131,7 @@ namespace Damselfly.Web.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Logging.LogError($"Unable to process /thumb/{thumbSize}/{imageId}: ", ex.Message);
+                    Logging.LogError($"Unable to process /thumb/{thumbSize}/{imageId}: {ex.Message}");
                 }
             }
 
