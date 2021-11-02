@@ -148,9 +148,9 @@
         if (firstRender)
         {
             folderService.OnChange += OnFoldersChanged;
+
             // Kick off the data load
             await ProcessUpdatedFilter();
-            await ScrollMonitor.InitScrollPosition();
         }
     }
 
