@@ -519,6 +519,7 @@ namespace Damselfly.Core.Services
             }
 
             LoadPersonCache();
+
             _workService.AddJobSource(this);
         }
 

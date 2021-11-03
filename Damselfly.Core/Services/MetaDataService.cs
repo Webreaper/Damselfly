@@ -260,6 +260,7 @@ namespace Damselfly.Core.Services
             var db = new ImageContext();
             var updateTimeStamp = DateTime.UtcNow;
             var imageKeywords = new List<string>();
+            List<string> sideCarTags = new List<string>();
 
             var img = await _imageCache.GetCachedImage(imageId);
             db.Attach(img);
@@ -295,21 +296,7 @@ namespace Damselfly.Core.Services
                 imgMetaData.LastUpdated = updateTimeStamp;
 
                 // Scan for sidecar files
-                var sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
-
-                if (sideCarTags.Any())
-                {
-                    // See if we've enabled the option to write any sidecar keywords to IPTC keywords
-                    // if they're missing in the EXIF data of the image.
-                    if (writeSideCarTagsToImages)
-                    {
-                        // Now, submit the tags; note they won't get created immediately, but in batch.
-                        Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-
-                        // Fire and forget this asynchronously - we don't care about waiting for it
-                        _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
-                    }
-                }
+                sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
 
                 imageKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToList();
 
@@ -341,6 +328,17 @@ namespace Damselfly.Core.Services
             _imageCache.Evict(imageId);
 
             watch.Stop();
+
+            if (sideCarTags.Any() && writeSideCarTagsToImages )
+            {
+                // If we've enabled the option to write any sidecar keywords to IPTC
+                // keywords if they're missing in the EXIF data of the image submit
+                // the tags; note they won't get created immediately, but in batch.
+                Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+
+                // Fire and forget this asynchronously - we don't care about waiting for it
+                _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
+            }
         }
 
         /// <summary>
@@ -440,8 +438,8 @@ namespace Damselfly.Core.Services
 
             if (sidecar != null)
             {
-                var imageKeywords = keywords.Select(x => x.RemoveSmartQuotes());
-                var sidecarKeywords = sidecar.GetKeywords().Select(x => x.RemoveSmartQuotes());
+                var imageKeywords = keywords.Select(x => x.Sanitise());
+                var sidecarKeywords = sidecar.GetKeywords().Select(x => x.Sanitise());
 
                 var missingKeywords = sidecarKeywords
                                          .Except(imageKeywords, StringComparer.OrdinalIgnoreCase)

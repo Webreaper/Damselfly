@@ -141,7 +141,7 @@ namespace Damselfly.Core.Services
                         new ExifOperation
                         {
                             ImageId = image.ImageId,
-                            Text = keyword.RemoveSmartQuotes(),
+                            Text = keyword.Sanitise(),
                             Type = ExifOperation.ExifType.Keyword,
                             Operation = ExifOperation.OperationType.Remove,
                             TimeStamp = timestamp

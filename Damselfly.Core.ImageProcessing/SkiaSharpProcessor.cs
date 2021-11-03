@@ -79,7 +79,7 @@ namespace Damselfly.Core.ImageProcessing
                 using var sourceBitmap = LoadOrientedBitmap(source, desiredWidth);
                 load.Stop();
 
-                hashThumb = new Stopwatch("HashHumb");
+                hashThumb = new Stopwatch("HashTumb");
                 result.ImageHash = GetHash(sourceBitmap);
                 hashThumb.Stop();
 
