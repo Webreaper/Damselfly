@@ -336,7 +336,7 @@ namespace Damselfly.Core.Services
             await db.SaveChangesAsync("ImageMetaDataSave");
 
             // Now save the tags
-            var tagsAdded = await AddTags(img, imageKeywords);
+            var tagsAdded = await WriteTagsForImage(img, imageKeywords);
 
             _imageCache.Evict(imageId);
 
@@ -351,10 +351,13 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="imageKeywords"></param>
         /// <param name="type"></param>
-        private async Task<int> AddTags(Image image, List<string> imageKeywords)
+        private async Task<int> WriteTagsForImage(Image image, List<string> imageKeywords)
         {
             int tagsAdded = 0;
-            var watch = new Stopwatch("AddTags");
+            var watch = new Stopwatch("WriteTagsForImage");
+
+            if (ImageContext.ReadOnly)
+                return tagsAdded;
 
             try
             {
@@ -381,27 +384,30 @@ namespace Damselfly.Core.Services
                                                                     })
                                                                 .ToList();
 
-                    // Note that we need to delete all of the existing tags for an image,
-                    // and then insert all of the new tags. This is so that if somebody adds
-                    // one tag, and removes another, we maintain the list correctly.
                     Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
 
-                    // TODO: This should be in the abstract model
-                    if (!ImageContext.ReadOnly)
+                    // First, get the image tags for the image
+                    var existingImageTagIds = image.ImageTags.Select(x => x.TagId).ToList();
+
+                    // Figure out which tags are new, and which existing tags need to be removed.
+                    var toDelete = existingImageTagIds.Where(id => ! newImageTags.Select(x => x.TagId).Contains(id) ).ToList();
+                    var toAdd = newImageTags.Where(x => ! existingImageTagIds.Contains( x.TagId )).ToList();
+
+                    if (toDelete.Any())
                     {
-                        // TODO: Push these down to the abstract model
-
                         Stopwatch delWatch = new Stopwatch("AddTagsDelete");
-                        await db.BatchDelete( db.ImageTags.Where(y => y.ImageId == image.ImageId ) );
+                        await db.BatchDelete(db.ImageTags.Where(y => y.ImageId == image.ImageId && toDelete.Contains(y.TagId)));
                         delWatch.Stop();
-
-                        Stopwatch addWatch = new Stopwatch("AddTagsInsert");
-                        await db.BulkInsert(db.ImageTags, newImageTags); ;
-                        addWatch.Stop();
-
-                        transaction.Commit();
-                        tagsAdded = newImageTags.Count;
                     }
+
+                    if (toAdd.Any())
+                    {
+                        Stopwatch addWatch = new Stopwatch("AddTagsInsert");
+                        await db.BulkInsert(db.ImageTags, toAdd); ;
+                        addWatch.Stop();
+                    }
+                    transaction.Commit();
+                    tagsAdded = newImageTags.Count;
                 }
                 catch (Exception ex)
                 {
