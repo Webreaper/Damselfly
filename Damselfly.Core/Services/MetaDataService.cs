@@ -61,6 +61,8 @@ namespace Damselfly.Core.Services
         /// <returns>Metadata, or Null if there was an error</returns>
         private IReadOnlyList<MetadataExtractor.Directory> SafeReadImageMetadata(string imagePath)
         {
+            var watch = new Stopwatch("ReadMetaData");
+
             IReadOnlyList<MetadataExtractor.Directory> metadata = null;
 
             if (File.Exists(imagePath))
@@ -81,6 +83,8 @@ namespace Damselfly.Core.Services
                 }
             }
 
+            watch.Stop();
+
             return metadata;
         }
 
@@ -99,11 +103,7 @@ namespace Damselfly.Core.Services
 
             try
             {
-                var watch = new Stopwatch("ReadMetaData");
-
                 IReadOnlyList<MetadataExtractor.Directory> metadata = SafeReadImageMetadata(image.FullPath);
-
-                watch.Stop();
 
                 if (metadata != null)
                 {
@@ -254,6 +254,8 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task ScanMetaData( int imageId )
         {
+            Stopwatch watch = new Stopwatch("ScanMetadata");
+
             var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
             var db = new ImageContext();
             var updateTimeStamp = DateTime.UtcNow;
@@ -338,7 +340,7 @@ namespace Damselfly.Core.Services
 
             _imageCache.Evict(imageId);
 
-            //Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
+            watch.Stop();
         }
 
         /// <summary>
