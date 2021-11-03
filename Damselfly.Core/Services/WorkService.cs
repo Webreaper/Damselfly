@@ -163,7 +163,7 @@ namespace Damselfly.Core.Services
             // Trigger the work service to look for new jobs - but after a small pause
             _ = Task.Run( async () => 
                     {
-                        Logging.Log("Waiting on background thread before populatejobs...");
+                        Logging.LogVerbose("Waiting on background thread before PopulateJobsForService...");
                         await Task.Delay(waitForSecs * 1000);
                         // Get more jobs from the DB
                         PopulateJobsForService(source, _maxQueueSize);
