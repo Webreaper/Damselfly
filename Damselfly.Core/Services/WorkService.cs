@@ -243,7 +243,7 @@ namespace Damselfly.Core.Services
             // up again in future during the next GetPendingJobs call.
             if( job.CanProcess )
             {
-                string jobName = job.GetType().Name;
+                string jobName = job.Description.Replace( " ", "" );
 
                 SetStatus($"{job.Description}", JobStatus.Running, cpuPercentage);
 
