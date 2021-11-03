@@ -191,6 +191,10 @@ namespace Damselfly.Core.Services
             {
                 var operationText = op.Text.RemoveSmartQuotes();
 
+                // Some options may have been discarded by the conflation process, so skip them.
+                if (op.State == ExifOperation.FileWriteState.Discarded)
+                    continue;
+
                 if ( String.IsNullOrEmpty( operationText ) )
                 {
                     Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
