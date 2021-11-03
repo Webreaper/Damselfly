@@ -259,7 +259,7 @@ namespace Damselfly.Core.Services
             var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
             var db = new ImageContext();
             var updateTimeStamp = DateTime.UtcNow;
-            var allKeywords = new Dictionary<Image, string[]>();
+            var imageKeywords = new List<string>();
 
             var img = await _imageCache.GetCachedImage(imageId);
             db.Attach(img);
@@ -311,7 +311,7 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                allKeywords[img] = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToArray();
+                imageKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToList();
 
                 if (imgMetaData.DateTaken != img.SortDate)
                 {
@@ -336,7 +336,7 @@ namespace Damselfly.Core.Services
             await db.SaveChangesAsync("ImageMetaDataSave");
 
             // Now save the tags
-            var tagsAdded = await AddTags(allKeywords);
+            var tagsAdded = await AddTags(img, imageKeywords);
 
             _imageCache.Evict(imageId);
 
@@ -351,12 +351,8 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="imageKeywords"></param>
         /// <param name="type"></param>
-        private async Task<int> AddTags(IDictionary<Image, string[]> imageKeywords)
+        private async Task<int> AddTags(Image image, List<string> imageKeywords)
         {
-            // See if we have any images that were written to the DB and have IDs
-            if (!imageKeywords.Where(x => x.Key.ImageId != 0).Any())
-                return 0;
-
             int tagsAdded = 0;
             var watch = new Stopwatch("AddTags");
 
@@ -364,10 +360,7 @@ namespace Damselfly.Core.Services
             {
                 // First, find all the distinct keywords, and check whether
                 // they're in the cache. If not, create them in the DB.
-                var allKeywords = imageKeywords.Where(x => x.Value != null && x.Value.Any())
-                                               .SelectMany(x => x.Value).Distinct();
-
-                await CreateTagsFromStrings(allKeywords);
+                await CreateTagsFromStrings(imageKeywords);
             }
             catch (Exception ex)
             {
@@ -380,12 +373,12 @@ namespace Damselfly.Core.Services
             {
                 try
                 {
-                    var newImageTags = imageKeywords.SelectMany(i => i.Value.Select(
-                                                                    v => new ImageTag
+                    // Create the new tag objects, pulling the tags from the cache
+                    var newImageTags = imageKeywords.Select(keyword => new ImageTag
                                                                     {
-                                                                        ImageId = i.Key.ImageId,
-                                                                        TagId = _tagCache[v].TagId
-                                                                    }))
+                                                                        ImageId = image.ImageId,
+                                                                        TagId = _tagCache[keyword].TagId
+                                                                    })
                                                                 .ToList();
 
                     // Note that we need to delete all of the existing tags for an image,
@@ -396,20 +389,17 @@ namespace Damselfly.Core.Services
                     // TODO: This should be in the abstract model
                     if (!ImageContext.ReadOnly)
                     {
-                        Stopwatch delWatch = new Stopwatch("DeleteTagsForReplace");
                         // TODO: Push these down to the abstract model
-                        await db.BatchDelete(db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
-                               .Contains(y.ImageId)));
+
+                        Stopwatch delWatch = new Stopwatch("AddTagsDelete");
+                        await db.BatchDelete( db.ImageTags.Where(y => y.ImageId == image.ImageId ) );
                         delWatch.Stop();
 
-                        Stopwatch addWatch = new Stopwatch("WriteTagsToDB");
+                        Stopwatch addWatch = new Stopwatch("AddTagsInsert");
                         await db.BulkInsert(db.ImageTags, newImageTags); ;
                         addWatch.Stop();
 
-                        Stopwatch transWatch = new Stopwatch("AddTagsCommit");
                         transaction.Commit();
-                        transWatch.Stop();
-
                         tagsAdded = newImageTags.Count;
                     }
                 }
@@ -644,10 +634,12 @@ namespace Damselfly.Core.Services
 
         public async Task<List<Models.Tag>> CreateTagsFromStrings(IEnumerable<string> tags)
         {
+            Stopwatch watch = new Stopwatch("CreateTagsFromStrings");
+
             using ImageContext db = new ImageContext();
 
             // Find the tags that aren't already in the cache
-            var newTags = tags.Where(x => !_tagCache.ContainsKey(x))
+            var newTags = tags.Distinct().Where(x => !_tagCache.ContainsKey(x))
                         .Select(x => new Models.Tag { Keyword = x, TagType = TagTypes.IPTC })
                         .ToList();
 
@@ -664,6 +656,9 @@ namespace Damselfly.Core.Services
             }
 
             var allTags = tags.Select(x => _tagCache[x]).ToList();
+
+            watch.Stop();
+
             return allTags;
         }
 
