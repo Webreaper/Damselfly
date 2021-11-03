@@ -360,8 +360,6 @@ namespace Damselfly.Core.Services
             int tagsAdded = 0;
             var watch = new Stopwatch("AddTags");
 
-            using ImageContext db = new ImageContext();
-
             try
             {
                 // First, find all the distinct keywords, and check whether
@@ -375,6 +373,8 @@ namespace Damselfly.Core.Services
             {
                 Logging.LogError("Exception adding Tags: {0}", ex);
             }
+
+            using ImageContext db = new ImageContext();
 
             using (var transaction = db.Database.BeginTransaction())
             {
@@ -396,14 +396,19 @@ namespace Damselfly.Core.Services
                     // TODO: This should be in the abstract model
                     if (!ImageContext.ReadOnly)
                     {
-
+                        Stopwatch delWatch = new Stopwatch("DeleteTagsForReplace");
                         // TODO: Push these down to the abstract model
                         await db.BatchDelete(db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
                                .Contains(y.ImageId)));
+                        delWatch.Stop();
 
+                        Stopwatch addWatch = new Stopwatch("WriteTagsToDB");
                         await db.BulkInsert(db.ImageTags, newImageTags); ;
+                        addWatch.Stop();
 
+                        Stopwatch transWatch = new Stopwatch("AddTagsCommit");
                         transaction.Commit();
+                        transWatch.Stop();
 
                         tagsAdded = newImageTags.Count;
                     }
