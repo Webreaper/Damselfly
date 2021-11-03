@@ -429,6 +429,8 @@ namespace Damselfly.Core.Services
         /// <param name="keywords"></param>
         private List<string> GetSideCarKeywords(Image img, string[] keywords, bool tagsWillBeWritten)
         {
+            Stopwatch watch = new Stopwatch("GetSideCarKeywords");
+
             var sideCarTags = new List<string>();
 
             var sidecar = img.GetSideCar();
@@ -450,6 +452,8 @@ namespace Damselfly.Core.Services
                     sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
             }
+
+            watch.Stop();
 
             return sideCarTags;
         }

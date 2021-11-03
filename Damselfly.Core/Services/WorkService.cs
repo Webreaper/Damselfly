@@ -148,7 +148,9 @@ namespace Damselfly.Core.Services
 
         /// <summary>
         /// Callback to notify the work service to look for new jobs. 
-        /// Will be called async, from another thread
+        /// Will be called async, from another thread, and should
+        /// process the PopulateJobs method on another thread and
+        /// return immediately. 
         /// </summary>
         /// <param name="source"></param>
         /// <param name="waitSeconds"></param>
@@ -156,12 +158,18 @@ namespace Damselfly.Core.Services
         {
             Logging.Log($"Checking new jobs for {source.GetType().Name}");
 
+            Stopwatch watch = new Stopwatch("HandleNewJobs");
+
             // Trigger the work service to look for new jobs - but after a small pause
-            _ = Task.Delay(waitForSecs * 1000).ContinueWith(x =>
+            _ = Task.Run( async () => 
                     {
+                        Logging.Log("Waiting on background thread before populatejobs...");
+                        await Task.Delay(waitForSecs * 1000);
                         // Get more jobs from the DB
                         PopulateJobsForService(source, _maxQueueSize);
                     });
+
+            watch.Stop();
         }
 
         /// <summary>
@@ -198,6 +206,8 @@ namespace Damselfly.Core.Services
         {
             bool newJobs = false;
 
+            Stopwatch watch = new Stopwatch("PopulateJobsForService");
+
             if (maxCount > 0)
             {
                 try
@@ -215,6 +225,8 @@ namespace Damselfly.Core.Services
                     Logging.LogError($"Exception getting jobs: {ex.Message}");
                 }
             }
+
+            watch.Stop();
 
             return newJobs;
         }

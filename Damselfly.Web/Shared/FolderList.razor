@@ -1,5 +1,4 @@
-﻿
-@inject SearchService searchService
+﻿@inject SearchService searchService
 @inject IndexingService indexService
 @inject FolderService folderService
 @inject UserFolderService userFolderService
@@ -136,10 +135,11 @@
 
     protected async Task ProcessUpdatedFilter()
     {
-        folderItems = await userFolderService.GetFilteredFolders(filterTerm);
+        var folders = await userFolderService.GetFilteredFolders(filterTerm);
 
-        if (folderContainer != null)
-            await folderContainer.RefreshDataAsync();
+        folderItems.Clear();
+        folderItems.AddRange(folders);
+
         await InvokeAsync(StateHasChanged);
     }
 

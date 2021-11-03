@@ -39,7 +39,7 @@
         int scrollPos = configService.GetInt(ScrollConfigName, 0);
 
         try {
-            Logging.Log($"Data loaded - initialising scroll position to {scrollPos}");
+            Logging.LogVerbose($"Data loaded - initialising scroll position to {scrollPos}");
             await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
         }
         catch( TaskCanceledException )
