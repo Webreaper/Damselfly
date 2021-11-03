@@ -191,10 +191,6 @@ namespace Damselfly.Core.Services
             {
                 var operationText = op.Text.RemoveSmartQuotes();
 
-                // Some options may have been discarded by the conflation process, so skip them.
-                if (op.State == ExifOperation.FileWriteState.Discarded)
-                    continue;
-
                 if ( String.IsNullOrEmpty( operationText ) )
                 {
                     Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
@@ -349,10 +345,11 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="tagsToProcess"></param>
         /// <returns></returns>
-        private IDictionary<int, List<ExifOperation>> ConflateOperations(List<ExifOperation> opsToProcess )
+        private async Task<IDictionary<int, List<ExifOperation>>> ConflateOperations(List<ExifOperation> opsToProcess )
         {
             // The result is the image ID, and a list of conflated ops.
             var result = new Dictionary<int, List<ExifOperation>>();
+            var discardedOps = new List<ExifOperation>();
 
             // First, conflate the keywords.
             var imageKeywords = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Keyword )
@@ -378,7 +375,7 @@ namespace Damselfly.Core.Services
                         if( exifOpDict.TryGetValue( imageKeywordOp.Text, out var existing ) )
                         {
                             // Update the state before it's replaced in the dict.
-                            existing.State = ExifOperation.FileWriteState.Discarded; 
+                            discardedOps.Add( existing ); 
                         }
 
                         // Store the most recent op for each operation,
@@ -408,13 +405,22 @@ namespace Damselfly.Core.Services
             {
                 // Add the most recent to the result
                 result[pair.Image.ImageId] = pair.Newest;
-                pair.Discarded.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
+                discardedOps.AddRange(pair.Discarded);
             }
 
-            var db = new ImageContext();
 
-            // Write the discarded states back to the DB
-            db.SaveChanges("ConflateExifOps");
+            if (discardedOps.Any())
+            {
+                var db = new ImageContext();
+
+                // Mark the ops as discarded, and save them.
+                discardedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
+
+                Logging.Log($"Discarding {discardedOps.Count} duplicate EXIF operations.");
+                Stopwatch watch = new Stopwatch("WriteDiscardedExifOps");
+                await db.BulkUpdate(db.KeywordOperations, discardedOps);
+                watch.Stop();
+            }
 
             return result;
         }
@@ -490,7 +496,7 @@ namespace Damselfly.Core.Services
                                     .Include(x => x.Image)
                                     .ToListAsync();
 
-            var conflatedOps = ConflateOperations(opsToProcess);
+            var conflatedOps = await ConflateOperations(opsToProcess);
 
             var jobs = conflatedOps.Select(x => new ExifProcess
             {
