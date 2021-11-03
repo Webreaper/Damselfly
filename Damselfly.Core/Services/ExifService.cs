@@ -243,7 +243,9 @@ namespace Damselfly.Core.Services
             env["LANG"] = "en_US.UTF-8";
             env["LC_ALL"] = "en_US.UTF-8";
 
+            Stopwatch watch = new Stopwatch("RunExifTool");
             success = process.StartProcess("exiftool", args, env);
+            watch.Stop();
 
             var db = new ImageContext();
 
