@@ -438,6 +438,11 @@ namespace Damselfly.Core.Services
 
             if (sidecar != null)
             {
+                // We need to be really careful here, to discount unicode-encoding differences, because otherwise
+                // we get into an infinite loop where we write one string to the KeywordOperations table, it gets
+                // picked up by the ExifService, written to the image using ExifTool - but with slightly different
+                // character encoding - and then the next time we come through here and check, the keywords look
+                // different. Rinse and repeat. :-s
                 var imageKeywords = keywords.Select(x => x.Sanitise());
                 var sidecarKeywords = sidecar.GetKeywords().Select(x => x.Sanitise());
 

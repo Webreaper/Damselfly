@@ -58,6 +58,10 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (lazyLoad)
                 options.UseLazyLoadingProxies();
 
+            // Default to no tracking for performance. We can use Attach or 
+            // AsTracking explicitly for when we need to do write operations.
+            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
+
             // See efmigrations.md
             //var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
             //var obj = Activator.CreateInstance("Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres.Models.PostgresModel");

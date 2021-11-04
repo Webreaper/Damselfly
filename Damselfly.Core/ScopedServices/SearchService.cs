@@ -48,10 +48,10 @@ namespace Damselfly.Core.ScopedServices
         {
             Logging.LogVerbose($"Filter changed: {query}");
 
-            OnChange?.Invoke();
+            OnSearchChanged?.Invoke();
         }
 
-        public event Action OnChange;
+        public event Action OnSearchChanged;
 
         public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim() ) { query.SearchText = value.Trim(); QueryChanged(); } } }
         public DateTime? MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
