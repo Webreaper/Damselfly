@@ -154,7 +154,9 @@ namespace Damselfly.Core.ImageProcessing
         {
             try
             {
-                using var sourceBitmap = LoadOrientedBitmap(source, width);
+                SKCodec codec = SKCodec.Create(source.FullName);
+                SKImageInfo info = codec.Info;
+                using SKBitmap sourceBitmap = SKBitmap.Decode(codec);
 
                 // setup crop rect
                 var cropRect = new SKRectI(x, y, x + width, y + height);

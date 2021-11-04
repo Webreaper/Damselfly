@@ -1,0 +1,80 @@
+﻿@page "/people"
+
+@using Damselfly.Core.Services;
+@using Damselfly.Core.Models;
+
+@inject ThumbnailService thumbService
+@inject ViewDataService ViewDataService
+@inject ImageRecognitionService faceService
+
+<div class="damselfly-tagview">
+    @if (People == null)
+    {
+        <p><em>Loading People...</em></p>
+    }
+    else
+    {
+        <MudTable Items="@People" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+                    Filter="new Func<Person,bool>(FilterFunc)" @bind-SelectedItem="selectedPerson">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">People &amp; Faces</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Face</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.PersonId)">ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.State)">Status</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Person, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.AzurePersonId)">Azure ID</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Face">
+                    <img src="@FaceLink( context )" width="100" />
+                </MudTd>
+                <MudTd DataLabel="ID">@context.PersonId</MudTd>
+                <MudTd DataLabel="Status">@context.State</MudTd>
+                <MudTd DataLabel="Keyword">
+                    <NavLink href="@FaceLink( @context )">@context.Name</NavLink>
+                </MudTd>
+                <MudTd DataLabel="Azure ID">@context.AzurePersonId.</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</div>
+@code {
+    [Parameter]
+    public string PersonName { get; set; }
+
+    Person selectedPerson;
+    string searchText;
+
+    private string FaceLink( Person person ) => $"/face/{person.PersonId}";
+
+    private IEnumerable<Person> People
+    {
+        get
+        {
+            return faceService.GetCachedPeople().OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    private bool FilterFunc( Person person )
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+
+        return person.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowTags = true });
+        }
+    }
+}

@@ -671,6 +671,29 @@ namespace Damselfly.Core.Services
             return allTags;
         }
 
+        public static void GetImageSize(string fullPath, out int width, out int height)
+        {
+            IReadOnlyList<MetadataExtractor.Directory> metadata;
+
+            width = height = 0;
+            metadata = ImageMetadataReader.ReadMetadata(fullPath);
+
+            var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
+
+            if (jpegDirectory != null)
+            {
+                width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
+                height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
+                if (width == 0 || height == 0)
+                {
+                    var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+
+                    width = jpegDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
+                    height = jpegDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
+                }
+            }
+        }
+
         #endregion
 
         public async Task MarkFolderForScan(Folder folder)

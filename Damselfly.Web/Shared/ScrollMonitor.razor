@@ -37,10 +37,8 @@
                 Logging.LogVerbose($"Data loaded - initialising scroll position to {scrollPos}");
                 await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                // Don't care
-                Logging.LogWarning($"Exception during scroll monitor initialisation: {ex.Message}");
             }
             catch (Exception ex)
             {

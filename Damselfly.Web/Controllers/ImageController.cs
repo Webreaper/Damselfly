@@ -174,45 +174,45 @@ namespace Damselfly.Web.Controllers
 
         [HttpGet("/face/{faceId}")]
         public async Task<IActionResult> Face(string faceId, CancellationToken cancel,
-                [FromServices] ImageProcessService imageProcessor, [FromServices] ThumbnailService thumbService)
+                [FromServices] ImageProcessService imageProcessor,
+                [FromServices] ThumbnailService thumbService,
+                [FromServices] ImageCache imageCache)
         {
             using var db = new ImageContext();
 
             IActionResult result = Redirect("/no-image.png");
 
-            // TODO: Use cache
-
-            var query = db.ImageObjects
-                .Include(x => x.Image)
-                .ThenInclude(o => o.MetaData)
-                .Include(x => x.Person)
-                .OrderByDescending(x => x.Image.MetaData.Width)
-                .ThenByDescending(x => x.Image.MetaData.Height);
-
-            ImageObject face = null;
+            var query = db.ImageObjects.AsQueryable();
 
             if ( int.TryParse( faceId, out var personId ))
             {
-                face = await query.Where( x => x.Person.PersonId == personId )
-                         .FirstOrDefaultAsync();
+                query = query.Where(x => x.Person.PersonId == personId);
             }
             else
             {
-                face = await query.Where(x => x.Person.AzurePersonId == faceId)
-                         .FirstOrDefaultAsync();
+                query = query.Where(x => x.Person.AzurePersonId == faceId);
             }
 
-            var file = new FileInfo(face.Image.FullPath);
-            var imagePath = new FileInfo( thumbService.GetThumbPath(file, ThumbSize.Large) );
-            var destFile = new FileInfo( "path" );
+            var face = await query
+                            .OrderByDescending(x => x.Image.MetaData.Width)
+                            .ThenByDescending(x => x.Image.MetaData.Height)
+                            .Select(x => x)
+                            .FirstOrDefaultAsync();
 
-            if (!destFile.Exists)
+            if (face != null)
             {
-                await imageProcessor.GetCroppedFile(imagePath, face.RectX, face.RectY, face.RectWidth, face.RectHeight, destFile );
+                var thumbPath = await thumbService.GetFaceThumbNail(face);
+
+                if (thumbPath != null )
+                {
+                    Logging.Log($" - Loading face thumb for {face.PersonId} from {thumbPath}");
+
+                    result = PhysicalFile(thumbPath.FullName, "image/jpeg");
+                }
             }
 
             return result;
         }
-
+       
     }
 }
