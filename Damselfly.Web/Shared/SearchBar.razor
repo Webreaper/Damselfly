@@ -5,6 +5,7 @@
 @inject SearchService searchService
 @inject UserStatusService statusService
 @inject UserConfigService configService
+@inject NavigationManager NavigationManager
 
 <div class="damselfly-searchbar">
     <div class="damselfly-searchfilter">
@@ -23,6 +24,7 @@
                 <i class="fas fa-chevron-down" />
             }
         </button>
+        <button class="btn btn-primary damselfly-searchtools" title="People Management" @onclick="@PeopleManagement"><i class="fas fa-users" /></button>
         <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
     </div>
 
@@ -46,7 +48,7 @@
     </div>
     @if (ShowAdvancedSearch)
     {
-        <AdvancedSearchPanel/>
+        <AdvancedSearchPanel />
     }
 </div>
 
@@ -58,16 +60,16 @@
     ThumbSize CurrentThumbSize = ThumbSize.Small;
     bool ShowAdvancedSearch { get; set; } = false;
 
-    private SearchQuery.GroupingType SelectedGrouping { get { return searchService.Grouping;  } set { ChangeGroupType(value); } }
+    private SearchQuery.GroupingType SelectedGrouping { get { return searchService.Grouping; } set { ChangeGroupType(value); } }
 
-    private void ChangeThumbSize( ThumbSize newSize )
+    private void ChangeThumbSize(ThumbSize newSize)
     {
         CurrentThumbSize = newSize;
         OnThumbSizeChanged?.Invoke(newSize);
         StateHasChanged();
     }
 
-    private string SelectedStyle( ThumbSize size )
+    private string SelectedStyle(ThumbSize size)
     {
         return CurrentThumbSize != size ? "damselfly-browsetool-deselected" : String.Empty;
     }
@@ -82,6 +84,18 @@
     {
         ShowAdvancedSearch = !ShowAdvancedSearch;
         StateHasChanged();
+    }
+
+    private void PeopleManagement()
+    {
+        try
+        {
+            NavigationManager.NavigateTo("/people");
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)

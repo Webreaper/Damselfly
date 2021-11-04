@@ -66,6 +66,7 @@ namespace Damselfly.Core.ScopedServices
         public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public int? LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
         public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
+        public Person Person { get { return query.Person; } set { if (query.Person != value) { query.Person = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
         public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
         public FaceSearchType? FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
@@ -212,6 +213,12 @@ namespace Damselfly.Core.ScopedServices
                     var fileImages = db.Images.Where(x => EF.Functions.Like(x.Folder.Path, likeTerm)
                                                         || EF.Functions.Like(x.FileName, likeTerm));
                     images = images.Union(fileImages);
+                }
+
+                if (query.Person?.PersonId >= 0)
+                {
+                    // Filter by folderID
+                    images = images.Where(x => x.ImageObjects.Any( p => p.PersonId == query.Person.PersonId ) );
                 }
 
                 if (query.Folder?.FolderId >= 0)
@@ -370,6 +377,9 @@ namespace Damselfly.Core.ScopedServices
 
                 if (Folder != null)
                     hints.Add($"Folder: {Folder.Name}");
+
+                if (Person != null)
+                    hints.Add($"Person: {Person.Name}");
 
                 if (SimilarTo != null)
                     hints.Add($"Looks Like: {SimilarTo.FileName}");

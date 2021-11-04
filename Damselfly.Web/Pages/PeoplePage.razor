@@ -30,12 +30,13 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Face">
-                    <img src="@FaceLink( context )" width="100" />
+                    <img src="@FaceLink( context )" width="100" title="@context.Name"/>
                 </MudTd>
                 <MudTd DataLabel="ID">@context.PersonId</MudTd>
                 <MudTd DataLabel="Status">@context.State</MudTd>
                 <MudTd DataLabel="Keyword">
-                    <NavLink href="@FaceLink( @context )">@context.Name</NavLink>
+                    <button class="btn btn-primary"><i class="fas fa-edit" /></button>
+                    <NavLink href="@PersonLink( @context )">@context.Name</NavLink>
                 </MudTd>
                 <MudTd DataLabel="Azure ID">@context.AzurePersonId.</MudTd>
             </RowTemplate>
@@ -53,6 +54,7 @@
     string searchText;
 
     private string FaceLink( Person person ) => $"/face/{person.PersonId}";
+    private string PersonLink(Person person) => $"/?personid={person.PersonId}";
 
     private IEnumerable<Person> People
     {

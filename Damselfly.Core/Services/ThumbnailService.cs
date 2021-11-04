@@ -408,6 +408,8 @@ namespace Damselfly.Core.Services
         {
             string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs" );
 
+            Stopwatch watch = new Stopwatch("GenerateFaceThumb");
+
             var image = await _imageCache.GetCachedImage(face.ImageId);
 
             var file = new FileInfo(image.FullPath);
@@ -416,6 +418,7 @@ namespace Damselfly.Core.Services
 
             if (!System.IO.Directory.Exists(faceDir))
             {
+                Logging.Log($"Created folder for face thumbnails: {faceDir}");
                 System.IO.Directory.CreateDirectory(faceDir);
             }
 
@@ -434,11 +437,13 @@ namespace Damselfly.Core.Services
 
                 destFile.Refresh();
 
-                if (destFile.Exists)
-                    return destFile;
+                if (!destFile.Exists)
+                    destFile = null;
             }
 
-            return null;
+            watch.Stop();
+
+            return destFile;
         }
 
         /// <summary>
@@ -455,12 +460,28 @@ namespace Damselfly.Core.Services
 
             float longestBmpSide = sourceWidth > sourceHeight ? sourceWidth : sourceHeight;
             float longestImgSide = image.MetaData.Width > image.MetaData.Height ? image.MetaData.Width : image.MetaData.Height;
-            var ratio = longestBmpSide / longestImgSide;
+
+            var ratio = (longestBmpSide / longestImgSide);
 
             int outX = (int)(x * ratio);
             int outY = (int)(y * ratio);
             int outWidth = (int)(width * ratio);
             int outHeight = (int)(height * ratio);
+
+            double expand = 0.10;
+
+            outX = (int)Math.Max(outX - (outX * expand), 0);
+            outY = (int)Math.Max(outY - (outY * expand), 0);
+
+            double widthExpand = 1 + (2 * expand);
+            outWidth = (int)(outWidth * widthExpand);
+            outHeight = (int)(outHeight * widthExpand);
+
+            if (outX + outWidth > sourceWidth)
+                outWidth = sourceWidth - outX;
+
+            if (outY + outHeight > sourceHeight)
+                outHeight = outHeight - outY;
 
             return (outX, outY, outWidth, outHeight);
         }

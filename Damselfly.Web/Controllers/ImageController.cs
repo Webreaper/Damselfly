@@ -193,10 +193,11 @@ namespace Damselfly.Web.Controllers
                 query = query.Where(x => x.Person.AzurePersonId == faceId);
             }
 
+            // Sort by largest face picture, then by most recent date taken
             var face = await query
-                            .OrderByDescending(x => x.Image.MetaData.Width)
-                            .ThenByDescending(x => x.Image.MetaData.Height)
-                            .Select(x => x)
+                            .OrderByDescending(x => x.RectWidth)
+                            .ThenByDescending(x => x.RectHeight)
+                            .ThenByDescending(x => x.Image.SortDate)
                             .FirstOrDefaultAsync();
 
             if (face != null)
@@ -205,7 +206,7 @@ namespace Damselfly.Web.Controllers
 
                 if (thumbPath != null )
                 {
-                    Logging.Log($" - Loading face thumb for {face.PersonId} from {thumbPath}");
+                    Logging.LogVerbose($" - Loading face thumb for {face.PersonId} from {thumbPath}");
 
                     result = PhysicalFile(thumbPath.FullName, "image/jpeg");
                 }
