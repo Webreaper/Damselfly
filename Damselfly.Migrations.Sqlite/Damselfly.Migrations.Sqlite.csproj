@@ -9,7 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EFCore.BulkExtensions" Version="6.0.0-rc.2" />
-    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="6.0.0-rc.2.21480.5-3" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="6.0.0-rc.2.21480.5-4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-rc.2.21480.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

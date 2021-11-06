@@ -184,6 +184,7 @@ namespace Damselfly.Web.Controllers
 
             var query = db.ImageObjects.AsQueryable();
 
+            // TODO Massively optimise this - if the file already exists we don't need the DB
             if ( int.TryParse( faceId, out var personId ))
             {
                 query = query.Where(x => x.Person.PersonId == personId);
