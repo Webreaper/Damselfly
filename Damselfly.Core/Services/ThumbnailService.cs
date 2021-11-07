@@ -407,38 +407,46 @@ namespace Damselfly.Core.Services
         public async Task<FileInfo> GetFaceThumbNail( ImageObject face )
         {
             string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs" );
-
+            FileInfo destFile = null;
             Stopwatch watch = new Stopwatch("GenerateFaceThumb");
 
-            var image = await _imageCache.GetCachedImage(face.ImageId);
-
-            var file = new FileInfo(image.FullPath);
-            var imagePath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
-            var destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");
-
-            if (!System.IO.Directory.Exists(faceDir))
+            try
             {
-                Logging.Log($"Created folder for face thumbnails: {faceDir}");
-                System.IO.Directory.CreateDirectory(faceDir);
-            }
 
-            if (!destFile.Exists)
-            {
-                MetaDataService.GetImageSize(imagePath.FullName, out var thumbWidth, out var thumbHeight);
+                var image = await _imageCache.GetCachedImage(face.ImageId);
 
-                Logging.LogTrace($"Loaded {imagePath.FullName} - {thumbWidth} x {thumbHeight}");
+                var file = new FileInfo(image.FullPath);
+                var imagePath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
+                destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");
 
-                (var x, var y, var width, var height) = ScaleDownRect(image, thumbWidth, thumbHeight,
-                                                face.RectX, face.RectY, face.RectWidth, face.RectHeight);
-
-                Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
-
-                await _imageProcessingService.GetCroppedFile(imagePath, x, y, width, height, destFile);
-
-                destFile.Refresh();
+                if (!System.IO.Directory.Exists(faceDir))
+                {
+                    Logging.Log($"Created folder for face thumbnails: {faceDir}");
+                    System.IO.Directory.CreateDirectory(faceDir);
+                }
 
                 if (!destFile.Exists)
-                    destFile = null;
+                {
+                    MetaDataService.GetImageSize(imagePath.FullName, out var thumbWidth, out var thumbHeight);
+
+                    Logging.LogTrace($"Loaded {imagePath.FullName} - {thumbWidth} x {thumbHeight}");
+
+                    (var x, var y, var width, var height) = ScaleDownRect(image, thumbWidth, thumbHeight,
+                                                    face.RectX, face.RectY, face.RectWidth, face.RectHeight);
+
+                    Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
+
+                    await _imageProcessingService.GetCroppedFile(imagePath, x, y, width, height, destFile);
+
+                    destFile.Refresh();
+
+                    if (!destFile.Exists)
+                        destFile = null;
+                }
+            }
+            catch( Exception ex )
+            {
+                Logging.Log($"Exception generating face thumb for image ID {face.ImageId}: {ex.Message}");
             }
 
             watch.Stop();
