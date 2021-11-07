@@ -425,7 +425,7 @@ namespace Damselfly.Core.Services
 
                 if (!destFile.Exists)
                 {
-                    Logging.Log($" - Generating face thumb for {face.PersonId} in file {destFile}...");
+                    Logging.Log($" - Generating face thumb for {face.PersonId} from file {imagePath}...");
 
                     MetaDataService.GetImageSize(imagePath.FullName, out var thumbWidth, out var thumbHeight);
 
