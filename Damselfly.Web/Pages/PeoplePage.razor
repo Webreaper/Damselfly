@@ -4,6 +4,7 @@
 @using Damselfly.Core.Models;
 
 @inject ThumbnailService thumbService
+@inject UserStatusService statusService
 @inject ViewDataService ViewDataService
 @inject ImageRecognitionService faceService
 
@@ -15,30 +16,21 @@
     else
     {
         <MudTable Items="@People" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
-                    Filter="new Func<PersonListItem,bool>(FilterFunc)" @bind-SelectedItem="selectedPerson">
+                    Filter="new Func<Person,bool>(FilterFunc)" @bind-SelectedItem="selectedPerson">
             <ToolBarContent>
                 <MudText Typo="Typo.h6">People &amp; Faces</MudText>
                 <MudSpacer />
-                <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText" />
+                <MudCheckBox @bind-Checked="@showUnidentified" Label="Unidentified" />
             </ToolBarContent>
             <HeaderContent>
                 <MudTh>Face</MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<PersonListItem, object>(x=>x.Person.PersonId)">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<PersonListItem, object>(x=>x.Person.State)">Status</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<PersonListItem, object>(x=>x.Person.Name)">Name</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<PersonListItem, object>(x=>x.Person.AzurePersonId)">Azure ID</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Person, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.State)">Status</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.AzurePersonId)">Azure ID</MudTableSortLabel></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Face">
-                    <img src="@context.FaceLink" height="80" title="@context.Person.Name"/>
-                </MudTd>
-                <MudTd DataLabel="ID">@context.Person.PersonId</MudTd>
-                <MudTd DataLabel="Status">@context.Person.State</MudTd>
-                <MudTd DataLabel="Keyword">
-                    <button class="btn btn-primary"><i class="fas fa-edit" /></button>
-                    <NavLink href="@context.PersonLink">@context.Person.Name</NavLink>
-                </MudTd>
-                <MudTd DataLabel="Azure ID">@context.Person.AzurePersonId.</MudTd>
+                <PeopleRow Person="@context" />
             </RowTemplate>
             <PagerContent>
                 <MudTablePager />
@@ -50,32 +42,40 @@
     [Parameter]
     public string PersonName { get; set; }
 
-    PersonListItem selectedPerson;
+    Person selectedPerson;
     string searchText;
+    bool showUnidentified { get; set; }
 
-    private class PersonListItem
-    {
-        public Person Person { get; set; }
-        public string FaceLink => $"/face/{Person.PersonId}";
-        public string PersonLink => $"/?personid={Person.PersonId}";
-    }
-
-    private IEnumerable<PersonListItem> People
+    private IEnumerable<Person> People
     {
         get
         {
             return faceService.GetCachedPeople()
-                              .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
-                              .Select( x => new PersonListItem {  Person = x } );
+                              .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase);
         }
     }
 
-    private bool FilterFunc(PersonListItem item )
+    private bool FilterFunc(Person person )
     {
-        if (string.IsNullOrEmpty(searchText))
-            return true;
+        bool display = true;
 
-        return item.Person.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        if (showUnidentified && person.State != Person.PersonState.Unknown)
+            display = false;
+
+        if( !string.IsNullOrEmpty(searchText))
+        {
+            if (!person.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                display = false;
+        }
+
+        return display;
+    }
+
+    private void DoSearch(string searchTerm)
+    {
+        statusService.StatusText = $"Searching for {searchTerm}...";
+        searchText = searchTerm;
+        InvokeAsync( StateHasChanged );
     }
 
     protected override void OnAfterRender(bool firstRender)

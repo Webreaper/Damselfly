@@ -25,6 +25,7 @@
             }
         </button>
         <button class="btn btn-primary damselfly-searchtools" title="People Management" @onclick="@PeopleManagement"><i class="fas fa-users" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="Tag Management" @onclick="@TagManagement"><i class="fas fa-tags" /></button>
         <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
     </div>
 
@@ -91,6 +92,18 @@
         try
         {
             NavigationManager.NavigateTo("/people");
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
+    }
+
+    private void TagManagement()
+    {
+        try
+        {
+            NavigationManager.NavigateTo("/tags");
         }
         catch (Exception ex)
         {
