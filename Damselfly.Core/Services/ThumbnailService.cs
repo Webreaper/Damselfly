@@ -406,15 +406,13 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task<FileInfo> GetFaceThumbNail( ImageObject face )
         {
-            string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs" );
             FileInfo destFile = null;
             Stopwatch watch = new Stopwatch("GenerateFaceThumb");
 
             try
             {
-
+                string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs");
                 var image = await _imageCache.GetCachedImage(face.ImageId);
-
                 var file = new FileInfo(image.FullPath);
                 var imagePath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
                 destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");

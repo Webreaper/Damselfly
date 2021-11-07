@@ -182,35 +182,45 @@ namespace Damselfly.Web.Controllers
 
             IActionResult result = Redirect("/no-image.png");
 
-            var query = db.ImageObjects.AsQueryable();
-
-            // TODO Massively optimise this - if the file already exists we don't need the DB
-            if ( int.TryParse( faceId, out var personId ))
+            try
             {
-                query = query.Where(x => x.Person.PersonId == personId);
-            }
-            else
-            {
-                query = query.Where(x => x.Person.AzurePersonId == faceId);
-            }
+                var query = db.ImageObjects.AsQueryable();
 
-            // Sort by largest face picture, then by most recent date taken
-            var face = await query
-                            .OrderByDescending(x => x.RectWidth)
-                            .ThenByDescending(x => x.RectHeight)
-                            .ThenByDescending(x => x.Image.SortDate)
-                            .FirstOrDefaultAsync();
-
-            if (face != null)
-            {
-                var thumbPath = await thumbService.GetFaceThumbNail(face);
-
-                if (thumbPath != null )
+                // TODO Massively optimise this - if the file already exists we don't need the DB
+                if (int.TryParse(faceId, out var personId))
                 {
-                    Logging.LogVerbose($" - Loading face thumb for {face.PersonId} from {thumbPath}");
-
-                    result = PhysicalFile(thumbPath.FullName, "image/jpeg");
+                    query = query.Where(x => x.Person.PersonId == personId);
                 }
+                else
+                {
+                    query = query.Where(x => x.Person.AzurePersonId == faceId);
+                }
+
+                // Sort by largest face picture, then by most recent date taken
+                var face = await query
+                                .OrderByDescending(x => x.RectWidth)
+                                .ThenByDescending(x => x.RectHeight)
+                                .ThenByDescending(x => x.Image.SortDate)
+                                .FirstOrDefaultAsync();
+
+                if (cancel.IsCancellationRequested)
+                    return result;
+
+                if (face != null)
+                {
+                    var thumbPath = await thumbService.GetFaceThumbNail(face);
+
+                    if (thumbPath != null && thumbPath.Exists)
+                    {
+                        Logging.Log($" - Loading face thumb for {face.PersonId} from {thumbPath}");
+
+                        result = PhysicalFile(thumbPath.FullName, "image/jpeg");
+                    }
+                }
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Unable to load face thumbnail for {faceId}: {ex.Message}");
             }
 
             return result;
