@@ -1,6 +1,7 @@
 ﻿
 @inject ImageRecognitionService faceService
 @inject UserStatusService statusService
+@inject IJSRuntime JsRuntime
 
 <MudTd DataLabel="Face">
     <NavLink href="@PersonLink"><img src="@FaceLink" height="80" title="@Person.Name" /></NavLink>
@@ -17,16 +18,15 @@
     public Person Person { get; set; }
 
     public string Name { get { return Person.Name; } set { UpdateName(value); } }
-
     public string FaceLink => $"/face/{Person.PersonId}";
     public string PersonLink => $"/?personid={Person.PersonId}";
 
     private void UpdateName(string newName)
     {
-        if( ! string.IsNullOrEmpty( newName ) && ! newName.Equals( Person.Name ) )
+        if (!string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name))
         {
+            _ = JsRuntime.InvokeAsync<string>("clearFocus");
             _ = faceService.UpdateName(Person, newName);
-
             statusService.StatusText = $"Name set to '{newName}'";
         }
     }

@@ -56,6 +56,12 @@
             return element.setSelectionRange(start, end);
         }
 
+        function clearFocus() {
+            console.log("LoseFocus");
+            if (document.activeElement instanceof HTMLElement)
+                document.activeElement.blur();
+        }
+
         function writeFileLocally(sourceUrl, localFilename) {
             window.downloadUrl(sourceUrl, localFilename);
         }
