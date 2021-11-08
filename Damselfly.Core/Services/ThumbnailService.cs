@@ -425,7 +425,7 @@ namespace Damselfly.Core.Services
 
                 if (!destFile.Exists)
                 {
-                    Logging.Log($" - Generating face thumb for {face.PersonId} from file {imagePath}...");
+                    Logging.LogVerbose($"Generating face thumb for {face.PersonId} from file {imagePath}...");
 
                     MetaDataService.GetImageSize(imagePath.FullName, out var thumbWidth, out var thumbHeight);
 
@@ -446,7 +446,7 @@ namespace Damselfly.Core.Services
             }
             catch( Exception ex )
             {
-                Logging.Log($"Exception generating face thumb for image ID {face.ImageId}: {ex.Message}");
+                Logging.LogError($"Exception generating face thumb for image ID {face.ImageId}: {ex.Message}");
             }
 
             watch.Stop();

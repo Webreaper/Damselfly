@@ -212,8 +212,6 @@ namespace Damselfly.Web.Controllers
 
                     if (thumbPath != null && thumbPath.Exists)
                     {
-                        Logging.Log($" - Loading face thumb for {face.PersonId} from {thumbPath}");
-
                         result = PhysicalFile(thumbPath.FullName, "image/jpeg");
                     }
                 }
