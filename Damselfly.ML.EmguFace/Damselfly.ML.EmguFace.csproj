@@ -11,7 +11,7 @@
     <PackageReference Include="Emgu.CV.runtime.macos" Version="4.5.1.4349" Condition="$([MSBuild]::IsOsPlatform('OSX'))" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.1.4349" />
     <PackageReference Include="Emgu.CV.Bitmap" Version="4.5.1.4349" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 
    <ItemGroup>
