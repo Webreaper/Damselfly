@@ -139,29 +139,6 @@ namespace Damselfly.Core.Services
             new ThumbConfig{ width = 120, height = 120, size = ThumbSize.Small, cropToRatio = true }
         };
 
-        private void GetImageSize(string fullPath, out int width, out int height)
-        {
-            IReadOnlyList<MetadataExtractor.Directory> metadata;
-
-            width = height = 0;
-            metadata = ImageMetadataReader.ReadMetadata(fullPath);
-
-            var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
-
-            if (jpegDirectory != null)
-            {
-                width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
-                height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
-                if (width == 0 || height == 0)
-                {
-                    var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-
-                    width = jpegDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
-                    height = jpegDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
-                }
-            }
-        }
-
         /// <summary>
         /// Gets the list of thumbnails sizes/specs to generate
         /// </summary>
@@ -199,7 +176,7 @@ namespace Damselfly.Core.Services
                         {
                             // The source is older, so we might be able to use it. Check the res:
                             int actualHeight, actualWidth;
-                            GetImageSize(destFile.FullName, out actualWidth, out actualHeight);
+                            MetaDataService.GetImageSize(destFile.FullName, out actualWidth, out actualHeight);
 
                             // Note that the size may be smaller - thumbconfigs are 'max' size, not actual.
                             if (actualHeight <= thumbConfig.height && actualWidth <= thumbConfig.width)
@@ -420,6 +397,102 @@ namespace Damselfly.Core.Services
             }
         }
 
+        /// <summary>
+        /// Given an image ID and a face object, returns the path of a generated
+        /// thumbnail for that croppped face.
+        /// </summary>
+        /// <param name="imageId"></param>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        public async Task<FileInfo> GetFaceThumbNail( ImageObject face )
+        {
+            FileInfo destFile = null;
+            Stopwatch watch = new Stopwatch("GenerateFaceThumb");
+
+            try
+            {
+                string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs");
+                var image = await _imageCache.GetCachedImage(face.ImageId);
+                var file = new FileInfo(image.FullPath);
+                var imagePath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
+                destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");
+
+                if (!System.IO.Directory.Exists(faceDir))
+                {
+                    Logging.Log($"Created folder for face thumbnails: {faceDir}");
+                    System.IO.Directory.CreateDirectory(faceDir);
+                }
+
+                if (!destFile.Exists)
+                {
+                    Logging.LogVerbose($"Generating face thumb for {face.PersonId} from file {imagePath}...");
+
+                    MetaDataService.GetImageSize(imagePath.FullName, out var thumbWidth, out var thumbHeight);
+
+                    Logging.LogTrace($"Loaded {imagePath.FullName} - {thumbWidth} x {thumbHeight}");
+
+                    (var x, var y, var width, var height) = ScaleDownRect(image, thumbWidth, thumbHeight,
+                                                    face.RectX, face.RectY, face.RectWidth, face.RectHeight);
+
+                    Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
+
+                    await _imageProcessingService.GetCroppedFile(imagePath, x, y, width, height, destFile);
+
+                    destFile.Refresh();
+
+                    if (!destFile.Exists)
+                        destFile = null;
+                }
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception generating face thumb for image ID {face.ImageId}: {ex.Message}");
+            }
+
+            watch.Stop();
+
+            return destFile;
+        }
+
+        /// <summary>
+        /// Scales the detected face/object rectangles based on the full-sized image,
+        /// since the object detection was done on a smaller thumbnail.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="imgObjects">Collection of objects to scale</param>
+        /// <param name="thumbSize"></param>
+        public static (int x, int y, int width, int height) ScaleDownRect(Image image, int sourceWidth, int sourceHeight, int x, int y, int width, int height)
+        {
+            if (sourceHeight == 0 || sourceWidth == 0)
+                return (x, y, width, height);
+
+            float longestBmpSide = sourceWidth > sourceHeight ? sourceWidth : sourceHeight;
+            float longestImgSide = image.MetaData.Width > image.MetaData.Height ? image.MetaData.Width : image.MetaData.Height;
+
+            var ratio = (longestBmpSide / longestImgSide);
+
+            int outX = (int)(x * ratio);
+            int outY = (int)(y * ratio);
+            int outWidth = (int)(width * ratio);
+            int outHeight = (int)(height * ratio);
+
+            double expand = 0.10;
+
+            outX = (int)Math.Max(outX - (outX * expand), 0);
+            outY = (int)Math.Max(outY - (outY * expand), 0);
+
+            double widthExpand = 1 + (2 * expand);
+            outWidth = (int)(outWidth * widthExpand);
+            outHeight = (int)(outHeight * widthExpand);
+
+            if (outX + outWidth > sourceWidth)
+                outWidth = sourceWidth - outX;
+
+            if (outY + outHeight > sourceHeight)
+                outHeight = outHeight - outY;
+
+            return (outX, outY, outWidth, outHeight);
+        }
 
         /// <summary>
         /// Process the file on disk to create a set of thumbnails.

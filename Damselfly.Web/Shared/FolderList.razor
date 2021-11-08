@@ -1,5 +1,4 @@
-﻿
-@inject SearchService searchService
+﻿@inject SearchService searchService
 @inject IndexingService indexService
 @inject FolderService folderService
 @inject UserFolderService userFolderService
@@ -9,7 +8,7 @@
 
 @implements IDisposable
 
-<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
+<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
 
 <div class="damselfly-folderlist">
     <div class="folder-search">
@@ -46,7 +45,6 @@
     private Virtualize<FolderListItem> folderContainer;
     private List<FolderListItem> folderItems;
     Folder SelectedItem { get; set; }
-    private ScrollMonitor ScrollMonitor;
 
     void ShowContextMenu(MouseEventArgs args, FolderListItem folder)
     {
@@ -138,8 +136,6 @@
     {
         folderItems = await userFolderService.GetFilteredFolders(filterTerm);
 
-        if (folderContainer != null)
-            await folderContainer.RefreshDataAsync();
         await InvokeAsync(StateHasChanged);
     }
 

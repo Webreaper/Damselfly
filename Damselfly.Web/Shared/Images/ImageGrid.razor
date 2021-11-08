@@ -207,18 +207,18 @@
     {
         if (firstRender)
         {
+            selectionService.OnSelectionChanged += SelectedImagesChanged;
+            searchService.OnSearchChanged += SearchQueryChanged;
+            FileExporter.OnChange += StateHasChanged;
+            basketService.OnBasketChanged += BasketChanged;
+            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
+
             int initialLoadCount = Math.Max(configService.GetInt("LoadedImages", imagesPerPage), imagesPerPage);
 
             Logging.Log($"Loading {initialLoadCount} images into grid.");
             await LoadData(initialLoadCount);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
-
-            selectionService.OnSelectionChanged += SelectedImagesChanged;
-            searchService.OnChange += SearchQueryChanged;
-            FileExporter.OnChange += StateHasChanged;
-            basketService.OnBasketChanged += BasketChanged;
-            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
         }
     }
 
@@ -230,7 +230,7 @@
     public void Dispose()
     {
         selectionService.OnSelectionChanged -= SelectedImagesChanged;
-        searchService.OnChange -= SearchQueryChanged;
+        searchService.OnSearchChanged -= SearchQueryChanged;
         FileExporter.OnChange -= StateHasChanged;
         basketService.OnBasketChanged -= BasketChanged;
         ScrollMonitor.OnScrollPositionChanged -= SaveScrollState;

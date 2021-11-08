@@ -20,7 +20,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        Logging.Log($"Saving scroll position to {scrollTop}");
+        Logging.LogVerbose($"Saving scroll position to {scrollTop}");
         configService.Set(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);
@@ -30,31 +30,26 @@
     {
         if (firstRender)
         {
-            await InitScrollPosition();
-        }
-    }
+            int scrollPos = configService.GetInt(ScrollConfigName, 0);
 
-    private async Task InitScrollPosition()
-    {
-        int scrollPos = configService.GetInt(ScrollConfigName, 0);
-
-        try {
-            Logging.Log($"Data loaded - initialising scroll position to {scrollPos}");
-            await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
-        }
-        catch( TaskCanceledException )
-        {
-            // Don't care
-        }
-        catch( Exception ex )
-        {
-            Logging.LogError($"Exception restoring scroll position: {ex.Message}");
+            try
+            {
+                Logging.LogVerbose($"Data loaded - initialising scroll position to {scrollPos}");
+                await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
+            }
+            catch (TaskCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception restoring scroll position: {ex.Message}");
+            }
         }
     }
 
     [JSInvokable]
     // Debugging method to help us differentiate between JS calls and other data loads
-    private void HandleScroll(int scrollTop)
+    public void HandleScroll(int scrollTop)
     {
         conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
     }

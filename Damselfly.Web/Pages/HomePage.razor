@@ -73,6 +73,19 @@
             }
         }
 
+        if (PersonId != 0)
+        {
+            using var db = new ImageContext();
+
+            var person = await db.People.FindAsync(PersonId);
+
+            if (person != null)
+            {
+                statusService.StatusText = $"Selected person {person.Name}";
+                searchService.Person = person;
+            }
+        }
+
         if (TagId != 0)
         {
             var tag = metadataService.GetTag(TagId);
@@ -86,11 +99,6 @@
 
             if (tag != null)
                 searchService.Tag = tag;
-        }
-
-        if (Date != DateTime.MinValue)
-        {
-            // searchService.MinDate
         }
 
         // Don't need this yet

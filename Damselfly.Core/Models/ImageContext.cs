@@ -639,6 +639,7 @@ namespace Damselfly.Core.Models
         public Image SimilarTo { get; set; } = null;
         public Folder Folder { get; set; } = null;
         public Tag Tag { get; set; } = null;
+        public Person Person { get; set; } = null;
         public DateTime? MaxDate { get; set; } = null;
         public DateTime? MinDate { get; set; } = null;
         public FaceSearchType? FaceSearch { get; set; } = null;
@@ -649,7 +650,7 @@ namespace Damselfly.Core.Models
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, SimilarTo={SimilarTo?.ImageId}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarTo?.ImageId}";
         }
     }
 

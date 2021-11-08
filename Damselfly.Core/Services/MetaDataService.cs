@@ -61,6 +61,8 @@ namespace Damselfly.Core.Services
         /// <returns>Metadata, or Null if there was an error</returns>
         private IReadOnlyList<MetadataExtractor.Directory> SafeReadImageMetadata(string imagePath)
         {
+            var watch = new Stopwatch("ReadMetaData");
+
             IReadOnlyList<MetadataExtractor.Directory> metadata = null;
 
             if (File.Exists(imagePath))
@@ -81,6 +83,8 @@ namespace Damselfly.Core.Services
                 }
             }
 
+            watch.Stop();
+
             return metadata;
         }
 
@@ -99,11 +103,7 @@ namespace Damselfly.Core.Services
 
             try
             {
-                var watch = new Stopwatch("ReadMetaData");
-
                 IReadOnlyList<MetadataExtractor.Directory> metadata = SafeReadImageMetadata(image.FullPath);
-
-                watch.Stop();
 
                 if (metadata != null)
                 {
@@ -254,10 +254,13 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task ScanMetaData( int imageId )
         {
+            Stopwatch watch = new Stopwatch("ScanMetadata");
+
             var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
             var db = new ImageContext();
             var updateTimeStamp = DateTime.UtcNow;
-            var allKeywords = new Dictionary<Image, string[]>();
+            var imageKeywords = new List<string>();
+            List<string> sideCarTags = new List<string>();
 
             var img = await _imageCache.GetCachedImage(imageId);
             db.Attach(img);
@@ -293,23 +296,9 @@ namespace Damselfly.Core.Services
                 imgMetaData.LastUpdated = updateTimeStamp;
 
                 // Scan for sidecar files
-                var sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
+                sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
 
-                if (sideCarTags.Any())
-                {
-                    // See if we've enabled the option to write any sidecar keywords to IPTC keywords
-                    // if they're missing in the EXIF data of the image.
-                    if (writeSideCarTagsToImages)
-                    {
-                        // Now, submit the tags; note they won't get created immediately, but in batch.
-                        Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
-
-                        // Fire and forget this asynchronously - we don't care about waiting for it
-                        _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
-                    }
-                }
-
-                allKeywords[img] = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToArray();
+                imageKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToList();
 
                 if (imgMetaData.DateTaken != img.SortDate)
                 {
@@ -334,11 +323,22 @@ namespace Damselfly.Core.Services
             await db.SaveChangesAsync("ImageMetaDataSave");
 
             // Now save the tags
-            var tagsAdded = await AddTags(allKeywords);
+            var tagsAdded = await WriteTagsForImage(img, imageKeywords);
 
             _imageCache.Evict(imageId);
 
-            //Logging.Log($"Completed metadata scan: {imagesToScan.Length} images, {newMetadataEntries.Count} added, {updatedEntries.Count} updated, {imageKeywords.Count} keywords added, in {batchWatch.HumanElapsedTime}.");
+            watch.Stop();
+
+            if (sideCarTags.Any() && writeSideCarTagsToImages )
+            {
+                // If we've enabled the option to write any sidecar keywords to IPTC
+                // keywords if they're missing in the EXIF data of the image submit
+                // the tags; note they won't get created immediately, but in batch.
+                Logging.LogVerbose($"Applying {sideCarTags.Count} keywords from sidecar files to image {img.FileName}");
+
+                // Fire and forget this asynchronously - we don't care about waiting for it
+                _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
+            }
         }
 
         /// <summary>
@@ -349,62 +349,63 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="imageKeywords"></param>
         /// <param name="type"></param>
-        private async Task<int> AddTags(IDictionary<Image, string[]> imageKeywords)
+        private async Task<int> WriteTagsForImage(Image image, List<string> imageKeywords)
         {
-            // See if we have any images that were written to the DB and have IDs
-            if (!imageKeywords.Where(x => x.Key.ImageId != 0).Any())
-                return 0;
-
             int tagsAdded = 0;
-            var watch = new Stopwatch("AddTags");
+            var watch = new Stopwatch("WriteTagsForImage");
 
-            using ImageContext db = new ImageContext();
+            if (ImageContext.ReadOnly)
+                return tagsAdded;
 
             try
             {
                 // First, find all the distinct keywords, and check whether
                 // they're in the cache. If not, create them in the DB.
-                var allKeywords = imageKeywords.Where(x => x.Value != null && x.Value.Any())
-                                               .SelectMany(x => x.Value).Distinct();
-
-                await CreateTagsFromStrings(allKeywords);
+                await CreateTagsFromStrings(imageKeywords);
             }
             catch (Exception ex)
             {
                 Logging.LogError("Exception adding Tags: {0}", ex);
             }
 
+            using ImageContext db = new ImageContext();
+
             using (var transaction = db.Database.BeginTransaction())
             {
                 try
                 {
-                    var newImageTags = imageKeywords.SelectMany(i => i.Value.Select(
-                                                                    v => new ImageTag
+                    // Create the new tag objects, pulling the tags from the cache
+                    var newImageTags = imageKeywords.Select(keyword => new ImageTag
                                                                     {
-                                                                        ImageId = i.Key.ImageId,
-                                                                        TagId = _tagCache[v].TagId
-                                                                    }))
+                                                                        ImageId = image.ImageId,
+                                                                        TagId = _tagCache[keyword].TagId
+                                                                    })
                                                                 .ToList();
 
-                    // Note that we need to delete all of the existing tags for an image,
-                    // and then insert all of the new tags. This is so that if somebody adds
-                    // one tag, and removes another, we maintain the list correctly.
                     Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
 
-                    // TODO: This should be in the abstract model
-                    if (!ImageContext.ReadOnly)
+                    // First, get the image tags for the image
+                    var existingImageTagIds = image.ImageTags.Select(x => x.TagId).ToList();
+
+                    // Figure out which tags are new, and which existing tags need to be removed.
+                    var toDelete = existingImageTagIds.Where(id => ! newImageTags.Select(x => x.TagId).Contains(id) ).ToList();
+                    var toAdd = newImageTags.Where(x => ! existingImageTagIds.Contains( x.TagId )).ToList();
+
+                    if (toDelete.Any())
                     {
-
-                        // TODO: Push these down to the abstract model
-                        await db.BatchDelete(db.ImageTags.Where(y => newImageTags.Select(x => x.ImageId)
-                               .Contains(y.ImageId)));
-
-                        await db.BulkInsert(db.ImageTags, newImageTags); ;
-
-                        transaction.Commit();
-
-                        tagsAdded = newImageTags.Count;
+                        Stopwatch delWatch = new Stopwatch("AddTagsDelete");
+                        await db.BatchDelete(db.ImageTags.Where(y => y.ImageId == image.ImageId && toDelete.Contains(y.TagId)));
+                        delWatch.Stop();
                     }
+
+                    if (toAdd.Any())
+                    {
+                        Stopwatch addWatch = new Stopwatch("AddTagsInsert");
+                        await db.BulkInsert(db.ImageTags, toAdd); ;
+                        addWatch.Stop();
+                    }
+                    transaction.Commit();
+                    tagsAdded = newImageTags.Count;
                 }
                 catch (Exception ex)
                 {
@@ -429,14 +430,21 @@ namespace Damselfly.Core.Services
         /// <param name="keywords"></param>
         private List<string> GetSideCarKeywords(Image img, string[] keywords, bool tagsWillBeWritten)
         {
+            Stopwatch watch = new Stopwatch("GetSideCarKeywords");
+
             var sideCarTags = new List<string>();
 
             var sidecar = img.GetSideCar();
 
             if (sidecar != null)
             {
-                var imageKeywords = keywords.Select(x => x.RemoveSmartQuotes());
-                var sidecarKeywords = sidecar.GetKeywords().Select(x => x.RemoveSmartQuotes());
+                // We need to be really careful here, to discount unicode-encoding differences, because otherwise
+                // we get into an infinite loop where we write one string to the KeywordOperations table, it gets
+                // picked up by the ExifService, written to the image using ExifTool - but with slightly different
+                // character encoding - and then the next time we come through here and check, the keywords look
+                // different. Rinse and repeat. :-s
+                var imageKeywords = keywords.Select(x => x.Sanitise());
+                var sidecarKeywords = sidecar.GetKeywords().Select(x => x.Sanitise());
 
                 var missingKeywords = sidecarKeywords
                                          .Except(imageKeywords, StringComparer.OrdinalIgnoreCase)
@@ -450,6 +458,8 @@ namespace Damselfly.Core.Services
                     sideCarTags = sideCarTags.Union(missingKeywords, StringComparer.OrdinalIgnoreCase).ToList();
                 }
             }
+
+            watch.Stop();
 
             return sideCarTags;
         }
@@ -633,10 +643,12 @@ namespace Damselfly.Core.Services
 
         public async Task<List<Models.Tag>> CreateTagsFromStrings(IEnumerable<string> tags)
         {
+            Stopwatch watch = new Stopwatch("CreateTagsFromStrings");
+
             using ImageContext db = new ImageContext();
 
             // Find the tags that aren't already in the cache
-            var newTags = tags.Where(x => !_tagCache.ContainsKey(x))
+            var newTags = tags.Distinct().Where(x => !_tagCache.ContainsKey(x))
                         .Select(x => new Models.Tag { Keyword = x, TagType = TagTypes.IPTC })
                         .ToList();
 
@@ -653,7 +665,33 @@ namespace Damselfly.Core.Services
             }
 
             var allTags = tags.Select(x => _tagCache[x]).ToList();
+
+            watch.Stop();
+
             return allTags;
+        }
+
+        public static void GetImageSize(string fullPath, out int width, out int height)
+        {
+            IReadOnlyList<MetadataExtractor.Directory> metadata;
+
+            width = height = 0;
+            metadata = ImageMetadataReader.ReadMetadata(fullPath);
+
+            var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
+
+            if (jpegDirectory != null)
+            {
+                width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
+                height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
+                if (width == 0 || height == 0)
+                {
+                    var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+
+                    width = jpegDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
+                    height = jpegDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
+                }
+            }
         }
 
         #endregion

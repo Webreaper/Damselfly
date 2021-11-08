@@ -1557,7 +1557,7 @@ hr.separator {
     padding: 3px;
     font-weight: bold;
     border: 2px solid #555555;
-    background-color: rgba(155,155,155,0.25);
+    background-color: rgba(155,155,155,0.35);
     border-radius: 5px;
     display: flex;
     flex-direction: column;
@@ -1565,7 +1565,7 @@ hr.separator {
 }
 
 .object:hover {
-    background-color: rgba(255,255,255,0.45);
+    background-color: rgba(255,255,255,0.25);
     border: 3px solid #ffffff;
     animation: fadeIn ease 0.2s;
 }

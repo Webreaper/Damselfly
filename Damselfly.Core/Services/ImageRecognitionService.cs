@@ -123,6 +123,22 @@ namespace Damselfly.Core.Services
 
             // Add/update the cache
             _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
+
+        }
+
+        public async Task UpdateName( Person person, string name )
+        {
+            using var db = new ImageContext();
+
+            // TODO: If this is an existing person/name, we might need to merge in Azure
+            person.Name = name;
+            person.State = Person.PersonState.Identified;
+            db.People.Update(person);
+
+            await db.SaveChangesAsync("SetName");
+
+            // Add/update the cache
+            _peopleCache[person.AzurePersonId] = person;
         }
 
         /// <summary>
@@ -519,6 +535,7 @@ namespace Damselfly.Core.Services
             }
 
             LoadPersonCache();
+
             _workService.AddJobSource(this);
         }
 

@@ -141,7 +141,7 @@ namespace Damselfly.Core.Services
                         new ExifOperation
                         {
                             ImageId = image.ImageId,
-                            Text = keyword.RemoveSmartQuotes(),
+                            Text = keyword.Sanitise(),
                             Type = ExifOperation.ExifType.Keyword,
                             Operation = ExifOperation.OperationType.Remove,
                             TimeStamp = timestamp
@@ -243,7 +243,9 @@ namespace Damselfly.Core.Services
             env["LANG"] = "en_US.UTF-8";
             env["LC_ALL"] = "en_US.UTF-8";
 
+            Stopwatch watch = new Stopwatch("RunExifTool");
             success = process.StartProcess("exiftool", args, env);
+            watch.Stop();
 
             var db = new ImageContext();
 
@@ -343,13 +345,15 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="tagsToProcess"></param>
         /// <returns></returns>
-        private IDictionary<Image, List<ExifOperation>> ConflateOperations(List<ExifOperation> opsToProcess )
+        private async Task<IDictionary<int, List<ExifOperation>>> ConflateOperations(List<ExifOperation> opsToProcess )
         {
-            var result = new Dictionary<Image, List<ExifOperation>>();
+            // The result is the image ID, and a list of conflated ops.
+            var result = new Dictionary<int, List<ExifOperation>>();
+            var discardedOps = new List<ExifOperation>();
 
             // First, conflate the keywords.
             var imageKeywords = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Keyword )
-                                            .GroupBy(x => x.Image);
+                                            .GroupBy(x => x.Image.ImageId);
 
             foreach( var imageOpList in imageKeywords )
             {
@@ -368,14 +372,14 @@ namespace Damselfly.Core.Services
 
                     foreach( var imageKeywordOp in orderedOps )
                     {
-                        // Store the most recent op for each operation,
-                        // over-writing the previous
                         if( exifOpDict.TryGetValue( imageKeywordOp.Text, out var existing ) )
                         {
                             // Update the state before it's replaced in the dict.
-                            existing.State = ExifOperation.FileWriteState.Discarded; 
+                            discardedOps.Add( existing ); 
                         }
 
+                        // Store the most recent op for each operation,
+                        // over-writing the previous
                         exifOpDict[imageKeywordOp.Text] = imageKeywordOp;
                     }
                 }
@@ -400,14 +404,23 @@ namespace Damselfly.Core.Services
             foreach( var pair in imageCaptions )
             {
                 // Add the most recent to the result
-                result[pair.Image] = pair.Newest;
-                pair.Discarded.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
+                result[pair.Image.ImageId] = pair.Newest;
+                discardedOps.AddRange(pair.Discarded);
             }
 
-            var db = new ImageContext();
 
-            // Write the discarded states back to the DB
-            db.SaveChanges("ConflateExifOps");
+            if (discardedOps.Any())
+            {
+                var db = new ImageContext();
+
+                // Mark the ops as discarded, and save them.
+                discardedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
+
+                Logging.Log($"Discarding {discardedOps.Count} duplicate EXIF operations.");
+                Stopwatch watch = new Stopwatch("WriteDiscardedExifOps");
+                await db.BulkUpdate(db.KeywordOperations, discardedOps);
+                watch.Stop();
+            }
 
             return result;
         }
@@ -475,21 +488,19 @@ namespace Damselfly.Core.Services
             // We skip any operations where the timestamp is more recent than 30s
             var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * s_exifWriteDelay);
 
-            // Find all images where there's either no metadata, or where the image
-            // was updated more recently than the image metadata
+            // Find all the operations that are pending, and the timestamp is older than the threshold.
             var opsToProcess = await db.KeywordOperations.AsQueryable()
                                     .Where(x => x.State == ExifOperation.FileWriteState.Pending && x.TimeStamp < timeThreshold)
                                     .OrderByDescending(x => x.TimeStamp)
                                     .Take(maxCount)
                                     .Include(x => x.Image)
-                                    .Include(x => x.Image.Folder)
                                     .ToListAsync();
 
-            var conflatedOps = ConflateOperations(opsToProcess);
+            var conflatedOps = await ConflateOperations(opsToProcess);
 
             var jobs = conflatedOps.Select(x => new ExifProcess
             {
-                ImageId = x.Key.ImageId,
+                ImageId = x.Key,
                 ExifOps = x.Value,
                 Service = this
             }).ToArray();

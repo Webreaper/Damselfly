@@ -1,0 +1,88 @@
+﻿@page "/people"
+
+@using Damselfly.Core.Services;
+@using Damselfly.Core.Models;
+
+@inject ThumbnailService thumbService
+@inject UserStatusService statusService
+@inject ViewDataService ViewDataService
+@inject ImageRecognitionService faceService
+
+<div class="damselfly-tagview">
+    @if (People == null)
+    {
+        <p><em>Loading People...</em></p>
+    }
+    else
+    {
+        <MudTable Items="@People" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+                    Filter="new Func<Person,bool>(FilterFunc)" @bind-SelectedItem="selectedPerson">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">People &amp; Faces</MudText>
+                <MudSpacer />
+                <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText" />
+                <MudCheckBox @bind-Checked="@showUnidentified" Label="Unidentified" />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Face</MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Person, object>(x=>x.Name)">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.State)">Status</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Person, object>(x=>x.AzurePersonId)">Azure ID</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <PeopleRow Person="@context" />
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</div>
+@code {
+    [Parameter]
+    public string PersonName { get; set; }
+
+    Person selectedPerson;
+    string searchText;
+    bool showUnidentified { get; set; }
+
+    private IEnumerable<Person> People
+    {
+        get
+        {
+            return faceService.GetCachedPeople()
+                              .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase);
+        }
+    }
+
+    private bool FilterFunc(Person person )
+    {
+        bool display = true;
+
+        if (showUnidentified && person.State != Person.PersonState.Unknown)
+            display = false;
+
+        if( !string.IsNullOrEmpty(searchText))
+        {
+            if (!person.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                display = false;
+        }
+
+        return display;
+    }
+
+    private void DoSearch(string searchTerm)
+    {
+        statusService.StatusText = $"Searching for {searchTerm}...";
+        searchText = searchTerm;
+        InvokeAsync( StateHasChanged );
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowTags = true });
+        }
+    }
+}

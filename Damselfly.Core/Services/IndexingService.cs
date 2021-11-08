@@ -340,6 +340,12 @@ namespace Damselfly.Core.Services
             if (imagesWereAddedOrRemoved)
                 NotifyFolderChanged();
 
+            if (imagesWereAddedOrRemoved || updatedImages > 0)
+            {
+                // Should flag the metadata service here...
+            }
+
+
             return imagesWereAddedOrRemoved;
         }
 

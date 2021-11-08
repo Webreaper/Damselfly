@@ -79,7 +79,7 @@ namespace Damselfly.Core.ImageProcessing
                 using var sourceBitmap = LoadOrientedBitmap(source, desiredWidth);
                 load.Stop();
 
-                hashThumb = new Stopwatch("HashHumb");
+                hashThumb = new Stopwatch("HashThumb");
                 result.ImageHash = GetHash(sourceBitmap);
                 hashThumb.Stop();
 
@@ -154,7 +154,9 @@ namespace Damselfly.Core.ImageProcessing
         {
             try
             {
-                using var sourceBitmap = LoadOrientedBitmap(source, width);
+                SKCodec codec = SKCodec.Create(source.FullName);
+                SKImageInfo info = codec.Info;
+                using SKBitmap sourceBitmap = SKBitmap.Decode(codec);
 
                 // setup crop rect
                 var cropRect = new SKRectI(x, y, x + width, y + height);

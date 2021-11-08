@@ -5,6 +5,7 @@
 
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
+@inject UserStatusService statusService
 @inject MetaDataService metadataService
 
 <div class="damselfly-tagview">
@@ -19,7 +20,7 @@
             <ToolBarContent>
                 <MudText Typo="Typo.h6">Keyword Tags</MudText>
                 <MudSpacer />
-                <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText" />
             </ToolBarContent>
             <HeaderContent>
                 <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TagId)">ID</MudTableSortLabel></MudTh>
@@ -42,13 +43,13 @@
     }
 </div>
 @code {
-        [Parameter]
-        public string TagName { get; set; }
+    [Parameter]
+    public string TagName { get; set; }
 
-        Tag selectedTag;
-        string searchText;
+    Tag selectedTag;
+    string searchText;
 
-        private string TagLink( Tag tag ) => $"/?tagid={tag.TagId}";
+    private string TagLink( Tag tag ) => $"/?tagid={tag.TagId}";
 
     private IEnumerable<Tag> Tags
     {
@@ -58,6 +59,15 @@
                                              .ThenBy(x => x.Keyword, StringComparer.OrdinalIgnoreCase);
         }
     }
+
+
+    private void DoSearch(string searchTerm)
+    {
+        statusService.StatusText = $"Searching for {searchTerm}...";
+        searchText = searchTerm;
+        InvokeAsync(StateHasChanged);
+    }
+
 
     private bool FilterFunc( Tag tag )
     {

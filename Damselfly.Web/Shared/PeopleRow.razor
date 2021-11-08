@@ -1,0 +1,34 @@
+﻿
+@inject ImageRecognitionService faceService
+@inject UserStatusService statusService
+@inject IJSRuntime JsRuntime
+
+<MudTd DataLabel="Face">
+    <NavLink href="@PersonLink"><img src="@FaceLink" height="80" title="@Person.Name" /></NavLink>
+</MudTd>
+<MudTd DataLabel="Keyword">
+    <MudTextField @bind-Value="@Name" Label="Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
+</MudTd>
+<MudTd DataLabel="Status">@Person.State</MudTd>
+<MudTd DataLabel="Azure ID">@Person.AzurePersonId.</MudTd>
+
+
+@code {
+    [Parameter]
+    public Person Person { get; set; }
+
+    public string Name { get { return Person.Name; } set { UpdateName(value); } }
+    public string FaceLink => $"/face/{Person.PersonId}";
+    public string PersonLink => $"/?personid={Person.PersonId}";
+
+    private void UpdateName(string newName)
+    {
+        if (!string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name))
+        {
+            _ = JsRuntime.InvokeAsync<string>("clearFocus");
+            _ = faceService.UpdateName(Person, newName);
+            statusService.StatusText = $"Name set to '{newName}'";
+        }
+    }
+
+}
