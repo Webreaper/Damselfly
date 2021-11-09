@@ -68,6 +68,9 @@ namespace Damselfly.Core.Services
                     var uniqueFolders = folders.Distinct(StringComparer.OrdinalIgnoreCase);
                     var pendingFolders = db.Folders.Where(f => uniqueFolders.Contains(f.Path)).ToList();
 
+                    // Call this method synchronously, we don't want to continue otherwise
+                    // we'll end up with race conditions as the timer triggers while
+                    // the method is completing. 
                     _indexingService.MarkFoldersForScan(pendingFolders).Wait();
                 }
             }

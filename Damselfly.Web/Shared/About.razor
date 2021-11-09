@@ -1,7 +1,13 @@
 ﻿@using System
 
 <div class="damselfly-about">
-    <h4>Credits/Thanks</h4>
+    <div>
+        <img src="damselfly-logo.png" height="200" title="Damselfly" />
+    </div>
+    <h3>Damselfly v<span />@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h3>
+    <h4>Server-based Digital Asset Management system</h4>
+    <hr />
+    <h3>Credits/Thanks</h3>
     <p>
         Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
         GUI Elements by <NavLink href="https://mudblazor.com/" target="_blank">MudBlazor</NavLink>.
@@ -15,15 +21,31 @@
         <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@ExifService.ExifToolVer by Phil Harvey.
         <NavLink href="https://github.com/jellever/DominantColor">Dominant Colour</NavLink> calculation by Jelle Vergeer.
     </p>
+    <h4> Documentation and Updates</h4>
+    <p>
+        For documentation etc, see the <NavLink href="https://github.com/webreaper/damselfly">Damselfly Github</NavLink> Page.
+        For information, updates and other news about Damselfly:
+        <ul>
+            <li><NavLink href="https://twitter.com/damselflyphotos"><i class="fab fa-twitter"></i> Twitter</NavLink></li>
+            <li><NavLink href="https://reddit.com/r/damselflyphotos"><i class="fab fa-reddit"></i> Reddit</NavLink></li>
+        </ul>
+    </p>
     <h4> Want to Support Damselfly?</h4>
 
     <p>
         Damselfly is free, open-source software. But if you find it useful, and fancy buying me a coffee or a slice of pizza, that would
         be appreciated!
-        <br />
-        <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+        <div>
+            <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+        </div>
     </p>
 </div>
 @code {
-
+    public string Version
+    {
+        get
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+    }
 }

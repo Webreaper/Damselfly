@@ -7,13 +7,11 @@
 <LocalFileExporter @ref="FileExporter" />
 
 <div class="damselfly-info">
-    <div>
-        <img src="damselfly-logo.png" height="200" title="Damselfly" />
-    </div>
-    <h3>Damselfly v<span />@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h3>
-    <h4>Server-based Digital Asset Management system</h4>
-
+    <h1>Configuration Settings</h1>
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
+        <MudTabPanel Text="Credits">
+            <About />
+        </MudTabPanel>
         <MudTabPanel Text="Damselfly Desktop">
             @if (FileExporter != null && FileExporter.IsDesktopHosted)
             {
@@ -31,10 +29,7 @@
             <DesktopAppDownload />
 
         </MudTabPanel>
-        <MudTabPanel Text="Credits">
-            <About/>
-        </MudTabPanel>
-        <MudTabPanel Text="Stats">
+        <MudTabPanel Text="Status">
             <Stats />
         </MudTabPanel>
         <MudTabPanel Text="Tasks">
@@ -47,14 +42,6 @@
 
 @code {
     private LocalFileExporter FileExporter;
-
-    public string Version
-    {
-        get
-        {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        }
-    }
 
     protected override void OnAfterRender(bool firstRender)
     {
