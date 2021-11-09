@@ -1,84 +1,29 @@
 ﻿@using System
-@using Damselfly.Web.Shared
-@inject IJSRuntime JsRuntime
-@inject Damselfly.Core.Interfaces.IImageProcessorFactory imFactory
-@implements IDisposable
-
-<LocalFileExporter @ref="FileExporter" />
 
 <div class="damselfly-about">
-    <div>
-        <img src="damselfly-logo.png" height="200" title="Damselfly" />
-    </div>
-    <h2>Damselfly v<span />@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h2>
-    <h4>Server-based Digital Asset Management system</h4>
+    <h4>Credits/Thanks</h4>
+    <p>
+        Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
+        GUI Elements by <NavLink href="https://mudblazor.com/" target="_blank">MudBlazor</NavLink>.
+        Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
+        Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink>
+        and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>
+        and <NavLink href="https://imagemagick.org/">ImageMagick</NavLink> <span />.
+        Face Detection by <NavLink href="https://www.emgu.com/">EmguCV</NavLink> and <NavLink href="http://accord-framework.net/" target="_blank">Accord.Net</NavLink>.
+        Facial recognition by <NavLink href="https://azure.microsoft.com/en-gb/services/cognitive-services/face/">Azure Cognitive Services Face API</NavLink>.
+        Object Detection based on <NavLink href="https://github.com/mentalstack/yolov5-net" target="_blank">MentalStack's</NavLink> code.
+        <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@ExifService.ExifToolVer by Phil Harvey.
+        <NavLink href="https://github.com/jellever/DominantColor">Dominant Colour</NavLink> calculation by Jelle Vergeer.
+    </p>
+    <h4> Want to Support Damselfly?</h4>
 
-    <div class="damselfly-aboutcolumn">
-        <div class="damselfly-aboutcolumncontent">
-            <h4>Damselfly Desktop</h4>
-            @if (FileExporter != null && FileExporter.IsDesktopHosted)
-            {
-                <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
-            }
-            <DesktopAppDownload />
-
-            <h4>Credits/Thanks</h4>
-            <p>
-                Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
-                GUI Elements by <NavLink href="https://mudblazor.com/" target="_blank">MudBlazor</NavLink>.
-                Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
-                Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink>
-                and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>
-                and <NavLink href="https://imagemagick.org/">ImageMagick</NavLink> <span />.
-                Face Detection by <NavLink href="https://www.emgu.com/">EmguCV</NavLink> and <NavLink href="http://accord-framework.net/" target="_blank">Accord.Net</NavLink>.
-                Facial recognition by <NavLink href="https://azure.microsoft.com/en-gb/services/cognitive-services/face/">Azure Cognitive Services Face API</NavLink>.
-                Object Detection based on <NavLink href="https://github.com/mentalstack/yolov5-net" target="_blank">MentalStack's</NavLink> code.
-                <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@ExifService.ExifToolVer by Phil Harvey.
-                <NavLink href="https://github.com/jellever/DominantColor">Dominant Colour</NavLink> calculation by Jelle Vergeer.
-            </p>
-
-            <h4> Want to Support Damselfly?</h4>
-
-            <p>
-                Damselfly is free, open-source software. But if you find it useful, and fancy buying me a coffee or a slice of pizza, that would
-                be appreciated!
-                <br />
-                <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
-            </p>
-        </div>
-        <div class="damselfly-aboutcolumncontent">
-            <h4>Stats:</h4>
-            <Stats />
-        </div>
-    </div>
-    <h4>Task Statuses:</h4>
-
-    <TaskList />
-
-    <NavLink href="/logs">View Server Logs</NavLink>
+    <p>
+        Damselfly is free, open-source software. But if you find it useful, and fancy buying me a coffee or a slice of pizza, that would
+        be appreciated!
+        <br />
+        <a href="https://www.buymeacoffee.com/damselfly" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/arial-green.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+    </p>
 </div>
+@code {
 
-    @code {
-        private LocalFileExporter FileExporter;
-
-        public string Version
-        {
-            get
-            {
-                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            }
-        }
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            if (firstRender)
-            {
-                FileExporter.OnChange += StateHasChanged;
-            }
-        }
-
-        public void Dispose()
-        {
-            FileExporter.OnChange -= StateHasChanged;
-        }
-    }
+}

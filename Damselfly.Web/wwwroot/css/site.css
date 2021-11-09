@@ -837,30 +837,16 @@ f
     align-content: center;
 }
 
-.damselfly-about {
+.damselfly-info {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     padding: 10px;
     display: flex;
     order: 3;
     flex: 1;
     padding: 5px;
     margin: 5px;
-}
-
-.damselfly-aboutcolumn {
-    display: flex;
-    flex-direction: row;
-    flex: 1 0 auto;
-    margin: 5px;
-}
-
-.damselfly-aboutcolumncontent {
-    flex: 1;
-    justify-content: flex-start;
-    padding: 5px;
-    border-radius: 3px;
+    overflow-y: auto;
 }
 
 .damselfly-imagenav {
@@ -1532,11 +1518,6 @@ hr.separator {
     /*set the size of the lens:*/
     width: 50px;
     height: 50px;
-}
-
-.damselfly-about {
-    overflow-y: auto;
-    flex-direction: column;
 }
 
 .objects-box {
