@@ -249,14 +249,14 @@ namespace Damselfly.Migrations.Sqlite.Models
 
         public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
-            // TODO Use bulk delete here?
+            // TODO Try/Catch here?
             return await query.DeleteAsync();
         }
 
         public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
         {
-            // TODO Use bulk delete here?
-            return await query.BatchUpdateAsync( updateExpression );
+            // TODO Try/Catch here?
+            return await query.UpdateAsync( updateExpression );
         }
 
         private string Sanitize( string input )

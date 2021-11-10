@@ -567,8 +567,8 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
 
             var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
-            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
+            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
             _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for AI reprocessing.";
 
             _workService.HandleNewJobs(this);
