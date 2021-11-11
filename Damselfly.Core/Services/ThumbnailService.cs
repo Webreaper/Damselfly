@@ -447,6 +447,8 @@ namespace Damselfly.Core.Services
                             destFile = null;
                     }
                 }
+                else
+                    Logging.LogWarning($"Unable to generate face thumb from {thumbPath} - file does not exist.");
             }
             catch( Exception ex )
             {

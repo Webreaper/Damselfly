@@ -168,7 +168,7 @@ namespace Damselfly.Core.ImageProcessing
             }
             catch (Exception ex)
             {
-                Logging.Log($"Exception during Skia Crop processing: {ex.Message}");
+                Logging.LogError($"Exception during Skia Crop processing: {ex.Message}");
                 throw;
             }
             finally

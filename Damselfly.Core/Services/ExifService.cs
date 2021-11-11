@@ -29,12 +29,19 @@ namespace Damselfly.Core.Services
         private readonly WorkService _workService;
 
         public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
+        public List<string> RecentTags { get; private set; } = new List<string>();
         public event Action OnFavouritesChanged;
+        public event Action OnRecentsChanged;
         private const int s_exifWriteDelay = 15;
 
         private void NotifyFavouritesChanged()
         {
             OnFavouritesChanged?.Invoke();
+        }
+
+        private void NotifyRecentsChanged()
+        {
+            OnRecentsChanged?.Invoke();
         }
 
         public ExifService( StatusService statusService, WorkService  workService,
@@ -46,6 +53,7 @@ namespace Damselfly.Core.Services
             _workService = workService;
 
             GetExifToolVersion();
+            LoadFavouriteTagsAsync().Wait();
 
             _workService.AddJobSource(this);
         }
@@ -92,6 +100,27 @@ namespace Damselfly.Core.Services
         public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null)
         {
             await UpdateTagsAsync(new[] { image }, addTags, removeTags, user);
+        }
+
+        /// <summary>
+        /// Add most-recent tags to the list
+        /// </summary>
+        /// <param name="recentTags"></param>
+        private void AddRecentTags( ICollection<string> recentTags )
+        {
+            const int maxRecents = 5;
+
+            var newRecent = recentTags.Concat(RecentTags)
+                                      .Except( FavouriteTags.Select( x => x.Keyword ))
+                                      .Distinct()
+                                      .Take( maxRecents ).ToList();
+
+            RecentTags.Clear();
+            RecentTags.AddRange(newRecent);
+
+            NotifyRecentsChanged();
+
+            // TODO: Would be nice to persist these to config too
         }
 
         /// <summary>
@@ -165,6 +194,8 @@ namespace Damselfly.Core.Services
             {
                 Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
             }
+
+            AddRecentTags(addTags);
 
             // Trigger the work service to look for new jobs
             _workService.HandleNewJobs(this, s_exifWriteDelay);
