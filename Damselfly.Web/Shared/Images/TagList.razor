@@ -11,6 +11,7 @@
 @inject IndexingService indexService
 @inject ImageCache imageCache 
 @inject ExifService iptcService
+@inject UserTagFavouritesService tagFaves
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
@@ -52,9 +53,9 @@
         }
     }
 
-    @if (iptcService.RecentTags != null && iptcService.RecentTags.Any())
+    @if (tagFaves.RecentTags != null && tagFaves.RecentTags.Any())
     {
-        @foreach (var tag in iptcService.RecentTags)
+        @foreach (var tag in tagFaves.RecentTags)
         {
             @if (CurrentImages != null && CurrentImages.Any())
             {
@@ -269,7 +270,7 @@
             // TODO: Dispose
             selectionService.OnSelectionChanged += SelectionChanged;
             iptcService.OnFavouritesChanged += FavouritesChanged;
-            iptcService.OnRecentsChanged += FavouritesChanged;
+            tagFaves.OnRecentsChanged += FavouritesChanged;
             SelectionChanged();
         }
         else
@@ -306,7 +307,7 @@
     {
         selectionService.OnSelectionChanged -= SelectionChanged;
         iptcService.OnFavouritesChanged -= FavouritesChanged;
-        iptcService.OnRecentsChanged -= FavouritesChanged;
+        tagFaves.OnRecentsChanged -= FavouritesChanged;
         navContext.OnChange += NavigationChanged;
     }
 

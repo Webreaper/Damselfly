@@ -118,6 +118,7 @@ namespace Damselfly.Web
             services.AddScoped<UserThemeService>();
             services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
+            services.AddScoped<UserTagFavouritesService>();
         }
 
         private void SetupPolicies(AuthorizationOptions config, IServiceCollection services)
