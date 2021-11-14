@@ -475,7 +475,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 1;
+        public int Priority => 2;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxCount )
         {
