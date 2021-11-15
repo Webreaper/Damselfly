@@ -201,6 +201,8 @@ namespace Damselfly.Core.ImageProcessing
 
         public async Task GetCroppedFile( FileInfo source, int x, int y, int width, int height, FileInfo destFile )
         {
+            Stopwatch watch = new Stopwatch("ImageSharpCrop");
+
             // Image.Load(string path) is a shortcut for our default type. 
             // Other pixel formats use Image.Load<TPixel>(string path))
             using var image = Image.Load<Rgba32>(source.FullName);
@@ -209,6 +211,8 @@ namespace Damselfly.Core.ImageProcessing
             image.Mutate(x => x.AutoOrient());
             image.Mutate(x => x.Crop( rect ));
             await image.SaveAsync(destFile.FullName);
+
+            watch.Stop();
         }
 
         /// <summary>

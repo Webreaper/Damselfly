@@ -738,6 +738,7 @@ namespace Damselfly.Core.Services
             public MetaDataService Service { get; set; }
             public bool CanProcess => true;
             public string Description => "Metadata scanning";
+            public JobPriorities Priority => JobPriorities.Metadata;
 
             public async Task Process()
             {
@@ -745,7 +746,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 2;
+        public JobPriorities Priority => JobPriorities.Metadata;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
         {

@@ -1,0 +1,58 @@
+﻿@using System
+@using Damselfly.Web.Shared
+@inject IJSRuntime JsRuntime
+@inject Damselfly.Core.Interfaces.IImageProcessorFactory imFactory
+@implements IDisposable
+
+<LocalFileExporter @ref="FileExporter" />
+
+<div class="damselfly-info">
+    <h1>Damselfly Information</h1>
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
+        <MudTabPanel Text="Credits">
+            <About />
+        </MudTabPanel>
+        <MudTabPanel Text="Damselfly Desktop">
+            @if (FileExporter != null && FileExporter.IsDesktopHosted)
+            {
+                <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
+            }
+            else
+            {
+                <p>
+                    The Damselfly Desktop app is a special container app which gives you closer integration between
+                    Damselfly and your desktop computer. When you run Damselfly in the app, you can copy photos directly
+                    from the server to a local folder of your choice, instantly, without needing to download or extract
+                    them, and preserving the folder structure from the server.
+                </p>
+            }
+            <DesktopAppDownload />
+
+        </MudTabPanel>
+        <MudTabPanel Text="Status">
+            <Stats />
+        </MudTabPanel>
+        <MudTabPanel Text="Tasks">
+            <h4>Task Statuses:</h4>
+            <TaskList />
+            <NavLink href="/logs">View Server Logs</NavLink>
+        </MudTabPanel>
+    </MudTabs>
+</div>
+
+@code {
+    private LocalFileExporter FileExporter;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            FileExporter.OnChange += StateHasChanged;
+        }
+    }
+
+    public void Dispose()
+    {
+        FileExporter.OnChange -= StateHasChanged;
+    }
+}

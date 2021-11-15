@@ -414,35 +414,41 @@ namespace Damselfly.Core.Services
                 string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs");
                 var image = await _imageCache.GetCachedImage(face.ImageId);
                 var file = new FileInfo(image.FullPath);
-                var imagePath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
-                destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");
+                var thumbPath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
 
-                if (!System.IO.Directory.Exists(faceDir))
+                if (thumbPath.Exists)
                 {
-                    Logging.Log($"Created folder for face thumbnails: {faceDir}");
-                    System.IO.Directory.CreateDirectory(faceDir);
-                }
+                    destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");
 
-                if (!destFile.Exists)
-                {
-                    Logging.LogVerbose($"Generating face thumb for {face.PersonId} from file {imagePath}...");
-
-                    MetaDataService.GetImageSize(imagePath.FullName, out var thumbWidth, out var thumbHeight);
-
-                    Logging.LogTrace($"Loaded {imagePath.FullName} - {thumbWidth} x {thumbHeight}");
-
-                    (var x, var y, var width, var height) = ScaleDownRect(image, thumbWidth, thumbHeight,
-                                                    face.RectX, face.RectY, face.RectWidth, face.RectHeight);
-
-                    Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
-
-                    await _imageProcessingService.GetCroppedFile(imagePath, x, y, width, height, destFile);
-
-                    destFile.Refresh();
+                    if (!System.IO.Directory.Exists(faceDir))
+                    {
+                        Logging.Log($"Created folder for face thumbnails: {faceDir}");
+                        System.IO.Directory.CreateDirectory(faceDir);
+                    }
 
                     if (!destFile.Exists)
-                        destFile = null;
+                    {
+                        Logging.Log($"Generating face thumb for {face.PersonId} from file {thumbPath}...");
+
+                        MetaDataService.GetImageSize(thumbPath.FullName, out var thumbWidth, out var thumbHeight);
+
+                        Logging.LogTrace($"Loaded {thumbPath.FullName} - {thumbWidth} x {thumbHeight}");
+
+                        (var x, var y, var width, var height) = ScaleDownRect(image, thumbWidth, thumbHeight,
+                                                        face.RectX, face.RectY, face.RectWidth, face.RectHeight);
+
+                        Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
+
+                        await _imageProcessingService.GetCroppedFile(thumbPath, x, y, width, height, destFile);
+
+                        destFile.Refresh();
+
+                        if (!destFile.Exists)
+                            destFile = null;
+                    }
                 }
+                else
+                    Logging.LogWarning($"Unable to generate face thumb from {thumbPath} - file does not exist.");
             }
             catch( Exception ex )
             {
@@ -629,6 +635,7 @@ namespace Damselfly.Core.Services
             public ThumbnailService Service { get; set; }
             public bool CanProcess => true;
             public string Description => "Thumbnail generation";
+            public JobPriorities Priority => JobPriorities.Thumbnails;
 
             public async Task Process()
             {
@@ -636,7 +643,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 4;
+        public JobPriorities Priority => JobPriorities.Thumbnails;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
         {

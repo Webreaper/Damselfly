@@ -30,11 +30,17 @@ namespace Damselfly.Core.Services
 
         public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
         public event Action OnFavouritesChanged;
+        public event Action<List<string>> OnUserTagsAdded;
         private const int s_exifWriteDelay = 15;
 
         private void NotifyFavouritesChanged()
         {
             OnFavouritesChanged?.Invoke();
+        }
+
+        private void NotifyUserTagsAdded( List<string> tagsAdded )
+        {
+            OnUserTagsAdded?.Invoke(tagsAdded);
         }
 
         public ExifService( StatusService statusService, WorkService  workService,
@@ -46,6 +52,7 @@ namespace Damselfly.Core.Services
             _workService = workService;
 
             GetExifToolVersion();
+            LoadFavouriteTagsAsync().Wait();
 
             _workService.AddJobSource(this);
         }
@@ -93,6 +100,8 @@ namespace Damselfly.Core.Services
         {
             await UpdateTagsAsync(new[] { image }, addTags, removeTags, user);
         }
+
+      
 
         /// <summary>
         /// Takes an image and a set of keywords, and writes them to the DB queue for
@@ -165,6 +174,9 @@ namespace Damselfly.Core.Services
             {
                 Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
             }
+
+            if( user != null )
+                NotifyUserTagsAdded(addTags);
 
             // Trigger the work service to look for new jobs
             _workService.HandleNewJobs(this, s_exifWriteDelay);
@@ -472,6 +484,7 @@ namespace Damselfly.Core.Services
             public ExifService Service { get; set; }
             public bool CanProcess => true;
             public string Description => "Keyword Updates";
+            public JobPriorities Priority => JobPriorities.ExifService;
 
             public async Task Process()
             {
@@ -479,7 +492,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 3;
+        public JobPriorities Priority => JobPriorities.ExifService;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
         {

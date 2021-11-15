@@ -25,35 +25,37 @@
         <Authorized Context="auth">
             <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
                 <MudTabPanel Text="User Settings">
-                    <div>
-                        <h2>Settings for @auth.User.Identity.Name</h2>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
-                                    @foreach (var choice in themeService.Themes)
-                                    {
-                                        <MudSelectItem T="string" Value="@choice.Name">
-                                            @choice.Name.Transform(To.SentenceCase)
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
+                    <EditForm Model="similarityThreshold" OnValidSubmit="@HandleValidSubmit">
+                        <div>
+                            <h2>Settings for @auth.User.Identity.Name</h2>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
+                                        @foreach (var choice in themeService.Themes)
+                                        {
+                                            <MudSelectItem T="string" Value="@choice.Name">
+                                                @choice.Name.Transform(To.SentenceCase)
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
                             </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="UIConstants.MudVariant"
-                                           HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
-                                    @foreach (var choice in new[] { 100, 90, 75, 50, 25 })
-                                    {
-                                        <MudSelectItem T="int" Value="@choice">
-                                            @choice.ToString()
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudSelect T="int" Label="Similarity Threshold" @bind-Value="similarityThreshold" Variant="UIConstants.MudVariant"
+                                               HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
+                                        @foreach (var choice in new[] { 100, 90, 75, 50, 25 })
+                                        {
+                                            <MudSelectItem T="int" Value="@choice">
+                                                @choice.ToString()
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
                             </div>
+                            <button class="btn btn-primary" type="submit">Save Settings</button>
                         </div>
-                        <button class="btn btn-primary" type="submit">Save Settings</button>
-                    </div>
+                    </EditForm>
                 </MudTabPanel>
 
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin" Context="authPolicy">

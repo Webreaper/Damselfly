@@ -152,11 +152,11 @@ namespace Damselfly.Core.ImageProcessing
         /// <returns></returns>
         public Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo dest)
         {
+            Stopwatch watch = new Stopwatch("SkiaSharpCrop");
+
             try
             {
-                SKCodec codec = SKCodec.Create(source.FullName);
-                SKImageInfo info = codec.Info;
-                using SKBitmap sourceBitmap = SKBitmap.Decode(codec);
+                using SKBitmap sourceBitmap = SKBitmap.Decode(source.FullName);
 
                 // setup crop rect
                 var cropRect = new SKRectI(x, y, x + width, y + height);
@@ -168,8 +168,12 @@ namespace Damselfly.Core.ImageProcessing
             }
             catch (Exception ex)
             {
-                Logging.Log($"Exception during Crop processing: {ex.Message}");
+                Logging.LogError($"Exception during Skia Crop processing: {ex.Message}");
                 throw;
+            }
+            finally
+            {
+                watch.Stop();
             }
 
             return Task.CompletedTask;
