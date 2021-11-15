@@ -216,7 +216,7 @@ namespace Damselfly.Core.Services
 
                     foreach (var job in jobs)
                     {
-                        _jobQueue.Enqueue(job, source.Priority);
+                        _jobQueue.Enqueue(job, (int)job.Priority);
                         newJobs = true;
                     }
                 }

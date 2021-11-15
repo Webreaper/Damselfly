@@ -635,6 +635,7 @@ namespace Damselfly.Core.Services
             public ThumbnailService Service { get; set; }
             public bool CanProcess => true;
             public string Description => "Thumbnail generation";
+            public JobPriorities Priority => JobPriorities.Thumbnails;
 
             public async Task Process()
             {
@@ -642,7 +643,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 4;
+        public JobPriorities Priority => JobPriorities.Thumbnails;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
         {

@@ -484,6 +484,7 @@ namespace Damselfly.Core.Services
             public ExifService Service { get; set; }
             public bool CanProcess => true;
             public string Description => "Keyword Updates";
+            public JobPriorities Priority => JobPriorities.ExifService;
 
             public async Task Process()
             {
@@ -491,7 +492,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 1;
+        public JobPriorities Priority => JobPriorities.ExifService;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
         {

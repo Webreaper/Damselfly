@@ -603,6 +603,7 @@ namespace Damselfly.Core.Services
             public int ImageId { get; set; }
             public ImageRecognitionService Service { get; set; }
             public string Description => "AI processing";
+            public JobPriorities Priority => JobPriorities.ImageRecognition;
 
             public async Task Process()
             {
@@ -612,7 +613,7 @@ namespace Damselfly.Core.Services
             public bool CanProcess { get { return true; } }
         }
 
-        public int Priority => 5;
+        public JobPriorities Priority => JobPriorities.ImageRecognition;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
         {

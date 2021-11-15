@@ -465,6 +465,7 @@ namespace Damselfly.Core.Services
             public IndexingService Service { get; set; }
             public bool CanProcess => true;
             public string Description { get; set; }
+            public JobPriorities Priority => IsFullIndex ? JobPriorities.FullIndexing : JobPriorities.Indexing;
 
             public async Task Process()
             {
@@ -475,7 +476,7 @@ namespace Damselfly.Core.Services
             }
         }
 
-        public int Priority => 2;
+        public JobPriorities Priority => JobPriorities.Indexing;
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxCount )
         {
