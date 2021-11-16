@@ -210,6 +210,7 @@ namespace Damselfly.Core.Models
         public virtual Image Image { get; set; }
         public int ImageId { get; set; }
 
+        public DateTime DateTaken { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
         public int Rating { get; set; } // 1-5, stars
@@ -221,7 +222,8 @@ namespace Damselfly.Core.Models
         public string FNum { get; set; }
         public string Exposure { get; set; }
         public bool FlashFired { get; set; }
-        public DateTime DateTaken { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
 
         public int? CameraId { get; set; }
         public virtual Camera Camera { get; set; }

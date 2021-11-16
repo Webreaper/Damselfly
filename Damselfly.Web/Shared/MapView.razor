@@ -1,0 +1,104 @@
+﻿
+@using FisSst.BlazorMaps
+@using Point = FisSst.BlazorMaps.Point;
+
+@inject IMarkerFactory MarkerFactory
+@inject SelectionService selectionService
+@inject NavigationService navContext
+@inject ICircleMarkerFactory CircleMarkerFactory
+@implements IDisposable
+
+@if (mapOptions != null)
+{
+    <Map @ref="mapRef" MapOptions="@mapOptions"></Map>
+}
+
+<style>
+    #mapId {
+        height: 250px;
+    }
+</style>
+
+@code {
+    private Map mapRef;
+    private LatLng firstMarkerLatLng;
+    private Marker marker1;
+    private MapOptions mapOptions;
+    private LatLng fifteenthLatLng;
+    private CircleMarkerOptions circleMarkerOptionsInit;
+    private CircleMarker circleMarker1;
+    private bool showMap = false;
+    private Image CurrentImage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        mapOptions = new MapOptions()
+        {
+            DivId = "mapId",
+            Center = new LatLng(51.506130, -0.090270),
+            Zoom = 10,
+            UrlTileLayer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            SubOptions = new MapSubOptions()
+            {
+                Attribution = "&copy; <a lhref='http://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
+                TileSize = 512,
+                ZoomOffset = -1,
+                MaxZoom = 19,
+            }
+        };
+
+        navContext.OnChange += NavigationChanged;
+        selectionService.OnSelectionChanged += SelectionChanged;
+    }
+
+    public void Dispose()
+    {
+        navContext.OnChange -= NavigationChanged;
+        selectionService.OnSelectionChanged -= SelectionChanged;
+    }
+
+    private void NavigationChanged(Image image)
+    {
+        CurrentImage = image;
+        _ = SetMapToImage();
+    }
+
+    private void SelectionChanged()
+    {
+        if (selectionService.Selection.Count == 1)
+        {
+            CurrentImage = selectionService.Selection.First();
+            _ = SetMapToImage();
+        }
+    }
+
+    private async Task SetMapToImage()
+    {
+        if (mapRef != null && CurrentImage != null && CurrentImage.MetaData != null &&
+            CurrentImage.MetaData.Longitude.HasValue && CurrentImage.MetaData.Latitude.HasValue)
+        {
+            showMap = true;
+            var pos = new LatLng(CurrentImage.MetaData.Latitude.Value, CurrentImage.MetaData.Longitude.Value);
+            await mapRef.SetView(pos);
+            await mapRef.SetZoom(12);
+        }
+        else
+            showMap = false;
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            await SetMapToImage();
+            //firstMarkerLatLng = new LatLng(51.506130, -0.090270);
+            //marker1 = await MarkerFactory.CreateAndAddToMap(firstMarkerLatLng, mapRef);
+
+            //this.circleMarkerOptionsInit = new CircleMarkerOptions() { Radius = 50 };
+            //this.fifteenthLatLng = new LatLng(50.276159, 18.599046);
+            //circleMarker1 = await this.CircleMarkerFactory.CreateAndAddToMap(this.fifteenthLatLng, this.mapRef, this.circleMarkerOptionsInit);
+        }
+    }
+}

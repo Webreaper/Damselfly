@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection;
+using FisSst.BlazorMaps.DependencyInjection;
 
 namespace Damselfly.Web
 {
@@ -60,6 +61,8 @@ namespace Damselfly.Web
             services.AddServerSideBlazor();
             services.AddFileReaderService();
             services.AddMudServices();
+            services.AddBlazorLeafletMaps();
+
             // Cache up to 10,000 images. Should be enough given cache expiry.
             services.AddMemoryCache( x => x.SizeLimit = 10000 );
 

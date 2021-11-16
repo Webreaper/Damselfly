@@ -171,6 +171,15 @@ namespace Damselfly.Core.Services
                         imgMetaData.FlashFired = ((flash & 0x1) != 0x0);
                     }
 
+                    var gpsDirectory = metadata.OfType<GpsDirectory>().FirstOrDefault();
+
+                    if (gpsDirectory != null)
+                    {
+                        var location = gpsDirectory.GetGeoLocation();
+                        imgMetaData.Longitude = location.Longitude;
+                        imgMetaData.Latitude = location.Latitude;
+                    }
+
                     var IPTCdir = metadata.OfType<IptcDirectory>().FirstOrDefault();
 
                     if (IPTCdir != null)

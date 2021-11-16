@@ -16,6 +16,7 @@ namespace Damselfly.Core.ScopedServices
         {
             public bool ShowFolderList { get; set; } = false;
             public bool ShowTags { get; set; } = false;
+            public bool ShowMap { get; set; } = false;
             public bool ShowBasket { get; set; } = false;
             public bool ShowExport { get; set; } = false;
             public bool ShowImageProps { get; set; } = false;
@@ -28,6 +29,7 @@ namespace Damselfly.Core.ScopedServices
                     return ShowBasket == other.ShowBasket &&
                            ShowFolderList == other.ShowFolderList &&
                            ShowExport == other.ShowExport &&
+                           ShowMap == other.ShowMap &&
                            ShowTags == other.ShowTags &&
                            ShowImageProps == other.ShowImageProps;
                 }
@@ -54,6 +56,7 @@ namespace Damselfly.Core.ScopedServices
 
         public bool ShowFolderList { get => sidebarState.ShowFolderList; }
         public bool ShowTags { get => sidebarState.ShowTags; }
+        public bool ShowMap { get => sidebarState.ShowMap; }
         public bool ShowBasket { get => sidebarState.ShowBasket; }
         public bool ShowExport { get => sidebarState.ShowExport; }
         public bool ShowImageProps { get => sidebarState.ShowImageProps; }

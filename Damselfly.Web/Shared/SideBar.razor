@@ -39,6 +39,14 @@
             </ToolWindow>
         </AuthorizeView>
     }
+    @if (ViewDataService.ShowMap)
+    {
+    <ToolWindow Title="Map">
+        <ChildContent>
+            <MapView />
+        </ChildContent>
+    </ToolWindow>
+    }
     @if (ViewDataService.ShowFolderList)
     {
         <ToolWindow Title="Folders">

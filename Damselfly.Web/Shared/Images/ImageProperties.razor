@@ -50,6 +50,7 @@ else
         <ImageField FieldName="ISO" FieldValue="@CurrentImage.MetaData.ISO" />
         <ImageField FieldName="Aperture" FieldValue="@Aperture" />
         <ImageField FieldName="Exposure" FieldValue="@Exposure" />
+        <ImageField FieldName="GeoLocation" FieldValue="@Location" />
 
         if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
         {
@@ -116,6 +117,7 @@ else
     public string Aperture => !string.IsNullOrEmpty(CurrentImage.MetaData.FNum) ? $"f{CurrentImage.MetaData.FNum}" : string.Empty;
     public string AverageColorStyle => $"background-color:{CurrentImage.MetaData.AverageColor}";
     public string DominantColorStyle => $"background-color:{CurrentImage.MetaData.DominantColor}";
+    public string Location => CurrentImage.MetaData.Latitude.HasValue ? $"{CurrentImage.MetaData.Latitude:n6}, {CurrentImage.MetaData.Longitude:n6}" : String.Empty;
     public string RatingTitle => CurrentImage.MetaData?.Rating == 0 ? "Unrated" : $"Rating: {CurrentImage.MetaData?.Rating} stars";
     private bool Expanded { get; set; }
     private bool CanEdit = false;
