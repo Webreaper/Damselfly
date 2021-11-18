@@ -6,37 +6,29 @@
 @inject NavigationService navContext
 @implements IDisposable
 
-<style>
-    .markerTemplate {
-        height: 30px;
-        width: 20px;
-        display: block;
-        margin: auto;
-        font-size: 14px;
-        pointer-events: none;
-    }
-</style>
 @if (showMap)
 {
-    <SfMaps>
-        <MapsTitleSettings Text="@CurrentImage.FileName">
-            <MapsTitleTextStyle FontFamily="Segoe UI" />
-        </MapsTitleSettings>
-        <MapsCenterPosition Latitude="@Latitude" Longitude="@Longitude" />
-        <MapsZoomSettings Enable="false" ZoomFactor="13" />
-        <MapsLayers>
-            <MapsLayer UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
-                <MapsMarkerSettings>
-                    <MapsMarker Visible="true" DataSource="@Markers" TValue="MarkerData"/>
-                </MapsMarkerSettings>
-            </MapsLayer>
-        </MapsLayers>
-    </SfMaps>
+<SfMaps Height="200px" >
+    <MapsAreaSettings Background="var(--main-background)">
+        <MapsBorder Color="var(--keyword-border)" Width="0"></MapsBorder>
+        <MapsMargin Bottom="0" Left="0" Right="0" Top="0"></MapsMargin>
+    </MapsAreaSettings>
+    <MapsCenterPosition Latitude="@Latitude" Longitude="@Longitude" />
+    <MapsZoomSettings Enable="false" ZoomFactor="13" />
+    <MapsLayers>
+        <MapsLayer UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
+            <MapsMarkerSettings>
+                <MapsMarker Visible="true" Height="20" Width="20" Fill="red" DataSource="@Markers" AnimationDuration="0" TValue="MarkerData" />
+            </MapsMarkerSettings>
+        </MapsLayer>
+    </MapsLayers>
+</SfMaps>
 }
 else
 {
-    <div>No GeoData available.</div>
+    <p>No GeoData available.</p>
 }
+
 @code {
     private bool showMap = false;
     private Image CurrentImage { get; set; }
