@@ -62,6 +62,7 @@
     <None Remove="Extensions\" />
     <None Remove="ExCSS" />
     <None Remove="FisSst.BlazorMaps" />
+    <None Remove="Syncfusion.Blazor.Maps" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="Shared\Images\ImagePropertyField.razor" />
@@ -97,6 +98,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.0" />
-    <PackageReference Include="FisSst.BlazorMaps" Version="1.0.1" />
+    <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.3.0.54" />
   </ItemGroup>
 </Project>

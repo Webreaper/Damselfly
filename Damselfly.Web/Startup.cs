@@ -30,7 +30,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection;
-using FisSst.BlazorMaps.DependencyInjection;
+using Syncfusion.Blazor;
 
 namespace Damselfly.Web
 {
@@ -61,7 +61,9 @@ namespace Damselfly.Web
             services.AddServerSideBlazor();
             services.AddFileReaderService();
             services.AddMudServices();
-            services.AddBlazorLeafletMaps();
+
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTM2MzExQDMxMzkyZTMzMmUzMGlHQncxT1FzM28yS3h2R1ZPL1VWSVppVVA3d09lME9wdzlDckp2UkUvRk09");
+            services.AddSyncfusionBlazor();
 
             // Cache up to 10,000 images. Should be enough given cache expiry.
             services.AddMemoryCache( x => x.SizeLimit = 10000 );
