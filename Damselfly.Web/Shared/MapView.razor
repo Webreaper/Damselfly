@@ -23,24 +23,11 @@
             <MapsTitleTextStyle FontFamily="Segoe UI" />
         </MapsTitleSettings>
         <MapsCenterPosition Latitude="@Latitude" Longitude="@Longitude" />
-        <MapsZoomSettings Enable="false" ZoomFactor="10" />
+        <MapsZoomSettings Enable="false" ZoomFactor="13" />
         <MapsLayers>
             <MapsLayer UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
                 <MapsMarkerSettings>
-                    <MapsMarker Visible="true" DataSource="@Markers" TValue="MarkerData">
-                        <ChildContent>
-                            <MapsMarkerTooltipSettings Visible="true" ValuePath="Name">
-                                <MapsMarkerTooltipTextStyle FontFamily="Segoe UI"></MapsMarkerTooltipTextStyle>
-                            </MapsMarkerTooltipSettings>
-                        </ChildContent>
-                        <MarkerTemplate>
-                            @{
-                                <div style="pointer-events: none;">
-                                    <img class="markerTemplate" src="images/maps/ballon.png" />
-                                </div>
-                            }
-                        </MarkerTemplate>
-                    </MapsMarker>
+                    <MapsMarker Visible="true" DataSource="@Markers" TValue="MarkerData"/>
                 </MapsMarkerSettings>
             </MapsLayer>
         </MapsLayers>
