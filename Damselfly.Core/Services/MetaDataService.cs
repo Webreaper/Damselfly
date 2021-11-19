@@ -96,8 +96,9 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image">Image object, which will be updated with metadata</param>
         /// <param name="keywords">Array of keyword tags in the image EXIF data</param>
-        private void GetImageMetaData(ref ImageMetaData imgMetaData, out string[] keywords)
+        private bool GetImageMetaData(ref ImageMetaData imgMetaData, out string[] keywords)
         {
+            bool metaDataReadSuccess = false;
             var image = imgMetaData.Image;
             keywords = new string[0];
 
@@ -107,6 +108,8 @@ namespace Damselfly.Core.Services
 
                 if (metadata != null)
                 {
+                    metaDataReadSuccess = true;
+
                     var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
 
                     if (jpegDirectory != null)
@@ -239,7 +242,10 @@ namespace Damselfly.Core.Services
             catch (Exception ex)
             {
                 Logging.Log("Error reading image metadata for {0}: {1}", image.FullPath, ex.Message);
+                metaDataReadSuccess = false;
             }
+
+            return metaDataReadSuccess;
         }
 
         private string FilteredDescription(string desc)
@@ -298,16 +304,17 @@ namespace Damselfly.Core.Services
                 else
                     db.ImageMetaData.Update(imgMetaData);
 
-                // Scan the image from the 
-                GetImageMetaData(ref imgMetaData, out var exifKeywords);
-
-                // Update the timestamp
+                // Update the timestamp regardless of whether we succeeded to read the metadata
                 imgMetaData.LastUpdated = updateTimeStamp;
 
-                // Scan for sidecar files
-                sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
+                // Scan the image from the 
+                if (GetImageMetaData(ref imgMetaData, out var exifKeywords))
+                {
+                    // Scan for sidecar files
+                    sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
 
-                imageKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                    imageKeywords = sideCarTags.Union(exifKeywords, StringComparer.OrdinalIgnoreCase).ToList();
+                }
 
                 if (imgMetaData.DateTaken != img.SortDate)
                 {
