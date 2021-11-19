@@ -179,8 +179,12 @@ namespace Damselfly.Core.Services
                     if (gpsDirectory != null)
                     {
                         var location = gpsDirectory.GetGeoLocation();
-                        imgMetaData.Longitude = location.Longitude;
-                        imgMetaData.Latitude = location.Latitude;
+
+                        if (location != null)
+                        {
+                            imgMetaData.Longitude = location.Longitude;
+                            imgMetaData.Latitude = location.Latitude;
+                        }
                     }
 
                     var IPTCdir = metadata.OfType<IptcDirectory>().FirstOrDefault();
