@@ -14,7 +14,7 @@ namespace Damselfly.Core.ImageProcessing
     public class ImageMagickProcessor : IImageProcessor
     {
         // SkiaSharp doesn't handle .heic files... yet
-        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp" };
+        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw" };
 
         public static ICollection<string> SupportedFileExtensions {
             get {
@@ -53,7 +53,7 @@ namespace Damselfly.Core.ImageProcessing
         private void CheckToolStatus()
         {
             ProcessStarter improcess = new ProcessStarter();
-            imAvailable = improcess.StartProcess("convert", "--version");
+            imAvailable = improcess.StartProcess(imageMagickExe, "--version");
 
             if (imAvailable)
             {

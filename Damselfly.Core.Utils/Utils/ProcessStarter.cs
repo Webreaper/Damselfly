@@ -27,6 +27,7 @@ namespace Damselfly.Core.Utils
             process.StartInfo.RedirectStandardError = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
 
             if (envVars != null)
             {
