@@ -53,7 +53,7 @@ namespace Damselfly.Core.ImageProcessing
         private void CheckToolStatus()
         {
             ProcessStarter improcess = new ProcessStarter();
-            imAvailable = improcess.StartProcess("convert", "--version");
+            imAvailable = improcess.StartProcess(imageMagickExe, "--version");
 
             if (imAvailable)
             {
@@ -164,6 +164,7 @@ namespace Damselfly.Core.ImageProcessing
                 catch (Exception ex)
                 {
                     Logging.LogError("Conversion failed. Unable to start process: {0}", ex.Message);
+                    Logging.LogError($"Failed commandline was: {exeToUse} {args}");
                 }
             }
             else
