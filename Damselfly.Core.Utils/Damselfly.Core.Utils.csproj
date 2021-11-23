@@ -2,8 +2,8 @@
   <ItemGroup>
     <PackageReference Include="Serilog" Version="2.11.0-dev-01371" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00947" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00879" />
-    <PackageReference Include="Humanizer" Version="2.11.10" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+    <PackageReference Include="Humanizer" Version="2.13.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
