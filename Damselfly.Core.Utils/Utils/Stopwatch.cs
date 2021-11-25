@@ -11,9 +11,9 @@ namespace Damselfly.Core.Utils
     /// for each named operation, and the average times for all instances of a named
     /// operation.
     /// </summary>
-    public class Stopwatch
+    public struct Stopwatch
     {
-        private class Totals
+        private struct Totals
         {
             public long count;
             public long totalTime;
@@ -40,7 +40,7 @@ namespace Damselfly.Core.Utils
             this.taskThresholdMS = thresholdMS;
 
             timername = name;
-            start = Environment.TickCount;
+            end = start = Environment.TickCount;
         }
 
         /// <summary>
