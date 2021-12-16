@@ -63,8 +63,9 @@ namespace Damselfly.Core.ScopedServices
         public bool IncludeAITags { get { return query.IncludeAITags; } set { if (query.IncludeAITags != value) { query.IncludeAITags = value; QueryChanged(); } } }
         public bool UntaggedImages { get { return query.UntaggedImages; } set { if (query.UntaggedImages != value) { query.UntaggedImages = value; QueryChanged(); } } }
         public int? CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
-        public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public int? LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
+        public int? Month { get { return query.Month; } set { if (query.Month != value) { query.Month = value; QueryChanged(); } } }
+        public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
         public Person Person { get { return query.Person; } set { if (query.Person != value) { query.Person = value; QueryChanged(); } } }
         public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
@@ -217,7 +218,7 @@ namespace Damselfly.Core.ScopedServices
 
                 if (query.Person?.PersonId >= 0)
                 {
-                    // Filter by folderID
+                    // Filter by personID
                     images = images.Where(x => x.ImageObjects.Any( p => p.PersonId == query.Person.PersonId ) );
                 }
 
@@ -235,6 +236,12 @@ namespace Damselfly.Core.ScopedServices
                     // set then they'll be set to min/max date.
                     images = images.Where(x => x.SortDate >= minDate &&
                                                x.SortDate <= maxDate);
+                }
+
+                if (query.Month.HasValue)
+                {
+                    // Filter by month
+                    images = images.Where(x => x.SortDate.Month == query.Month );
                 }
 
                 if (query.MinSizeKB.HasValue)
