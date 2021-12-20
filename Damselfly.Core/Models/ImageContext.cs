@@ -638,6 +638,7 @@ namespace Damselfly.Core.Models
         public int? MinSizeKB { get; set; } = null;
         public int? CameraId { get; set; } = null;
         public int? LensId { get; set; } = null;
+        public int? Month { get; set; } = null;
         public Image SimilarTo { get; set; } = null;
         public Folder Folder { get; set; } = null;
         public Tag Tag { get; set; } = null;

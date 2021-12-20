@@ -244,7 +244,7 @@ namespace Damselfly.ML.Face.Azure
                 {
                     var detectedFaces = await AzureDetect(sourceImage);
 
-                    if (detectedFaces.Any())
+                    if (detectedFaces != null && detectedFaces.Any())
                     {
                         faces = await IdentifyOrCreateFaces(detectedFaces);
 
