@@ -1425,6 +1425,10 @@ padding: 0.4em 0.65em;
     padding: 2px 5px;
 }
 
+.rz-navigation-item-link {
+    padding: 10px 10px;
+}
+
 hr.separator {
     width: 99%;
     margin: 1px;
