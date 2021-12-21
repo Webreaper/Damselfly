@@ -62,7 +62,7 @@ namespace Damselfly.Web
             services.AddFileReaderService();
             services.AddMudServices();
 
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTM2MzExQDMxMzkyZTMzMmUzMGlHQncxT1FzM28yS3h2R1ZPL1VWSVppVVA3d09lME9wdzlDckp2UkUvRk09");
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
             services.AddSyncfusionBlazor();
 
             // Cache up to 10,000 images. Should be enough given cache expiry.
