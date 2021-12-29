@@ -22,6 +22,9 @@ namespace Damselfly.Core.Services
     /// </summary>
     public class ExifService : IProcessJobFactory
     {
+        // Face tags using MGW standard
+        // exiftool -xmp-mwg-rs:RegionAppliedToDimensionsH=4000 -xmp-mwg-rs:RegionAppliedToDimensionsUnit="pixel" -xmp-mwg-rs:RegionAppliedToDimensionsW=6000 -xmp-mwg-rs:RegionAreaX=0.319270833 -xmp-mwg-rs:RegionAreaY=0.21015625 -xmp-mwg-rs:RegionAreaW=0.165104167 -xmp-mwg-rs:RegionAreaH=0.30390625 -xmp-mwg-rs:RegionName=John -xmp-mwg-rs:RegionRotation=0 -xmp-mwg-rs:RegionType="Face" myfile.xmp
+
         public static string ExifToolVer { get; private set; }
         private readonly StatusService _statusService;
         private readonly ImageCache _imageCache;

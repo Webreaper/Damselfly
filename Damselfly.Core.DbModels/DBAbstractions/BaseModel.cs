@@ -307,6 +307,8 @@ namespace Damselfly.Core.DbModels.DBAbstractions
                         if (ex.InnerException != null)
                             Logging.LogError("  Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
 
+                        // No retries if it's not a locked DB
+                        break;
                     }
                 }
 
