@@ -94,7 +94,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="xmpDirectory"></param>
         /// <returns></returns>
-        private List<ImageObject> ReadXMPFaceRegionData(XmpDirectory xmpDirectory, Image image)
+        private List<ImageObject> ReadXMPFaceRegionData(XmpDirectory xmpDirectory, Image image, string orientation)
         {
             try
             {
@@ -105,6 +105,7 @@ namespace Damselfly.Core.Services
                                                .ToDictionary(x => x.Path, y => y.Value);
 
                 int iRegion = 0;
+                var (flipH, flipV) = FlipHorizVert(orientation);
 
                 while (true)
                 {
@@ -128,23 +129,33 @@ namespace Damselfly.Core.Services
                     double w = Convert.ToDouble(wStr);
                     double h = Convert.ToDouble(hStr);
 
+                    if( flipH )
+                        x = 1 - x;
+
+                    if (flipV)
+                        y = 1 - y;
+
                     var newPerson = new Person
                     {
                         Name = name,
-                        State = Person.PersonState.Unknown
+                        State = Person.PersonState.Identified
                     };
 
                     var newFace = new ImageObject
                     {
                         RecogntionSource = ImageObject.RecognitionType.ExternalApp,
                         ImageId = image.ImageId,
-                        RectX = (int)(x * image.MetaData.Width),
-                        RectY = (int)(y * image.MetaData.Height),
+                        // Note that x and y in this case are the centrepoints of the faces. 
+                        // Make sure we offset the rects by half their width and height
+                        // to centre them on the face.
+                        RectX = (int)((x - (w / 2)) * image.MetaData.Width),
+                        RectY = (int)((y - (h / 2)) * image.MetaData.Height),
                         RectHeight = (int)(h * image.MetaData.Height),
                         RectWidth = (int)(w * image.MetaData.Width),
                         TagId = 0,
                         Type = ImageObject.ObjectTypes.Face.ToString(),
-                        Score = 100
+                        Score = 100,
+                        Person = newPerson
                     };
 
                     newFaces.Add(newFace);
@@ -158,6 +169,44 @@ namespace Damselfly.Core.Services
             }
 
             return new List<ImageObject>();
+        }
+
+        static void RotateImageObjectRect( System.Drawing.Point centrePoint, ImageObject imgObj, double angleInDegrees )
+        {
+            var topleft = new System.Drawing.Point(imgObj.RectX, imgObj.RectY);
+            var topRight = new System.Drawing.Point(imgObj.RectX + imgObj.RectWidth, imgObj.RectY);
+            var bottomRight = new System.Drawing.Point(imgObj.RectX, imgObj.RectY + imgObj.RectHeight);
+            var bottomLeft = new System.Drawing.Point(imgObj.RectX + imgObj.RectWidth, imgObj.RectY + imgObj.RectHeight);
+
+            var tl = RotatePoint(topleft, centrePoint, angleInDegrees);
+            var br = RotatePoint(topRight, centrePoint, angleInDegrees);
+            var bl = RotatePoint(bottomLeft, centrePoint, angleInDegrees);
+            var tr = RotatePoint(topRight, centrePoint, angleInDegrees);
+        }
+
+        /// <summary>
+        /// Rotates one point around another
+        /// </summary>
+        /// <param name="pointToRotate">The point to rotate.</param>
+        /// <param name="centerPoint">The center point of rotation.</param>
+        /// <param name="angleInDegrees">The rotation angle in degrees.</param>
+        /// <returns>Rotated point</returns>
+        static System.Drawing.Point RotatePoint(System.Drawing.Point pointToRotate, System.Drawing.Point centerPoint, double angleInDegrees)
+        {
+            double angleInRadians = angleInDegrees * (Math.PI / 180);
+            double cosTheta = Math.Cos(angleInRadians);
+            double sinTheta = Math.Sin(angleInRadians);
+            return new System.Drawing.Point
+            {
+                X =
+                    (int)
+                    (cosTheta * (pointToRotate.X - centerPoint.X) -
+                    sinTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.X),
+                Y =
+                    (int)
+                    (sinTheta * (pointToRotate.X - centerPoint.X) +
+                    cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
+            };
         }
 
         /// <summary>
@@ -290,11 +339,12 @@ namespace Damselfly.Core.Services
                             keywords = keywordList;
                     }
 
+                    var orientation = "1"; // Default
                     var IfdDirectory = metadata.OfType<ExifIfd0Directory>().FirstOrDefault();
 
                     if (IfdDirectory != null)
                     {
-                        var orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
+                        orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
                         var camMake = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagMake);
                         var camModel = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagModel);
                         var camSerial = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagBodySerialNumber);
@@ -317,7 +367,7 @@ namespace Damselfly.Core.Services
 
                     if( xmpDirectory != null )
                     {
-                        newFaces = ReadXMPFaceRegionData(xmpDirectory, image);
+                        newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
                     }
                 }
 
@@ -455,31 +505,41 @@ namespace Damselfly.Core.Services
         {
             if (xmpFaces != null && xmpFaces.Any())
             {
-                var createdTags = await CreateTagsFromStrings(new[] { "Face" });
-                var faceTag = createdTags.First();
-
-                // Find existing faces and swap if appropriate
-                var names = xmpFaces.Select(x => x.Person.Name).ToList();
-
-                var db = new ImageContext();
-
-                var peopleLookup = db.People.Where(x => names.Contains(x.Name, StringComparer.OrdinalIgnoreCase))
-                         .ToDictionary(x => x.Name, y => y.PersonId);
-
-                foreach (var xmpFace in xmpFaces)
+                try
                 {
-                    xmpFace.TagId = faceTag.TagId;
+                    var createdTags = await CreateTagsFromStrings(new[] { "Face" });
+                    var faceTag = createdTags.First();
 
-                    if( peopleLookup.TryGetValue( xmpFace.Person.Name, out var matchedPersonId ) )
+                    // Find existing faces and swap if appropriate
+                    var names = xmpFaces.Select(x => x.Person.Name)
+                                        .ToList();
+
+                    var db = new ImageContext();
+
+                    var peopleLookup = db.People.Where(x => names.Contains(x.Name))
+                                                .ToDictionary(x => x.Name, y => y.PersonId);
+
+                    foreach (var xmpFace in xmpFaces)
                     {
-                        xmpFace.Person = null;
-                        xmpFace.PersonId = matchedPersonId;
+                        xmpFace.TagId = faceTag.TagId;
+
+                        if (peopleLookup.TryGetValue(xmpFace.Person.Name, out var matchedPersonId))
+                        {
+                            xmpFace.Person = null;
+                            xmpFace.PersonId = matchedPersonId;
+                        }
+
+                        db.ImageObjects.Add(xmpFace);
                     }
+
+                    // TODO - check for existing rects/faces and replace
+
+                    await db.SaveChangesAsync("SaveFacesMetaData");
                 }
-
-                // TODO - check for existing rects/faces and replace
-
-                await db.BulkInsert(db.ImageObjects, xmpFaces);
+                catch( Exception ex )
+                {
+                    Logging.LogError($"Exception while processing XMP faces: {ex}");
+                }
             }
         }
 
@@ -610,7 +670,8 @@ namespace Damselfly.Core.Services
         /// These are the orientation strings:
         ///    "Top, left side (Horizontal / normal)",
         ///    "Top, right side (Mirror horizontal)",
-        ///    "Bottom, right side (Rotate 180)", "Bottom, left side (Mirror vertical)",
+        ///    "Bottom, right side (Rotate 180)",
+        ///    "Bottom, left side (Mirror vertical)",
         ///    "Left side, top (Mirror horizontal and rotate 270 CW)",
         ///    "Right side, top (Rotate 90 CW)",
         ///    "Right side, bottom (Mirror horizontal and rotate 90 CW)",
@@ -634,6 +695,22 @@ namespace Damselfly.Core.Services
                 "Right side, bottom (Mirror horizontal and rotate 90 CW)" => true,
                 "Left side, bottom (Rotate 270 CW)" => true,
                 _ => false
+            };
+
+        /// <summary>
+        /// See NeedToSwitchWidthAndHeight for the states
+        /// </summary>
+        /// <param name="orientation"></param>
+        /// <returns></returns>
+        private (bool, bool) FlipHorizVert(string orientation) =>
+            orientation switch
+            {
+                "3" => (true, true),
+                "Top, right side (Mirror horizontal)" => (true, false),
+                "Bottom, right side (Rotate 180)" => (true, true),
+                "Bottom, left side (Mirror vertical)" => (false, true),
+                // TODO: All the other cases here. :-(
+                _ => (false, false)
             };
 
         /// <summary>
