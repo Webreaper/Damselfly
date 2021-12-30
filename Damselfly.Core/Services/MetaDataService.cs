@@ -171,44 +171,6 @@ namespace Damselfly.Core.Services
             return new List<ImageObject>();
         }
 
-        static void RotateImageObjectRect( System.Drawing.Point centrePoint, ImageObject imgObj, double angleInDegrees )
-        {
-            var topleft = new System.Drawing.Point(imgObj.RectX, imgObj.RectY);
-            var topRight = new System.Drawing.Point(imgObj.RectX + imgObj.RectWidth, imgObj.RectY);
-            var bottomRight = new System.Drawing.Point(imgObj.RectX, imgObj.RectY + imgObj.RectHeight);
-            var bottomLeft = new System.Drawing.Point(imgObj.RectX + imgObj.RectWidth, imgObj.RectY + imgObj.RectHeight);
-
-            var tl = RotatePoint(topleft, centrePoint, angleInDegrees);
-            var br = RotatePoint(topRight, centrePoint, angleInDegrees);
-            var bl = RotatePoint(bottomLeft, centrePoint, angleInDegrees);
-            var tr = RotatePoint(topRight, centrePoint, angleInDegrees);
-        }
-
-        /// <summary>
-        /// Rotates one point around another
-        /// </summary>
-        /// <param name="pointToRotate">The point to rotate.</param>
-        /// <param name="centerPoint">The center point of rotation.</param>
-        /// <param name="angleInDegrees">The rotation angle in degrees.</param>
-        /// <returns>Rotated point</returns>
-        static System.Drawing.Point RotatePoint(System.Drawing.Point pointToRotate, System.Drawing.Point centerPoint, double angleInDegrees)
-        {
-            double angleInRadians = angleInDegrees * (Math.PI / 180);
-            double cosTheta = Math.Cos(angleInRadians);
-            double sinTheta = Math.Sin(angleInRadians);
-            return new System.Drawing.Point
-            {
-                X =
-                    (int)
-                    (cosTheta * (pointToRotate.X - centerPoint.X) -
-                    sinTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.X),
-                Y =
-                    (int)
-                    (sinTheta * (pointToRotate.X - centerPoint.X) +
-                    cosTheta * (pointToRotate.Y - centerPoint.Y) + centerPoint.Y)
-            };
-        }
-
         /// <summary>
         /// Scans an image file on disk for its metadata, using the MetaDataExtractor
         /// library. The image object is populated with the metadata, and the IPTC
