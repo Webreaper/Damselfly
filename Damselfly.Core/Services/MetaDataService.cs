@@ -440,7 +440,7 @@ namespace Damselfly.Core.Services
             // Now save the tags
             var tagsAdded = await WriteTagsForImage(img, imageKeywords);
 
-            await WriteXMPFaces(xmpFaces);
+            await WriteXMPFaces(img, xmpFaces);
 
             _imageCache.Evict(imageId);
 
@@ -463,7 +463,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="xmpFaces"></param>
         /// <returns></returns>
-        private async Task WriteXMPFaces(List<ImageObject> xmpFaces)
+        private async Task WriteXMPFaces(Image image, List<ImageObject> xmpFaces)
         {
             if (xmpFaces != null && xmpFaces.Any())
             {
@@ -494,8 +494,12 @@ namespace Damselfly.Core.Services
                         db.ImageObjects.Add(xmpFace);
                     }
 
-                    // TODO - check for existing rects/faces and replace
+                    // Delete any objects that we found in the metadata before, so we start afresh.
+                    await db.BatchDelete(db.ImageObjects
+                                .Where(x => x.ImageId.Equals(image.ImageId) &&
+                                            x.RecogntionSource == ImageObject.RecognitionType.ExternalApp));
 
+                    // TODO - check for existing rects/faces and replace
                     await db.SaveChangesAsync("SaveFacesMetaData");
                 }
                 catch( Exception ex )

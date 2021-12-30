@@ -152,6 +152,15 @@
                             <FluentValidationValidator />
                             <ValidationSummary />
 
+                            <h2>Image Recognition Settings</h2>
+
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@writeAITagsToImages" Label="Write recognised object keywords to image EXIF metadata" />
+                                </div>
+                            </div>
+
+
                             <h2>Azure Cognitive Services Face Recognition</h2>
 
                             <p>
@@ -311,6 +320,7 @@
     private string selectedTheme;
     private bool useSmtp = true;
     private bool forceLogin = false;
+    private bool writeAITagsToImages = false;
     private bool allowExternalRegistration = false;
     private bool anableAuthAndRoles = false;
     private int similarityThreshold = 75;
@@ -353,6 +363,8 @@
             configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
             configService.Set(ConfigSettings.AzureUseFreeTier, azureSettings.UsingFreeTier.ToString());
             configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
+
+            configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
 
             configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
@@ -424,6 +436,7 @@
         allowExternalRegistration = configService.GetBool(ConfigSettings.AllowExternalRegistration);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
         logLevel = configService.Get<LogEventLevel>(ConfigSettings.LogLevel);
+        writeAITagsToImages = configService.GetBool(ConfigSettings.WriteAITagsToImages);
 
         smtpSettings.Load(configService);
         sendGridSettings.Load(configService);

@@ -32,6 +32,7 @@ namespace Damselfly.Core.Services
         private readonly ConfigService _configService;
         private readonly ImageClassifier _imageClassifier;
         private readonly WorkService _workService;
+        private readonly ExifService _exifService;
         private readonly ImageCache _imageCache;
 
         private IDictionary<string, Person> _peopleCache;
@@ -43,7 +44,7 @@ namespace Damselfly.Core.Services
                         AccordFaceService accordFace, EmguFaceService emguService,
                         ThumbnailService thumbs, ConfigService configService,
                         ImageClassifier imageClassifier, ImageCache imageCache,
-                        WorkService workService)
+                        WorkService workService, ExifService exifService)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
@@ -56,6 +57,7 @@ namespace Damselfly.Core.Services
             _imageClassifier = imageClassifier;
             _imageCache = imageCache;
             _workService = workService;
+            _exifService = exifService;
          }
 
         public ImageRecognitionService()
@@ -482,11 +484,22 @@ namespace Damselfly.Core.Services
                     // First, clear out the existing faces and objects - we don't want dupes
                     // TODO: Might need to be smarter about this once we add face names and
                     // Object identification details.
-                    await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId)));
+                    await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId) && x.RecogntionSource != ImageObject.RecognitionType.ExternalApp ));
                     // Now add the objects and faces.
                     await db.BulkInsert(db.ImageObjects, allFound);
 
                     objWriteWatch.Stop();
+
+                    if (_configService.GetBool(ConfigSettings.WriteAITagsToImages))
+                    {
+                        // For anything that's not a face, write the tags to the images
+                        var tags = allFound.Where(x => !x.IsFace)
+                                           .Select(x => x.Tag.Keyword)
+                                           .ToList();
+
+                        // Fire and forget this asynchronously - we don't care about waiting for it
+                        _ = _exifService.UpdateTagsAsync(image, tags, null);
+                    }
                 }
             }
             catch (Exception ex)
