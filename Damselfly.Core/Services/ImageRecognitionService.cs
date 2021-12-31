@@ -488,18 +488,10 @@ namespace Damselfly.Core.Services
                     // Now add the objects and faces.
                     await db.BulkInsert(db.ImageObjects, allFound);
 
+                    WriteAITagsToImages(image, allFound);
+
                     objWriteWatch.Stop();
 
-                    if (_configService.GetBool(ConfigSettings.WriteAITagsToImages))
-                    {
-                        // For anything that's not a face, write the tags to the images
-                        var tags = allFound.Where(x => !x.IsFace)
-                                           .Select(x => x.Tag.Keyword)
-                                           .ToList();
-
-                        // Fire and forget this asynchronously - we don't care about waiting for it
-                        _ = _exifService.UpdateTagsAsync(image, tags, null);
-                    }
                 }
             }
             catch (Exception ex)
@@ -508,6 +500,25 @@ namespace Damselfly.Core.Services
             }
         }
 
+        /// <summary>
+        /// Write the tags to the image
+        /// </summary>
+        /// <param name="tags"></param>
+        private void WriteAITagsToImages( Image image, List<ImageObject> tags )
+        {
+            if (_configService.GetBool(ConfigSettings.WriteAITagsToImages))
+            {
+                Logging.Log("Writing AI tags to image Metadata...");
+
+                // For anything that's not a face, write the tags to the images
+                var tagStrings = tags.Where(x => !x.IsFace && x.Tag != null)
+                                   .Select(x => x.Tag.Keyword)
+                                   .ToList();
+
+                // Fire and forget this asynchronously - we don't care about waiting for it
+                _ = _exifService.UpdateTagsAsync(image, tagStrings, null);
+            }
+        }
 
         /// <summary>
         /// Scales the detected face/object rectangles based on the full-sized image,
