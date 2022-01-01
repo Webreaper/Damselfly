@@ -510,13 +510,26 @@ namespace Damselfly.Core.Services
             {
                 Logging.Log("Writing AI tags to image Metadata...");
 
-                // For anything that's not a face, write the tags to the images
-                var tagStrings = tags.Where(x => !x.IsFace && x.Tag != null)
-                                   .Select(x => x.Tag.Keyword)
-                                   .ToList();
+                // Seleect the tag IDs that aren't faces.
+                var tagIdsToAdd = tags.Where( x => !x.IsFace )
+                                    .Select(x => x.TagId)
+                                    .Distinct()
+                                    .ToList();
 
-                // Fire and forget this asynchronously - we don't care about waiting for it
-                _ = _exifService.UpdateTagsAsync(image, tagStrings, null);
+                if (tagIdsToAdd.Any())
+                {
+                    // Get their keywords
+                    var keywordsToAdd = _metdataService.CachedTags
+                                              .Where(x => tagIdsToAdd.Contains(x.TagId))
+                                              .Select(x => x.Keyword)
+                                              .ToList();
+
+                    if (keywordsToAdd.Any())
+                    {
+                        // Fire and forget this asynchronously - we don't care about waiting for it
+                        _ = _exifService.UpdateTagsAsync(image, keywordsToAdd, null);
+                    }
+                }
             }
         }
 
