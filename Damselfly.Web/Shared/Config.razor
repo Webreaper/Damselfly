@@ -156,10 +156,15 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudCheckBox @bind-Checked="@writeAITagsToImages" Label="Write recognised object keywords to image EXIF metadata" />
+                                    <MudCheckBox @bind-Checked="@enableAIProcessing" Label="Scan images locally for objects/faces using AI (this will use a lot of CPU)" />
                                 </div>
                             </div>
 
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@writeAITagsToImages" Label="Write recognised object keywords to image EXIF metadata" />
+                                </div>
+                            </div>
 
                             <h2>Azure Cognitive Services Face Recognition</h2>
 
@@ -320,6 +325,7 @@
     private string selectedTheme;
     private bool useSmtp = true;
     private bool forceLogin = false;
+    private bool enableAIProcessing = true;
     private bool writeAITagsToImages = false;
     private bool allowExternalRegistration = false;
     private bool anableAuthAndRoles = false;
@@ -365,6 +371,7 @@
             configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
 
             configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
+            configService.Set(ConfigSettings.EnableAIProcessing, enableAIProcessing.ToString());
 
             configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
@@ -437,6 +444,7 @@
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
         logLevel = configService.Get<LogEventLevel>(ConfigSettings.LogLevel);
         writeAITagsToImages = configService.GetBool(ConfigSettings.WriteAITagsToImages);
+        enableAIProcessing = configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
         smtpSettings.Load(configService);
         sendGridSettings.Load(configService);

@@ -243,6 +243,7 @@ namespace Damselfly.Core.Services
             var thumbSize = ThumbSize.Large;
             var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
             var fileName = Path.Combine(image.Folder.Path, image.FileName);
+            bool enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
             // First, update the timestamp. We do this first, so that even if something
             // fails, it'll be set, avoiding infinite loops of failed processing.
@@ -266,7 +267,7 @@ namespace Damselfly.Core.Services
                 if (bitmap == null)
                     return;
 
-                if( _imageClassifier != null )
+                if( _imageClassifier != null && enableAIProcessing )
                 {
                     var colorWatch = new Stopwatch("DetectObjects");
 
@@ -288,37 +289,40 @@ namespace Damselfly.Core.Services
                 // This is a user config.
                 bool useAzureDetection = false;
 
-                var objwatch = new Stopwatch("DetectObjects");
-
-                // First, look for Objects
-                var objects = await _objectDetector.DetectObjects(bitmap);
-
-                objwatch.Stop();
-
-                if (objects.Any())
+                if (enableAIProcessing)
                 {
-                    Logging.Log($" Yolo found {objects.Count} objects in {fileName}...");
+                    var objwatch = new Stopwatch("DetectObjects");
 
-                    var newTags = await CreateNewTags(objects);
+                    // First, look for Objects
+                    var objects = await _objectDetector.DetectObjects(bitmap);
 
-                    var newObjects = objects.Select(x => new ImageObject
+                    objwatch.Stop();
+
+                    if (objects.Any())
                     {
-                        RecogntionSource = ImageObject.RecognitionType.MLNetObject,
-                        ImageId = image.ImageId,
-                        RectX = (int)x.Rect.Left,
-                        RectY = (int)x.Rect.Top,
-                        RectHeight = (int)x.Rect.Height,
-                        RectWidth = (int)x.Rect.Width,
-                        TagId = x.IsFace ? 0 : newTags[x.Tag],
-                        Type = ImageObject.ObjectTypes.Object.ToString(),
-                        Score = x.Score
-                    }).ToList();
+                        Logging.Log($" Yolo found {objects.Count} objects in {fileName}...");
 
-                    if (UseAzureForRecogition(objects))
-                        useAzureDetection = true;
+                        var newTags = await CreateNewTags(objects);
 
-                    ScaleObjectRects(image, newObjects, bitmap);
-                    foundObjects.AddRange(newObjects);
+                        var newObjects = objects.Select(x => new ImageObject
+                        {
+                            RecogntionSource = ImageObject.RecognitionType.MLNetObject,
+                            ImageId = image.ImageId,
+                            RectX = (int)x.Rect.Left,
+                            RectY = (int)x.Rect.Top,
+                            RectHeight = (int)x.Rect.Height,
+                            RectWidth = (int)x.Rect.Width,
+                            TagId = x.IsFace ? 0 : newTags[x.Tag],
+                            Type = ImageObject.ObjectTypes.Object.ToString(),
+                            Score = x.Score
+                        }).ToList();
+
+                        if (UseAzureForRecogition(objects))
+                            useAzureDetection = true;
+
+                        ScaleObjectRects(image, newObjects, bitmap);
+                        foundObjects.AddRange(newObjects);
+                    }
                 }
 
                 if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages)
@@ -326,9 +330,9 @@ namespace Damselfly.Core.Services
                     // Skip local face detection and just go straight to Azure
                     useAzureDetection = true;
                 }
-                else
+                else if( enableAIProcessing )
                 {
-                    if (_emguFaceService.ServiceAvailable)
+                    if (_emguFaceService.ServiceAvailable )
                     {
                         var emguwatch = new Stopwatch("EmguFaceDetect");
 

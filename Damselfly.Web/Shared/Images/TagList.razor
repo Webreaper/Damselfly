@@ -215,8 +215,8 @@
                 if (tagLists.Count() > 1)
                 {
                     return tagLists.Aggregate((x, y) => x.Intersect(y))
-                               .OrderBy(x => x.Keyword)
-                               .ToList();
+                                .OrderBy(x => x.Keyword)
+                                .ToList();
                 }
                 else if (tagLists.Count() == 1)
                 {
@@ -328,7 +328,9 @@
         using var db = new ImageContext();
 
         theImageTags = GetImageTags();
+        // TODO: Remove object tags that exist as IPTC tags
         theObjectTags = GetObjectTags();
+
         await InvokeAsync(StateHasChanged);
     }
 
