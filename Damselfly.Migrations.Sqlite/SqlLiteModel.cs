@@ -8,7 +8,6 @@ using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
 using System.Linq.Expressions;
 using Damselfly.Core.Utils;
-using Z.EntityFramework.Plus;
 using SqlParameter = Microsoft.Data.Sqlite.SqliteParameter;
 using EFCore.BulkExtensions;
 
@@ -250,13 +249,13 @@ namespace Damselfly.Migrations.Sqlite.Models
         public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
             // TODO Try/Catch here?
-            return await query.DeleteAsync();
+            return await query.BatchDeleteAsync();
         }
 
         public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
         {
             // TODO Try/Catch here?
-            return await query.UpdateAsync( updateExpression );
+            return await query.BatchUpdateAsync( updateExpression );
         }
 
         private string Sanitize( string input )

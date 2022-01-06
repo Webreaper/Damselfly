@@ -35,7 +35,7 @@
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.1.5" />
-    <PackageReference Include="MudBlazor" Version="6.0.2" />
+    <PackageReference Include="MudBlazor" Version="6.0.4" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
