@@ -15,6 +15,7 @@ using System.Threading;
 using TagTypes = Damselfly.Core.Models.Tag.TagTypes;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
+using MetadataExtractor.Formats.Xmp;
 
 namespace Damselfly.Core.Services
 {
@@ -89,6 +90,88 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Pull out the XMP face area so we can convert it to a real face in the DB
+        /// </summary>
+        /// <param name="xmpDirectory"></param>
+        /// <returns></returns>
+        private List<ImageObject> ReadXMPFaceRegionData(XmpDirectory xmpDirectory, Image image, string orientation)
+        {
+            try
+            {
+                var newFaces = new List<ImageObject>();
+
+                var nvps = xmpDirectory.XmpMeta.Properties
+                                               .Where(x => !string.IsNullOrEmpty(x.Path))
+                                               .ToDictionary(x => x.Path, y => y.Value);
+
+                int iRegion = 0;
+                var (flipH, flipV) = FlipHorizVert(orientation);
+
+                while (true)
+                {
+                    iRegion++;
+
+                    var regionBase = $"mwg-rs:Regions/mwg-rs:RegionList[{iRegion}]/mwg-rs:";
+
+                    // Check if there's a name for the next region. If not, we've probably done them all
+                    if (!nvps.ContainsKey($"{regionBase}Name"))
+                        break;
+
+                    var name = nvps[$"{regionBase}Name"];
+                    var type = nvps[$"{regionBase}Type"];
+                    var xStr = nvps[$"{regionBase}Area/stArea:x"];
+                    var yStr = nvps[$"{regionBase}Area/stArea:y"];
+                    var wStr = nvps[$"{regionBase}Area/stArea:w"];
+                    var hStr = nvps[$"{regionBase}Area/stArea:h"];
+
+                    double x = Convert.ToDouble(xStr);
+                    double y = Convert.ToDouble(yStr);
+                    double w = Convert.ToDouble(wStr);
+                    double h = Convert.ToDouble(hStr);
+
+                    if( flipH )
+                        x = 1 - x;
+
+                    if (flipV)
+                        y = 1 - y;
+
+                    var newPerson = new Person
+                    {
+                        Name = name,
+                        State = Person.PersonState.Identified
+                    };
+
+                    var newFace = new ImageObject
+                    {
+                        RecogntionSource = ImageObject.RecognitionType.ExternalApp,
+                        ImageId = image.ImageId,
+                        // Note that x and y in this case are the centrepoints of the faces. 
+                        // Make sure we offset the rects by half their width and height
+                        // to centre them on the face.
+                        RectX = (int)((x - (w / 2)) * image.MetaData.Width),
+                        RectY = (int)((y - (h / 2)) * image.MetaData.Height),
+                        RectHeight = (int)(h * image.MetaData.Height),
+                        RectWidth = (int)(w * image.MetaData.Width),
+                        TagId = 0,
+                        Type = ImageObject.ObjectTypes.Face.ToString(),
+                        Score = 100,
+                        Person = newPerson
+                    };
+
+                    newFaces.Add(newFace);
+                }
+
+                return newFaces;
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception while parsing XMP face/region data: {ex}");
+            }
+
+            return new List<ImageObject>();
+        }
+
+        /// <summary>
         /// Scans an image file on disk for its metadata, using the MetaDataExtractor
         /// library. The image object is populated with the metadata, and the IPTC
         /// keywords are returned back to the caller for processing and ingestion
@@ -96,11 +179,13 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image">Image object, which will be updated with metadata</param>
         /// <param name="keywords">Array of keyword tags in the image EXIF data</param>
-        private bool GetImageMetaData(ref ImageMetaData imgMetaData, out string[] keywords)
+        /// <param name="newFaces">Array of face objects in the XMP metadata</param>
+        private bool GetImageMetaData(ref ImageMetaData imgMetaData, out string[] keywords, out List<ImageObject> newFaces)
         {
             bool metaDataReadSuccess = false;
             var image = imgMetaData.Image;
             keywords = new string[0];
+            newFaces = null;
 
             try
             {
@@ -216,11 +301,12 @@ namespace Damselfly.Core.Services
                             keywords = keywordList;
                     }
 
+                    var orientation = "1"; // Default
                     var IfdDirectory = metadata.OfType<ExifIfd0Directory>().FirstOrDefault();
 
                     if (IfdDirectory != null)
                     {
-                        var orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
+                        orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
                         var camMake = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagMake);
                         var camModel = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagModel);
                         var camSerial = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagBodySerialNumber);
@@ -238,10 +324,18 @@ namespace Damselfly.Core.Services
                             imgMetaData.Height = temp;
                         }
                     }
+
+                    var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
+
+                    if( xmpDirectory != null )
+                    {
+                        newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
+                    }
                 }
 
-                if (imgMetaData.DateTaken == DateTime.MinValue)
-                    DumpMetaData(image, metadata);
+#if DEBUG
+                DumpMetaData(image, metadata);
+#endif
             }
             catch (Exception ex)
             {
@@ -280,7 +374,8 @@ namespace Damselfly.Core.Services
             var updateTimeStamp = DateTime.UtcNow;
             var imageKeywords = new List<string>();
             List<string> sideCarTags = new List<string>();
-
+            List<ImageObject> xmpFaces = null;
+             
             var img = await _imageCache.GetCachedImage(imageId);
             db.Attach(img);
 
@@ -312,7 +407,7 @@ namespace Damselfly.Core.Services
                 imgMetaData.LastUpdated = updateTimeStamp;
 
                 // Scan the image from the 
-                if (GetImageMetaData(ref imgMetaData, out var exifKeywords))
+                if (GetImageMetaData(ref imgMetaData, out var exifKeywords, out xmpFaces))
                 {
                     // Scan for sidecar files
                     sideCarTags = GetSideCarKeywords(img, exifKeywords, writeSideCarTagsToImages);
@@ -345,6 +440,8 @@ namespace Damselfly.Core.Services
             // Now save the tags
             var tagsAdded = await WriteTagsForImage(img, imageKeywords);
 
+            await WriteXMPFaces(img, xmpFaces);
+
             _imageCache.Evict(imageId);
 
             watch.Stop();
@@ -358,6 +455,57 @@ namespace Damselfly.Core.Services
 
                 // Fire and forget this asynchronously - we don't care about waiting for it
                 _ = _exifService.UpdateTagsAsync(img, sideCarTags, null);
+            }
+        }
+
+        /// <summary>
+        /// Write the face records for any faces found in the XMP Region metadata
+        /// </summary>
+        /// <param name="xmpFaces"></param>
+        /// <returns></returns>
+        private async Task WriteXMPFaces(Image image, List<ImageObject> xmpFaces)
+        {
+            if (xmpFaces != null && xmpFaces.Any())
+            {
+                try
+                {
+                    var createdTags = await CreateTagsFromStrings(new[] { "Face" });
+                    var faceTag = createdTags.First();
+
+                    // Find existing faces and swap if appropriate
+                    var names = xmpFaces.Select(x => x.Person.Name)
+                                        .ToList();
+
+                    var db = new ImageContext();
+
+                    var peopleLookup = db.People.Where(x => names.Contains(x.Name))
+                                                .ToDictionary(x => x.Name, y => y.PersonId);
+
+                    foreach (var xmpFace in xmpFaces)
+                    {
+                        xmpFace.TagId = faceTag.TagId;
+
+                        if (peopleLookup.TryGetValue(xmpFace.Person.Name, out var matchedPersonId))
+                        {
+                            xmpFace.Person = null;
+                            xmpFace.PersonId = matchedPersonId;
+                        }
+
+                        db.ImageObjects.Add(xmpFace);
+                    }
+
+                    // Delete any objects that we found in the metadata before, so we start afresh.
+                    await db.BatchDelete(db.ImageObjects
+                                .Where(x => x.ImageId.Equals(image.ImageId) &&
+                                            x.RecogntionSource == ImageObject.RecognitionType.ExternalApp));
+
+                    // TODO - check for existing rects/faces and replace
+                    await db.SaveChangesAsync("SaveFacesMetaData");
+                }
+                catch( Exception ex )
+                {
+                    Logging.LogError($"Exception while processing XMP faces: {ex}");
+                }
             }
         }
 
@@ -488,7 +636,8 @@ namespace Damselfly.Core.Services
         /// These are the orientation strings:
         ///    "Top, left side (Horizontal / normal)",
         ///    "Top, right side (Mirror horizontal)",
-        ///    "Bottom, right side (Rotate 180)", "Bottom, left side (Mirror vertical)",
+        ///    "Bottom, right side (Rotate 180)",
+        ///    "Bottom, left side (Mirror vertical)",
         ///    "Left side, top (Mirror horizontal and rotate 270 CW)",
         ///    "Right side, top (Rotate 90 CW)",
         ///    "Right side, bottom (Mirror horizontal and rotate 90 CW)",
@@ -515,18 +664,48 @@ namespace Damselfly.Core.Services
             };
 
         /// <summary>
+        /// See NeedToSwitchWidthAndHeight for the states
+        /// </summary>
+        /// <param name="orientation"></param>
+        /// <returns></returns>
+        private (bool, bool) FlipHorizVert(string orientation) =>
+            orientation switch
+            {
+                "3" => (true, true),
+                "Top, right side (Mirror horizontal)" => (true, false),
+                "Bottom, right side (Rotate 180)" => (true, true),
+                "Bottom, left side (Mirror vertical)" => (false, true),
+                // TODO: All the other cases here. :-(
+                _ => (false, false)
+            };
+
+        /// <summary>
         /// Dump metadata out in tracemode.
         /// </summary>
         /// <param name="metadata"></param>
         private void DumpMetaData(Image img, IReadOnlyList<MetadataExtractor.Directory> metadata)
         {
-            Logging.LogVerbose($"Metadata dump for: {img.FileName}:");
+            Logging.Log($"Metadata dump for: {img.FileName}:");
             foreach (var dir in metadata)
             {
-                Logging.LogVerbose($" Directory: {dir.Name}:");
-                foreach (var tag in dir.Tags)
+                Logging.Log($" Directory: {dir.Name}:");
+
+                if (dir is XmpDirectory)
                 {
-                    Logging.LogVerbose($"  Tag: {tag.Name} = {tag.Description}");
+                    var xmpDirectory = dir as XmpDirectory;
+
+                    foreach (var property in xmpDirectory.XmpMeta.Properties)
+                    {
+                        if (!string.IsNullOrEmpty(property.Value ) )
+                            Logging.Log($"  Tag: {property.Path} = {property.Value}");
+                    }
+                }
+                else
+                {
+                    foreach (var tag in dir.Tags)
+                    {
+                        Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
+                    }
                 }
             }
         }

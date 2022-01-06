@@ -32,6 +32,7 @@ namespace Damselfly.Core.Services
         private readonly ConfigService _configService;
         private readonly ImageClassifier _imageClassifier;
         private readonly WorkService _workService;
+        private readonly ExifService _exifService;
         private readonly ImageCache _imageCache;
 
         private IDictionary<string, Person> _peopleCache;
@@ -43,7 +44,7 @@ namespace Damselfly.Core.Services
                         AccordFaceService accordFace, EmguFaceService emguService,
                         ThumbnailService thumbs, ConfigService configService,
                         ImageClassifier imageClassifier, ImageCache imageCache,
-                        WorkService workService)
+                        WorkService workService, ExifService exifService)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
@@ -56,6 +57,7 @@ namespace Damselfly.Core.Services
             _imageClassifier = imageClassifier;
             _imageCache = imageCache;
             _workService = workService;
+            _exifService = exifService;
          }
 
         public ImageRecognitionService()
@@ -241,6 +243,7 @@ namespace Damselfly.Core.Services
             var thumbSize = ThumbSize.Large;
             var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
             var fileName = Path.Combine(image.Folder.Path, image.FileName);
+            bool enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
             // First, update the timestamp. We do this first, so that even if something
             // fails, it'll be set, avoiding infinite loops of failed processing.
@@ -264,7 +267,7 @@ namespace Damselfly.Core.Services
                 if (bitmap == null)
                     return;
 
-                if( _imageClassifier != null )
+                if( _imageClassifier != null && enableAIProcessing )
                 {
                     var colorWatch = new Stopwatch("DetectObjects");
 
@@ -286,37 +289,40 @@ namespace Damselfly.Core.Services
                 // This is a user config.
                 bool useAzureDetection = false;
 
-                var objwatch = new Stopwatch("DetectObjects");
-
-                // First, look for Objects
-                var objects = await _objectDetector.DetectObjects(bitmap);
-
-                objwatch.Stop();
-
-                if (objects.Any())
+                if (enableAIProcessing)
                 {
-                    Logging.Log($" Yolo found {objects.Count} objects in {fileName}...");
+                    var objwatch = new Stopwatch("DetectObjects");
 
-                    var newTags = await CreateNewTags(objects);
+                    // First, look for Objects
+                    var objects = await _objectDetector.DetectObjects(bitmap);
 
-                    var newObjects = objects.Select(x => new ImageObject
+                    objwatch.Stop();
+
+                    if (objects.Any())
                     {
-                        RecogntionSource = ImageObject.RecognitionType.MLNetObject,
-                        ImageId = image.ImageId,
-                        RectX = (int)x.Rect.Left,
-                        RectY = (int)x.Rect.Top,
-                        RectHeight = (int)x.Rect.Height,
-                        RectWidth = (int)x.Rect.Width,
-                        TagId = x.IsFace ? 0 : newTags[x.Tag],
-                        Type = ImageObject.ObjectTypes.Object.ToString(),
-                        Score = x.Score
-                    }).ToList();
+                        Logging.Log($" Yolo found {objects.Count} objects in {fileName}...");
 
-                    if (UseAzureForRecogition(objects))
-                        useAzureDetection = true;
+                        var newTags = await CreateNewTags(objects);
 
-                    ScaleObjectRects(image, newObjects, bitmap);
-                    foundObjects.AddRange(newObjects);
+                        var newObjects = objects.Select(x => new ImageObject
+                        {
+                            RecogntionSource = ImageObject.RecognitionType.MLNetObject,
+                            ImageId = image.ImageId,
+                            RectX = (int)x.Rect.Left,
+                            RectY = (int)x.Rect.Top,
+                            RectHeight = (int)x.Rect.Height,
+                            RectWidth = (int)x.Rect.Width,
+                            TagId = x.IsFace ? 0 : newTags[x.Tag],
+                            Type = ImageObject.ObjectTypes.Object.ToString(),
+                            Score = x.Score
+                        }).ToList();
+
+                        if (UseAzureForRecogition(objects))
+                            useAzureDetection = true;
+
+                        ScaleObjectRects(image, newObjects, bitmap);
+                        foundObjects.AddRange(newObjects);
+                    }
                 }
 
                 if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages)
@@ -324,9 +330,9 @@ namespace Damselfly.Core.Services
                     // Skip local face detection and just go straight to Azure
                     useAzureDetection = true;
                 }
-                else
+                else if( enableAIProcessing )
                 {
-                    if (_emguFaceService.ServiceAvailable)
+                    if (_emguFaceService.ServiceAvailable )
                     {
                         var emguwatch = new Stopwatch("EmguFaceDetect");
 
@@ -482,11 +488,14 @@ namespace Damselfly.Core.Services
                     // First, clear out the existing faces and objects - we don't want dupes
                     // TODO: Might need to be smarter about this once we add face names and
                     // Object identification details.
-                    await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId)));
+                    await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId) && x.RecogntionSource != ImageObject.RecognitionType.ExternalApp ));
                     // Now add the objects and faces.
                     await db.BulkInsert(db.ImageObjects, allFound);
 
+                    WriteAITagsToImages(image, allFound);
+
                     objWriteWatch.Stop();
+
                 }
             }
             catch (Exception ex)
@@ -495,6 +504,38 @@ namespace Damselfly.Core.Services
             }
         }
 
+        /// <summary>
+        /// Write the tags to the image
+        /// </summary>
+        /// <param name="tags"></param>
+        private void WriteAITagsToImages( Image image, List<ImageObject> tags )
+        {
+            if (_configService.GetBool(ConfigSettings.WriteAITagsToImages))
+            {
+                Logging.Log("Writing AI tags to image Metadata...");
+
+                // Seleect the tag IDs that aren't faces.
+                var tagIdsToAdd = tags.Where( x => !x.IsFace )
+                                    .Select(x => x.TagId)
+                                    .Distinct()
+                                    .ToList();
+
+                if (tagIdsToAdd.Any())
+                {
+                    // Get their keywords
+                    var keywordsToAdd = _metdataService.CachedTags
+                                              .Where(x => tagIdsToAdd.Contains(x.TagId))
+                                              .Select(x => x.Keyword)
+                                              .ToList();
+
+                    if (keywordsToAdd.Any())
+                    {
+                        // Fire and forget this asynchronously - we don't care about waiting for it
+                        _ = _exifService.UpdateTagsAsync(image, keywordsToAdd, null);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Scales the detected face/object rectangles based on the full-sized image,

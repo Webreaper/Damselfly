@@ -2,6 +2,9 @@
     var img, result, scale, aspect;
     scale = zoomPercentage / 100;
     img = document.getElementById(imgID);
+    if (img === null)
+        return;
+
     aspect = img.naturalHeight / img.naturalWidth;
     result = document.getElementById(zoomDivId);
 

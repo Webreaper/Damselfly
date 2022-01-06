@@ -398,7 +398,8 @@ namespace Damselfly.Core.Models
             Emgu = 1,
             Accord = 2,
             Azure = 3,
-            MLNetObject = 4
+            MLNetObject = 4,
+            ExternalApp = 5
         };
 
         [Key]

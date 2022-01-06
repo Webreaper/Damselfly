@@ -1,4 +1,5 @@
 ﻿@using Microsoft.EntityFrameworkCore 
+@using Humanizer
 
 <div>
     @if (StatsReady)
@@ -17,6 +18,7 @@
             <tr><td colspan="2"><h4>Photo Collection</h4></td></tr>
             <tr><td>Folders:</td><td>@TotalFolders</td></tr>
             <tr><td>Images:</td><td>@TotalImages</td></tr>
+            <tr><td>Image File Size:</td><td>@TotalImagesSizeBytes.Bytes().Humanize()</td></tr>
             <tr><td>Tags/Keywords:</td><td>@TotalTags</td></tr>
             <tr><td>Recognised Objects:</td><td>@ObjectsRecognised</td></tr>
             <tr><td>Faces:</td><td>@PeopleFound</td></tr>
@@ -26,7 +28,7 @@
                 <tr><td>Azure Transactions:</td><td>@AzureMonthlyTransactions</td></tr>
             }
             <tr><td colspan="2"><h4>Process Queue</h4></td></tr>
-            <tr><td>Pending MetaData Scans:</td><td>@PendingImages</td></tr>
+            <tr><td>Pending Metadata Scans:</td><td>@PendingImages</td></tr>
             <tr><td>Pending Thumbnails:</td><td>@PendingThumbs</td></tr>
             <tr><td>Pending AI Scans:</td><td>@PendingAIScans</td></tr>
             <tr><td>Pending Keyword Updates:</td><td>@PendingKeywordImages (total keywords: @PendingKeywordOps)</td></tr>
@@ -49,6 +51,7 @@
     int PendingAIScans { get; set; }
     int PendingKeywordOps { get; set; }
     int PendingKeywordImages { get; set; }
+    long TotalImagesSizeBytes { get; set; }
     string AzureMonthlyTransactions { get; set; }
     int ObjectsRecognised { get; set; }
     int PeopleFound { get; set; }
@@ -69,6 +72,7 @@
             TotalImages = await db.Images.CountAsync();
             TotalTags = await db.Tags.CountAsync();
             TotalFolders = await db.Folders.CountAsync();
+            TotalImagesSizeBytes = await db.Images.SumAsync( x => (long)x.FileSizeBytes );
             PeopleFound = await db.People.CountAsync();
             PeopleIdentified = await db.People.Where( x => x.Name != "Unknown" ).CountAsync();
             ObjectsRecognised = await db.ImageObjects.CountAsync();

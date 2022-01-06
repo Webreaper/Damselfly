@@ -8,7 +8,6 @@ using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
 using System.Linq.Expressions;
 using Damselfly.Core.Utils;
-using Z.EntityFramework.Plus;
 using SqlParameter = Microsoft.Data.Sqlite.SqliteParameter;
 using EFCore.BulkExtensions;
 
@@ -149,10 +148,9 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                //collection.AddRange(itemsToSave);
-                //await db.SaveChangesAsync();
+                var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 500 };
 
-                await db.BulkInsertAsync(itemsToSave);
+                await db.BulkInsertAsync(itemsToSave, bulkConfig);
 
                 success = true;
             }
@@ -250,13 +248,13 @@ namespace Damselfly.Migrations.Sqlite.Models
         public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
         {
             // TODO Try/Catch here?
-            return await query.DeleteAsync();
+            return await query.BatchDeleteAsync();
         }
 
         public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
         {
             // TODO Try/Catch here?
-            return await query.UpdateAsync( updateExpression );
+            return await query.BatchUpdateAsync( updateExpression );
         }
 
         private string Sanitize( string input )

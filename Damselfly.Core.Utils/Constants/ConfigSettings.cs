@@ -16,6 +16,8 @@ namespace Damselfly.Core.Utils.Constants
         public const string WordpressPassword = "WordpressPassword";
 
         public const string ImportSidecarKeywords = "ImportSidecarKeywords";
+        public const string WriteAITagsToImages = "WriteAITagsToImages";
+        public const string EnableAIProcessing = "EnableAIProcessing";
         public const string LogLevel = "LogLevel";
 
         public const string AzureEndpoint = "AzureEndpoint";
