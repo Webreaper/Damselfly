@@ -34,20 +34,20 @@
         {
             @if (CurrentImages != null && CurrentImages.Any())
             {
-                <div class="damselfly-keyword damselfly-addfavekeyword"
+                <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to image"
                      @onclick="@(() => QuickAddTag(tag.Keyword))"
                      @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                        <div class="damselfly-addtag" title="Add @tag.Keyword to Selection"><i class="fa fa-plus-circle" /></div>
+                        <div class="damselfly-addtag" ><i class="fa fa-plus-circle" /></div>
                     </AuthorizeView>
-                    <div title="Add @tag.Keyword to image" class="damselfly-keywordtext">@tag.Keyword</div>
+                    <div  class="damselfly-keywordtext">@tag.Keyword</div>
                 </div>
             }
             else
             {
-                <div class="damselfly-keyword damselfly-addfavekeyword"
+                <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to Selection"
                      @oncontextmenu=@(args => ShowContextMenu(args, tag, true )) @oncontextmenu:preventDefault="true">
-                    <div title="Add @tag.Keyword to Selection" class="damselfly-keywordtext-disabled">@tag.Keyword</div>
+                    <div class="damselfly-keywordtext-disabled">@tag.Keyword</div>
                 </div>
             }
         }
@@ -59,18 +59,18 @@
         {
             @if (CurrentImages != null && CurrentImages.Any())
             {
-                <div class="damselfly-keyword damselfly-addfavekeyword"
+                <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to image"
                      @onclick="@(() => QuickAddTag(tag))">
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                        <div class="damselfly-addtag" title="Add @tag to Selection"><i class="fa fa-history" /></div>
+                        <div class="damselfly-addtag"><i class="fa fa-history"/></div>
                     </AuthorizeView>
-                    <div title="Add @tag to image" class="damselfly-keywordtext">@tag</div>
+                    <div class="damselfly-keywordtext">@tag</div>
                 </div>
             }
             else
             {
-                <div class="damselfly-keyword damselfly-addfavekeyword">
-                    <div title="Add @tag to Selection" class="damselfly-keywordtext-disabled">@tag</div>
+                <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to Selection">
+                    <div class="damselfly-keywordtext-disabled">@tag</div>
                 </div>
             }
         }
@@ -234,7 +234,7 @@
         return new Tag[0];
     }
 
-    private IList<AITag> GetObjectTags()
+    private IList<AITag> GetObjectTags( IList<Tag> tagsToExclude )
     {
         if (CurrentImages != null)
         {
@@ -248,6 +248,7 @@
                                                  Icon = x.Type == "Face" ? "fa-user" : "fa-lightbulb",
                                                  Name = x.GetTagName()
                                              })
+                                             .Where( x => ! tagsToExclude.Any( y => y.Keyword.Equals( x.Name, StringComparison.OrdinalIgnoreCase ) ) )
                                              .DistinctBy( x => x.Name )
                                              .OrderBy( x => x.Name )
                                              .ToList();
@@ -328,8 +329,8 @@
         using var db = new ImageContext();
 
         theImageTags = GetImageTags();
-        // TODO: Remove object tags that exist as IPTC tags
-        theObjectTags = GetObjectTags();
+
+        theObjectTags = GetObjectTags( theImageTags );
 
         await InvokeAsync(StateHasChanged);
     }

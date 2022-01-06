@@ -148,10 +148,9 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                //collection.AddRange(itemsToSave);
-                //await db.SaveChangesAsync();
+                var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 500 };
 
-                await db.BulkInsertAsync(itemsToSave);
+                await db.BulkInsertAsync(itemsToSave, bulkConfig);
 
                 success = true;
             }
