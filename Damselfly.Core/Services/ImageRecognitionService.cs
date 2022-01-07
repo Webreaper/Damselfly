@@ -257,6 +257,8 @@ namespace Damselfly.Core.Services
 
             try
             {
+                MetaDataService.GetImageSize(medThumb.FullName, out var thumbWidth, out var thumbHeight);
+
                 var foundObjects = new List<ImageObject>();
                 var foundFaces = new List<ImageObject>();
                 Logging.Log($"Processing AI image detection for {file.Name}...");
@@ -324,7 +326,7 @@ namespace Damselfly.Core.Services
                         if (UseAzureForRecogition(objects))
                             useAzureDetection = true;
 
-                        ScaleObjectRects(image, newObjects, bitmap);
+                        ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                         foundObjects.AddRange(newObjects);
                     }
                 }
@@ -371,7 +373,7 @@ namespace Damselfly.Core.Services
                                 Score = 0
                             }).ToList();
 
-                            ScaleObjectRects(image, newObjects, bitmap);
+                            ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                             foundFaces.AddRange(newObjects);
                         }
                     }
@@ -410,7 +412,7 @@ namespace Damselfly.Core.Services
                                     Score = 0
                                 }).ToList();
 
-                                ScaleObjectRects(image, newObjects, bitmap);
+                                ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                                 foundFaces.AddRange(newObjects);
                             }
                         }
@@ -455,7 +457,7 @@ namespace Damselfly.Core.Services
                             PersonId = _peopleCache[x.PersonId.ToString()].PersonId
                         }).ToList();
 
-                        ScaleObjectRects(image, newObjects, bitmap);
+                        ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                         foundFaces.AddRange(newObjects);
 
                         var peopleToAdd = foundFaces.Select(x => x.Person);
@@ -547,17 +549,10 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <param name="imgObjects">Collection of objects to scale</param>
-        /// <param name="thumbSize"></param>
-        private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, System.Drawing.Bitmap bitmap)
+        /// <param name="bmpWidth">Width of the image used to generate the rects</param>
+        /// <param name="bmpHeight">Height of the image used to generate the rects</param>
+        private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, int bmpWidth, int bmpHeight)
         {
-            if (bitmap == null)
-                return;
-
-#pragma warning disable 1416
-            var bmpHeight = bitmap.Height;
-            var bmpWidth = bitmap.Width;
-#pragma warning restore 1416
-
             if (bmpHeight == 0 || bmpWidth == 0)
                 return;
 

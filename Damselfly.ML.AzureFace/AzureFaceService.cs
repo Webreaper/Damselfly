@@ -253,6 +253,9 @@ namespace Damselfly.ML.Face.Azure
                             // Hopefully they'll improve this....
                             // https://docs.microsoft.com/en-us/answers/questions/494886/azure-faceclient-persondirectory-api-usage.html
 
+                            // Should use this here:
+                            // var thumbPath = await thumbService.GetFaceThumbNail(face);
+
                             MemoryStream memoryStream = SaveFaceThumb(sourceImage, face);
 
                             var persistedFace = await _transThrottle.Call("AddFace", _faceClient.PersonDirectory.AddPersonFaceFromStreamAsync(

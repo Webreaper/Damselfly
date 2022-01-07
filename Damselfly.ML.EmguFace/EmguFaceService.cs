@@ -158,9 +158,10 @@ namespace Damselfly.ML.Face.Emgu
                             ServiceModel = model.ClassifierFile
                         }));
 
-                        DetectDupeRects( ref result);
                     }
                 }
+
+                DetectDupeRects(ref result);
             }
             catch (Exception ex)
             {
@@ -178,25 +179,31 @@ namespace Damselfly.ML.Face.Emgu
             {
                 for( int j = 0; j < results.Count; j++ )
                 {
-                    if (i == j || toDelete.Contains(i))
-                    {
-                        // If the first rect we're comparing with is already
-                        // slated for deletion, don't bother checking again.
+                    if (i == j || toDelete.Contains(j) || toDelete.Contains(i) )
                         continue;
-                    }
+
 
                     var firstRect = results[i].Rect;
                     var secondRect = results[j].Rect;
+
+                    var firstArea = firstRect.Width * firstRect.Height;
+                    var secondArea = secondRect.Width * secondRect.Height;
+
+                    // Always try and keep the largest of the two.
+                    int deletePreference = j;
+
+                    if (firstArea < secondArea)
+                        deletePreference = i;
 
                     Rectangle rect = Rectangle.Intersect(firstRect, secondRect);
                     var percentage = (rect.Width * rect.Height) * 100f / (firstRect.Width * firstRect.Height);
 
                     // If the second of the pair overlaps the first by 90% and the first isn't
                     // already scheduled to be deleted, add it to the to-delete list.
-                    if ( percentage > 90 )
+                    if ( percentage > 75 )
                     {
-                        Logging.LogVerbose($"Removing dupe face rect with 90% intersect: [{firstRect} / {secondRect}]");
-                        toDelete.Add(j);
+                        Logging.LogVerbose($"Removing dupe face rect with 70% intersect: [{firstRect} / {secondRect}]");
+                        toDelete.Add(deletePreference);
                     }
                 }
             }
