@@ -17,6 +17,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.ML.ImageClassification;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
+using System.Runtime.InteropServices;
 
 namespace Damselfly.Core.Services
 {
@@ -217,16 +218,20 @@ namespace Damselfly.Core.Services
         private System.Drawing.Bitmap SafeLoadBitmap(string fileName)
         {
             System.Drawing.Bitmap bmp = null;
-            try
-            {
-                // Load the bitmap once
-                bmp = new System.Drawing.Bitmap(fileName);
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
-            }
 
+            // Bitmap loading required libgdiplus which isn't supported on OSX
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                try
+                {
+                    // Load the bitmap once
+                    bmp = new System.Drawing.Bitmap(fileName);
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
+                }
+            }
             return bmp;
         }
 #pragma warning restore 1416
@@ -264,10 +269,8 @@ namespace Damselfly.Core.Services
 
                 var bitmap = SafeLoadBitmap(medThumb.FullName);
 
-                if (bitmap == null)
-                    return;
-
-                if( _imageClassifier != null && enableAIProcessing )
+                // For the image classifier, we need a successfully loaded bitmap
+                if (bitmap != null && _imageClassifier != null && enableAIProcessing)
                 {
                     var colorWatch = new Stopwatch("DetectObjects");
 
@@ -289,7 +292,8 @@ namespace Damselfly.Core.Services
                 // This is a user config.
                 bool useAzureDetection = false;
 
-                if (enableAIProcessing)
+                // For the object detector, we need a successfully loaded bitmap
+                if (bitmap != null && enableAIProcessing)
                 {
                     var objwatch = new Stopwatch("DetectObjects");
 
@@ -546,6 +550,9 @@ namespace Damselfly.Core.Services
         /// <param name="thumbSize"></param>
         private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, System.Drawing.Bitmap bitmap)
         {
+            if (bitmap == null)
+                return;
+
 #pragma warning disable 1416
             var bmpHeight = bitmap.Height;
             var bmpWidth = bitmap.Width;

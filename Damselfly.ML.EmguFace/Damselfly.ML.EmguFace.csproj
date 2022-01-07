@@ -19,6 +19,7 @@
      <None Remove="System.Drawing.Common" />
      <None Remove="Emgu.CV.Bitmap" />
      <None Remove="runtime.osx.10.10-x64.CoreCompat.System.Drawing" />
+     <None Remove="Models\car\" />
    </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
@@ -29,6 +30,9 @@
     <None Include="Models\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\car\" />
   </ItemGroup>
    <PropertyGroup>
     <RestoreSources>$(RestoreSources);../localPackages;https://api.nuget.org/v3/index.json</RestoreSources>

@@ -133,13 +133,18 @@ namespace Damselfly.ML.Face.Emgu
 
             try
             {
-                foreach( var model in classifiers )
-                {
-                    //var img = bitmap.ToMat();
-                    using var img = CvInvoke.Imread(path);
-                    using var imgGray = new UMat();
-                    CvInvoke.CvtColor(img, imgGray, ColorConversion.Bgr2Gray);
+                using var img = CvInvoke.Imread(path);
+                using var imgGray = new UMat();
 
+                // Disable caching for the OpenCL stuff, which crashes on the Mac.
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    CvInvoke.UseOpenCL = false;
+
+                CvInvoke.CvtColor(img, imgGray, ColorConversion.Bgr2Gray);
+                CvInvoke.EqualizeHist(imgGray, imgGray);
+
+                foreach ( var model in classifiers )
+                {
                     var faces = model.Classifier.DetectMultiScale(imgGray, 1.1, 10, new Size(20, 20), Size.Empty).ToList();
 
                     if ( faces.Any() )
