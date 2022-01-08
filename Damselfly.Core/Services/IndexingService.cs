@@ -329,12 +329,19 @@ namespace Damselfly.Core.Services
             dbFolder.FolderScanDate = DateTime.UtcNow;
             db.Folders.Update(dbFolder);
 
-            await db.SaveChangesAsync("FolderScan");
+            int updated = await db.SaveChangesAsync("FolderScan");
 
             watch.Stop();
 
-            _statusService.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
-                    dbFolder.Name, dbFolder.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
+            if (updated > 0)
+            {
+                _statusService.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
+                        dbFolder.Name, dbFolder.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
+            }
+            else
+            {
+                Logging.LogWarning($"Error during folder scan update for {dbFolder.Path}");
+            }
 
             // Do this after we scan for images, because we only load folders if they have images.
             if (imagesWereAddedOrRemoved)
