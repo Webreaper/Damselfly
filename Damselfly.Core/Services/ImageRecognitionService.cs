@@ -218,7 +218,6 @@ namespace Damselfly.Core.Services
         private System.Drawing.Bitmap SafeLoadBitmap(string fileName)
         {
             System.Drawing.Bitmap bmp = null;
-
             // Bitmap loading required libgdiplus which isn't supported on OSX
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -232,6 +231,7 @@ namespace Damselfly.Core.Services
                     Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
                 }
             }
+
             return bmp;
         }
 #pragma warning restore 1416
@@ -261,7 +261,9 @@ namespace Damselfly.Core.Services
 
                 var foundObjects = new List<ImageObject>();
                 var foundFaces = new List<ImageObject>();
-                Logging.Log($"Processing AI image detection for {file.Name}...");
+
+                if( enableAIProcessing || _azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages )
+                    Logging.Log($"Processing AI image detection for {file.Name}...");
 
                 if (!File.Exists(medThumb.FullName) )
                 {
@@ -271,8 +273,10 @@ namespace Damselfly.Core.Services
 
                 var bitmap = SafeLoadBitmap(medThumb.FullName);
 
-                // For the image classifier, we need a successfully loaded bitmap
-                if (bitmap != null && _imageClassifier != null && enableAIProcessing)
+                if (bitmap == null)
+                    return;
+
+                if( bitmap != null && _imageClassifier != null && enableAIProcessing )
                 {
                     var colorWatch = new Stopwatch("DetectObjects");
 
@@ -549,8 +553,7 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="image"></param>
         /// <param name="imgObjects">Collection of objects to scale</param>
-        /// <param name="bmpWidth">Width of the image used to generate the rects</param>
-        /// <param name="bmpHeight">Height of the image used to generate the rects</param>
+        /// <param name="thumbSize"></param>
         private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, int bmpWidth, int bmpHeight)
         {
             if (bmpHeight == 0 || bmpWidth == 0)

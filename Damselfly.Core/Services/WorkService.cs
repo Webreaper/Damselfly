@@ -250,8 +250,18 @@ namespace Damselfly.Core.Services
                 Logging.LogVerbose($"Processing job type: {jobName}");
 
                 Stopwatch stopwatch = new Stopwatch($"ProcessJob{jobName}");
-                job.Process().Wait();
-                stopwatch.Stop();
+                try
+                {
+                    job.Process().Wait();
+                }
+                catch( Exception ex )
+                {
+                    Logging.LogError($"Exception processing {job.GetType()} job: {ex.Message}");
+                }
+                finally
+                {
+                    stopwatch.Stop();
+                }
 
                 // Now, decide how much we need to sleep, in order to throttle CPU to the desired percentage
                 // E.g., if the job took 2.5s to execute, then in order to maintain 25% CPU usage, we need to

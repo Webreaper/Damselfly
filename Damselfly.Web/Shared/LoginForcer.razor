@@ -1,9 +1,10 @@
 ﻿
 @using Damselfly.Core.Utils.Constants
-  
+
 @inject NavigationManager navigationManager
 @inject ConfigService configService
 @inject UserService userService
+
 @code {
     [CascadingParameter]
     protected Task<AuthenticationState> AuthStat { get; set; }
@@ -18,7 +19,7 @@
         // the user to create the first one, so disable the login redirect.
         var users = await userService.GetUsers();
 
-        if( users.Any() && forceLogin)
+        if( users.Any() && forceLogin )
         {
             var user = (await AuthStat).User;
 

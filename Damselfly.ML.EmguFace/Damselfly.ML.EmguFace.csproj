@@ -5,21 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Emgu.CV" Version="4.5.4.4788" />
-    <PackageReference Include="Emgu.CV.runtime.linux-arm" Version="4.5.4.4788" />
-    <PackageReference Include="Emgu.CV.runtime.ubuntu.20.04-x64" Version="4.5.4.4788" />
-    <PackageReference Include="Emgu.CV.runtime.macos" Version="4.5.4.4788" Condition="$([MSBuild]::IsOsPlatform('OSX'))" />
-    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.4.4788" />
-    <PackageReference Include="Emgu.CV.Bitmap" Version="4.5.4.4788" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-    <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
-  </ItemGroup>
+    <PackageReference Include="Emgu.CV" Version="4.5.1.4349" />
+    <PackageReference Include="Emgu.CV.runtime.linux-arm" Version="4.5.1.4349" />
+    <PackageReference Include="Emgu.CV.runtime.ubuntu.20.04-x64" Version="4.5.1.4349" />
+    <PackageReference Include="Emgu.CV.runtime.macos" Version="4.5.1.4349" Condition="$([MSBuild]::IsOsPlatform('OSX'))" />
+    <PackageReference Include="Emgu.CV.runtime.windows" Version="4.5.1.4349" />
+    <PackageReference Include="Emgu.CV.Bitmap" Version="4.5.1.4349" />
+   </ItemGroup>
 
    <ItemGroup>
      <None Remove="System.Drawing.Common" />
      <None Remove="Emgu.CV.Bitmap" />
-     <None Remove="runtime.osx.10.10-x64.CoreCompat.System.Drawing" />
-     <None Remove="Models\car\" />
    </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
@@ -30,9 +26,6 @@
     <None Include="Models\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\car\" />
   </ItemGroup>
    <PropertyGroup>
     <RestoreSources>$(RestoreSources);../localPackages;https://api.nuget.org/v3/index.json</RestoreSources>

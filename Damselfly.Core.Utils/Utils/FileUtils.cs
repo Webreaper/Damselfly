@@ -38,7 +38,7 @@ namespace Damselfly.Core.Utils
                     // to be hidden. So we check for that by looking for the Parent
                     // to be null, and if it is, we ignore the hidden attribute.
                     // See https://github.com/Webreaper/Damselfly/issues/333
-                    if ( dir.Parent != null )
+                    if (dir.Parent != null)
                         return true;
                 }
 
