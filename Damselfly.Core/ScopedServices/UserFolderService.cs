@@ -39,7 +39,7 @@ namespace Damselfly.Core.ScopedServices
             if (allFolderItems != null && allFolderItems.Any() && !string.IsNullOrEmpty(filterTerm))
             {
                 items = await Task.FromResult(allFolderItems
-                                .Where(x => x.Folder.Name.ContainsNoCase(filterTerm)
+                                .Where(x => x.DisplayName.ContainsNoCase(filterTerm)
                                             // Always include the currently selected folder so it remains highlighted
                                             || _searchService.Folder?.FolderId == x.Folder.FolderId)
                                 .ToList());
