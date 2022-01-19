@@ -28,8 +28,8 @@
     --grid-image-selected-box: rgba(55, 155, 55, 0.7);
     --tag-editor-disabled-bg: rgb( 200, 200, 200 );
     --tag-editor-text: #aaaaaa;
-    --tag-editor-border: darkgrey;
-    --tag-editor-bg: darkgrey;
+    --tag-editor-border: #444444;
+    --tag-editor-bg: #444444;
     --tool-window-text: #777777;
     --tool-window-bg: rgba(50, 60, 50, 0.3);
     --tool-window-shadow: rgba(25, 25, 25, 0.7);
