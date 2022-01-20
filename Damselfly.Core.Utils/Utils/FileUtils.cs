@@ -32,7 +32,15 @@ namespace Damselfly.Core.Utils
             while( dir != null )
             {
                 if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                    return true;
+                {
+                    // Special case: on Windows, C:\ seems to always have the hidden
+                    // attribute, which can result in the whole tree being assumed
+                    // to be hidden. So we check for that by looking for the Parent
+                    // to be null, and if it is, we ignore the hidden attribute.
+                    // See https://github.com/Webreaper/Damselfly/issues/333
+                    if (dir.Parent != null)
+                        return true;
+                }
 
                 dir = dir.Parent;
             }                

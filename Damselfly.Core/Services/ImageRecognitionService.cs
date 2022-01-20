@@ -17,6 +17,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.ML.ImageClassification;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
+using System.Runtime.InteropServices;
 
 namespace Damselfly.Core.Services
 {
@@ -217,14 +218,18 @@ namespace Damselfly.Core.Services
         private System.Drawing.Bitmap SafeLoadBitmap(string fileName)
         {
             System.Drawing.Bitmap bmp = null;
-            try
+            // Bitmap loading required libgdiplus which isn't supported on OSX
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                // Load the bitmap once
-                bmp = new System.Drawing.Bitmap(fileName);
-            }
-            catch( Exception ex )
-            {
-                Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
+                try
+                {
+                    // Load the bitmap once
+                    bmp = new System.Drawing.Bitmap(fileName);
+                }
+                catch (Exception ex)
+                {
+                    Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
+                }
             }
 
             return bmp;
@@ -252,9 +257,13 @@ namespace Damselfly.Core.Services
 
             try
             {
+                MetaDataService.GetImageSize(medThumb.FullName, out var thumbWidth, out var thumbHeight);
+
                 var foundObjects = new List<ImageObject>();
                 var foundFaces = new List<ImageObject>();
-                Logging.Log($"Processing AI image detection for {file.Name}...");
+
+                if( enableAIProcessing || _azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages )
+                    Logging.Log($"Processing AI image detection for {file.Name}...");
 
                 if (!File.Exists(medThumb.FullName) )
                 {
@@ -267,7 +276,7 @@ namespace Damselfly.Core.Services
                 if (bitmap == null)
                     return;
 
-                if( _imageClassifier != null && enableAIProcessing )
+                if( bitmap != null && _imageClassifier != null && enableAIProcessing )
                 {
                     var colorWatch = new Stopwatch("DetectObjects");
 
@@ -289,7 +298,8 @@ namespace Damselfly.Core.Services
                 // This is a user config.
                 bool useAzureDetection = false;
 
-                if (enableAIProcessing)
+                // For the object detector, we need a successfully loaded bitmap
+                if (bitmap != null && enableAIProcessing)
                 {
                     var objwatch = new Stopwatch("DetectObjects");
 
@@ -320,7 +330,7 @@ namespace Damselfly.Core.Services
                         if (UseAzureForRecogition(objects))
                             useAzureDetection = true;
 
-                        ScaleObjectRects(image, newObjects, bitmap);
+                        ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                         foundObjects.AddRange(newObjects);
                     }
                 }
@@ -367,7 +377,7 @@ namespace Damselfly.Core.Services
                                 Score = 0
                             }).ToList();
 
-                            ScaleObjectRects(image, newObjects, bitmap);
+                            ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                             foundFaces.AddRange(newObjects);
                         }
                     }
@@ -406,7 +416,7 @@ namespace Damselfly.Core.Services
                                     Score = 0
                                 }).ToList();
 
-                                ScaleObjectRects(image, newObjects, bitmap);
+                                ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                                 foundFaces.AddRange(newObjects);
                             }
                         }
@@ -451,7 +461,7 @@ namespace Damselfly.Core.Services
                             PersonId = _peopleCache[x.PersonId.ToString()].PersonId
                         }).ToList();
 
-                        ScaleObjectRects(image, newObjects, bitmap);
+                        ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                         foundFaces.AddRange(newObjects);
 
                         var peopleToAdd = foundFaces.Select(x => x.Person);
@@ -544,13 +554,8 @@ namespace Damselfly.Core.Services
         /// <param name="image"></param>
         /// <param name="imgObjects">Collection of objects to scale</param>
         /// <param name="thumbSize"></param>
-        private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, System.Drawing.Bitmap bitmap)
+        private void ScaleObjectRects(Image image, List<ImageObject> imgObjects, int bmpWidth, int bmpHeight)
         {
-#pragma warning disable 1416
-            var bmpHeight = bitmap.Height;
-            var bmpWidth = bitmap.Width;
-#pragma warning restore 1416
-
             if (bmpHeight == 0 || bmpWidth == 0)
                 return;
 

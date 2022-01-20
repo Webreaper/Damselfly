@@ -1,8 +1,9 @@
 ﻿
 @using Damselfly.Core.Utils.Constants
-  
+
 @inject NavigationManager navigationManager
 @inject ConfigService configService
+@inject UserService userService
 
 @code {
     [CascadingParameter]
@@ -14,7 +15,11 @@
 
         var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
 
-        if (forceLogin)
+        // Check if any users have been created. If there aren't any, then we need to allow
+        // the user to create the first one, so disable the login redirect.
+        var users = await userService.GetUsers();
+
+        if( users.Any() && forceLogin )
         {
             var user = (await AuthStat).User;
 
