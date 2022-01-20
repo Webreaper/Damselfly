@@ -6,7 +6,7 @@ on:
       git-ref:
         description: Git Ref (Optional)    
         required: false
-        
+
 jobs:
   build-desktop:
     runs-on: ${{ matrix.os }}
@@ -65,8 +65,15 @@ jobs:
             os: macos-latest
 
     steps:
-      - name: Checkout Source
+      - name: Clone Repository (latest)
         uses: actions/checkout@v2
+        if: github.event.inputs.git-ref == ''
+
+      - name: Clone Repository (Custom Ref)
+        uses: actions/checkout@v2
+        if: github.event.inputs.git-ref != ''
+        with:
+          ref: ${{ github.event.inputs.git-ref }}
 
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v1
@@ -94,8 +101,15 @@ jobs:
             os: ubuntu-latest
 
     steps:        
-      - name: Checkout Source
+      - name: Clone Repository (latest)
         uses: actions/checkout@v2
+        if: github.event.inputs.git-ref == ''
+
+      - name: Clone Repository (Custom Ref)
+        uses: actions/checkout@v2
+        if: github.event.inputs.git-ref != ''
+        with:
+          ref: ${{ github.event.inputs.git-ref }}
 
       - name: Read VERSION file
         id: getversion
@@ -113,12 +127,10 @@ jobs:
              cd publish
              unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
              cd ..
-
       - name: Validate Server artifacts
         run: |
              echo "Server artifacts:"
              ls server
-
       - name: Download Desktop Builds into wwwroot folder
         uses: actions/download-artifact@v2
         with:
@@ -129,7 +141,6 @@ jobs:
         run: |
              echo "Desktop artifacts:"
              ls publish/wwwroot/desktop
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -163,4 +174,3 @@ jobs:
             Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}-beta
           draft: false
           prerelease: true
-
