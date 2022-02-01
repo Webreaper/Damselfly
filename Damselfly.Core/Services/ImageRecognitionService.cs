@@ -273,9 +273,6 @@ namespace Damselfly.Core.Services
 
                 var bitmap = SafeLoadBitmap(medThumb.FullName);
 
-                if (bitmap == null)
-                    return;
-
                 if( bitmap != null && _imageClassifier != null && enableAIProcessing )
                 {
                     var colorWatch = new Stopwatch("DetectObjects");
@@ -544,6 +541,18 @@ namespace Damselfly.Core.Services
                         _ = _exifService.UpdateTagsAsync(image, keywordsToAdd, null);
                     }
                 }
+
+                // Seleect the tag IDs that are faces.
+                var facesToAdd = tags.Where(x => x.IsFace)
+                                    .Distinct()
+                                    .ToList();
+
+                if (facesToAdd.Any())
+                {
+                    // Fire and forget this asynchronously - we don't care about waiting for it
+                    _ = _exifService.UpdateFaceDataAsync(new[] { image }, facesToAdd, null);
+                }
+
             }
         }
 

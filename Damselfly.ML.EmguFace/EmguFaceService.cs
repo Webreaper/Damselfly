@@ -68,31 +68,10 @@ namespace Damselfly.ML.Face.Emgu
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    var asm = Assembly.GetAssembly(typeof(CascadeClassifier));
-
-                    if (asm != null)
-                    {
-                        var ver = asm.GetName().Version;
-                        if (ver != null)
-                        {
-                            var reqVer = new Version(4, 5, 3, 0);
-
-                            if (ver < reqVer)
-                            {
-                                // No MacOS love for EMGU until this bug is fixed in 4.5.3
-                                // https://github.com/emgucv/emgucv/issues/550
-                                Logging.Log("EMGU not available on OSX.");
-                                return false;
-                            }
-                        }
-                    }
-                }
-
                 return true;
             }
         }
+
         private void InitialiseClassifiers()
         {
             if (! IsSupported)
@@ -135,6 +114,18 @@ namespace Damselfly.ML.Face.Emgu
             {
                 foreach( var model in classifiers )
                 {
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        // Comment from EMGUCV:
+                        // Mac OS’s security policy has been changing quite a bit in the last few OS releases, it
+                        // may have blocked access to the temporary directory that Open CV used to cache OpenCL kernels.
+                        // You can probably call “CvInvoke.UseOpenCL = false” to disable OpenCL if the running platform
+                        // is MacOS.It will disable Open CL and no kernels will be cached on disk.Not an ideal solution,
+                        // but unless Open CV address this on future release(or Apple stop changing security policies that
+                        // often) this will be a problem for Mac.
+                        CvInvoke.UseOpenCL = false;
+                    }
+
                     //var img = bitmap.ToMat();
                     using var img = CvInvoke.Imread(path);
                     using var imgGray = new UMat();

@@ -83,7 +83,7 @@
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.3.1.21360" />
-    <PackageReference Include="Radzen.Blazor" Version="3.14.2" />
+    <PackageReference Include="Radzen.Blazor" Version="3.11.12" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
     <PackageReference Include="FluentValidation" Version="10.3.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">

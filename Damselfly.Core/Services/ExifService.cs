@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Interfaces;
+using System.Text.Json;
 
 namespace Damselfly.Core.Services
 {
@@ -23,7 +24,9 @@ namespace Damselfly.Core.Services
     public class ExifService : IProcessJobFactory
     {
         // Face tags using MGW standard
-        // exiftool -xmp-mwg-rs:RegionAppliedToDimensionsH=4000 -xmp-mwg-rs:RegionAppliedToDimensionsUnit="pixel" -xmp-mwg-rs:RegionAppliedToDimensionsW=6000 -xmp-mwg-rs:RegionAreaX=0.319270833 -xmp-mwg-rs:RegionAreaY=0.21015625 -xmp-mwg-rs:RegionAreaW=0.165104167 -xmp-mwg-rs:RegionAreaH=0.30390625 -xmp-mwg-rs:RegionName=John -xmp-mwg-rs:RegionRotation=0 -xmp-mwg-rs:RegionType="Face" myfile.xmp
+        // exiftool -xmp-mwg-rs:RegionAppliedToDimensionsH=4000 -xmp-mwg-rs:RegionAppliedToDimensionsUnit="pixel" -xmp-mwg-rs:RegionAppliedToDimensionsW=6000
+        // -xmp-mwg-rs:RegionAreaX=0.319270833 -xmp-mwg-rs:RegionAreaY=0.21015625 -xmp-mwg-rs:RegionAreaW=0.165104167 -xmp-mwg-rs:RegionAreaH=0.30390625
+        // -xmp-mwg-rs:RegionName=John -xmp-mwg-rs:RegionRotation=0 -xmp-mwg-rs:RegionType="Face" myfile.xmp
 
         public static string ExifToolVer { get; private set; }
         private readonly StatusService _statusService;
@@ -104,7 +107,56 @@ namespace Damselfly.Core.Services
             await UpdateTagsAsync(new[] { image }, addTags, removeTags, user);
         }
 
-      
+        /// <summary>
+        /// Takes an image and a set of keywords, and writes them to the DB queue for
+        /// keywords to be added. These will then be processed asynchronously.
+        /// </summary>
+        /// <param name="images"></param>
+        /// <param name="tagsToAdd"></param>
+        /// <param name="tagsToRemove"></param>
+        /// <returns></returns>
+        public async Task UpdateFaceDataAsync(Image[] images, List<ImageObject> faces, AppIdentityUser user = null)
+        {
+            // TODO: Split tags with commas here?
+            var timestamp = DateTime.UtcNow;
+            var changeDesc = string.Empty;
+
+            using var db = new ImageContext();
+            var ops = new List<ExifOperation>();
+
+            if( faces != null)
+            {
+                foreach (var image in images)
+                {
+                    ops.AddRange(faces.Select(face => new ExifOperation
+                    {
+                        ImageId = image.ImageId,
+                        Text = JsonSerializer.Serialize(face),
+                        Type = ExifOperation.ExifType.Face,
+                        Operation = ExifOperation.OperationType.Add,
+                        TimeStamp = timestamp,
+                        UserId = user?.Id
+                    }));
+                }
+            }
+
+            Logging.LogVerbose($"Bulk inserting {ops.Count()} face exif operations (for {images.Count()}) into queue. ");
+
+            try
+            {
+                await db.BulkInsert(db.KeywordOperations, ops);
+
+                _statusService.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
+            }
+
+            // Trigger the work service to look for new jobs
+            _workService.HandleNewJobs(this, s_exifWriteDelay);
+        }
+
 
         /// <summary>
         /// Takes an image and a set of keywords, and writes them to the DB queue for
@@ -236,6 +288,14 @@ namespace Damselfly.Core.Services
                         args += $" -keywords+=\"{operationText}\" ";
                         processedOps.Add(op);
                     }
+                }
+                else if( op.Type == ExifOperation.ExifType.Caption )
+                {
+                    Logging.LogWarning("Caption Exif operations are not supported yet.");
+                }
+                else if (op.Type == ExifOperation.ExifType.Face)
+                {
+                    Logging.LogWarning("Face Exif operations are not supported yet.");
                 }
             }
 

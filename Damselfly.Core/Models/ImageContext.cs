@@ -564,7 +564,8 @@ namespace Damselfly.Core.Models
         public enum ExifType
         {
             Keyword = 0,
-            Caption = 1
+            Caption = 1,
+            Face = 2
         };
 
         public enum FileWriteState
