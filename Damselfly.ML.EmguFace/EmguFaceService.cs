@@ -112,25 +112,26 @@ namespace Damselfly.ML.Face.Emgu
 
             try
             {
-                foreach( var model in classifiers )
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    {
-                        // Comment from EMGUCV:
-                        // Mac OS’s security policy has been changing quite a bit in the last few OS releases, it
-                        // may have blocked access to the temporary directory that Open CV used to cache OpenCL kernels.
-                        // You can probably call “CvInvoke.UseOpenCL = false” to disable OpenCL if the running platform
-                        // is MacOS.It will disable Open CL and no kernels will be cached on disk.Not an ideal solution,
-                        // but unless Open CV address this on future release(or Apple stop changing security policies that
-                        // often) this will be a problem for Mac.
-                        CvInvoke.UseOpenCL = false;
-                    }
+                    // Comment from EMGUCV:
+                    // Mac OS’s security policy has been changing quite a bit in the last few OS releases, it
+                    // may have blocked access to the temporary directory that Open CV used to cache OpenCL kernels.
+                    // You can probably call “CvInvoke.UseOpenCL = false” to disable OpenCL if the running platform
+                    // is MacOS.It will disable Open CL and no kernels will be cached on disk.Not an ideal solution,
+                    // but unless Open CV address this on future release(or Apple stop changing security policies that
+                    // often) this will be a problem for Mac.
+                    CvInvoke.UseOpenCL = false;
+                }
 
-                    //var img = bitmap.ToMat();
-                    using var img = CvInvoke.Imread(path);
-                    using var imgGray = new UMat();
-                    CvInvoke.CvtColor(img, imgGray, ColorConversion.Bgr2Gray);
+                //var img = bitmap.ToMat();
+                using var img = CvInvoke.Imread(path);
+                using var imgGray = new UMat();
+                CvInvoke.CvtColor(img, imgGray, ColorConversion.Bgr2Gray);
+                CvInvoke.EqualizeHist(imgGray, imgGray);
 
+                foreach ( var model in classifiers )
+                {
                     var faces = model.Classifier.DetectMultiScale(imgGray, 1.1, 10, new Size(20, 20), Size.Empty).ToList();
 
                     if ( faces.Any() )
@@ -143,10 +144,10 @@ namespace Damselfly.ML.Face.Emgu
                             Service = "Emgu",
                             ServiceModel = model.ClassifierFile
                         }));
-
-                        DetectDupeRects( ref result);
                     }
                 }
+
+                DetectDupeRects(ref result);
             }
             catch (Exception ex)
             {
