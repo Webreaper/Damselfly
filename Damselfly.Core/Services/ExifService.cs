@@ -253,6 +253,7 @@ namespace Damselfly.Core.Services
             Logging.LogVerbose("Updating tags for file {0}", image.FullPath);
             string args = string.Empty;
             List<ExifOperation> processedOps = new List<ExifOperation>();
+            bool needExecuteExifTool = false;
 
             foreach (var op in exifOperations)
             {
@@ -288,66 +289,78 @@ namespace Damselfly.Core.Services
                         args += $" -keywords+=\"{operationText}\" ";
                         processedOps.Add(op);
                     }
+
+                    needExecuteExifTool = true;
                 }
                 else if( op.Type == ExifOperation.ExifType.Caption )
                 {
                     Logging.LogWarning("Caption Exif operations are not supported yet.");
+                    op.State = ExifOperation.FileWriteState.Failed;
+                    processedOps.Add(op);
                 }
                 else if (op.Type == ExifOperation.ExifType.Face)
                 {
                     Logging.LogWarning("Face Exif operations are not supported yet.");
+                    op.State = ExifOperation.FileWriteState.Failed;
+                    processedOps.Add(op);
                 }
             }
 
-            // Note: we could do this to preserve the last-mod-time:
-            //   args += " -P -overwrite_original_in_place";
-            // However, we rely on the last-mod-time changing to pick up
-            // changes to keywords and to subsequently re-index images.
-            args += " -overwrite_original ";
-            // We enable the 'ignore minor warnings' flag which will allow
-            // us to do things like write tags that are too long for the
-            // IPTC specification.
-            args += " -m ";
-            args += " \"" + image.FullPath + "\"";
-
-            var process = new ProcessStarter();
-
-            // Fix perl local/env issues for exiftool
-            var env = new Dictionary<string, string>();
-            env["LANGUAGE"] = "en_US.UTF-8";
-            env["LANG"] = "en_US.UTF-8";
-            env["LC_ALL"] = "en_US.UTF-8";
-
-            Stopwatch watch = new Stopwatch("RunExifTool");
-            success = process.StartProcess("exiftool", args, env);
-            watch.Stop();
-
             var db = new ImageContext();
 
-            if (success)
+            if (needExecuteExifTool)
             {
-                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
+                // Note: we could do this to preserve the last-mod-time:
+                //   args += " -P -overwrite_original_in_place";
+                // However, we rely on the last-mod-time changing to pick up
+                // changes to keywords and to subsequently re-index images.
+                args += " -overwrite_original ";
+                // We enable the 'ignore minor warnings' flag which will allow
+                // us to do things like write tags that are too long for the
+                // IPTC specification.
+                args += " -m ";
+                args += " \"" + image.FullPath + "\"";
 
-                // Updating the timestamp on the image to newer than its metadata will
-                // trigger its metadata and tags to be refreshed during the next scan
-                await _indexingService.MarkImagesForScan(new [] { image });
-            }
-            else
-            {
-                processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
-                Logging.LogError("ExifTool Tag update failed for image: {0}", image.FullPath);
+                var process = new ProcessStarter();
 
-                RestoreTempExifImage(image.FullPath);
+                // Fix perl local/env issues for exiftool
+                var env = new Dictionary<string, string>();
+                env["LANGUAGE"] = "en_US.UTF-8";
+                env["LANG"] = "en_US.UTF-8";
+                env["LC_ALL"] = "en_US.UTF-8";
+
+                Stopwatch watch = new Stopwatch("RunExifTool");
+                success = process.StartProcess("exiftool", args, env);
+                watch.Stop();
+
+                if (success)
+                {
+                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
+
+                    // Updating the timestamp on the image to newer than its metadata will
+                    // trigger its metadata and tags to be refreshed during the next scan
+                    await _indexingService.MarkImagesForScan(new[] { image });
+                }
+                else
+                {
+                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
+                    Logging.LogError("ExifTool Tag update failed for image: {0}", image.FullPath);
+
+                    RestoreTempExifImage(image.FullPath);
+                }
             }
 
             // Now write the updates
             await db.BulkUpdate(db.KeywordOperations, processedOps);
 
-            var totals = string.Join(",", exifOperations.GroupBy(x => x.State)
-                               .Select(x => $"{x.Key}: {x.Count()}")
-                               .ToList());
-
-            _statusService.StatusText = $"Keywords written for {image.FileName}. {totals}";
+            if( needExecuteExifTool )
+            {
+                var totals = string.Join(", ", exifOperations.GroupBy(x => x.State)
+                                   .Select(x => $"{x.Key}: {x.Count()}")
+                                   .ToList());
+                
+                _statusService.StatusText = $"EXIF data written for {image.FileName}. {totals}";
+            }
 
             return success;
         }
@@ -479,10 +492,29 @@ namespace Damselfly.Core.Services
             foreach( var pair in imageCaptions )
             {
                 // Add the most recent to the result
-                result[pair.Image.ImageId] = pair.Newest;
+                if (result.ContainsKey(pair.Image.ImageId))
+                    result[pair.Image.ImageId].AddRange(pair.Newest);
+                else
+                    result[pair.Image.ImageId] = pair.Newest;
+
                 discardedOps.AddRange(pair.Discarded);
             }
 
+            // Now the Faces. Group by image + list of ops
+            var imageFaces = opsToProcess.Where(x => x.Type == ExifOperation.ExifType.Face)
+                                            .GroupBy(x => x.Image)
+                                            .Select(x => new { ImageId = x.Key.ImageId, Ops = x.ToList() })
+                                            .ToList();
+
+            // Now collect up the face updates. We don't discard any of these
+            foreach (var pair in imageFaces)
+            {
+                if (result.ContainsKey(pair.ImageId))
+                    result[pair.ImageId].AddRange(pair.Ops);
+                else
+                    // Add the most recent to the result
+                    result[pair.ImageId] = pair.Ops;
+            }
 
             if (discardedOps.Any())
             {
