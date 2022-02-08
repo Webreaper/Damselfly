@@ -78,7 +78,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="6.0.2-mauipre.1.22054.8" />
-    <PackageReference Include="MudBlazor" Version="6.0.5" />
+    <PackageReference Include="MudBlazor" Version="6.0.6" />
     <PackageReference Include="Serilog.AspNetCore" Version="4.1.1-dev-00250" />
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
@@ -98,6 +98,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.1" />
-    <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.43" />
+    <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.50" />
   </ItemGroup>
 </Project>

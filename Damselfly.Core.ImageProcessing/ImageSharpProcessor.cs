@@ -96,16 +96,18 @@ namespace Damselfly.Core.ImageProcessing
             try
             {
                 var hashWatch = new Stopwatch("CalcImageHash");
-
                 var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 
-                for (int y = 0; y < image.Height; y++)
+                image.ProcessPixelRows(pixelAccessor =>
                 {
-                    Span<Rgba32> pixelRowSpan = image.GetPixelRowSpan(y);
+                    for (int y = 0; y < pixelAccessor.Height; y++)
+                    {
+                        var pixelRowSpan = pixelAccessor.GetRowSpan(y);
 
-                    byte[] rgbaBytes = MemoryMarshal.AsBytes(pixelRowSpan).ToArray();
-                    hash.AppendData(rgbaBytes);
-                }
+                        byte[] rgbaBytes = MemoryMarshal.AsBytes(pixelRowSpan).ToArray();
+                        hash.AppendData(rgbaBytes);
+                    }
+                });
 
                 result = hash.GetHashAndReset().ToHex(true);
                 hashWatch.Stop();

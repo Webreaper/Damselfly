@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="SixLabors.ImageSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
+  </ItemGroup>
 </Project>
