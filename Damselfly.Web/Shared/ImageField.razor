@@ -1,11 +1,22 @@
 ﻿
-@if (!string.IsNullOrEmpty(FieldValue))
+@if (!string.IsNullOrEmpty(FieldValue) || Editable)
 {
     <div>
         <label class="imagefield-label" title="@Title">@FieldName:
             @if (string.IsNullOrEmpty(Href))
             {
-                <span class="imagefield-val">@FieldValue</span>
+                @if(editing )
+                {
+                    <input @ref="inputField" class="SearchField" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus"/>
+                }
+                else 
+                {
+                    <span class="imagefield-val">@FieldValue</span>
+                    @if( Editable )
+                    {
+                        <i class="fas fa-edit" title="Click here to edit this field" @onclick="EditField" />
+                    }
+                }
             }
             else
             {
@@ -26,7 +37,35 @@
     public string Href { get; set; }
 
     [Parameter]
+    public bool Editable { get; set; } = false;
+
+    [Parameter]
     public string FieldValue { get; set; }
+
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
+
+    private bool editing = false;
+    private ElementReference inputField;
+
+    private async void ValueChanged(ChangeEventArgs args)
+    {
+        editing = false;
+        StateHasChanged();
+
+        await OnValueChanged.InvokeAsync(args);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            if( editing )
+            {
+                await inputField.FocusAsync();
+            }
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -34,5 +73,17 @@
             Title = FieldValue;
 
         base.OnInitialized();
+    }
+
+    private void LostFocus()
+    {
+        editing = false;
+        StateHasChanged();
+    }
+
+    private void EditField()
+    {
+        editing = true;
+        StateHasChanged();
     }
 }

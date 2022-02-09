@@ -35,11 +35,10 @@ else
 
     @if (CurrentImage.MetaData != null)
     {
-        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
-        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" />
-        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" />
+        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" Editable="true" OnValueChanged="@CaptionChanged" />
+        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" Editable="true" OnValueChanged="@DescriptionChanged" />
+        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" Editable="true" OnValueChanged="@CopyrightChanged" />
         <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
-        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" />
         <div title="@RatingTitle">
             <label class="imagefield-label" title="Rating">Rating:</label>
             <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
@@ -147,7 +146,7 @@ else
             await db.SaveChangesAsync("UpdateRating");
 
             // Schedule the change to be written to the EXIF Data of the image.
-            exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
+            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
         }
     }
 
@@ -163,6 +162,24 @@ else
         searchService.NotifyStateChanged();
         // Notify the image list that the selection has changed
         StateHasChanged();
+    }
+
+    private async void CaptionChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value as string;
+        await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.User);
+    }
+
+    private async void DescriptionChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value as string;
+        await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Description, newValue.ToString(), userService.User);
+    }
+
+    private async void CopyrightChanged(ChangeEventArgs args)
+    {
+        var newValue = args.Value as string;
+        await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.User);
     }
 
     protected override async Task OnInitializedAsync()
