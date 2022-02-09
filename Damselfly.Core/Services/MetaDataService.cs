@@ -207,10 +207,6 @@ namespace Damselfly.Core.Services
 
                     if (subIfdDirectory != null)
                     {
-                        var desc = subIfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription);
-
-                        imgMetaData.Description = FilteredDescription(desc);
-
                         imgMetaData.DateTaken = subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeDigitized);
 
                         if (imgMetaData.DateTaken == DateTime.MinValue)
@@ -272,40 +268,17 @@ namespace Damselfly.Core.Services
                         }
                     }
 
-                    var IPTCdir = metadata.OfType<IptcDirectory>().FirstOrDefault();
-
-                    if (IPTCdir != null)
-                    {
-                        var caption = IPTCdir.SafeExifGetString(IptcDirectory.TagCaption);
-                        var byline = IPTCdir.SafeExifGetString(IptcDirectory.TagByLine);
-                        var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource);
-
-                        imgMetaData.Caption = FilteredDescription(caption);
-                        imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice);
-                        imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit);
-
-                        if (string.IsNullOrEmpty(imgMetaData.Credit) && !string.IsNullOrEmpty(source))
-                            imgMetaData.Credit = source;
-
-                        if (!string.IsNullOrEmpty(byline))
-                        {
-                            if (!string.IsNullOrEmpty(imgMetaData.Credit))
-                                imgMetaData.Credit += $" ({byline})";
-                            else
-                                imgMetaData.Credit += $"{byline}";
-                        }
-
-                        // Stash the keywords in the dict, they'll be stored later.
-                        var keywordList = IPTCdir?.GetStringArray(IptcDirectory.TagKeywords);
-                        if (keywordList != null)
-                            keywords = keywordList;
-                    }
-
                     var orientation = "1"; // Default
                     var IfdDirectory = metadata.OfType<ExifIfd0Directory>().FirstOrDefault();
 
                     if (IfdDirectory != null)
                     {
+
+                        var exifDesc = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription);
+                        imgMetaData.Description = FilteredDescription( exifDesc );
+
+                        imgMetaData.Copyright = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagCopyright);
+
                         orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
                         var camMake = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagMake);
                         var camModel = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagModel);
@@ -323,6 +296,36 @@ namespace Damselfly.Core.Services
                             imgMetaData.Width = imgMetaData.Height;
                             imgMetaData.Height = temp;
                         }
+                    }
+
+                    var IPTCdir = metadata.OfType<IptcDirectory>().FirstOrDefault();
+
+                    if (IPTCdir != null)
+                    {
+                        var caption = IPTCdir.SafeExifGetString(IptcDirectory.TagCaption);
+                        var byline = IPTCdir.SafeExifGetString(IptcDirectory.TagByLine);
+                        var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource);
+
+                        imgMetaData.Caption = FilteredDescription(caption);
+                        if( ! string.IsNullOrEmpty(imgMetaData.Copyright ) )
+                            imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice);
+                        imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit);
+
+                        if (string.IsNullOrEmpty(imgMetaData.Credit) && !string.IsNullOrEmpty(source))
+                            imgMetaData.Credit = source;
+
+                        if (!string.IsNullOrEmpty(byline))
+                        {
+                            if (!string.IsNullOrEmpty(imgMetaData.Credit))
+                                imgMetaData.Credit += $" ({byline})";
+                            else
+                                imgMetaData.Credit += $"{byline}";
+                        }
+
+                        // Stash the keywords in the dict, they'll be stored later.
+                        var keywordList = IPTCdir?.GetStringArray(IptcDirectory.TagKeywords);
+                        if (keywordList != null)
+                            keywords = keywordList;
                     }
 
                     var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();

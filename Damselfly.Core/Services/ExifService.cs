@@ -334,13 +334,13 @@ namespace Damselfly.Core.Services
                 }
                 else if( op.Type == ExifOperation.ExifType.Caption )
                 {
-                    args += $" -iptc:ObjectName=\"{op.Text}\"";
+                    args += $" -iptc:Caption-Abstract=\"{op.Text}\"";
                     processedOps.Add(op);
                     needExecuteExifTool = true;
                 }
                 else if (op.Type == ExifOperation.ExifType.Description)
                 {
-                    args += $" -iptc:Caption-Abstract=\"{op.Text}\"";
+                    args += $" -Exif:ImageDescription=\"{op.Text}\"";
                     processedOps.Add(op);
                     needExecuteExifTool = true;
                 }

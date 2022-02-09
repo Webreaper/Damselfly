@@ -2,7 +2,7 @@
 @if (!string.IsNullOrEmpty(FieldValue) || Editable)
 {
     <div>
-        <label class="imagefield-label" title="@Title">@FieldName:
+        <label class="imagefield-label" title="@Tooltip">@FieldName:
             @if (string.IsNullOrEmpty(Href))
             {
                 @if(editing )
@@ -47,6 +47,7 @@
 
     private bool editing = false;
     private ElementReference inputField;
+    private string Tooltip => Title?.Trim();
 
     private async void ValueChanged(ChangeEventArgs args)
     {

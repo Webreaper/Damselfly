@@ -134,16 +134,21 @@ else
         configService.Set("ShowExtendedProps", Expanded.ToString());
     }
 
+    private async Task SaveProperty( Action<ImageMetaData> propertyUpdate )
+    {
+        var db = new ImageContext();
+        var metadata = CurrentImage.MetaData;
+        db.Attach(metadata);
+        propertyUpdate.Invoke(CurrentImage.MetaData);
+        db.Update(metadata);
+        await db.SaveChangesAsync("UpdateMetaData");
+
+    }
     private async Task OnRatingChanged(int newValue)
     {
         if (newValue != CurrentImage.MetaData.Rating)
         {
-            var db = new ImageContext();
-            var metadata = CurrentImage.MetaData;
-            db.Attach(metadata);
-            metadata.Rating = newValue;
-            db.Update(metadata);
-            await db.SaveChangesAsync("UpdateRating");
+            await SaveProperty(x => x.Rating = newValue);
 
             // Schedule the change to be written to the EXIF Data of the image.
             await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
@@ -167,19 +172,33 @@ else
     private async void CaptionChanged(ChangeEventArgs args)
     {
         var newValue = args.Value as string;
-        await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.User);
+
+        if( CurrentImage.MetaData.Caption != newValue )
+        {
+            await SaveProperty(x => x.Caption = newValue);
+
+            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.User);
+        }
     }
 
     private async void DescriptionChanged(ChangeEventArgs args)
     {
         var newValue = args.Value as string;
-        await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Description, newValue.ToString(), userService.User);
+        if( CurrentImage.MetaData.Description != newValue )
+        {
+            await SaveProperty(x => x.Description = newValue);
+            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Description, newValue.ToString(), userService.User);
+        }
     }
 
     private async void CopyrightChanged(ChangeEventArgs args)
     {
         var newValue = args.Value as string;
-        await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.User);
+        if( CurrentImage.MetaData.Copyright != newValue )
+        {
+            await SaveProperty(x => x.Copyright = newValue);
+            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.User);
+        }
     }
 
     protected override async Task OnInitializedAsync()
