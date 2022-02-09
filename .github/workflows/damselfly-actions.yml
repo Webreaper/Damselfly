@@ -1,4 +1,4 @@
-name: damselfly-actions
+name: DamselflyBuild
 on: 
   push:
   workflow_dispatch:
@@ -78,7 +78,7 @@ jobs:
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.100'
+          dotnet-version: '6.0.102'
 
       - name: Run Dotnet Server Build
         run: sh scripts/makeserver.sh ${{ matrix.target }} 

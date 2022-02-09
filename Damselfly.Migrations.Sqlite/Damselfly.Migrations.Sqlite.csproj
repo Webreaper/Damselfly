@@ -8,11 +8,11 @@
     <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="EFCore.BulkExtensions" Version="6.3.9" />
+    <PackageReference Include="EFCore.BulkExtensions" Version="6.4.0" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />

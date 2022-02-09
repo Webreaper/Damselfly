@@ -233,6 +233,51 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Takes an image and a set of keywords, and writes them to the DB queue for
+        /// keywords to be added. These will then be processed asynchronously.
+        /// </summary>
+        /// <param name="images"></param>
+        /// <param name="tagsToAdd"></param>
+        /// <param name="tagsToRemove"></param>
+        /// <returns></returns>
+        public async Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null)
+        {
+            var timestamp = DateTime.UtcNow;
+            var changeDesc = string.Empty;
+
+            using var db = new ImageContext();
+            var keywordOps = new List<ExifOperation>();
+
+            keywordOps.AddRange(images.Select(image => new ExifOperation
+            {
+                ImageId = image.ImageId,
+                Text = newValue,
+                Type = exifType,
+                Operation = ExifOperation.OperationType.Add,
+                TimeStamp = timestamp,
+                UserId = user?.Id
+            }));
+
+            changeDesc += $"set {exifType.ToString()}";
+
+            Logging.LogVerbose($"Inserting {keywordOps.Count()} {exifType.ToString()} operations (for {images.Count()}) into queue. ");
+
+            try
+            {
+                await db.BulkInsert(db.KeywordOperations, keywordOps);
+
+                _statusService.StatusText = $"Saved {exifType.ToString()} ({changeDesc}) for {images.Count()} images.";
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception inserting {exifType.ToString()} operations: {ex.Message}");
+            }
+
+            // Trigger the work service to look for new jobs
+            _workService.HandleNewJobs(this, s_exifWriteDelay);
+        }
+
+        /// <summary>
         /// Helper method to actually run ExifTool and update the tags on disk.
         /// </summary>
         /// <param name="imagePath"></param>
@@ -289,9 +334,28 @@ namespace Damselfly.Core.Services
                 }
                 else if( op.Type == ExifOperation.ExifType.Caption )
                 {
-                    Logging.LogWarning("Caption Exif operations are not supported yet.");
-                    op.State = ExifOperation.FileWriteState.Failed;
+                    args += $" -iptc:ObjectName=\"{op.Text}\"";
                     processedOps.Add(op);
+                    needExecuteExifTool = true;
+                }
+                else if (op.Type == ExifOperation.ExifType.Description)
+                {
+                    args += $" -iptc:Caption-Abstract=\"{op.Text}\"";
+                    processedOps.Add(op);
+                    needExecuteExifTool = true;
+                }
+                else if (op.Type == ExifOperation.ExifType.Copyright)
+                {
+                    args += $" -Copyright=\"{op.Text}\"";
+                    args += $" -iptc:CopyrightNotice=\"{op.Text}\"";
+                    processedOps.Add(op);
+                    needExecuteExifTool = true;
+                }
+                else if (op.Type == ExifOperation.ExifType.Rating)
+                {
+                    args += $" -rating=\"{op.Text}\"";
+                    processedOps.Add(op);
+                    needExecuteExifTool = true;
                 }
                 else if (op.Type == ExifOperation.ExifType.Face)
                 {
@@ -455,13 +519,13 @@ namespace Damselfly.Core.Services
             var discardedOps = new List<ExifOperation>();
 
             // First, conflate the keywords.
-            var imageKeywords = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Keyword )
+            var imageKeywords = opsToProcess.Where(x => x.Type == ExifOperation.ExifType.Keyword)
                                             .GroupBy(x => x.Image.ImageId);
 
-            foreach( var imageOpList in imageKeywords )
+            foreach (var imageOpList in imageKeywords)
             {
                 var theImage = imageOpList.Key;
-                var keywordOps = imageOpList.GroupBy(x => x.Text );
+                var keywordOps = imageOpList.GroupBy(x => x.Text);
 
                 // Now, for each exif change for this image, collect up the most
                 // recent operation and store it in a dictionary. Note, text in
@@ -469,16 +533,16 @@ namespace Damselfly.Core.Services
                 // conflate with ops for tag 'cat'
                 var exifOpDict = new Dictionary<string, ExifOperation>();
 
-                foreach( var op in keywordOps )
+                foreach (var op in keywordOps)
                 {
                     var orderedOps = op.OrderBy(x => x.TimeStamp).ToList();
 
-                    foreach( var imageKeywordOp in orderedOps )
+                    foreach (var imageKeywordOp in orderedOps)
                     {
-                        if( exifOpDict.TryGetValue( imageKeywordOp.Text, out var existing ) )
+                        if (exifOpDict.TryGetValue(imageKeywordOp.Text, out var existing))
                         {
                             // Update the state before it's replaced in the dict.
-                            discardedOps.Add( existing ); 
+                            discardedOps.Add(existing);
                         }
 
                         // Store the most recent op for each operation,
@@ -490,29 +554,6 @@ namespace Damselfly.Core.Services
                 // By now we've got a dictionary of keywords/operations. Now we just
                 // add them into the final result.
                 result[theImage] = exifOpDict.Values.ToList();
-            }
-
-            // Now the captions. Group by image + list of ops, sorted newest first, and then the
-            // one we want is the most recent.
-            var imageCaptions = opsToProcess.Where(x => x.Type == ExifOperation.ExifType.Caption)
-                                            .GroupBy( x => x.Image )
-                                            .Select(x => new { Image = x.Key, NewestFirst = x.OrderByDescending(d => d.TimeStamp) } )
-                                            .Select( x => new {
-                                                   Image = x.Image,
-                                                   Newest = x.NewestFirst.Take(1).ToList(),
-                                                   Discarded = x.NewestFirst.Skip(1).ToList() })
-                                            .ToList();
-
-            // Now collect up the caption updates, and mark the rest as discarded.
-            foreach( var pair in imageCaptions )
-            {
-                // Add the most recent to the result
-                if (result.ContainsKey(pair.Image.ImageId))
-                    result[pair.Image.ImageId].AddRange(pair.Newest);
-                else
-                    result[pair.Image.ImageId] = pair.Newest;
-
-                discardedOps.AddRange(pair.Discarded);
             }
 
             // Now the Faces. Group by image + list of ops
@@ -531,6 +572,12 @@ namespace Damselfly.Core.Services
                     result[pair.ImageId] = pair.Ops;
             }
 
+            // These items we just want the most recent in the list
+            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Caption);
+            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Description);
+            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Copyright);
+            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Rating);
+
             if (discardedOps.Any())
             {
                 var db = new ImageContext();
@@ -545,6 +592,35 @@ namespace Damselfly.Core.Services
             }
 
             return result;
+        }
+
+        private static void ConflateSingleObjects(List<ExifOperation> opsToProcess, Dictionary<int, List<ExifOperation>> result, List<ExifOperation> discardedOps, ExifOperation.ExifType exifType)
+        {
+
+            // Now the captions. Group by image + list of ops, sorted newest first, and then the
+            // one we want is the most recent.
+            var imageCaptions = opsToProcess.Where(x => x.Type == exifType)
+                                            .GroupBy(x => x.Image)
+                                            .Select(x => new { Image = x.Key, NewestFirst = x.OrderByDescending(d => d.TimeStamp) })
+                                            .Select(x => new
+                                            {
+                                                Image = x.Image,
+                                                Newest = x.NewestFirst.Take(1).ToList(),
+                                                Discarded = x.NewestFirst.Skip(1).ToList()
+                                            })
+                                            .ToList();
+
+            // Now collect up the caption updates, and mark the rest as discarded.
+            foreach (var pair in imageCaptions)
+            {
+                // Add the most recent to the result if it's in the dict, otherwise create a new entry
+                if (result.ContainsKey(pair.Image.ImageId))
+                    result[pair.Image.ImageId].AddRange(pair.Newest);
+                else
+                    result[pair.Image.ImageId] = pair.Newest;
+
+                discardedOps.AddRange(pair.Discarded);
+            }
         }
 
         /// <summary>
@@ -593,7 +669,7 @@ namespace Damselfly.Core.Services
             public List<ExifOperation> ExifOps { get; set; }
             public ExifService Service { get; set; }
             public bool CanProcess => true;
-            public string Description => "Keyword Updates";
+            public string Description => "Writing Metadata";
             public JobPriorities Priority => JobPriorities.ExifService;
 
             public async Task Process()

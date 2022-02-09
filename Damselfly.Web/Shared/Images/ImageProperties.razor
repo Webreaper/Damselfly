@@ -10,6 +10,7 @@
 @inject UserConfigService configService
 @inject UserService userService
 @inject ImageRecognitionService aiService
+@inject ExifService exifService
 
 @inject IJSRuntime JsRuntime
 @implements IDisposable
@@ -144,6 +145,9 @@ else
             metadata.Rating = newValue;
             db.Update(metadata);
             await db.SaveChangesAsync("UpdateRating");
+
+            // Schedule the change to be written to the EXIF Data of the image.
+            exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
         }
     }
 

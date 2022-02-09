@@ -565,7 +565,10 @@ namespace Damselfly.Core.Models
         {
             Keyword = 0,
             Caption = 1,
-            Face = 2
+            Face = 2,
+            Description = 3,
+            Rating = 4,
+            Copyright = 5
         };
 
         public enum FileWriteState
