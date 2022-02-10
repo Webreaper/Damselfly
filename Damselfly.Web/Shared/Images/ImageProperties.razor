@@ -43,7 +43,7 @@ else
             <label class="imagefield-label" title="@RatingTitle">
                 Rating:
                 <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
-                            SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)" />
+                           SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)" />
             </label>
         </div>
         <ImageField FieldName="Size" FieldValue="@Size" />
@@ -56,14 +56,12 @@ else
 
         if (!string.IsNullOrEmpty(CurrentImage.MetaData.DominantColor))
         {
-            <div>
-                <label title="Dominant Color">
+            <div class="imagefield">
+                <label class="imagefield-label" title="Dominant Color">
                     Colors:
+                    <span title="Dominant Colour" class="dominant-color" style="@DominantColorStyle" />
+                    <span title="Average Colour" class="dominant-color" style="@AverageColorStyle" />
                 </label>
-                <div>
-                    <div title="Dominant Colour" class="dominant-color" style="@DominantColorStyle" />
-                    <div title="Average Colour" class="dominant-color" style="@AverageColorStyle" />
-                </div>
             </div>
         }
     }
@@ -86,18 +84,20 @@ else
     @if (Expanded)
     {
         <ImageField FieldName="File Modified" FieldValue="@CurrentImage.FileLastModDate.Display()" />
-        <div>
-            <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate" />
-            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
-            </AuthorizeView>
-        </div>
         <ImageField FieldName="Metadata Scanned:" FieldValue="@MetadataScanDate" />
         <div>
-            <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate" />
-            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
-            </AuthorizeView>
+            <ImageField FieldName="Thumbs Generated" FieldValue="@ThumbnailUpdate">
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshThumb" title="Regenerate thumbnail" />
+                </AuthorizeView>
+            </ImageField>
+        </div>
+        <div>
+            <ImageField FieldName="AI Processed" FieldValue="@AIProcessDate">
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshAI" title="Re-run AI processing" />
+                </AuthorizeView>
+            </ImageField>
         </div>
 
         @if (CurrentImage.Hash != null)

@@ -359,6 +359,7 @@ namespace Damselfly.Core.Services
                 }
                 else if (op.Type == ExifOperation.ExifType.Face)
                 {
+#if DEBUG
                     var imageObject = JsonSerializer.Deserialize<ImageObject>(op.Text);
 
                     // Face tags using MGW standard
@@ -382,6 +383,10 @@ namespace Damselfly.Core.Services
 
                     processedOps.Add(op);
                     needExecuteExifTool = true;
+#else
+                    op.State = ExifOperation.FileWriteState.Failed;
+                    Logging.Log("Writing Face EXIF data is not supported at this time.");
+#endif
                 }
             }
 

@@ -4,31 +4,34 @@
     <div class="imagefield">
         <label class="imagefield-label" title="@Tooltip">
             @FieldName:
-                @if (string.IsNullOrEmpty(Href))
+            @if (string.IsNullOrEmpty(Href))
+            {
+                @if (editing)
                 {
-                    @if (editing)
-                    {
 
-                        <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
-                    }
-                    else
-                    {
-                        @if (Editable)
-                        {
-                            <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
-                            <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField" />
-                        }
-                        else
-                        {
-                            <span class="imagefield-val">@FieldValue</span>
-                        }
-                    }
+                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
                 }
                 else
                 {
-                    <NavLink href="@Href">@FieldValue</NavLink>
+                    @if (Editable)
+                    {
+                        <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
+                        <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField" />
+                    }
+                    else
+                    {
+                        <span class="imagefield-val">@FieldValue</span>
+                    }
                 }
-            </label>
+            }
+            else
+            {
+                <NavLink href="@Href">@FieldValue</NavLink>
+            }
+
+            @ChildContent
+
+        </label>
     </div>
 }
 
@@ -50,6 +53,9 @@
 
     [Parameter]
     public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
 
     private bool editing = false;
     private ElementReference inputField;
