@@ -1,28 +1,34 @@
 ﻿
 @if (!string.IsNullOrEmpty(FieldValue) || Editable)
 {
-    <div>
-        <label class="imagefield-label" title="@Tooltip">@FieldName:
-            @if (string.IsNullOrEmpty(Href))
-            {
-                @if(editing )
+    <div class="imagefield">
+        <label class="imagefield-label" title="@Tooltip">
+            @FieldName:
+                @if (string.IsNullOrEmpty(Href))
                 {
-                    <input @ref="inputField" class="SearchField" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus"/>
-                }
-                else 
-                {
-                    <span class="imagefield-val">@FieldValue</span>
-                    @if( Editable )
+                    @if (editing)
                     {
-                        <i class="fas fa-edit" title="Click here to edit this field" @onclick="EditField" />
+
+                        <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
+                    }
+                    else
+                    {
+                        @if (Editable)
+                        {
+                            <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
+                            <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField" />
+                        }
+                        else
+                        {
+                            <span class="imagefield-val">@FieldValue</span>
+                        }
                     }
                 }
-            }
-            else
-            {
-                <NavLink href="@Href">@FieldValue</NavLink>
-            }
-        </label>
+                else
+                {
+                    <NavLink href="@Href">@FieldValue</NavLink>
+                }
+            </label>
     </div>
 }
 
@@ -48,6 +54,7 @@
     private bool editing = false;
     private ElementReference inputField;
     private string Tooltip => Title?.Trim();
+    private string EditTooltip => $"Click here to edit the {FieldName.ToLower()}";
 
     private async void ValueChanged(ChangeEventArgs args)
     {

@@ -588,15 +588,6 @@ f
     overflow-y: auto;
     font-size: 13px;
 }
-.damselfly-imageproperties div {
-    display: flex;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    max-width: 250px;
-    overflow-x: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;    
-}
 
 .damselfly-exportpanel {
     display: flex;
@@ -633,14 +624,41 @@ f
     padding: 5px;
 }
 
-.imagefield-label{
+.imagefield {
+    display: flex;
+    flex-direction: row;
+    flex: 1 0 auto;
     margin-left: 3px;
+    opacity: 0.8;
+}
+
+.imagefield-label {
+    display: flex;
+    flex: 1 1 auto;
+    margin-left: 3px;
+    overflow-y: hidden;
     opacity: 0.8;
 }
 
 .imagefield-val {
     opacity: 1;
+    flex: 1 1 auto;
     font-weight: bold;
+    margin-right: 3px;
+    margin-left: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.imagefield-edit {
+    flex: 1 1 100%;
+    border: 0;
+    outline: 0;
+    margin-left: 2px;
+    margin-right: 2px;
+    background: transparent;
+    color: var( --body-text);
+    border-bottom: 1px solid var( --button-border );
 }
 
 .dominant-color {
@@ -1135,7 +1153,6 @@ f
     flex: 1 1 60%;
     padding-left: 15px;
     font-size: 14px;
-    text-wrap: none;
 }
 
 .damselfly-imageseparatorbuttons {
@@ -1189,6 +1206,7 @@ f
 .InputAddOn {
     display: flex;
 }
+
 
 /* TODO: Rename these */
 .InputAddOn-field {

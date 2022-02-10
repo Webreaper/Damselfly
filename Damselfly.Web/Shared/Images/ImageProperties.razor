@@ -39,10 +39,12 @@ else
         <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" Editable="true" OnValueChanged="@DescriptionChanged" />
         <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" Editable="true" OnValueChanged="@CopyrightChanged" />
         <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
-        <div title="@RatingTitle">
-            <label class="imagefield-label" title="Rating">Rating:</label>
-            <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
-                       SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)" />
+        <div class="imagefield">
+            <label class="imagefield-label" title="@RatingTitle">
+                Rating:
+                <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
+                            SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)" />
+            </label>
         </div>
         <ImageField FieldName="Size" FieldValue="@Size" />
         <ImageField FieldName="Camera" FieldValue="@Camera" />
@@ -143,16 +145,7 @@ else
         db.Update(metadata);
         await db.SaveChangesAsync("UpdateMetaData");
 
-    }
-    private async Task OnRatingChanged(int newValue)
-    {
-        if (newValue != CurrentImage.MetaData.Rating)
-        {
-            await SaveProperty(x => x.Rating = newValue);
-
-            // Schedule the change to be written to the EXIF Data of the image.
-            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
-        }
+        StateHasChanged();
     }
 
     public bool InBasket
@@ -169,6 +162,15 @@ else
         StateHasChanged();
     }
 
+    private async Task OnRatingChanged(int newValue)
+    {
+        if (newValue != CurrentImage.MetaData.Rating)
+        {
+            await SaveProperty(x => x.Rating = newValue);
+            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
+        }
+    }
+
     private async void CaptionChanged(ChangeEventArgs args)
     {
         var newValue = args.Value as string;
@@ -176,7 +178,6 @@ else
         if( CurrentImage.MetaData.Caption != newValue )
         {
             await SaveProperty(x => x.Caption = newValue);
-
             await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.User);
         }
     }
