@@ -35,9 +35,9 @@ else
 
     @if (CurrentImage.MetaData != null)
     {
-        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" Editable="true" OnValueChanged="@CaptionChanged" />
-        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" Editable="true" OnValueChanged="@DescriptionChanged" />
-        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" Editable="true" OnValueChanged="@CopyrightChanged" />
+        <ImageField FieldName="Caption" FieldValue="@CurrentImage.MetaData.Caption" Editable="@CanEdit" OnValueChanged="@CaptionChanged" />
+        <ImageField FieldName="Description" FieldValue="@CurrentImage.MetaData.Description" Editable="@CanEdit" OnValueChanged="@DescriptionChanged" />
+        <ImageField FieldName="Copyright" FieldValue="@CurrentImage.MetaData.Copyright" Editable="@CanEdit" OnValueChanged="@CopyrightChanged" />
         <ImageField FieldName="Credit" FieldValue="@CurrentImage.MetaData.Credit" />
         <div class="imagefield">
             <label class="imagefield-label" title="@RatingTitle">

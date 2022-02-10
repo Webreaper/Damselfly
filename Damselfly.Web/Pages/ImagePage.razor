@@ -32,14 +32,16 @@ else
         <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
             <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
         </AuthorizeView>
-        <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+            <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
+        </AuthorizeView>
         <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
-            window.open(
-                '@FaceBookShareUrl',
-                'facebook-share-dialog',
-                'width=626,height=436');
-            return false;" />
-        <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
+        window.open(
+            '@FaceBookShareUrl',
+            'facebook-share-dialog',
+            'width=626,height=436');
+        return false;" />
+    <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
 
         <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image" />
     </div>
