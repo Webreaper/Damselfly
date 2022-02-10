@@ -577,11 +577,14 @@ namespace Damselfly.Core.Services
                     result[pair.ImageId] = pair.Ops;
             }
 
-            // These items we just want the most recent in the list
-            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Caption);
-            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Description);
-            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Copyright);
-            ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Rating);
+            if (opsToProcess.Any())
+            {
+                // These items we just want the most recent in the list
+                ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Caption);
+                ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Description);
+                ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Copyright);
+                ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Rating);
+            }
 
             if (discardedOps.Any())
             {

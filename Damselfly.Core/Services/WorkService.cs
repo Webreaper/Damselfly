@@ -212,7 +212,7 @@ namespace Damselfly.Core.Services
             {
                 try
                 {
-                    var jobs = source.GetPendingJobs(maxCount).GetAwaiter().GetResult();
+                    var jobs = source.GetPendingJobs(maxCount).Result;
 
                     foreach (var job in jobs)
                     {
