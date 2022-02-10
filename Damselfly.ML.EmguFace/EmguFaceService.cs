@@ -147,7 +147,7 @@ namespace Damselfly.ML.Face.Emgu
                     }
                 }
 
-                DetectDupeRects(ref result);
+                return DetectDupeRects( result );
             }
             catch (Exception ex)
             {
@@ -157,9 +157,9 @@ namespace Damselfly.ML.Face.Emgu
             return result;
         }
 
-        public void DetectDupeRects( ref List<ImageDetectResult> results )
+        public List<ImageDetectResult> DetectDupeRects( List<ImageDetectResult> results )
         {
-            var toDelete = new List<int>();
+            var toDelete = new HashSet<int>();
 
             for( int i = 0; i < results.Count; i++ )
             {
@@ -188,12 +188,15 @@ namespace Damselfly.ML.Face.Emgu
                 }
             }
 
-            // Now, remove the items, last-first so the collection
-            // indexes don't change. 
-            foreach( var del in toDelete.OrderByDescending( x => x ) )
+            var newResults = new List<ImageDetectResult>();
+
+            for( int i = 0; i < results.Count; i++ )
             {
-                results.RemoveAt( del ); 
+                if (!toDelete.Contains(i))
+                    newResults.Add( results[i] );
             }
+
+            return newResults;
         }
     }
 }

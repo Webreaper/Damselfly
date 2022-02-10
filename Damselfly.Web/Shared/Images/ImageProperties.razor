@@ -42,8 +42,7 @@ else
         <div class="imagefield">
             <label class="imagefield-label" title="@RatingTitle">
                 Rating:
-                <MudRating SelectedValue="CurrentImage.MetaData.Rating" Color="Color.Primary"
-                           SelectedValueChanged="OnRatingChanged" Disabled="@(!CanEdit)" />
+                <MudRating SelectedValue="CurrentImage.MetaData.Rating" SelectedValueChanged="OnRatingChanged" Color="Color.Primary" Disabled="@(!CanEdit)" />
             </label>
         </div>
         <ImageField FieldName="Size" FieldValue="@Size" />
@@ -144,8 +143,6 @@ else
         propertyUpdate.Invoke(CurrentImage.MetaData);
         db.Update(metadata);
         await db.SaveChangesAsync("UpdateMetaData");
-
-        StateHasChanged();
     }
 
     public bool InBasket
