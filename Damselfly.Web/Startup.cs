@@ -182,7 +182,7 @@ namespace Damselfly.Web
                         IndexingService indexService, ImageProcessService imageProcessing,
                         AzureFaceService azureFace, ImageRecognitionService aiService,
                         UserService userService, ConfigService configService, WorkService workService,
-                        ImageCache imageCache,  MetaDataService metaDataService)
+                        ImageCache imageCache,  MetaDataService metaDataService, ObjectDetector objectDetector)
         {
             var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 
@@ -248,6 +248,12 @@ namespace Damselfly.Web
             metaDataService.StartService();
             indexService.StartService();
             aiService.StartService();
+
+            // ObjectDetector can throw a segmentation fault if the docker container is pinned
+            // to a single CPU, so for now, to aid debugging, let's not even try and initialise
+            // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
+            if ( configService.GetBool(ConfigSettings.EnableAIProcessing, true) )
+                objectDetector.InitScorer();
 
             // Validation check to ensure at least one user is an Admin
             userService.CheckAdminUser().Wait();
