@@ -635,6 +635,7 @@ f
 .imagefield-label {
     display: flex;
     flex: 1 1 auto;
+    align-items: center;
     margin-left: 3px;
     overflow-y: hidden;
     opacity: 0.8;
@@ -647,6 +648,7 @@ f
     margin-right: 3px;
     margin-left: 2px;
     white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 
