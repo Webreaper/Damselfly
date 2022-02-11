@@ -170,16 +170,19 @@ else
 
     private async Task OnRatingChanged(int newValue)
     {
-        long elapsedSinceLast = Environment.TickCount - lastCall;
+        long now = Environment.TickCount;
+        long elapsedSinceLast = now - lastCall;
+
+        Logging.Log($"Rating changed: {CurrentImage.MetaData.Rating} => {newValue} (now={now}, lastCall={lastCall}, elapsed={elapsedSinceLast}");
 
         if( elapsedSinceLast > 400 )
         {
-            lastCall = Environment.TickCount;
+            lastCall = now;
 
             if (newValue != CurrentImage.MetaData.Rating)
             {
                 await SaveProperty(x => x.Rating = newValue);
-                await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
+                //await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
             }
         }
     }
