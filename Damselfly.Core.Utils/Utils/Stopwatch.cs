@@ -40,7 +40,7 @@ namespace Damselfly.Core.Utils
             this.taskThresholdMS = thresholdMS;
 
             timername = name;
-            end = start = Environment.TickCount;
+            end = start = Environment.TickCount64;
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Damselfly.Core.Utils
         /// </summary>
         public void Stop()
         {
-            end = Environment.TickCount;
+            end = Environment.TickCount64;
 
             long time = end - start;
             Logging.LogTrace("Time taken for {0}: {1}ms", timername, time);

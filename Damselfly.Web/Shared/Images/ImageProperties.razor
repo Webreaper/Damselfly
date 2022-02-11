@@ -23,7 +23,7 @@
 }
 else
 {
-<div class="damselfly-imageproperties">
+<div @key="CurrentImage" class="damselfly-imageproperties">
     @if (basketService.CurrentBasket != null)
     {
         <div>Add to @basketService.CurrentBasket.Name: <input class="damselfly-checkbox" type="checkbox" @bind="@InBasket" /></div>
@@ -166,32 +166,22 @@ else
     /// In the meantime, use a very simple timer; if the two updates come within 400ms of
     /// each other, it's probably not the user, so ignore the second one.
     /// </summary>
-    private int lastCall = 0;
+    private long lastCall = 0;
 
     private async Task OnRatingChanged(int newValue)
     {
-        Logging.Log("Rating changed");
-        try
+        long now = Environment.TickCount64;
+        long elapsedSinceLast = now - lastCall;
+
+        if( elapsedSinceLast > 400 )
         {
-            int now = Environment.TickCount;
-            int elapsedSinceLast = now - lastCall;
+            lastCall = now;
 
-            Logging.Log($"Rating changed: {CurrentImage.MetaData.Rating} => {newValue} (now={now}, lastCall={lastCall}, elapsed={elapsedSinceLast}");
-
-            if( elapsedSinceLast > 400 )
+            if (newValue != CurrentImage.MetaData.Rating)
             {
-                lastCall = now;
-
-                if (newValue != CurrentImage.MetaData.Rating)
-                {
-                    await SaveProperty(x => x.Rating = newValue);
-                    await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
-                }
+                await SaveProperty(x => x.Rating = newValue);
+                await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
             }
-        }
-        catch( Exception ex )
-        {
-            Logging.Log($"Exception in rating change: {ex.Message}");
         }
     }
 
