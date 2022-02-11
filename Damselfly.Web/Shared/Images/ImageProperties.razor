@@ -159,13 +159,12 @@ else
         StateHasChanged();
     }
 
-    /// <summary>
     /// Hacktastic: for some reason, the OnRatingChanged gets called twice in quick succession,
     /// once for the new value, and then again for the old value. I think this is a bug in
     /// MudBlazor, but need to investigate (and if so produce a repro so they can fix it).
     /// In the meantime, use a very simple timer; if the two updates come within 400ms of
     /// each other, it's probably not the user, so ignore the second one.
-    /// </summary>
+    /// See: https://github.com/MudBlazor/MudBlazor/issues/3927
     private long lastCall = 0;
 
     private async Task OnRatingChanged(int newValue)

@@ -644,6 +644,7 @@ namespace Damselfly.Core.Models
         public int? CameraId { get; set; } = null;
         public int? LensId { get; set; } = null;
         public int? Month { get; set; } = null;
+        public int? MinRating { get; set; } = null;
         public Image SimilarTo { get; set; } = null;
         public Folder Folder { get; set; } = null;
         public Tag Tag { get; set; } = null;
@@ -658,7 +659,7 @@ namespace Damselfly.Core.Models
 
         public override string ToString()
         {
-            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarTo?.ImageId}";
+            return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarTo?.ImageId}";
         }
     }
 

@@ -43,6 +43,16 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
+        <MudSelect T="int?" Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var choice in Enumerable.Range(1, 5).Reverse() )
+            {
+                <MudSelectItem T="int?" Value="@choice">
+                    <StarRating Stars="@choice"/>
+                </MudSelectItem>
+            }
+        </MudSelect>
+    </div>
+    <div class="damselfly-dialogctrl">
         <MudSelect T="SearchQuery.FaceSearchType?" Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Variant="UIConstants.MudVariant">
             @foreach (var choice in faceTypes)
             {

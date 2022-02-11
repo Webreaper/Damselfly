@@ -1,0 +1,20 @@
+﻿
+@inject SearchService searchService
+@inject ImageRecognitionService aiService
+@inject UserStatusService statusService;
+
+<div title="@Caption">
+    <span>
+    @for (int star=0; star < Stars; star++)
+    {
+        <i class="fas fa-star" />
+    }
+    </span>
+</div>
+
+@code {
+    [Parameter]
+    public int Stars { get; set; }
+
+    private string Caption => $"{Stars} stars";
+}

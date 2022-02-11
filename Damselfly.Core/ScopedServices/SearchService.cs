@@ -65,6 +65,7 @@ namespace Damselfly.Core.ScopedServices
         public int? CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
         public int? LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
         public int? Month { get { return query.Month; } set { if (query.Month != value) { query.Month = value; QueryChanged(); } } }
+        public int? MinRating { get { return query.MinRating; } set { if (query.MinRating != value) { query.MinRating = value; QueryChanged(); } } }
         public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
         public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
         public Person Person { get { return query.Person; } set { if (query.Person != value) { query.Person = value; QueryChanged(); } } }
@@ -236,6 +237,12 @@ namespace Damselfly.Core.ScopedServices
                     // set then they'll be set to min/max date.
                     images = images.Where(x => x.SortDate >= minDate &&
                                                x.SortDate <= maxDate);
+                }
+
+                if (query.MinRating.HasValue)
+                {
+                    // Filter by Minimum rating
+                    images = images.Where(x => x.MetaData.Rating >= query.MinRating);
                 }
 
                 if (query.Month.HasValue)
