@@ -337,7 +337,7 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                //DumpMetaData(image, metadata);
+                DumpMetaData(image, metadata);
             }
             catch (Exception ex)
             {

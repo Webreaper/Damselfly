@@ -353,7 +353,7 @@ namespace Damselfly.Core.Services
                 }
                 else if (op.Type == ExifOperation.ExifType.Rating)
                 {
-                    args += $" -rating=\"{op.Text}\"";
+                    args += $" -exif:Rating=\"{op.Text}\"";
                     processedOps.Add(op);
                     needExecuteExifTool = true;
                 }
