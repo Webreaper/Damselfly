@@ -283,6 +283,7 @@ namespace Damselfly.Core.Services
                         var camMake = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagMake);
                         var camModel = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagModel);
                         var camSerial = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagBodySerialNumber);
+                        imgMetaData.Rating = IfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagRating);
 
                         if (!string.IsNullOrEmpty(camMake) || !string.IsNullOrEmpty(camModel))
                         {
@@ -336,7 +337,7 @@ namespace Damselfly.Core.Services
                     }
                 }
 
-                // DumpMetaData(image, metadata);
+                //DumpMetaData(image, metadata);
             }
             catch (Exception ex)
             {
@@ -687,6 +688,9 @@ namespace Damselfly.Core.Services
         /// <param name="metadata"></param>
         private void DumpMetaData(Image img, IReadOnlyList<MetadataExtractor.Directory> metadata)
         {
+            if (!System.Diagnostics.Debugger.IsAttached)
+                return;
+
             Logging.Log($"Metadata dump for: {img.FileName}:");
             foreach (var dir in metadata)
             {

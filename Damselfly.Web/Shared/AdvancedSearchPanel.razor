@@ -47,7 +47,7 @@
             @foreach( var choice in Enumerable.Range(1, 5).Reverse() )
             {
                 <MudSelectItem T="int?" Value="@choice">
-                    <StarRating Stars="@choice"/>
+                    <StarRating Rating="@choice" Editable="false"/>
                 </MudSelectItem>
             }
         </MudSelect>
@@ -119,7 +119,7 @@
         <MudCheckBox @bind-Checked="@searchService.IncludeAITags" Label="Include AI tags" />
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.UntaggedImages" Label="Images without keyword tags" />
+        <MudCheckBox @bind-Checked="@searchService.UntaggedImages" Label="Images without keywords" />
     </div>
 </div>
 

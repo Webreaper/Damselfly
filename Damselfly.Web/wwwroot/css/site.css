@@ -1726,6 +1726,14 @@ hr.separator {
 }
 
 
+.damselfly-ratingstar {
+    margin-left: 3px;
+}
+
+.damselfly-ratingstarmouse:hover {
+    color: var( --image-checkbox-checked-hover-bg );
+}
+
 /* Autocomplete */
 
 .blazored-typeahead__results {

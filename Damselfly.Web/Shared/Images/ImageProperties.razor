@@ -42,7 +42,7 @@ else
         <div class="imagefield">
             <label class="imagefield-label" title="@RatingTitle">
                 Rating:
-                <MudRating SelectedValue="CurrentImage.MetaData.Rating" SelectedValueChanged="OnRatingChanged" Color="Color.Primary" Disabled="@(!CanEdit)" />
+                <StarRating Rating="CurrentImage.MetaData.Rating" OnValueChanged="OnRatingChanged" Editable="@CanEdit" />
             </label>
         </div>
         <ImageField FieldName="Size" FieldValue="@Size" />
@@ -143,6 +143,8 @@ else
         propertyUpdate.Invoke(CurrentImage.MetaData);
         db.Update(metadata);
         await db.SaveChangesAsync("UpdateMetaData");
+
+        StateHasChanged();
     }
 
     public bool InBasket
@@ -159,28 +161,12 @@ else
         StateHasChanged();
     }
 
-    /// Hacktastic: for some reason, the OnRatingChanged gets called twice in quick succession,
-    /// once for the new value, and then again for the old value. I think this is a bug in
-    /// MudBlazor, but need to investigate (and if so produce a repro so they can fix it).
-    /// In the meantime, use a very simple timer; if the two updates come within 400ms of
-    /// each other, it's probably not the user, so ignore the second one.
-    /// See: https://github.com/MudBlazor/MudBlazor/issues/3927
-    private long lastCall = 0;
-
     private async Task OnRatingChanged(int newValue)
     {
-        long now = Environment.TickCount64;
-        long elapsedSinceLast = now - lastCall;
-
-        if( elapsedSinceLast > 250 )
+        if (newValue != CurrentImage.MetaData.Rating)
         {
-            lastCall = now;
-
-            if (newValue != CurrentImage.MetaData.Rating)
-            {
-                await SaveProperty(x => x.Rating = newValue);
-                await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
-            }
+            await SaveProperty(x => x.Rating = newValue);
+            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
         }
     }
 
