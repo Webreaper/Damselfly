@@ -252,7 +252,7 @@ namespace Damselfly.Web
             // ObjectDetector can throw a segmentation fault if the docker container is pinned
             // to a single CPU, so for now, to aid debugging, let's not even try and initialise
             // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
-            if ( configService.GetBool(ConfigSettings.EnableAIProcessing, true) )
+            if ( ! configService.GetBool(ConfigSettings.DisableObjectDetector, false) )
                 objectDetector.InitScorer();
 
             // Validation check to ensure at least one user is an Admin

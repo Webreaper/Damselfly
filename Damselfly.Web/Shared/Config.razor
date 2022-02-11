@@ -162,7 +162,13 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudCheckBox @bind-Checked="@writeAITagsToImages" Label="Write recognised object keywords to image EXIF metadata" />
+                                    <MudCheckBox @bind-Checked="@disableObjectDetector" Label="Disable object detection scanner" />
+                                </div>
+                            </div>
+
+                            <div class="damselfly-configsetting">
+                                <div class="damselfly-configfield">
+                                    <MudCheckBox @bind-Checked="@writeAITagsToImages" Label="Write recognised item keywords to image EXIF metadata" />
                                 </div>
                             </div>
 
@@ -326,6 +332,7 @@
     private bool useSmtp = true;
     private bool forceLogin = false;
     private bool enableAIProcessing = true;
+    private bool disableObjectDetector = false;
     private bool writeAITagsToImages = false;
     private bool allowExternalRegistration = false;
     private bool anableAuthAndRoles = false;
@@ -372,6 +379,7 @@
 
             configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
             configService.Set(ConfigSettings.EnableAIProcessing, enableAIProcessing.ToString());
+            configService.Set(ConfigSettings.DisableObjectDetector, disableObjectDetector.ToString());
 
             configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
@@ -445,6 +453,7 @@
         logLevel = configService.Get<LogEventLevel>(ConfigSettings.LogLevel);
         writeAITagsToImages = configService.GetBool(ConfigSettings.WriteAITagsToImages);
         enableAIProcessing = configService.GetBool(ConfigSettings.EnableAIProcessing, true);
+        disableObjectDetector = configService.GetBool(ConfigSettings.DisableObjectDetector, false);
 
         smtpSettings.Load(configService);
         sendGridSettings.Load(configService);
