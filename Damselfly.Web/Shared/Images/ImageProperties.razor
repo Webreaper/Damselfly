@@ -166,24 +166,32 @@ else
     /// In the meantime, use a very simple timer; if the two updates come within 400ms of
     /// each other, it's probably not the user, so ignore the second one.
     /// </summary>
-    private long lastCall = 0;
+    private int lastCall = 0;
 
     private async Task OnRatingChanged(int newValue)
     {
-        long now = Environment.TickCount;
-        long elapsedSinceLast = now - lastCall;
-
-        Logging.Log($"Rating changed: {CurrentImage.MetaData.Rating} => {newValue} (now={now}, lastCall={lastCall}, elapsed={elapsedSinceLast}");
-
-        if( elapsedSinceLast > 400 )
+        Logging.Log("Rating changed");
+        try
         {
-            lastCall = now;
+            int now = Environment.TickCount;
+            int elapsedSinceLast = now - lastCall;
 
-            if (newValue != CurrentImage.MetaData.Rating)
+            Logging.Log($"Rating changed: {CurrentImage.MetaData.Rating} => {newValue} (now={now}, lastCall={lastCall}, elapsed={elapsedSinceLast}");
+
+            if( elapsedSinceLast > 400 )
             {
-                await SaveProperty(x => x.Rating = newValue);
-                //await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
+                lastCall = now;
+
+                if (newValue != CurrentImage.MetaData.Rating)
+                {
+                    await SaveProperty(x => x.Rating = newValue);
+                    await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
+                }
             }
+        }
+        catch( Exception ex )
+        {
+            Logging.Log($"Exception in rating change: {ex.Message}");
         }
     }
 
