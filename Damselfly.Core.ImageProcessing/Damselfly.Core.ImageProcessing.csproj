@@ -13,8 +13,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="SixLabors.ImageSharp" />
+    <None Remove="SixLabors.Fonts" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="2.0.0" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta16" />
   </ItemGroup>
 </Project>

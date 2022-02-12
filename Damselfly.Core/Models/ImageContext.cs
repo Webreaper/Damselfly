@@ -106,6 +106,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AILastUpdated);
+            modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Rating);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();

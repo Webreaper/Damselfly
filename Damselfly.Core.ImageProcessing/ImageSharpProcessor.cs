@@ -53,7 +53,7 @@ namespace Damselfly.Core.ImageProcessing
 
                 string fontPath = Path.Combine(folder, "arial.ttf");
 
-                fontCollection.Install(fontPath);
+                fontCollection.Add(fontPath);
 
                 Logging.Log("Watermark font installed: {0}", fontPath);
             }
@@ -251,7 +251,8 @@ namespace Damselfly.Core.ImageProcessing
             if (!string.IsNullOrEmpty(config.WatermarkText) && fontCollection != null)
             {
                 // Apply the watermark if one's been specified.
-                Font font = fontCollection.CreateFont("Arial", 10);
+                var fontFamily = fontCollection.Get("Arial");
+                var font = fontFamily.CreateFont(10);
 
                 img.Mutate(context => ApplyWaterMark(context, font, config.WatermarkText, Color.White));
             }
@@ -275,7 +276,7 @@ namespace Damselfly.Core.ImageProcessing
             Size imgSize = processingContext.GetCurrentSize();
 
             // measure the text size
-            FontRectangle size = TextMeasurer.Measure(text, new RendererOptions(font));
+            FontRectangle size = TextMeasurer.Measure(text, new TextOptions(font));
 
             int ratio = 4; // Landscape, we make the text 25% of the width
 
@@ -299,14 +300,13 @@ namespace Damselfly.Core.ImageProcessing
             // 5% from the bottom right.
             var position = new PointF(imgSize.Width - fivePercent, imgSize.Height - fivePercent);
 
-            var textGraphicOptions = new DrawingOptions
+            TextOptions textOptions = new TextOptions( scaledFont )
             {
-                TextOptions = {
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Bottom,
-                }
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Right,
             };
-            return processingContext.DrawText(textGraphicOptions, text, scaledFont, color, position);
+
+            return processingContext.DrawText(textOptions, text, color);
         }
     }
 }
