@@ -395,6 +395,9 @@ namespace Damselfly.Core.ScopedServices
                 if (Person != null)
                     hints.Add($"Person: {Person.Name}");
 
+                if (MinRating != null)
+                    hints.Add($"Rating: at least {MinRating} stars");
+
                 if (SimilarTo != null)
                     hints.Add($"Looks Like: {SimilarTo.FileName}");
 
