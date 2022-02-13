@@ -178,7 +178,7 @@ namespace Damselfly.Web
             {
                 Logging.Log("Initialising Damselfly...");
 
-                var host = BuildWebHost(listeningPort, args);
+                var host = BuildHost(listeningPort, args);
 
                 host.Run();
 
@@ -198,24 +198,29 @@ namespace Damselfly.Web
         /// <param name="port"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static IWebHost BuildWebHost(int port, string[] args)
+        public static IHost BuildHost(int port, string[] args)
         {
             if( port == 0 )
                 port = s_defaultPort;
 
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder => BuildWebHost(webBuilder, port, args))
+                .UseSerilog()
+                .Build();
+        }
+
+        private static void BuildWebHost(IWebHostBuilder webBuilder, int port, string[] args)
+        {
             string url = $"http://*:{port}";
 
-            return WebHost.CreateDefaultBuilder(args)
-                .UseConfiguration(new ConfigurationBuilder()
-                    .AddCommandLine(args)
-                    .Build())
+            webBuilder.UseConfiguration(new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .Build())
 #if DEBUG
-                .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
+                    .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
 #endif
-                .UseStartup<Startup>()
-                .UseSerilog()
-                .UseUrls( url )
-                .Build();
+                    .UseStartup<Startup>()
+                .UseUrls(url);
         }
     }
 }

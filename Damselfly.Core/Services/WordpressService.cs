@@ -58,7 +58,7 @@ namespace Damselfly.Core.Services
                         ExportConfig wpConfig = new ExportConfig { Size = ExportSize.Large, WatermarkText = null };
 
                         // This saves to the memoryStream with encoder
-                        _imageProcessService.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
+                        await _imageProcessService.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
 
                         // The position needs to be reset, before we push it to Wordpress
                         memoryStream.Position = 0; 

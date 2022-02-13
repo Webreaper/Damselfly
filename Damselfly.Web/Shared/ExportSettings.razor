@@ -4,55 +4,41 @@
 @inject DownloadService downloadService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
+
 @implements IDisposable
 
 <LocalFileExporter @ref="FileExporter" />
 
 <div class="damselfly-exportpanel">
-    <ExportConfigManager CurrentConfig="@selectedConfig" />
-    <div class="damselfly-exportsettings">
-        <div>
-            <h4>Export Settings</h4>
-        </div>
-        <div>
-            <label for="exportType">Export Type: </label>
-            <select name="exportType" value="@selectedConfig.Type">
-                @foreach (var choice in exportTypes)
-                {
-                    <option value="@choice">
-                        @choice.ToString()
-                    </option>
-                }
-            </select>
-        </div>
-        <div>
-            <label for="keepFolders">Keep Folders: </label>
-            <input id="keepFolders" type="checkbox" @bind="@selectedConfig.KeepFolders" />
-        </div>
-        <div>
-            <label for="exportSize">Export Size: </label>
-            <select name="exportSize" value="@selectedConfig.Size">
-                @foreach (var choice in exportSizes)
-                {
-                    <option value="@choice">
-                        @choice.ToString()
-                    </option>
-                }
-            </select>
-        </div>
-        <div>
-            <label for="watermarkText">Watermark Text: </label>
-            <input id="watermarkText" @bind-value="selectedConfig.WatermarkText" />
-        </div>
-        <div>
-            @if (FileExporter != null && FileExporter.IsDesktopHosted)
-            {
-                <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
-            }
-            <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
-        </div>
-    </div>
-
+    <ExportConfigManager CurrentConfig="@selectedConfig" OnValueChanged="ConfigChanged" />
+    @if (selectedConfig != null)
+        {
+            <div class="damselfly-exportsettings">
+                <div>
+                    <h4>Export Settings</h4>
+                </div>
+                <div>
+                    <ImageField FieldName="Export Type" FieldValue="@selectedConfig.Type.ToString()" />
+                </div>
+                <div>
+                    <ImageField FieldName="Export Size" FieldValue="@selectedConfig.SizeDesc()" />
+                </div>
+                <div>
+                    <ImageField FieldName="Watermark" FieldValue="@selectedConfig.WatermarkText" />
+                </div>
+                <div>
+                    @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                    {
+                        <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
+                        }
+                    <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Please create an Export config.</p>
+        }
 </div>
 
 @code {
@@ -60,31 +46,23 @@
     public ExportType[] exportTypes { get; private set; } = new ExportType[0];
     public ExportSize[] exportSizes { get; private set; } = new ExportSize[0];
 
-    // TODO: Size etc are not binding.
-    public string CurrentConfigName { get { return selectedConfig.Name; } set { ChangeConfig(value); } }
-    public List<ExportConfig> configs = new List<ExportConfig>();
-    public ExportConfig selectedConfig = new ExportConfig { Name = "Default" };
+    private ExportConfig selectedConfig;
     public string StatusMessage { get; set; }
 
-    private void ChangeConfig(string name)
+    private void ConfigChanged( ChangeEventArgs args)
     {
-        using var db = new ImageContext();
+        selectedConfig = args.Value as ExportConfig;
 
-        var config = db.DownloadConfigs.FirstOrDefault(x => x.Name.Equals(name));
+        if( selectedConfig != null )
+            StatusMessage = $"Loaded Config for '{selectedConfig.Name}'";
 
-        if (config != null)
-        {
-            selectedConfig = config;
-            StatusMessage = $"Loaded Config for '{name}'";
-            StateHasChanged();
-        }
+        StateHasChanged();
     }
 
     private async Task SaveConfig()
     {
         await downloadService.SaveDownloadConfig(selectedConfig);
         StatusMessage = $"Saved Config for '{selectedConfig.Name}'";
-        await LoadConfigs();
         StateHasChanged();
     }
 
@@ -100,7 +78,7 @@
         await JsRuntime.InvokeAsync<string>("downloadFile", zipPath);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
@@ -110,17 +88,9 @@
 
             exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
             exportSizes = (ExportSize[])Enum.GetValues(typeof(ExportSize));
-            await LoadConfigs();
 
             StateHasChanged();
         }
-    }
-
-    private async Task<List<ExportConfig>> LoadConfigs()
-    {
-        using var db = new ImageContext();
-        configs = await Task.FromResult(db.DownloadConfigs.ToList());
-        return configs;
     }
 
     public void Dispose()

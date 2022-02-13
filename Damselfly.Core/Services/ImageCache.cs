@@ -55,7 +55,7 @@ namespace Damselfly.Core.Services
 
             Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
 
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
                      .Take(warmupCount)

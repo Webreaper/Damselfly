@@ -46,11 +46,12 @@ namespace Damselfly.Core.Services
         private const int jobFetchSleep = 30;
 #endif
 
+        // This is like an IRQ flag. If it's true, we check the queue 
+        // for new entries rather than just ploughing through it. 
+        private volatile bool _newJobsFlag = false;
+
         private readonly ConcurrentPriorityQueue<IProcessJob> _jobQueue = new ConcurrentPriorityQueue<IProcessJob>();
         private readonly ConcurrentBag<IProcessJobFactory> _jobSources = new ConcurrentBag<IProcessJobFactory>();
-        private readonly ImageCache _imageCache;
-        private readonly ConfigService _configService;
-        private string _statusText = string.Empty;
         private const int _maxQueueSize = 500;
         private CPULevelSettings _cpuSettings = new CPULevelSettings();
 
@@ -58,11 +59,8 @@ namespace Damselfly.Core.Services
         public ServiceStatus Status { get; private set; } = new ServiceStatus();
         public event Action<ServiceStatus> OnStatusChanged;
 
-        public WorkService(ImageCache imageCache, ConfigService configService)
+        public WorkService( ConfigService configService )
         {
-            _imageCache = imageCache;
-            _configService = configService;
-
             _cpuSettings.Load(configService);
         }
 
@@ -129,11 +127,13 @@ namespace Damselfly.Core.Services
 
                 var item = _jobQueue.TryDequeue();
 
-                if ( item != null )
+                if( item != null )
                 {
                     ProcessJob(item, cpuPercentage);
                 }
-                else
+
+                // If there were no new jobs, or we've been flagged to recheck the queue, look
+                if( item == null || _newJobsFlag )
                 {
                     if (!PopulateJobQueue())
                     {
@@ -154,20 +154,13 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="source"></param>
         /// <param name="waitSeconds"></param>
-        public void HandleNewJobs( IProcessJobFactory source, int waitForSecs = 5 )
+        public void FlagNewJobs( IProcessJobFactory source )
         {
-            Logging.Log($"Checking new jobs for {source.GetType().Name}");
+            Logging.Log($"Flagging new jobs state for {source.GetType().Name}");
 
-            Stopwatch watch = new Stopwatch("HandleNewJobs");
+            Stopwatch watch = new Stopwatch("FlagNewJobs");
 
-            // Trigger the work service to look for new jobs - but after a small pause
-            _ = Task.Run( async () => 
-                    {
-                        Logging.LogVerbose("Waiting on background thread before PopulateJobsForService...");
-                        await Task.Delay(waitForSecs * 1000);
-                        // Get more jobs from the DB
-                        PopulateJobsForService(source, _maxQueueSize);
-                    });
+            _newJobsFlag = true;
 
             watch.Stop();
         }

@@ -9,12 +9,10 @@ namespace Damselfly.Core.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            Logging.Log("Dropping Hash Index...");
             migrationBuilder.DropIndex(
                 name: "IX_ImageMetaData_Hash",
                 table: "ImageMetaData");
 
-            Logging.Log("Creating Hash table...");
             migrationBuilder.CreateTable(
                 name: "Hashes",
                 columns: table => new
@@ -59,8 +57,6 @@ namespace Damselfly.Core.Migrations
                 keyValue: 3,
                 column: "ConcurrencyStamp",
                 value: "e2f1656c-d1eb-4db3-b3a0-efffab6ff171");
-
-            Logging.Log("Creating Hash indexes...");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Hashes_ImageId",

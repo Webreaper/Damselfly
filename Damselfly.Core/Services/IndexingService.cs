@@ -77,38 +77,36 @@ namespace Damselfly.Core.Services
 
             try
             {
-                using (var db = new ImageContext())
+                using var db = new ImageContext();
+                // Load the existing folder and its images from the DB
+                folderToScan = await db.Folders
+                            .Where(x => x.Path.Equals(folder.FullName))
+                            .Include(x => x.Images)
+                            .FirstOrDefaultAsync();
+
+                if (folderToScan == null)
                 {
-                    // Load the existing folder and its images from the DB
-                    folderToScan = await db.Folders
-                                .Where(x => x.Path.Equals(folder.FullName))
-                                .Include(x => x.Images)
-                                .FirstOrDefaultAsync();
-
-                    if (folderToScan == null)
-                    {
-                        Logging.LogVerbose("Scanning new folder: {0}\\{1}", folder.Parent.Name, folder.Name);
-                        folderToScan = new Folder { Path = folder.FullName };
-                    }
-                    else
-                        Logging.LogVerbose("Scanning existing folder: {0}\\{1} ({2} images in DB)", folder.Parent.Name, folder.Name, folderToScan.Images.Count());
-
-                    if (folderToScan.FolderId == 0)
-                    {
-                        Logging.Log($"Adding new folder: {folderToScan.Path}");
-
-                        if (parent != null)
-                            folderToScan.ParentFolderId = parent.FolderId;
-
-                        // New folder, add it. 
-                        db.Folders.Add(folderToScan);
-                        await db.SaveChangesAsync("AddFolders");
-                        foldersChanged = true;
-                    }
-
-                    // Now, check for missing folders, and clean up if appropriate.
-                    foldersChanged = await RemoveMissingChildDirs(db, folderToScan) || foldersChanged;
+                    Logging.LogVerbose("Scanning new folder: {0}\\{1}", folder.Parent.Name, folder.Name);
+                    folderToScan = new Folder { Path = folder.FullName };
                 }
+                else
+                    Logging.LogVerbose("Scanning existing folder: {0}\\{1} ({2} images in DB)", folder.Parent.Name, folder.Name, folderToScan.Images.Count());
+
+                if (folderToScan.FolderId == 0)
+                {
+                    Logging.Log($"Adding new folder: {folderToScan.Path}");
+
+                    if (parent != null)
+                        folderToScan.ParentFolderId = parent.FolderId;
+
+                    // New folder, add it. 
+                    db.Folders.Add(folderToScan);
+                    await db.SaveChangesAsync("AddFolders");
+                    foldersChanged = true;
+                }
+
+                // Now, check for missing folders, and clean up if appropriate.
+                foldersChanged = await RemoveMissingChildDirs(db, folderToScan) || foldersChanged;
 
                 _watcherService.CreateFileWatcher(folder);
 
@@ -371,7 +369,7 @@ namespace Damselfly.Core.Services
                 else
                     _statusService.StatusText = $"{folders.Count} folders flagged for re-indexing.";
 
-                _workService.HandleNewJobs(this);
+                _workService.FlagNewJobs(this);
             }
             catch (Exception ex)
             {
@@ -389,7 +387,7 @@ namespace Damselfly.Core.Services
 
                 _statusService.StatusText = $"All {updated} folders flagged for re-indexing.";
 
-                _workService.HandleNewJobs(this);
+                _workService.FlagNewJobs(this);
             }
             catch (Exception ex)
             {
@@ -482,7 +480,7 @@ namespace Damselfly.Core.Services
         {
             if (_fullIndexComplete)
             {
-                var db = new ImageContext();
+                using var db = new ImageContext();
 
                 // Now, see if there's any folders that have a null scan date.
                 var folders = await db.Folders.Where(x => x.FolderScanDate == null)

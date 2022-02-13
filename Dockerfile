@@ -1,5 +1,6 @@
+ARG BASE_IMAGE=webreaper/damselfly-base:latest
 
-FROM webreaper/damselfly-base:latest AS final
+FROM $BASE_IMAGE as final
 
 WORKDIR /app
 COPY /publish .

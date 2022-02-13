@@ -10,6 +10,8 @@ namespace Damselfly.Core.Utils.Constants
         public const string ShowZoom = "ShowZoom";
         public const string ShowObjects = "ShowObjects";
         public const string SelectedBasketId = "SelectedBasketId";
+        public const string SideBarWidth = "SideBarWidth";
+        public const string SideBarCollapsed = "SideBarCollapsed";
 
         public const string WordpressURL = "WordpressURL";
         public const string WordpressUser = "WordpressUser";

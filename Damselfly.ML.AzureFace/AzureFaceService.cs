@@ -148,6 +148,10 @@ namespace Damselfly.ML.Face.Azure
             }
         }
 
+        /// <summary>
+        /// Set up the service and query the state of the person directory etc
+        /// </summary>
+        /// <returns></returns>
         private async Task InitializeAzureService()
         {
             Logging.Log("Starting Azure Face Service...");
@@ -206,15 +210,13 @@ namespace Damselfly.ML.Face.Azure
         /// </summary>
         /// <param name="image"></param>
         /// <returns></returns>
-        private async Task<IList<DetectedFace>> AzureDetect( Bitmap image )
+        private async Task<IList<DetectedFace>> AzureDetect(string imagePath )
         {
-            using var memoryStream = new MemoryStream();
-            image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-            memoryStream.Seek(0, SeekOrigin.Begin);
+            using var fileStream = File.OpenRead( imagePath );
 
             Logging.LogVerbose($"Calling Azure Face service...");
 
-            var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(memoryStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
+            var detectedFaces = await _transThrottle.Call("Detect", _faceClient.Face.DetectWithStreamAsync(fileStream, true, true, _attributes, recognitionModel: RECOGNITION_MODEL));
 
             Logging.LogVerbose($"Azure Face service call complete.");
 
@@ -226,7 +228,7 @@ namespace Damselfly.ML.Face.Azure
         /// </summary>
         /// <param name="imageFilePath"></param>
         /// <returns></returns>
-        public async Task<List<Face>> DetectFaces( Bitmap sourceImage )
+        public async Task<List<Face>> DetectFaces( string imagePath, IImageProcessor imageProcessor )
         {
             var faces = new List<Face>();
 
@@ -242,7 +244,7 @@ namespace Damselfly.ML.Face.Azure
 
                 try
                 {
-                    var detectedFaces = await AzureDetect(sourceImage);
+                    var detectedFaces = await AzureDetect(imagePath);
 
                     if (detectedFaces != null && detectedFaces.Any())
                     {
@@ -253,14 +255,19 @@ namespace Damselfly.ML.Face.Azure
                             // Hopefully they'll improve this....
                             // https://docs.microsoft.com/en-us/answers/questions/494886/azure-faceclient-persondirectory-api-usage.html
 
-                            // Should use this here:
-                            // var thumbPath = await thumbService.GetFaceThumbNail(face);
+                            using MemoryStream stream = new MemoryStream();
+                            await imageProcessor.CropImage(new FileInfo( imagePath ), face.Left, face.Top, face.Width, face.Height, stream);
 
-                            MemoryStream memoryStream = SaveFaceThumb(sourceImage, face);
-
-                            var persistedFace = await _transThrottle.Call("AddFace", _faceClient.PersonDirectory.AddPersonFaceFromStreamAsync(
-                                                    face.PersonId.ToString(), image: memoryStream, recognitionModel: RECOGNITION_MODEL,
-                                                    detectionModel: DETECTION_MODEL));
+                            if (stream != null)
+                            {
+                                var persistedFace = await _transThrottle.Call("AddFace", _faceClient.PersonDirectory.AddPersonFaceFromStreamAsync(
+                                                        face.PersonId.ToString(),
+                                                        image: stream,
+                                                        recognitionModel: RECOGNITION_MODEL,
+                                                        detectionModel: DETECTION_MODEL));
+                            }
+                            else
+                                Logging.Log($"Unable to crop image for Azure: no supported image processor for {imagePath}");
                         }
                     }
                 }
@@ -286,54 +293,6 @@ namespace Damselfly.ML.Face.Azure
             }
 
             return faces;
-        }
-
-        /// <summary>
-        /// Crop the face from the original image, and save it locally.
-        /// </summary>
-        /// <param name="sourceImage"></param>
-        /// <param name="face"></param>
-        /// <returns></returns>
-        private static MemoryStream SaveFaceThumb(Bitmap sourceImage, Face face)
-        {
-            // It's a new face. Extract the face rect.
-            var faceRect = new Rectangle(face.Left, face.Top, face.Width, face.Height);
-
-            // Save the faces
-            var faceBitmap = GetCroppedFaceFromImage(sourceImage, faceRect);
-            var memoryStream = new MemoryStream();
-            faceBitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                // TODO: Probably want to write these to a 'thumbs' style folder, so we can resubmit
-                // the face training data if we need to for any reason.
-                string faceFile = $"/Users/markotway/Desktop/Faces/{face.PersonId.Value}.jpg";
-                faceBitmap.Save(faceFile);
-            }
-
-            return memoryStream;
-        }
-
-        /// <summary>
-        /// Extract the cropped area of a specific face from the source image
-        /// </summary>
-        /// <param name="sourceImage"></param>
-        /// <param name="cropRect"></param>
-        /// <returns></returns>
-        public static Bitmap GetCroppedFaceFromImage(Bitmap sourceImage, Rectangle cropRect)
-        {
-            // Inflate by 10% to ensure we capture the whole face. 
-            var inflate = new Size((int)(cropRect.Width * 0.1), (int)(cropRect.Height * 0.1));
-            cropRect.Inflate(inflate);
-
-            Bitmap nb = new Bitmap(cropRect.Width, cropRect.Height);
-            using (Graphics g = Graphics.FromImage(nb))
-            {
-                g.DrawImage(sourceImage, -cropRect.X, -cropRect.Y);
-                return nb;
-            }
         }
 
         /// <summary>

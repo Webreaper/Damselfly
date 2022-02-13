@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Damselfly.Core.Interfaces;
-using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Utils.Images;
@@ -217,13 +212,30 @@ namespace Damselfly.Core.ImageProcessing
             watch.Stop();
         }
 
+        public async Task CropImage(FileInfo source, int x, int y, int width, int height, Stream stream)
+        {
+            Stopwatch watch = new Stopwatch("ImageSharpCrop");
+
+            // Image.Load(string path) is a shortcut for our default type. 
+            // Other pixel formats use Image.Load<TPixel>(string path))
+            using var image = Image.Load<Rgba32>(source.FullName);
+
+            var rect = new Rectangle(x, y, width, height);
+            image.Mutate(x => x.AutoOrient());
+            image.Mutate(x => x.Crop(rect));
+
+            await image.SaveAsJpegAsync(stream);
+
+            watch.Stop();
+        }
+
         /// <summary>
         /// Transforms an image to add a watermark.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
+        public async Task TransformDownloadImage(string input, Stream output, IExportSettings config)
         {
             Logging.Log($" Running image transform for Watermark: {config.WatermarkText}");
 
@@ -257,7 +269,7 @@ namespace Damselfly.Core.ImageProcessing
                 img.Mutate(context => ApplyWaterMark(context, font, config.WatermarkText, Color.White));
             }
 
-            img.Save(output, fmt);
+            await img.SaveAsync(output, fmt);
         }
 
 

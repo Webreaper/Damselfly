@@ -1,17 +1,19 @@
 ﻿
 @inject ImageRecognitionService faceService
 @inject UserStatusService statusService
+@inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
 
-<MudTd DataLabel="Face">
-    <NavLink href="@PersonLink"><img src="@FaceLink" height="80" title="@Person.Name" /></NavLink>
-</MudTd>
-<MudTd DataLabel="Keyword">
-    <MudTextField @bind-Value="@Name" Label="Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
-</MudTd>
-<MudTd DataLabel="Status">@Person.State</MudTd>
-<MudTd DataLabel="Azure ID">@Person.AzurePersonId.</MudTd>
-
+<div class="damselfly-exportitem">
+    <div title="@Person.AzurePersonId" class="damselfly-personimg">
+        <NavLink href="@PersonLink">
+            <img @key="@Person.PersonId" title="@Person.Name" src="@FaceLink">
+        </NavLink>
+    </div>
+    <div class="damselfly-personfield">
+        <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
+    </div>
+</div>
 
 @code {
     [Parameter]
@@ -28,6 +30,14 @@
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
             _ = faceService.UpdateName(Person, newName);
             statusService.StatusText = $"Name set to '{newName}'";
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowFolderList = true });
         }
     }
 

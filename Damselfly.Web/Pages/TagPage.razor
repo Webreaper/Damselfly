@@ -29,7 +29,6 @@
                 <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="ID">@context.TagId</MudTd>
                 <MudTd DataLabel="Keyword">
                     <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
                 </MudTd>

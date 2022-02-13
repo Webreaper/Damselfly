@@ -1,66 +1,62 @@
 ﻿@inject ThumbnailService thumbService
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService;
+@inject IDialogService DialogService
 
-<div>
-    @if (!AddingConfig)
+<div class="SearchBox">
+    <select @onchange="ConfigChanged" class="SearchField">
+        @foreach (var config in configs)
+        {
+            <option value="@config.ExportConfigId">@config.Name</option>
+        }
+    </select>
+    <div class="SearchFieldIcon" title="Add an Export Config"><i class="fas fa-plus-circle" @onclick="OpenAddBasketDialog" /></div>
+    @if (CurrentConfig != null)
     {
-        <select @onchange="ConfigChanged">
-            @foreach (var config in configs)
-            {
-                <option value="@config.Name">@config.Name</option>
-            }
-        </select>
-        <button title="Add Basket" @onclick="@(() => AddBasket())" class="btn btn-primary"><i class="fa fa-plus-circle" /></button>
-    }
-    else
-    {
-        <input placeholder="Config Name" class="tagEditor" @bind-value="NewConfigName" @bind-value:event="oninput" />
-        <button title="Save Config" @onclick="@(() => SaveConfig())" class="btn btn-primary"><i class="fa fa-save" /></button>
-        <button title="Cancel Adding" @onclick="@(() => CancelAdding())" class="btn btn-primary"><i class="fa fa-times-circle" /></button>
+        <div class="SearchFieldIcon" title="Edit this Export Config"><i class="fas fa-edit" @onclick="OpenEditBasketDialog" /></div>
     }
 </div>
 
-@code {
+
+@code
+{
     readonly List<ExportConfig> configs = new List<ExportConfig>();
-    bool AddingConfig { get; set; }
-    string NewConfigName { get; set; }
 
     [Parameter]
     public ExportConfig CurrentConfig { get; set; }
 
-    private void SaveConfig()
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
+
+    async Task ConfigChanged(ChangeEventArgs e)
     {
-        AddingConfig = false;
+        int id = Convert.ToInt32(e.Value);
 
-        using var db = new ImageContext();
+        if (id >= 0)
+            CurrentConfig = configs.FirstOrDefault(x => x.ExportConfigId == id);
 
-        if( CurrentConfig.ExportConfigId == -1 )
-            db.DownloadConfigs.Add(CurrentConfig);
-        else
-            db.DownloadConfigs.Update(CurrentConfig);
-        db.SaveChanges("AddExportConfig");
-
-        StateHasChanged();
+        await OnValueChanged.InvokeAsync( new ChangeEventArgs {  Value = CurrentConfig });
     }
 
-    private void CancelAdding()
+    private async Task OpenAddBasketDialog()
     {
-        AddingConfig = false;
-        StateHasChanged();
+        var newConfig = new ExportConfig { Name = "New Config" };
+
+        var parameters = new DialogParameters { { "Config", newConfig }, { "mode", "Add" } };
+        var dialog = DialogService.Show<ExportConfigDialog>("Add New Config", parameters);
+        var result = await dialog.Result;
+
+        await LoadData();
     }
 
-    private void AddBasket()
+    private async Task OpenEditBasketDialog()
     {
-        AddingConfig = true;
-        StateHasChanged();
-    }
+        var parameters = new DialogParameters { { "Config", CurrentConfig }, { "mode", "Edit" } };
+        var dialog = DialogService.Show<ExportConfigDialog>("Edit Config", parameters);
+        var result = await dialog.Result;
 
-    private void ConfigChanged(ChangeEventArgs e)
-    {
-        StateHasChanged();
+        await LoadData();
     }
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -77,6 +73,12 @@
         this.configs.Clear();
         this.configs.AddRange(db.DownloadConfigs);
         watch.Stop();
+
+        if (CurrentConfig == null)
+        {
+            CurrentConfig = configs.FirstOrDefault();
+            await OnValueChanged.InvokeAsync(new ChangeEventArgs { Value = CurrentConfig });
+        }
 
         await InvokeAsync(StateHasChanged);
     }

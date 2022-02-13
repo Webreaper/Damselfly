@@ -322,10 +322,9 @@ namespace Damselfly.Web
                 ExecutionFrequency = new TimeSpan(2, 0, 0),
                 WorkMethod = () =>
                 {
-                    using (var db = new ImageContext())
-                    {
-                        db.FlushDBWriteCache();
-                    }
+                    using var db = new ImageContext();
+
+                    db.FlushDBWriteCache();
                 }
             });
             */
