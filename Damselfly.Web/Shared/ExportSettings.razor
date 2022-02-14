@@ -15,34 +15,13 @@
             <h4>Export Settings</h4>
         </div>
         <div>
-            <label for="exportType">Export Type: </label>
-            <select name="exportType" value="@selectedConfig.Type">
-                @foreach (var choice in exportTypes)
-                {
-                    <option value="@choice">
-                        @choice.ToString()
-                    </option>
-                }
-            </select>
+            <ImageField FieldName="Export Type" FieldValue="@selectedConfig.Type.ToString()" />
         </div>
         <div>
-            <label for="keepFolders">Keep Folders: </label>
-            <input id="keepFolders" type="checkbox" @bind="@selectedConfig.KeepFolders" />
+            <ImageField FieldName="Export Size" FieldValue="@selectedConfig.Size.ToString()" />
         </div>
         <div>
-            <label for="exportSize">Export Size: </label>
-            <select name="exportSize" value="@selectedConfig.Size">
-                @foreach (var choice in exportSizes)
-                {
-                    <option value="@choice">
-                        @choice.ToString()
-                    </option>
-                }
-            </select>
-        </div>
-        <div>
-            <label for="watermarkText">Watermark Text: </label>
-            <input id="watermarkText" @bind-value="selectedConfig.WatermarkText" />
+            <ImageField FieldName="Watermark" FieldValue="@selectedConfig.WatermarkText" />
         </div>
         <div>
             @if (FileExporter != null && FileExporter.IsDesktopHosted)

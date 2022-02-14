@@ -1,66 +1,46 @@
 ﻿@inject ThumbnailService thumbService
 @inject NavigationManager NavigationManager
 @inject WordpressService wpService;
+@inject IDialogService DialogService
 
-<div>
-    @if (!AddingConfig)
-    {
-        <select @onchange="ConfigChanged">
-            @foreach (var config in configs)
-            {
-                <option value="@config.Name">@config.Name</option>
-            }
-        </select>
-        <button title="Add Basket" @onclick="@(() => AddBasket())" class="btn btn-primary"><i class="fa fa-plus-circle" /></button>
-    }
-    else
-    {
-        <input placeholder="Config Name" class="tagEditor" @bind-value="NewConfigName" @bind-value:event="oninput" />
-        <button title="Save Config" @onclick="@(() => SaveConfig())" class="btn btn-primary"><i class="fa fa-save" /></button>
-        <button title="Cancel Adding" @onclick="@(() => CancelAdding())" class="btn btn-primary"><i class="fa fa-times-circle" /></button>
-    }
+<div class="SearchBox">
+    <select @bind="CurrentConfig.ExportConfigId" class="SearchField">
+        @foreach (var config in configs)
+        {
+            <option value="@config.ExportConfigId">@config.Name</option>
+        }
+    </select>
+    <div class="SearchFieldIcon" title="Export Configs"><i class="fas fa-plus-circle" @onclick="OpenAddBasketDialog" /></div>
+    <div class="SearchFieldIcon" title="Export Configs"><i class="fas fa-edit" @onclick="OpenEditBasketDialog" /></div>
 </div>
 
-@code {
+
+@code
+{
     readonly List<ExportConfig> configs = new List<ExportConfig>();
-    bool AddingConfig { get; set; }
-    string NewConfigName { get; set; }
 
     [Parameter]
     public ExportConfig CurrentConfig { get; set; }
 
-    private void SaveConfig()
+    private async Task OpenAddBasketDialog()
     {
-        AddingConfig = false;
+        var newConfig = new ExportConfig { Name = "New Config" };
 
-        using var db = new ImageContext();
+        var parameters = new DialogParameters { { "Config", newConfig }, { "mode", "Add" } };
+        var dialog = DialogService.Show<ExportConfigDialog>("Add New Config", parameters);
+        var result = await dialog.Result;
 
-        if( CurrentConfig.ExportConfigId == -1 )
-            db.DownloadConfigs.Add(CurrentConfig);
-        else
-            db.DownloadConfigs.Update(CurrentConfig);
-        db.SaveChanges("AddExportConfig");
-
-        StateHasChanged();
+        await LoadData();
     }
 
-    private void CancelAdding()
+    private async Task OpenEditBasketDialog()
     {
-        AddingConfig = false;
-        StateHasChanged();
-    }
+        var parameters = new DialogParameters { { "Config", CurrentConfig }, { "mode", "Edit" } };
+        var dialog = DialogService.Show<ExportConfigDialog>("Edit Config", parameters);
+        var result = await dialog.Result;
 
-    private void AddBasket()
-    {
-        AddingConfig = true;
-        StateHasChanged();
+        await LoadData();
     }
-
-    private void ConfigChanged(ChangeEventArgs e)
-    {
-        StateHasChanged();
-    }
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
