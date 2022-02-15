@@ -427,7 +427,7 @@ namespace Damselfly.Core.Services
                 }
             }
 
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             // Now write the updates
             await db.BulkUpdate(db.KeywordOperations, exifOperations);
@@ -581,7 +581,7 @@ namespace Damselfly.Core.Services
 
             if (discardedOps.Any())
             {
-                var db = new ImageContext();
+                using var db = new ImageContext();
 
                 // Mark the ops as discarded, and save them.
                 discardedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
@@ -683,7 +683,7 @@ namespace Damselfly.Core.Services
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
         {
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             // We skip any operations where the timestamp is more recent than 30s
             var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * s_exifWriteDelay);

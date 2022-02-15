@@ -372,7 +372,7 @@ namespace Damselfly.Core.Services
             Stopwatch watch = new Stopwatch("ScanMetadata");
 
             var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
-            var db = new ImageContext();
+            using var db = new ImageContext();
             var updateTimeStamp = DateTime.UtcNow;
             var imageKeywords = new List<string>();
             List<string> sideCarTags = new List<string>();
@@ -479,7 +479,7 @@ namespace Damselfly.Core.Services
                     var names = xmpFaces.Select(x => x.Person.Name)
                                         .ToList();
 
-                    var db = new ImageContext();
+                    using var db = new ImageContext();
 
                     var peopleLookup = db.People.Where(x => names.Contains(x.Name))
                                                 .ToDictionary(x => x.Name, y => y.PersonId);
@@ -804,15 +804,14 @@ namespace Damselfly.Core.Services
                 {
                     var watch = new Stopwatch("LoadTagCache");
 
-                    using (var db = new ImageContext())
-                    {
-                        // Pre-cache tags from DB.
-                        _tagCache = new ConcurrentDictionary<string, Models.Tag>(db.Tags
-                                                                                    .AsNoTracking()
-                                                                                    .ToDictionary(k => k.Keyword, v => v));
-                        if (_tagCache.Any())
-                            Logging.LogTrace("Pre-loaded cach with {0} tags.", _tagCache.Count());
-                    }
+                    using var db = new ImageContext();
+
+                    // Pre-cache tags from DB.
+                    _tagCache = new ConcurrentDictionary<string, Models.Tag>(db.Tags
+                                                                                .AsNoTracking()
+                                                                                .ToDictionary(k => k.Keyword, v => v));
+                    if (_tagCache.Any())
+                        Logging.LogTrace("Pre-loaded cach with {0} tags.", _tagCache.Count());
 
                     watch.Stop();
                 }
@@ -955,7 +954,7 @@ namespace Damselfly.Core.Services
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
         {
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             // Find all images where there's either no metadata, or where the image or sidecar file 
             // was updated more recently than the image metadata

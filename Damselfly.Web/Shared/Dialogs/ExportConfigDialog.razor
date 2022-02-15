@@ -78,7 +78,7 @@
 
     async Task DeleteConfig()
     {
-        var db = new ImageContext();
+        using var db = new ImageContext();
 
         var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == Config.ExportConfigId);
 
