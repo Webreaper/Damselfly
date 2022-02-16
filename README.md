@@ -106,7 +106,7 @@ do this for you) where the server will re-index them to pick up your changes.
 ### Suggested workflow.
 
 1. Images are copied onto a laptop for initial sorting, quality checks, and IPTC tagging using Picasa or Digikam
-2. [Rclone](www.rclone.org) script syncs the new images across the LAN to the network share
+2. [Rclone](https://rclone.org/) script syncs the new images across the LAN to the network share
 3. Damselfly automatically picks up the new images and indexes them (and generates thumbnails) within 30 minutes
 4. Images are now searchable in Damselfly and can be added to the Damselfly 'basket' with a single click
 5. Images in the basket can be copied back to the desktop/laptop for local editing in Lightroom/On1/Digikam/etc.
