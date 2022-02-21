@@ -4,6 +4,7 @@
 @inject DownloadService downloadService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
+
 @implements IDisposable
 
 <LocalFileExporter @ref="FileExporter" />
@@ -40,21 +41,17 @@
     public ExportSize[] exportSizes { get; private set; } = new ExportSize[0];
 
     // TODO: Size etc are not binding.
-    public string CurrentConfigName { get { return selectedConfig.Name; } set { ChangeConfig(value); } }
+    public ExportConfig CurrentConfig { get { return selectedConfig; } set { ChangeConfig(value); } }
     public List<ExportConfig> configs = new List<ExportConfig>();
-    public ExportConfig selectedConfig = new ExportConfig { Name = "Default" };
+    private ExportConfig selectedConfig = new ExportConfig { Name = "Default" };
     public string StatusMessage { get; set; }
 
-    private void ChangeConfig(string name)
+    private void ChangeConfig(ExportConfig config)
     {
-        using var db = new ImageContext();
-
-        var config = db.DownloadConfigs.FirstOrDefault(x => x.Name.Equals(name));
-
         if (config != null)
         {
             selectedConfig = config;
-            StatusMessage = $"Loaded Config for '{name}'";
+            StatusMessage = $"Loaded Config for '{config.Name}'";
             StateHasChanged();
         }
     }
