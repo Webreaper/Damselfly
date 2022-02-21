@@ -4,10 +4,10 @@
 @inject IDialogService DialogService
 
 <div class="SearchBox">
-    <select @bind="CurrentConfig.ExportConfigId" class="SearchField">
+    <select @bind="CurrentConfig" class="SearchField">
         @foreach (var config in configs)
         {
-            <option value="@config.ExportConfigId">@config.Name</option>
+            <option value="@config">@config.Name</option>
         }
     </select>
     <div class="SearchFieldIcon" title="Export Configs"><i class="fas fa-plus-circle" @onclick="OpenAddBasketDialog" /></div>
