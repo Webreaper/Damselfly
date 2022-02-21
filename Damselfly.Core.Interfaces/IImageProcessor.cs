@@ -22,7 +22,7 @@ namespace Damselfly.Core.Interfaces
     {
         Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles );
         Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile);
-        void TransformDownloadImage(string input, Stream output, IExportSettings exportConfig);
+        Task TransformDownloadImage(string input, Stream output, IExportSettings exportConfig);
 
         static ICollection<string> SupportedFileExtensions { get; }
     }
