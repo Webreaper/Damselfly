@@ -17,6 +17,7 @@ namespace Damselfly.Core.Utils.Constants
         Large = 2,
         Medium = 3,
         Small = 4,
+        ExtraLarge = 5
     };
 }
 

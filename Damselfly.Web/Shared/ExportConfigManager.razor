@@ -10,8 +10,11 @@
             <option value="@config.ExportConfigId">@config.Name</option>
         }
     </select>
-    <div class="SearchFieldIcon" title="Export Configs"><i class="fas fa-plus-circle" @onclick="OpenAddBasketDialog" /></div>
-    <div class="SearchFieldIcon" title="Export Configs"><i class="fas fa-edit" @onclick="OpenEditBasketDialog" /></div>
+    <div class="SearchFieldIcon" title="Add an Export Config"><i class="fas fa-plus-circle" @onclick="OpenAddBasketDialog" /></div>
+    @if (CurrentConfig != null)
+    {
+        <div class="SearchFieldIcon" title="Edit this Export Config"><i class="fas fa-edit" @onclick="OpenEditBasketDialog" /></div>
+    }
 </div>
 
 
@@ -70,6 +73,12 @@
         this.configs.Clear();
         this.configs.AddRange(db.DownloadConfigs);
         watch.Stop();
+
+        if (CurrentConfig == null)
+        {
+            CurrentConfig = configs.FirstOrDefault();
+            await OnValueChanged.InvokeAsync(new ChangeEventArgs { Value = CurrentConfig });
+        }
 
         await InvokeAsync(StateHasChanged);
     }
