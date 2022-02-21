@@ -10,7 +10,7 @@
 <LocalFileExporter @ref="FileExporter" />
 
 <div class="damselfly-exportpanel">
-    <ExportConfigManager CurrentConfig="@selectedConfig" />
+    <ExportConfigManager CurrentConfig="@selectedConfig" OnValueChanged="ConfigChanged" />
     <div class="damselfly-exportsettings">
         <div>
             <h4>Export Settings</h4>
@@ -40,20 +40,15 @@
     public ExportType[] exportTypes { get; private set; } = new ExportType[0];
     public ExportSize[] exportSizes { get; private set; } = new ExportSize[0];
 
-    // TODO: Size etc are not binding.
-    public ExportConfig CurrentConfig { get { return selectedConfig; } set { ChangeConfig(value); } }
     public List<ExportConfig> configs = new List<ExportConfig>();
     private ExportConfig selectedConfig = new ExportConfig { Name = "Default" };
     public string StatusMessage { get; set; }
 
-    private void ChangeConfig(ExportConfig config)
+    private void ConfigChanged( ChangeEventArgs args)
     {
-        if (config != null)
-        {
-            selectedConfig = config;
-            StatusMessage = $"Loaded Config for '{config.Name}'";
-            StateHasChanged();
-        }
+        selectedConfig = args.Value as ExportConfig;
+        StatusMessage = $"Loaded Config for '{selectedConfig.Name}'";
+        StateHasChanged();
     }
 
     private async Task SaveConfig()

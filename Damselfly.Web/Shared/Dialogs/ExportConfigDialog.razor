@@ -19,7 +19,7 @@
             {
                 <p>@errorMsg</p>
             }
-            <MudSelect T="ExportSize" Label="Type" @bind-Value="Config.Size" Clearable="true" Variant="UIConstants.MudVariant">
+            <MudSelect T="ExportSize" Label="Type" @bind-Value="Config.Size" Variant="UIConstants.MudVariant">
                 @foreach (var choice in exportSizes)
                 {
                     <MudSelectItem Value="@choice">
@@ -27,7 +27,7 @@
                     </MudSelectItem>
                 }
             </MudSelect>
-            <MudSelect T="ExportType" Label="Size" @bind-Value="Config.Type" Clearable="true" Variant="UIConstants.MudVariant">
+            <MudSelect T="ExportType" Label="Size" @bind-Value="Config.Type" Variant="UIConstants.MudVariant">
                 @foreach (var choice in exportTypes)
                 {
                     <MudSelectItem Value="@choice">
