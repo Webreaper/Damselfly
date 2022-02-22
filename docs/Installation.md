@@ -9,6 +9,8 @@
   - [FileWatcher INotify Limits](#filewatcher-inotify-limits)
   - [Setting up the Desktop Client](#setting-up-the-desktop-client)
     - [Installing the Desktop Client](#installing-the-desktop-client)
+  - [Can I Run Damselfly Without Docker?](#can-i-run-damselfly-without-docker)
+    - [Dependencies for Damselfly without Docker](#dependencies-for-damselfly-without-docker)
 
 ## Docker
 
@@ -67,6 +69,36 @@ sudo sysctl -w kern.maxfiles=524288
 ```
 Future versions of Damselfly will hopefully include this configuration within the docker image, so it's changed automatically.
 
+## Setting up the Desktop Client
+
+The Damselfly Desktop Client gives closer integration between the server and your Mac, Windows or Linux desktop. You can set up a local folder to mirror the 
+folder structure of the photos on the server, and then use Damselfly Desktop to bring across images from the server to work on locally. So you might have
+the server indexing:
+
+     `/volume1/photos/Christmas 2020'
+     `/volume1/photos/Holiday 2021'
+     `/volume1/photos/Fred Wedding'
+
+and set up a folder on your Mac:
+
+     `/Users/markotway/Pictures'
+
+To work on images locally, add them to the basket in and click the download/export button. When running the Damselfly Desktop app, a new button will appear:
+'Save Locally', which will copy all of the images selected in, say, the Christmas album into a folder `/Users/markotway/Pictures/Christmas 2020`. Once you've 
+finished working on the pictures, you can sync them back to the server (a future version of Damselfly will do this for you).
+
+### Installing the Desktop Client
+
+You can download the desktop client from the server 'info' page (the `i` icon in the bottom right of the status bar). Once downloaded, install as appropriate
+for your chosen OS (e.g., the Mac version unzips to a `.dmg` file, which you can double-click, and drag/drop the app into the `Applications` folder).
+
+When you first run the desktop app, you'll be presented with the settings screen; input the URL of the server Web UI, and the root folder of where you'd like
+photos to sync locally.
+
+<img style="margin: 5px;" src="./DesktopSetup.jpg" alt="Configuring Damselfly Desktop" width="600"/>
+
+Once you've entered the correct details, click `Save` and the Web UI should be displayed. 
+
 ## Can I run Damselfly without Docker?
 
 Damselfly can be run without docker, but it will be harder to set up the AI components. Please note: I cannot provide support for installations 
@@ -103,33 +135,3 @@ Dependencies you will require are:
 
 To see the full set of dependencies required by Damselfly, see the 
 [Dockerfile for the base image](https://github.com/Webreaper/Damselfly-Base-Image/blob/main/Dockerfile).
-
-## Setting up the Desktop Client
-
-The Damselfly Desktop Client gives closer integration between the server and your Mac, Windows or Linux desktop. You can set up a local folder to mirror the 
-folder structure of the photos on the server, and then use Damselfly Desktop to bring across images from the server to work on locally. So you might have
-the server indexing:
-
-     `/volume1/photos/Christmas 2020'
-     `/volume1/photos/Holiday 2021'
-     `/volume1/photos/Fred Wedding'
-
-and set up a folder on your Mac:
-
-     `/Users/markotway/Pictures'
-
-To work on images locally, add them to the basket in and click the download/export button. When running the Damselfly Desktop app, a new button will appear:
-'Save Locally', which will copy all of the images selected in, say, the Christmas album into a folder `/Users/markotway/Pictures/Christmas 2020`. Once you've 
-finished working on the pictures, you can sync them back to the server (a future version of Damselfly will do this for you).
-
-### Installing the Desktop Client
-
-You can download the desktop client from the server 'info' page (the `i` icon in the bottom right of the status bar). Once downloaded, install as appropriate
-for your chosen OS (e.g., the Mac version unzips to a `.dmg` file, which you can double-click, and drag/drop the app into the `Applications` folder).
-
-When you first run the desktop app, you'll be presented with the settings screen; input the URL of the server Web UI, and the root folder of where you'd like
-photos to sync locally.
-
-<img style="margin: 5px;" src="./DesktopSetup.jpg" alt="Configuring Damselfly Desktop" width="600"/>
-
-Once you've entered the correct details, click `Save` and the Web UI should be displayed. 
