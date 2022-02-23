@@ -1449,6 +1449,21 @@ padding: 0.4em 0.65em;
     padding: 1px 1px;
 }
 
+
+.rz-splitter-horizontal > .rz-splitter-bar {
+    width: 10px;
+}
+
+.rz-splitter > .rz-splitter-bar {
+    color: var(--tool-window-shadow);
+    background-color: var(--tool-window-title-bg);
+    opacity: 0.7;
+}
+
+.rz-splitter:hover > .rz-splitter-bar:hover{
+    opacity: 1;
+}
+
 hr.separator {
     width: 99%;
     margin: 1px;
