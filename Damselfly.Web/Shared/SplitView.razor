@@ -25,8 +25,8 @@
     {
         base.OnInitialized();
 
-        SideBarSize = configService.Get("SideBarWidth", "20%");
-        Collapsed = configService.GetBool("SideBarCollapsed", false);
+        SideBarSize = configService.Get(ConfigSettings.SideBarWidth, "20%");
+        Collapsed = configService.GetBool(ConfigSettings.SideBarCollapsed, false);
     }
 
     void OnResize(RadzenSplitterResizeEventArgs args)
@@ -34,8 +34,8 @@
         if( args.PaneIndex == 0 )
         {
             var newSize = $"{(int)args.NewSize}%";
-            configService.Set("SideBarWidth", newSize);
-            configService.Set("SideBarCollapsed", "false");
+            configService.Set(ConfigSettings.SideBarWidth, newSize);
+            configService.Set(ConfigSettings.SideBarCollapsed, "false");
         }
     }
 
@@ -44,7 +44,7 @@
         if (args.PaneIndex == 0)
         {
             Collapsed = true;
-            configService.Set("SideBarCollapsed", Collapsed.ToString());
+            configService.Set(ConfigSettings.SideBarCollapsed, Collapsed.ToString());
         }
     }
 
