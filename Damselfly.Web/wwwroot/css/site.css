@@ -501,6 +501,7 @@ f
     order: 1;
     flex: 0 0 350px;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     height: 100%;
     flex-direction: column;
@@ -563,7 +564,7 @@ f
     flex-direction: column;
     flex: 1 1 15px;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
 }
 
 .damselfly-selectedimages {
@@ -1444,26 +1445,34 @@ padding: 0.4em 0.65em;
 }
 
 .rz-menu:not(.rz-profile-menu) .rz-navigation-item-wrapper {
-    padding: 2px 5px;
+    padding: 2px 5px !important;
 }
 
 .rz-navigation-item-link {
-    padding: 1px 1px;
+    padding: 1px 1px !important;
 }
 
 
 .rz-splitter-horizontal > .rz-splitter-bar {
-    width: 10px;
+    width: 8px;
 }
 
 .rz-splitter > .rz-splitter-bar {
     color: var(--tool-window-shadow);
-    background-color: var(--tool-window-title-bg);
+/*    background-color: var(--tool-window-bg); */
+    background-image: linear-gradient(90deg, var(--statusbar-gradstart), var(--statusbar-gradend) ); 
     opacity: 0.7;
 }
 
-.rz-splitter:hover > .rz-splitter-bar:hover{
+.rz-splitter:hover > .rz-splitter-bar:hover {
     opacity: 1;
+    color: var(--tool-window-bg);
+    background-image: linear-gradient(90deg, var(--statusbar-gradstart), var(--statusbar-gradend) );
+}
+
+.rz-splitter:active > .rz-splitter-bar:active {
+    opacity: 1;
+    background-color: var(--tool-window-title-bg);
 }
 
 hr.separator {
