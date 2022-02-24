@@ -502,6 +502,7 @@ f
     flex: 0 0 350px;
     overflow-y: auto;
     display: flex;
+    height: 100%;
     flex-direction: column;
 }
 
@@ -510,6 +511,7 @@ f
     display: flex;
     flex: 1;
     flex-direction: column;
+    height: 100%;
     overflow-y: auto;
 }
 
