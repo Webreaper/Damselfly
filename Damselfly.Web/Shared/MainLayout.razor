@@ -1,4 +1,5 @@
 ﻿
+@inject UserConfigService configService
 @inherits LayoutComponentBase
 
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
@@ -11,8 +12,14 @@
             <ThemeSwitcher />
             <div class="damselfly-container">
                 <div class="damselfly-application">
-                    <SideBar />
-                    @Body
+                    <SplitView>
+                        <LeftPane>
+                            <SideBar />
+                        </LeftPane>
+                        <RightPane>
+                            @Body
+                        </RightPane>
+                    </SplitView>
                 </div>
                 <Statusbar />
             </div>

@@ -9,6 +9,8 @@
   - [FileWatcher INotify Limits](#filewatcher-inotify-limits)
   - [Setting up the Desktop Client](#setting-up-the-desktop-client)
     - [Installing the Desktop Client](#installing-the-desktop-client)
+  - [Can I Run Damselfly Without Docker?](#can-i-run-damselfly-without-docker)
+    - [Dependencies for Damselfly without Docker](#dependencies-for-damselfly-without-docker)
 
 ## Docker
 
@@ -55,7 +57,8 @@ Damselfly uses OS-level filewatcher triggers to monitor your library for changes
 photo library. 
 
 For MacOS and Linus, the number of inotify watchers availalbe to the OS may be set very low (a few hundred) so you may need to increase 
-the number of inotify instances as follows (where 524288 is any large number that's big enough for one watcher per folder), [for linux](https://unix.stackexchange.com/questions/13751/kernel-inotify-watch-limit-reached).
+the number of inotify instances as follows (where 524288 is any large number that's big enough for one watcher per folder), 
+[for linux](https://unix.stackexchange.com/questions/13751/kernel-inotify-watch-limit-reached).
 
 ```
 echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
@@ -95,3 +98,40 @@ photos to sync locally.
 <img style="margin: 5px;" src="./DesktopSetup.jpg" alt="Configuring Damselfly Desktop" width="600"/>
 
 Once you've entered the correct details, click `Save` and the Web UI should be displayed. 
+
+## Can I run Damselfly without Docker?
+
+Damselfly can be run without docker, but it will be harder to set up the AI components. Please note: I cannot provide support for installations 
+that don't use docker. This is for experts only.
+
+Note that Damselfly is a 64-bit app, so you'll need at 64-bit OS in order to run it, whether or not you use Docker.
+
+To run without docker, you'll need to download the appropriate server binaries from the release (something like `damselfly-server-linux-2.9.0.zip` 
+or the Windows/Mac equivalent). Note that I don't produce non-docker binary assets with every release; if you need them for a release and they're 
+not there, 
+please email and ask.
+
+Once you've downloaded the binaries, extract them into a folder, and from the command-line within that folder run Damselfly. There is only one
+mandatory command-line parameter, which is the path to where your photo collection can be found, so something like:
+
+```
+./Damselfly.Web /path/to/my/photos
+```
+
+### Dependencies for Damselfly without Docker
+
+**Note: I cannot support non-docker installations; there are too many variations across all the different OS flavours/types, and I simply don't 
+have time. I recommend you run Damselfly in Docker.**
+
+Damselfly relies on various dependencies being present for all functionality to work. These are bundled with the Docker image, but if you're running
+outside docker you'll need to manage them yourself. 
+
+Many of the depenendencies may be available on Windows already. On linux/OSX, you'll need to install these by hand, probably via a package manager.
+Dependencies you will require are:
+* Exiftool (used for keyword and other metadata write operations to images)
+* Fonts (used for watermarking images on export)
+* libgomp1 / libdgiplus / libc6-dev - for ML/ONNX functionality for object recognition
+* Various dependencies for the EMGUCV AI libraries for face-recognition etc.
+
+To see the full set of dependencies required by Damselfly, see the 
+[Dockerfile for the base image](https://github.com/Webreaper/Damselfly-Base-Image/blob/main/Dockerfile).

@@ -82,16 +82,15 @@ namespace Damselfly.Core.Services
                 {
                     var watch = new Stopwatch("LoadPersonCache");
 
-                    using (var db = new ImageContext())
-                    {
-                        // Pre-cache tags from DB.
-                        _peopleCache = new ConcurrentDictionary<string, Person>(db.People
-                                                            .Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
-                                                            .AsNoTracking()
-                                                            .ToDictionary(k => k.AzurePersonId, v => v));
-                        if (_peopleCache.Any())
-                            Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
-                    }
+                    using var db = new ImageContext();
+
+                    // Pre-cache tags from DB.
+                    _peopleCache = new ConcurrentDictionary<string, Person>(db.People
+                                                        .Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
+                                                        .AsNoTracking()
+                                                        .ToDictionary(k => k.AzurePersonId, v => v));
+                    if (_peopleCache.Any())
+                        Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
 
                     watch.Stop();
                 }
@@ -602,7 +601,7 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         private async Task DetectObjects(int imageId)
         {
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             var image = await _imageCache.GetCachedImage(imageId);
             db.Attach(image);
@@ -672,7 +671,7 @@ namespace Damselfly.Core.Services
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
         {
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
                             .OrderByDescending(x => x.LastUpdated)

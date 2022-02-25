@@ -223,7 +223,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
+        public async Task TransformDownloadImage(string input, Stream output, IExportSettings config)
         {
             Logging.Log($" Running image transform for Watermark: {config.WatermarkText}");
 
@@ -257,7 +257,7 @@ namespace Damselfly.Core.ImageProcessing
                 img.Mutate(context => ApplyWaterMark(context, font, config.WatermarkText, Color.White));
             }
 
-            img.Save(output, fmt);
+            await img.SaveAsync(output, fmt);
         }
 
 

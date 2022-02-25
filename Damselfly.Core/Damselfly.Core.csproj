@@ -23,18 +23,18 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.155" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0-preview.155" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.187" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0-preview.187" />
     <PackageReference Include="FluentValidation" Version="10.3.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22054.8" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.2-mauipre.1.22054.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22102.15" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.2-mauipre.1.22102.15" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.2" />
     <PackageReference Include="SendGrid" Version="9.25.3" />
     <PackageReference Include="MailKit" Version="3.1.1" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.2" />
-    <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.1.5" />
+    <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.2.30" />
     <PackageReference Include="MudBlazor" Version="6.0.6" />
   </ItemGroup>
   <ItemGroup>

@@ -112,7 +112,11 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task UpdateFaceDataAsync(Image[] images, List<ImageObject> faces, AppIdentityUser user = null)
         {
-            // TODO: Split tags with commas here?
+#if ! DEBUG
+            // Not supported yet....
+            return;
+# endif
+
             var timestamp = DateTime.UtcNow;
             var changeDesc = string.Empty;
 
@@ -292,8 +296,7 @@ namespace Damselfly.Core.Services
 
             Logging.LogVerbose("Updating tags for file {0}", image.FullPath);
             string args = string.Empty;
-            List<ExifOperation> processedOps = new List<ExifOperation>();
-            bool needExecuteExifTool = false;
+            List<ExifOperation> opsToProcess = new List<ExifOperation>();
 
             foreach (var op in exifOperations)
             {
@@ -321,45 +324,38 @@ namespace Damselfly.Core.Services
                     if (op.Operation == ExifOperation.OperationType.Remove)
                     {
                         Logging.LogVerbose($" Removing keyword {operationText} from {op.Image.FileName}");
-                        processedOps.Add(op);
+                        opsToProcess.Add(op);
                     }
                     else if (op.Operation == ExifOperation.OperationType.Add)
                     {
                         Logging.LogVerbose($" Adding keyword '{operationText}' to {op.Image.FileName}");
                         args += $" -keywords+=\"{operationText}\" ";
-                        processedOps.Add(op);
+                        opsToProcess.Add(op);
                     }
-
-                    needExecuteExifTool = true;
                 }
                 else if( op.Type == ExifOperation.ExifType.Caption )
                 {
                     args += $" -iptc:Caption-Abstract=\"{op.Text}\"";
-                    processedOps.Add(op);
-                    needExecuteExifTool = true;
+                    opsToProcess.Add(op);
                 }
                 else if (op.Type == ExifOperation.ExifType.Description)
                 {
                     args += $" -Exif:ImageDescription=\"{op.Text}\"";
-                    processedOps.Add(op);
-                    needExecuteExifTool = true;
+                    opsToProcess.Add(op);
                 }
                 else if (op.Type == ExifOperation.ExifType.Copyright)
                 {
                     args += $" -Copyright=\"{op.Text}\"";
                     args += $" -iptc:CopyrightNotice=\"{op.Text}\"";
-                    processedOps.Add(op);
-                    needExecuteExifTool = true;
+                    opsToProcess.Add(op);
                 }
                 else if (op.Type == ExifOperation.ExifType.Rating)
                 {
                     args += $" -exif:Rating=\"{op.Text}\"";
-                    processedOps.Add(op);
-                    needExecuteExifTool = true;
+                    opsToProcess.Add(op);
                 }
                 else if (op.Type == ExifOperation.ExifType.Face)
                 {
-#if DEBUG
                     var imageObject = JsonSerializer.Deserialize<ImageObject>(op.Text);
 
                     // Face tags using MGW standard
@@ -367,32 +363,31 @@ namespace Damselfly.Core.Services
                     // -xmp-mwg-rs:RegionAreaX=0.319270833 -xmp-mwg-rs:RegionAreaY=0.21015625 -xmp-mwg-rs:RegionAreaW=0.165104167 -xmp-mwg-rs:RegionAreaH=0.30390625
                     // -xmp-mwg-rs:RegionName=John -xmp-mwg-rs:RegionRotation=0 -xmp-mwg-rs:RegionType="Face" myfile.xmp
 
-                    // TODO: How to add multiple faces?
-                    args += $" -xmp-mwg-rs:RegionType=\"Face\"";
-                    args += $" -xmp-mwg-rs:RegionAppliedToDimensionsUnit=\"pixel\"";
-                    args += $" -xmp-mwg-rs:RegionAppliedToDimensionsH=4000";
-                    args += $" -xmp-mwg-rs:RegionAppliedToDimensionsW=6000";
-                    args += $" -xmp-mwg-rs:RegionAreaX=0.319270833 -xmp-mwg-rs:RegionAreaY=0.21015625";
-                    args += $" -xmp-mwg-rs:RegionAreaW=0.165104167 -xmp-mwg-rs:RegionAreaH=0.30390625";
-                    args += $" -xmp-mwg-rs:RegionRotation=0";
-
-                    if (imageObject.Person != null)
+                    if (System.Diagnostics.Debugger.IsAttached)
                     {
-                        args += $" -xmp-mwg-rs:RegionName={imageObject.Person.Name}";
-                    }
+                        // TODO: How to add multiple faces?
+                        args += $" -xmp-mwg-rs:RegionType=\"Face\"";
+                        args += $" -xmp-mwg-rs:RegionAppliedToDimensionsUnit=\"pixel\"";
+                        args += $" -xmp-mwg-rs:RegionAppliedToDimensionsH=4000";
+                        args += $" -xmp-mwg-rs:RegionAppliedToDimensionsW=6000";
+                        args += $" -xmp-mwg-rs:RegionAreaX=0.319270833 -xmp-mwg-rs:RegionAreaY=0.21015625";
+                        args += $" -xmp-mwg-rs:RegionAreaW=0.165104167 -xmp-mwg-rs:RegionAreaH=0.30390625";
+                        args += $" -xmp-mwg-rs:RegionRotation=0";
 
-                    processedOps.Add(op);
-                    needExecuteExifTool = true;
-#else
-                    op.State = ExifOperation.FileWriteState.Failed;
-                    Logging.Log("Writing Face EXIF data is not supported at this time.");
-#endif
+                        if (imageObject.Person != null)
+                        {
+                            args += $" -xmp-mwg-rs:RegionName={imageObject.Person.Name}";
+                        }
+
+                        opsToProcess.Add(op);
+                    }
                 }
             }
 
-            var db = new ImageContext();
+            // Assume they've all failed unless we succeed below.
+            exifOperations.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
 
-            if (needExecuteExifTool)
+            if (opsToProcess.Any() )
             {
                 // Note: we could do this to preserve the last-mod-time:
                 //   args += " -P -overwrite_original_in_place";
@@ -419,7 +414,7 @@ namespace Damselfly.Core.Services
 
                 if (success)
                 {
-                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
+                    opsToProcess.ForEach(x => x.State = ExifOperation.FileWriteState.Written);
 
                     // Updating the timestamp on the image to newer than its metadata will
                     // trigger its metadata and tags to be refreshed during the next scan
@@ -427,25 +422,23 @@ namespace Damselfly.Core.Services
                 }
                 else
                 {
-                    processedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
                     Logging.LogError("ExifTool Tag update failed for image: {0}", image.FullPath);
-
                     RestoreTempExifImage(image.FullPath);
                 }
             }
 
+            using var db = new ImageContext();
+
             // Now write the updates
-            await db.BulkUpdate(db.KeywordOperations, processedOps);
+            await db.BulkUpdate(db.KeywordOperations, exifOperations);
 
-            if( needExecuteExifTool )
-            {
-                var totals = string.Join(", ", exifOperations.GroupBy(x => x.State)
-                                   .Select(x => $"{x.Key}: {x.Count()}")
-                                   .ToList());
+            // Now write a summary of how many succeeded and failed.
+            var totals = string.Join(", ", exifOperations.GroupBy(x => x.State)
+                                .Select(x => $"{x.Key}: {x.Count()}")
+                                .ToList());
                 
-                _statusService.StatusText = $"EXIF data written for {image.FileName}. {totals}";
-            }
-
+            _statusService.StatusText = $"EXIF data written for {image.FileName}. {totals}";
+  
             return success;
         }
 
@@ -588,7 +581,7 @@ namespace Damselfly.Core.Services
 
             if (discardedOps.Any())
             {
-                var db = new ImageContext();
+                using var db = new ImageContext();
 
                 // Mark the ops as discarded, and save them.
                 discardedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
@@ -690,7 +683,7 @@ namespace Damselfly.Core.Services
 
         public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
         {
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             // We skip any operations where the timestamp is more recent than 30s
             var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * s_exifWriteDelay);

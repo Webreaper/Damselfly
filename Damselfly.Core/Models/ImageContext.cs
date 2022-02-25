@@ -676,19 +676,19 @@ namespace Damselfly.Core.Models
         public bool KeepFolders { get; set; }
         public string WatermarkText { get; set; }
 
-        public int MaxImageSize
-        {
-            get
+        public int MaxImageSize => MaxSize(Size);
+        public string SizeDesc() => SizeDesc(Size);
+
+        public static string SizeDesc(ExportSize size) => $"{size.Humanize()}" + (size == ExportSize.FullRes ? "" : $" (max {MaxSize(size)}x{MaxSize(size)})");
+        public static int MaxSize( ExportSize size ) =>
+            size switch
             {
-                return Size switch
-                {
-                    ExportSize.Large => 1600,
-                    ExportSize.Medium => 1024,
-                    ExportSize.Small => 800,
-                    _ => int.MaxValue,
-                };
-            }
-        }
+                ExportSize.ExtraLarge => 1920,
+                ExportSize.Large => 1600,
+                ExportSize.Medium => 1024,
+                ExportSize.Small => 800,
+                _ => int.MaxValue,
+            };
     }
 
     /// <summary>

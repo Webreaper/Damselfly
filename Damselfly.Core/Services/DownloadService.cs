@@ -210,8 +210,7 @@ namespace Damselfly.Core.Services
                                 {
                                     // Run the transform - note we do this in-memory and directly on the stream so the
                                     // transformed file is never actually written to disk other than in the zip.
-                                    await Task.Run(() => _imageProcessingService.TransformDownloadImage(imagePath.FullName,
-                                                            zipStream, config));
+                                    await _imageProcessingService.TransformDownloadImage(imagePath.FullName, zipStream, config);
                                 }
                             }
                         }

@@ -182,7 +182,7 @@ namespace Damselfly.Core.ImageProcessing
                 Logging.LogVerbose(e.Data);
         }
 
-        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
+        public Task TransformDownloadImage(string input, Stream output, IExportSettings config)
         {
             throw new NotImplementedException();
         }

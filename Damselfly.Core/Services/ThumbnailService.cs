@@ -344,7 +344,7 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task<ImageProcessResult> CreateThumb(int imageId)
         {
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             var image = await _imageCache.GetCachedImage(imageId);
 
@@ -371,7 +371,7 @@ namespace Damselfly.Core.Services
         {
             try
             {
-                var db = new ImageContext();
+                using var db = new ImageContext();
                 Hash hash = image.Hash;
 
                 if (hash == null)
@@ -650,7 +650,7 @@ namespace Damselfly.Core.Services
             if (!EnableThumbnailGeneration)
                 return new ThumbProcess[0];
             
-            var db = new ImageContext();
+            using var db = new ImageContext();
 
             var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
                                     .OrderByDescending(x => x.LastUpdated)

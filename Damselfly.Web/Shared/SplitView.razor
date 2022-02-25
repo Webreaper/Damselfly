@@ -1,0 +1,61 @@
+﻿
+@inject UserConfigService configService
+@inherits LayoutComponentBase
+
+<RadzenSplitter Collapse=@OnCollapse Expand="@OnExpand" Resize="@OnResize">
+    <RadzenSplitterPane Size="@SideBarSize" Collapsed="@Collapsed" Min="150px" Max="70%">
+        @LeftPane
+    </RadzenSplitterPane>
+    <RadzenSplitterPane Collapsible="false">
+        @RightPane
+    </RadzenSplitterPane>
+</RadzenSplitter>
+
+@code{
+    [Parameter]
+    public RenderFragment LeftPane { get; set; }
+
+    [Parameter]
+    public RenderFragment RightPane { get; set; }
+
+    private string SideBarSize { get; set; }
+    private bool Collapsed { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SideBarSize = configService.Get(ConfigSettings.SideBarWidth, "20%");
+        Collapsed = configService.GetBool(ConfigSettings.SideBarCollapsed, false);
+    }
+
+    void OnResize(RadzenSplitterResizeEventArgs args)
+    {
+        if( args.PaneIndex == 0 )
+        {
+            var newSize = $"{(int)args.NewSize}%";
+            configService.Set(ConfigSettings.SideBarWidth, newSize);
+            configService.Set(ConfigSettings.SideBarCollapsed, "false");
+        }
+    }
+
+    void OnCollapse(RadzenSplitterEventArgs args)
+    {
+        if (args.PaneIndex == 0)
+        {
+            Collapsed = true;
+            configService.Set(ConfigSettings.SideBarCollapsed, Collapsed.ToString());
+        }
+    }
+
+    void OnExpand(RadzenSplitterEventArgs args)
+    {
+        if (args.PaneIndex == 0)
+        {
+            Collapsed = false;
+            configService.Set("SideBarCollapsed", Collapsed.ToString());
+        }
+    }
+}
+
+

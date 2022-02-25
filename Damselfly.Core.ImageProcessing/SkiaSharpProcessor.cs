@@ -366,12 +366,24 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         /// <summary>
+        /// Async wrapper - note that Skia Sharp doesn't support Async yet.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <param name="config"></param>
+        /// <returns></returns>
+        public async Task TransformDownloadImage(string input, Stream output, IExportSettings config)
+        {
+            await Task.Run(() => TransformDownloadImageSync(input, output, config));
+        }
+
+        /// <summary>
         /// Transform the images ready for download, optionally adding a watermark.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="output"></param>
         /// <param name="waterMarkText"></param>
-        public void TransformDownloadImage(string input, Stream output, IExportSettings config)
+        public void TransformDownloadImageSync(string input, Stream output, IExportSettings config)
         {
             using SKImage img = SKImage.FromEncodedData(input);
             using var bitmap = SKBitmap.FromImage(img);

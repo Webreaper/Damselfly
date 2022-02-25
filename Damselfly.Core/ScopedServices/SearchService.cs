@@ -42,7 +42,6 @@ namespace Damselfly.Core.ScopedServices
         private readonly MetaDataService _metadataService;
         private readonly SearchQuery query = new SearchQuery();
         public List<Image> SearchResults { get; private set; } = new List<Image>();
-        private const double s_similarityThreshold = 0.75;
 
         public void NotifyStateChanged()
         {
@@ -97,8 +96,11 @@ namespace Damselfly.Core.ScopedServices
 
         private void QueryChanged()
         {
-            SearchResults.Clear();
-            NotifyStateChanged();
+            Task.Run(() =>
+            {
+                SearchResults.Clear();
+                NotifyStateChanged();
+            });
         }
 
         /// <summary>
@@ -394,6 +396,9 @@ namespace Damselfly.Core.ScopedServices
 
                 if (Person != null)
                     hints.Add($"Person: {Person.Name}");
+
+                if (MinRating != null)
+                    hints.Add($"Rating: at least {MinRating} stars");
 
                 if (SimilarTo != null)
                     hints.Add($"Looks Like: {SimilarTo.FileName}");

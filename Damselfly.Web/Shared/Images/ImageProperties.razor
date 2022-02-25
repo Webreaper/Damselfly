@@ -137,7 +137,7 @@ else
 
     private async Task SaveProperty( Action<ImageMetaData> propertyUpdate )
     {
-        var db = new ImageContext();
+        using var db = new ImageContext();
         var metadata = CurrentImage.MetaData;
         db.Attach(metadata);
         propertyUpdate.Invoke(CurrentImage.MetaData);

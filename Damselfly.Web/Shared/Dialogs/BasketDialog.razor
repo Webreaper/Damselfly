@@ -73,7 +73,7 @@
     async Task DeleteBasket()
     {
         IStatusService statusAudience = model.IsPublic ? statusService : userStatusService;
-        var db = new ImageContext();
+        using var db = new ImageContext();
 
         var existingBasket = db.Baskets.Where(x => x.BasketId == Basket.BasketId);
 
@@ -89,7 +89,7 @@
 
     async Task Save()
     {
-        var db = new ImageContext();
+        using var db = new ImageContext();
         IStatusService statusAudience = model.IsPublic ? statusService : userStatusService;
 
         try

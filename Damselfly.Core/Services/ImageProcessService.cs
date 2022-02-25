@@ -73,14 +73,14 @@ namespace Damselfly.Core.Services
         /// <param name="output"></param>
         /// <param name="config"></param>
         /// TODO: Async
-        public void TransformDownloadImage(string input, Stream output, IExportSettings exportConfig)
+        public async Task TransformDownloadImage(string input, Stream output, IExportSettings exportConfig)
         {
             var ext = Path.GetExtension(input);
 
             var processor = _factory.GetProcessor(ext);
 
             if (processor != null)
-                processor.TransformDownloadImage(input, output, exportConfig);
+                await processor.TransformDownloadImage(input, output, exportConfig);
         }
 
         /// <summary>
