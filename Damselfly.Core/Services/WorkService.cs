@@ -211,6 +211,9 @@ namespace Damselfly.Core.Services
                     {
                         _jobQueue.Enqueue(job, (int)job.Priority);
                         newJobs = true;
+
+                        // TODO: HACK
+                        Thread.Sleep(100);
                     }
                 }
                 catch (Exception ex)
