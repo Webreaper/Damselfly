@@ -208,7 +208,7 @@ namespace Damselfly.Web.Controllers
 
                 if (face != null)
                 {
-                    var thumbPath = await thumbService.GetFaceThumbNail(face);
+                    var thumbPath = await thumbService.GenerateFaceThumb(face);
 
                     if (thumbPath != null && thumbPath.Exists)
                     {

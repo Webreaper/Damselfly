@@ -1,12 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using System.Threading.Tasks;
-using Damselfly.Core.Models;
 using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.ImageProcessing
@@ -188,6 +182,11 @@ namespace Damselfly.Core.ImageProcessing
         }
 
         public Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task CropImage(FileInfo source, int x, int y, int width, int height, Stream stream)
         {
             throw new NotImplementedException();
         }

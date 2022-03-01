@@ -150,7 +150,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="height"></param>
         /// <param name="dest"></param>
         /// <returns></returns>
-        public Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo dest)
+        public Task CropImage(FileInfo source, int x, int y, int width, int height, Stream destStream)
         {
             Stopwatch watch = new Stopwatch("SkiaSharpCrop");
 
@@ -162,9 +162,7 @@ namespace Damselfly.Core.ImageProcessing
                 var cropRect = new SKRectI(x, y, x + width, y + height);
                 var cropped = Crop(sourceBitmap, cropRect);
                 using SKData data = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
-
-                using (var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write))
-                    data.SaveTo(stream);
+                data.SaveTo(destStream);
             }
             catch (Exception ex)
             {
@@ -177,6 +175,24 @@ namespace Damselfly.Core.ImageProcessing
             }
 
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Crops a file, saving it to disk
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="dest"></param>
+        /// <returns></returns>
+        public async Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo dest)
+        {
+            using (var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write))
+            {
+                await CropImage(source, x, y, width, height, stream);
+            }
         }
 
         /// <summary>

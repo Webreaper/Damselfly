@@ -35,8 +35,9 @@ namespace Damselfly.Core.Services
         private readonly WorkService _workService;
         private readonly ExifService _exifService;
         private readonly ImageCache _imageCache;
+        private readonly ImageProcessService _imageProcessor;
 
-        private IDictionary<string, Person> _peopleCache;
+        private IDictionary<string, Person> _peopleCache = null;
 
         public static bool EnableImageRecognition { get; set; } = true;
 
@@ -45,7 +46,8 @@ namespace Damselfly.Core.Services
                         AccordFaceService accordFace, EmguFaceService emguService,
                         ThumbnailService thumbs, ConfigService configService,
                         ImageClassifier imageClassifier, ImageCache imageCache,
-                        WorkService workService, ExifService exifService)
+                        WorkService workService, ExifService exifService,
+                        ImageProcessService imageProcessor)
         {
             _thumbService = thumbs;
             _accordFaceService = accordFace;
@@ -56,6 +58,7 @@ namespace Damselfly.Core.Services
             _emguFaceService = emguService;
             _configService = configService;
             _imageClassifier = imageClassifier;
+            _imageProcessor = imageProcessor;
             _imageCache = imageCache;
             _workService = workService;
             _exifService = exifService;
@@ -67,7 +70,9 @@ namespace Damselfly.Core.Services
 
         public List<Person> GetCachedPeople()
         {
-            return _peopleCache.Values.OrderBy(x => x.Name).ToList();
+            LoadPersonCache();
+
+            return _peopleCache.Values.OrderBy(x => x?.Name).ToList();
         }
 
         /// <summary>
@@ -78,22 +83,31 @@ namespace Damselfly.Core.Services
         {
             try
             {
-                if (_peopleCache == null || force)
+                if (_peopleCache == null )
+                    _peopleCache = new ConcurrentDictionary<string, Person>();
+
+                if (force)
+                    _peopleCache.Clear();
+
+                var watch = new Stopwatch("LoadPersonCache");
+
+                using var db = new ImageContext();
+
+                var dict = db.People.Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
+                                    .AsNoTracking()
+                                    .Select(p => new { p.AzurePersonId, Person = p } )
+                                    .ToList();
+
+                if (dict.Any())
                 {
-                    var watch = new Stopwatch("LoadPersonCache");
+                    // Merge the items into the people cache. Note that we use
+                    // the indexer to avoid dupe key issues. TODO: Should the table be unique?
+                    dict.ToList().ForEach(x => _peopleCache[x.AzurePersonId] = x.Person);
 
-                    using var db = new ImageContext();
-
-                    // Pre-cache tags from DB.
-                    _peopleCache = new ConcurrentDictionary<string, Person>(db.People
-                                                        .Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
-                                                        .AsNoTracking()
-                                                        .ToDictionary(k => k.AzurePersonId, v => v));
-                    if (_peopleCache.Any())
-                        Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
-
-                    watch.Stop();
+                    Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
                 }
+
+                watch.Stop();
             }
             catch (Exception ex)
             {
@@ -149,34 +163,46 @@ namespace Damselfly.Core.Services
         /// </summary>
         /// <param name="personIdsToAdd"></param>
         /// <returns></returns>
-        public async Task<List<Person>> CreateMissingPeople(IEnumerable<string> personIdsToAdd)
+        public async Task CreateMissingPeople(IEnumerable<string> personIdsToAdd)
         {
             using ImageContext db = new ImageContext();
 
-            // Find the people that aren't already in the cache and add new ones
-            var newPeople = personIdsToAdd.Where(x => !_peopleCache.ContainsKey(x))
-                        .Select(x => new Person
+            try
+            {
+                if (personIdsToAdd != null && personIdsToAdd.Any())
+                {
+                    // Find the people that aren't already in the cache and add new ones
+                    // Be careful - filter out empty ones (shouldn't ever happen, but belt
+                    // and braces
+                    var newNames = personIdsToAdd.Select( x => x.Trim() )
+                                    .Where( x => !string.IsNullOrEmpty(x) && !_peopleCache.ContainsKey( x ) )
+                                    .ToList();
+
+                    if (newNames.Any())
+                    {
+                        Logging.Log($"Adding {newNames.Count()} person records.");
+
+                        var newPeople = newNames.Select(x => new Person
                         {
                             AzurePersonId = x,
                             Name = "Unknown",
                             State = Person.PersonState.Unknown
+                        }).ToList();
+
+                        if (newPeople.Any())
+                        {
+                            await db.BulkInsert(db.People, newPeople);
+
+                            // Add or replace the new people in the cache (this should always add)
+                            newPeople.ForEach(x => _peopleCache[x.AzurePersonId] = x);
                         }
-                        ).ToList();
-
-
-            if (newPeople.Any())
-            {
-
-                Logging.LogTrace("Adding {0} people", newPeople.Count());
-
-                await db.BulkInsert(db.People, newPeople);
-
-                // Add the new items to the cache. 
-                newPeople.ForEach(x => _peopleCache[x.AzurePersonId] = x);
+                    }
+                }
             }
-
-            var allTags = personIdsToAdd.Select(x => _peopleCache[x]).ToList();
-            return allTags;
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception in CreateMissingPeople: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -429,7 +455,7 @@ namespace Damselfly.Core.Services
                     Logging.LogVerbose($"Processing {medThumb.FullName} with Azure Face Service");
 
                     // We got predictions or we're scanning everything - so now let's try the image with Azure.
-                    var azureFaces = await _azureFaceService.DetectFaces(bitmap);
+                    var azureFaces = await _azureFaceService.DetectFaces(medThumb.FullName, _imageProcessor);
 
                     azurewatch.Stop();
 
@@ -441,7 +467,7 @@ namespace Damselfly.Core.Services
                         var peopleIds = azureFaces.Select(x => x.PersonId.ToString());
 
                         // Create any new ones, or pull existing ones back from the cache
-                        var people = await CreateMissingPeople(peopleIds);
+                        await CreateMissingPeople(peopleIds);
 
                         var newObjects = azureFaces.Select(x => new ImageObject
                         {
@@ -625,7 +651,7 @@ namespace Damselfly.Core.Services
             int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
             _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for AI reprocessing.";
 
-            _workService.HandleNewJobs(this);
+            _workService.FlagNewJobs(this);
         }
 
         public async Task MarkAllImagesForScan()
@@ -636,7 +662,7 @@ namespace Damselfly.Core.Services
 
             _statusService.StatusText = $"All {updated} images flagged for AI reprocessing.";
 
-            _workService.HandleNewJobs(this);
+            _workService.FlagNewJobs(this);
         }
 
         public async Task MarkImagesForScan(ICollection<Image> images)

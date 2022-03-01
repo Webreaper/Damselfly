@@ -369,7 +369,7 @@ namespace Damselfly.Core.Services
                 else
                     _statusService.StatusText = $"{folders.Count} folders flagged for re-indexing.";
 
-                _workService.HandleNewJobs(this);
+                _workService.FlagNewJobs(this);
             }
             catch (Exception ex)
             {
@@ -387,7 +387,7 @@ namespace Damselfly.Core.Services
 
                 _statusService.StatusText = $"All {updated} folders flagged for re-indexing.";
 
-                _workService.HandleNewJobs(this);
+                _workService.FlagNewJobs(this);
             }
             catch (Exception ex)
             {

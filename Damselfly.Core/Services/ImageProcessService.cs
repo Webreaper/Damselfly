@@ -1,11 +1,8 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
-using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
-using System;
 using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Services
@@ -108,6 +105,14 @@ namespace Damselfly.Core.Services
 
             if (processor != null)
                 await processor.GetCroppedFile(source, x, y, width, height, destFile);
+        }
+
+        public async Task CropImage(FileInfo path, int x, int y, int width, int height, Stream stream)
+        {
+            var processor = _factory.GetProcessor(path.Extension);
+
+            if (processor != null)
+                await processor.CropImage(path, x, y, width, height, stream);
         }
     }
 }

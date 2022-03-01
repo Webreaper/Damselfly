@@ -909,7 +909,7 @@ namespace Damselfly.Core.Services
 
             _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for Metadata scanning.";
 
-            _workService.HandleNewJobs(this);
+            _workService.FlagNewJobs(this);
         }
 
         public async Task MarkAllImagesForScan()
@@ -920,7 +920,7 @@ namespace Damselfly.Core.Services
 
             _statusService.StatusText = $"All {updated} images flagged for Metadata scanning.";
 
-            _workService.HandleNewJobs(this);
+            _workService.FlagNewJobs(this);
         }
 
         public async Task MarkImagesForScan(ICollection<Image> images)

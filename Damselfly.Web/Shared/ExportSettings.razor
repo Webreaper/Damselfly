@@ -78,7 +78,7 @@
         await JsRuntime.InvokeAsync<string>("downloadFile", zipPath);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {

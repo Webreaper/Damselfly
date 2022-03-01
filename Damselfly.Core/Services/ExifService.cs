@@ -32,7 +32,6 @@ namespace Damselfly.Core.Services
         public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
         public event Action OnFavouritesChanged;
         public event Action<List<string>> OnUserTagsAdded;
-        private const int s_exifWriteDelay = 15;
 
         private void NotifyFavouritesChanged()
         {
@@ -153,7 +152,7 @@ namespace Damselfly.Core.Services
             }
 
             // Trigger the work service to look for new jobs
-            _workService.HandleNewJobs(this, s_exifWriteDelay);
+            _workService.FlagNewJobs(this);
         }
 
 
@@ -233,7 +232,7 @@ namespace Damselfly.Core.Services
                 NotifyUserTagsAdded(addTags);
 
             // Trigger the work service to look for new jobs
-            _workService.HandleNewJobs(this, s_exifWriteDelay);
+            _workService.FlagNewJobs(this);
         }
 
         /// <summary>
@@ -278,7 +277,7 @@ namespace Damselfly.Core.Services
             }
 
             // Trigger the work service to look for new jobs
-            _workService.HandleNewJobs(this, s_exifWriteDelay);
+            _workService.FlagNewJobs(this);
         }
 
         /// <summary>
@@ -671,6 +670,7 @@ namespace Damselfly.Core.Services
             public ExifService Service { get; set; }
             public bool CanProcess => true;
             public string Description => "Writing Metadata";
+            public DateTime ProcessSchedule { get; set; }
             public JobPriorities Priority => JobPriorities.ExifService;
 
             public async Task Process()
@@ -686,7 +686,7 @@ namespace Damselfly.Core.Services
             using var db = new ImageContext();
 
             // We skip any operations where the timestamp is more recent than 30s
-            var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * s_exifWriteDelay);
+            var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * 30);
 
             // Find all the operations that are pending, and the timestamp is older than the threshold.
             var opsToProcess = await db.KeywordOperations.AsQueryable()
@@ -702,7 +702,7 @@ namespace Damselfly.Core.Services
             {
                 ImageId = x.Key,
                 ExifOps = x.Value,
-                Service = this
+                Service = this,
             }).ToArray();
 
             return jobs;

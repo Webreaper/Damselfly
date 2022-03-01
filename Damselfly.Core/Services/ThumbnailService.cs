@@ -1,13 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Collections.Generic;
 using Damselfly.Core.Utils;
-using MetadataExtractor;
-using MetadataExtractor.Formats.Exif;
 using Microsoft.EntityFrameworkCore;
-using MetadataExtractor.Formats.Jpeg;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils.Images;
@@ -398,13 +394,24 @@ namespace Damselfly.Core.Services
         }
 
         /// <summary>
+        /// Clears the cache of face thumbs from the disk
+        /// </summary>
+        public void ClearFaceThumbs()
+        {
+            DirectoryInfo dir = new DirectoryInfo( Path.Combine(_thumbnailRootFolder, "_FaceThumbs") );
+
+            dir.GetFiles().ToList()
+                     .ForEach( x => FileUtils.SafeDelete(x));
+        }
+
+        /// <summary>
         /// Given an image ID and a face object, returns the path of a generated
         /// thumbnail for that croppped face.
         /// </summary>
         /// <param name="imageId"></param>
         /// <param name="face"></param>
         /// <returns></returns>
-        public async Task<FileInfo> GetFaceThumbNail( ImageObject face )
+        public async Task<FileInfo> GenerateFaceThumb( ImageObject face )
         {
             FileInfo destFile = null;
             Stopwatch watch = new Stopwatch("GenerateFaceThumb");
@@ -434,8 +441,9 @@ namespace Damselfly.Core.Services
 
                         Logging.LogTrace($"Loaded {thumbPath.FullName} - {thumbWidth} x {thumbHeight}");
 
-                        (var x, var y, var width, var height) = ScaleDownRect(image, thumbWidth, thumbHeight,
-                                                        face.RectX, face.RectY, face.RectWidth, face.RectHeight);
+                        (var x, var y, var width, var height) = ScaleDownRect(image.MetaData.Width, image.MetaData.Height,
+                                                                              thumbWidth, thumbHeight,
+                                                                              face.RectX, face.RectY, face.RectWidth, face.RectHeight);
 
                         Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
 
@@ -467,13 +475,13 @@ namespace Damselfly.Core.Services
         /// <param name="image"></param>
         /// <param name="imgObjects">Collection of objects to scale</param>
         /// <param name="thumbSize"></param>
-        public static (int x, int y, int width, int height) ScaleDownRect(Image image, int sourceWidth, int sourceHeight, int x, int y, int width, int height)
+        public static (int x, int y, int width, int height) ScaleDownRect(int imageWidth, int imageHeight, int sourceWidth, int sourceHeight, int x, int y, int width, int height)
         {
             if (sourceHeight == 0 || sourceWidth == 0)
                 return (x, y, width, height);
 
             float longestBmpSide = sourceWidth > sourceHeight ? sourceWidth : sourceHeight;
-            float longestImgSide = image.MetaData.Width > image.MetaData.Height ? image.MetaData.Width : image.MetaData.Height;
+            float longestImgSide = imageWidth > imageHeight ? imageWidth : imageHeight;
 
             var ratio = (longestBmpSide / longestImgSide);
 
@@ -482,14 +490,15 @@ namespace Damselfly.Core.Services
             int outWidth = (int)(width * ratio);
             int outHeight = (int)(height * ratio);
 
-            double expand = 0.10;
+            double percentExpand = 0.3;
+            double expandX = outWidth * percentExpand;
+            double expandY = outHeight * percentExpand;
 
-            outX = (int)Math.Max(outX - (outX * expand), 0);
-            outY = (int)Math.Max(outY - (outY * expand), 0);
+            outX = (int)Math.Max(outX - expandX, 0);
+            outY = (int)Math.Max(outY - expandY, 0);
 
-            double widthExpand = 1 + (2 * expand);
-            outWidth = (int)(outWidth * widthExpand);
-            outHeight = (int)(outHeight * widthExpand);
+            outWidth = (int)(outWidth + (expandX * 2));
+            outHeight = (int)(outHeight + (expandY * 2));
 
             if (outX + outWidth > sourceWidth)
                 outWidth = sourceWidth - outX;
@@ -626,7 +635,7 @@ namespace Damselfly.Core.Services
             var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
             _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";
 
-            _workService.HandleNewJobs(this);
+            _workService.FlagNewJobs(this);
         }
 
         public class ThumbProcess : IProcessJob

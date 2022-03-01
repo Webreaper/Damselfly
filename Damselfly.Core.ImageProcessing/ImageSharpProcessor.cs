@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
 using Damselfly.Core.Interfaces;
-using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Utils.Images;
@@ -213,6 +208,23 @@ namespace Damselfly.Core.ImageProcessing
             image.Mutate(x => x.AutoOrient());
             image.Mutate(x => x.Crop( rect ));
             await image.SaveAsync(destFile.FullName);
+
+            watch.Stop();
+        }
+
+        public async Task CropImage(FileInfo source, int x, int y, int width, int height, Stream stream)
+        {
+            Stopwatch watch = new Stopwatch("ImageSharpCrop");
+
+            // Image.Load(string path) is a shortcut for our default type. 
+            // Other pixel formats use Image.Load<TPixel>(string path))
+            using var image = Image.Load<Rgba32>(source.FullName);
+
+            var rect = new Rectangle(x, y, width, height);
+            image.Mutate(x => x.AutoOrient());
+            image.Mutate(x => x.Crop(rect));
+
+            await image.SaveAsJpegAsync(stream);
 
             watch.Stop();
         }
