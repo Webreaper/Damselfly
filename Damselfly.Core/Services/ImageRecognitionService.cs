@@ -646,10 +646,13 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
-            var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
+            //var queryable = db.Set<ImageMetaData>().Where(img => img.Image.FolderId == folder.FolderId);
+            //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
-            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
-            _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for AI reprocessing.";
+            int updated = await ImageMetaData.UpdateFields(db, folder, "AILastUpdated", "null");
+
+            if( updated != 0 )
+                _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for AI reprocessing.";
 
             _workService.FlagNewJobs(this);
         }

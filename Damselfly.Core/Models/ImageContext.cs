@@ -247,6 +247,30 @@ namespace Damselfly.Core.Models
         // Date we last performed face/object/image recognition
         // If this is null, AI will be reprocessed
         public DateTime? AILastUpdated { get; set; }
+
+        /// <summary>
+        /// Temporary workaround for the fact that EFCore.BulkExtensions doesn't support joined
+        /// updates in its BatchUpdateAsync method. So we just execute the raw SQL directly.
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="folderId"></param>
+        /// <param name="updateField"></param>
+        /// <param name="newValue"></param>
+        /// <returns></returns>
+        public static async Task<int> UpdateFields(ImageContext db, Folder folder, string updateField, string newValue)
+        {
+            string sql = $@"UPDATE ImageMetaData SET {updateField} = {newValue} FROM (SELECT i.ImageId, i.FolderId FROM Images i where i.FolderId = {folder.FolderId}) AS imgs WHERE imgs.ImageID = ImageMetaData.ImageID";
+
+            try
+            {
+                return await db.Database.ExecuteSqlRawAsync(sql);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception updating Metadata Field {updateField}: {ex.Message}");
+                return 0;
+            }
+        }
     }
 
     /// <summary>

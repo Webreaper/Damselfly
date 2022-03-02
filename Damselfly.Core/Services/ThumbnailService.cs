@@ -616,10 +616,10 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
-            // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null where imageid in (select imageid from images where folderid = {folder.FolderId})");
+            int updated = await ImageMetaData.UpdateFields(db, folder, "ThumbLastUpdated", "null");
 
-            _statusService.StatusText = $"Folder {folder.Name} flagged for thumbnail re-generation.";
+            if( updated != 0 )
+                _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for thumbnail re-generation.";
         }
 
         public async Task MarkImagesForScan(ICollection<Image> images)
