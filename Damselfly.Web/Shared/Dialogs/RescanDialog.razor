@@ -67,10 +67,10 @@
 
     void OkayClicked()
     {
+        MudDialog.Close(DialogResult.Ok(true));
+
         // Fire and forget; we don't need to block/await
         _ = Rescan();
-
-        MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task Rescan()

@@ -51,20 +51,27 @@ namespace Damselfly.Core.Services
         /// <returns></returns>
         public async Task WarmUp()
         {
-            const int warmupCount = 2000;
+            try
+            {
+                const int warmupCount = 2000;
 
-            Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
+                Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
 
-            using var db = new ImageContext();
+                using var db = new ImageContext();
 
-            var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
-                     .Take(warmupCount)
-                     .Select(x => x.ImageId)
-                     .ToListAsync();
+                var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
+                         .Take(warmupCount)
+                         .Select(x => x.ImageId)
+                         .ToListAsync();
 
-            await EnrichAndCache( warmupIds );
+                await EnrichAndCache(warmupIds);
 
-            Logging.Log($"Image Cache primed with {warmupIds.Count} images.");
+                Logging.Log($"Image Cache primed with {warmupIds.Count} images.");
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Unexpected error warming up cache: {ex.Message}");
+            }
         }
 
         /// <summary>
