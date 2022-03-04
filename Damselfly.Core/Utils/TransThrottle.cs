@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
+using Microsoft.Rest;
 
 namespace Damselfly.Core.Utils
 {
@@ -114,7 +115,7 @@ namespace Damselfly.Core.Utils
                 }
                 catch (Exception ex)
                 {
-                    await HandleThrottleException(ex, retries);
+                    retries = await HandleThrottleException(ex, retries);
                 }
             }
 
@@ -142,7 +143,7 @@ namespace Damselfly.Core.Utils
                 }
                 catch (Exception ex)
                 {
-                    await HandleThrottleException(ex, retries);
+                    retries = await HandleThrottleException(ex, retries);
                 }
             }
         }
@@ -153,10 +154,13 @@ namespace Damselfly.Core.Utils
         /// </summary>
         /// <param name="ex"></param>
         /// <param name="retriesRemaining"></param>
-        /// <returns></returns>
-        private async Task HandleThrottleException( Exception ex, int retriesRemaining )
+        /// <returns>Number of retries (depending on this error this may be altered)</returns>
+        private async Task<int> HandleThrottleException( Exception ex, int retriesRemaining )
         {
+            int retriesToReturn = retriesRemaining;
+
             const int requestsDelay = 30;
+
             if (ex is ErrorException)
             {
                 var errorEx = ex as ErrorException;
@@ -175,8 +179,21 @@ namespace Damselfly.Core.Utils
                     await Task.Delay(requestsDelay * 1000);
                 }
             }
+            else if (ex is ValidationException)
+            {
+                var errorEx = ex as ValidationException;
+
+                if( errorEx.Message.Contains("'faceIds' exceeds maximum item count of '10'") )
+                {
+                    Logging.LogWarning("Photo had more than 10 faces. This is not supported in the free Azure API.");
+                    // No point retrying. All bets are off for this pic.
+                    retriesToReturn = 0;
+                }
+            }
             else
                 throw ex;
+
+            return retriesToReturn;
         }
 
         public int TotalTransactions { get { return _totalTransactions; } }

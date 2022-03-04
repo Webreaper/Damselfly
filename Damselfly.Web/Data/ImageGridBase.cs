@@ -63,7 +63,7 @@ namespace Damselfly.Web.Data
             }
             else
             {
-                if (e.MetaKey)
+                if (e.MetaKey || e.CtrlKey)
                 {
                     // Apple key was pressed - toggle the selection
                     selectionService.ToggleSelection(new List<Image> { selectionInfo.image });

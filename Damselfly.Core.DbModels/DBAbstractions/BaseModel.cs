@@ -114,7 +114,15 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return true;
 
-            return await DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete);
+            try
+            {
+                return await DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during batch delete: {ex.Message}");
+                return false;
+            }
         }
 
         /// <summary>
@@ -128,7 +136,15 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return 1;
 
-            return await DatabaseSpecialisation.BatchDelete(query);
+            try
+            {
+                return await DatabaseSpecialisation.BatchDelete(query);
+            }
+            catch(Exception ex )
+            {
+                Logging.LogError($"Exception during batch delete: {ex.Message}");
+                return 0;
+            }
         }
 
         /// <summary>
@@ -142,8 +158,17 @@ namespace Damselfly.Core.DbModels.DBAbstractions
             if (ReadOnly)
                 return 1;
 
-            return await DatabaseSpecialisation.BatchUpdate(query, updateExpression);
+            try
+            { 
+                return await DatabaseSpecialisation.BatchUpdate(query, updateExpression);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError($"Exception during batch update: {ex.Message}");
+                return 0;
+            }
         }
+
 
         /// <summary>
         /// Bulk insert weapper for the database specialisation type. 

@@ -75,6 +75,18 @@ namespace Damselfly.Core.Services
             return _peopleCache.Values.OrderBy(x => x?.Name).ToList();
         }
 
+        private int GetPersonIDFromCache( Guid? azurePersonId )
+        {
+            if (azurePersonId.HasValue)
+            {
+                LoadPersonCache();
+
+                if (_peopleCache.TryGetValue(azurePersonId.ToString(), out var person))
+                    return person.PersonId;
+            }
+            return 0;
+        }
+
         /// <summary>
         /// Initialise the in-memory cache of people.
         /// </summary>
@@ -269,26 +281,24 @@ namespace Damselfly.Core.Services
         private async Task DetectObjects(ImageMetaData metadata)
         {
             var image = metadata.Image;
-            var file = new FileInfo(image.FullPath);
-            var thumbSize = ThumbSize.Large;
-            var medThumb = new FileInfo(_thumbService.GetThumbPath(file, thumbSize));
-            var fileName = Path.Combine(image.Folder.Path, image.FileName);
-            bool enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
+            var fileName = new FileInfo(image.FullPath);
 
-            // First, update the timestamp. We do this first, so that even if something
-            // fails, it'll be set, avoiding infinite loops of failed processing.
-            // The caller will update the DB with a SaveChanges call.
-            metadata.AILastUpdated = DateTime.UtcNow;
+            if (!fileName.Exists )
+                return;
 
             try
             {
+                var thumbSize = ThumbSize.Large;
+                var medThumb = new FileInfo(_thumbService.GetThumbPath(fileName, thumbSize));
+                bool enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
+
                 MetaDataService.GetImageSize(medThumb.FullName, out var thumbWidth, out var thumbHeight);
 
                 var foundObjects = new List<ImageObject>();
                 var foundFaces = new List<ImageObject>();
 
                 if( enableAIProcessing || _azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages )
-                    Logging.Log($"Processing AI image detection for {file.Name}...");
+                    Logging.Log($"Processing AI image detection for {fileName.Name}...");
 
                 if (!File.Exists(medThumb.FullName) )
                 {
@@ -469,19 +479,22 @@ namespace Damselfly.Core.Services
                         // Create any new ones, or pull existing ones back from the cache
                         await CreateMissingPeople(peopleIds);
 
+                        // Now convert into ImageObjects. Note that if the peopleCache doesn't
+                        // contain the key, it means we didn't create a person record successfully
+                        // for that entry - so we skip it.
                         var newObjects = azureFaces.Select(x => new ImageObject
-                        {
-                            ImageId = image.ImageId,
-                            RectX = x.Left,
-                            RectY = x.Top,
-                            RectHeight = x.Height,
-                            RectWidth = x.Width,
-                            Type = ImageObject.ObjectTypes.Face.ToString(),
-                            TagId = faceTagId,
-                            RecogntionSource = ImageObject.RecognitionType.Azure,
-                            Score = x.Score,
-                            PersonId = _peopleCache[x.PersonId.ToString()].PersonId
-                        }).ToList();
+                                {
+                                    ImageId = image.ImageId,
+                                    RectX = x.Left,
+                                    RectY = x.Top,
+                                    RectHeight = x.Height,
+                                    RectWidth = x.Width,
+                                    Type = ImageObject.ObjectTypes.Face.ToString(),
+                                    TagId = faceTagId,
+                                    RecogntionSource = ImageObject.RecognitionType.Azure,
+                                    Score = x.Score,
+                                    PersonId = GetPersonIDFromCache( x.PersonId )
+                                }).ToList();
 
                         ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                         foundFaces.AddRange(newObjects);
@@ -632,12 +645,22 @@ namespace Damselfly.Core.Services
             var image = await _imageCache.GetCachedImage(imageId);
             db.Attach(image);
 
-            await DetectObjects(image.MetaData);
+            // First, update the timestamp. We do this first, so that even if something
+            // fails, it'll be set, avoiding infinite loops of failed processing.
+            // The caller will update the DB with a SaveChanges call.
+            image.MetaData.AILastUpdated = DateTime.UtcNow;
 
-            // The DetectObjects method will set the metadata AILastUpdated
-            // timestamp. It may also update other fields.
-            db.ImageMetaData.Update(image.MetaData);
-            await db.SaveChangesAsync("UpdateAIGenDate");
+            try
+            {
+                await DetectObjects(image.MetaData);
+            }
+            finally
+            {
+                // The DetectObjects method will set the metadata AILastUpdated
+                // timestamp. It may also update other fields.
+                db.ImageMetaData.Update(image.MetaData);
+                await db.SaveChangesAsync("UpdateAIGenDate");
+            }
 
             _imageCache.Evict(imageId);
         }
@@ -646,10 +669,13 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
-            var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
+            //var queryable = db.Set<ImageMetaData>().Where(img => img.Image.FolderId == folder.FolderId);
+            //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
-            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
-            _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for AI reprocessing.";
+            int updated = await ImageMetaData.UpdateFields(db, folder, "AILastUpdated", "null");
+
+            if( updated != 0 )
+                _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for AI reprocessing.";
 
             _workService.FlagNewJobs(this);
         }

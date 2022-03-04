@@ -316,22 +316,25 @@ namespace Damselfly.ML.Face.Azure
             if (_persistedFaces > 0 )
             {
                 var faceIdsToMatch = detectedFaces.Where(x => x.FaceId.HasValue).Select(x => x.FaceId.Value).ToList();
-                // ge":"Incompatible identification scope parameters are present in the request."}}
+
                 var matches = await _transThrottle.Call( "Identify", _faceClient.Face.IdentifyAsync(faceIdsToMatch,
                                                 personIds: new List<string> { "*" }, maxNumOfCandidatesReturned: 3) );
 
-                foreach (var match in matches)
+                if (matches != null)
                 {
-                    // Find the face for this match
-                    var face = faces.FirstOrDefault(x => x.FaceId == match.FaceId);
-
-                    if (match.Candidates?.Count > 0)
+                    foreach (var match in matches)
                     {
-                        // We got a match. Pick the first one for now.
-                        face.PersonId = match.Candidates[0].PersonId;
-                        face.Score = match.Candidates[0].Confidence;
-                        // TODO: face.score = match.Candidates[0].Confidence;
-                        Logging.Log($"Identified person {face.PersonId.Value}.");
+                        // Find the face for this match
+                        var face = faces.FirstOrDefault(x => x.FaceId == match.FaceId);
+
+                        if (match.Candidates?.Count > 0)
+                        {
+                            // We got a match. Pick the first one for now.
+                            face.PersonId = match.Candidates[0].PersonId;
+                            face.Score = match.Candidates[0].Confidence;
+                            // TODO: face.score = match.Candidates[0].Confidence;
+                            Logging.Log($"Identified person {face.PersonId.Value}.");
+                        }
                     }
                 }
             }
@@ -346,11 +349,17 @@ namespace Damselfly.ML.Face.Azure
                 // It's somebody new - create the person
                 var createdPerson = await _transThrottle.Call("CreatePerson", _faceClient.PersonDirectory.CreatePersonAsync(body));
 
-                // Keep track of this - we could call GetGroup.List, but that uses up a transaction...
-                _persistedFaces++;
+                if (createdPerson != null && createdPerson.Body != null)
+                {
+                    // Keep track of this - we could call GetGroup.List, but that uses up a transaction...
+                    _persistedFaces++;
 
-                newFace.PersonId = createdPerson.Body.PersonId;
-                Logging.Log($"Created new person {newFace.PersonId.Value}.");
+
+                    newFace.PersonId = createdPerson.Body.PersonId;
+                    Logging.Log($"Created new person {newFace.PersonId.Value}.");
+                }
+                else
+                    Logging.LogWarning($"New person was not created from Azure. Possible API limit breach.");
             }
 
             return faces;

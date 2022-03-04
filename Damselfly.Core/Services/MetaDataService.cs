@@ -904,10 +904,13 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
-            var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
-            int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+            //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
+            //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
 
-            _statusService.StatusText = $"Folder {folder.Name} ({updated} images) flagged for Metadata scanning.";
+            int updated = await ImageMetaData.UpdateFields(db, folder, "LastUpdated", "2000-01-01");
+
+            if( updated != 0)
+                _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for Metadata scanning.";
 
             _workService.FlagNewJobs(this);
         }
