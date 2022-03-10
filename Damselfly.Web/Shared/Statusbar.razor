@@ -1,10 +1,12 @@
 ﻿@using Damselfly
 
+@implements IDisposable
+
 @inject UserStatusService statusService
 
 <div class="damselfly-statusbar">
     <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
-    <WorkStatus/>
+    <WorkStatus />
     <LoginDisplay />
     <Toolbar />
 </div>
