@@ -140,7 +140,7 @@ namespace Damselfly.Core.Services
                         SetStatus("Idle", JobStatus.Idle, cpuPercentage);
 
                         // Nothing to do, so have a kip.
-                        Thread.Sleep(jobFetchSleep * 5000);
+                        Thread.Sleep(jobFetchSleep * 1000);
                     }
                 }
             }
