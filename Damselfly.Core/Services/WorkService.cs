@@ -132,7 +132,8 @@ namespace Damselfly.Core.Services
                     ProcessJob(item, cpuPercentage);
                 }
 
-                // If there were no new jobs, or we've been flagged to recheck the queue, look
+                // If there were no new jobs, or we've been flagged to recheck the queue
+                // to see if there's any higher-priority jobs to process
                 if( item == null || _newJobsFlag )
                 {
                     if (!PopulateJobQueue())
