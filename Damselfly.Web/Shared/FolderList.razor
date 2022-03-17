@@ -144,6 +144,7 @@
         if (firstRender)
         {
             folderService.OnChange += OnFoldersChanged;
+            searchService.OnSearchChanged += OnSearchChanged;
 
             // Kick off the data load
             await ProcessUpdatedFilter();
@@ -153,11 +154,17 @@
     public void Dispose()
     {
         folderService.OnChange -= OnFoldersChanged;
+        searchService.OnSearchChanged -= OnSearchChanged;
     }
 
     private void OnFoldersChanged()
     {
         // Be careful of threading - we may get called from anywhere
         _ = ProcessUpdatedFilter();
+    }
+
+    private void OnSearchChanged()
+    {
+        InvokeAsync(StateHasChanged);
     }
 }
