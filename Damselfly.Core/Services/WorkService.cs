@@ -125,24 +125,26 @@ namespace Damselfly.Core.Services
                     continue;
                 }
 
+                var getNewJobs = _newJobsFlag;
                 var item = _jobQueue.TryDequeue();
+                _newJobsFlag = false;
 
-                if( item != null )
+                if ( item != null )
                 {
                     ProcessJob(item, cpuPercentage);
                 }
-
-                // If there were no new jobs, or we've been flagged to recheck the queue
-                // to see if there's any higher-priority jobs to process
-                if( item == null || _newJobsFlag )
+                else
                 {
-                    if (!PopulateJobQueue())
-                    {
-                        SetStatus("Idle", JobStatus.Idle, cpuPercentage);
+                    // No job to process, so we want to grab more
+                    getNewJobs = true;
+                }
 
-                        // Nothing to do, so have a kip.
-                        Thread.Sleep(jobFetchSleep * 1000);
-                    }
+                // See if there's any higher-priority jobs to process
+                if ( getNewJobs && ! PopulateJobQueue() )
+                {
+                    // Nothing to do, so set the status to idle, and have a kip.
+                    SetStatus("Idle", JobStatus.Idle, cpuPercentage);
+                    Thread.Sleep(jobFetchSleep * 1000);
                 }
             }
         }

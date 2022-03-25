@@ -30,7 +30,7 @@
     <PackageReference Include="System.Drawing.Common" Version="6.0.2-mauipre.1.22102.15" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.3" />
-    <PackageReference Include="SendGrid" Version="9.26.0" />
+    <PackageReference Include="SendGrid" Version="9.27.0" />
     <PackageReference Include="MailKit" Version="3.1.1" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.3" />
