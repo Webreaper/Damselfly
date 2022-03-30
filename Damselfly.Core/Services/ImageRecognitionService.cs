@@ -725,7 +725,9 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
-            var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null && x.ThumbLastUpdated != null)
+            var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null
+                                                        && x.ThumbLastUpdated != null
+                                                        && x.LastUpdated > DateTime.MinValue )
                             .OrderByDescending(x => x.LastUpdated)
                             .Take(maxJobs)
                             .Select(x => x.ImageId)
