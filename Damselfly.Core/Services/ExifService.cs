@@ -436,7 +436,7 @@ namespace Damselfly.Core.Services
                                 .Select(x => $"{x.Key}: {x.Count()}")
                                 .ToList());
                 
-            _statusService.StatusText = $"EXIF data written for {image.FileName}. {totals}";
+            _statusService.StatusText = $"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}";
   
             return success;
         }

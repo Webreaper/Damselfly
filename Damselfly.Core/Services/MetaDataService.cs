@@ -337,6 +337,8 @@ namespace Damselfly.Core.Services
                     }
                 }
 
+                Logging.Log($"Read metadata for {image.FullPath} (ID: {image.ImageId}) including {keywords.Count()} keywords.");
+
                 DumpMetaData(image, metadata);
             }
             catch (Exception ex)
