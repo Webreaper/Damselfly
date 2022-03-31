@@ -902,14 +902,17 @@ namespace Damselfly.Core.Services
 
         #endregion
 
+        // Use a const which isn't DateTime.MinValue - it just has to be older than when Damselfly first existed.
+        private static readonly DateTime NoMetadataDate = new DateTime(2000, 01, 01);
+
         public async Task MarkFolderForScan(Folder folder)
         {
             using var db = new ImageContext();
 
             //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
-            //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+            //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-            int updated = await ImageMetaData.UpdateFields(db, folder, "LastUpdated", "2000-01-01");
+            int updated = await ImageMetaData.UpdateFields(db, folder, "LastUpdated", $"{NoMetadataDate:yyyy-mm-dd}");
 
             if( updated != 0)
                 _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for Metadata scanning.";
@@ -921,7 +924,7 @@ namespace Damselfly.Core.Services
         {
             using var db = new ImageContext();
 
-            int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+            int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
             _statusService.StatusText = $"All {updated} images flagged for Metadata scanning.";
 
@@ -935,7 +938,7 @@ namespace Damselfly.Core.Services
             var ids = images.Select(x => x.ImageId).ToList();
             var queryable = db.ImageMetaData.Where(i => ids.Contains(i.ImageId));
 
-            int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = DateTime.MinValue });
+            int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
             var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
             _statusService.StatusText = $"{msgText} flagged for Metadata scanning.";
