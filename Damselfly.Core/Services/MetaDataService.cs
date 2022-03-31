@@ -274,10 +274,10 @@ namespace Damselfly.Core.Services
                     if (IfdDirectory != null)
                     {
 
-                        var exifDesc = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription);
+                        var exifDesc = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription).Trim();
                         imgMetaData.Description = FilteredDescription( exifDesc );
 
-                        imgMetaData.Copyright = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagCopyright);
+                        imgMetaData.Copyright = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagCopyright).Trim();
 
                         orientation = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagOrientation);
                         var camMake = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagMake);
@@ -303,14 +303,14 @@ namespace Damselfly.Core.Services
 
                     if (IPTCdir != null)
                     {
-                        var caption = IPTCdir.SafeExifGetString(IptcDirectory.TagCaption);
-                        var byline = IPTCdir.SafeExifGetString(IptcDirectory.TagByLine);
-                        var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource);
+                        var caption = IPTCdir.SafeExifGetString(IptcDirectory.TagCaption).Trim();
+                        var byline = IPTCdir.SafeExifGetString(IptcDirectory.TagByLine).Trim();
+                        var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource).Trim();
 
                         imgMetaData.Caption = FilteredDescription(caption);
                         if( ! string.IsNullOrEmpty(imgMetaData.Copyright ) )
-                            imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice);
-                        imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit);
+                            imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice).Trim();
+                        imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit).Trim();
 
                         if (string.IsNullOrEmpty(imgMetaData.Credit) && !string.IsNullOrEmpty(source))
                             imgMetaData.Credit = source;
