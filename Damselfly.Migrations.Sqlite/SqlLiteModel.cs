@@ -92,7 +92,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             ExecutePragma(db, "PRAGMA temp_store=MEMORY;");
 
             // Massive hack....
-            Logging.Log("Deleting corrupt ImageMetaData entries");
+            Logging.LogTrace("Deleting corrupt ImageMetaData entries");
             db.Database.ExecuteSqlRaw("delete from imagemetadata where Lastupdated = 1998;");
 
             Logging.Log("Running Sqlite DB optimisation...");

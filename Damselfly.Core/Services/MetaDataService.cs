@@ -902,8 +902,7 @@ namespace Damselfly.Core.Services
 
         #endregion
 
-        // Use a const which isn't DateTime.MinValue - it just has to be older than when Damselfly first existed.
-        private static readonly DateTime NoMetadataDate = new DateTime(2000, 01, 01);
+        private static readonly DateTime NoMetadataDate = DateTime.MinValue;
 
         public async Task MarkFolderForScan(Folder folder)
         {
@@ -912,7 +911,7 @@ namespace Damselfly.Core.Services
             //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
             //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-            int updated = await ImageMetaData.UpdateFields(db, folder, "LastUpdated", $"{NoMetadataDate:yyyy-mm-dd}");
+            int updated = await ImageMetaData.UpdateFields(db, folder, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
 
             if( updated != 0)
                 _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for Metadata scanning.";

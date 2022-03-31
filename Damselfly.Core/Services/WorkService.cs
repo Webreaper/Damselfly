@@ -5,6 +5,7 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading;
+using Humanizer;
 
 namespace Damselfly.Core.Services
 {
@@ -234,9 +235,9 @@ namespace Damselfly.Core.Services
             // up again in future during the next GetPendingJobs call.
             if( job.CanProcess )
             {
-                string jobName = job.Description.Replace( " ", "" );
+                string jobName = job.GetType().Name;
 
-                SetStatus($"{job.Description}", JobStatus.Running, cpuPercentage);
+                SetStatus($"{jobName.Humanize()}", JobStatus.Running, cpuPercentage);
 
                 Logging.LogVerbose($"Processing job type: {jobName}");
 
