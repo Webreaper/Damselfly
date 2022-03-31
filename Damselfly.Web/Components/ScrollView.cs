@@ -3,58 +3,57 @@ using Damselfly.Core.Services;
 /// <summary>
 /// State helpers for the scrollview
 /// </summary>
-namespace Damselfly.Web.Components
+namespace Damselfly.Web.Components;
+
+public class ScrollView
 {
-    public class ScrollView
+    public int ClientHeight { get; set; }
+    public int ScrollTop { set; get; }
+
+    public override string ToString()
     {
-        public int ClientHeight { get; set; }
-        public int ScrollTop { set; get; }
-
-        public override string ToString()
-        {
-            return $"ClientHeight: {ClientHeight}, Top: {ScrollTop}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            var other = obj as ScrollView;
-
-            if (other == null || other.ClientHeight != ClientHeight || other.ScrollTop != ScrollTop)
-                return false;
-
-            return true;
-        }
-
-        public override int GetHashCode()
-        {
-            return ClientHeight.GetHashCode() ^ ScrollTop.GetHashCode();
-        }
+        return $"ClientHeight: {ClientHeight}, Top: {ScrollTop}";
     }
 
-    public class ScrollViewResult
+    public override bool Equals(object obj)
     {
-        public int Height { get; set; }
-        public int SkipItems { get; set; }
-        public int TakeItems { get; set; }
+        var other = obj as ScrollView;
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as ScrollViewResult;
+        if (other == null || other.ClientHeight != ClientHeight || other.ScrollTop != ScrollTop)
+            return false;
 
-            if (other == null || other.Height != Height || other.SkipItems != SkipItems || other.TakeItems != TakeItems)
-                return false;
+        return true;
+    }
 
-            return true;
-        }
+    public override int GetHashCode()
+    {
+        return ClientHeight.GetHashCode() ^ ScrollTop.GetHashCode();
+    }
+}
 
-        public override string ToString()
-        {
-            return $"Height: {Height}, Skip: {SkipItems}, Take: {TakeItems}";
-        }
+public class ScrollViewResult
+{
+    public int Height { get; set; }
+    public int SkipItems { get; set; }
+    public int TakeItems { get; set; }
 
-        public override int GetHashCode()
-        {
-            return Height.GetHashCode() ^ SkipItems.GetHashCode() ^ TakeItems.GetHashCode();
-        }
+    public override bool Equals(object obj)
+    {
+        var other = obj as ScrollViewResult;
+
+        if (other == null || other.Height != Height || other.SkipItems != SkipItems || other.TakeItems != TakeItems)
+            return false;
+
+        return true;
+    }
+
+    public override string ToString()
+    {
+        return $"Height: {Height}, Skip: {SkipItems}, Take: {TakeItems}";
+    }
+
+    public override int GetHashCode()
+    {
+        return Height.GetHashCode() ^ SkipItems.GetHashCode() ^ TakeItems.GetHashCode();
     }
 }
