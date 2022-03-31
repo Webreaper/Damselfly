@@ -247,7 +247,7 @@ namespace Damselfly.Core.Services
                 }
                 catch( Exception ex )
                 {
-                    Logging.LogError($"Exception processing {job.GetType().Name} job for ID {job.ImageId}: {ex.Message}");
+                    Logging.LogError($"Exception processing {job.Description}: {ex.Message}");
                 }
                 finally
                 {
