@@ -672,6 +672,7 @@ public class ExifService : IProcessJobFactory
         public string Description => $"Writing {ExifOps.Count()} Metadata for ID: {ImageId}";
         public DateTime ProcessSchedule { get; set; }
         public JobPriorities Priority => JobPriorities.ExifService;
+        public override string ToString() => Description;
 
         public async Task Process()
         {

@@ -950,6 +950,7 @@ public class MetaDataService : IProcessJobFactory
         public string Name => $"Metadata scan";
         public string Description => $"{Name} for ID: {ImageId}";
         public JobPriorities Priority => JobPriorities.Metadata;
+        public override string ToString() => Description;
 
         public async Task Process()
         {

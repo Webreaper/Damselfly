@@ -645,6 +645,7 @@ public class ThumbnailService : IProcessJobFactory
         public string Name => "Thumbnail Generation";
         public string Description => $"Thumbnail gen for ID:{ImageId}";
         public JobPriorities Priority => JobPriorities.Thumbnails;
+        public override string ToString() => Description;
 
         public async Task Process()
         {

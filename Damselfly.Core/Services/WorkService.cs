@@ -46,6 +46,7 @@ public class WorkService
     private volatile bool _newJobsFlag = false;
 
     private readonly ConcurrentPriorityQueue<IProcessJob> _jobQueue = new ConcurrentPriorityQueue<IProcessJob>();
+    private readonly ConcurrentDictionary<string, IProcessJob> _jobQueueLookup = new ConcurrentDictionary<string, IProcessJob>();
     private readonly ConcurrentBag<IProcessJobFactory> _jobSources = new ConcurrentBag<IProcessJobFactory>();
     private const int _maxQueueSize = 500;
     private CPULevelSettings _cpuSettings = new CPULevelSettings();
@@ -126,6 +127,8 @@ public class WorkService
 
             if ( item != null )
             {
+                _jobQueueLookup.TryRemove(item.Description, out var _);
+
                 ProcessJob(item, cpuPercentage);
             }
             else
@@ -137,10 +140,13 @@ public class WorkService
             // See if there's any higher-priority jobs to process
             if ( getNewJobs && ! PopulateJobQueue() )
             {
-                // Nothing to do, so set the status to idle, and have a kip.
-                SetStatus("Idle", JobStatus.Idle, cpuPercentage);
-                Logging.Log("Background processing complete for now. Going idle...");
-                Thread.Sleep(jobFetchSleep * 1000);
+                if (_jobQueueLookup.IsEmpty)
+                {
+
+                    // Nothing to do, so set the status to idle, and have a kip.
+                    SetStatus("Idle", JobStatus.Idle, cpuPercentage);
+                    Thread.Sleep(jobFetchSleep * 1000);
+                }
             }
         }
     }
@@ -208,8 +214,11 @@ public class WorkService
 
                 foreach (var job in jobs)
                 {
-                    _jobQueue.Enqueue(job, (int)job.Priority);
-                    newJobs = true;
+                    if (_jobQueueLookup.TryAdd(job.Description, job))
+                    {
+                        _jobQueue.Enqueue(job, (int)job.Priority);
+                        newJobs = true;
+                    }
                 }
             }
             catch (Exception ex)

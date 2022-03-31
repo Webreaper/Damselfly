@@ -711,6 +711,7 @@ public class ImageRecognitionService : IProcessJobFactory
         public string Name => $"AI processing";
         public string Description => $"{Name} for ID: {ImageId}";
         public JobPriorities Priority => JobPriorities.ImageRecognition;
+        public override string ToString() => Description;
 
         public async Task Process()
         {
@@ -727,8 +728,7 @@ public class ImageRecognitionService : IProcessJobFactory
         using var db = new ImageContext();
 
         var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null
-                                                    && x.ThumbLastUpdated != null
-                                                    && x.Image.LastUpdated <= x.LastUpdated )
+                                                    && x.ThumbLastUpdated != null )
                         .OrderByDescending(x => x.LastUpdated)
                         .Take(maxJobs)
                         .Select(x => x.ImageId)

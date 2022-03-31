@@ -461,6 +461,7 @@ public class IndexingService : IProcessJobFactory
         public string Name { get; set; }
         public string Description => $"{Name} {Path}";
         public JobPriorities Priority => IsFullIndex ? JobPriorities.FullIndexing : JobPriorities.Indexing;
+        public override string ToString() => Description;
 
         public async Task Process()
         {
