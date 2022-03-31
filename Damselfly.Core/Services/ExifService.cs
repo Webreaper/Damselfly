@@ -669,6 +669,7 @@ namespace Damselfly.Core.Services
             public List<ExifOperation> ExifOps { get; set; }
             public ExifService Service { get; set; }
             public bool CanProcess => true;
+            public string Name => "Writing Metadata";
             public string Description => $"Writing {ExifOps.Count()} Metadata for ID: {ImageId}";
             public DateTime ProcessSchedule { get; set; }
             public JobPriorities Priority => JobPriorities.ExifService;

@@ -643,6 +643,7 @@ namespace Damselfly.Core.Services
             public int ImageId { get; set; }
             public ThumbnailService Service { get; set; }
             public bool CanProcess => true;
+            public string Name => "Thumbnail Generation";
             public string Description => $"Thumbnail gen for ID:{ImageId}";
             public JobPriorities Priority => JobPriorities.Thumbnails;
 

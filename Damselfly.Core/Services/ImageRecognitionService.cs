@@ -708,7 +708,8 @@ namespace Damselfly.Core.Services
         {
             public int ImageId { get; set; }
             public ImageRecognitionService Service { get; set; }
-            public string Description => $"AI processing for ID: {ImageId}";
+            public string Name => $"AI processing";
+            public string Description => $"{Name} for ID: {ImageId}";
             public JobPriorities Priority => JobPriorities.ImageRecognition;
 
             public async Task Process()

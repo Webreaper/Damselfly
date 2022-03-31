@@ -462,7 +462,8 @@ namespace Damselfly.Core.Services
             public DirectoryInfo Path { get; set; }
             public IndexingService Service { get; set; }
             public bool CanProcess => true;
-            public string Description { get; set; }
+            public string Name { get; set; }
+            public string Description => $"{Name} {Path}";
             public JobPriorities Priority => IsFullIndex ? JobPriorities.FullIndexing : JobPriorities.Indexing;
 
             public async Task Process()
@@ -491,7 +492,7 @@ namespace Damselfly.Core.Services
                 var jobs = folders.Select(x => new IndexProcess {
                                             Path = new DirectoryInfo(x.Path),
                                             Service = this,
-                                            Description = $"Indexing {x.Path}" })
+                                            Name = "Indexing" })
                                   .ToArray();
 
                 return jobs;
@@ -508,7 +509,7 @@ namespace Damselfly.Core.Services
                 {
                     Path = new DirectoryInfo( RootFolder ),
                     Service = this,
-                    Description = "Full Index",
+                    Name = "Full Index",
                     IsFullIndex = true
                 } };
             }

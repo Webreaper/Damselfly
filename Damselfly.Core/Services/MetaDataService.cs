@@ -948,7 +948,8 @@ namespace Damselfly.Core.Services
             public int ImageId { get; set; }
             public MetaDataService Service { get; set; }
             public bool CanProcess => true;
-            public string Description => $"Metadata scan for ID: {ImageId}";
+            public string Name => $"Metadata scan";
+            public string Description => $"{Name} for ID: {ImageId}";
             public JobPriorities Priority => JobPriorities.Metadata;
 
             public async Task Process()

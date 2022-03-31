@@ -18,6 +18,7 @@ namespace Damselfly.Core.Interfaces
     {
         Task Process();
         bool CanProcess { get; }
+        string Name { get; }
         string Description { get; }
         JobPriorities Priority { get; }
     }

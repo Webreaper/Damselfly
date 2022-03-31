@@ -237,7 +237,7 @@ namespace Damselfly.Core.Services
             {
                 string jobName = job.GetType().Name;
 
-                SetStatus($"{jobName.Humanize()}", JobStatus.Running, cpuPercentage);
+                SetStatus($"{job.Name}", JobStatus.Running, cpuPercentage);
 
                 Logging.LogVerbose($"Processing job type: {jobName}");
 
