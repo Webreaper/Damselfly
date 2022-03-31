@@ -491,7 +491,7 @@ namespace Damselfly.Core.Services
                 var jobs = folders.Select(x => new IndexProcess {
                                             Path = new DirectoryInfo(x.Path),
                                             Service = this,
-                                            Description = "Indexing" })
+                                            Description = $"Indexing {x.Path}" })
                                   .ToArray();
 
                 return jobs;
