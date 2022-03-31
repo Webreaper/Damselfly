@@ -1,28 +1,27 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Damselfly.Web.Components
+namespace Damselfly.Web.Components;
+
+/// <summary>
+/// Callback management for th Scrollview JS interop
+/// </summary>
+public class VirtualScrollJsHelper
 {
-    /// <summary>
-    /// Callback management for th Scrollview JS interop
-    /// </summary>
-    public class VirtualScrollJsHelper
+    private readonly IVirtualScroll _host;
+
+    public VirtualScrollJsHelper(IVirtualScroll host)
     {
-        private readonly IVirtualScroll _host;
-
-        public VirtualScrollJsHelper(IVirtualScroll host)
-        {
-            _host = host;
-        }
-
-        [JSInvokable]
-        public void VirtualScrollingSetView(ScrollView view)
-        {
-            _host.VirtualScrollingSetView(view);
-        }
+        _host = host;
     }
 
-    public interface IVirtualScroll
+    [JSInvokable]
+    public void VirtualScrollingSetView(ScrollView view)
     {
-        void VirtualScrollingSetView(ScrollView view);
+        _host.VirtualScrollingSetView(view);
     }
+}
+
+public interface IVirtualScroll
+{
+    void VirtualScrollingSetView(ScrollView view);
 }

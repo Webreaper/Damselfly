@@ -8,6 +8,20 @@ namespace Damselfly.Core.Utils
     public static class StringExtensions
     {
         /// <summary>
+        /// Trim method with safety for null or empty strings.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static string SafeTrim( this string source )
+        {
+            if (source == null)
+                return null;
+
+            return source.Trim();
+        }
+
+
+        /// <summary>
         /// Case insensitive contains. Still not really sure why this
         /// isn't something that's part of .Net....
         /// </summary>

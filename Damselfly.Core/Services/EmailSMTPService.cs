@@ -6,104 +6,103 @@ using System.Threading.Tasks;
 using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Utils;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.Services;
+
+/// <summary>
+/// IEmailSender implementation that uses SMTP
+/// </summary>
+public class EmailSmtpService : IEmailSender
 {
-    /// <summary>
-    /// IEmailSender implementation that uses SMTP
-    /// </summary>
-    public class EmailSmtpService : IEmailSender
+    public class SmtpSettings
     {
-        public class SmtpSettings
+        public string MailServer { get; set; }
+        public int MailPort { get; set; }
+        public string SenderName { get; set; }
+        public string Sender { get; set; }
+        public string Password { get; set; }
+
+        public void Load( ConfigService configService )
         {
-            public string MailServer { get; set; }
-            public int MailPort { get; set; }
-            public string SenderName { get; set; }
-            public string Sender { get; set; }
-            public string Password { get; set; }
-
-            public void Load( ConfigService configService )
-            {
-                MailServer = configService.Get(ConfigSettings.SmtpServer);
-                MailPort = configService.GetInt(ConfigSettings.SmtpPort);
-                Password = configService.Get(ConfigSettings.SmtpPassword);
-                Sender = configService.Get(ConfigSettings.SmtpSenderEmail);
-                SenderName = configService.Get(ConfigSettings.SmtpSenderName);
-            }
-
-            public void Save(ConfigService configService)
-            {
-                configService.Set(ConfigSettings.SmtpServer, MailServer);
-                configService.Set(ConfigSettings.SmtpPort, MailPort.ToString());
-                configService.Set(ConfigSettings.SmtpPassword, Password);
-                configService.Set(ConfigSettings.SmtpSenderEmail, Sender);
-                configService.Set(ConfigSettings.SmtpSenderName, SenderName);
-            }
+            MailServer = configService.Get(ConfigSettings.SmtpServer);
+            MailPort = configService.GetInt(ConfigSettings.SmtpPort);
+            Password = configService.Get(ConfigSettings.SmtpPassword);
+            Sender = configService.Get(ConfigSettings.SmtpSenderEmail);
+            SenderName = configService.Get(ConfigSettings.SmtpSenderName);
         }
 
-        public bool IsValid
+        public void Save(ConfigService configService)
         {
-            get { return !string.IsNullOrEmpty(_emailSettings.MailServer) && !string.IsNullOrEmpty(_emailSettings.Password); }
+            configService.Set(ConfigSettings.SmtpServer, MailServer);
+            configService.Set(ConfigSettings.SmtpPort, MailPort.ToString());
+            configService.Set(ConfigSettings.SmtpPassword, Password);
+            configService.Set(ConfigSettings.SmtpSenderEmail, Sender);
+            configService.Set(ConfigSettings.SmtpSenderName, SenderName);
         }
+    }
 
-        private readonly SmtpSettings _emailSettings = new SmtpSettings();
+    public bool IsValid
+    {
+        get { return !string.IsNullOrEmpty(_emailSettings.MailServer) && !string.IsNullOrEmpty(_emailSettings.Password); }
+    }
 
-        public EmailSmtpService( ConfigService configService )
+    private readonly SmtpSettings _emailSettings = new SmtpSettings();
+
+    public EmailSmtpService( ConfigService configService )
+    {
+        _emailSettings.Load(configService);
+    }
+
+    public async Task SendEmailAsync(string email, string subject, string message)
+    {
+        Logging.Log($"Sending email to {email} using SMTP service.");
+
+        try
         {
-            _emailSettings.Load(configService);
-        }
+            var mimeMessage = new MimeMessage();
 
-        public async Task SendEmailAsync(string email, string subject, string message)
-        {
-            Logging.Log($"Sending email to {email} using SMTP service.");
+            mimeMessage.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.Sender));
 
-            try
+            mimeMessage.To.Add(new MailboxAddress(_emailSettings.SenderName, email));
+
+            mimeMessage.Subject = subject;
+
+            mimeMessage.Body = new TextPart("html")
             {
-                var mimeMessage = new MimeMessage();
+                Text = message
+            };
 
-                mimeMessage.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.Sender));
+            using (var client = new SmtpClient())
+            {
+                // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
+                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                mimeMessage.To.Add(new MailboxAddress(_emailSettings.SenderName, email));
-
-                mimeMessage.Subject = subject;
-
-                mimeMessage.Body = new TextPart("html")
+                if (System.Diagnostics.Debugger.IsAttached)
                 {
-                    Text = message
-                };
-
-                using (var client = new SmtpClient())
+                    // The third parameter is useSSL (true if the client should make an SSL-wrapped
+                    // connection to the server; otherwise, false).
+                    await client.ConnectAsync(_emailSettings.MailServer, _emailSettings.MailPort, true);
+                }
+                else
                 {
-                    // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
-                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-                    if (System.Diagnostics.Debugger.IsAttached)
-                    {
-                        // The third parameter is useSSL (true if the client should make an SSL-wrapped
-                        // connection to the server; otherwise, false).
-                        await client.ConnectAsync(_emailSettings.MailServer, _emailSettings.MailPort, true);
-                    }
-                    else
-                    {
-                        await client.ConnectAsync(_emailSettings.MailServer);
-                    }
-
-                    // Note: only needed if the SMTP server requires authentication
-                    await client.AuthenticateAsync(_emailSettings.Sender, _emailSettings.Password);
-
-                    await client.SendAsync(mimeMessage);
-
-                    await client.DisconnectAsync(true);
-
-                    Logging.Log($"Email send to {email} complete.");
+                    await client.ConnectAsync(_emailSettings.MailServer);
                 }
 
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError($"SMTP send error: {ex}");
-            }
-        }
+                // Note: only needed if the SMTP server requires authentication
+                await client.AuthenticateAsync(_emailSettings.Sender, _emailSettings.Password);
 
+                await client.SendAsync(mimeMessage);
+
+                await client.DisconnectAsync(true);
+
+                Logging.Log($"Email send to {email} complete.");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError($"SMTP send error: {ex}");
+        }
     }
+
 }
 

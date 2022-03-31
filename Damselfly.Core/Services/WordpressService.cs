@@ -9,171 +9,170 @@ using System.IO;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.Constants;
 
-namespace Damselfly.Core.Services
+namespace Damselfly.Core.Services;
+
+/// <summary>
+/// Service for accessing Wordpress and uploading media.
+/// </summary>
+public class WordpressService
 {
-    /// <summary>
-    /// Service for accessing Wordpress and uploading media.
-    /// </summary>
-    public class WordpressService
+    private WordPressClient _client;
+    private readonly StatusService _statusService;
+    private readonly ConfigService _configService;
+    private readonly ImageProcessService _imageProcessService;
+
+    public WordpressService( ImageProcessService imageService,
+                             ConfigService configService,
+                             StatusService statusService)
     {
-        private WordPressClient _client;
-        private readonly StatusService _statusService;
-        private readonly ConfigService _configService;
-        private readonly ImageProcessService _imageProcessService;
+        _configService = configService;
+        _statusService = statusService;
+        _imageProcessService = imageService;
 
-        public WordpressService( ImageProcessService imageService,
-                                 ConfigService configService,
-                                 StatusService statusService)
+        ResetClient();
+    }
+
+    /// <summary>
+    /// Upload the basket imagesconfigured Wordpress  site's media library
+    /// TODO: Add option to watermark and resize images when uploading
+    /// </summary>
+    /// <returns></returns>
+    public async Task UploadBasketToWordpress( List<Image> images)
+    {
+        try
         {
-            _configService = configService;
-            _statusService = statusService;
-            _imageProcessService = imageService;
+            _statusService.StatusText = $"Uploading {images.Count()} to Wordpress...";
 
-            ResetClient();
-        }
+            Logging.LogVerbose($"Checking token validity...");
 
-        /// <summary>
-        /// Upload the basket imagesconfigured Wordpress  site's media library
-        /// TODO: Add option to watermark and resize images when uploading
-        /// </summary>
-        /// <returns></returns>
-        public async Task UploadBasketToWordpress( List<Image> images)
-        {
-            try
+            bool validToken = await CheckTokenValidity();
+
+            if( validToken )
             {
-                _statusService.StatusText = $"Uploading {images.Count()} to Wordpress...";
-
-                Logging.LogVerbose($"Checking token validity...");
-
-                bool validToken = await CheckTokenValidity();
-
-                if( validToken )
+                foreach (var image in images)
                 {
-                    foreach (var image in images)
-                    {
-                        using var memoryStream = new MemoryStream();
+                    using var memoryStream = new MemoryStream();
 
-                        // We shrink the images a bit before upload to Wordpress.
-                        // TODO: Support watermarks for WP Upload in future.
-                        ExportConfig wpConfig = new ExportConfig { Size = ExportSize.Large, WatermarkText = null };
+                    // We shrink the images a bit before upload to Wordpress.
+                    // TODO: Support watermarks for WP Upload in future.
+                    ExportConfig wpConfig = new ExportConfig { Size = ExportSize.Large, WatermarkText = null };
 
-                        // This saves to the memoryStream with encoder
-                        await _imageProcessService.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
+                    // This saves to the memoryStream with encoder
+                    await _imageProcessService.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
 
-                        // The position needs to be reset, before we push it to Wordpress
-                        memoryStream.Position = 0; 
+                    // The position needs to be reset, before we push it to Wordpress
+                    memoryStream.Position = 0; 
 
-                        _statusService.StatusText = $"Uploading {image.FileName} to Wordpress.";
+                    _statusService.StatusText = $"Uploading {image.FileName} to Wordpress.";
 
-                        await _client.Media.Create(memoryStream, image.FileName);
+                    await _client.Media.Create(memoryStream, image.FileName);
 
-                        Logging.LogVerbose($"Image uploaded: {image.FullPath} successfully.");
-                    }
-
-                    _statusService.StatusText = $"{images.Count()} images uploaded to Wordpress.";
+                    Logging.LogVerbose($"Image uploaded: {image.FullPath} successfully.");
                 }
-                else
-                {
-                    Logging.LogError($"Token was invalid.");
-                    _statusService.StatusText = $"Authentication error uploading to Wordpress.";
-                }
+
+                _statusService.StatusText = $"{images.Count()} images uploaded to Wordpress.";
             }
-            catch (Exception e)
+            else
             {
-                Logging.LogError($"Error uploading to Wordpress: {e.Message}");
-                _statusService.StatusText = $"Error uploading images to Wordpress. Please check the logs.";
+                Logging.LogError($"Token was invalid.");
+                _statusService.StatusText = $"Authentication error uploading to Wordpress.";
             }
         }
-
-        /// <summary>
-        /// See if the token we have is valid. If it is, return true.
-        /// If it's invalid (either we never had one, or it's expired)
-        /// request a new one.
-        /// </summary>
-        /// <returns></returns>
-        private async Task<bool> CheckTokenValidity()
+        catch (Exception e)
         {
-            bool gotToken = false;
-
-            if (_client == null)
-            {
-                // Create the one-time client.
-                // TODO: Destroy this if the settings are updated.
-                _client = GetClient();
-
-                if (_client == null)
-                    return false;
-            }
-
-            // Now check if we have a valid token (they expire after
-            // 24 hours) and if not, obtain one
-            gotToken = await _client.IsValidJWToken();
-
-            if (! gotToken )
-            {
-                var user = _configService.Get(ConfigSettings.WordpressUser);
-                var pass = _configService.Get(ConfigSettings.WordpressPassword);
-
-                Logging.LogVerbose($"No valid JWT token. Requesting a new one.");
-
-                await _client.RequestJWToken( user, pass );
-
-                gotToken = await _client.IsValidJWToken();
-            }
-
-            var state = gotToken ? "valid" : "invalid";
-            Logging.LogVerbose($"JWT token is {state}.");
-
-            return gotToken;
+            Logging.LogError($"Error uploading to Wordpress: {e.Message}");
+            _statusService.StatusText = $"Error uploading images to Wordpress. Please check the logs.";
         }
+    }
 
-        /// <summary>
-        /// Reset the client - use this if the settings are updated.
-        /// </summary>
-        public void ResetClient()
+    /// <summary>
+    /// See if the token we have is valid. If it is, return true.
+    /// If it's invalid (either we never had one, or it's expired)
+    /// request a new one.
+    /// </summary>
+    /// <returns></returns>
+    private async Task<bool> CheckTokenValidity()
+    {
+        bool gotToken = false;
+
+        if (_client == null)
         {
+            // Create the one-time client.
+            // TODO: Destroy this if the settings are updated.
             _client = GetClient();
 
-            if( _client != null )
-                Logging.Log("Wordpress API client reset.");
+            if (_client == null)
+                return false;
         }
 
-        /// <summary>
-        /// Create the Wordpress PCL client.
-        /// </summary>
-        /// <returns></returns>
-        private WordPressClient GetClient()
+        // Now check if we have a valid token (they expire after
+        // 24 hours) and if not, obtain one
+        gotToken = await _client.IsValidJWToken();
+
+        if (! gotToken )
         {
-            WordPressClient client = null;
+            var user = _configService.Get(ConfigSettings.WordpressUser);
+            var pass = _configService.Get(ConfigSettings.WordpressPassword);
 
-            try
-            {
-                var wpUrl = _configService.Get(ConfigSettings.WordpressURL);
+            Logging.LogVerbose($"No valid JWT token. Requesting a new one.");
 
-                if (!String.IsNullOrEmpty(wpUrl))
-                {
-                    var baseUrl = new Uri(wpUrl);
-                    var url = new Uri(baseUrl, "/wp-json/");
+            await _client.RequestJWToken( user, pass );
 
-                    Logging.LogVerbose($"Initialising Wordpress Client for {url}...");
-
-                    // JWT authentication
-                    client = new WordPressClient(url.ToString());
-                    client.AuthMethod = AuthMethod.JWT;
-
-                    Logging.Log($"JWT Auth token generated successfully.");
-                }
-                else
-                    Logging.Log("Wordpress integration was not configured.");
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError($"Unable to create Wordpress Client: {ex.Message}");
-                client = null;
-            }
-
-            return client;
+            gotToken = await _client.IsValidJWToken();
         }
 
+        var state = gotToken ? "valid" : "invalid";
+        Logging.LogVerbose($"JWT token is {state}.");
+
+        return gotToken;
     }
+
+    /// <summary>
+    /// Reset the client - use this if the settings are updated.
+    /// </summary>
+    public void ResetClient()
+    {
+        _client = GetClient();
+
+        if( _client != null )
+            Logging.Log("Wordpress API client reset.");
+    }
+
+    /// <summary>
+    /// Create the Wordpress PCL client.
+    /// </summary>
+    /// <returns></returns>
+    private WordPressClient GetClient()
+    {
+        WordPressClient client = null;
+
+        try
+        {
+            var wpUrl = _configService.Get(ConfigSettings.WordpressURL);
+
+            if (!String.IsNullOrEmpty(wpUrl))
+            {
+                var baseUrl = new Uri(wpUrl);
+                var url = new Uri(baseUrl, "/wp-json/");
+
+                Logging.LogVerbose($"Initialising Wordpress Client for {url}...");
+
+                // JWT authentication
+                client = new WordPressClient(url.ToString());
+                client.AuthMethod = AuthMethod.JWT;
+
+                Logging.Log($"JWT Auth token generated successfully.");
+            }
+            else
+                Logging.Log("Wordpress integration was not configured.");
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError($"Unable to create Wordpress Client: {ex.Message}");
+            client = null;
+        }
+
+        return client;
+    }
+
 }
