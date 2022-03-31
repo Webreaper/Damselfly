@@ -139,6 +139,7 @@ public class WorkService
             {
                 // Nothing to do, so set the status to idle, and have a kip.
                 SetStatus("Idle", JobStatus.Idle, cpuPercentage);
+                Logging.Log("Background processing complete for now. Going idle...");
                 Thread.Sleep(jobFetchSleep * 1000);
             }
         }
