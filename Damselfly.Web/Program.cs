@@ -114,6 +114,8 @@ namespace Damselfly.Web
                 ThumbnailService.SetThumbnailRoot(o.ThumbPath);
                 ThumbnailService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
 
+                var tieredPGO = System.Environment.GetEnvironmentVariable("DOTNET_TieredPGO") == "1";
+
                 Logging.Log("Startup State:");
                 Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
                 Logging.Log($" CLR Ver: {Environment.Version}");
@@ -125,6 +127,7 @@ namespace Damselfly.Web
                 Logging.Log($" Indexing = {!o.NoEnableIndexing}");
                 Logging.Log($" ThumbGen = {!o.NoGenerateThumbnails}");
                 Logging.Log($" Images Root set as {o.SourceDirectory}");
+                Logging.Log($" TieredPGO Enabled={tieredPGO}");
 
                 IDataBase dbType = null;
 

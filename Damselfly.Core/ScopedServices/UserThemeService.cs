@@ -2,42 +2,41 @@
 using Damselfly.Core.Utils.Constants;
 using static Damselfly.Core.ScopedServices.ThemeService;
 
-namespace Damselfly.Core.ScopedServices
+namespace Damselfly.Core.ScopedServices;
+
+public class UserThemeService
 {
-    public class UserThemeService
+    private readonly UserConfigService _configService;
+    private readonly ThemeService _themeService;
+    private ThemeConfig _currentTheme;
+    public event Action<ThemeConfig> OnChangeTheme;
+
+    public UserThemeService( UserConfigService configService, ThemeService themeService)
     {
-        private readonly UserConfigService _configService;
-        private readonly ThemeService _themeService;
-        private ThemeConfig _currentTheme;
-        public event Action<ThemeConfig> OnChangeTheme;
+        _configService = configService;
+        _themeService = themeService;
 
-        public UserThemeService( UserConfigService configService, ThemeService themeService)
+        var userTheme = _configService.Get(ConfigSettings.Theme, "green");
+        _currentTheme = _themeService.GetThemeConfig(userTheme);
+    }
+
+    public string CurrentThemeName
+    {
+        get
         {
-            _configService = configService;
-            _themeService = themeService;
-
-            var userTheme = _configService.Get(ConfigSettings.Theme, "green");
-            _currentTheme = _themeService.GetThemeConfig(userTheme);
+            return _currentTheme.Name;
         }
-
-        public string CurrentThemeName
+        set
         {
-            get
-            {
-                return _currentTheme.Name;
-            }
-            set
-            {
-                _currentTheme = _themeService.GetThemeConfig(value);
-                _configService.Set(ConfigSettings.Theme, value);
-                OnChangeTheme?.Invoke(_currentTheme);
-            }
+            _currentTheme = _themeService.GetThemeConfig(value);
+            _configService.Set(ConfigSettings.Theme, value);
+            OnChangeTheme?.Invoke(_currentTheme);
         }
+    }
 
-        public ThemeConfig CurrentTheme
-        {
-            get { return _currentTheme; }
-        }
+    public ThemeConfig CurrentTheme
+    {
+        get { return _currentTheme; }
     }
 }
 

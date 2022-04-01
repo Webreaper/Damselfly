@@ -91,6 +91,10 @@ namespace Damselfly.Migrations.Sqlite.Models
             // Store temporary tables in memory
             ExecutePragma(db, "PRAGMA temp_store=MEMORY;");
 
+            // Massive hack....
+            Logging.LogTrace("Deleting corrupt ImageMetaData entries");
+            db.Database.ExecuteSqlRaw("delete from imagemetadata where Lastupdated = 1998;");
+
             Logging.Log("Running Sqlite DB optimisation...");
             db.Database.ExecuteSqlRaw("VACUUM;");
             Logging.Log("DB optimisation complete.");

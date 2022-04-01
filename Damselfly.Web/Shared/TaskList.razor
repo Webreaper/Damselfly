@@ -1,4 +1,4 @@
-﻿@using Damselfly
+﻿@using Humanizer
 
 @inject TaskService taskScheduler
 @inject IJSRuntime JsRuntime
@@ -19,7 +19,7 @@
                 @foreach (var task in tasks)
                 {
                     <tr>
-                        <td>@task.Type.ToString()</td>
+                        <td>@task.Type.ToString().Humanize()</td>
                         <td>@ElapsedString( task.LastStarted )</td>
                         <td>@ElapsedString( task.LastCompleted )</td>
                         <td>@GetTimeTaken(task)</td>

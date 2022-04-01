@@ -7,6 +7,8 @@
 @inject UserConfigService configService
 @inject NavigationManager NavigationManager
 
+@implements IDisposable
+
 <div class="damselfly-searchbar">
     <div class="damselfly-searchfilter">
         <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnValueChanged="@DoSearch" TextValue="@searchService.SearchText" />
