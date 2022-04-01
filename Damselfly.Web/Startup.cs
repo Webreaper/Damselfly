@@ -314,6 +314,8 @@ namespace Damselfly.Web
                 ImmediateStart = false
             });
 
+#if false
+            // Disabled for now, don't think it's really required.
             // Flush the DB WriteCache (currently a no-op except for SQLite) ever 2 hours
             tasks.Add( new ScheduledTask
             {
@@ -326,6 +328,7 @@ namespace Damselfly.Web
                     db.FlushDBWriteCache();
                 }
             });
+#endif
 
             // Add the jobs
             foreach (var task in tasks)

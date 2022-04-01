@@ -727,8 +727,11 @@ public class ImageRecognitionService : IProcessJobFactory
     {
         using var db = new ImageContext();
 
-        var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null
-                                                    && x.ThumbLastUpdated != null )
+        // Only pull out images where the thumb *has* been processed, and the
+        // metadata has already been scanned, the AI hasn't been processed.
+        var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
+                                                    && x.ThumbLastUpdated != null
+                                                    && x.AILastUpdated == null)
                         .OrderByDescending(x => x.LastUpdated)
                         .Take(maxJobs)
                         .Select(x => x.ImageId)
