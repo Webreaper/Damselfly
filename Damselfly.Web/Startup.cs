@@ -301,7 +301,7 @@ namespace Damselfly.Web
             {
                 Type = ScheduledTask.TaskType.CleanupKeywordOps,
                 ExecutionFrequency = new TimeSpan(12,0,0),
-                WorkMethod = () => exifService.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
+                WorkMethod = () => { _ = exifService.CleanUpKeywordOperations(keywordCleanupFreq); },
                 ImmediateStart = false
             });
 

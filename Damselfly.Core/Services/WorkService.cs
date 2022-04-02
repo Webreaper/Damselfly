@@ -247,7 +247,7 @@ public class WorkService
             Stopwatch stopwatch = new Stopwatch($"ProcessJob{jobName}");
             try
             {
-                job.Process().Wait();
+                job.Process();
             }
             catch( Exception ex )
             {

@@ -51,7 +51,7 @@ public class ExifService : IProcessJobFactory
         _workService = workService;
 
         GetExifToolVersion();
-        LoadFavouriteTagsAsync().Wait();
+        _ = LoadFavouriteTagsAsync();
 
         _workService.AddJobSource(this);
     }
