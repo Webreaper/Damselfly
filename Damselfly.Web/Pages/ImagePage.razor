@@ -83,6 +83,8 @@ else
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        SetupPreload();
     }
 
     public string FaceBookShareUrl
@@ -122,8 +124,8 @@ else
 
     private void SetupPreload()
     {
-        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}?nocache={CurrentImage.LastUpdated:yyyyMMddHHmmss}";
-        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}?nocache={CurrentImage.LastUpdated:yyyyMMddHHmmss}";
+        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}?nocache={CurrentImage?.LastUpdated:yyyyMMddHHmmss}";
+        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}?nocache={CurrentImage?.LastUpdated:yyyyMMddHHmmss}";
         StateHasChanged();
     }
 
