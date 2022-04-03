@@ -14,7 +14,7 @@
 @using Damselfly.Core.Utils.Constants
 
 <div class="damselfly-imageview" @ref="ImageView" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
-    @if (image == null)
+    @if (CurrentImage == null)
     {
 <div class="col">
     <p><em>Error. Image not found!</em></p>
@@ -45,21 +45,21 @@ else
 
         <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image" />
     </div>
-    <div class="damselfly-imagetitle" title="@image.FullPath">
+    <div class="damselfly-imagetitle" title="@CurrentImage.FullPath">
         <h4>
-            @image.FileName
+            @CurrentImage.FileName
         </h4>
     </div>
 </div>
 
-    <ImagePreview @ref="theImagePreview" Image="@image" />}
+    <ImagePreview @ref="theImagePreview" Image="@CurrentImage" />}
 </div>
 
 @code {
     [Parameter]
     public string ImageID { get; set; }
 
-    private Image image;
+    private Image CurrentImage;
     private Image nextImage;
     private Image prevImage;
     private ElementReference ImageView;
@@ -68,23 +68,21 @@ else
     private bool ShowObjects => theImagePreview == null ? false : theImagePreview.ShowObjects;
 
     private ImagePreview theImagePreview;
-    public string ImgKey => $"prev{image.ImageId}";
-    public string ImgPreviewKey => $"{image.ImageId}";
+    public string ImgKey => $"prev{CurrentImage.ImageId}";
+    public string ImgPreviewKey => $"{CurrentImage.ImageId}";
     public string ImageUrl { get; set; }
     public string ImageUrlHighRes { get; set; }
 
     public CropJsHelper JsHelper { get; set; }
 
-    private bool NextEnabled => nextImage != null && nextImage.ImageId != image.ImageId;
-    private bool PrevEnabled => prevImage != null && prevImage.ImageId != image.ImageId;
+    private bool NextEnabled => nextImage != null && nextImage.ImageId != CurrentImage.ImageId;
+    private bool PrevEnabled => prevImage != null && prevImage.ImageId != CurrentImage.ImageId;
     private string PrevImageIDUrl => $"/image/{prevImage.ImageId}";
     private string NextImageIDUrl => $"/image/{nextImage.ImageId}";
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        SetupPreload();
     }
 
     public string FaceBookShareUrl
@@ -124,8 +122,8 @@ else
 
     private void SetupPreload()
     {
-        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}?nocache={image.LastUpdated:yyyyMMddHHmmss}";
-        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}?nocache={image.LastUpdated:yyyyMMddHHmmss}";
+        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}?nocache={CurrentImage.LastUpdated:yyyyMMddHHmmss}";
+        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}?nocache={CurrentImage.LastUpdated:yyyyMMddHHmmss}";
         StateHasChanged();
     }
 
@@ -136,13 +134,6 @@ else
         StateHasChanged();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        SetupPreload();
-
-        // TODO - do we need this?
-        await SetUpNavigation();
-    }
 
     [JSInvokable]
     // Debugging assistant to help us differentiate between JS calls and other data loads
@@ -155,8 +146,10 @@ else
     {
         if (Int32.TryParse(ImageID, out var imageId))
         {
-            image = await imageCache.GetCachedImage(imageId);
-            navContext.CurrentImage = image;
+            CurrentImage = await imageCache.GetCachedImage(imageId);
+            navContext.CurrentImage = CurrentImage;
+
+            SetupPreload();
 
             nextImage = await navContext.GetNextImageAsync(true);
             prevImage = await navContext.GetNextImageAsync(false);
@@ -165,27 +158,27 @@ else
 
     private void Next()
     {
-        if (nextImage != null && nextImage.ImageId != image.ImageId)
+        if (nextImage != null && nextImage.ImageId != CurrentImage.ImageId)
             NavigationManager.NavigateTo("/image/" + nextImage.ImageId);
 
     }
 
     private void Prev()
     {
-        if (prevImage != null && prevImage.ImageId != image.ImageId)
+        if (prevImage != null && prevImage.ImageId != CurrentImage.ImageId)
             NavigationManager.NavigateTo("/image/" + prevImage.ImageId);
     }
 
     public void RefreshImage()
     {
-        _ = indexService.MarkImagesForScan(new List<Image>() { image });
+        _ = indexService.MarkImagesForScan(new List<Image>() { CurrentImage });
     }
 
     public async Task DownloadImage()
     {
         try
         {
-            await JsRuntime.InvokeAsync<string>("downloadFile", image.DownloadImageUrl);
+            await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.DownloadImageUrl);
         }
         catch (Exception ex)
         {
