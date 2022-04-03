@@ -108,7 +108,7 @@
             else
             {
                 // Browser can't render it, so return the JPG thumbnail
-                return $"/thumb/{ThumbSize.ExtraLarge}/{theImage.ImageId}";
+                return $"/thumb/{ThumbSize.ExtraLarge}/{theImage.ImageId}?nocache={theImage.LastUpdated:yyyyMMddHHmmss}";
             }
         }
 

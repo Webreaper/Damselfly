@@ -49,7 +49,7 @@
 
     private string GetImgUrl(Image image)
     {
-        return $"/thumb/{ThumbSize.Small}/{image.ImageId}";
+        return $"/thumb/{ThumbSize.Small}/{image.ImageId}?nocache={image.LastUpdated:yyyyMMddHHmmss}";
     }
 
     public async Task<List<List<Image>>> LoadData()

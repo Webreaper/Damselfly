@@ -124,8 +124,8 @@ else
 
     private void SetupPreload()
     {
-        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}";
-        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}";
+        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}?nocache={image.LastUpdated:yyyyMMddHHmmss}";
+        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}?nocache={image.LastUpdated:yyyyMMddHHmmss}";
         StateHasChanged();
     }
 
