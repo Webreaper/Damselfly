@@ -13,6 +13,7 @@ using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Models
 {
@@ -196,6 +197,16 @@ namespace Damselfly.Core.Models
         [NotMapped]
         public string DownloadImageUrl { get { return $"/dlimage/{ImageId}"; } }
 
+        /// <summary>
+        /// URL mapped with last-updated time to ensure we always refresh the thumb
+        /// when the image is updated.
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        public string ThumbUrl( ThumbSize size )
+        {
+            return $"/thumb/{size}/{this.ImageId}?nocache={this?.LastUpdated:yyyyMMddHHmmss}";
+        }
         public void FlagForMetadataUpdate() { this.LastUpdated = DateTime.UtcNow; }
     }
 

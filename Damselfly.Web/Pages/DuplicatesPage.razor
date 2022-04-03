@@ -21,7 +21,7 @@
             {
                 <div class="damselfly-duplicate">
                     <div class="damselfly-dupeimage">
-                        <img src="@GetImgUrl(list[0])" />
+                        <img src="@list[0].ThumbUrl( ThumbSize.Small )" />
                     </div>
 
                     <div class="damselfly-dupe-entries">
@@ -46,11 +46,6 @@
     public Image CurrentImage { get; set; }
 
     List<List<Image>> imageLists = new List<List<Image>>();
-
-    private string GetImgUrl(Image image)
-    {
-        return $"/thumb/{ThumbSize.Small}/{image.ImageId}?nocache={image.LastUpdated:yyyyMMddHHmmss}";
-    }
 
     public async Task<List<List<Image>>> LoadData()
     {

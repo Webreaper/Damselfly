@@ -52,7 +52,7 @@ else
     </div>
 </div>
 
-    <ImagePreview @ref="theImagePreview" Image="@CurrentImage" />}
+    <ImagePreview @ref="theImagePreview" @key="@ImageID" Image="@CurrentImage" />}
 </div>
 
 @code {
@@ -83,8 +83,6 @@ else
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        SetupPreload();
     }
 
     public string FaceBookShareUrl
@@ -95,6 +93,11 @@ else
             var imageUrl = System.Net.WebUtility.UrlEncode(url);
             return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
         }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await SetUpNavigation();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -122,13 +125,6 @@ else
         theImagePreview.ToggleZoomEnabled();
     }
 
-    private void SetupPreload()
-    {
-        ImageUrl = $"/thumb/{ThumbSize.Medium}/{ImageID}?nocache={CurrentImage?.LastUpdated:yyyyMMddHHmmss}";
-        ImageUrlHighRes = $"/thumb/{ThumbSize.ExtraLarge}/{ImageID}?nocache={CurrentImage?.LastUpdated:yyyyMMddHHmmss}";
-        StateHasChanged();
-    }
-
     protected void ReplaceUrl(ProgressEventArgs args)
     {
         Logging.Log("Replacing Image URL");
@@ -151,10 +147,13 @@ else
             CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
 
-            SetupPreload();
+            ImageUrl = CurrentImage.ThumbUrl( ThumbSize.Medium );
+            ImageUrlHighRes = CurrentImage.ThumbUrl(ThumbSize.ExtraLarge); ;
 
             nextImage = await navContext.GetNextImageAsync(true);
             prevImage = await navContext.GetNextImageAsync(false);
+
+            StateHasChanged();
         }
     }
 
