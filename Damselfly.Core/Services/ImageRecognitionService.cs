@@ -145,6 +145,7 @@ public class ImageRecognitionService : IProcessJobFactory
         // TODO: If this is an existing person/name, we might need to merge in Azure
         faceObject.Person.Name = name;
         faceObject.Person.State = Person.PersonState.Identified;
+        faceObject.Person.LastUpdated = DateTime.UtcNow;
         db.ImageObjects.Update(faceObject);
 
         await db.SaveChangesAsync("SetName");
@@ -161,6 +162,7 @@ public class ImageRecognitionService : IProcessJobFactory
         // TODO: If this is an existing person/name, we might need to merge in Azure
         person.Name = name;
         person.State = Person.PersonState.Identified;
+        person.LastUpdated = DateTime.UtcNow;
         db.People.Update(person);
 
         await db.SaveChangesAsync("SetName");
@@ -198,7 +200,8 @@ public class ImageRecognitionService : IProcessJobFactory
                     {
                         AzurePersonId = x,
                         Name = "Unknown",
-                        State = Person.PersonState.Unknown
+                        State = Person.PersonState.Unknown,
+                        LastUpdated = DateTime.UtcNow
                     }).ToList();
 
                     if (newPeople.Any())

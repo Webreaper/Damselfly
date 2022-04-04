@@ -20,7 +20,7 @@
     public Person Person { get; set; }
 
     public string Name { get { return Person.Name; } set { UpdateName(value); } }
-    public string FaceLink => $"/face/{Person.PersonId}";
+    public string FaceLink => $"/face/{Person.PersonId}?nocache={Person.LastUpdated:yyyyMMddHHmmss}";
     public string PersonLink => $"/?personid={Person.PersonId}";
 
     private void UpdateName(string newName)
