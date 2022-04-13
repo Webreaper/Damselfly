@@ -183,7 +183,7 @@ namespace Damselfly.Web
                         UserService userService, ConfigService configService, WorkService workService,
                         ImageCache imageCache,  MetaDataService metaDataService, ObjectDetector objectDetector)
         {
-            SyncfusionLicenseProvider.RegisterLicense("NjE0NjkyQDMyMzAyZTMxMmUzMG0rVVJObG52UWJCYXhoVm12eXRRVFVXcHN3RHJFdDRFa01Gc3RhZHUwZmM9");
+            SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
 
             var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 

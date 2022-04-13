@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <DockerComposeProjectPath>../docker-compose.dcproj</DockerComposeProjectPath>
@@ -112,6 +112,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.4" />
-    <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.1.0.48" />
+    <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56" />
   </ItemGroup>
 </Project>
