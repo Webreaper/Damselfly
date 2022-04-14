@@ -43,6 +43,7 @@
     <Folder Include="Utils\" />
     <Folder Include="Models\SideCars\" />
     <Folder Include="ScopedServices\" />
+    <Folder Include="Models\Tables\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj" />
@@ -60,5 +61,6 @@
     <None Remove="ScopedServices\" />
     <None Remove="CoenM.ImageSharp.ImageHash" />
     <None Remove="MudBlazor" />
+    <None Remove="Models\DTOs\" />
   </ItemGroup>
 </Project>
