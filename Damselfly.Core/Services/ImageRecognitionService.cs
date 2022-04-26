@@ -345,7 +345,7 @@ public class ImageRecognitionService : IProcessJobFactory
 
                 if (objects.Any())
                 {
-                    Logging.Log($" Yolo found {objects.Count} objects in {fileName}...");
+                    Logging.Log($" Yolo found {objects.Count()} objects in {fileName}...");
 
                     var newTags = await CreateNewTags(objects);
 
