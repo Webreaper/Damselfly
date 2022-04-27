@@ -299,8 +299,8 @@ namespace Damselfly.Migrations.Sqlite.Models
                 var imageSubQuery = $"select distinct fts.ImageId from FTSImages fts where ";
                 imageSubQuery += $"fts.Caption MATCH ('{ftsTerm}') OR ";
                 imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') OR ";
-                imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR ";
-                imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}')";
+                // imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR "; // Copyright search doesn't make that much sense
+                // imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}')";
                 joinSubQuery = $"{joinSubQuery} union {imageSubQuery}";
 
                 // Subquery to produce the distinct set of images that match the term
