@@ -65,7 +65,7 @@ public class WordpressService
 
                     _statusService.StatusText = $"Uploading {image.FileName} to Wordpress.";
 
-                    await _client.Media.Create(memoryStream, image.FileName);
+                    await _client.Media.CreateAsync(memoryStream, image.FileName);
 
                     Logging.LogVerbose($"Image uploaded: {image.FullPath} successfully.");
                 }
@@ -107,7 +107,7 @@ public class WordpressService
 
         // Now check if we have a valid token (they expire after
         // 24 hours) and if not, obtain one
-        gotToken = await _client.IsValidJWToken();
+        gotToken = await _client.Auth.IsValidJWTokenAsync();
 
         if (! gotToken )
         {
@@ -116,9 +116,9 @@ public class WordpressService
 
             Logging.LogVerbose($"No valid JWT token. Requesting a new one.");
 
-            await _client.RequestJWToken( user, pass );
+            await _client.Auth.RequestJWTokenAsync( user, pass );
 
-            gotToken = await _client.IsValidJWToken();
+            gotToken = await _client.Auth.IsValidJWTokenAsync();
         }
 
         var state = gotToken ? "valid" : "invalid";
@@ -159,7 +159,7 @@ public class WordpressService
 
                 // JWT authentication
                 client = new WordPressClient(url.ToString());
-                client.AuthMethod = AuthMethod.JWT;
+                client.Auth.UseBearerAuth(JWTPlugin.JWTAuthByEnriqueChavez);
 
                 Logging.Log($"JWT Auth token generated successfully.");
             }
