@@ -17,20 +17,20 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MetadataExtractor" Version="2.7.2" />
-    <PackageReference Include="CommandLineParser" Version="2.9.0-preview1" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="WordPressPCL" Version="2.0.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.2" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.187" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0-preview.187" />
-    <PackageReference Include="FluentValidation" Version="11.0.1" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0" />
+    <PackageReference Include="FluentValidation" Version="11.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22102.15" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.2-mauipre.1.22102.15" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.5" />
-    <PackageReference Include="SendGrid" Version="9.27.0" />
+    <PackageReference Include="SendGrid" Version="9.28.0" />
     <PackageReference Include="MailKit" Version="3.2.0" />
     <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="6.0.5" />
