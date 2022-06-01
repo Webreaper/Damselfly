@@ -4,6 +4,7 @@
 @inject UserFolderService userFolderService
 @inject ImageRecognitionService aiService
 @inject ContextMenuService contextMenuService
+@inject UserConfigService configService
 @inject IDialogService DialogService
 
 @implements IDisposable
@@ -47,11 +48,13 @@
     private Virtualize<Folder> folderContainer;
     private List<Folder> folderItems;
     Folder SelectedItem { get; set; }
+    bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
     {
         string refreshText = "Refresh Folder";
         string selectText = "Select Folder";
+        string viewText = FlatView ? "Tree View" : "Flat View";
 
         if( folder == null )
         {
@@ -63,6 +66,7 @@
         new List<ContextMenuItem>() {
                 new ContextMenuItem(){ Text = selectText, Value = 0 },
                 new ContextMenuItem(){ Text = refreshText, Value = 1 },
+                new ContextMenuItem(){ Text = viewText, Value = 3 },
              }, (args) =>
              {
                  contextMenuService.Close();
@@ -70,8 +74,18 @@
                  {
                      case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
                      case 1: _ = ShowRescanDialog( folder ); break;
+                     case 3: _ = ToggleFlatView(); break;
                  }
              });
+    }
+
+    private async Task ToggleFlatView()
+    {
+        var newState = ! FlatView;
+
+        configService.Set(ConfigSettings.FlatView, newState.ToString());
+
+        await ProcessUpdatedFilter();
     }
 
     private async Task ShowRescanDialog( Folder folder )
@@ -95,12 +109,17 @@
     {
         if (folder.FolderItem.IsExpanded)
             return "fa-folder-open";
+        else if( folder.HasSubFolders )
+            return "fa-folder-plus";
 
         return "fa-folder";
     }
 
     string IndentMargin( Folder folder )
     {
+        if ( FlatView )
+            return string.Empty;
+
         return $"margin-left:{folder.FolderItem.Depth * 10}px;";
     }
 
@@ -138,9 +157,12 @@
 
     protected async Task ToggleExpand( Folder item )
     {
-        userFolderService.ToggleExpand(item);
+        if( item.HasSubFolders )
+        {
+            userFolderService.ToggleExpand(item);
 
-        await ProcessUpdatedFilter();
+            await ProcessUpdatedFilter();
+        }
     }
 
     protected async Task ProcessUpdatedFilter()

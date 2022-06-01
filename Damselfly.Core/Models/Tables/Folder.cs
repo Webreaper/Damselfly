@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,5 +30,34 @@ public class Folder
 
     [NotMapped]
     public FolderListItem FolderItem { get; set; }
+
+    [NotMapped]
+    public IEnumerable<Folder> Subfolders
+    {
+        get
+        {
+            var thisId = new[] { this };
+
+            if ( Children != null )
+                return Children.SelectMany(x => x.Subfolders).Concat( thisId);
+
+            return thisId;
+        }
+    }
+
+    [NotMapped]
+    public IEnumerable<Folder> ParentFolders
+    {
+        get
+        {
+            if ( Parent != null )
+                return Parent.ParentFolders.Concat(new[] { Parent });
+
+            return Enumerable.Empty<Folder>();
+        }
+    }
+
+    [NotMapped]
+    public bool HasSubFolders {  get { return Children != null && Children.Any(); } }
 }
 

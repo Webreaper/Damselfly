@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Services;
+using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -17,11 +18,13 @@ public class UserFolderService
 {
     private readonly FolderService _folderService;
     private readonly SearchService _searchService;
+    private readonly UserConfigService _configService;
 
-    public UserFolderService( FolderService folderService, SearchService searchService)
+    public UserFolderService( FolderService folderService, SearchService searchService, UserConfigService configService)
     {
         _folderService = folderService;
         _searchService = searchService;
+        _configService = configService;
     }
 
     /// <summary>
@@ -32,9 +35,9 @@ public class UserFolderService
     /// <returns></returns>
     public async Task<List<Folder>> GetFilteredFolders( string filterTerm )
     {
-        List<Folder> items = null;
-
         var allFolderItems = _folderService.FolderItems;
+
+        IEnumerable<Folder> items = allFolderItems;
 
         if (allFolderItems != null && allFolderItems.Any() && !string.IsNullOrEmpty(filterTerm))
         {
@@ -42,24 +45,23 @@ public class UserFolderService
                             .Where(x => x.FolderItem.DisplayName.ContainsNoCase(filterTerm)
                                         // Always include the currently selected folder so it remains highlighted
                                         || _searchService.Folder?.FolderId == x.FolderId)
-                            .Where(x => x.Parent is null || x.Parent.FolderItem.IsExpanded )
-                            .ToList());
+                            .Where(x => x.Parent is null || x.Parent.FolderItem.IsExpanded));
         }
-        else
-            items = allFolderItems.Where( x => x.Parent is null || x.Parent.FolderItem.IsExpanded).ToList();
 
-        return items;
+        bool flat = _configService.GetBool( ConfigSettings.FlatView, true );
+
+        if( flat )
+            return items.Where(x => x.FolderItem.ImageCount > 0).OrderByDescending( x => x.FolderItem.MaxImageDate ).ToList();
+        else
+            return items.Where(x => x.ParentFolders.All(x => x.FolderItem.IsExpanded)).ToList();
     }
 
+    /// <summary>
+    /// Toggle the state of a folder.
+    /// </summary>
+    /// <param name="item"></param>
     public void ToggleExpand(Folder item)
     {
-        if (item.FolderItem.IsExpanded)
-        {
-            item.FolderItem.IsExpanded = false;
-        }
-        else
-        {
-            item.FolderItem.IsExpanded = true;
-        }
+        item.FolderItem.IsExpanded = ! item.FolderItem.IsExpanded;
     }
 }

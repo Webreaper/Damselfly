@@ -13,7 +13,7 @@ namespace Damselfly.Core.Models
         public string DisplayName { get; set; }
 		public int ImageCount { get; set; }
 		public DateTime? MaxImageDate { get; set; }
-        public bool IsExpanded { get; set; } = true;
+        public bool IsExpanded { get; set; }
         public int Depth { get; set; } = 1;
 
         public override string ToString()
