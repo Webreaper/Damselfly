@@ -30,23 +30,36 @@ public class UserFolderService
     /// </summary>
     /// <param name="filterTerm"></param>
     /// <returns></returns>
-    public async Task<List<FolderListItem>> GetFilteredFolders( string filterTerm )
+    public async Task<List<Folder>> GetFilteredFolders( string filterTerm )
     {
-        List<FolderListItem> items = null;
+        List<Folder> items = null;
 
         var allFolderItems = _folderService.FolderItems;
 
         if (allFolderItems != null && allFolderItems.Any() && !string.IsNullOrEmpty(filterTerm))
         {
             items = await Task.FromResult(allFolderItems
-                            .Where(x => x.DisplayName.ContainsNoCase(filterTerm)
+                            .Where(x => x.FolderItem.DisplayName.ContainsNoCase(filterTerm)
                                         // Always include the currently selected folder so it remains highlighted
-                                        || _searchService.Folder?.FolderId == x.Folder.FolderId)
+                                        || _searchService.Folder?.FolderId == x.FolderId)
+                            .Where(x => x.Parent is null || x.Parent.FolderItem.IsExpanded )
                             .ToList());
         }
         else
-            items = allFolderItems;
+            items = allFolderItems.Where( x => x.Parent is null || x.Parent.FolderItem.IsExpanded).ToList();
 
         return items;
+    }
+
+    public void ToggleExpand(Folder item)
+    {
+        if (item.FolderItem.IsExpanded)
+        {
+            item.FolderItem.IsExpanded = false;
+        }
+        else
+        {
+            item.FolderItem.IsExpanded = true;
+        }
     }
 }

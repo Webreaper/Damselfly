@@ -14,14 +14,20 @@ public class Folder
     public int ParentFolderId { get; set; }
     public DateTime? FolderScanDate { get; set; }
 
+    public Folder Parent { get; set; }
+    public ICollection<Folder> Children { get; set; }
+
     public virtual List<Image> Images { get; } = new List<Image>();
 
     public override string ToString()
     {
-        return $"{Path} [{FolderId}]";
+        return $"{Path} [{FolderId}] {FolderItem?.ToString()}";
     }
 
     [NotMapped]
     public string Name { get { return System.IO.Path.GetFileName(Path); } }
+
+    [NotMapped]
+    public FolderListItem FolderItem { get; set; }
 }
 

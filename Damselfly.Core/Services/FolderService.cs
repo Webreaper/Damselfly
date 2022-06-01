@@ -15,7 +15,7 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class FolderService
 {
-    private List<FolderListItem> allFolderItems = new List<FolderListItem>();
+    private List<Folder> allFolders = new List<Folder>();
     public event Action OnChange;
     private EventConflator conflator = new EventConflator(10 * 1000);
 
@@ -38,11 +38,11 @@ public class FolderService
         _ = LoadFolders();
     }
 
-    public List<FolderListItem> FolderItems { get { return allFolderItems;  } }
+    public List<Folder> FolderItems { get { return allFolders;  } }
 
     private void NotifyStateChanged()
     {
-        Logging.Log($"Folders changed: {allFolderItems.Count}");
+        Logging.Log($"Folders changed: {allFolders.Count}");
 
         OnChange?.Invoke();
     }
@@ -58,22 +58,12 @@ public class FolderService
         var watch = new Stopwatch("GetFolders");
 
         Logging.Log("Loading folder data...");
-        Folder[] folders = new Folder[0];
 
         try
         {
-            // Only pull folders with images
-            allFolderItems = await db.Folders.Where(x => x.Images.Any())
-                            .Select(x =>
-                                new FolderListItem
-                                {
-                                    Folder = x,
-                                    DisplayName = GetFolderDisplayName( x ),
-                                    ImageCount = x.Images.Count,
-                                    // Not all images may have metadata yet.
-                                    MaxImageDate = x.Images.Max(i => i.SortDate)
-                                })
-                            .OrderByDescending(x => x.MaxImageDate)
+            allFolders = await db.Folders
+                            .Include(x => x.Parent)
+                            .Select(x => EnrichFolder( x, x.Images.Count, x.Images.Max( i => i.SortDate ) ) )
                             .ToListAsync();
         }
         catch( Exception ex )
@@ -85,6 +75,29 @@ public class FolderService
 
         // Update the GUI
         NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Bolt some metadata onto the folder object so it can be used by the UI.
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <param name="imageCount"></param>
+    /// <param name="maxDate"></param>
+    /// <returns></returns>
+    private static Folder EnrichFolder( Folder folder, int imageCount, DateTime? maxDate )
+    {
+        var item = new FolderListItem { ImageCount = imageCount, MaxImageDate = maxDate, DisplayName = GetFolderDisplayName(folder) };
+
+        folder.FolderItem = item;
+
+        var parent = folder.Parent;
+        while( parent != null )
+        {
+            item.Depth++;
+            parent = parent.Parent;
+        }
+
+        return folder;
     }
 
     /// <summary>

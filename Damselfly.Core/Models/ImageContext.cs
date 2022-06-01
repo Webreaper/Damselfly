@@ -91,6 +91,13 @@ namespace Damselfly.Core.Models
                 .WithOne(meta => meta.Image)
                 .HasForeignKey<ImageMetaData>(i => i.ImageId);
 
+            modelBuilder.Entity<Folder>()
+                .HasOne(x => x.Parent)
+                .WithMany(x => x.Children)
+                .HasForeignKey(x => x.ParentFolderId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
             modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
             modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });
