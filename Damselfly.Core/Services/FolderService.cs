@@ -61,10 +61,12 @@ public class FolderService
 
         try
         {
-            allFolders = await db.Folders
-                            .Include(x => x.Parent)
+            var folders = await db.Folders
+                            .Include(x => x.Children )
                             .Select(x => EnrichFolder( x, x.Images.Count, x.Images.Max( i => i.SortDate ) ) )
                             .ToListAsync();
+
+            allFolders = SortedChildren(folders[0], x => x.Name);
         }
         catch( Exception ex )
         {
@@ -75,6 +77,20 @@ public class FolderService
 
         // Update the GUI
         NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Recursive method to create the sorted list of all hierarchical folders
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="folder"></param>
+    /// <param name="sortFunc"></param>
+    /// <returns></returns>
+    private static List<Folder> SortedChildren<T>(Folder folder, Func<Folder, T> sortFunc)
+    {
+        return new[] { folder }.Concat( folder.Children.OrderBy( sortFunc )
+                       .SelectMany(x => SortedChildren(x, sortFunc)) )
+                       .ToList();
     }
 
     /// <summary>
