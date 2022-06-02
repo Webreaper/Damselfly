@@ -35,13 +35,25 @@ public class UserFolderService
     /// <returns></returns>
     public async Task<List<Folder>> GetFilteredFolders( string filterTerm )
     {
-        var allFolderItems = _folderService.FolderItems;
+        var allFolderItems = _folderService.FolderItems.FirstOrDefault();
 
-        IEnumerable<Folder> items = allFolderItems;
+        if (allFolderItems == null)
+            return new List<Folder>();
 
-        if (allFolderItems != null && allFolderItems.Any() && !string.IsNullOrEmpty(filterTerm))
+        var sortAscending = _configService.GetBool(ConfigSettings.FolderSortAscending, true);
+        var sortMode = _configService.Get(ConfigSettings.FolderSortMode, "Date");
+
+        IEnumerable<Folder> items;
+
+        if ( sortMode == "Date" )
+            items = allFolderItems.SortedChildren(x => x.FolderItem.MaxImageDate, sortAscending).ToList();
+        else
+            items = allFolderItems.SortedChildren(x => x.Name, sortAscending).ToList();
+
+
+        if (items != null && items.Any() && !string.IsNullOrEmpty(filterTerm))
         {
-            items = await Task.FromResult(allFolderItems
+            items = await Task.FromResult(items
                             .Where(x => x.FolderItem.DisplayName.ContainsNoCase(filterTerm)
                                         // Always include the currently selected folder so it remains highlighted
                                         || _searchService.Folder?.FolderId == x.FolderId)
@@ -50,8 +62,26 @@ public class UserFolderService
 
         bool flat = _configService.GetBool( ConfigSettings.FlatView, true );
 
-        if( flat )
-            return items.Where(x => x.FolderItem.ImageCount > 0).OrderByDescending( x => x.FolderItem.MaxImageDate ).ToList();
+        if (flat)
+        {
+            var foldersWithImages = items.Where(x => x.FolderItem.ImageCount > 0);
+
+            // TODO: Refactor to make this more generic
+            if (sortMode == "Date")
+            {
+                if (sortAscending)
+                    return foldersWithImages.OrderBy(x => x.FolderItem.MaxImageDate).ToList();
+                else
+                    return foldersWithImages.OrderByDescending(x => x.FolderItem.MaxImageDate).ToList();
+            }
+            else
+            {
+                if (sortAscending)
+                    return foldersWithImages.OrderBy(x => x.Name).ToList();
+                else
+                    return foldersWithImages.OrderByDescending(x => x.Name).ToList();
+            }
+        }
         else
             return items.Where(x => x.ParentFolders.All(x => x.FolderItem.IsExpanded)).ToList();
     }

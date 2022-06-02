@@ -49,14 +49,24 @@
     private List<Folder> folderItems;
     Folder SelectedItem { get; set; }
     bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
+    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, true);
+    string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
     {
         string refreshText = "Refresh Folder";
         string selectText = "Select Folder";
         string viewText = FlatView ? "Tree View" : "Flat View";
+        string sortDirection = "Sort Ascending";
+        string sortText = "Sort by Date";
 
-        if( folder == null )
+        if (SortMode == "Date")
+            sortText = "Sort by Name";
+
+        if( Ascending )
+            sortDirection = "Sort Descending";
+
+        if ( folder == null )
         {
             refreshText = "Refresh All Folders";
             selectText = "Clear Folder Selection";
@@ -67,6 +77,8 @@
                 new ContextMenuItem(){ Text = selectText, Value = 0 },
                 new ContextMenuItem(){ Text = refreshText, Value = 1 },
                 new ContextMenuItem(){ Text = viewText, Value = 3 },
+                new ContextMenuItem(){ Text = sortText, Value = 4 },
+                new ContextMenuItem(){ Text = sortDirection, Value = 5 },
              }, (args) =>
              {
                  contextMenuService.Close();
@@ -75,6 +87,8 @@
                      case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
                      case 1: _ = ShowRescanDialog( folder ); break;
                      case 3: _ = ToggleFlatView(); break;
+                     case 4: _ = ToggleSortMode(); break;
+                     case 5: _ = ToggleSortAscendingView(); break;
                  }
              });
     }
@@ -84,6 +98,27 @@
         var newState = ! FlatView;
 
         configService.Set(ConfigSettings.FlatView, newState.ToString());
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ToggleSortMode()
+    {
+        var newMode = "Date";
+
+        if (SortMode == "Date")
+            newMode = "Name";
+
+        configService.Set(ConfigSettings.FolderSortMode, newMode);
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ToggleSortAscendingView()
+    {
+        var newState = !Ascending;
+
+        configService.Set(ConfigSettings.FolderSortAscending, newState.ToString());
 
         await ProcessUpdatedFilter();
     }
@@ -107,11 +142,13 @@
 
     string FolderIcon(Folder folder)
     {
-        if (folder.FolderItem.IsExpanded)
-            return "fa-folder-open";
-        else if( folder.HasSubFolders )
-            return "fa-folder-plus";
-
+        if( !FlatView )
+        {
+            if (folder.FolderItem.IsExpanded)
+                return "fa-folder-open";
+            else if( folder.HasSubFolders )
+                return "fa-folder-plus";
+        }
         return "fa-folder";
     }
 

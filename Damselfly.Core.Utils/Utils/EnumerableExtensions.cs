@@ -18,5 +18,6 @@ namespace Damselfly.Core.Utils
 
             return enumArray.ToList();
         }
+
     }
 }
