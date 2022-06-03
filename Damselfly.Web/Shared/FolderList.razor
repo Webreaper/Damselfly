@@ -18,7 +18,7 @@
         </div>
         <div class="damselfly-browsetool">
             <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()" />
-            <i title="Sort by Date/Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()" />
+            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()" />
             <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()" />
         </div>
     </div>
@@ -57,7 +57,7 @@ else
     bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, true);
     string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
     string SortClass => SortMode == "Date" ? (Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up") : (Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z");
-    string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-square-h";
+    string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
     string FlatTreeClass => FlatView ? "fa-list" : "fa-folder-tree";
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
