@@ -12,34 +12,37 @@
 <ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
 
 <div class="damselfly-folderlist">
-    <div class="folder-search">
-        <label for="searchBox">
+    <div class="damselfly-browsetools">
+        <div class="damselfly-browsetool">
             <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
-        </label>
+        </div>
+        <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas @FlatTreeClass" @onclick="() => ToggleFlatView()" /></div>
+            <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas @SortModeClass" @onclick="() => ToggleSortMode()" /></div>
+        <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas @SortClass" @onclick="() => ToggleSortAscendingView()" /></div>
     </div>
-    @if (folderItems == null)
-    {
-        <p>Loading...</p>
-        <Spinner />
-    }
-    else
-    {
-        <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())"
-             @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
-            <i class="fa fa-folder-open folder-icon" /> All Folders
-        </div>
-        <div class="folder-scroll-area" id="folderscrollarea">
-            <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
-                <div class="folder-entry @FolderStyle(context.FolderId)" 
-                     @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
-                    <i style="@IndentMargin(context)" class="fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
-                    <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
-                        @context.FolderItem.DisplayName (@context.FolderItem.ImageCount)
-                    </span>
-                </div>
-            </Virtualize>
-        </div>
-    }
+@if (folderItems == null)
+{
+    <p>Loading...</p>
+    <Spinner />
+}
+else
+{
+    <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())"
+         @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
+        <i class="fa fa-folder-open folder-icon" /> All Folders
+    </div>
+    <div class="folder-scroll-area" id="folderscrollarea">
+        <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
+            <div class="folder-entry @FolderStyle(context.FolderId)"
+                 @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
+                <i style="@IndentMargin(context)" class="fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
+                <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
+                    @context.FolderItem.DisplayName (@context.FolderItem.ImageCount)
+                </span>
+            </div>
+        </Virtualize>
+    </div>
+}
 </div>
 
 @code {
@@ -51,6 +54,9 @@
     bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
     bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, true);
     string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
+    string SortClass => SortMode == "Date" ? (Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up") : (Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z");
+    string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-square-h";
+    string FlatTreeClass => FlatView ? "fa-list" : "fa-folder-tree";
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
     {
@@ -63,10 +69,10 @@
         if (SortMode == "Date")
             sortText = "Sort by Name";
 
-        if( Ascending )
+        if (Ascending)
             sortDirection = "Sort Descending";
 
-        if ( folder == null )
+        if (folder == null)
         {
             refreshText = "Refresh All Folders";
             selectText = "Clear Folder Selection";
@@ -79,13 +85,13 @@
                 new ContextMenuItem(){ Text = viewText, Value = 3 },
                 new ContextMenuItem(){ Text = sortText, Value = 4 },
                 new ContextMenuItem(){ Text = sortDirection, Value = 5 },
-             }, (args) =>
+                 }, (args) =>
              {
                  contextMenuService.Close();
                  switch (args.Value)
                  {
                      case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
-                     case 1: _ = ShowRescanDialog( folder ); break;
+                     case 1: _ = ShowRescanDialog(folder); break;
                      case 3: _ = ToggleFlatView(); break;
                      case 4: _ = ToggleSortMode(); break;
                      case 5: _ = ToggleSortAscendingView(); break;
@@ -95,7 +101,7 @@
 
     private async Task ToggleFlatView()
     {
-        var newState = ! FlatView;
+        var newState = !FlatView;
 
         configService.Set(ConfigSettings.FlatView, newState.ToString());
 
@@ -123,11 +129,11 @@
         await ProcessUpdatedFilter();
     }
 
-    private async Task ShowRescanDialog( Folder folder )
+    private async Task ShowRescanDialog(Folder folder)
     {
         var parameters = new DialogParameters { { "allimages", true } };
 
-        if( folder != null )
+        if (folder != null)
             parameters = new DialogParameters { { "folder", folder }, { "count", folder.FolderItem.ImageCount } };
 
         var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
@@ -142,19 +148,19 @@
 
     string FolderIcon(Folder folder)
     {
-        if( !FlatView )
+        if (!FlatView)
         {
             if (folder.FolderItem.IsExpanded)
                 return "fa-folder-open";
-            else if( folder.HasSubFolders )
+            else if (folder.HasSubFolders)
                 return "fa-folder-plus";
         }
         return "fa-folder";
     }
 
-    string IndentMargin( Folder folder )
+    string IndentMargin(Folder folder)
     {
-        if ( FlatView )
+        if (FlatView)
             return string.Empty;
 
         return $"margin-left:{folder.FolderItem.Depth * 10}px;";
@@ -192,9 +198,9 @@
         StateHasChanged();
     }
 
-    protected async Task ToggleExpand( Folder item )
+    protected async Task ToggleExpand(Folder item)
     {
-        if( item.HasSubFolders )
+        if (item.HasSubFolders)
         {
             userFolderService.ToggleExpand(item);
 
