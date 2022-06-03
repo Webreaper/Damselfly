@@ -98,8 +98,17 @@ public class FolderService
         folder.FolderItem = item;
 
         var parent = folder.Parent;
-        while( parent != null )
+
+        while ( parent != null )
         {
+            if (parent.FolderItem == null)
+                parent.FolderItem = new FolderListItem { DisplayName = GetFolderDisplayName(parent) };
+
+            if (parent.FolderItem.MaxImageDate == null || parent.FolderItem.MaxImageDate < maxDate)
+                parent.FolderItem.MaxImageDate = maxDate;
+
+            parent.FolderItem.ImageCount += imageCount;
+
             item.Depth++;
             parent = parent.Parent;
         }
