@@ -88,14 +88,21 @@ public class FolderService
     /// <returns></returns>
     private static Folder EnrichFolder( Folder folder, int imageCount, DateTime? maxDate )
     {
-        var item = new FolderListItem {
-            ImageCount = imageCount,
-            MaxImageDate = maxDate,
-            DisplayName = GetFolderDisplayName(folder),
-            IsExpanded = folder.HasSubFolders
-        };
 
-        folder.FolderItem = item;
+        var item = folder.FolderItem;
+
+        if( item == null )
+        {
+            item = new FolderListItem
+            {
+                ImageCount = imageCount,
+                MaxImageDate = maxDate,
+                DisplayName = GetFolderDisplayName(folder),
+                IsExpanded = folder.HasSubFolders
+            };
+
+            folder.FolderItem = item;
+        };
 
         var parent = folder.Parent;
 
