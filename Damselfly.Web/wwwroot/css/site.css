@@ -1179,6 +1179,10 @@ f
     display: flex;
 }
 
+.damselfly-sortcontrols {
+    margin-right: 6px;
+    font-size: 16px;
+}
 .damselfly-imageseparatortitle {
     padding: 3px;
     flex: 1 1 60%;
@@ -1201,7 +1205,7 @@ f
 }
 
 .SearchBox {
-    min-width: 300px;
+    min-width: 250px;
     display: flex;
     background: transparent;
     padding: 2px;

@@ -16,9 +16,11 @@
         <div class="damselfly-browsetool">
             <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
         </div>
-        <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas @FlatTreeClass" @onclick="() => ToggleFlatView()" /></div>
-            <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas @SortModeClass" @onclick="() => ToggleSortMode()" /></div>
-        <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas @SortClass" @onclick="() => ToggleSortAscendingView()" /></div>
+        <div class="damselfly-browsetool">
+            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()" />
+            <i title="Sort by Date/Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()" />
+            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()" />
+        </div>
     </div>
 @if (folderItems == null)
 {
