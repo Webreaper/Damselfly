@@ -39,7 +39,7 @@ else
                  @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
                 <i style="@IndentMargin(context)" class="fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
                 <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
-                    @context.FolderItem.DisplayName (@context.FolderItem.ImageCount)
+                    @context.FolderItem.DisplayName (@context.FolderItem.TotalImages)
                 </span>
             </div>
         </Virtualize>

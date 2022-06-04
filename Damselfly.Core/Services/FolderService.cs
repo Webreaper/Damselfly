@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Damselfly.Core.Services;
 
@@ -114,7 +115,7 @@ public class FolderService
             if (parent.FolderItem.MaxImageDate == null || parent.FolderItem.MaxImageDate < maxDate)
                 parent.FolderItem.MaxImageDate = maxDate;
 
-            parent.FolderItem.ImageCount += imageCount;
+            parent.FolderItem.ChildImageCount += imageCount;
 
             item.Depth++;
             parent = parent.Parent;
@@ -124,32 +125,16 @@ public class FolderService
     }
 
     /// <summary>
-    /// Build up the folder display name from enough short or
-    /// numeric folder names to give us a meaningful display.
+    /// Clean up the display name
     /// </summary>
     /// <param name="folder"></param>
     /// <returns></returns>
     private static string GetFolderDisplayName( Folder folder )
     {
-        string display = folder.Name;
-        DirectoryInfo dir = new DirectoryInfo(folder.Path).Parent;
+        var display = folder.Name;
 
-        while( dir != null && display.Length <= 10 )
-        {
-            // If the name is short, or it's an integer, add it
-            if (dir.Name.Length < 6 || int.TryParse(dir.Name, out var _))
-            {
-                if (display.Length != 0)
-                    display = Path.DirectorySeparatorChar + display;
-
-                display = dir.Name + display;
-
-                // Now look at the parent
-                dir = dir.Parent;
-            }
-            else
-                break;
-        }
+        while (display.StartsWith('/') || display.StartsWith('\\'))
+            display = display.Substring(1);
 
         return display;
     }
