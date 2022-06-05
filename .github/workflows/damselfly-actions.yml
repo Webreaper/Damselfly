@@ -168,9 +168,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
-          tag_name: ${{ steps.getversion.outputs.version }}-beta
+          tag_name: ${{ steps.getversion.outputs.version }}
           release_name: Release v${{ steps.getversion.outputs.version }}
           body: |
-            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}-beta
+            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
           draft: false
-          prerelease: true
+          prerelease: false

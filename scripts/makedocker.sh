@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
     docker build -t damselfly --build-arg BASE_IMAGE=webreaper/damselfly-base:dev . 
 else
     version=`cat VERSION`
-    DOCKERTAG="${version}-beta"
+    DOCKERTAG="${version}"
     echo "Master specified - creating tag: ${DOCKERTAG}"
 
     echo "**** Building Docker Damselfly"
