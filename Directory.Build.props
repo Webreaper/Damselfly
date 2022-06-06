@@ -1,7 +1,7 @@
 <Project>
  <PropertyGroup>
    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-   <TargetFramework>net6.0</TargetFramework>
+   <TargetFramework>net7.0</TargetFramework>
    <NoWarn>CA1416</NoWarn>
  </PropertyGroup>
 </Project>

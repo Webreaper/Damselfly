@@ -78,7 +78,7 @@ jobs:
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.102'
+          dotnet-version: '7.0.100-preview.4.22252.9'
 
       - name: Run Dotnet Server Build
         run: sh scripts/makeserver.sh ${{ matrix.target }} 
@@ -168,9 +168,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
-          tag_name: ${{ steps.getversion.outputs.version }}-beta
+          tag_name: ${{ steps.getversion.outputs.version }}
           release_name: Release v${{ steps.getversion.outputs.version }}
           body: |
-            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}-beta
+            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
           draft: false
-          prerelease: true
+          prerelease: false

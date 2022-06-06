@@ -249,6 +249,13 @@ app {
     vertical-align: middle;
 }
 
+.folder-icon {
+    width: 20px;
+}
+
+.expandable {
+}
+
 .folder-entry:hover {
     animation: fadeIn ease 0.2s;
     background: var( --keyword-bg );
@@ -1179,6 +1186,10 @@ f
     display: flex;
 }
 
+.damselfly-sortcontrols {
+    margin-right: 6px;
+    font-size: 16px;
+}
 .damselfly-imageseparatortitle {
     padding: 3px;
     flex: 1 1 60%;
@@ -1201,12 +1212,13 @@ f
 }
 
 .SearchBox {
-    min-width: 300px;
+    min-width: 250px;
     display: flex;
     background: transparent;
     padding: 2px;
     margin: 2px;
     margin-top: 4px;
+    font-size: 14px;
     border: 0;
     border-bottom: 1px solid var( --button-border );
 }
@@ -1876,3 +1888,5 @@ hr.separator {
     -webkit-animation: fa-spin 0.5s infinite linear;
     animation: fa-spin 0.5s infinite linear;
 }
+
+

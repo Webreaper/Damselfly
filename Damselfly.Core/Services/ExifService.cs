@@ -51,7 +51,7 @@ public class ExifService : IProcessJobFactory
         _workService = workService;
 
         GetExifToolVersion();
-        LoadFavouriteTagsAsync().Wait();
+        _ = LoadFavouriteTagsAsync();
 
         _workService.AddJobSource(this);
     }
@@ -260,19 +260,19 @@ public class ExifService : IProcessJobFactory
             UserId = user?.Id
         }));
 
-        changeDesc += $"set {exifType.ToString()}";
+        changeDesc += $"set {exifType}";
 
-        Logging.LogVerbose($"Inserting {keywordOps.Count()} {exifType.ToString()} operations (for {images.Count()}) into queue. ");
+        Logging.LogVerbose($"Inserting {keywordOps.Count()} {exifType} operations (for {images.Count()}) into queue. ");
 
         try
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.StatusText = $"Saved {exifType.ToString()} ({changeDesc}) for {images.Count()} images.";
+            _statusService.StatusText = $"Saved {exifType} ({changeDesc}) for {images.Count()} images.";
         }
         catch (Exception ex)
         {
-            Logging.LogError($"Exception inserting {exifType.ToString()} operations: {ex.Message}");
+            Logging.LogError($"Exception inserting {exifType} operations: {ex.Message}");
         }
 
         // Trigger the work service to look for new jobs
@@ -300,7 +300,7 @@ public class ExifService : IProcessJobFactory
         {
             var operationText = op.Text.RemoveSmartQuotes();
 
-            if ( String.IsNullOrEmpty( operationText ) )
+            if ( string.IsNullOrEmpty( operationText ) )
             {
                 Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
                 continue;

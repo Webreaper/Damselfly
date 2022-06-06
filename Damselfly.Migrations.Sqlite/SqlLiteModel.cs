@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.Models;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
 using System.Linq.Expressions;
 using Damselfly.Core.Utils;
-using SqlParameter = Microsoft.Data.Sqlite.SqliteParameter;
 using EFCore.BulkExtensions;
 
 namespace Damselfly.Migrations.Sqlite.Models
@@ -53,11 +51,9 @@ namespace Damselfly.Migrations.Sqlite.Models
             {
                 var connection = db.Database.GetDbConnection();
                 connection.Open();
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = pragmaCommand;
-                    command.ExecuteNonQuery();
-                }
+                using var command = connection.CreateCommand();
+                command.CommandText = pragmaCommand;
+                command.ExecuteNonQuery();
             }
             catch (Exception ex)
             {
@@ -298,9 +294,9 @@ namespace Damselfly.Migrations.Sqlite.Models
 
                 var imageSubQuery = $"select distinct fts.ImageId from FTSImages fts where ";
                 imageSubQuery += $"fts.Caption MATCH ('{ftsTerm}') OR ";
-                imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') OR ";
-                imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR ";
-                imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}')";
+                // imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR "; // Copyright search doesn't make that much sense
+                // imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}') OR ";
+                imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') ";
                 joinSubQuery = $"{joinSubQuery} union {imageSubQuery}";
 
                 // Subquery to produce the distinct set of images that match the term

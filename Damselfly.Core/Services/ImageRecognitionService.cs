@@ -145,6 +145,7 @@ public class ImageRecognitionService : IProcessJobFactory
         // TODO: If this is an existing person/name, we might need to merge in Azure
         faceObject.Person.Name = name;
         faceObject.Person.State = Person.PersonState.Identified;
+        faceObject.Person.LastUpdated = DateTime.UtcNow;
         db.ImageObjects.Update(faceObject);
 
         await db.SaveChangesAsync("SetName");
@@ -161,6 +162,7 @@ public class ImageRecognitionService : IProcessJobFactory
         // TODO: If this is an existing person/name, we might need to merge in Azure
         person.Name = name;
         person.State = Person.PersonState.Identified;
+        person.LastUpdated = DateTime.UtcNow;
         db.People.Update(person);
 
         await db.SaveChangesAsync("SetName");
@@ -198,7 +200,8 @@ public class ImageRecognitionService : IProcessJobFactory
                     {
                         AzurePersonId = x,
                         Name = "Unknown",
-                        State = Person.PersonState.Unknown
+                        State = Person.PersonState.Unknown,
+                        LastUpdated = DateTime.UtcNow
                     }).ToList();
 
                     if (newPeople.Any())
@@ -342,7 +345,7 @@ public class ImageRecognitionService : IProcessJobFactory
 
                 if (objects.Any())
                 {
-                    Logging.Log($" Yolo found {objects.Count} objects in {fileName}...");
+                    Logging.Log($" Yolo found {objects.Count()} objects in {fileName}...");
 
                     var newTags = await CreateNewTags(objects);
 
@@ -727,8 +730,11 @@ public class ImageRecognitionService : IProcessJobFactory
     {
         using var db = new ImageContext();
 
-        var images = await db.ImageMetaData.Where(x => x.AILastUpdated == null
-                                                    && x.ThumbLastUpdated != null )
+        // Only pull out images where the thumb *has* been processed, and the
+        // metadata has already been scanned, the AI hasn't been processed.
+        var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
+                                                    && x.ThumbLastUpdated != null
+                                                    && x.AILastUpdated == null)
                         .OrderByDescending(x => x.LastUpdated)
                         .Take(maxJobs)
                         .Select(x => x.ImageId)

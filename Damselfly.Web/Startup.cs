@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using Serilog;
 using Microsoft.AspNetCore.Builder;
@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection;
 using Syncfusion.Blazor;
+using Syncfusion.Licensing;
 
 namespace Damselfly.Web
 {
@@ -61,8 +62,6 @@ namespace Damselfly.Web
             services.AddServerSideBlazor();
             services.AddFileReaderService();
             services.AddMudServices();
-
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
             services.AddSyncfusionBlazor();
 
             // Cache up to 10,000 images. Should be enough given cache expiry.
@@ -184,6 +183,8 @@ namespace Damselfly.Web
                         UserService userService, ConfigService configService, WorkService workService,
                         ImageCache imageCache,  MetaDataService metaDataService, ObjectDetector objectDetector)
         {
+            SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
+
             var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 
             Logging.ChangeLogLevel( logLevel );
@@ -301,7 +302,7 @@ namespace Damselfly.Web
             {
                 Type = ScheduledTask.TaskType.CleanupKeywordOps,
                 ExecutionFrequency = new TimeSpan(12,0,0),
-                WorkMethod = () => exifService.CleanUpKeywordOperations(keywordCleanupFreq).Wait(),
+                WorkMethod = () => { _ = exifService.CleanUpKeywordOperations(keywordCleanupFreq); },
                 ImmediateStart = false
             });
 
@@ -314,6 +315,8 @@ namespace Damselfly.Web
                 ImmediateStart = false
             });
 
+#if false
+            // Disabled for now, don't think it's really required.
             // Flush the DB WriteCache (currently a no-op except for SQLite) ever 2 hours
             tasks.Add( new ScheduledTask
             {
@@ -326,6 +329,7 @@ namespace Damselfly.Web
                     db.FlushDBWriteCache();
                 }
             });
+#endif
 
             // Add the jobs
             foreach (var task in tasks)

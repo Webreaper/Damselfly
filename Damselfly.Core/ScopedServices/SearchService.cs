@@ -227,8 +227,10 @@ public class SearchService
 
             if (query.Folder?.FolderId >= 0)
             {
+                var descendants = query.Folder.Subfolders.ToList();
+
                 // Filter by folderID
-                images = images.Where(x => x.FolderId == query.Folder.FolderId);
+                images = images.Where(x => descendants.Select( x => x.FolderId ).Contains( x.FolderId ) );
             }
 
             if (query.MinDate.HasValue || query.MaxDate.HasValue)

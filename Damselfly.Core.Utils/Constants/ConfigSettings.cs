@@ -12,6 +12,9 @@ namespace Damselfly.Core.Utils.Constants
         public const string SelectedBasketId = "SelectedBasketId";
         public const string SideBarWidth = "SideBarWidth";
         public const string SideBarCollapsed = "SideBarCollapsed";
+        public const string FlatView = "FlatView";
+        public const string FolderSortAscending = "FolderSortAscending";
+        public const string FolderSortMode = "FolderSortMode";
 
         public const string WordpressURL = "WordpressURL";
         public const string WordpressUser = "WordpressUser";

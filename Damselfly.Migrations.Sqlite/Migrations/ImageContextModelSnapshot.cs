@@ -15,7 +15,7 @@ namespace Damselfly.Core.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.2");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.3");
 
             modelBuilder.Entity("Damselfly.Core.DbModels.AppIdentityUser", b =>
                 {
@@ -117,21 +117,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "b25e7079-5db1-40d8-82c1-58cd0ec155ca",
+                            ConcurrencyStamp = "9ad1e6c9-cdbe-4086-bd13-1a6cfe4dee73",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "cd16a8fe-045c-4a16-ad18-0350aa6e0070",
+                            ConcurrencyStamp = "67b290f6-b8bb-48c1-86ab-a620c1c53e98",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "209ccba0-909f-4775-a806-335aa85678a4",
+                            ConcurrencyStamp = "bd96a214-8217-4df7-b438-43a125082f56",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -658,6 +658,9 @@ namespace Damselfly.Core.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("AzurePersonId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastUpdated")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")

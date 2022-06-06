@@ -1,5 +1,5 @@
 ﻿using System;
-using Damselfly.Core.Models;
+using System.Collections.Generic;
 
 namespace Damselfly.Core.Models
 {
@@ -10,14 +10,18 @@ namespace Damselfly.Core.Models
     /// </summary>
 	public class FolderListItem
 	{
-		public Folder Folder { get; set; }
         public string DisplayName { get; set; }
 		public int ImageCount { get; set; }
-		public DateTime MaxImageDate { get; set; }
+        public int ChildImageCount { get; set; }
+		public DateTime? MaxImageDate { get; set; }
+        public bool IsExpanded { get; set; }
+        public int Depth { get; set; } = 1;
+
+        public int TotalImages => ImageCount + ChildImageCount;
 
         public override string ToString()
         {
-            return $"{Folder.Path} [{ImageCount} images, most recent date {MaxImageDate}]";
+            return $"{DisplayName} [{ImageCount} images, Date: {MaxImageDate}]";
         }
     }
 }

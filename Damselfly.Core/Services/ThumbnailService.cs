@@ -446,6 +446,8 @@ public class ThumbnailService : IProcessJobFactory
 
                     Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
 
+                    // TODO: Update person LastUpdated here?
+
                     await _imageProcessingService.GetCroppedFile(thumbPath, x, y, width, height, destFile);
 
                     destFile.Refresh();

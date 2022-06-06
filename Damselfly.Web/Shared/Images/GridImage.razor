@@ -57,7 +57,7 @@ else
 
     private LocalFileExporter FileExporter;
     private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}";
-    private string ImageUrl => $"/thumb/{ThumbnailSize}/{CurrentImage.ImageId}";
+    private string ImageUrl => CurrentImage.ThumbUrl(ThumbnailSize);
     private string previewKey => $"Prev{CurrentImage.ImageId}";
     private string ImageClass => selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected";
 

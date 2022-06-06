@@ -137,6 +137,7 @@ public class MetaDataService : IProcessJobFactory
                 var newPerson = new Person
                 {
                     Name = name,
+                    LastUpdated = DateTime.UtcNow,
                     State = Person.PersonState.Identified
                 };
 

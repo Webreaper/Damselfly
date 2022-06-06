@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Damselfly.Core.Utils;
 
@@ -11,8 +11,8 @@ namespace Damselfly.Core.Utils;
 /// <typeparam name="K"></typeparam>
 public class UniqueConcurrentPriorityQueue<T, K> where T : class
 {
-	private readonly ConcurrentPriorityQueue<T> _queue = new();
-	private readonly ConcurrentDictionary<K, T> _queueLookup = new ConcurrentDictionary<K, T>();
+	private PriorityQueue<T, int> _queue = new();
+	private readonly Dictionary<K, T> _queueLookup = new Dictionary<K, T>();
 	private readonly Func<T, K> _keyFunc;
 	private readonly Func<T, int> _priorityFunc;
 
@@ -22,7 +22,7 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
 		_priorityFunc = priorityFunc;
 	}
 
-	public bool IsEmpty => _queueLookup.IsEmpty;
+	public bool IsEmpty { get { lock (_queue) { return _queueLookup.Count == 0; } } }
 
 	/// <summary>
 	/// When we go to add, we first try and add to a dictionary, which guarantees uniqueness.
@@ -31,19 +31,23 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
 	/// <exception cref="ApplicationException"></exception>
 	public T TryDequeue()
 	{
-		T item = _queue.TryDequeue();
-
-		if (item != null)
+		lock (_queue)
 		{
-			var key = _keyFunc(item);
-			if (!_queueLookup.TryRemove(key, out var _))
+
+			if (_queue.TryDequeue( out var item, out var _) )
 			{
-				// Something bad happened - the collections are now out of sync.
-				throw new ApplicationException($"Unable to remove key {key} from lookup.");
+				var key = _keyFunc(item);
+				if (!_queueLookup.Remove(key, out var _))
+				{
+					// Something bad happened - the collections are now out of sync.
+					throw new ApplicationException($"Unable to remove key {key} from lookup.");
+				}
+
+				return item;
 			}
 		}
 
-		return item;
+		return default(T);
 	}
 
 	/// <summary>
@@ -54,15 +58,18 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
 	public bool TryAdd( T newItem )
 	{
 		bool added = false;
-		var key = _keyFunc(newItem);
 
-		if( _queueLookup.TryAdd( key, newItem ) )
-        {
-			// Success - this means the item wasn't already in the collection. So enqueue it
-			_queue.Enqueue(newItem, _priorityFunc( newItem ));
-			added = true;
-        }
+		lock (_queue)
+		{
+			var key = _keyFunc(newItem);
 
+			if (_queueLookup.TryAdd(key, newItem))
+			{
+				// Success - this means the item wasn't already in the collection. So enqueue it
+				_queue.Enqueue(newItem, _priorityFunc(newItem));
+				added = true;
+			}
+		}
 		return added;
 	}
 }

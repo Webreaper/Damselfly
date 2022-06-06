@@ -1,6 +1,6 @@
 # Read the version from disk.
 version=`cat VERSION`
-dotnetversion='6.0'
+dotnetversion='7.0'
 
 if [ -n "$1" ]; then
     PLATFORM=$1
@@ -30,7 +30,9 @@ zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
 
 echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname}"
 
-dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true
+dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+# Disable trimming until .Net 7 preview 5
+# dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true
 
 outputdir="Damselfly.Web/bin/Release/net${dotnetversion}/${runtime}/publish"
 

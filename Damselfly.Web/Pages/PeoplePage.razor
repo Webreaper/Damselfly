@@ -122,7 +122,7 @@
                           .Where(x => FilterFunc(x))
                           .ToList();
 
-        InvokeAsync( StateHasChanged );
+        await InvokeAsync( StateHasChanged );
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -134,4 +134,4 @@
             await LoadData();
         }
     }
-    }
+}
