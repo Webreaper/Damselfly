@@ -35,9 +35,9 @@ else
     </div>
     <div class="folder-scroll-area" id="folderscrollarea">
         <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
-            <div class="folder-entry @FolderStyle(context.FolderId)"
+            <div class="folder-entry @FolderStyle(context.FolderId) expandable"
                  @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
-                <i style="@IndentMargin(context)" class="fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
+                <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
                 <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
                     @context.FolderItem.DisplayName (@context.FolderItem.TotalImages)
                 </span>

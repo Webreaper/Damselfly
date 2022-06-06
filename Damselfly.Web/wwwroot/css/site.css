@@ -249,6 +249,13 @@ app {
     vertical-align: middle;
 }
 
+.folder-icon {
+    width: 20px;
+}
+
+.expandable {
+}
+
 .folder-entry:hover {
     animation: fadeIn ease 0.2s;
     background: var( --keyword-bg );
@@ -1881,3 +1888,5 @@ hr.separator {
     -webkit-animation: fa-spin 0.5s infinite linear;
     animation: fa-spin 0.5s infinite linear;
 }
+
+
