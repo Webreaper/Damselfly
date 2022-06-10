@@ -80,12 +80,14 @@ namespace Damselfly.Web
             // we'll get a different instance the next time we send email. 
             services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
-            services.AddSingleton<TransThrottle>(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
+            services.AddSingleton(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
             services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
+
             services.AddSingleton<ConfigService>();
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-            services.AddSingleton<ImageProcessorFactory>();
-            services.AddSingleton<IImageProcessorFactory>(x => x.GetRequiredService<ImageProcessorFactory>());
+
+            services.AddImageServices();
+
             services.AddSingleton<StatusService>();
             services.AddSingleton<ObjectDetector>();
             services.AddSingleton<FolderWatcherService>();
@@ -96,7 +98,6 @@ namespace Damselfly.Web
             services.AddSingleton<TaskService>();
             services.AddSingleton<FolderService>();
             services.AddSingleton<DownloadService>();
-            services.AddSingleton<ImageProcessService>();
             services.AddSingleton<WordpressService>();
             services.AddSingleton<AccordFaceService>();
             services.AddSingleton<AzureFaceService>();
@@ -112,17 +113,12 @@ namespace Damselfly.Web
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
             services.AddScoped<BasketService>();
-            services.AddScoped<UserService>();
-            services.AddScoped<UserStatusService>();
-            services.AddScoped<UserConfigService>();
-            services.AddScoped<SearchService>();
             services.AddScoped<NavigationService>();
-            services.AddScoped<UserFolderService>();
-            services.AddScoped<ViewDataService>();
-            services.AddScoped<UserThemeService>();
             services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
-            services.AddScoped<UserTagFavouritesService>();
+            services.AddScoped<SearchService>();
+
+            services.AddUserServices();
         }
 
         private void SetupPolicies(AuthorizationOptions config, IServiceCollection services)
