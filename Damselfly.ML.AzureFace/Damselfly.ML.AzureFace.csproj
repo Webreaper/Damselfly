@@ -12,6 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.Face" Version="2.8.0-preview.2" />
     <PackageReference Include="FluentValidation" Version="11.0.3" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0-preview.5.22301.12" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.2-mauipre.1.22102.15" />
   </ItemGroup>
 </Project>
