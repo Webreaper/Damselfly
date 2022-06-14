@@ -16,6 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.2" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta16" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta17" />
   </ItemGroup>
 </Project>
