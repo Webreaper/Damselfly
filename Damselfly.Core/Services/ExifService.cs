@@ -37,13 +37,13 @@ public class ExifService : IProcessJobFactory
         OnFavouritesChanged?.Invoke();
     }
 
-    private void NotifyUserTagsAdded( List<string> tagsAdded )
+    private void NotifyUserTagsAdded(List<string> tagsAdded)
     {
         OnUserTagsAdded?.Invoke(tagsAdded);
     }
 
-    public ExifService( StatusService statusService, WorkService  workService,
-            IndexingService indexingService, ImageCache imageCache )
+    public ExifService(StatusService statusService, WorkService workService,
+            IndexingService indexingService, ImageCache imageCache)
     {
         _statusService = statusService;
         _imageCache = imageCache;
@@ -62,7 +62,7 @@ public class ExifService : IProcessJobFactory
     private void GetExifToolVersion()
     {
         var process = new ProcessStarter();
-        if (process.StartProcess("exiftool", "-ver") )
+        if (process.StartProcess("exiftool", "-ver"))
         {
             ExifToolVer = $"v{process.OutputText}";
         }
@@ -121,7 +121,7 @@ public class ExifService : IProcessJobFactory
         using var db = new ImageContext();
         var ops = new List<ExifOperation>();
 
-        if( faces != null)
+        if (faces != null)
         {
             foreach (var image in images)
             {
@@ -163,7 +163,7 @@ public class ExifService : IProcessJobFactory
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null )
+    public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null)
     {
         // TODO: Split tags with commas here?
         var timestamp = DateTime.UtcNow;
@@ -198,7 +198,7 @@ public class ExifService : IProcessJobFactory
 
             foreach (var image in images)
             {
-                keywordOps.AddRange( tagsToRemove.Select(keyword => 
+                keywordOps.AddRange(tagsToRemove.Select(keyword =>
                     new ExifOperation
                     {
                         ImageId = image.ImageId,
@@ -206,7 +206,7 @@ public class ExifService : IProcessJobFactory
                         Type = ExifOperation.ExifType.Keyword,
                         Operation = ExifOperation.OperationType.Remove,
                         TimeStamp = timestamp
-                    } ) );
+                    }));
             }
 
             if (!string.IsNullOrEmpty(changeDesc))
@@ -227,7 +227,7 @@ public class ExifService : IProcessJobFactory
             Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
         }
 
-        if( user != null )
+        if (user != null)
             NotifyUserTagsAdded(addTags);
 
         // Trigger the work service to look for new jobs
@@ -286,7 +286,7 @@ public class ExifService : IProcessJobFactory
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    private async Task<bool> ProcessExifOperations(int imageId, List<ExifOperation> exifOperations )
+    private async Task<bool> ProcessExifOperations(int imageId, List<ExifOperation> exifOperations)
     {
         bool success = false;
 
@@ -300,7 +300,7 @@ public class ExifService : IProcessJobFactory
         {
             var operationText = op.Text.RemoveSmartQuotes();
 
-            if ( string.IsNullOrEmpty( operationText ) )
+            if (string.IsNullOrEmpty(operationText))
             {
                 Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
                 continue;
@@ -331,7 +331,7 @@ public class ExifService : IProcessJobFactory
                     opsToProcess.Add(op);
                 }
             }
-            else if( op.Type == ExifOperation.ExifType.Caption )
+            else if (op.Type == ExifOperation.ExifType.Caption)
             {
                 args += $" -iptc:Caption-Abstract=\"{op.Text}\"";
                 opsToProcess.Add(op);
@@ -385,7 +385,7 @@ public class ExifService : IProcessJobFactory
         // Assume they've all failed unless we succeed below.
         exifOperations.ForEach(x => x.State = ExifOperation.FileWriteState.Failed);
 
-        if (opsToProcess.Any() )
+        if (opsToProcess.Any())
         {
             // Note: we could do this to preserve the last-mod-time:
             //   args += " -P -overwrite_original_in_place";
@@ -434,7 +434,7 @@ public class ExifService : IProcessJobFactory
         var totals = string.Join(", ", exifOperations.GroupBy(x => x.State)
                             .Select(x => $"{x.Key}: {x.Count()}")
                             .ToList());
-            
+
         _statusService.StatusText = $"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}";
 
         return success;
@@ -450,7 +450,7 @@ public class ExifService : IProcessJobFactory
     {
         FileInfo path = new FileInfo(imagePath);
         var newExtension = path.Extension + "_exiftool_tmp";
-        var tempPath = new FileInfo( Path.ChangeExtension(imagePath, newExtension) );
+        var tempPath = new FileInfo(Path.ChangeExtension(imagePath, newExtension));
 
         if (!path.Exists && tempPath.Exists)
         {
@@ -459,7 +459,7 @@ public class ExifService : IProcessJobFactory
             {
                 File.Move(tempPath.FullName, path.FullName);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogWarning($"Unable to move file: {ex.Message}");
             }
@@ -484,7 +484,7 @@ public class ExifService : IProcessJobFactory
 
             Logging.LogVerbose($"Cleaned up {cleanedUp} completed Keyword Operations.");
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Exception whilst cleaning up keyword operations: {ex.Message}");
         }
@@ -508,7 +508,7 @@ public class ExifService : IProcessJobFactory
     /// </summary>
     /// <param name="tagsToProcess"></param>
     /// <returns></returns>
-    private async Task<IDictionary<int, List<ExifOperation>>> ConflateOperations(List<ExifOperation> opsToProcess )
+    private async Task<IDictionary<int, List<ExifOperation>>> ConflateOperations(List<ExifOperation> opsToProcess)
     {
         // The result is the image ID, and a list of conflated ops.
         var result = new Dictionary<int, List<ExifOperation>>();
@@ -627,7 +627,7 @@ public class ExifService : IProcessJobFactory
     /// </summary>
     /// <param name="tag"></param>
     /// <returns></returns>
-    public async Task ToggleFavourite( Tag tag )
+    public async Task ToggleFavourite(Tag tag)
     {
         using var db = new ImageContext();
         // TODO: Async - use BulkUpdateAsync?
