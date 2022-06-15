@@ -6,6 +6,8 @@ WORKDIR /app
 COPY /publish .
 RUN chmod +x Damselfly.Web 
 
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends install -y strace
+
 # Copy the entrypoint script
 COPY ./damselfly-entrypoint.sh /
 RUN ["chmod", "+x", "/damselfly-entrypoint.sh"]

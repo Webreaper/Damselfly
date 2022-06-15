@@ -17,7 +17,8 @@ echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlinearg
 export DOTNET_TieredPGO=1
 
 cd /app
-./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+
+strace -f -o /config/trace.log ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 
 exec "$@"
 
