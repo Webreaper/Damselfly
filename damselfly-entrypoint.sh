@@ -14,7 +14,7 @@ echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlinearg
 
 # Let's turn this on for extra performance.
 # https://devblogs.microsoft.com/dotnet/announcing-net-6/#dynamic-pgo
-# export DOTNET_TieredPGO=1
+export DOTNET_TieredPGO=1
 
 cd /app
 ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
