@@ -15,10 +15,12 @@ echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlinearg
 # Let's turn this on for extra performance.
 # https://devblogs.microsoft.com/dotnet/announcing-net-6/#dynamic-pgo
 export DOTNET_TieredPGO=1
+# Fix for https://github.com/dotnet/runtime/issues/70758
+export COMPlus_EnableWriteXorExecute=0
 
 cd /app
 
-strace -f -o /config/trace.log ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 
 exec "$@"
 
