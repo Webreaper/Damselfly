@@ -16,6 +16,8 @@ echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlinearg
 # https://devblogs.microsoft.com/dotnet/announcing-net-6/#dynamic-pgo
 export DOTNET_TieredPGO=1
 
+export COREHOST_TRACE=1
+
 cd /app
 ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 
