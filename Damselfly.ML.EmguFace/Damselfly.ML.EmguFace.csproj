@@ -27,7 +27,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-   <PropertyGroup>
-    <RestoreSources>$(RestoreSources);../localPackages;https://api.nuget.org/v3/index.json</RestoreSources>
-  </PropertyGroup>
 </Project>
