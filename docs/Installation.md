@@ -56,7 +56,7 @@ Other options:
 Damselfly uses OS-level filewatcher triggers to monitor your library for changes. One watcher is created for each folder in your
 photo library. 
 
-For MacOS and Linus, the number of inotify watchers availalbe to the OS may be set very low (a few hundred) so you may need to increase 
+For MacOS and Linux, the number of inotify watchers availalbe to the OS may be set very low (a few hundred) so you may need to increase 
 the number of inotify instances as follows (where 524288 is any large number that's big enough for one watcher per folder), 
 [for linux](https://unix.stackexchange.com/questions/13751/kernel-inotify-watch-limit-reached).
 
