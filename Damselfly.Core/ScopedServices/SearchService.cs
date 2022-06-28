@@ -269,9 +269,11 @@ public class SearchService
 
             if (query.Orientation.HasValue)
             {
-                if (query.Orientation == OrientationType.Landscape)
+                if (query.Orientation == OrientationType.Panorama)
+                    images = images.Where(x => x.MetaData.Width > (x.MetaData.Height * 2));
+                else if (query.Orientation == OrientationType.Landscape)
                     images = images.Where(x => x.MetaData.Width > x.MetaData.Height);
-                else
+                else if (query.Orientation == OrientationType.Portrait )
                     images = images.Where(x => x.MetaData.Height > x.MetaData.Width);
             }
 

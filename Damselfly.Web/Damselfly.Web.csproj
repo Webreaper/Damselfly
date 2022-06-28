@@ -65,6 +65,7 @@
     <None Remove="FisSst.BlazorMaps" />
     <None Remove="Syncfusion.Blazor.Maps" />
     <None Remove="Shared\Dialogs\" />
+    <None Remove="Microsoft.AspNetCore.Components.QuickGrid" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="Shared\Images\ImagePropertyField.razor" />
@@ -113,5 +114,6 @@
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.0-preview.5.22303.8" />
     <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="0.1.0-alpha.22324.2" />
   </ItemGroup>
 </Project>

@@ -195,14 +195,6 @@ public class MetaDataService : IProcessJobFactory
             {
                 metaDataReadSuccess = true;
 
-                var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
-
-                if (jpegDirectory != null)
-                {
-                    imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
-                    imgMetaData.Height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
-                }
-
                 var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
 
                 if (subIfdDirectory != null)
@@ -253,6 +245,16 @@ public class MetaDataService : IProcessJobFactory
                     var flash = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagFlash);
 
                     imgMetaData.FlashFired = ((flash & 0x1) != 0x0);
+                }
+
+                var jpegDirectory = metadata.OfType<JpegDirectory>().FirstOrDefault();
+
+                if (jpegDirectory != null)
+                {
+                    if( imgMetaData.Width == 0 )
+                        imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
+                    if (imgMetaData.Height == 0)
+                        imgMetaData.Height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
                 }
 
                 var gpsDirectory = metadata.OfType<GpsDirectory>().FirstOrDefault();

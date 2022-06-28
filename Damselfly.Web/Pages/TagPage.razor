@@ -2,6 +2,7 @@
 
 @using Damselfly.Core.Services;
 @using Damselfly.Core.Models;
+@using Microsoft.AspNetCore.Components.QuickGrid;
 
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
@@ -15,47 +16,70 @@
     }
     else
     {
-        <MudTable Items="@Tags" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
-                    Filter="new Func<Tag,bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
-            <ToolBarContent>
+        @if (useQuickGrid)
+        {
+            <div>
                 <MudText Typo="Typo.h6">Keyword Tags</MudText>
                 <MudSpacer />
                 <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText" />
-            </ToolBarContent>
-            <HeaderContent>
-                <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TagId)">ID</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Tag, object>(x=>x.Keyword)">Keyword</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.Favourite)">Favourite</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Keyword">
-                    <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
-                </MudTd>
-                <MudTd DataLabel="Favourite?">@context.Favourite</MudTd>
-                <MudTd DataLabel="Date Created">@context.TimeStamp</MudTd>
-            </RowTemplate>
-            <PagerContent>
-                <MudTablePager />
-            </PagerContent>
-        </MudTable>
+            </div>
+            <div class="quickgrid">
+                <QuickGrid Virtualize="true" Items="@Tags">
+                    <PropertyColumn Property="@(c => c.TagId)" Sortable="true" />
+                    <PropertyColumn Property="@(c => c.Keyword)" Sortable="true" />
+                    <PropertyColumn Property="@(c => c.Favourite)" Sortable="true" />
+                    <PropertyColumn Property="@(c => c.TimeStamp)" Sortable="true" />
+                </QuickGrid>
+            </div>
+        }
+        else
+        { 
+            <MudTable Items="@Tags" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+                      Filter="new Func<Tag,bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Keyword Tags</MudText>
+                    <MudSpacer />
+                    <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText" />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel InitialDirection="MudBlazor.SortDirection.Ascending" SortBy="new Func<Tag, object>(x=>x.Keyword)">Keyword</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.Favourite)">Favourite</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Tag, object>(x=>x.TimeStamp)">Date Created</MudTableSortLabel></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Keyword">
+                        <NavLink href="@TagLink( @context )">@context.Keyword</NavLink>
+                    </MudTd>
+                    <MudTd DataLabel="Favourite?">@context.Favourite</MudTd>
+                    <MudTd DataLabel="Date Created">@context.TimeStamp</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        }
     }
 </div>
 @code {
     [Parameter]
     public string TagName { get; set; }
 
+    // Enable Experimental Grid
+    bool useQuickGrid = false;
+
     Tag selectedTag;
     string searchText;
 
     private string TagLink( Tag tag ) => $"/?tagid={tag.TagId}";
 
-    private IEnumerable<Tag> Tags
+    private IQueryable<Tag> Tags
     {
         get
         {
             return metadataService.CachedTags.OrderBy(x => x.Favourite)
-                                             .ThenBy(x => x.Keyword, StringComparer.OrdinalIgnoreCase);
+                                             .ThenBy(x => x.Keyword, StringComparer.OrdinalIgnoreCase)
+                                             .Where( x => FilterFunc( x ) )
+                                             .AsQueryable();
         }
     }
 

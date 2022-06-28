@@ -1889,4 +1889,21 @@ hr.separator {
     animation: fa-spin 0.5s infinite linear;
 }
 
+/* Fix height and enable scrolling */
+.quickgrid {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Sticky header while scrolling */
+.quickgrid thead {
+    position: sticky;
+    top: 0;
+    background: var(--main-background);
+}
+
+/* Subtle stripe effect */
+.quickgrid tr:nth-child(even) {
+    background: rgba(0,100,0,0.4);
+}
 

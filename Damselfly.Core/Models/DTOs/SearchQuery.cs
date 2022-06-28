@@ -34,7 +34,8 @@ public class SearchQuery
     public enum OrientationType
     {
         Landscape,
-        Portrait
+        Portrait,
+        Panorama
     }
 
     public string SearchText { get; set; } = string.Empty;
