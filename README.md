@@ -43,6 +43,7 @@ editing etc.
 * [Multi-user support with user accounts](./docs/Multi-user.md), and role-based entitlements (e.g., users with ReadOnly 
   role are prevented from keyword-tagging images)
 * Download/export processing to watermark images ready for social media, or sending via Email etc.
+* GeoLocation with map display of photo locations where metadata exists
 * Selection basket for saving images from search results:
     * Images within the basket can be downloaded, exported for use within Digikam/PhotoShop/etc., or 
       uploaded to Wordpress
