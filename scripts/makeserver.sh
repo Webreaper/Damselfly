@@ -30,7 +30,6 @@ zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
 
 echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname}"
 
-# Single file is broken
 dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:EnableCompressionInSingleFile=true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true
 
 outputdir="Damselfly.Web/bin/Release/net${dotnetversion}/${runtime}/publish"
