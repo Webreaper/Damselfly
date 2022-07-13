@@ -42,7 +42,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Shared\Images\" />
     <Folder Include="wwwroot\downloads\" />
     <Folder Include="wwwroot\css\" />
     <Folder Include="Controllers\" />
