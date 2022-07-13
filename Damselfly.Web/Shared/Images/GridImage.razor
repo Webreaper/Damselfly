@@ -22,7 +22,8 @@ else
     <div class="grid-image" @ondblclick="NavigateToImage">
          @if( !string.IsNullOrEmpty(ImageUrl) )
          {
-            <img @key="CurrentImage.ImageId" class="@ImageClass @FadeClass" @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
+            <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
+                 @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
                     @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
          }
@@ -56,11 +57,11 @@ else
     }
 
     private LocalFileExporter FileExporter;
-    private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}";
+    private string ImgToolTip => $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}\nSize (w x h): {CurrentImage?.MetaData.Width} x {CurrentImage?.MetaData.Height}";
     private string ImageUrl => CurrentImage.ThumbUrl(ThumbnailSize);
     private string previewKey => $"Prev{CurrentImage.ImageId}";
     private string ImageClass => selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected";
-
+    private string AspectRatioStyle => ThumbnailSize == ThumbSize.Small ? string.Empty : $"aspect-ratio:{CurrentImage.AspectRatio};";
     private string FadeClass = string.Empty;
     private int imageId = 0;
 
