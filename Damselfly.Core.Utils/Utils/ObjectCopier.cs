@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Damselfly.Core.Utils
@@ -8,7 +9,7 @@ namespace Damselfly.Core.Utils
     /// </summary>
     public static class ObjectUtils
     {
-        public static bool CopyPropertiesTo<T, TU>(this T source, TU dest)
+        public static bool CopyPropertiesTo<T, TU>(this T source, TU dest, List<string> nameFilter = null)
         {
             bool changed = false;
             var sourceProps = typeof(T).GetProperties().Where(x => x.CanRead).ToList();
@@ -20,6 +21,9 @@ namespace Damselfly.Core.Utils
 
                 if (destProp != null )
                 {
+                    if (nameFilter != null && !nameFilter.Contains(destProp.Name))
+                        continue;
+
                     var newVal = sourceProp.GetValue(source, null);
                     var prevVal = destProp.GetValue(dest, null);
 

@@ -219,7 +219,7 @@ namespace Damselfly.Migrations.Postgres.Models
             return await query.DeleteAsync();
         }
 
-        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
+        public async Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
         {
             return await query.UpdateAsync(updateExpression);
         }

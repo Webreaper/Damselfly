@@ -160,7 +160,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
 
             try
             { 
-                return await DatabaseSpecialisation.BatchUpdate(query, updateExpression);
+                return await DatabaseSpecialisation.BatchUpdate(this, query, updateExpression);
             }
             catch( Exception ex )
             {

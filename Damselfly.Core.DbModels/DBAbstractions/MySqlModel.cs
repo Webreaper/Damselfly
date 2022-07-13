@@ -148,7 +148,7 @@ namespace Damselfly.Core.Models.DBAbstractions
             throw new NotImplementedException();
         }
 
-        public Task<IQueryable<T>> Search<T>(string query, DbSet<T> collection) where T : class
+        public Task<IQueryable<T>> Search<T>(BaseDBModel db, string query, DbSet<T> collection) where T : class
         {
             // Full text search not supported in MySQL
             // TODO: Implement with a Like Query?
@@ -156,7 +156,7 @@ namespace Damselfly.Core.Models.DBAbstractions
         }
 
 
-        public Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
+        public Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
         {
             throw new NotImplementedException();
         }

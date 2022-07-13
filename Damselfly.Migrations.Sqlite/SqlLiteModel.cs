@@ -182,10 +182,11 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                //collection.UpdateRange(itemsToSave);
-                //await db.SaveChangesAsync();
+                collection.UpdateRange(itemsToSave);
+                await db.SaveChangesAsync();
 
-                await db.BulkUpdateAsync(itemsToSave);
+                // TODO: Replace when EFCore 7 has this
+                //await db.BulkUpdateAsync(itemsToSave);
 
                 success = true;
             }
@@ -216,10 +217,11 @@ namespace Damselfly.Migrations.Sqlite.Models
             bool success = false;
             try
             {
-                //collection.RemoveRange(itemsToDelete);
-                //await db.SaveChangesAsync();
+                collection.RemoveRange(itemsToDelete);
+                await db.SaveChangesAsync();
 
-                await db.BulkDeleteAsync(itemsToDelete);
+                // TODO: Replace when EFCore 7 has this
+                //await db.BulkDeleteAsync(itemsToDelete);
 
                 success = true;
             }
@@ -251,10 +253,45 @@ namespace Damselfly.Migrations.Sqlite.Models
             return await query.BatchDeleteAsync();
         }
 
-        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
+        public async Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
         {
-            // TODO Try/Catch here?
-            return await query.BatchUpdateAsync( updateExpression );
+            // Broken with .Net 7 preview 6...
+            // return await query.BatchUpdateAsync(updateExpression);
+            // ...so use this massive hack instead. :)
+
+            var entities = await query.ToListAsync();
+            var compiledExpression = updateExpression.Compile();
+            int updates = 0;
+            var dbSet = db.Set<T>();
+            List<string> memberNames = new List<string>();
+
+            if (updateExpression.Body is MemberInitExpression memberInitExpression)
+            {
+                foreach (var item in memberInitExpression.Bindings)
+                {
+                    if (item is MemberAssignment assignment)
+                    {
+                        memberNames.Add( item.Member.Name );
+                    }
+                }
+            }
+
+            foreach (var e in entities)
+            {
+                var updated = compiledExpression.Invoke(e);
+
+                updated.CopyPropertiesTo(e, memberNames);
+
+                dbSet.Update( e );
+                updates++;
+            }
+
+            return await db.SaveChangesAsync();
+        }
+
+        public static Action<TR> IgnoreResult<TR>(Delegate f)
+        {
+            return x => f.DynamicInvoke(x);
         }
 
         private string Sanitize( string input )
