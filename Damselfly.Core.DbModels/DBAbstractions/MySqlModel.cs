@@ -143,7 +143,7 @@ namespace Damselfly.Core.Models.DBAbstractions
             return result;
         }
 
-        public Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
+        public Task<int> BatchDelete<T>(BaseDBModel db, IQueryable<T> query) where T : class
         {
             throw new NotImplementedException();
         }

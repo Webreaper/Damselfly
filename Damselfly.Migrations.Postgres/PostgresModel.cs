@@ -214,7 +214,7 @@ namespace Damselfly.Migrations.Postgres.Models
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
+        public async Task<int> BatchDelete<T>(BaseDBModel db, IQueryable<T> query) where T : class
         {
             return await query.DeleteAsync();
         }

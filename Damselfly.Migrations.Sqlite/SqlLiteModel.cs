@@ -247,10 +247,18 @@ namespace Damselfly.Migrations.Sqlite.Models
             throw new NotImplementedException();
         }
 
-        public async Task<int> BatchDelete<T>(IQueryable<T> query) where T : class
+        public async Task<int> BatchDelete<T>(BaseDBModel db, IQueryable<T> query) where T : class
         {
             // TODO Try/Catch here?
-            return await query.BatchDeleteAsync();
+            var entities = await query.ToListAsync();
+            var dbSet = db.Set<T>();
+
+            foreach (var e in entities)
+            {
+                dbSet.Remove(e);
+            }
+
+            return await db.SaveChangesAsync();
         }
 
         public async Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
@@ -261,7 +269,6 @@ namespace Damselfly.Migrations.Sqlite.Models
 
             var entities = await query.ToListAsync();
             var compiledExpression = updateExpression.Compile();
-            int updates = 0;
             var dbSet = db.Set<T>();
             List<string> memberNames = new List<string>();
 
@@ -283,7 +290,6 @@ namespace Damselfly.Migrations.Sqlite.Models
                 updated.CopyPropertiesTo(e, memberNames);
 
                 dbSet.Update( e );
-                updates++;
             }
 
             return await db.SaveChangesAsync();

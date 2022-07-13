@@ -138,7 +138,7 @@ namespace Damselfly.Core.DbModels.DBAbstractions
 
             try
             {
-                return await DatabaseSpecialisation.BatchDelete(query);
+                return await DatabaseSpecialisation.BatchDelete(this, query);
             }
             catch(Exception ex )
             {
