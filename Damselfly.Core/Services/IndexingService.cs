@@ -93,7 +93,7 @@ public class IndexingService : IProcessJobFactory
                 Logging.Log($"Adding new folder: {folderToScan.Path}");
 
                 if (parent != null)
-                    folderToScan.ParentFolderId = parent.FolderId;
+                    folderToScan.ParentId = parent.FolderId;
 
                 // New folder, add it. 
                 db.Folders.Add(folderToScan);
@@ -138,7 +138,7 @@ public class IndexingService : IProcessJobFactory
         try
         {
             // Now query the DB for child folders of our current folder
-            var dbChildDirs = db.Folders.Where(x => x.ParentFolderId == folderToScan.FolderId).ToList();
+            var dbChildDirs = db.Folders.Where(x => x.ParentId == folderToScan.FolderId).ToList();
 
             foreach (var childFolder in dbChildDirs)
             {

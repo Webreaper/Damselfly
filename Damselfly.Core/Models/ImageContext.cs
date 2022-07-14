@@ -92,9 +92,8 @@ namespace Damselfly.Core.Models
                 .HasForeignKey<ImageMetaData>(i => i.ImageId);
 
             modelBuilder.Entity<Folder>()
-                .HasOne(x => x.Parent)
-                .WithMany(x => x.Children)
-                .HasForeignKey(x => x.ParentFolderId)
+                .HasMany(x => x.Children)
+                .WithOne(x => x.Parent)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
