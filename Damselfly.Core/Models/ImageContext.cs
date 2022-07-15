@@ -60,6 +60,10 @@ namespace Damselfly.Core.Models
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
 
+            // Potential fix for https://github.com/dotnet/efcore/issues/28444
+            var dpk = modelBuilder.Entity<DataProtectionKey>();
+            dpk.HasKey(x => x.Id );
+
             it.HasOne(p => p.Image)
                 .WithMany(p => p.ImageTags)
                 .HasForeignKey(p => p.ImageId)
