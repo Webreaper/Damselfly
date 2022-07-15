@@ -60,7 +60,7 @@ namespace Damselfly.Core.Migrations
                 table: "ImageMetaData",
                 type: "REAL",
                 nullable: false,
-                defaultValue: 0.0);
+                defaultValue: 1.0);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ImageMetaData_AspectRatio",
