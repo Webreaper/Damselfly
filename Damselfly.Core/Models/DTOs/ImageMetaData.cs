@@ -21,6 +21,7 @@ public class ImageMetaData
     public DateTime DateTaken { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
+    public double AspectRatio { get; set; } = 1;
     public int Rating { get; set; } // 1-5, stars
     public string Caption { get; set; }
     public string Copyright { get; set; }

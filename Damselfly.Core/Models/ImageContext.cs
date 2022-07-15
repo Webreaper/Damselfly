@@ -56,14 +56,14 @@ namespace Damselfly.Core.Models
         {
             base.OnModelCreating(modelBuilder);
 
+            // Potential fix for https://github.com/dotnet/efcore/issues/28444
+            var dpk = modelBuilder.Entity<DataProtectionKey>();
+            dpk.HasKey(x => x.Id);
+
             // Many to many via ImageTags
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
-
-            // Potential fix for https://github.com/dotnet/efcore/issues/28444
-            var dpk = modelBuilder.Entity<DataProtectionKey>();
-            dpk.HasKey(x => x.Id );
-
+ 
             it.HasOne(p => p.Image)
                 .WithMany(p => p.ImageTags)
                 .HasForeignKey(p => p.ImageId)
@@ -118,6 +118,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AILastUpdated);
             modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Rating);
+            modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AspectRatio);
             modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
             modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();

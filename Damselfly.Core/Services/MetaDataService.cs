@@ -339,6 +339,11 @@ public class MetaDataService : IProcessJobFactory
                 }
             }
 
+            if( imgMetaData.Width != 0 && imgMetaData.Height != 0 )
+            {
+                imgMetaData.AspectRatio = imgMetaData.Width / imgMetaData.Height;
+            }
+
             Logging.Log($"Read metadata for {image.FullPath} (ID: {image.ImageId}) including {keywords.Count()} keywords.");
 
             DumpMetaData(image, metadata);

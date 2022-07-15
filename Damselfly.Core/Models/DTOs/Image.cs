@@ -62,9 +62,6 @@ public class Image
     [NotMapped]
     public string DownloadImageUrl { get { return $"/dlimage/{ImageId}"; } }
 
-    [NotMapped]
-    public double AspectRatio {  get { return MetaData == null ? 1 : MetaData.Height > 0 ? (MetaData.Width / (double)MetaData.Height) : 1; } }
-
     /// <summary>
     /// URL mapped with last-updated time to ensure we always refresh the thumb
     /// when the image is updated.

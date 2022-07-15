@@ -35,7 +35,8 @@ public class SearchQuery
     {
         Landscape,
         Portrait,
-        Panorama
+        Panorama,
+        Square
     }
 
     public string SearchText { get; set; } = string.Empty;

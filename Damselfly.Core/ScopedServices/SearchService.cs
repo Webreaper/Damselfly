@@ -270,11 +270,13 @@ public class SearchService
             if (query.Orientation.HasValue)
             {
                 if (query.Orientation == OrientationType.Panorama)
-                    images = images.Where(x => x.MetaData.Width > (x.MetaData.Height * 2));
+                    images = images.Where(x => x.MetaData.AspectRatio > 2);
                 else if (query.Orientation == OrientationType.Landscape)
-                    images = images.Where(x => x.MetaData.Width > x.MetaData.Height);
+                    images = images.Where(x => x.MetaData.AspectRatio > 1);
                 else if (query.Orientation == OrientationType.Portrait )
-                    images = images.Where(x => x.MetaData.Height > x.MetaData.Width);
+                    images = images.Where(x => x.MetaData.AspectRatio < 1);
+                else if (query.Orientation == OrientationType.Square)
+                    images = images.Where(x => x.MetaData.AspectRatio == 1);
             }
 
             if (query.CameraId.HasValue)

@@ -62,7 +62,7 @@ else
     private string previewKey => $"Prev{CurrentImage.ImageId}";
     private string ImageSize => CurrentImage.MetaData == null ? "n/a" : $"Size (w x h): {CurrentImage.MetaData.Width} x {CurrentImage.MetaData.Height}";
     private string ImageClass => selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected";
-    private string AspectRatioStyle => ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.AspectRatio:0.##};";
+    private string AspectRatioStyle => ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.MetaData.AspectRatio:0.##};";
     private string FadeClass = string.Empty;
     private int imageId = 0;
 
