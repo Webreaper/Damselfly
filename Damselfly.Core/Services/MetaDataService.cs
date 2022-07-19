@@ -104,7 +104,7 @@ public class MetaDataService : IProcessJobFactory
                                            .ToDictionary(x => x.Path, y => y.Value);
 
             int iRegion = 0;
-            var (flipH, flipV) = FlipHorizVert(orientation);
+            var (flipH, flipV, switchOrient) = FlipHorizVert(orientation);
 
             while (true)
             {
@@ -127,6 +127,13 @@ public class MetaDataService : IProcessJobFactory
                 double y = Convert.ToDouble(yStr);
                 double w = Convert.ToDouble(wStr);
                 double h = Convert.ToDouble(hStr);
+
+                if( switchOrient )
+                {
+                    var xTemp = y;
+                    y = x;
+                    x = xTemp;
+                }
 
                 if( flipH )
                     x = 1 - x;
@@ -677,18 +684,30 @@ public class MetaDataService : IProcessJobFactory
 
     /// <summary>
     /// See NeedToSwitchWidthAndHeight for the states
+    /// 1 = 0 degrees: the correct orientation, no adjustment is required.
+    /// 2 = 0 degrees, mirrored: image has been flipped back-to-front.
+    /// 3 = 180 degrees: image is upside down.
+    /// 4 = 180 degrees, mirrored: image has been flipped back-to-front and is upside down.
+    /// 5 = 90 degrees: image has been flipped back-to-front and is on its side.
+    /// 6 = 90 degrees, mirrored: image is on its side.
+    /// 7 = 270 degrees: image has been flipped back-to-front and is on its far side.
+    /// 8 = 270 degrees, mirrored: image is on its far side.
     /// </summary>
     /// <param name="orientation"></param>
-    /// <returns></returns>
-    private (bool, bool) FlipHorizVert(string orientation) =>
+    /// <returns>Three bools: whether the h value should be flipped, whether the w value should be flipped and whether both should be swapped</returns>
+    private (bool, bool, bool) FlipHorizVert(string orientation) =>
         orientation switch
         {
-            "3" => (true, true),
-            "Top, right side (Mirror horizontal)" => (true, false),
-            "Bottom, right side (Rotate 180)" => (true, true),
-            "Bottom, left side (Mirror vertical)" => (false, true),
-            // TODO: All the other cases here. :-(
-            _ => (false, false)
+            "3" => (true, true, false),
+            "Top, right side (Mirror horizontal)" => (true, false, false),
+            "Bottom, right side (Rotate 180)" => (true, true, false),
+            "Bottom, left side (Mirror vertical)" => (false, true, false),
+            "6" => (false, false, true),
+
+            // TODO: Guessing these, but worth a shot. :)
+            "4" => (false, false, true),
+            "8" => (false, false, true),
+            _ => (false, false, false)
         };
 
     /// <summary>

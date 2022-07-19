@@ -85,7 +85,7 @@ else
     {
         base.OnParametersSet();
 
-        if (CurrentImage.ImageId != imageId)
+        if (CurrentImage == null || CurrentImage.ImageId != imageId)
             FadeClass = string.Empty;
     }
 
