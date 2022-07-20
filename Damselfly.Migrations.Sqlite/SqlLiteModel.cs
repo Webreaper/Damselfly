@@ -265,39 +265,8 @@ namespace Damselfly.Migrations.Sqlite.Models
         {
             // Broken with .Net 7 preview 6...
             // return await query.BatchUpdateAsync(updateExpression);
-            // ...so use this massive hack instead. :)
 
-            var entities = await query.ToListAsync();
-            var compiledExpression = updateExpression.Compile();
-            var dbSet = db.Set<T>();
-            List<string> memberNames = new List<string>();
-
-            if (updateExpression.Body is MemberInitExpression memberInitExpression)
-            {
-                foreach (var item in memberInitExpression.Bindings)
-                {
-                    if (item is MemberAssignment assignment)
-                    {
-                        memberNames.Add( item.Member.Name );
-                    }
-                }
-            }
-
-            foreach (var e in entities)
-            {
-                var updated = compiledExpression.Invoke(e);
-
-                updated.CopyPropertiesTo(e, memberNames);
-
-                dbSet.Update( e );
-            }
-
-            return await db.SaveChangesAsync();
-        }
-
-        public static Action<TR> IgnoreResult<TR>(Delegate f)
-        {
-            return x => f.DynamicInvoke(x);
+            return await db.BulkUpdateWithSaveChanges(query, updateExpression);
         }
 
         private string Sanitize( string input )
