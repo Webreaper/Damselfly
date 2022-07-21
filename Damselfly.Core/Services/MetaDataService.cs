@@ -439,7 +439,11 @@ public class MetaDataService : IProcessJobFactory
                 Logging.LogTrace($"Updating image {img.FileName} with DateTaken: {imgMetaData.DateTaken}.");
                 // Always update the image sort date with the date taken,
                 // if one was found in the metadata
-                img.SortDate = imgMetaData.DateTaken;
+                if (imgMetaData.DateTaken > DateTime.MinValue)
+                {
+                    // Don't update the date to date taken if the one there isn't valid
+                    img.SortDate = imgMetaData.DateTaken;
+                }
                 img.LastUpdated = updateTimeStamp;
                 db.Images.Update(img);
             }
