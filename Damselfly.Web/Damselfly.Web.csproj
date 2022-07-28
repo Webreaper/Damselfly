@@ -92,12 +92,12 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0-preview.6.22324.4" />
-    <PackageReference Include="MudBlazor" Version="6.0.11" />
-    <PackageReference Include="Serilog.AspNetCore" Version="6.0.0" />
+    <PackageReference Include="MudBlazor" Version="6.0.13" />
+    <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="font-awesome" Version="4.7.0" />
     <PackageReference Include="Tewr.Blazor.FileReader" Version="3.3.1.21360" />
-    <PackageReference Include="Radzen.Blazor" Version="3.19.5" />
+    <PackageReference Include="Radzen.Blazor" Version="3.19.10" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
     <PackageReference Include="FluentValidation" Version="11.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-preview.6.22329.4">

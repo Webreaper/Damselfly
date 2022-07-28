@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace Damselfly.Core.Services;
 
 /// <summary>
-/// This is the big that drives the performance. The bottleneck for performance
+/// This is the thing that drives the performance. The bottleneck for performance
 /// is hitting the DB to pull back image metadata, etc., because there's a lot
 /// of joins, particularly when it comes to ImageTags (which is many-to-many,
 /// and for a large collection can have several million rows). So we cache, hard.
@@ -165,6 +165,7 @@ public class ImageCache
         // join is *really* slow on a standard EFCore query, so we have to
         // filter using a list of ImageIDs. 
         var images = await db.Images
+                        .AsNoTracking()
                         .Where(x => imageIds.Contains( x.ImageId) )
                         .Include(x => x.Folder)
                         .Include(x => x.MetaData)
