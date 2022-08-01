@@ -300,6 +300,9 @@ public class ExifService : IProcessJobFactory
         {
             var operationText = op.Text.RemoveSmartQuotes();
 
+            // We need to escape double-quotes.
+            operationText = operationText.Replace("\"", "\\\"");
+
             if (string.IsNullOrEmpty(operationText))
             {
                 Logging.LogWarning($"Exif Operation with empty text: {op.Image.FileName}.");
