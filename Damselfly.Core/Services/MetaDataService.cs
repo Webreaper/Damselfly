@@ -394,8 +394,7 @@ public class MetaDataService : IProcessJobFactory
         List<string> sideCarTags = new List<string>();
         List<ImageObject> xmpFaces = null;
          
-        var img = await _imageCache.GetCachedImage(imageId);
-        db.Attach(img);
+        var img = await _imageCache.GetCachedImage(imageId, db);
 
         try
         {
@@ -426,6 +425,7 @@ public class MetaDataService : IProcessJobFactory
 
             // Update the timestamp regardless of whether we succeeded to read the metadata
             imgMetaData.LastUpdated = updateTimeStamp;
+            Logging.Log($"Setting metadata lastupdate timatestamp to {updateTimeStamp} for ID {imgMetaData.ImageId}");
 
             // Scan the image from the 
             if (GetImageMetaData(ref imgMetaData, out var exifKeywords, out xmpFaces))
@@ -446,6 +446,7 @@ public class MetaDataService : IProcessJobFactory
                     // Don't update the date to date taken if the one there isn't valid
                     img.SortDate = imgMetaData.DateTaken;
                 }
+
                 img.LastUpdated = updateTimeStamp;
                 db.Images.Update(img);
             }
@@ -462,7 +463,8 @@ public class MetaDataService : IProcessJobFactory
         finally
         {
             // Ensure we update the timestamp for the item
-            await db.SaveChangesAsync("ImageMetaDataSave");
+            int changesSaved = await db.SaveChangesAsync("ImageMetaDataSave");
+            Logging.Log($"Saved change for metadata: {changesSaved > 0}");
         }
 
         // Now save the tags

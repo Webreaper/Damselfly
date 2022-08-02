@@ -79,7 +79,7 @@ public class ImageCache
     /// </summary>
     /// <param name="imgId"></param>
     /// <returns></returns>
-    public async Task<Image> GetCachedImage(int imgId)
+    public async Task<Image> GetCachedImage(int imgId, DbContext contextToAttach)
     {
         Image cachedImage;
 
@@ -87,6 +87,10 @@ public class ImageCache
         var cachedImages = await EnrichAndCache( ids );
 
         cachedImage = cachedImages.FirstOrDefault();
+
+        // Attach to the context
+        if( contextToAttach != null )
+            contextToAttach.Attach(cachedImage);
 
         return cachedImage;
     }
@@ -163,9 +167,12 @@ public class ImageCache
 
         // This is THE query. It has to be fast. The ImageTags many-to-many
         // join is *really* slow on a standard EFCore query, so we have to
-        // filter using a list of ImageIDs. 
+        // filter using a list of ImageIDs.
+        // TODO: We can use AsNoTracking here and it might be faster. However,
+        // when we do that, the updates in ScanMetaData don't work. Do we need
+        // to do something clever, such as setting the object modified?
+        // https://stackoverflow.com/questions/6969760/entity-framework-update-problem
         var images = await db.Images
-                        //.AsNoTracking()
                         .Where(x => imageIds.Contains( x.ImageId) )
                         .Include(x => x.Folder)
                         .Include(x => x.MetaData)

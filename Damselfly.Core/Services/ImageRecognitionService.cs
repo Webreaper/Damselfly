@@ -645,8 +645,7 @@ public class ImageRecognitionService : IProcessJobFactory
     {
         using var db = new ImageContext();
 
-        var image = await _imageCache.GetCachedImage(imageId);
-        db.Attach(image);
+        var image = await _imageCache.GetCachedImage(imageId, db);
 
         // First, update the timestamp. We do this first, so that even if something
         // fails, it'll be set, avoiding infinite loops of failed processing.

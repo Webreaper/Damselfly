@@ -290,7 +290,7 @@ public class ExifService : IProcessJobFactory
     {
         bool success = false;
 
-        var image = await _imageCache.GetCachedImage(imageId);
+        var image = await _imageCache.GetCachedImage(imageId, null);
 
         Logging.LogVerbose("Updating tags for file {0}", image.FullPath);
         string args = string.Empty;
