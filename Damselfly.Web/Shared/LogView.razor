@@ -1,5 +1,4 @@
-﻿@page "/logs"
-
+﻿
 @inject ViewDataService ViewDataService
 @inject UserStatusService statusService
 
@@ -58,8 +57,6 @@
     {
         if (firstRender)
         {
-            ViewDataService.SetSideBarState(new ViewDataService.SideBarState () );
-
             _ = GetLogLines();
         }
     }
@@ -101,7 +98,6 @@
                     page++;
 
                     await InvokeAsync(StateHasChanged);
-                    await Task.Delay(100);
                     statusService.StatusText = $"Loaded {logLines.Count()} log lines...";
                 }
                 else

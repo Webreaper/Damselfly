@@ -63,13 +63,17 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
 		{
 			var key = _keyFunc(newItem);
 
+			Logging.Log($"Adding job with key '{key}' to work queue...");
+
 			if (_queueLookup.TryAdd(key, newItem))
 			{
 				// Success - this means the item wasn't already in the collection. So enqueue it
 				_queue.Enqueue(newItem, _priorityFunc(newItem));
 				added = true;
 			}
-		}
-		return added;
+			else
+                Logging.Log($" Didn't add job with key '{key}' to work queue...");
+        }
+        return added;
 	}
 }
