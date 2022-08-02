@@ -199,7 +199,7 @@ public class WorkService
     /// <returns></returns>
     private bool PopulateJobsForService(IProcessJobFactory source, int maxCount)
     {
-        bool newJobs = false;
+        int newJobs = 0;
 
         Stopwatch watch = new Stopwatch("PopulateJobsForService");
 
@@ -211,9 +211,12 @@ public class WorkService
 
                 foreach (var job in jobs)
                 {
-                    if( _jobQueue.TryAdd( job ) )
-                        newJobs = true;
+                    if (_jobQueue.TryAdd(job))
+                        newJobs++;
                 }
+
+                if( newJobs > 0 )
+                    Logging.Log($"Added {newJobs} jobs to pending queue for {source.GetType().Name}");
             }
             catch (Exception ex)
             {
@@ -223,7 +226,7 @@ public class WorkService
 
         watch.Stop();
 
-        return newJobs;
+        return newJobs > 0;
     }
 
     /// <summary>
@@ -234,15 +237,15 @@ public class WorkService
     /// <returns></returns>
     private void ProcessJob(IProcessJob job, int cpuPercentage)
     {
+        string jobName = job.GetType().Name;
+
         // If we can't process, we'll discard this job, and pick it 
         // up again in future during the next GetPendingJobs call.
-        if( job.CanProcess )
+        if ( job.CanProcess )
         {
-            string jobName = job.GetType().Name;
-
             SetStatus($"{job.Name}", JobStatus.Running, cpuPercentage);
 
-            Logging.LogVerbose($"Processing job type: {jobName}");
+            Logging.Log($"Processing job type: {jobName}");
 
             Stopwatch stopwatch = new Stopwatch($"ProcessJob{jobName}");
             try
@@ -274,6 +277,10 @@ public class WorkService
                 Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
                 Thread.Sleep(waitTime);
             }
+        }
+        else
+        {
+            Logging.Log($"Discarded job {jobName}");
         }
     }
 }

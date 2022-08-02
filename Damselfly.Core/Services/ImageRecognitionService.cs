@@ -721,7 +721,7 @@ public class ImageRecognitionService : IProcessJobFactory
             await Service.DetectObjects(ImageId);
         }
 
-        public bool CanProcess { get { return true; } }
+        public bool CanProcess => true;
     }
 
     public JobPriorities Priority => JobPriorities.ImageRecognition;

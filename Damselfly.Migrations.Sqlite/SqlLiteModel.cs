@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Core.DbModels.DBAbstractions;
 using System.Linq.Expressions;
+using System.IO;
 using Damselfly.Core.Utils;
 using EFCore.BulkExtensions;
 
@@ -18,6 +19,7 @@ namespace Damselfly.Migrations.Sqlite.Models
     public class SqlLiteModel : IDataBase
     {
         private string DatabasePath { get; set; }
+        private string sentinelPath;
 
         public SqlLiteModel()
         {
@@ -36,6 +38,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="options"></param>
         public void Configure(DbContextOptionsBuilder options)
         {
+            sentinelPath = Path.Combine(Path.GetDirectoryName(DatabasePath), "OptimiseDB.flag");
             string dataSource = $"Data Source={DatabasePath}";
             options.UseSqlite(dataSource, b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite"));
         }
@@ -91,11 +94,36 @@ namespace Damselfly.Migrations.Sqlite.Models
             Logging.LogTrace("Deleting corrupt ImageMetaData entries");
             db.Database.ExecuteSqlRaw("delete from imagemetadata where Lastupdated = 1998;");
 
-            Logging.Log("Running Sqlite DB optimisation...");
-            db.Database.ExecuteSqlRaw("VACUUM;");
-            Logging.Log("DB optimisation complete.");
+            OptimiseDB(db);
 
             RebuildFreeText(db);
+        }
+
+        private void WriteSentinelFile()
+        {
+            try
+            {
+                if (!File.Exists(sentinelPath))
+                {
+                    File.WriteAllText(sentinelPath, "If this file exists, the DB will be optimised at next Damselfly Startup");
+                }
+            }
+            catch
+            {
+                Logging.LogWarning($"Unable to write optimise sentinal file: {sentinelPath}");
+            }
+        }
+
+        private void OptimiseDB( DbContext db )
+        {
+            if( ! string.IsNullOrEmpty(sentinelPath) && File.Exists( sentinelPath ) )
+            {
+                FileUtils.SafeDelete(new FileInfo(sentinelPath));
+
+                Logging.Log("Running Sqlite DB optimisation...");
+                db.Database.ExecuteSqlRaw("VACUUM;");
+                Logging.Log("DB optimisation complete.");
+            }
         }
 
         public void FlushDBWriteCache(BaseDBModel db)
@@ -222,6 +250,8 @@ namespace Damselfly.Migrations.Sqlite.Models
 
                 // TODO: Replace when EFCore 7 has this
                 //await db.BulkDeleteAsync(itemsToDelete);
+
+                WriteSentinelFile();
 
                 success = true;
             }
