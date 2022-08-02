@@ -245,7 +245,7 @@ public class WorkService
         {
             SetStatus($"{job.Name}", JobStatus.Running, cpuPercentage);
 
-            Logging.Log($"Processing job type: {jobName}");
+            Logging.LogVerbose($"Processing job type: {jobName}");
 
             Stopwatch stopwatch = new Stopwatch($"ProcessJob{jobName}");
             try

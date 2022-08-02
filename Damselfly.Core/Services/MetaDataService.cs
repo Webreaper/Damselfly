@@ -411,7 +411,7 @@ public class MetaDataService : IProcessJobFactory
                 return;
             }
 
-            Logging.Log($"Scanning metadata for {img.FileName}...");
+            Logging.LogVerbose($"Scanning metadata for {img.FileName}...");
 
             ImageMetaData imgMetaData = img.MetaData;
 
