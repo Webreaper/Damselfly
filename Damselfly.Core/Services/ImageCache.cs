@@ -165,7 +165,7 @@ public class ImageCache
         // join is *really* slow on a standard EFCore query, so we have to
         // filter using a list of ImageIDs. 
         var images = await db.Images
-                        .AsNoTracking()
+                        //.AsNoTracking()
                         .Where(x => imageIds.Contains( x.ImageId) )
                         .Include(x => x.Folder)
                         .Include(x => x.MetaData)

@@ -411,7 +411,7 @@ public class MetaDataService : IProcessJobFactory
                 return;
             }
 
-            Logging.LogVerbose($"Scanning metadata for {img.FileName}...");
+            Logging.Log($"Scanning metadata for {img.FileName}...");
 
             ImageMetaData imgMetaData = img.MetaData;
 
@@ -459,8 +459,11 @@ public class MetaDataService : IProcessJobFactory
         {
             Logging.LogError($"Exception caught during metadata scan for {img.FullPath}: {ex.Message}.");
         }
-
-        await db.SaveChangesAsync("ImageMetaDataSave");
+        finally
+        {
+            // Ensure we update the timestamp for the item
+            await db.SaveChangesAsync("ImageMetaDataSave");
+        }
 
         // Now save the tags
         var tagsAdded = await WriteTagsForImage(img, imageKeywords);
