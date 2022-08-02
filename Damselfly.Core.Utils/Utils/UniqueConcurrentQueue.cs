@@ -71,8 +71,6 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
 				_queue.Enqueue(newItem, _priorityFunc(newItem));
 				added = true;
 			}
-			else
-                Logging.Log($" Didn't add job with key '{key}' to work queue...");
         }
         return added;
 	}
