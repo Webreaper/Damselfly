@@ -144,7 +144,7 @@ else
     {
         if (Int32.TryParse(ImageID, out var imageId))
         {
-            CurrentImage = await imageCache.GetCachedImage(imageId);
+            CurrentImage = await imageCache.GetCachedImage(imageId, null);
             navContext.CurrentImage = CurrentImage;
 
             ImageUrl = CurrentImage.ThumbUrl( ThumbSize.Medium );

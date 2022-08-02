@@ -9,29 +9,42 @@
     }
     else
     {
-        <div class="log-scroll-area">
-            <h4 @onclick="DownloadLogFile">@LogFileName</h4>
-            <div class="log-table">
-                <table class="loglist-table">
-                    <thead>
+<div class="damselfly-searchbar">
+    <div class="damselfly-browsetools">
+        <h4 @onclick="DownloadLogFile">@LogFileName</h4>
+        &nbsp;
+        &nbsp;
+        &nbsp;
+        <select class="damselfly-browsetool damselfly-browsetool-select" @bind="SelectedFilter">
+            <option value="ALL">Show All Logs</option>
+            <option value="INF">Show Info</option>
+            <option value="WRN">Show Warnings</option>
+            <option value="ERR">Show Errors</option>
+        </select>
+    </div>
+    <div class="log-scroll-area">
+        <div class="log-table">
+            <table class="loglist-table">
+                <thead>
+                    <tr>
+                        <th class="timestamp">Timestamp</th>
+                        <th class="level">Log Level</th>
+                        <th class="entry">Entry</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <Virtualize Items="@filteredLogs" Context="line" ItemSize="15">
                         <tr>
-                            <th class="timestamp">Timestamp</th>
-                            <th class="level">Log Level</th>
-                            <th class="entry">Entry</th>
+                            <td class="timestamp">@line.date</td>
+                            <td class="level log-level-@line.level">@line.level</td>
+                            <td class="entry">@line.entry</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <Virtualize Items="@logLines" Context="line" ItemSize="15">
-                            <tr>
-                                <td class="timestamp">@line.date</td>
-                                <td class="level log-level-@line.level">@line.level</td>
-                                <td class="entry">@line.entry</td>
-                            </tr>
-                        </Virtualize>
-                    </tbody>
-                </table>
-            </div>
+                    </Virtualize>
+                </tbody>
+            </table>
         </div>
+    </div>
+</div>
     }
 </div>
 
@@ -47,6 +60,9 @@
 
     List<LogEntry> logLines = new List<LogEntry>();
     private string LogFileName { get; set; }
+    private string SelectedFilter { get; set; } = "ALL";
+
+    private List<LogEntry> filteredLogs => logLines.Where(x => SelectedFilter == "ALL" || x.level == SelectedFilter).ToList();
 
     protected override void OnInitialized()
     {
@@ -74,13 +90,27 @@
         {
             LogFileName = file.Name;
 
+            int page = 0, pageSize = 200;
             try
             {
                 var reader = new ReverseLineReader(file.FullName);
 
-                var page = reader.Select( x => CreateLogEntry(x) )
+                while( true )
+                {
+                    var lines = reader.Skip( page++ * pageSize )
+                                 .Take( pageSize )
+                                 .Select( x => CreateLogEntry(x) )
                                  .ToList();
-                logLines.AddRange(page);
+
+                    if (lines.Any())
+                    {
+                        logLines.AddRange(lines);
+                        await InvokeAsync(StateHasChanged);
+                        statusService.StatusText = $"Loaded {logLines.Count()} log lines...";
+                    }
+                    else
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -89,7 +119,7 @@
             finally
             {
                 await InvokeAsync(StateHasChanged);
-                statusService.StatusText = $"Loaded {logLines.Count()} log lines...";
+                statusService.StatusText = $"Loaded {logLines.Count()} log lines.";
             }
         }
     }

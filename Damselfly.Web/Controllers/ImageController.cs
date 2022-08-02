@@ -36,7 +36,7 @@ namespace Damselfly.Web.Controllers
             {
                 try
                 {
-                    var image = await imageCache.GetCachedImage(id);
+                    var image = await imageCache.GetCachedImage(id, null);
 
                     if (cancel.IsCancellationRequested)
                         return result;
@@ -79,7 +79,7 @@ namespace Damselfly.Web.Controllers
                 {
                     Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
-                    var image = await imageCache.GetCachedImage(id);
+                    var image = await imageCache.GetCachedImage(id, null);
 
                     if (cancel.IsCancellationRequested)
                         return result;
