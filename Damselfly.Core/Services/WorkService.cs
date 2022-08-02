@@ -216,7 +216,7 @@ public class WorkService
                 }
 
                 if( newJobs > 0 )
-                    Logging.Log($"Added {newJobs} jobs to pending queue for {source.GetType().Name}");
+                    Logging.LogVerbose($"Added {newJobs} jobs to pending queue for {source.GetType().Name}");
             }
             catch (Exception ex)
             {

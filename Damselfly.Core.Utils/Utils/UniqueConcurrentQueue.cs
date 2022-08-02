@@ -63,7 +63,7 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
 		{
 			var key = _keyFunc(newItem);
 
-			Logging.Log($"Adding job with key '{key}' to work queue...");
+			Logging.LogVerbose($"Adding job with key '{key}' to work queue...");
 
 			if (_queueLookup.TryAdd(key, newItem))
 			{
