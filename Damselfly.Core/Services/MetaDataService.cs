@@ -351,7 +351,8 @@ public class MetaDataService : IProcessJobFactory
                 imgMetaData.AspectRatio = (double)imgMetaData.Width / (double)imgMetaData.Height;
             }
 
-            Logging.Log($"Read metadata for {image.FullPath} (ID: {image.ImageId}) including {keywords.Count()} keywords.");
+            var keywordsSummary = keywords.Any() ? $", found {keywords.Count()} keywords." : String.Empty;
+            Logging.Log($"Read metadata for {image.FullPath} (ID: {image.ImageId}) {keywordsSummary}");
 
             DumpMetaData(image, metadata);
         }
@@ -423,7 +424,6 @@ public class MetaDataService : IProcessJobFactory
 
             // Update the timestamp regardless of whether we succeeded to read the metadata
             imgMetaData.LastUpdated = updateTimeStamp;
-            Logging.Log($"Setting metadata lastupdate timatestamp to {updateTimeStamp} for ID {imgMetaData.ImageId}");
 
             // Scan the image from the 
             if (GetImageMetaData(ref imgMetaData, out var exifKeywords, out xmpFaces))
@@ -462,7 +462,9 @@ public class MetaDataService : IProcessJobFactory
         {
             // Ensure we update the timestamp for the item
             int changesSaved = await db.SaveChangesAsync("ImageMetaDataSave");
-            Logging.Log($"Saved change for metadata: {changesSaved > 0}");
+
+            if (changesSaved == 0)
+                Logging.LogError($"No changed saved after metadata scan for image {img.ImageId}");
         }
 
         // Now save the tags
