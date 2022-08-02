@@ -268,7 +268,7 @@ public class ImageRecognitionService : IProcessJobFactory
             }
             catch (Exception ex)
             {
-                Logging.LogError($"Error loading bitmap for {fileName}: {ex}");
+                Logging.LogWarning($"Error loading bitmap for {fileName}: {ex}");
             }
         }
 
