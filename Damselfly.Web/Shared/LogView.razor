@@ -90,7 +90,7 @@
         {
             LogFileName = file.Name;
 
-            int page = 0, pageSize = 200;
+            int page = 0, pageSize = 500;
             try
             {
                 var reader = new ReverseLineReader(file.FullName);
@@ -109,6 +109,11 @@
                         statusService.StatusText = $"Loaded {logLines.Count()} log lines...";
                     }
                     else
+                        break;
+
+                    // Don't load more than 10,000 log lines.
+                    // TODO: Can we load these virtually?
+                    if (page == 20)
                         break;
                 }
             }
