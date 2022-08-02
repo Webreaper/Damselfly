@@ -407,9 +407,11 @@ public class MetaDataService : IProcessJobFactory
                 // skip it, as it's possible it might still be
                 // mid-copy.
                 // TODO: We need a better way of managing this
-                Logging.LogVerbose($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+                Logging.Log($"Skipping metadata scan for {img.FileName} - write time is too recent.");
                 return;
             }
+
+            Logging.Log($"Scanning metadata for {img.FileName}...");
 
             ImageMetaData imgMetaData = img.MetaData;
 
