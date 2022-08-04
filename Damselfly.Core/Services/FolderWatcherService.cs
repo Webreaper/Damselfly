@@ -119,11 +119,10 @@ public class FolderWatcherService
                 {
                     _fileWatchersDisabled = true;
 
-                    const string msg = @"OS inotify/ file - watcher limit reached. Damselfly cannot monitor any more
-                                            folders for changes. You should increase the watcher limit - see this article:
-                                            https://github.com/Webreaper/Damselfly/blob/master/docs/Installation.md#filewatcher-inotify-limits";
+                    _statusService.StatusText = "OS inotify/file watcher limit reached. See the installation guide on how to increase this.";
 
-                    Logging.LogError(msg);
+                    Logging.LogError(@"OS inotify/ file-watcher limit reached. Damselfly cannot monitor any more folders for changes.");
+                    Logging.LogError("You should increase the watcher limit - see this article: https://github.com/Webreaper/Damselfly/blob/master/docs/Installation.md#filewatcher-inotify-limits");
                 }
             }
         }
