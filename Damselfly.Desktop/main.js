@@ -268,7 +268,7 @@ function createWindow() {
     y: winStateKeeper.y,
     width: winStateKeeper.width,
     height: winStateKeeper.height,
-    backgroundColor: black,
+    backgroundColor: '#000', 
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: false
