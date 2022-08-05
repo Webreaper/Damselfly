@@ -1,6 +1,6 @@
 {
   "name": "Damselfly",
-  "version": "1.7.7",
+  "version": "3.0.0",
   "description": "Damselfy Desktop App",
   "main": "main.js",
   "scripts": {
