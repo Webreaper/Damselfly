@@ -57,8 +57,8 @@ namespace Damselfly.Core.Models
             base.OnModelCreating(modelBuilder);
 
             // Potential fix for https://github.com/dotnet/efcore/issues/28444
-            //var dpk = modelBuilder.Entity<DataProtectionKey>();
-            //dpk.HasKey(x => x.Id);
+            var dpk = modelBuilder.Entity<DataProtectionKey>();
+            dpk.HasKey(x => x.Id);
 
             // Many to many via ImageTags
             var it = modelBuilder.Entity<ImageTag>();
