@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Damselfly.Web.Shared</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Data\" />
+    <None Remove="Blazored.FluentValidation" />
+    <None Remove="Blazored.Typeahead" />
+    <None Remove="Radzen.Blazor" />
+    <None Remove="MudBlazor" />
+    <None Remove="FluentValidation" />
+    <None Remove="Extensions\" />
+    <None Remove="Microsoft.AspNetCore.WebUtilities" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
+    <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
+    <PackageReference Include="Radzen.Blazor" Version="3.20.2" />
+    <PackageReference Include="MudBlazor" Version="6.0.14" />
+    <PackageReference Include="FluentValidation" Version="11.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
+  </ItemGroup>
+</Project>

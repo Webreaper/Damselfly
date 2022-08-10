@@ -1,0 +1,297 @@
+﻿
+@inject SearchService searchService
+@inject APIConfigService configService
+@inject APIBasketService basketService
+@inject ILogger<ImageGrid> logger
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+@inherits ImageGridBase
+
+<LocalFileExporter @ref="FileExporter" />
+<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" />
+
+<div class="damselfly-imagegrid" id="scroll-area">
+    @if (!gridImages.Any())
+    {
+        <div class="damselfly-searchmsg">
+            @if (endOfImages)
+            {
+                <span>@NoResultsMessage</span>
+            }
+            else
+            {
+                <span> Loading images...</span>
+            }
+        </div>
+    }
+    else
+    {
+        int allImages = 0;
+        foreach (var grouping in GroupedImages)
+        {
+            if (!string.IsNullOrEmpty(grouping.Key))
+            {
+                <div class="damselfly-imageseparator">
+                    <div class="damselfly-imageseparatortitle">
+                        @grouping.Key
+                    </div>
+                    <div class="damselfly-imageseparatorbuttons">
+                        <button @onclick="async () => { await AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            <i class="fas fa-shopping-basket" />
+                            &nbsp;Add
+                        </button>
+                        <button @onclick="async () => { await RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            <i class="fas fa-shopping-basket" />
+                            &nbsp;Remove
+                        </button>
+                        <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            &nbsp;Select
+                        </button>
+                        <button @onclick="() => { DeselectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
+                            &nbsp;De-select
+                        </button>
+                        @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                        {
+                            <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
+                                <i class="fas fa-download" />
+                                &nbsp;Save Locally
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
+            foreach (var image in grouping.Images)
+            {
+                var info = new SelectionInfo { image = image, index = allImages++ };
+
+                <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
+                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
+                </div>
+            }
+
+        }
+
+        if (!endOfImages)
+        {
+            <div class="damselfly-moreimages" id="list-end">
+                <div class="imagegrid-loader"></div>
+            </div>
+        }
+        else
+        {
+            <div id="snackbar" class="@toastClass">No more images to show.</div>
+        }
+    }
+</div>
+
+@code {
+    private LocalFileExporter FileExporter;
+    const int imagesPerPage = 250;
+    private bool NoImagesSelected => !selectionService.Selection.Any();
+    bool IsLoading { get; set; } = false;
+    bool endOfImages = false;
+    string toastClass = string.Empty;
+    private ScrollMonitor ScrollMonitor;
+
+    [Parameter]
+    public ThumbSize CurrentThumbSize { get { return _currentThumbSize; } set { ChangeThumbSize(value); } }
+    private ThumbSize _currentThumbSize;
+
+    private void StoreImage(Image image)
+    {
+        // Todo - save an image to local storage
+    }
+
+    async Task AddGroupToBasket(ImageGrouping grouping)
+    {
+       // await basketService.SetBasketState(grouping.Images, true);
+       // statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
+    }
+
+    async Task RemoveGroupFromBasket(ImageGrouping grouping)
+    {
+       // await basketService.SetBasketState(grouping.Images, false);
+       // statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+    }
+
+    void SelectGroup(ImageGrouping grouping)
+    {
+        selectionService.SelectImages(grouping.Images);
+    }
+
+    void DeselectGroup(ImageGrouping grouping)
+    {
+        selectionService.DeselectImages(grouping.Images);
+    }
+
+    private List<ImageGrouping> GroupedImages
+    {
+        get
+        {
+            // TODO: Order by
+            if (searchService.Grouping == GroupingType.Folder)
+            {
+                var result = gridImages.GroupBy(x => x.Folder.Path);
+
+                if (searchService.SortOrder == SortOrderType.Descending)
+                    result = result.OrderByDescending(x => x.Key);
+                else
+                    result = result.OrderBy(x => x.Key);
+
+                return result.Select(x => new ImageGrouping { Key = x.Key, Images = x.ToList() })
+                            .ToList();
+            }
+            else if (searchService.Grouping == GroupingType.Date)
+            {
+                var result = gridImages.GroupBy(x => x.SortDate.Date);
+
+                if (searchService.SortOrder == SortOrderType.Descending)
+                    result = result.OrderByDescending(x => x.Key);
+                else
+                    result = result.OrderBy(x => x.Key);
+
+                return result.Select(x => new ImageGrouping { Key = x.Key.ToString("dddd, dd MMMM yyyy"), Images = x.ToList() })
+                            .ToList();
+            }
+
+            return new List<ImageGrouping> { new ImageGrouping { Key = null, Images = gridImages } };
+        }
+
+    }
+
+    private void ChangeGroupType(GroupingType newType)
+    {
+        searchService.Grouping = newType;
+        //Logging.Log($"Grouping changed to {searchService.Grouping}");
+        StateHasChanged();
+    }
+
+    private void ChangeSortOrder(SortOrderType newType)
+    {
+        searchService.SortOrder = newType;
+        //Logging.Log($"Sort order changed to {searchService.SortOrder}");
+        StateHasChanged();
+    }
+
+    string WrapStyle { get; set; } = "wrapping-table-small";
+
+    protected void ChangeThumbSize(ThumbSize newSize)
+    {
+        if (_currentThumbSize != newSize)
+        {
+            _currentThumbSize = newSize;
+
+            switch (newSize)
+            {
+                case ThumbSize.Medium: WrapStyle = "wrapping-table-medium"; break;
+                case ThumbSize.Large: WrapStyle = "wrapping-table-large"; break;
+                case ThumbSize.ExtraLarge: WrapStyle = "wrapping-table-x-large"; break;
+                case ThumbSize.Small: WrapStyle = "wrapping-table-small"; break;
+                default: WrapStyle = "wrapping-table-small"; break;
+            }
+
+            configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            selectionService.OnSelectionChanged += SelectedImagesChanged;
+            searchService.OnSearchChanged += SearchQueryChanged;
+            //FileExporter.OnChange += StateHasChanged;
+            //basketService.OnBasketChanged += BasketChanged;
+            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
+
+            int initialLoadCount = Math.Max(configService.GetInt("LoadedImages", imagesPerPage), imagesPerPage);
+
+            //Logging.Log($"Loading {initialLoadCount} images into grid.");
+            await LoadData(initialLoadCount);
+
+            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
+        }
+    }
+
+    protected void SelectedImagesChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        selectionService.OnSelectionChanged -= SelectedImagesChanged;
+        searchService.OnSearchChanged -= SearchQueryChanged;
+        FileExporter.OnChange -= StateHasChanged;
+        basketService.OnBasketChanged -= BasketChanged;
+        ScrollMonitor.OnScrollPositionChanged -= SaveScrollState;
+    }
+
+    public string NoResultsMessage
+    {
+        get
+        {
+            return $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
+        }
+    }
+
+    protected void BasketChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected void SearchQueryChanged()
+    {
+        selectionService.ClearSelection();
+        gridImages.Clear();
+        endOfImages = false;
+
+        _ = InvokeAsync(StateHasChanged);
+
+        _ = LoadData(imagesPerPage);
+    }
+
+
+    private void SaveScrollState(int scrollTop)
+    {
+        configService.Set("LoadedImages", gridImages.Count.ToString());
+    }
+
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public async Task LoadMoreData()
+    {
+        logger.LogTrace("Javscript callback triggered to load more data.");
+
+        await LoadData(imagesPerPage);
+    }
+
+    public async Task LoadData(int imagesToLoad)
+    {
+        if (!IsLoading)
+        {
+            logger.LogTrace($"Loading {imagesToLoad} more data into image grid.");
+
+            IsLoading = true;
+
+            ChangeThumbSize(CurrentThumbSize);
+            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+
+            if (response.SearchResults.Any())
+            {
+                gridImages.AddRange(response.SearchResults);
+            }
+
+            // Flag the 'more' div if we loaded at least as many as we requested.
+            endOfImages = !response.MoreDataAvailable;
+
+            // If we've tried to load data and there isn't any more, show the toast.
+            toastClass = endOfImages ? "show" : string.Empty;
+
+            IsLoading = false;
+
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+}

@@ -11,8 +11,6 @@
 @inject IJSRuntime JsRuntime
 @implements ICropHelper
 
-@using Damselfly.Core.Utils.Constants
-
 <div class="damselfly-imageview" @ref="ImageView" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
     @if (CurrentImage == null)
     {

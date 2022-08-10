@@ -50,7 +50,7 @@ namespace Damselfly.Web
             public bool ReadOnly { get; set; }
 
             [Option("port", HelpText = "Port for Webserver (default = 6363)", Required = false)]
-            public int Port { get; set; }
+            public int Port { get; set; } = s_defaultPort;
 
             [Option("syno", Required = false, HelpText = "Use native Synology thumbnail structure.")]
             public bool Synology { get; set; }
@@ -168,6 +168,7 @@ namespace Damselfly.Web
             }
 
         }
+
         /// <summary>
         /// Main entry point. Creates a bunch of services, and then kicks off
         /// the webserver, which is a blocking call (since it's the dispatcher
@@ -203,9 +204,6 @@ namespace Damselfly.Web
         /// <returns></returns>
         public static IHost BuildHost(int port, string[] args)
         {
-            if( port == 0 )
-                port = s_defaultPort;
-
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => BuildWebHost(webBuilder, port, args))
                 .UseSerilog()

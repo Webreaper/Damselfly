@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
+using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -74,10 +74,10 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source">Source.</param>
         /// <param name="sizes">Sizes.</param>
-        public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles )
+        public async Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles )
         {
             // This processor doesn't support hash creation
-            ImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false, ImageHash = string.Empty };
+            IImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false, ImageHash = string.Empty };
 
             // Some useful unsharp and quality settings, plus by defining the max size of the JPEG, it 
             // makes imagemagic more efficient with its memory allocation, so significantly faster. 

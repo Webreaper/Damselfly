@@ -5,6 +5,7 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Services;
 
@@ -18,22 +19,6 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class WorkService
 {
-    public enum JobStatus
-    {
-        Idle,
-        Running,
-        Paused,
-        Disabled,
-        Error
-    }
-
-    public class ServiceStatus
-    {
-        public string StatusText { get; set; } = "Initialising";
-        public JobStatus Status { get; set; } = JobStatus.Idle;
-        public int CPULevel { get; set; }
-    };
-
 
 #if DEBUG
     private const int jobFetchSleep = 10;

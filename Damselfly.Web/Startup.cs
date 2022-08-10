@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Components.Authorization;
-using Damselfly.Web.Data;
 using Damselfly.Core.Services;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.ScopedServices;
@@ -28,10 +27,12 @@ using Damselfly.Core.DbModels;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authorization;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Microsoft.AspNetCore.DataProtection;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Web;
 
 namespace Damselfly.Web
 {
@@ -61,11 +62,12 @@ namespace Damselfly.Web
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
+
             services.AddMudServices();
             services.AddSyncfusionBlazor();
 
             // Cache up to 10,000 images. Should be enough given cache expiry.
-            services.AddMemoryCache( x => x.SizeLimit = 10000 );
+            services.AddMemoryCache( x => x.SizeLimit = 5000 );
 
             services.AddDbContext<ImageContext>();
             services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
@@ -79,45 +81,22 @@ namespace Damselfly.Web
             // we'll get a different instance the next time we send email. 
             services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
-            services.AddSingleton(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
+            services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
-            services.AddSingleton<ConfigService>();
-            services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-
             services.AddImageServices();
+            services.AddBackEndServices();
+            services.AddMLServices();
 
-            services.AddSingleton<StatusService>();
-            services.AddSingleton<ObjectDetector>();
-            services.AddSingleton<FolderWatcherService>();
-            services.AddSingleton<IndexingService>();
-            services.AddSingleton<MetaDataService>();
-            services.AddSingleton<ThumbnailService>();
-            services.AddSingleton<ExifService>();
-            services.AddSingleton<TaskService>();
-            services.AddSingleton<FolderService>();
-            services.AddSingleton<DownloadService>();
-            services.AddSingleton<WordpressService>();
-            services.AddSingleton<AccordFaceService>();
-            services.AddSingleton<AzureFaceService>();
-            services.AddSingleton<ImageClassifier>();
-            services.AddSingleton<EmguFaceService>();
-            services.AddSingleton<ThemeService>();
-            services.AddSingleton<ImageRecognitionService>();
-            services.AddSingleton<ImageCache>();
-            services.AddSingleton<WorkService>();
+            // Radzen
+            services.AddScoped<ContextMenuService>();
 
             // This needs to happen after ConfigService has been registered.
             services.AddAuthorization(config => SetupPolicies(config, services));
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
-            services.AddScoped<BasketService>();
-            services.AddScoped<NavigationService>();
-            services.AddScoped<SelectionService>();
-            services.AddScoped<ContextMenuService>();
-            services.AddScoped<SearchService>();
 
-            services.AddUserServices();
+            services.AddBlazorServerUIServices();
         }
 
         private void SetupPolicies(AuthorizationOptions config, IServiceCollection services)
@@ -170,13 +149,11 @@ namespace Damselfly.Web
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
-                        DownloadService download, ThemeService themes, TaskService tasks,
-                        ExifService exifService, ThumbnailService thumbService,
-                        IndexingService indexService, ImageProcessService imageProcessing,
-                        AzureFaceService azureFace, ImageRecognitionService aiService,
-                        UserService userService, ConfigService configService, WorkService workService,
-                        ImageCache imageCache,  MetaDataService metaDataService, ObjectDetector objectDetector)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigService configService,
+            DownloadService download, TaskService tasks, ThumbnailService thumbService, ExifService exifService,
+            ImageCache imageCache, ImageProcessService imageService, AzureFaceService azureService, IndexingService indexingService,
+            ImageRecognitionService aiService, ObjectDetector objectDetector, ThemeService themeService, WorkService workService,
+            MetaDataService metaDataService, UserService userService)
         {
             SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
 
@@ -225,6 +202,7 @@ namespace Damselfly.Web
                 endpoints.MapFallbackToPage("/_Host");
             });
 
+
             // Prime the cache
             imageCache.WarmUp().Wait();
 
@@ -232,23 +210,23 @@ namespace Damselfly.Web
             string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
 
             // TODO: Fix this, or not if Skia doesn't need it
-            imageProcessing.SetContentPath(contentRootPath);
+            imageService.SetContentPath(contentRootPath);
             download.SetDownloadPath(contentRootPath);
-            themes.SetContentPath(contentRootPath);
+            themeService.SetContentPath(contentRootPath);
 
             // Start the work processing queue for AI, Thumbs, etc
             workService.StartService();
 
             // Start the face service before the thumbnail service
-            azureFace.StartService().Wait();
+            azureService.StartService().Wait();
             metaDataService.StartService();
-            indexService.StartService();
+            indexingService.StartService();
             aiService.StartService();
 
             // ObjectDetector can throw a segmentation fault if the docker container is pinned
             // to a single CPU, so for now, to aid debugging, let's not even try and initialise
             // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
-            if ( ! configService.GetBool(ConfigSettings.DisableObjectDetector, false) )
+            if (!configService.GetBool(ConfigSettings.DisableObjectDetector, false))
                 objectDetector.InitScorer();
 
             // Validation check to ensure at least one user is an Admin

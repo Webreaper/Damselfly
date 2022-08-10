@@ -3,7 +3,7 @@ using SendGrid.Helpers.Mail;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services;

@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web", "Damselfly.Web\Damselfly.Web.csproj", "{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}"
 EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{037D2CDE-6BD4-41EB-880A-0922A8572A98}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core", "Damselfly.Core\Damselfly.Core.csproj", "{D9320EC3-B38C-4982-BBE6-61F27CA95369}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj", "{E459082F-F196-47EC-8CA2-A3AC7B36E453}"
@@ -49,6 +47,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetectio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Interfaces", "Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj", "{29DFE59C-9244-4FD2-9120-D9B53ACDC97D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Client", "Damselfly.Web.Client\Damselfly.Web.Client.csproj", "{A3B78C5B-DCB4-4841-924B-4A5B8B8D7053}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WASM", "WASM", "{F67D3D71-CFF1-4185-B1B9-2FC211599436}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Server", "Damselfly.Web.Server\Damselfly.Web.Server.csproj", "{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Models", "Damselfly.Web.Shared\Damselfly.Web.Models.csproj", "{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Constants", "Damselfly.Core.Constants\Damselfly.Core.Constants.csproj", "{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.ScopedServices", "Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj", "{071FB598-9583-4D0E-A424-C15D99451650}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Utils", "Damselfly.Web.Utils\Damselfly.Web.Utils.csproj", "{08725461-30C8-4BAD-B318-DAE328170507}"
+EndProject
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "docker-compose", "docker-compose.dcproj", "{EF731A22-067D-4855-B8DB-5AC2088A9C2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,10 +73,6 @@ Global
 		{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1D16003-2C4F-4A4C-86DE-F69C6D6A2FD3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{037D2CDE-6BD4-41EB-880A-0922A8572A98}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9320EC3-B38C-4982-BBE6-61F27CA95369}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -143,6 +153,34 @@ Global
 		{29DFE59C-9244-4FD2-9120-D9B53ACDC97D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29DFE59C-9244-4FD2-9120-D9B53ACDC97D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29DFE59C-9244-4FD2-9120-D9B53ACDC97D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3B78C5B-DCB4-4841-924B-4A5B8B8D7053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3B78C5B-DCB4-4841-924B-4A5B8B8D7053}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3B78C5B-DCB4-4841-924B-4A5B8B8D7053}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3B78C5B-DCB4-4841-924B-4A5B8B8D7053}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{071FB598-9583-4D0E-A424-C15D99451650}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{071FB598-9583-4D0E-A424-C15D99451650}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{071FB598-9583-4D0E-A424-C15D99451650}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{071FB598-9583-4D0E-A424-C15D99451650}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08725461-30C8-4BAD-B318-DAE328170507}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08725461-30C8-4BAD-B318-DAE328170507}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08725461-30C8-4BAD-B318-DAE328170507}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08725461-30C8-4BAD-B318-DAE328170507}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF731A22-067D-4855-B8DB-5AC2088A9C2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF731A22-067D-4855-B8DB-5AC2088A9C2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF731A22-067D-4855-B8DB-5AC2088A9C2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF731A22-067D-4855-B8DB-5AC2088A9C2F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C1EE9263-B11B-49DE-890E-9C523C27C08D} = {247B3CC7-691C-4F41-853B-E1955D37CC7D}

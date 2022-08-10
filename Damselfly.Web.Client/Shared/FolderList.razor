@@ -1,0 +1,247 @@
+﻿@using Damselfly.Core.Interfaces
+
+@inject SearchService searchService
+@inject IFolderService folderService
+@inject ContextMenuService contextMenuService
+@inject IConfigService configService
+@inject IDialogService DialogService
+
+@implements IDisposable
+
+<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
+
+<div class="damselfly-folderlist">
+    <div class="damselfly-browsetools">
+        <div class="damselfly-browsetool">
+            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
+        </div>
+        <div class="damselfly-browsetool">
+            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()" />
+            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()" />
+            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()" />
+        </div>
+    </div>
+@if (folderItems == null)
+{
+    <p>Loading...</p>
+    <Spinner />
+}
+else
+{
+    <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())"
+         @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
+        <i class="fa fa-folder-open folder-icon" /> All Folders
+    </div>
+    <div class="folder-scroll-area" id="folderscrollarea">
+        <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
+            <div class="folder-entry @FolderStyle(context.FolderId) expandable"
+                 @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
+                <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
+                <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
+                    @context.FolderItem.DisplayName (@context.FolderItem.TotalImages)
+                </span>
+            </div>
+        </Virtualize>
+    </div>
+}
+</div>
+
+@code {
+    private string filterTerm;
+    public string FilterTerm { get { return filterTerm; } }
+    private Virtualize<Folder> folderContainer;
+    private List<Folder> folderItems;
+    Folder SelectedItem { get; set; }
+    bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
+    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, true);
+    string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
+    string SortClass => SortMode == "Date" ? (Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up") : (Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z");
+    string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
+    string FlatTreeClass => FlatView ? "fa-list" : "fa-folder-tree";
+
+    void ShowContextMenu(MouseEventArgs args, Folder folder)
+    {
+        string refreshText = "Refresh Folder";
+        string selectText = "Select Folder";
+        string viewText = FlatView ? "Tree View" : "Flat View";
+        string sortDirection = "Sort Ascending";
+        string sortText = "Sort by Date";
+
+        if (SortMode == "Date")
+            sortText = "Sort by Name";
+
+        if (Ascending)
+            sortDirection = "Sort Descending";
+
+        if (folder == null)
+        {
+            refreshText = "Refresh All Folders";
+            selectText = "Clear Folder Selection";
+        }
+
+        contextMenuService.Open(args,
+        new List<ContextMenuItem>() {
+                new ContextMenuItem(){ Text = selectText, Value = 0 },
+                new ContextMenuItem(){ Text = refreshText, Value = 1 },
+                new ContextMenuItem(){ Text = viewText, Value = 3 },
+                new ContextMenuItem(){ Text = sortText, Value = 4 },
+                new ContextMenuItem(){ Text = sortDirection, Value = 5 },
+                 }, (args) =>
+             {
+                 contextMenuService.Close();
+                 switch (args.Value)
+                 {
+                     case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
+                     case 1: _ = ShowRescanDialog(folder); break;
+                     case 3: _ = ToggleFlatView(); break;
+                     case 4: _ = ToggleSortMode(); break;
+                     case 5: _ = ToggleSortAscendingView(); break;
+                 }
+             });
+    }
+
+    private async Task ToggleFlatView()
+    {
+        var newState = !FlatView;
+
+        configService.Set(ConfigSettings.FlatView, newState.ToString());
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ToggleSortMode()
+    {
+        var newMode = "Date";
+
+        if (SortMode == "Date")
+            newMode = "Name";
+
+        configService.Set(ConfigSettings.FolderSortMode, newMode);
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ToggleSortAscendingView()
+    {
+        var newState = !Ascending;
+
+        configService.Set(ConfigSettings.FolderSortAscending, newState.ToString());
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ShowRescanDialog(Folder folder)
+    {
+        var parameters = new DialogParameters { { "allimages", true } };
+
+        if (folder != null)
+            parameters = new DialogParameters { { "folder", folder }, { "count", folder.FolderItem.ImageCount } };
+
+        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
+    }
+
+    protected void SelectionChanged(Folder f)
+    {
+        //Logging.Log($"Selected folder {f.FolderId}");
+    }
+
+    string FolderIcon(Folder folder)
+    {
+        if (!FlatView)
+        {
+            if (folder.FolderItem.IsExpanded)
+                return "fa-folder-open";
+            else if (folder.HasSubFolders)
+                return "fa-folder-plus";
+        }
+        return "fa-folder";
+    }
+
+    string IndentMargin(Folder folder)
+    {
+        if (FlatView)
+            return string.Empty;
+
+        return $"margin-left:{folder.FolderItem.Depth * 10}px;";
+    }
+
+    string FolderStyle(int folderId)
+    {
+        if (folderId == -1 && searchService.Folder == null)
+            return "folder-entry-selected";
+
+        if (searchService.Folder?.FolderId == folderId)
+            return "folder-entry-selected";
+
+        return string.Empty;
+    }
+
+    private void DoFilter(string searchTerm)
+    {
+        if (filterTerm != searchTerm)
+        {
+            filterTerm = searchTerm;
+            OnFoldersChanged();
+        }
+    }
+
+    void ResetFilterFolder()
+    {
+        searchService.Folder = null;
+        StateHasChanged();
+    }
+
+    void SetFilterFolder(Folder folder)
+    {
+        searchService.Folder = folder;
+        StateHasChanged();
+    }
+
+    protected async Task ToggleExpand(Folder item)
+    {
+        if (item.HasSubFolders)
+        {
+            folderService.ToggleExpand(item);
+
+            await ProcessUpdatedFilter();
+        }
+    }
+
+    protected async Task ProcessUpdatedFilter()
+    {
+        folderItems = await folderService.GetFilteredFolders(filterTerm);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            folderService.OnChange += OnFoldersChanged;
+            searchService.OnSearchChanged += OnSearchChanged;
+
+            // Kick off the data load
+            await ProcessUpdatedFilter();
+        }
+    }
+
+    public void Dispose()
+    {
+        folderService.OnChange -= OnFoldersChanged;
+        searchService.OnSearchChanged -= OnSearchChanged;
+    }
+
+    private void OnFoldersChanged()
+    {
+        // Be careful of threading - we may get called from anywhere
+        _ = ProcessUpdatedFilter();
+    }
+
+    private void OnSearchChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+}

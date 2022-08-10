@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Damselfly.Core.Utils.Images;
 using System.Drawing;
 
 namespace Damselfly.Core.Interfaces
@@ -20,7 +19,7 @@ namespace Damselfly.Core.Interfaces
     /// </summary>
     public interface IImageProcessor
     {
-        Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles );
+        Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles );
         Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile);
         Task CropImage(FileInfo path, int x, int y, int width, int height, Stream stream);
         Task TransformDownloadImage(string input, Stream output, IExportSettings exportConfig);

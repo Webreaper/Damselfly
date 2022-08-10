@@ -9,6 +9,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj" />
   </ItemGroup>
 </Project>

@@ -8,6 +8,7 @@ using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -16,7 +17,7 @@ namespace Damselfly.Core.ScopedServices;
 /// of images saved in the 'basket' for export, sharing, upload and other p
 /// rocessing.
 /// </summary>
-public class BasketService
+public class BasketService : IBasketService
 {
     private readonly DownloadService _downloadService;
     private readonly UserStatusService _statusService;

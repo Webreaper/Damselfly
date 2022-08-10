@@ -13,7 +13,7 @@ using AuthenticationStateProvider = Microsoft.AspNetCore.Components.Authorizatio
 using AuthenticationState = Microsoft.AspNetCore.Components.Authorization.AuthenticationState;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Damselfly.Core.Services;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.ScopedServices;
 

@@ -1,6 +1,4 @@
-﻿@using Damselfly.Web.Data
-@using Damselfly.Core.Utils.Images;
-
+﻿
 @inject IDialogService DialogService
 @inject SearchService searchService
 @inject UserStatusService statusService
@@ -33,20 +31,20 @@
 
     <div class="damselfly-browsetools">
         <select class="damselfly-browsetool damselfly-browsetool-select" @bind="SelectedGrouping">
-            <option value="@SearchQuery.GroupingType.None">Timeline</option>
-            <option value="@SearchQuery.GroupingType.Date">Date</option>
-            <option value="@SearchQuery.GroupingType.Folder">Folder</option>
+            <option value="@GroupingType.None">Timeline</option>
+            <option value="@GroupingType.Date">Date</option>
+            <option value="@GroupingType.Folder">Folder</option>
         </select>
         <div class="damselfly-browsetool @SelectedStyle( ThumbSize.Small )"><i title="Small Thumbnails" class="fas fa-image" style="font-size:smaller;" @onclick="() => ChangeThumbSize(ThumbSize.Small)" /></div>
         <div class="damselfly-browsetool @SelectedStyle( ThumbSize.Medium )"><i title="Medium Thumbnails" class="fas fa-image" @onclick="() => ChangeThumbSize(ThumbSize.Medium)" /></div>
         <div class="damselfly-browsetool @SelectedStyle( ThumbSize.Large )"><i title="Large Thumbnails" class="fas fa-image" style="font-size:larger;" @onclick="() => ChangeThumbSize(ThumbSize.Large)" /></div>
-        @if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+        @if (searchService.SortOrder == SortOrderType.Descending)
         {
-            <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas fa-sort-amount-up" @onclick="() => ChangeSortOrder(SearchQuery.SortOrderType.Ascending)" /></div>
+            <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas fa-sort-amount-up" @onclick="() => ChangeSortOrder(SortOrderType.Ascending)" /></div>
         }
         else
         {
-            <div class="damselfly-browsetool"><i title="Sort Descending" class="fas fa-sort-amount-down" @onclick="() => ChangeSortOrder(SearchQuery.SortOrderType.Descending)" /></div>
+            <div class="damselfly-browsetool"><i title="Sort Descending" class="fas fa-sort-amount-down" @onclick="() => ChangeSortOrder(SortOrderType.Descending)" /></div>
         }
     </div>
     @if (ShowAdvancedSearch)
@@ -63,7 +61,7 @@
     ThumbSize CurrentThumbSize = ThumbSize.Small;
     bool ShowAdvancedSearch { get; set; } = false;
 
-    private SearchQuery.GroupingType SelectedGrouping { get { return searchService.Grouping; } set { ChangeGroupType(value); } }
+    private GroupingType SelectedGrouping { get { return searchService.Grouping; } set { ChangeGroupType(value); } }
 
     private void ChangeThumbSize(ThumbSize newSize)
     {
@@ -138,14 +136,14 @@
         searchService.SearchText = searchTerm;
     }
 
-    private void ChangeGroupType(SearchQuery.GroupingType newType)
+    private void ChangeGroupType(GroupingType newType)
     {
         searchService.Grouping = newType;
         Logging.Log($"Grouping changed to {searchService.Grouping}");
         StateHasChanged();
     }
 
-    private void ChangeSortOrder(SearchQuery.SortOrderType newType)
+    private void ChangeSortOrder(SortOrderType newType)
     {
         searchService.SortOrder = newType;
         Logging.Log($"Sort order changed to {searchService.SortOrder}");

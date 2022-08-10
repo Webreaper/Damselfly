@@ -2,10 +2,10 @@
 using System.Security.Cryptography;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
+using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
-using Damselfly.Core.Utils.Images;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -141,9 +141,9 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public async Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles)
         {
-            var result = new ImageProcessResult();
+            IImageProcessResult result = new ImageProcessResult();
             Stopwatch load = new Stopwatch("ImageSharpLoad");
 
             // Image.Load(string path) is a shortcut for our default type. 

@@ -7,7 +7,8 @@ using WordPressPCL.Models;
 using Damselfly.Core.Models;
 using System.IO;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices;
 
 namespace Damselfly.Core.Services;
 
@@ -18,11 +19,11 @@ public class WordpressService
 {
     private WordPressClient _client;
     private readonly StatusService _statusService;
-    private readonly ConfigService _configService;
+    private readonly APIConfigService _configService;
     private readonly ImageProcessService _imageProcessService;
 
     public WordpressService( ImageProcessService imageService,
-                             ConfigService configService,
+                             APIConfigService configService,
                              StatusService statusService)
     {
         _configService = configService;
@@ -37,7 +38,7 @@ public class WordpressService
     /// TODO: Add option to watermark and resize images when uploading
     /// </summary>
     /// <returns></returns>
-    public async Task UploadBasketToWordpress( List<Image> images)
+    public async Task UploadImagesToWordpress( List<Image> images)
     {
         try
         {

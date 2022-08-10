@@ -2,10 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using MudBlazor;
 using MudBlazor.Utilities;
 using Damselfly.Core.Utils;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -18,13 +19,6 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class ThemeService
 {
-    public class ThemeConfig
-    {
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public MudTheme MudTheme { get; set; }
-    }
-
     private readonly IDictionary<string, ThemeConfig> _themeConfigs = new Dictionary<string, ThemeConfig>( StringComparer.OrdinalIgnoreCase );
 
     public ThemeService()

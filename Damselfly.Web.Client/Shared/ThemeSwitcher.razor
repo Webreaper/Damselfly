@@ -1,0 +1,57 @@
+﻿
+@using MudBlazor.Utilities;
+
+@inject ClientThemeService themeService
+@inject APIConfigService configService
+@inject Logger<ThemeSwitcher> logger
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<MudThemeProvider Theme="@MudTheme" />
+
+@code {
+    private long cacheBuster = 1;
+    private MudTheme MudTheme;
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+
+        // TODO WASM: Default?
+        var theme = await themeService.GetTheme();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            themeService.OnChangeTheme += SwitchTheme;
+            var theme = await themeService.GetTheme();
+            SwitchTheme(theme);
+        }
+    }
+
+    public void Dispose()
+    {
+        themeService.OnChangeTheme -= SwitchTheme;
+    }
+
+    private void SwitchTheme(ThemeConfig newTheme)
+    {
+
+        if (newTheme != null)
+        {
+            // Apply the new stylesheet to Damselfly
+            var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
+            _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);
+
+            if (newTheme.MudTheme != null)
+            {
+                MudTheme = newTheme.MudTheme;
+            }
+
+            // Trigger a statechanged for Mud
+            StateHasChanged();
+        }
+    }
+}

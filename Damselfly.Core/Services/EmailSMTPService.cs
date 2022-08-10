@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using MimeKit;
 using System;
 using System.Threading.Tasks;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services;

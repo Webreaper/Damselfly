@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using MetadataExtractor;
@@ -948,7 +948,7 @@ public class MetaDataService : IProcessJobFactory
         //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-        int updated = await ImageMetaData.UpdateFields(db, folder, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
+        int updated = await ImageContext.UpdateMetadataFields(db, folder, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
 
         if( updated != 0)
             _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for Metadata scanning.";

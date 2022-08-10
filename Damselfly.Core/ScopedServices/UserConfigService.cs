@@ -3,6 +3,7 @@ using System.Linq;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
+using Damselfly.Web.Utils;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -33,20 +34,17 @@ public class UserConfigService : BaseConfigService, IDisposable
 
     public override void InitialiseCache()
     {
-        lock (_cache)
+        ClearCache();
+
+        if (_user != null)
         {
-            _cache.Clear();
+            using var db = new ImageContext();
 
-            if (_user != null)
+            var settings = db.ConfigSettings.Where(x => x.UserId == _user.Id).ToList();
+
+            foreach (var setting in settings)
             {
-                using var db = new ImageContext();
-
-                var settings = db.ConfigSettings.Where(x => x.UserId == _user.Id).ToList();
-
-                foreach (var setting in settings)
-                {
-                    _cache[setting.Name] = setting;
-                }
+                SetSetting(setting.Name, setting );
             }
         }
     }
@@ -60,54 +58,53 @@ public class UserConfigService : BaseConfigService, IDisposable
     /// </summary>
     /// <param name="name"></param>
     /// <param name="value"></param>
-    public override void Set(string name, string value)
+    public void Set(string name, string value)
     {
         // UserID of zero indicates "no user", so default global setting
         int userId = _user != null ? _user.Id : 0;
 
-        lock (_cache)
+        using var db = new ImageContext();
+
+        var existing = GetSetting(name);
+
+        if (existing != null )
         {
-            using var db = new ImageContext();
-
-            if (_cache.TryGetValue(name, out ConfigSetting existing))
+            if (String.IsNullOrEmpty(value))
             {
-                if (String.IsNullOrEmpty(value))
+                Set(name, null);
+
+                if (_user != null)
                 {
-                    _cache.Remove(name);
-
-                    if (_user != null)
-                    {
-                        // Setting set to null - delete from the DB and cache
-                        db.ConfigSettings.Remove(existing);
-                    }
-                }
-                else
-                {
-                    // Setting set to non-null - save in the DB and cache
-                    existing.Value = value;
-                    existing.UserId = userId;
-
-                    _cache[name] = existing;
-
-                    if( _user != null )
-                        db.ConfigSettings.Update(existing);
+                    // Setting set to null - delete from the DB and cache
+                    db.ConfigSettings.Remove(existing);
                 }
             }
             else
             {
-                if (!String.IsNullOrEmpty(value))
-                {
-                    // Existing setting set to non-null - create in the DB and cache.
-                    existing = new ConfigSetting { Name = name, Value = value, UserId = userId };
-                    _cache[name] = existing;
+                // Setting set to non-null - save in the DB and cache
+                existing.Value = value;
+                existing.UserId = userId;
 
-                    if( _user != null )
-                        db.ConfigSettings.Add(existing);
-                }
+                SetSetting(name, existing );
+
+                if( _user != null )
+                    db.ConfigSettings.Update(existing);
             }
-
-            if( _user != null )
-                db.SaveChanges("SaveConfig");
         }
+        else
+        {
+            if (!String.IsNullOrEmpty(value))
+            {
+                // Existing setting set to non-null - create in the DB and cache.
+                existing = new ConfigSetting { Name = name, Value = value, UserId = userId };
+                SetSetting( name, existing );
+
+                if( _user != null )
+                    db.ConfigSettings.Add(existing);
+            }
+        }
+
+        if( _user != null )
+            db.SaveChanges("SaveConfig");
     }
 }

@@ -9,11 +9,9 @@ using System.Threading.Tasks;
 using Damselfly.Core.DbModels.DBAbstractions;
 using Humanizer;
 using Damselfly.Core.DbModels;
-using Damselfly.Core.Utils.Constants;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Models
 {
@@ -131,10 +129,31 @@ namespace Damselfly.Core.Models
 
             RoleDefinitions.OnModelCreating(modelBuilder);
         }
-    }
 
 
-    
-    
-  
+        /// <summary>
+        /// Temporary workaround for the fact that EFCore.BulkExtensions doesn't support joined
+        /// updates in its BatchUpdateAsync method. So we just execute the raw SQL directly.
+        /// TODO: This should really live in the SQLiteModel
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="folderId"></param>
+        /// <param name="updateField"></param>
+        /// <param name="newValue"></param>
+        /// <returns></returns>
+        public static async Task<int> UpdateMetadataFields(ImageContext db, Folder folder, string updateField, string newValue)
+        {
+            string sql = $@"UPDATE ImageMetaData SET {updateField} = {newValue} FROM (SELECT i.ImageId, i.FolderId FROM Images i where i.FolderId = {folder.FolderId}) AS imgs WHERE imgs.ImageID = ImageMetaData.ImageID";
+
+            try
+            {
+                return await db.Database.ExecuteSqlRawAsync(sql);
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception updating Metadata Field {updateField}: {ex.Message}");
+                return 0;
+            }
+        }
+    }  
 }

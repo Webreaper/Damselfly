@@ -1,6 +1,5 @@
 ﻿@using Damselfly.Core.DbModels
 @using Microsoft.AspNetCore.Identity
-@using Damselfly.Core.Utils.Constants
 
 @inject NavigationManager Navigation
 @inject ConfigService configService
@@ -20,15 +19,15 @@
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    private WorkService.ServiceStatus ProcessingStatus { get; set; }
+    private ServiceStatus ProcessingStatus { get; set; }
 
     private string StatusIcon => ProcessingStatus.Status switch
     {
-        WorkService.JobStatus.Running => $"fa-cog {SpinSpeed}",
-        WorkService.JobStatus.Paused => "fa-pause-circle",
-        WorkService.JobStatus.Idle => "fa-check-circle",
-        WorkService.JobStatus.Disabled => "fa-stop-circle",
-        WorkService.JobStatus.Error => "fa-exclamation-circle",
+        JobStatus.Running => $"fa-cog {SpinSpeed}",
+        JobStatus.Paused => "fa-pause-circle",
+        JobStatus.Idle => "fa-check-circle",
+        JobStatus.Disabled => "fa-stop-circle",
+        JobStatus.Error => "fa-exclamation-circle",
         _ => throw new ArgumentException("StatusIcon: Unexpected Switch option")
     };
 
@@ -43,15 +42,15 @@
 
     private string StatusTitle => ProcessingStatus.Status switch
     {
-        WorkService.JobStatus.Running => $"Background processing running (CPU: {ProcessingStatus.CPULevel}%)",
-        WorkService.JobStatus.Paused => "Background processing paused",
-        WorkService.JobStatus.Idle => "Background processing idle",
-        WorkService.JobStatus.Disabled => "Background processing disabled",
-        WorkService.JobStatus.Error => "Background processing error",
+        JobStatus.Running => $"Background processing running (CPU: {ProcessingStatus.CPULevel}%)",
+        JobStatus.Paused => "Background processing paused",
+        JobStatus.Idle => "Background processing idle",
+        JobStatus.Disabled => "Background processing disabled",
+        JobStatus.Error => "Background processing error",
         _ => throw new ArgumentException("StatusTitle: Unexpected Switch option")
     };
 
-    private void StatusChanged(WorkService.ServiceStatus status)
+    private void StatusChanged(ServiceStatus status)
     {
         InvokeAsync( () => {
             ProcessingStatus = status;
@@ -78,7 +77,7 @@
         {
             var menuList = new List<ContextMenuItem>();
 
-            if (ProcessingStatus.Status == WorkService.JobStatus.Paused)
+            if (ProcessingStatus.Status == JobStatus.Paused)
             {
                 menuList.Add(new ContextMenuItem() { Text = "Resume Processing", Value = 1 });
             }
