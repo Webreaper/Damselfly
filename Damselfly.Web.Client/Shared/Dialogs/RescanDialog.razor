@@ -1,0 +1,122 @@
+﻿
+@using System.Linq
+
+@inject UserStatusService userStatusService
+@inject ThumbnailService thumbService
+@inject ImageRecognitionService aiService
+@inject MetaDataService metaService
+@inject IndexingService indexingService
+@inject ImageCache imageCache
+
+<MudDialog>
+    <DialogContent>
+        @if (AllImages)
+        {
+            <MudText>Re-scan ALL folders.</MudText>
+            <MudText>WARNING: this may take hours or days, depending on how many images are in your library.</MudText>
+        }
+        else if (Folder != null)
+        {
+            <MudText>Re-scan folder @Folder.Name (@ImageText):</MudText>
+        }
+        else
+        {
+            <MudText>Re-scan @ImageText:</MudText>
+        }
+        <div>
+            <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files" />
+        </div>
+        <div>
+            <MudCheckBox @bind-Checked="@RescanMetadata" Label="Re-scan metadata" />
+        </div>
+        <div>
+            <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails" />
+        </div>
+        <div>
+            <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="OkayClicked">Rescan</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public ICollection<Image> Images { get; set; }
+
+    [Parameter]
+    public Folder Folder { get; set; }
+
+    [Parameter]
+    public bool AllImages { get; set; }
+
+    [Parameter]
+    public int Count { get; set; }
+
+    private string ImageText => Count > 1 ? $"{Count} images" : "1 image";
+
+    private bool ReIndex { get; set; }
+    private bool RegenThumbs { get; set; }
+    private bool RescanAI { get; set; }
+    private bool RescanMetadata { get; set; }
+
+    void OkayClicked()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+
+        // Fire and forget; we don't need to block/await
+        _ = Rescan();
+    }
+
+    private async Task Rescan()
+    {
+        if (AllImages)
+        {
+            if (ReIndex)
+                await indexingService.MarkAllFoldersForScan();
+            if (RescanMetadata)
+                await metaService.MarkAllImagesForScan();
+            if (RegenThumbs)
+                await thumbService.MarkAllImagesForScan();
+            if (RescanAI)
+                await aiService.MarkAllImagesForScan();
+        }
+        else if (Folder == null)
+        {
+            if (ReIndex)
+                await indexingService.MarkImagesForScan(Images);
+            if (RescanMetadata)
+                await metaService.MarkImagesForScan(Images);
+            if (RegenThumbs)
+                await thumbService.MarkImagesForScan(Images);
+            if (RescanAI)
+                await aiService.MarkImagesForScan(Images);
+        }
+        else
+        {
+            if (ReIndex)
+                await indexingService.MarkFoldersForScan(new List<Folder> { Folder });
+            if (RescanMetadata)
+                await metaService.MarkFolderForScan(Folder);
+            if (RegenThumbs)
+                await thumbService.MarkFolderForScan(Folder);
+            if (RescanAI)
+                await aiService.MarkFolderForScan(Folder);
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Images != null)
+            Count = Images.Count;
+
+        await base.OnInitializedAsync();
+    }
+}

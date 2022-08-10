@@ -1,0 +1,101 @@
+﻿@using Damselfly.Core.DbModels
+@using Microsoft.AspNetCore.Identity
+@using Damselfly.Core.Utils.Constants
+
+@inject NavigationManager Navigation
+@inject ConfigService configService
+@inject WorkService workService
+@inject UserService userService
+@inject ContextMenuService contextMenuService
+
+@implements IDisposable
+
+<div class="damselfly-statusbarpanel" title="@StatusTitle"
+        @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true"
+        @onclick="@(args => ShowContextMenu(args))">
+    <i class="processing-icon fas @StatusIcon" />
+    <label>@ProcessingStatus.StatusText</label>
+</div>
+@code{
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private WorkService.ServiceStatus ProcessingStatus { get; set; }
+
+    private string StatusIcon => ProcessingStatus.Status switch
+    {
+        WorkService.JobStatus.Running => $"fa-cog {SpinSpeed}",
+        WorkService.JobStatus.Paused => "fa-pause-circle",
+        WorkService.JobStatus.Idle => "fa-check-circle",
+        WorkService.JobStatus.Disabled => "fa-stop-circle",
+        WorkService.JobStatus.Error => "fa-exclamation-circle",
+        _ => throw new ArgumentException("StatusIcon: Unexpected Switch option")
+    };
+
+    private string SpinSpeed => ProcessingStatus.CPULevel switch
+    {
+        25 => "fa-spin-25",
+        50 => "fa-spin-50",
+        75 => "fa-spin-75",
+        100 => "fa-spin-100",
+        _ => throw new ArgumentException("SpinSpeed: Unexpected Switch option")
+    };
+
+    private string StatusTitle => ProcessingStatus.Status switch
+    {
+        WorkService.JobStatus.Running => $"Background processing running (CPU: {ProcessingStatus.CPULevel}%)",
+        WorkService.JobStatus.Paused => "Background processing paused",
+        WorkService.JobStatus.Idle => "Background processing idle",
+        WorkService.JobStatus.Disabled => "Background processing disabled",
+        WorkService.JobStatus.Error => "Background processing error",
+        _ => throw new ArgumentException("StatusTitle: Unexpected Switch option")
+    };
+
+    private void StatusChanged(WorkService.ServiceStatus status)
+    {
+        InvokeAsync( () => {
+            ProcessingStatus = status;
+            StateHasChanged();
+        } );
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        ProcessingStatus = workService.Status;
+        workService.OnStatusChanged += StatusChanged;
+    }
+
+    public void Dispose()
+    {
+        workService.OnStatusChanged -= StatusChanged;
+    }
+
+    async Task ShowContextMenu(MouseEventArgs args)
+    {
+        if(await userService.PolicyApplies(PolicyDefinitions.s_IsEditor))
+        {
+            var menuList = new List<ContextMenuItem>();
+
+            if (ProcessingStatus.Status == WorkService.JobStatus.Paused)
+            {
+                menuList.Add(new ContextMenuItem() { Text = "Resume Processing", Value = 1 });
+            }
+            else
+            {
+                menuList.Add(new ContextMenuItem() { Text = "Pause Processing", Value = 0 });
+            }
+
+            contextMenuService.Open(args, menuList, (args) =>
+            {
+                contextMenuService.Close();
+                switch (args.Value)
+                {
+                    case 0: workService.Paused = true; break;
+                    case 1: workService.Paused = false; break;
+                }
+            });
+        }
+    }
+}

@@ -1,0 +1,100 @@
+﻿
+@using Syncfusion.Blazor.Maps
+@using Syncfusion.Blazor
+
+@inject SelectionService selectionService
+@inject NavigationService navContext
+@implements IDisposable
+
+@if (showMap)
+{
+<SfMaps Height="200px" >
+    <MapsAreaSettings Background="var(--main-background)">
+        <MapsBorder Color="var(--keyword-border)" Width="0"></MapsBorder>
+        <MapsMargin Bottom="0" Left="0" Right="0" Top="0"></MapsMargin>
+    </MapsAreaSettings>
+    <MapsCenterPosition Latitude="@Latitude" Longitude="@Longitude" />
+    <MapsZoomSettings Enable="false" ZoomFactor="13" />
+    <MapsLayers>
+        <MapsLayer UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
+            <MapsMarkerSettings>
+                <MapsMarker Visible="true" Height="20" Width="20" Fill="red" DataSource="@Markers" AnimationDuration="0" TValue="MarkerData" />
+            </MapsMarkerSettings>
+        </MapsLayer>
+    </MapsLayers>
+</SfMaps>
+}
+else
+{
+    <p>No GeoData available.</p>
+}
+
+@code {
+    private bool showMap = false;
+    private Image CurrentImage { get; set; }
+    private double Latitude { get; set; }
+    private double Longitude { get; set; }
+
+    public class MarkerData
+    {
+        public string Name { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+    }
+
+    public List<MarkerData> Markers = new List<MarkerData>();
+
+    protected override void OnInitialized()
+    {
+        navContext.OnChange += NavigationChanged;
+        selectionService.OnSelectionChanged += SelectionChanged;
+    }
+
+    public void Dispose()
+    {
+        navContext.OnChange -= NavigationChanged;
+        selectionService.OnSelectionChanged -= SelectionChanged;
+    }
+
+    private void NavigationChanged(Image image)
+    {
+        CurrentImage = image;
+        _ = SetMapToImage();
+    }
+
+    private void SelectionChanged()
+    {
+        if (selectionService.Selection.Count == 1)
+        {
+            CurrentImage = selectionService.Selection.First();
+            _ = SetMapToImage();
+        }
+    }
+
+    private async Task SetMapToImage()
+    {
+        Markers.Clear();
+
+        if (CurrentImage != null && CurrentImage.MetaData != null &&
+            CurrentImage.MetaData.Longitude.HasValue && CurrentImage.MetaData.Latitude.HasValue)
+        {
+            Latitude = CurrentImage.MetaData.Latitude.Value;
+            Longitude = CurrentImage.MetaData.Longitude.Value;
+            showMap = true;
+
+            Markers.Add(new MarkerData { Name = CurrentImage.FileName, Latitude = this.Latitude, Longitude = this.Longitude });
+        }
+        else
+            showMap = false;
+
+        await InvokeAsync( StateHasChanged );
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await SetMapToImage();
+        }
+    }
+}

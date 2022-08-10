@@ -1,0 +1,78 @@
+﻿@using Damselfly.Web.Shared
+@using Damselfly.Core.DbModels
+
+@inherits LayoutComponentBase
+@inject ViewDataService ViewDataService
+@inject NavigationService navContext
+
+<div class="damselfly-sidebar">
+    <DamselflyLogo />
+
+    @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
+    {
+        <ToolWindow Title="Image Properties">
+            <ChildContent>
+                <ImageProperties />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowBasket)
+    {
+        <ToolWindow Title="Basket">
+            <ChildContent>
+                <SelectedImages />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowTags)
+    {
+        <ToolWindow Title="Image Keywords">
+            <ChildContent>
+                <Keywords />
+            </ChildContent>
+        </ToolWindow>
+        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+            <ToolWindow Title="Add Keywords">
+                <ChildContent>
+                    <KeywordFavourites />
+                </ChildContent>
+            </ToolWindow>
+        </AuthorizeView>
+    }
+    @if (ViewDataService.ShowMap)
+    {
+    <ToolWindow Title="Map">
+        <ChildContent>
+            <MapView />
+        </ChildContent>
+    </ToolWindow>
+    }
+    @if (ViewDataService.ShowFolderList)
+    {
+        <ToolWindow Title="Folders">
+            <ChildContent>
+                <FolderList />
+            </ChildContent>
+        </ToolWindow>
+    }
+    @if (ViewDataService.ShowExport)
+    {
+        <ToolWindow Title="Export">
+            <ChildContent>
+                <ExportSettings />
+            </ChildContent>
+        </ToolWindow>
+     }
+</div>
+
+@code { protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ViewDataService.SideBarStateChanged += OnSideBarStateChanged;
+    }
+
+    private void OnSideBarStateChanged(ViewDataService.SideBarState state)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+}

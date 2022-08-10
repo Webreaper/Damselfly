@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Images;
 
 namespace Damselfly.Core.Services;
 
@@ -49,7 +48,7 @@ public class ImageProcessService : IImageProcessor, IHashProvider
     /// <param name="source"></param>
     /// <param name="destFiles"></param>
     /// <returns></returns>
-    public async Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+    public async Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles)
     {
         var processor = _factory.GetProcessor(source.Extension);
 
@@ -60,7 +59,7 @@ public class ImageProcessService : IImageProcessor, IHashProvider
             return result;
         }
 
-        return new ImageProcessResult { ThumbsGenerated = false };
+        return new DbModels.Images.ImageProcessResult { ThumbsGenerated = false };
     }
 
     /// <summary>

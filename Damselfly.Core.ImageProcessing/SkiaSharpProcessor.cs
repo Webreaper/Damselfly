@@ -9,7 +9,8 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
-using Damselfly.Core.Utils.Images;
+using Damselfly.Core.DbModels.Images;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.ImageProcessing
 {
@@ -64,10 +65,10 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destFiles"></param>
-        public Task<ImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, ThumbConfig> destFiles)
+        public Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles)
         {
             Stopwatch load, hashThumb, scale, save, thumbs;
-            ImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false };
+            IImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false };
 
             try
             {

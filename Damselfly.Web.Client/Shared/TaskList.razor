@@ -1,0 +1,81 @@
+﻿@using Humanizer
+
+@inject TaskService taskScheduler
+@inject IJSRuntime JsRuntime
+
+<div class="damselfly-tasks">
+    <div class="damselfly-taskitem">
+        @if (tasks != null)
+        {
+            <table class="tasklist-table">
+                <tr>
+                    <th>Task</th>
+                    <th>Last Started</th>
+                    <th>Last Completed</th>
+                    <th>Time Taken</th>
+                    <th>Next Run</th>
+                    <th align="center">Run Task</th>
+                </tr>
+                @foreach (var task in tasks)
+                {
+                    <tr>
+                        <td>@task.Type.ToString().Humanize()</td>
+                        <td>@ElapsedString( task.LastStarted )</td>
+                        <td>@ElapsedString( task.LastCompleted )</td>
+                        <td>@GetTimeTaken(task)</td>
+                        <td>In @now.ToHumanReadableString(task.NextRun)</td>
+                        <td align="center"><button class="btn btn-primary" type="submit" @onclick="@(() => RunTask(task))">Run</button></td>
+                    </tr>
+                }
+            </table>
+        }
+        else
+        {
+            <p>Loading task status list</p>
+        }
+    </div>
+</div>
+
+@code {
+    ScheduledTask[] tasks;
+    private DateTime now = DateTime.UtcNow;
+
+    private string ElapsedString( DateTime dateTime )
+    {
+        if (dateTime < new DateTime(1990, 1, 1))
+            return "Never";
+
+        var diff = (dateTime - now);
+
+        return dateTime.ToHumanReadableString(now) + " ago";
+    }
+
+    private string GetTimeTaken(ScheduledTask task)
+    {
+        if (task.LastCompleted < new DateTime(1990, 1, 1))
+            return "N/A";
+
+        if (task.LastStarted > task.LastCompleted)
+        {
+            return DateTime.UtcNow.ToHumanReadableString(task.LastStarted);
+        }
+        else
+        {
+            return task.LastStarted.ToHumanReadableString(task.LastCompleted);
+        }
+    }
+
+    // TODO: Move to AfterRender
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Called twice?
+        var result = await taskScheduler.GetTasksAsync();
+
+        tasks = result;
+    }
+
+    private void RunTask(ScheduledTask task)
+    {
+        taskScheduler.EnqueueTaskAsync(task);
+    }
+}

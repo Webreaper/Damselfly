@@ -53,7 +53,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WASM", "WASM", "{F67D3D71-C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Server", "Damselfly.Web.Server\Damselfly.Web.Server.csproj", "{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}"
 EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "docker-compose", "docker-compose.dcproj", "{E9494108-EA61-4A20-87FA-85FD52736695}"
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "docker-compose", "docker-compose.dcproj", "{79A7A57F-3A35-482A-B720-5B4A6E8E0D8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Models", "Damselfly.Web.Shared\Damselfly.Web.Models.csproj", "{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Constants", "Damselfly.Core.Constants\Damselfly.Core.Constants.csproj", "{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,10 +157,18 @@ Global
 		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF17CBB7-15E7-461A-B0AD-755EA6A416BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E9494108-EA61-4A20-87FA-85FD52736695}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E9494108-EA61-4A20-87FA-85FD52736695}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E9494108-EA61-4A20-87FA-85FD52736695}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E9494108-EA61-4A20-87FA-85FD52736695}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79A7A57F-3A35-482A-B720-5B4A6E8E0D8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79A7A57F-3A35-482A-B720-5B4A6E8E0D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79A7A57F-3A35-482A-B720-5B4A6E8E0D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79A7A57F-3A35-482A-B720-5B4A6E8E0D8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02BEFA19-BCE0-4E3D-8DCA-EE9291A2B11B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E46FA36-2EC2-4C3C-A885-AC3E994B07FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C1EE9263-B11B-49DE-890E-9C523C27C08D} = {247B3CC7-691C-4F41-853B-E1955D37CC7D}

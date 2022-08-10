@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.Constants;
-using Damselfly.Core.Utils.Images;
 using Damselfly.Core.Utils.ML;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
@@ -18,6 +17,7 @@ using Damselfly.ML.ImageClassification;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using System.Runtime.InteropServices;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Services;
 
@@ -674,7 +674,7 @@ public class ImageRecognitionService : IProcessJobFactory
         //var queryable = db.Set<ImageMetaData>().Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
-        int updated = await ImageMetaData.UpdateFields(db, folder, "AILastUpdated", "null");
+        int updated = await ImageContext.UpdateMetadataFields(db, folder, "AILastUpdated", "null");
 
         if( updated != 0 )
             _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for AI reprocessing.";

@@ -1,0 +1,146 @@
+﻿@page "/"
+
+@using Damselfly.Web.Data
+@using Damselfly.Core.Services;
+@using Damselfly.Core.Utils.Images
+
+@implements IDisposable
+
+@inject ThumbnailService thumbService
+@inject ViewDataService ViewDataService
+@inject MetaDataService metadataService
+@inject NavigationService navContext
+@inject SearchService searchService
+@inject UserStatusService statusService
+@inject NavigationManager navigationManager
+
+<div class="damselfly-imagebrowser">
+    <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
+    <ImageGrid CurrentThumbSize="@thumbSize"/>
+</div>
+
+@code
+{
+    [QueryStringParameter]
+    public string S { get; set; }
+
+    [QueryStringParameter]
+    public int FolderId { get; set; }
+
+    [QueryStringParameter]
+    public int TagId { get; set; }
+
+    [QueryStringParameter]
+    public string Tag { get; set; }
+
+    [QueryStringParameter]
+    public int PersonId { get; set; }
+
+    [QueryStringParameter]
+    public DateTime Date { get; set; }
+
+    private ThumbSize thumbSize { get; set; }
+
+    private void ThumbSizeChanged( ThumbSize newSize )
+    {
+        thumbSize = newSize;
+        StateHasChanged();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await ApplyQueryParams();
+    }
+
+    private async Task ApplyQueryParams()
+    {
+        if( ! string.IsNullOrEmpty( S ) )
+        {
+            searchService.SearchText = S;
+        }
+
+        if (FolderId != 0)
+        {
+            using var db = new ImageContext();
+
+            var folder = await db.Folders.FindAsync(FolderId);
+
+            if (folder != null)
+            {
+                statusService.StatusText = $"Selected folder {folder.Name}";
+                searchService.Folder = folder;
+            }
+        }
+
+        if (PersonId != 0)
+        {
+            using var db = new ImageContext();
+
+            var person = await db.People.FindAsync(PersonId);
+
+            if (person != null)
+            {
+                statusService.StatusText = $"Selected person {person.Name}";
+                searchService.Person = person;
+            }
+        }
+
+        if (TagId != 0)
+        {
+            var tag = metadataService.GetTag(TagId);
+
+            if (tag != null)
+                searchService.Tag = tag;
+        }
+        else if( ! string.IsNullOrEmpty( Tag ))
+        {
+            var tag = metadataService.GetTag(Tag);
+
+            if (tag != null)
+                searchService.Tag = tag;
+        }
+
+        // Don't need this yet
+        //this.UpdateQueryString(navigationManager);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        navContext.CurrentImage = null;
+
+        ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
+
+        navigationManager.LocationChanged += HandleLocationChanged;
+
+    }
+
+    void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+        StateHasChanged();
+
+        _ = ApplyQueryParams();
+    }
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    // TODO: Don't think we need this
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public void GetUpdateState(string clientVersion)
+    {
+        Logging.Log($"Checking for update: {clientVersion}");
+
+    }
+}

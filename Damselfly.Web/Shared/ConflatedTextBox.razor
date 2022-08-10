@@ -1,6 +1,4 @@
-﻿@using Damselfly.Web.Data
-
-<div class="SearchBox">
+﻿<div class="SearchBox">
     <div class="SearchFieldIcon" title="@placeholder"><i class="fa @IconClass" /></div>
     <input class="SearchField" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
     @if (CanClear)

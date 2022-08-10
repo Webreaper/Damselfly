@@ -1,0 +1,96 @@
+﻿
+@using Damselfly.Core.DbModels
+@using Damselfly.Core.Utils.Constants
+
+@implements IDisposable
+
+@inject IDialogService DialogService
+@inject ThumbnailService thumbService
+@inject BasketService basketService
+@inject NavigationManager NavigationManager
+@inject WordpressService wpService
+@inject UserService userService
+@inject UserConfigService userConfigService
+
+<div class="SearchBox">
+    <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
+    <select @bind="SelectedBasketId" class="SearchField">
+        @foreach (var basket in baskets)
+        {
+            <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
+        }
+    </select>
+</div>
+
+@code {
+    readonly List<Basket> baskets = new List<Basket>();
+    string NewBasketName { get; set; }
+
+    private int SelectedBasketId
+    {
+        get { return basketService.CurrentBasket == null ? -1 : basketService.CurrentBasket.BasketId; }
+        set { _ = NewBasketSelected(value); }
+    }
+
+    
+
+    private async Task NewBasketSelected(int selectedBasketId)
+    {
+        var newBasket = await basketService.SwitchBasketById(selectedBasketId);
+        userConfigService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+    }
+
+    private string PrivateIndicator(Basket basket)
+    {
+        if (userService.RolesEnabled)
+        {
+            // Shared baskets don't make sense if users and roles are disabled.
+            if (basket != null && ! basket.UserId.HasValue)
+            {
+                return "(shared)";
+            }
+        }
+
+        return string.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            basketService.OnBasketChanged += BasketsChanged;
+
+            await LoadBasketList();
+
+            var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId, -1);
+            if (selectedBasketId > 0)
+                await basketService.SwitchBasketById(selectedBasketId);
+            else
+                await basketService.SwitchToDefaultBasket(userService.User);
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        basketService.OnBasketChanged -= BasketsChanged;
+    }
+
+    private void BasketsChanged()
+    {
+        _ = LoadBasketList();
+        StateHasChanged();
+    }
+
+    public async Task LoadBasketList()
+    {
+        var watch = new Stopwatch("LoadBaskets");
+
+        var myBaskets = await basketService.GetUserBaskets(userService.User);
+
+        this.baskets.Clear();
+        this.baskets.AddRange(myBaskets);
+        watch.Stop();
+    }
+}
+

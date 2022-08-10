@@ -1,0 +1,99 @@
+﻿@using Microsoft.EntityFrameworkCore 
+@using Humanizer
+
+<div>
+    @if (StatsReady)
+    {
+    <table>
+        <colgroup>
+            <col span="1" style="width: 200px">
+            <col span="1" style="width: 300px">
+        </colgroup>
+        <tbody>
+            <tr><td colspan="2"><h4>System</h4></td></tr>
+            <tr><td>.Net Version:</td><td>@Environment.Version</td></tr>
+            <tr><td>OS Version:</td><td>@Environment.OSVersion</td></tr>
+            <tr><td>Process Architecture:</td><td>@System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture</td></tr>
+            <tr><td>Processor Count:</td><td>@Environment.ProcessorCount</td></tr>
+            <tr><td colspan="2"><h4>Photo Collection</h4></td></tr>
+            <tr><td>Folders:</td><td>@TotalFolders</td></tr>
+            <tr><td>Images:</td><td>@TotalImages</td></tr>
+            <tr><td>Image File Size:</td><td>@TotalImagesSizeBytes.Bytes().Humanize()</td></tr>
+            <tr><td>Tags/Keywords:</td><td>@TotalTags</td></tr>
+            <tr><td>Recognised Objects:</td><td>@ObjectsRecognised</td></tr>
+            <tr><td>Faces:</td><td>@PeopleFound</td></tr>
+            <tr><td>People Identified:</td><td>@PeopleIdentified</td></tr>
+            @if (!string.IsNullOrEmpty(AzureMonthlyTransactions))
+            {
+                <tr><td>Azure Transactions:</td><td>@AzureMonthlyTransactions</td></tr>
+            }
+            <tr><td colspan="2"><h4>Process Queue</h4></td></tr>
+            <tr><td>Pending Metadata Scans:</td><td>@PendingImages</td></tr>
+            <tr><td>Pending Thumbnails:</td><td>@PendingThumbs</td></tr>
+            <tr><td>Pending AI Scans:</td><td>@PendingAIScans</td></tr>
+            <tr><td>Pending Keyword Updates:</td><td>@PendingKeywordImages (total keywords: @PendingKeywordOps)</td></tr>
+        </tbody>
+    </table>
+    }
+    else
+    {
+        <p>Preparing stats... please wait.</p>
+    }
+</div>
+
+@code {
+    bool StatsReady { get; set; } = false;
+    int TotalImages { get; set; }
+    int TotalFolders { get; set; }
+    int TotalTags { get; set; }
+    int PendingThumbs { get; set; }
+    int PendingImages { get; set; }
+    int PendingAIScans { get; set; }
+    int PendingKeywordOps { get; set; }
+    int PendingKeywordImages { get; set; }
+    long TotalImagesSizeBytes { get; set; }
+    string AzureMonthlyTransactions { get; set; }
+    int ObjectsRecognised { get; set; }
+    int PeopleFound { get; set; }
+    int PeopleIdentified { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Run(() => GetStatsSync());
+        }
+    }
+
+    protected async Task GetStatsSync()
+    {
+        using var db = new ImageContext();
+
+        TotalImages = await db.Images.CountAsync();
+        TotalTags = await db.Tags.CountAsync();
+        TotalFolders = await db.Folders.CountAsync();
+        TotalImagesSizeBytes = await db.Images.SumAsync( x => (long)x.FileSizeBytes );
+        PeopleFound = await db.People.CountAsync();
+        PeopleIdentified = await db.People.Where( x => x.Name != "Unknown" ).CountAsync();
+        ObjectsRecognised = await db.ImageObjects.CountAsync();
+        PendingAIScans = await db.ImageMetaData.Where(x => !x.AILastUpdated.HasValue).CountAsync();
+        PendingThumbs = await db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).CountAsync();
+        PendingImages = await db.Images.Where(x => x.MetaData == null || x.LastUpdated > x.MetaData.LastUpdated ).Include( x => x.MetaData ).CountAsync();
+        PendingKeywordOps = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending).CountAsync();
+        PendingKeywordImages = await db.KeywordOperations.Where(x => x.State == ExifOperation.FileWriteState.Pending)
+                                                    .Select(x => x.ImageId )
+                                                    .Distinct().CountAsync();
+
+        // TODO: Should pull this out of the TransThrottle instance.
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime( now.Year, now.Month, 1, 0, 0, 0 );
+        var monthEnd = monthStart.AddMonths(1).AddSeconds( -1 );
+        var totalTrans = await db.CloudTransactions.Where(x => x.Date >= monthStart && x.Date <= monthEnd).SumAsync(x => x.TransCount);
+
+        if( totalTrans > 0 )
+            AzureMonthlyTransactions = $"{totalTrans} (during {monthStart:MMM})";
+
+        StatsReady = true;
+        await InvokeAsync( StateHasChanged );
+    }
+}

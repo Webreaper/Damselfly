@@ -1,0 +1,18 @@
+﻿@page "/config"
+
+@inject ViewDataService ViewDataService
+
+<div class="damselfly-config">
+
+    <Config />
+</div>
+
+    @code {
+        protected override void OnAfterRender(bool firstRender)
+        {
+            if (firstRender)
+            {
+                ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true });
+            }
+        }
+    }

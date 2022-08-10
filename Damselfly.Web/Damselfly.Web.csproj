@@ -40,6 +40,9 @@
     <ProjectReference Include="..\Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Web.Shared\Damselfly.Web.Models.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\downloads\" />
@@ -50,7 +53,6 @@
     <Folder Include="wwwroot\vScroll\" />
     <Folder Include="wwwroot\objectrects\" />
     <Folder Include="Pages\Shared\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Shared\Dialogs\" />
   </ItemGroup>
   <ItemGroup>
@@ -59,7 +61,6 @@
     <None Remove="Microsoft.AspNetCore.Identity.UI" />
     <None Remove="Pages\Shared\" />
     <None Remove="Microsoft.AspNetCore.WebUtilities" />
-    <None Remove="Extensions\" />
     <None Remove="ExCSS" />
     <None Remove="FisSst.BlazorMaps" />
     <None Remove="Syncfusion.Blazor.Maps" />

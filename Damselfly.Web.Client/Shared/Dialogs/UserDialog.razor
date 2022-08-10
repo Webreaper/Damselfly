@@ -1,0 +1,202 @@
+﻿@using Damselfly.Core.DbModels
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+
+@inject UserService userService
+
+<MudDialog>
+    <DialogContent>
+        <EditForm autocomplete="off" Model="@model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudTextField @bind-Value="@model.Username" For="@(() => model.Username)" Label="User Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <MudTextField @bind-Value="@model.Email" InputType="InputType.Email" For="@(() => model.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <MudTextField @bind-Value="@model.Password" InputType="InputType.Password" For="@(() => model.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <MudTextField @bind-Value="@model.Password2" InputType="InputType.Password" For="@(() => model.Password2)" Label="Confirm Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            @if (allRoles != null)
+            {
+                <MudSelect T="string" Label="User Roles" HelperText="Select the roles to which this user belongs" @bind-Value="selectedRole" Variant="Variant.Filled">
+                    @foreach (var role in allRoles)
+                    {
+                        <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            @if (!string.IsNullOrEmpty(errorMsg))
+            {
+                <p>@errorMsg</p>
+            }
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Save">@SaveButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public AppIdentityUser User { get; set; } = null;
+
+    bool AddingNewUser { get; set; } = false;
+    string SaveButtonText => AddingNewUser ? "Create User" : "Save";
+
+    public class UserForm
+    {
+        [Required]
+        public string Username { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        public string Password { get; set; }
+        public string Password2 { get; set; }
+
+    }
+
+    private UserForm model = new UserForm();
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await Save();
+    }
+
+    private string selectedRole, errorMsg;
+
+    private ICollection<ApplicationRole> allRoles;
+
+    private void DisplayError( string errorText )
+    {
+        errorMsg = errorText;
+        StateHasChanged();
+    }
+
+    private void DisplayIdentityResultError(IdentityResult result)
+    {
+        if (result != null && result.Errors.Any())
+        {
+            var msg = string.Join(", ", result.Errors.Select(x => x.Description));
+            DisplayError(msg);
+        }
+    }
+
+    // TODO: Get better return values here and show errors if there are any.
+    async Task Save()
+    {
+        try
+        {
+            bool success = true;
+
+            if (AddingNewUser)
+            {
+                success = !string.IsNullOrEmpty(model.Password) && model.Password.Equals(model.Password2);
+
+                if( ! success )
+                {
+                    DisplayError("Passwords empty or do not match.");
+                }
+            }
+            else
+            {
+                // For exsiting users, handle password reset.
+                if (!string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith("*****"))
+                {
+                    success = model.Password.Equals(model.Password2);
+
+                    if (success)
+                    {
+                        var result = await userService.SetUserPasswordAsync(User, model.Password);
+
+                        success = result.Succeeded;
+
+                        if (!success)
+                            DisplayIdentityResultError(result);
+                    }
+                    else
+                    {
+                        DisplayError("Passwords do not match.");
+                    }
+                }
+            }
+
+            if( success )
+            {
+                User.UserName = model.Username;
+                User.Email = model.Email;
+
+                IdentityResult result;
+                if (AddingNewUser)
+                {
+                    result = await userService.CreateNewUser(User, model.Password);
+                }
+                else
+                {
+                    result = await userService.UpdateUserAsync(User, selectedRole);
+                }
+
+                success = result != null && result.Succeeded;
+
+                if( ! success )
+                    DisplayIdentityResultError(result);
+            }
+
+            if( success )
+                MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch( Exception ex )
+        {
+            Logging.LogError($"Exception when saving user settings: {ex}");
+            DisplayError("Unexpected error while saving user settings. Please try again.");
+        }
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Default
+            selectedRole = RoleDefinitions.s_UserRole;
+
+            allRoles = await userService.GetRoles();
+
+
+            if (User.UserRoles != null && User.UserRoles.Any())
+            {
+                var allUsers = await userService.GetUsers();
+
+                if( ! allUsers.Any() )
+                {
+                    // If there's no users yet, default to Admin
+                    selectedRole = "Admin";
+                }
+                else
+                {
+                    var role = User.UserRoles.First();
+                    selectedRole = role.Role.Name;
+                }
+
+                StateHasChanged();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if( User == null )
+        {
+            AddingNewUser = true;
+            User = new AppIdentityUser();
+        }
+
+        model.Username = User.UserName;
+        model.Email = User.Email;
+    }
+
+}

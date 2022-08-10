@@ -1,0 +1,42 @@
+﻿
+@inject SearchService searchService
+@inject ImageRecognitionService aiService
+@inject UserStatusService statusService;
+
+<div>
+    @foreach (var star in Enumerable.Range(1, 5))
+    {
+        @if (Editable)
+        {
+            <i class="@StarStyle(star)" @onclick="() => ValueChanged(star)" title="@star stars" />
+        }
+        else if( star <= Rating )
+        {
+            <i class="fas fa-star damselfly-ratingstar" title="@Rating stars" />
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Rating { get{ return proxyValue;  } set { ValueChanged( value ); } }
+
+    [Parameter]
+    public bool Editable { get; set; }
+
+    [Parameter]
+    public Func<int, Task> OnValueChanged { get; set; }
+
+    private int proxyValue = 0;
+    private string StarStyle(int star) => (star <= Rating ? "fas" : "far") + " fa-star damselfly-ratingstar damselfly-ratingstarmouse";
+
+    private void ValueChanged( int value )
+    {
+        if( proxyValue != value )
+        {
+            proxyValue = value;
+
+            _ = OnValueChanged?.Invoke(value);
+        }
+    }
+}

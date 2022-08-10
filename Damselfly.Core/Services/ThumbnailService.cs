@@ -6,8 +6,9 @@ using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
-using Damselfly.Core.Utils.Images;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Images;
 
 namespace Damselfly.Core.Services;
 
@@ -125,7 +126,7 @@ public class ThumbnailService : IProcessJobFactory
     /// <summary>
     /// This is the set of thumb resolutions that Syno PhotoStation and moments expects
     /// </summary>
-    private static ThumbConfig[] thumbConfigs = {
+    private static IThumbConfig[] thumbConfigs = {
         new ThumbConfig{ width = 2000, height = 2000, size = ThumbSize.ExtraLarge, useAsSource = true, batchGenerate = false},
         new ThumbConfig{ width = 800, height = 800, size = ThumbSize.Large, useAsSource = true },
         new ThumbConfig{ width = 640, height = 640, size = ThumbSize.Big, batchGenerate = false},
@@ -141,11 +142,11 @@ public class ThumbnailService : IProcessJobFactory
     /// <param name="ignoreExisting">Force the creation even if there's an existing file with the correct timestamp</param>
     /// <param name="altSource">If an existing thumbnail can be used as a source image, returns it</param>
     /// <returns></returns>
-    private Dictionary<FileInfo, ThumbConfig> GetThumbConfigs(FileInfo source, bool forceRegeneration, out FileInfo altSource)
+    private Dictionary<FileInfo, IThumbConfig> GetThumbConfigs(FileInfo source, bool forceRegeneration, out FileInfo altSource)
     {
         altSource = null;
 
-        var thumbFileAndConfig = new Dictionary<FileInfo, ThumbConfig>();
+        var thumbFileAndConfig = new Dictionary<FileInfo, IThumbConfig>();
 
         // First pre-check whether the thumbs exist
         foreach ( var thumbConfig in thumbConfigs.Where( x => x.batchGenerate )  )
@@ -319,7 +320,7 @@ public class ThumbnailService : IProcessJobFactory
     /// <param name="sourceImage"></param>
     /// <param name="forceRegeneration"></param>
     /// <returns></returns>
-    public async Task<ImageProcessResult> CreateThumbs(ImageMetaData sourceImage, bool forceRegeneration )
+    public async Task<IImageProcessResult> CreateThumbs(ImageMetaData sourceImage, bool forceRegeneration )
     {
         // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
         sourceImage.ThumbLastUpdated = DateTime.UtcNow;
@@ -337,7 +338,7 @@ public class ThumbnailService : IProcessJobFactory
     /// <param name="sourceImage"></param>
     /// <param name="forceRegeneration"></param>
     /// <returns></returns>
-    public async Task<ImageProcessResult> CreateThumb(int imageId)
+    public async Task<IImageProcessResult> CreateThumb(int imageId)
     {
         using var db = new ImageContext();
 
@@ -362,7 +363,7 @@ public class ThumbnailService : IProcessJobFactory
     /// <param name="image"></param>
     /// <param name="processResult"></param>
     /// <returns></returns>
-    public async Task AddHashToImage( Image image, ImageProcessResult processResult )
+    public async Task AddHashToImage( Image image, IImageProcessResult processResult )
     {
         try
         {
@@ -516,16 +517,16 @@ public class ThumbnailService : IProcessJobFactory
     /// <param name="image"></param>
     /// <param name="forceRegeneration"></param>
     /// <returns></returns>
-    public async Task<ImageProcessResult> ConvertFile(Models.Image image, bool forceRegeneration, ThumbSize size = ThumbSize.Unknown )
+    public async Task<IImageProcessResult> ConvertFile(Models.Image image, bool forceRegeneration, ThumbSize size = ThumbSize.Unknown )
     {
         var imagePath = new FileInfo(image.FullPath);
-        ImageProcessResult result = null;
+        IImageProcessResult result = null;
 
         try
         {
             if (imagePath.Exists)
             {
-                Dictionary<FileInfo, ThumbConfig> destFiles;
+                Dictionary<FileInfo, IThumbConfig> destFiles;
                 FileInfo altSource = null;
 
                 if (size == ThumbSize.Unknown)
@@ -537,7 +538,7 @@ public class ThumbnailService : IProcessJobFactory
                 {
                     var destFile = new FileInfo(GetThumbPath(imagePath, size));
                     var config = thumbConfigs.Where(x => x.size == size).FirstOrDefault();
-                    destFiles = new Dictionary<FileInfo, ThumbConfig>() { { destFile, config } };
+                    destFiles = new Dictionary<FileInfo, IThumbConfig>() { { destFile, config } };
                 }
 
                 if (altSource != null)
@@ -617,7 +618,7 @@ public class ThumbnailService : IProcessJobFactory
     {
         using var db = new ImageContext();
 
-        int updated = await ImageMetaData.UpdateFields(db, folder, "ThumbLastUpdated", "null");
+        int updated = await ImageContext.UpdateMetadataFields(db, folder, "ThumbLastUpdated", "null");
 
         if( updated != 0 )
             _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for thumbnail re-generation.";

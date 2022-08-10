@@ -1,25 +1,44 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+﻿@using Damselfly.Core.DbModels
+@using Microsoft.AspNetCore.Identity
+@using Damselfly.Core.Utils.Constants 
 
 @inject NavigationManager Navigation
-@inject SignOutSessionStateManager SignOutManager
+@inject ConfigService configService
+@inject SignInManager<AppIdentityUser> signInManager
 
-<AuthorizeView>
-    <Authorized>
-        <a href="authentication/profile">Hello, @context.User.Identity?.Name!</a>
-        <button class="nav-link btn btn-link" @onclick="BeginSignOut">Log out</button>
-    </Authorized>
-    <NotAuthorized>
-        <a href="authentication/register">Register</a>
-        <a href="authentication/login">Log in</a>
-    </NotAuthorized>
-</AuthorizeView>
-
-@code{
-    private async Task BeginSignOut(MouseEventArgs args)
-    {
-        await SignOutManager.SetSignOutState();
-        Navigation.NavigateTo("authentication/logout");
-    }
+@if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+{
+    <AuthorizeView>
+        <Authorized>
+            <div class="damselfly-statusbarpanel" title="Logged in as @context.User.Identity?.Name">
+                <i class="processing-icon fas fa-user" />
+                <NavLink href="/config">@context.User.Identity?.Name</NavLink>
+            </div>
+            <div>
+                <button class="btn btn-primary" onclick="location.href='/Identity/Account/Logout'" type="button">Log Out</button>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div>
+                <button class="btn btn-primary" onclick="location.href='/Identity/Account/Login'" type="button">Log In</button>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
 }
 
+@code{
+    /// <summary>
+    /// The below code would seem to be the right way to do this,
+    /// but not so, because of the issue here:
+    /// https://github.com/dotnet/aspnetcore/issues/13601
+    /// More discussion here.
+    /// https://github.com/dotnet/aspnetcore/issues/34095
+    /// </summary>
+    /// <returns></returns>
+    async Task BeginSignOut()
+    {
+        await signInManager.SignOutAsync();
+        Guid key = Guid.NewGuid();
+        Navigation.NavigateTo($"/Identity/Account/Logout?key={key}", true);
+    }
+}

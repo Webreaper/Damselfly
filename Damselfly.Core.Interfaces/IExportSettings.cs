@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Utils.Constants;
+﻿using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Interfaces
 {

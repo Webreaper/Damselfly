@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Components.Authorization;
-using Damselfly.Web.Data;
+using Damselfly.Web.Shared;
 using Damselfly.Core.Services;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.ScopedServices;
@@ -86,26 +86,7 @@ namespace Damselfly.Web
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
 
             services.AddImageServices();
-
-            services.AddSingleton<StatusService>();
-            services.AddSingleton<ObjectDetector>();
-            services.AddSingleton<FolderWatcherService>();
-            services.AddSingleton<IndexingService>();
-            services.AddSingleton<MetaDataService>();
-            services.AddSingleton<ThumbnailService>();
-            services.AddSingleton<ExifService>();
-            services.AddSingleton<TaskService>();
-            services.AddSingleton<FolderService>();
-            services.AddSingleton<DownloadService>();
-            services.AddSingleton<WordpressService>();
-            services.AddSingleton<AccordFaceService>();
-            services.AddSingleton<AzureFaceService>();
-            services.AddSingleton<ImageClassifier>();
-            services.AddSingleton<EmguFaceService>();
-            services.AddSingleton<ThemeService>();
-            services.AddSingleton<ImageRecognitionService>();
-            services.AddSingleton<ImageCache>();
-            services.AddSingleton<WorkService>();
+            services.AddDamselflyServices();
 
             // This needs to happen after ConfigService has been registered.
             services.AddAuthorization(config => SetupPolicies(config, services));

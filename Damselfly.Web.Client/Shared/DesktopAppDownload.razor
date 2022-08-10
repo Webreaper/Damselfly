@@ -1,0 +1,56 @@
+﻿
+@inject SearchService searchService
+@inject ImageRecognitionService aiService
+@inject UserStatusService statusService;
+
+@if (DownloadService.DesktopAppInfo.AppsAvailable)
+{
+<div>
+    <p>Download v<span />@Version of the Desktop App here:</p>
+    <div class="desktop-download-icons">
+        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
+        {
+            <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                <NavLink href="@DownloadService.DesktopAppInfo.MacOSApp">
+                    <div class="InputAddOn-field">MacOS</div>
+                </NavLink>
+                @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
+                {
+                    <NavLink href="@DownloadService.DesktopAppInfo.MacOSArmApp">
+                        <div class="InputAddOn-field">(M1)</div>
+                    </NavLink>
+                }
+            </div>
+        }
+        @if (DownloadService.DesktopAppInfo.WindowsApp != null)
+        {
+            <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                <NavLink href="@DownloadService.DesktopAppInfo.WindowsApp">
+                    <div class="InputAddOn-field">Windows</div>
+                </NavLink>
+            </div>
+        }
+        @if (DownloadService.DesktopAppInfo.LinuxApp != null)
+        {
+            <div class="InputAddOn">
+                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                <NavLink href="@DownloadService.DesktopAppInfo.LinuxApp">
+                    <div class="InputAddOn-field">Linux</div>
+                </NavLink>
+            </div>
+        }
+    </div>
+</div>
+}
+
+@code {
+    public string Version
+    {
+        get
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+    }
+}
