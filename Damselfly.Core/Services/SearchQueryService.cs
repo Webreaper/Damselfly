@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Constants;
-using Damselfly.Web.Models.Data;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.Services;
 

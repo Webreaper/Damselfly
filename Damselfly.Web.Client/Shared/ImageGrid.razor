@@ -1,6 +1,8 @@
 ﻿
 @inject SearchService searchService
 @inject APIConfigService configService
+@inject APIBasketService basketService
+@inject ILogger<ImageGrid> logger
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 @inherits ImageGridBase
@@ -263,7 +265,7 @@
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public async Task LoadMoreData()
     {
-        Logging.LogVerbose("Javscript callback triggered to load more data.");
+        logger.LogTrace("Javscript callback triggered to load more data.");
 
         await LoadData(imagesPerPage);
     }
@@ -272,7 +274,7 @@
     {
         if (!IsLoading)
         {
-            Logging.LogVerbose($"Loading {imagesToLoad} more data into image grid.");
+            logger.LogTrace($"Loading {imagesToLoad} more data into image grid.");
 
             IsLoading = true;
 

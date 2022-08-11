@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Humanizer;
 using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -152,5 +153,11 @@ public class SearchService
 
             return "No Filter";
         }
+    }
+
+    public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
+    {
+        await Task.Delay(100);
+        return new SearchResponse { MoreDataAvailable = false };
     }
 }

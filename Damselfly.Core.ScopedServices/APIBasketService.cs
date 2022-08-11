@@ -10,7 +10,9 @@ public class APIBasketService
     /// </summary>
     public List<Image> BasketImages { get; private set; } = new List<Image>();
 
-	public async Task SetBasketState( ICollection<Image> images, bool newState)
+    public event Action OnBasketChanged;
+
+    public async Task SetBasketState( ICollection<Image> images, bool newState)
 	{
 		
 	}

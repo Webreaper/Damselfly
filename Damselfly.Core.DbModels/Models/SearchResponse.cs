@@ -1,7 +1,7 @@
 ﻿using System;
 using Damselfly.Core.Models;
 
-namespace Damselfly.Web.Models.Data;
+namespace Damselfly.Core.DbModels;
 
 public class SearchResponse
 {
