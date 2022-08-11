@@ -53,20 +53,20 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="SearchQuery.FaceSearchType?" Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T="FaceSearchType?" Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Variant="UIConstants.MudVariant">
             @foreach (var choice in faceTypes)
             {
-                <MudSelectItem T="SearchQuery.FaceSearchType?" Value="@choice">
+                <MudSelectItem T="FaceSearchType?" Value="@choice">
                     @choice.ToString().Humanize()
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="SearchQuery.OrientationType?" Label="Orientation" @bind-Value="searchService.Orientation" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T="OrientationType?" Label="Orientation" @bind-Value="searchService.Orientation" Clearable="true" Variant="UIConstants.MudVariant">
             @foreach (var choice in orientationTypes)
             {
-                <MudSelectItem T="SearchQuery.OrientationType?" Value="@choice">
+                <MudSelectItem T="OrientationType?" Value="@choice">
                     @choice.ToString().Humanize()
                 </MudSelectItem>
             }
@@ -162,8 +162,8 @@
         base.OnInitialized();
     }
 
-    private List<SearchQuery.FaceSearchType> faceTypes = EnumerableExtensions.GetEnumList<SearchQuery.FaceSearchType>();
-    private List<SearchQuery.OrientationType> orientationTypes = EnumerableExtensions.GetEnumList<SearchQuery.OrientationType>();
+    private List<FaceSearchType> faceTypes = EnumerableExtensions.GetEnumList<FaceSearchType>();
+    private List<OrientationType> orientationTypes = EnumerableExtensions.GetEnumList<OrientationType>();
 
     private List<KeyValuePair<string, int>> fileSizeChoices = new List<KeyValuePair<string, int>> {
         new KeyValuePair<string, int>( "1KB", 1 ),

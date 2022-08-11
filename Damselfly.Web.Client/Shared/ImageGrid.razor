@@ -1,17 +1,12 @@
 ﻿
-@using Damselfly.Core.Models
-@inject ThumbnailService thumbService
-@inject UserStatusService statusService
-@inject BasketService basketService
 @inject SearchService searchService
-@inject ImageCache imageCache
-@inject UserConfigService configService
+@inject APIConfigService configService
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 @inherits ImageGridBase
 
-@using Damselfly.Web.Shared
 @using Damselfly.Core.Utils.Constants
+@using Damselfly.Web.Client.Shared
 
 <LocalFileExporter @ref="FileExporter" />
 <ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" />
@@ -98,7 +93,6 @@
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
     string toastClass = string.Empty;
-    private EventConflator conflator = new EventConflator(2000);
     private ScrollMonitor ScrollMonitor;
 
     [Parameter]
@@ -112,14 +106,14 @@
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
-        await basketService.SetBasketState(grouping.Images, true);
-        statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
+       // await basketService.SetBasketState(grouping.Images, true);
+       // statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
     }
 
     async Task RemoveGroupFromBasket(ImageGrouping grouping)
     {
-        await basketService.SetBasketState(grouping.Images, false);
-        statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+       // await basketService.SetBasketState(grouping.Images, false);
+       // statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
     }
 
     void SelectGroup(ImageGrouping grouping)
@@ -137,11 +131,11 @@
         get
         {
             // TODO: Order by
-            if (searchService.Grouping == SearchQuery.GroupingType.Folder)
+            if (searchService.Grouping == GroupingType.Folder)
             {
                 var result = gridImages.GroupBy(x => x.Folder.Path);
 
-                if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+                if (searchService.SortOrder == SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -149,11 +143,11 @@
                 return result.Select(x => new ImageGrouping { Key = x.Key, Images = x.ToList() })
                             .ToList();
             }
-            else if (searchService.Grouping == SearchQuery.GroupingType.Date)
+            else if (searchService.Grouping == GroupingType.Date)
             {
                 var result = gridImages.GroupBy(x => x.SortDate.Date);
 
-                if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+                if (searchService.SortOrder == SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -167,17 +161,17 @@
 
     }
 
-    private void ChangeGroupType(SearchQuery.GroupingType newType)
+    private void ChangeGroupType(GroupingType newType)
     {
         searchService.Grouping = newType;
-        Logging.Log($"Grouping changed to {searchService.Grouping}");
+        //Logging.Log($"Grouping changed to {searchService.Grouping}");
         StateHasChanged();
     }
 
-    private void ChangeSortOrder(SearchQuery.SortOrderType newType)
+    private void ChangeSortOrder(SortOrderType newType)
     {
         searchService.SortOrder = newType;
-        Logging.Log($"Sort order changed to {searchService.SortOrder}");
+        //Logging.Log($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
 
@@ -208,13 +202,13 @@
         {
             selectionService.OnSelectionChanged += SelectedImagesChanged;
             searchService.OnSearchChanged += SearchQueryChanged;
-            FileExporter.OnChange += StateHasChanged;
-            basketService.OnBasketChanged += BasketChanged;
+            //FileExporter.OnChange += StateHasChanged;
+            //basketService.OnBasketChanged += BasketChanged;
             ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
 
             int initialLoadCount = Math.Max(configService.GetInt("LoadedImages", imagesPerPage), imagesPerPage);
 
-            Logging.Log($"Loading {initialLoadCount} images into grid.");
+            //Logging.Log($"Loading {initialLoadCount} images into grid.");
             await LoadData(initialLoadCount);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));

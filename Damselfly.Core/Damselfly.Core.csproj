@@ -50,6 +50,8 @@
     <ProjectReference Include="..\Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj" />
     <ProjectReference Include="..\Damselfly.ML.EmguFace\Damselfly.ML.EmguFace.csproj" />
     <ProjectReference Include="..\Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj" />
+    <ProjectReference Include="..\Damselfly.Web.Utils\Damselfly.Web.Utils.csproj" />
+    <ProjectReference Include="..\Damselfly.Web.Shared\Damselfly.Web.Models.csproj" />
 </ItemGroup>
   <ItemGroup>
     <None Remove="Microsoft.AspNetCore.Components.Authorization" />

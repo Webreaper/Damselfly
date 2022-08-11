@@ -1,22 +1,14 @@
 ﻿@page "/"
 
-@using Damselfly.Web.Data
-@using Damselfly.Core.Services;
-@using Damselfly.Core.Utils.Images
+@using Damselfly.Core.Constants
+@using Damselfly.Web.Extensions
 
 @implements IDisposable
 
-@inject ThumbnailService thumbService
-@inject ViewDataService ViewDataService
-@inject MetaDataService metadataService
-@inject NavigationService navContext
-@inject SearchService searchService
-@inject UserStatusService statusService
 @inject NavigationManager navigationManager
 
 <div class="damselfly-imagebrowser">
-    <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
-    <ImageGrid CurrentThumbSize="@thumbSize"/>
+    <ImageGrid CurrentThumbSize="@thumbSize" />
 </div>
 
 @code
@@ -41,7 +33,7 @@
 
     private ThumbSize thumbSize { get; set; }
 
-    private void ThumbSizeChanged( ThumbSize newSize )
+    private void ThumbSizeChanged(ThumbSize newSize)
     {
         thumbSize = newSize;
         StateHasChanged();
@@ -49,9 +41,10 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await ApplyQueryParams();
+        //await ApplyQueryParams();
     }
 
+    /*
     private async Task ApplyQueryParams()
     {
         if( ! string.IsNullOrEmpty( S ) )
@@ -103,6 +96,7 @@
         // Don't need this yet
         //this.UpdateQueryString(navigationManager);
     }
+    */
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -114,12 +108,13 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        /*
         navContext.CurrentImage = null;
 
         ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
 
         navigationManager.LocationChanged += HandleLocationChanged;
-
+        */
     }
 
     void HandleLocationChanged(object sender, LocationChangedEventArgs e)
@@ -127,7 +122,7 @@
         this.SetParametersFromQueryString(navigationManager);
         StateHasChanged();
 
-        _ = ApplyQueryParams();
+        //_ = ApplyQueryParams();
     }
 
     public void Dispose()
@@ -140,7 +135,7 @@
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public void GetUpdateState(string clientVersion)
     {
-        Logging.Log($"Checking for update: {clientVersion}");
+        //Logging.Log($"Checking for update: {clientVersion}");
 
     }
 }

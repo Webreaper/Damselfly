@@ -96,7 +96,7 @@ namespace Damselfly.Web
             services.AddScoped<NavigationService>();
             services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
-            services.AddScoped<SearchService>();
+            services.AddScoped<SearchQueryService>();
 
             services.AddUserServices();
         }

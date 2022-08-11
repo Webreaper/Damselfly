@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Models;
 
@@ -10,35 +11,6 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class SearchQuery
 {
-    public enum SortOrderType
-    {
-        Ascending,
-        Descending
-    };
-
-    public enum GroupingType
-    {
-        None,
-        Folder,
-        Date
-    };
-
-    public enum FaceSearchType
-    {
-        Faces,
-        NoFaces,
-        IdentifiedFaces,
-        UnidentifiedFaces
-    }
-
-    public enum OrientationType
-    {
-        Landscape,
-        Portrait,
-        Panorama,
-        Square
-    }
-
     public string SearchText { get; set; } = string.Empty;
     public bool TagsOnly { get; set; } = false;
     public bool IncludeAITags { get; set; } = true;

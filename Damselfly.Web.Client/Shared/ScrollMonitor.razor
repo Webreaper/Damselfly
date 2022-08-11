@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Damselfly.Core.Utils.Constants
 
-@inject UserConfigService configService
+@inject APIConfigService configService 
 @inject IJSRuntime JsRuntime
 
 @code{
@@ -20,7 +20,8 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        Logging.LogVerbose($"Saving scroll position to {scrollTop}");
+        // WASM: Fix logging
+        // Logging.LogVerbose($"Saving scroll position to {scrollTop}");
         configService.Set(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);
@@ -34,7 +35,8 @@
 
             try
             {
-                Logging.LogVerbose($"Data loaded - initialising scroll position to {scrollPos}");
+                // WASM
+                // Logging.LogVerbose($"Data loaded - initialising scroll position to {scrollPos}");
                 await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
             }
             catch (TaskCanceledException)
@@ -42,7 +44,8 @@
             }
             catch (Exception ex)
             {
-                Logging.LogError($"Exception restoring scroll position: {ex.Message}");
+                // WASM
+                // Logging.LogError($"Exception restoring scroll position: {ex.Message}");
             }
         }
     }

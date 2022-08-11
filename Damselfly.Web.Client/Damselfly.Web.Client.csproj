@@ -20,6 +20,7 @@
     <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
     <PackageReference Include="FluentValidation" Version="11.2.0" />
+    <PackageReference Include="Humanizer" Version="2.14.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,10 +33,27 @@
     <None Remove="Blazored.Typeahead" />
     <None Remove="Blazored.FluentValidation" />
     <None Remove="FluentValidation" />
+    <None Remove="Humanizer" />
+    <None Remove="Shared\Dialogs\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Web.Shared\Damselfly.Web.Models.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Web.Utils\Damselfly.Web.Utils.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shared\Dialogs\" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,13 @@
 ﻿
 @using Damselfly.Core.Models
+@using Damselfly.Web.Utils
+
 @inject ThumbnailService thumbService
 @inject UserStatusService statusService
 @inject BasketService basketService
 @inject SearchService searchService
+@inject SearchQueryService searchQueryService
+
 @inject ImageCache imageCache
 @inject UserConfigService configService
 @inject IJSRuntime JsRuntime
@@ -137,11 +141,11 @@
         get
         {
             // TODO: Order by
-            if (searchService.Grouping == SearchQuery.GroupingType.Folder)
+            if (searchService.Grouping == GroupingType.Folder)
             {
                 var result = gridImages.GroupBy(x => x.Folder.Path);
 
-                if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+                if (searchService.SortOrder == SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -149,11 +153,11 @@
                 return result.Select(x => new ImageGrouping { Key = x.Key, Images = x.ToList() })
                             .ToList();
             }
-            else if (searchService.Grouping == SearchQuery.GroupingType.Date)
+            else if (searchService.Grouping == GroupingType.Date)
             {
                 var result = gridImages.GroupBy(x => x.SortDate.Date);
 
-                if (searchService.SortOrder == SearchQuery.SortOrderType.Descending)
+                if (searchService.SortOrder == SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -167,14 +171,14 @@
 
     }
 
-    private void ChangeGroupType(SearchQuery.GroupingType newType)
+    private void ChangeGroupType(GroupingType newType)
     {
         searchService.Grouping = newType;
         Logging.Log($"Grouping changed to {searchService.Grouping}");
         StateHasChanged();
     }
 
-    private void ChangeSortOrder(SearchQuery.SortOrderType newType)
+    private void ChangeSortOrder(SortOrderType newType)
     {
         searchService.SortOrder = newType;
         Logging.Log($"Sort order changed to {searchService.SortOrder}");
@@ -283,7 +287,9 @@
             IsLoading = true;
 
             ChangeThumbSize(CurrentThumbSize);
-            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+
+            var query = searchService.Query;
+            var response = await searchQueryService.GetQueryImagesAsync(query, gridImages.Count(), imagesToLoad);
 
             if (response.SearchResults.Any())
             {

@@ -1,13 +1,11 @@
 ﻿
-@inject ThumbnailService thumbService
 @inject NavigationManager NavigationManager
-@inject NavigationService navContext
 @inject ContextMenuService contextMenuService
-@inject BasketService basketService
-@inject ImageRecognitionService aiService
 @inject SelectionService selectionService
-@inject DownloadService downloadService
 @inject SearchService searchService
+@inject NavigationService navContext
+@inject APIBasketService basketService
+@inject APIDownloadService downloadService
 @inject IDialogService DialogService
 
 @inject IJSRuntime JsRuntime
@@ -16,17 +14,17 @@
 
 @if (CurrentImage == null)
 {
-<p><em>Loading image...</em></p> }
+    <p><em>Loading image...</em></p> }
 else
 {
     <div class="grid-image" @ondblclick="NavigateToImage">
-         @if( !string.IsNullOrEmpty(ImageUrl) )
-         {
+        @if (!string.IsNullOrEmpty(ImageUrl))
+        {
             <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
-                    @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
-         }
+        }
     </div>
     @if (DisplayFileName)
     {
@@ -68,7 +66,8 @@ else
 
     private async Task SetBasketState(bool newState)
     {
-        await basketService.SetBasketState(new[] { CurrentImage }, newState);
+        // WASM: Fix later
+        // await basketService.SetBasketState(new[] { CurrentImage }, newState);
 
         // Notify the image list that the selection has changed
         StateHasChanged();
@@ -104,7 +103,7 @@ else
                 {
                     <RadzenMenuItem Text="Find Similar Images (Experimental)" Value="6" />
                 }
-                    <hr class="separator">
+                <hr class="separator">
                 @if (InBasket)
                 {
                     <RadzenMenuItem Text="Remove from basket" Value="2" />
@@ -119,7 +118,7 @@ else
                         <RadzenMenuItem Text="Save Locally" Value="4" />
                     </AuthorizeView>
                 }
-               
+
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
                     <RadzenMenuItem Text="Refresh" Value="5" />
                 </AuthorizeView>
@@ -131,14 +130,14 @@ private ICollection<Image> ContextSelection
 {
 get
 {
-   if (selectionService.Selection.Any())
-   {
-       return selectionService.Selection;
-   }
-   else
-   {
-       return new List<Image> { CurrentImage };
-   }
+if (selectionService.Selection.Any())
+{
+return selectionService.Selection;
+}
+else
+{
+return new List<Image> { CurrentImage };
+}
 }
 }
 
@@ -147,13 +146,13 @@ async Task OnMenuItemClick(MenuItemEventArgs args)
 contextMenuService.Close();
 switch (args.Value)
 {
-   case 0: NavigateToImage(); break;
-   case 1: await DownloadImage(); break;
-   case 2: await basketService.SetBasketState(ContextSelection, false); break;
-   case 3: await basketService.SetBasketState(ContextSelection, true); break;
-   case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
-   case 5: await ShowRescanDialog(); break;
-   case 6: FindImageSimilarTo(); break;
+case 0: NavigateToImage(); break;
+case 1: await DownloadImage(); break;
+case 2: await basketService.SetBasketState(ContextSelection, false); break;
+case 3: await basketService.SetBasketState(ContextSelection, true); break;
+case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection, IndexingService.RootFolder); break;
+case 5: await ShowRescanDialog(); break;
+case 6: FindImageSimilarTo(); break;
 }
 }
 
@@ -174,19 +173,19 @@ public async Task DownloadImage()
 {
 try
 {
-   string downloadFile = CurrentImage.DownloadImageUrl;
+string downloadFile = CurrentImage.DownloadImageUrl;
 
-   if (selectionService.Selection.Count() > 1)
-   {
-       var config = new ExportConfig { KeepFolders = true };
-       downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection, config);
-   }
+if (selectionService.Selection.Count() > 1)
+{
+var config = new ExportConfig { KeepFolders = true };
+downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection, config);
+}
 
-   await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
+await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
 }
 catch (Exception ex)
 {
-   Logging.LogError("Exception: " + ex.Message);
+Logging.LogError("Exception: " + ex.Message);
 }
 }
 

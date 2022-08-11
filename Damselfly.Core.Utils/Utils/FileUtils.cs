@@ -49,21 +49,6 @@ namespace Damselfly.Core.Utils
         }
 
         /// <summary>
-        /// Little wrapper for managing relative paths without trailing slashes.
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="root"></param>
-        /// <returns></returns>
-        public static string MakePathRelativeTo(this string path, string root)
-        {
-            if (!root.EndsWith(Path.DirectorySeparatorChar))
-                root += Path.DirectorySeparatorChar;
-
-            var result = Path.GetRelativePath(root, path);
-            return result;
-        }
-
-        /// <summary>
         /// Predicate to filter out unwanted folders. We don't care about
         /// folders which are hidden (including .folder) and we don't want
         /// to look at @eaDir folders on Synology.

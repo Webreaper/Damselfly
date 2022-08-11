@@ -1,4 +1,6 @@
-﻿<div class="SearchBox">
+﻿@using Damselfly.Web.Utils
+
+<div class="SearchBox">
     <div class="SearchFieldIcon" title="@placeholder"><i class="fa @IconClass" /></div>
     <input class="SearchField" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
     @if (CanClear)
@@ -40,7 +42,7 @@
 
     private void HandleChange(string newValue)
     {
-        if( tempValue != newValue )
+        if (tempValue != newValue)
         {
             if (OnKeyPressed != null)
                 OnKeyPressed(newValue);

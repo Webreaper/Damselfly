@@ -1,6 +1,4 @@
 ﻿
-@inject BasketService basketService
-@inject ViewDataService ViewDataService
 @inject UserStatusService statusService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
@@ -15,21 +13,18 @@
         OnChange?.Invoke();
     }
 
-    public async Task ExportBasketToLocalFilesystem()
+    public async Task ExportImagesToLocalFilesystem(ICollection<Image> images, string rootFolder)
     {
-        await ExportToLocalFS(basketService.BasketImages);
-    }
-
-    public async Task ExportImagesToLocalFilesystem(ICollection<Image> images)
-    {
-        await ExportToLocalFS( images );
+        await ExportToLocalFS( images, rootFolder );
     }
 
     /// <summary>
     /// Do the actual export
     /// </summary>
+    /// <param name="images">Collection of images</param>
+    /// <param name="rootFolder">The root folder to which they should be relative</param>
     /// <returns></returns>
-    private async Task ExportToLocalFS(ICollection<Image> images)
+    private async Task ExportToLocalFS(ICollection<Image> images, string rootFolder)
     {
         if (IsDesktopHosted)
         {
@@ -42,7 +37,7 @@
                 // Image folder is fully qualified, so we need to make it relative to the pictures folder
                 // The electron container will use its local settings to create the full path of where
                 // the image will be written locally on the client-side
-                string localPath = image.FullPath.MakePathRelativeTo(IndexingService.RootFolder);
+                string localPath = image.FullPath.MakePathRelativeTo(rootFolder);
 
                 statusService.StatusText = $"Writing {image.FileName} to {localPath}...";
 
