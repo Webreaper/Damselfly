@@ -1,9 +1,10 @@
 ﻿using System;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class APIBasketService
+public class APIBasketService : IBasketService
 {
     /// <summary>
     /// The list of selected images in the basket

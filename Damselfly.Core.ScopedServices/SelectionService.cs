@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 

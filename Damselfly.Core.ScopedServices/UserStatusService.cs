@@ -2,6 +2,7 @@
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 

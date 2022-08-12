@@ -1,5 +1,6 @@
 ﻿using System;
 using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
@@ -38,14 +39,17 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddUserServices( this IServiceCollection services )
 	{
-        return services.AddScoped<UserFolderService>()
-                       .AddScoped<UserService>()
-                       .AddScoped<UserStatusService>()
-                       .AddScoped<UserConfigService>()
-                       .AddScoped<ViewDataService>()
-                       .AddScoped<UserThemeService>()
-                       .AddScoped<UserTagFavouritesService>();
+        services.AddScoped<UserFolderService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<UserStatusService>();
+        services.AddScoped<UserConfigService>();
+        services.AddScoped<ViewDataService>();
+        services.AddScoped<UserThemeService>();
+        services.AddScoped<UserTagFavouritesService>();
 
+        services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
+
+        return services;
     }
 }
 

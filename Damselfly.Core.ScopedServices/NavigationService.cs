@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -21,10 +22,10 @@ public class NavigationService
 
     public NavigationContexts Context { get; set; } = NavigationContexts.Search;
     public Image CurrentImage { get { return theImage; } set { theImage = value; NotifyStateChanged( theImage ); } }
-    private readonly APIBasketService _basketService;
+    private readonly IBasketService _basketService;
     private readonly SearchService _searchService;
 
-    public NavigationService( APIBasketService basketService, SearchService searchService)
+    public NavigationService( IBasketService basketService, SearchService searchService)
     {
         _basketService = basketService;
         _searchService = searchService;

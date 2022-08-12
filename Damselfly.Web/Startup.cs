@@ -33,6 +33,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Web
 {
@@ -81,10 +82,10 @@ namespace Damselfly.Web
             services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
             services.AddSingleton(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
-            services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
-
             services.AddSingleton<ConfigService>();
+
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+            services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
             services.AddImageServices();
             services.AddDamselflyServices();
@@ -98,6 +99,9 @@ namespace Damselfly.Web
             services.AddScoped<SelectionService>();
             services.AddScoped<ContextMenuService>();
             services.AddScoped<SearchQueryService>();
+            services.AddScoped<SearchService>();
+
+            services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
 
             services.AddUserServices();
         }

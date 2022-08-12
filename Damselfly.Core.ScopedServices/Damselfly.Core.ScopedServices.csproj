@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
     <ProjectReference Include="..\Damselfly.Web.Utils\Damselfly.Web.Utils.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Interfaces\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
 </Project>

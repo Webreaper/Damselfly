@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Damselfly.Core.Interfaces
+namespace Damselfly.Core.ScopedServices.Interfaces
 {
     public interface IStatusService
     {

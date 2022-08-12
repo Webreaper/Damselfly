@@ -1,5 +1,6 @@
 ﻿using System;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services;
