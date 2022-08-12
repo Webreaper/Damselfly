@@ -10,8 +10,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.ScopedServices;
-using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -19,13 +19,13 @@ public class SearchQueryService
 {
     public List<Image> SearchResults { get; private set; } = new List<Image>();
 
-    private readonly UserStatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
-    private readonly UserConfigService _configService;
+    private readonly IConfigService _configService;
     private readonly MetaDataService _metadataService;
 
-    public SearchQueryService(UserStatusService statusService, ImageCache cache,
-                            MetaDataService metadataService, UserConfigService configService)
+    public SearchQueryService(IStatusService statusService, ImageCache cache,
+                            MetaDataService metadataService, IConfigService configService)
     {
         _configService = configService;
         _statusService = statusService;

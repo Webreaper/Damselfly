@@ -1,4 +1,6 @@
 ﻿using System;
+using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -13,9 +15,27 @@ namespace Damselfly.Core.Utils;
 
 public static class ServiceRegistrations
 {
+    public static IServiceCollection AddMLServices(this IServiceCollection services)
+    {
+        services.AddSingleton(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
+        services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
+
+        services.AddSingleton<AccordFaceService>();
+        services.AddSingleton<AzureFaceService>();
+        services.AddSingleton<ImageClassifier>();
+        services.AddSingleton<EmguFaceService>();
+
+        return services;
+    }
+
     public static IServiceCollection AddBackEndServices(this IServiceCollection services)
     {
+        services.AddSingleton<ConfigService>();
+        services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+
         services.AddSingleton<StatusService>();
+        services.AddSingleton<IStatusService>(x => x.GetRequiredService<StatusService>());
+
         services.AddSingleton<ObjectDetector>();
         services.AddSingleton<FolderWatcherService>();
         services.AddSingleton<IndexingService>();
@@ -26,14 +46,19 @@ public static class ServiceRegistrations
         services.AddSingleton<FolderService>();
         services.AddSingleton<DownloadService>();
         services.AddSingleton<WordpressService>();
-        services.AddSingleton<AccordFaceService>();
-        services.AddSingleton<AzureFaceService>();
-        services.AddSingleton<ImageClassifier>();
-        services.AddSingleton<EmguFaceService>();
         services.AddSingleton<ThemeService>();
         services.AddSingleton<ImageRecognitionService>();
         services.AddSingleton<ImageCache>();
         services.AddSingleton<WorkService>();
+        return services;
+    }
+
+    public static IServiceCollection AddHostedBlazorBackEndServices( this IServiceCollection services )
+    {
+        services.AddBackEndServices();
+
+        services.AddSingleton<SearchQueryService>();
+
         return services;
     }
 

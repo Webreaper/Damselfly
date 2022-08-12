@@ -1,6 +1,7 @@
-﻿using Damselfly.Core.Models;
+﻿using Damselfly.Core.DbModels;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
-using Damselfly.Web.Client.Shared;
+using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
@@ -8,27 +9,27 @@ using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-[Authorize]
+// TODO: WASM: [Authorize]
 [ApiController]
-[Route("[controller]")]
-public class ImageController : ControllerBase
+[Route("/api/search")]
+public class ImageSearchController : ControllerBase
 {
-    [Inject]
-    protected SearchService searchService { get; set; }
+    private readonly SearchQueryService _searchService;
 
-    private readonly ILogger<ImageController> _logger;
+    private readonly ILogger<ImageSearchController> _logger;
 
-    public ImageController( ILogger<ImageController> logger)
+    public ImageSearchController( SearchQueryService searchService, ILogger<ImageSearchController> logger)
     {
+        _searchService = searchService;
         _logger = logger;
+        _logger.LogInformation($"Initialised ImageSearch controller");
     }
 
     [HttpGet]
-    public async Task<IEnumerable<Image>> Get()
+    public async Task<SearchResponse> Get()
     {
-        var response = await searchService.GetQueryImagesAsync(1, 100);
-
-        return response.SearchResults;
+        var query = new SearchQuery();
+        return await _searchService.GetQueryImagesAsync(query, 1, 100);
     }
 }
 

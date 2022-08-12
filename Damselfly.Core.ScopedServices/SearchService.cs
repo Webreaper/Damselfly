@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Humanizer;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
+using static System.Net.WebRequestMethods;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Http.Json;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -20,6 +23,13 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class SearchService
 {
+    private HttpClient httpClient;
+
+    public SearchService(HttpClient httpclient )
+    {
+        httpClient = httpclient;
+    }
+
     private readonly SearchQuery query = new SearchQuery();
     public List<Image> SearchResults { get; private set; } = new List<Image>();
 
@@ -156,7 +166,7 @@ public class SearchService
 
     public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
     {
-        await Task.Delay(100);
-        return new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
+        //return new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
+        return await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
     }
 }

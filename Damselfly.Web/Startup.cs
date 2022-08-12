@@ -82,14 +82,12 @@ namespace Damselfly.Web
             // we'll get a different instance the next time we send email. 
             services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
-            services.AddSingleton(new TransThrottle(CloudTransaction.TransactionType.AzureFace));
-            services.AddSingleton<ConfigService>();
-
             services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
             services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
             services.AddImageServices();
             services.AddBackEndServices();
+            services.AddMLServices();
 
             // Radzen
             services.AddScoped<ContextMenuService>();

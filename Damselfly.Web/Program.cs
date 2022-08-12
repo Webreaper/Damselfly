@@ -168,6 +168,7 @@ namespace Damselfly.Web
             }
 
         }
+
         /// <summary>
         /// Main entry point. Creates a bunch of services, and then kicks off
         /// the webserver, which is a blocking call (since it's the dispatcher
