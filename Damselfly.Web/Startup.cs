@@ -89,7 +89,7 @@ namespace Damselfly.Web
             services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
             services.AddImageServices();
-            services.AddDamselflyServices();
+            services.AddBackEndServices();
 
             // Radzen
             services.AddScoped<ContextMenuService>();
@@ -99,7 +99,7 @@ namespace Damselfly.Web
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
 
-            services.AddUserServices();
+            services.AddBlazorServerUIServices();
         }
 
         private void SetupPolicies(AuthorizationOptions config, IServiceCollection services)

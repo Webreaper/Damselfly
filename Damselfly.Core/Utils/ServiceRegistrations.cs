@@ -13,7 +13,7 @@ namespace Damselfly.Core.Utils;
 
 public static class ServiceRegistrations
 {
-    public static IServiceCollection AddDamselflyServices(this IServiceCollection services)
+    public static IServiceCollection AddBackEndServices(this IServiceCollection services)
     {
         services.AddSingleton<StatusService>();
         services.AddSingleton<ObjectDetector>();
@@ -37,19 +37,23 @@ public static class ServiceRegistrations
         return services;
     }
 
-    public static IServiceCollection AddUserServices( this IServiceCollection services )
+    public static IServiceCollection AddBlazorServerUIServices( this IServiceCollection services )
 	{
+        services.AddScoped<SearchService>();
         services.AddScoped<SearchQueryService>();
+        services.AddScoped<NavigationService>();
         services.AddScoped<BasketService>();
         services.AddScoped<UserFolderService>();
         services.AddScoped<UserService>();
         services.AddScoped<UserStatusService>();
+        services.AddScoped<SelectionService>();
         services.AddScoped<UserConfigService>();
         services.AddScoped<ViewDataService>();
         services.AddScoped<UserThemeService>();
         services.AddScoped<UserTagFavouritesService>();
 
         services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
+        services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
 
         return services;
     }
