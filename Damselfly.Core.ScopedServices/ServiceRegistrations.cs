@@ -11,6 +11,7 @@ public static class ServiceRegistrations
     {
         services.AddScoped<CachedDataService>();
         services.AddScoped<APIBasketService>();
+        services.AddScoped<APIDownloadService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<SearchService>();
         services.AddScoped<APIConfigService>();
@@ -20,6 +21,7 @@ public static class ServiceRegistrations
 
         services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<APIBasketService>());
+        services.AddScoped<IDownloadService>(x => x.GetRequiredService<APIDownloadService>());
 
         services.AddScoped<SelectionService>();
 

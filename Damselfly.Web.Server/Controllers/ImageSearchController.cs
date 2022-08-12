@@ -29,7 +29,7 @@ public class ImageSearchController : ControllerBase
     public async Task<SearchResponse> Get()
     {
         var query = new SearchQuery();
-        return await _searchService.GetQueryImagesAsync(query, 1, 100);
+        return await _searchService.GetQueryImagesAsync(query, 0, 100);
     }
 }
 

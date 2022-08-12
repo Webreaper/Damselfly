@@ -7,6 +7,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Collections.Generic;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -17,7 +18,7 @@ namespace Damselfly.Core.Services;
 /// download. The service can also perform transforms on the images before they're
 /// zipped for download, such as resizing, rotations, watermarking etc.
 /// </summary>
-public class DownloadService
+public class DownloadService : IDownloadService
 {
     public class DesktopAppPaths
     {

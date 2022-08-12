@@ -21,6 +21,8 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.Interfaces;
 using Microsoft.Extensions.FileProviders;
 using Syncfusion.Licensing;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace Damselfly.Web;
 
@@ -197,13 +199,15 @@ public class Program
         builder.Services.AddAuthentication()
             .AddIdentityServerJwt();
 
-        builder.Services.AddControllersWithViews();
+        builder.Services.AddControllersWithViews()
+                .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
         builder.Services.AddRazorPages();
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
         builder.Services.AddMLServices();
+
         var app = builder.Build();
 
         var configService = app.Services.GetRequiredService<ConfigService>();
