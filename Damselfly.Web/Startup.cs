@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Components.Authorization;
-using Damselfly.Web.Shared;
 using Damselfly.Core.Services;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.ScopedServices;
@@ -150,7 +149,11 @@ namespace Damselfly.Web
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigService configService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ConfigService configService,
+            DownloadService download, TaskService tasks, ThumbnailService thumbService, ExifService exifService,
+            ImageCache imageCache, ImageProcessService imageService, AzureFaceService azureService, IndexingService indexingService,
+            ImageRecognitionService aiService, ObjectDetector objectDetector, ThemeService themeService, WorkService workService,
+            MetaDataService metaDataService, UserService userService)
         {
             SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
 
@@ -199,8 +202,37 @@ namespace Damselfly.Web
                 endpoints.MapFallbackToPage("/_Host");
             });
 
-            // TODO Blah
-            // env.SetupServices(app.Services);
+
+            // Prime the cache
+            imageCache.WarmUp().Wait();
+
+            // TODO: Save this in ConfigService
+            string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
+
+            // TODO: Fix this, or not if Skia doesn't need it
+            imageService.SetContentPath(contentRootPath);
+            download.SetDownloadPath(contentRootPath);
+            themeService.SetContentPath(contentRootPath);
+
+            // Start the work processing queue for AI, Thumbs, etc
+            workService.StartService();
+
+            // Start the face service before the thumbnail service
+            azureService.StartService().Wait();
+            metaDataService.StartService();
+            indexingService.StartService();
+            aiService.StartService();
+
+            // ObjectDetector can throw a segmentation fault if the docker container is pinned
+            // to a single CPU, so for now, to aid debugging, let's not even try and initialise
+            // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
+            if (!configService.GetBool(ConfigSettings.DisableObjectDetector, false))
+                objectDetector.InitScorer();
+
+            // Validation check to ensure at least one user is an Admin
+            userService.CheckAdminUser().Wait();
+
+            StartTaskScheduler(tasks, download, thumbService, exifService);
 
             Logging.StartupCompleted();
             Logging.Log("Starting Damselfly webserver...");

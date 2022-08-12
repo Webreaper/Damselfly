@@ -26,41 +26,7 @@ public static class AppInitialiser
     /// <param name="env"></param>
     public static void SetupServices(this IWebHostEnvironment env, IServiceProvider services)
     {
-        var download = services.GetRequiredService<DownloadService>();
-        var tasks = services.GetRequiredService<TaskService>();
-        var thumbService = services.GetRequiredService<ThumbnailService>();
-        var exifService = services.GetRequiredService<ExifService>();
 
-        // Prime the cache
-        services.GetRequiredService<ImageCache>().WarmUp().Wait();
-
-        // TODO: Save this in ConfigService
-        string contentRootPath = Path.Combine(env.ContentRootPath, "wwwroot");
-
-        // TODO: Fix this, or not if Skia doesn't need it
-        services.GetRequiredService<ImageProcessService>().SetContentPath(contentRootPath);
-        download.SetDownloadPath(contentRootPath);
-        services.GetRequiredService<ThemeService>().SetContentPath(contentRootPath);
-
-        // Start the work processing queue for AI, Thumbs, etc
-        services.GetRequiredService<WorkService>().StartService();
-
-        // Start the face service before the thumbnail service
-        services.GetRequiredService<AzureFaceService>().StartService().Wait();
-        services.GetRequiredService<MetaDataService>().StartService();
-        services.GetRequiredService<IndexingService>().StartService();
-        services.GetRequiredService<ImageRecognitionService>().StartService();
-
-        // ObjectDetector can throw a segmentation fault if the docker container is pinned
-        // to a single CPU, so for now, to aid debugging, let's not even try and initialise
-        // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
-        if (!services.GetRequiredService<ConfigService>().GetBool(ConfigSettings.DisableObjectDetector, false))
-            services.GetRequiredService<ObjectDetector>().InitScorer();
-
-        // Validation check to ensure at least one user is an Admin
-        services.GetRequiredService<UserService>().CheckAdminUser().Wait();
-
-        StartTaskScheduler(tasks, download, thumbService, exifService);
     }
 
 
