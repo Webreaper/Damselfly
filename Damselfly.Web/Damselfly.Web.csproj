@@ -43,6 +43,9 @@
     <ProjectReference Include="..\Damselfly.Web.Shared\Damselfly.Web.Models.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\downloads\" />
@@ -54,18 +57,6 @@
     <Folder Include="wwwroot\objectrects\" />
     <Folder Include="Pages\Shared\" />
     <Folder Include="Shared\Dialogs\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="config\" />
-    <None Remove="Microsoft.EntityFrameworkCore.Tools" />
-    <None Remove="Microsoft.AspNetCore.Identity.UI" />
-    <None Remove="Pages\Shared\" />
-    <None Remove="Microsoft.AspNetCore.WebUtilities" />
-    <None Remove="ExCSS" />
-    <None Remove="FisSst.BlazorMaps" />
-    <None Remove="Syncfusion.Blazor.Maps" />
-    <None Remove="Shared\Dialogs\" />
-    <None Remove="Microsoft.AspNetCore.Components.QuickGrid" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="Shared\Images\ImagePropertyField.razor" />

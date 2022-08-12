@@ -11,6 +11,7 @@ using Damselfly.Core.DbModels;
 using static System.Net.WebRequestMethods;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net.Http.Json;
+using System.Net.Http;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -25,9 +26,9 @@ public class SearchService
 {
     private HttpClient httpClient;
 
-    public SearchService(HttpClient httpclient )
+    public SearchService(HttpClient client )
     {
-        httpClient = httpclient;
+        httpClient = client;
     }
 
     private readonly SearchQuery query = new SearchQuery();

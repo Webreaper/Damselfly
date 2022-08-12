@@ -17,6 +17,10 @@ using System.Runtime.InteropServices;
 using Damselfly.Core.DbModels.Interfaces;
 using Damselfly.Migrations.Sqlite.Models;
 using Damselfly.Migrations.Postgres.Models;
+using Damselfly.Core.Constants;
+using Damselfly.Core.Interfaces;
+using Microsoft.Extensions.FileProviders;
+using Syncfusion.Licensing;
 
 namespace Damselfly.Web;
 
@@ -49,7 +53,7 @@ public class Program
         public bool ReadOnly { get; set; }
 
         [Option("port", HelpText = "Port for Webserver (default = 6363)", Required = false)]
-        public int Port { get; set; }
+        public int Port { get; set; } = s_defaultPort;
 
         [Option("syno", Required = false, HelpText = "Use native Synology thumbnail structure.")]
         public bool Synology { get; set; }
@@ -200,8 +204,14 @@ public class Program
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
         builder.Services.AddMLServices();
-
         var app = builder.Build();
+
+        var configService = app.Services.GetRequiredService<ConfigService>();
+        var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
+
+        Logging.ChangeLogLevel(logLevel);
+
+        SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -216,7 +226,16 @@ public class Program
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
+        // Disable this for now
+        // app.UseHttpsRedirection();
+
+        // TODO: Do we need this if we serve all the images via the controller?
+        app.UseStaticFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
+            RequestPath = ThumbnailService.RequestRoot
+        });
 
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
@@ -236,6 +255,11 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
+
+        app.Environment.SetupServices( app.Services );
+
+        Logging.StartupCompleted();
+        Logging.Log("Starting Damselfly webserver...");
 
         app.Run();
     }
