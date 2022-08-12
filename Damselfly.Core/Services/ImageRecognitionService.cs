@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Utils.ML;
 using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;

@@ -1,0 +1,61 @@
+﻿@using Damselfly.Web.Utils
+
+<div class="SearchBox">
+    <div class="SearchFieldIcon" title="@placeholder"><i class="fa @IconClass" /></div>
+    <input class="SearchField" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput" />
+    @if (CanClear)
+    {
+        <div class="SearchFieldClear" title="Clear Filter" @onclick="@(() => ClearText())"><i class="fa fa-times" /></div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string IconClass { get; set; }
+    [Parameter]
+    public Action<string> OnKeyPressed { get; set; }
+    [Parameter]
+    public Action<string> OnValueChanged { get; set; }
+    [Parameter]
+    public string placeholder { get; set; }
+    [Parameter]
+    public string id { get; set; }
+
+    [Parameter]
+    public string TextValue { set { HandleChange(value); } }
+
+    private bool CanClear { get; set; }
+    private EventConflator conflator = new EventConflator();
+    private string tempValue;
+
+    private void ClearText()
+    {
+        HandleChange(string.Empty);
+    }
+
+    // Used as a proxy to the underlying input box
+    private string ProxyValue
+    {
+        get { return tempValue; } // TODO - don't think we need this
+        set { HandleChange(value); }
+    }
+
+    private void HandleChange(string newValue)
+    {
+        if (tempValue != newValue)
+        {
+            if (OnKeyPressed != null)
+                OnKeyPressed(newValue);
+
+            tempValue = newValue;
+            conflator.HandleEvent(SearchCallback);
+            CanClear = !string.IsNullOrEmpty(newValue);
+        }
+    }
+
+    private void SearchCallback(object state)
+    {
+        if (OnValueChanged != null)
+            OnValueChanged(tempValue);
+    }
+}

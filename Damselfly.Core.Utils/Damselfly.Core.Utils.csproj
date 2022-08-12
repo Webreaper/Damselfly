@@ -12,12 +12,10 @@
 
   <ItemGroup>
     <Folder Include="Utils\" />
-    <Folder Include="Constants\" />
     <Folder Include="ML\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Humanizer" />
-    <None Remove="Constants\" />
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="System.Drawing.Common" />
     <None Remove="Classes\" />

@@ -2,7 +2,7 @@
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using static Damselfly.Core.Models.SearchQuery;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Collections.Generic;

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Damselfly.Core.Services;

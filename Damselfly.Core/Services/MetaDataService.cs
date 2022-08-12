@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using MetadataExtractor;

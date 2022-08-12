@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace Damselfly.Core.Utils
+namespace Damselfly.Web.Utils
 {
     public static class EnumerableExtensions
     {

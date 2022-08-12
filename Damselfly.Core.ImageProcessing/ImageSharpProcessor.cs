@@ -6,7 +6,6 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;

@@ -28,7 +28,7 @@ using Damselfly.Core.DbModels;
 using MudBlazor.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authorization;
-using Damselfly.Core.Utils.Constants;
+using Damselfly.Core.Constants;
 using Microsoft.AspNetCore.DataProtection;
 using Syncfusion.Blazor;
 using Syncfusion.Licensing;

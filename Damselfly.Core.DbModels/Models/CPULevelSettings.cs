@@ -1,7 +1,7 @@
 ﻿using System;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
 
 namespace Damselfly.Core.Models
 {

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
-using Damselfly.Core.Utils.Constants;
 using Damselfly.Core.Interfaces;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -12,6 +11,7 @@ using Microsoft.Azure.CognitiveServices.Vision.Face;
 using System.IO;
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
 using System.Drawing;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.ML.Face.Azure
 {
