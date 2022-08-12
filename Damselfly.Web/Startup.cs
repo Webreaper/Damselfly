@@ -63,6 +63,7 @@ namespace Damselfly.Web
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddFileReaderService();
+
             services.AddMudServices();
             services.AddSyncfusionBlazor();
 
@@ -90,18 +91,13 @@ namespace Damselfly.Web
             services.AddImageServices();
             services.AddDamselflyServices();
 
+            // Radzen
+            services.AddScoped<ContextMenuService>();
+
             // This needs to happen after ConfigService has been registered.
             services.AddAuthorization(config => SetupPolicies(config, services));
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
-            services.AddScoped<BasketService>();
-            services.AddScoped<NavigationService>();
-            services.AddScoped<SelectionService>();
-            services.AddScoped<ContextMenuService>();
-            services.AddScoped<SearchQueryService>();
-            services.AddScoped<SearchService>();
-
-            services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
 
             services.AddUserServices();
         }

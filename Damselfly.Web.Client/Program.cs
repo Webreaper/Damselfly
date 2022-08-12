@@ -2,6 +2,11 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Damselfly.Web.Client;
+using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using Radzen;
+using MudBlazor.Services;
 
 namespace Damselfly.Web.Client;
 
@@ -21,6 +26,12 @@ public class Program
 
         builder.Services.AddApiAuthorization();
 
+        builder.Services.AddMudServices();
+
+        builder.Services.AddScoped<ContextMenuService>();
+
+        builder.Services.AddDamselflyUIServices();
+       
         await builder.Build().RunAsync();
     }
 }

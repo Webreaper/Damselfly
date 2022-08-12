@@ -10,7 +10,7 @@ public class UserStatusService : IStatusService, IDisposable
 {
     private StatusService _statusService;
     private string statusText;
-    public event Action<string> OnChange;
+    public event Action<string>? OnChange;
 
     public UserStatusService( StatusService statusService )
     {

@@ -73,6 +73,7 @@
 
     async Task DeleteBasket()
     {
+        // WASM: Need to do this better
         IStatusService statusAudience = model.IsPublic ? statusService : userStatusService;
         using var db = new ImageContext();
 

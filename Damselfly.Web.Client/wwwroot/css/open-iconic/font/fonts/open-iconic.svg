@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
 <!--
 2014-7-1: Created.
@@ -541,4 +541,3 @@ d="M350 800c193 0 350 -157 350 -350c0 -61 -17 -119 -44 -169c4 -2 10 -6 13 -9l103
 c-139 0 -250 -111 -250 -250s111 -250 250 -250c62 0 119 23 163 60c7 11 19 25 31 31l3 3c34 43 53 97 53 156c0 139 -111 250 -250 250zM200 500h300v-100h-300v100z" />
   </font>
 </defs></svg>
-

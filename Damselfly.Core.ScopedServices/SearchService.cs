@@ -158,6 +158,6 @@ public class SearchService
     public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
     {
         await Task.Delay(100);
-        return new SearchResponse { MoreDataAvailable = false };
+        return new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
     }
 }

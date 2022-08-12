@@ -39,6 +39,8 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddUserServices( this IServiceCollection services )
 	{
+        services.AddScoped<SearchQueryService>();
+        services.AddScoped<BasketService>();
         services.AddScoped<UserFolderService>();
         services.AddScoped<UserService>();
         services.AddScoped<UserStatusService>();
