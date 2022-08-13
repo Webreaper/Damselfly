@@ -2,6 +2,7 @@
 @inject SearchService searchService
 @inject ClientPeopleService peopleService
 @inject UserStatusService statusService
+@inject Logger<AIObject> logger
 
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
     @if (Editing)
@@ -74,7 +75,7 @@
         }
     }
 
-    private Task<IEnumerable<string>> SearchNames(string text)
+    private async Task<IEnumerable<string>> SearchNames(string text)
     {
         var searchText = text.Trim();
         IEnumerable<string> results = new List<string>();
@@ -85,7 +86,7 @@
         // Only query the DB if we have more than 2 chars.
         if (searchText.Length > 1)
         {
-            var names = peopleService.GetPeopleNames(searchText);
+            var names = await peopleService.GetPeopleNames(searchText);
 
             if (!names.Contains(searchText, StringComparer.OrdinalIgnoreCase))
                 names.Insert(0, searchText);
@@ -93,7 +94,7 @@
             results = names;
         }
 
-        return Task.FromResult( results );
+        return results;
     }
 
     private async Task UpdateName(string name)
@@ -101,11 +102,11 @@
         if (!string.IsNullOrEmpty(name))
         {
 
-            Logging.Log($"Saving name: {name}");
+            logger.LogInformation($"Saving name: {name}");
             TypeAheadName = null;
             StateHasChanged();
 
-            await aiService.UpdateName(theObject, name);
+            await peopleService.UpdateName(theObject, name);
 
             statusService.StatusText = $"Name saved as '{name}'";
 

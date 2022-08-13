@@ -14,9 +14,14 @@ public class ClientWorkService : BaseClientService
     // WASM: TODO: 
     public event Action<ServiceStatus> OnStatusChanged;
 
-    public async Task<HttpResponseMessage> SetWorkStatus(ServiceStatus newStatus)
+    public async Task<HttpResponseMessage> Pause(bool paused)
     {
-        return await httpClient.PostAsJsonAsync("/api/work", newStatus);
+        return await httpClient.PostAsJsonAsync($"/api/work/pause", paused);
+    }
+
+    public async Task<ServiceStatus> GetWorkStatus()
+    {
+        return await httpClient.GetFromJsonAsync<ServiceStatus>("/api/work");
     }
 }
 

@@ -1,11 +1,10 @@
 ﻿
 @using System.Linq
-@using Damselfly.Core.ScopedServices.Interfaces
 
-@inject IBasketService basketService
+@inject BasketService basketService
 @inject UserService userService
 @inject UserStatusService userStatusService
-@inject UserStatusService statusService
+@inject StatusService statusService    
 
 <MudDialog>
     <DialogContent>
@@ -51,7 +50,7 @@
 
     private string errorMsg;
 
-    private void DisplayError(string errorText)
+    private void DisplayError( string errorText )
     {
         errorMsg = errorText;
         StateHasChanged();

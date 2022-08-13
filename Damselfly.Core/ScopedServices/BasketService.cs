@@ -106,7 +106,7 @@ public class BasketService : IBasketService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<List<Basket>> GetUserBaskets( AppIdentityUser user )
+    public async Task<ICollection<Basket>> GetUserBaskets( AppIdentityUser user )
     {
         int userId = 0;
 

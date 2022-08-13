@@ -1,4 +1,5 @@
 ﻿@using System
+@inject CachedDataService dataService
 
 <div class="damselfly-about">
     <div>
@@ -18,7 +19,7 @@
         Face Detection by <NavLink href="https://www.emgu.com/">EmguCV</NavLink> and <NavLink href="http://accord-framework.net/" target="_blank">Accord.Net</NavLink>.
         Facial recognition by <NavLink href="https://azure.microsoft.com/en-gb/services/cognitive-services/face/">Azure Cognitive Services Face API</NavLink>.
         Object Detection based on <NavLink href="https://github.com/mentalstack/yolov5-net" target="_blank">MentalStack's</NavLink> code.
-        <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@ExifService.ExifToolVer by Phil Harvey.
+        <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@dataService.ExifToolVer by Phil Harvey.
         <NavLink href="https://github.com/jellever/DominantColor">Dominant Colour</NavLink> calculation by Jelle Vergeer.
         Maps by <NavLink href="https://www.openstreetmap.org/copyright">OpenStreetMap</NavLink> and <NavLink href="https://www.syncfusion.com/blazor-components">Syncfusion</NavLink>.
 

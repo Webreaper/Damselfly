@@ -1,0 +1,146 @@
+﻿
+@using System.ComponentModel.DataAnnotations
+@using Damselfly.Core.Interfaces
+
+@inject BasketService basketService
+@inject UserService userService
+@inject UserStatusService statusService
+@inject ConfigService configService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(Mode == "Edit" ? $"Edit Config '{Config.Name}'" : "Create New Export Config") </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="@Config" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <MudTextField @bind-Value="@Config.Name" For="@(() => Config.Name)" Label="Config Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            @if (!string.IsNullOrEmpty(errorMsg))
+            {
+                <p>@errorMsg</p>
+            }
+            <MudSelect T="ExportSize" Label="Size" @bind-Value="Config.Size" Variant="UIConstants.MudVariant">
+                @foreach (var choice in exportSizes)
+                {
+                    <MudSelectItem Value="@choice">
+                        @ExportConfig.SizeDesc( choice )
+                    </MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="ExportType" Label="Type" @bind-Value="Config.Type" Variant="UIConstants.MudVariant">
+                @foreach (var choice in exportTypes)
+                {
+                    <MudSelectItem Value="@choice">
+                        @choice.ToString()
+                    </MudSelectItem>
+                }
+            </MudSelect>
+            <MudCheckBox @bind-Checked="@Config.KeepFolders" Label="Export with folder structure" />
+            <MudTextField @bind-Value="@Config.WatermarkText" For="@(() => Config.WatermarkText)" Label="Watermark Text" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        @if (Mode == "Edit")
+        {
+            <MudItem xs="12" md="12">
+                <MudPaper Elevation="0" Class="d-flex py-2 px-1">
+                    <MudButton Class="pa-2 ml-2 mr-auto" Color="Color.Warning" OnClick="DeleteConfig">Delete Config</MudButton>
+                    <MudButton Class="pa-2 mx-2" OnClick="Cancel">Cancel</MudButton>
+                    <MudButton Class="pa-2 mx-2" Color="Color.Primary" OnClick="Save">Save</MudButton>
+                </MudPaper>
+            </MudItem>
+        }
+        else
+        {
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Save">Add Config</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public ExportConfig Config { get; set; } = new ExportConfig();
+
+    [Parameter]
+    public string Mode { get; set; }
+
+    public ExportType[] exportTypes { get; private set; } = new ExportType[0];
+    public ExportSize[] exportSizes { get; private set; } = new ExportSize[0];
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await Save();
+    }
+
+    async Task DeleteConfig()
+    {
+        using var db = new ImageContext();
+
+        var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == Config.ExportConfigId);
+
+        await db.BatchDelete(existingConfig);
+
+        statusService.StatusText = $"Config '{Config.Name}' was deleted.";
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    async Task Save()
+    {
+        using var db = new ImageContext();
+
+        try
+        {
+            if (Mode == "Add")
+            {
+                if (db.DownloadConfigs.Any(x => x.Name.Equals(Config.Name) ))
+                {
+                    DisplayError($"Config '{Config.Name}' already exists. Please choose another name.");
+                    return;
+                }
+                else
+                {
+                    db.DownloadConfigs.Add(Config);
+                    await db.SaveChangesAsync("SaveExportConfig");
+
+                    statusService.StatusText = $"New download config '{Config.Name}' was created.";
+                }
+            }
+            else if (Mode == "Edit")
+            {
+                db.DownloadConfigs.Update(Config);
+                await db.SaveChangesAsync("SaveExportConfig");
+
+
+                statusService.StatusText = $"Config '{Config.Name}' saved.";
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError($"Unexpected error saving export config: {ex}");
+            DisplayError($"Unexpected error saving export config {ex.Message}");
+        }
+    }
+
+    private string errorMsg;
+
+    private void DisplayError(string errorText)
+    {
+        errorMsg = errorText;
+        StateHasChanged();
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    protected override void OnInitialized()
+    {
+        exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
+        exportSizes = (ExportSize[])Enum.GetValues(typeof(ExportSize));
+    }
+}

@@ -3,8 +3,9 @@
 @inject NavigationManager NavigationManager
 @inject ClientWordpressService wpService
 @inject UserStatusService statusService
-@inject ClientUserService userService 
+@inject ClientUserService userService
 @inject IDialogService DialogService
+@inject Logger<SelectedImages> logger
 
 @implements IDisposable
 @inherits ImageGridBase
@@ -52,98 +53,98 @@ else
         </AuthorizeView>
 
     </div>
-    </div>
+</div>
 
-    @code {
-        [Parameter]
-        public bool ShowTags { get; set; } = true;
+@code {
+    [Parameter]
+    public bool ShowTags { get; set; } = true;
 
-        public bool BasketHasImages => gridImages.Any();
-        public bool ImagesSelected => selectionService.Selection.Any();
+    public bool BasketHasImages => gridImages.Any();
+    public bool ImagesSelected => selectionService.Selection.Any();
 
-        private void UploadToWordPress()
+    private void UploadToWordPress()
+    {
+        _ = wpService.UploadImagesToWordpress(basketService.BasketImages);
+    }
+
+    private async Task BasketCopy()
+    {
+        var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
+        var result = await dialog.Result;
+    }
+
+    private async Task OpenAddBasketDialog()
+    {
+        var newBasket = new Basket { Name = "New Basket", UserId = userService.User?.Id };
+
+        var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
+        var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
+        var result = await dialog.Result;
+
+    }
+
+    private async Task OpenEditBasketDialog()
+    {
+        var parameters = new DialogParameters { { "basket", basketService.CurrentBasket }, { "mode", "Edit" } };
+        var dialog = DialogService.Show<BasketDialog>("Edit Basket", parameters);
+        var result = await dialog.Result;
+    }
+
+    async Task AddSelectedToBasket()
+    {
+        var selected = selectionService.Selection.ToList();
+        await basketService.SetBasketState(selected, true);
+
+        statusService.StatusText = $"{selected.Count()} images added to the basket";
+    }
+
+    private void ShowDownloads()
+    {
+        try
         {
-            _ = wpService.UploadBasketToWordpress(basketService.BasketImages);
+            NavigationManager.NavigateTo("/export");
         }
-
-        private async Task BasketCopy()
+        catch (Exception ex)
         {
-            var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
-            var result = await dialog.Result;
-        }
-
-        private async Task OpenAddBasketDialog()
-        {
-            var newBasket = new Basket { Name = "New Basket", UserId = userService.User?.Id };
-
-            var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
-            var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
-            var result = await dialog.Result;
-
-        }
-
-        private async Task OpenEditBasketDialog()
-        {
-            var parameters = new DialogParameters { { "basket", basketService.CurrentBasket }, { "mode", "Edit" } };
-            var dialog = DialogService.Show<BasketDialog>("Edit Basket", parameters);
-            var result = await dialog.Result;
-        }
-
-        async Task AddSelectedToBasket()
-        {
-            var selected = selectionService.Selection.ToList();
-            await basketService.SetBasketState(selected, true);
-
-            statusService.StatusText = $"{selected.Count()} images added to the basket";
-        }
-
-        private void ShowDownloads()
-        {
-            try
-            {
-                NavigationManager.NavigateTo("/export");
-            }
-            catch (Exception ex)
-            {
-                Logging.LogError("Exception: " + ex.Message);
-            }
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                basketService.OnBasketChanged += BasketImagesChanged;
-                selectionService.OnSelectionChanged += SelectedImagesChanged;
-                await LoadData();
-            }
-        }
-
-        public void Dispose()
-        {
-            basketService.OnBasketChanged -= BasketImagesChanged;
-            selectionService.OnSelectionChanged -= SelectedImagesChanged;
-        }
-
-        protected void SelectedImagesChanged()
-        {
-            InvokeAsync(StateHasChanged);
-        }
-
-        protected void BasketImagesChanged()
-        {
-            // Marshall onto the dispatcher thread
-            _ = LoadData();
-        }
-
-        public async Task LoadData()
-        {
-            var watch = new Stopwatch("SelectedLoadData");
-            gridImages.Clear();
-            gridImages.AddRange(basketService.BasketImages);
-            watch.Stop();
-
-            await InvokeAsync(StateHasChanged);
+            logger.LogError("Exception: " + ex.Message);
         }
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            basketService.OnBasketChanged += BasketImagesChanged;
+            selectionService.OnSelectionChanged += SelectedImagesChanged;
+            await LoadData();
+        }
+    }
+
+    public void Dispose()
+    {
+        basketService.OnBasketChanged -= BasketImagesChanged;
+        selectionService.OnSelectionChanged -= SelectedImagesChanged;
+    }
+
+    protected void SelectedImagesChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected void BasketImagesChanged()
+    {
+        // Marshall onto the dispatcher thread
+        _ = LoadData();
+    }
+
+    public async Task LoadData()
+    {
+        var watch = new Stopwatch("SelectedLoadData");
+        gridImages.Clear();
+        gridImages.AddRange(basketService.BasketImages);
+        watch.Stop();
+
+        await InvokeAsync(StateHasChanged);
+    }
+}
 

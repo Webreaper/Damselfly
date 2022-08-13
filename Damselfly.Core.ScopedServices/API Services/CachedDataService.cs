@@ -19,8 +19,9 @@ public class CachedDataService : BaseClientService
         await httpClient.GetFromJsonAsync<List<Lens>>($"/api/lenses");
     }
 
+    // WASM: TODO:
     public string ImagesRootFolder { get; }
-
+    public string ExifToolVer { get; set; }
     public ICollection<Camera> Cameras { get; set; }
     public ICollection<Lens> Lenses { get; set; }
 }

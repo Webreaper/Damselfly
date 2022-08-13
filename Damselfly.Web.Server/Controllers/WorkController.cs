@@ -26,10 +26,10 @@ public class WorkController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("/api/work")]
-    public async Task SetWorkStatus( ServiceStatus newStatus )
+    [HttpPost("/api/work/pause")]
+    public async Task PauseWork( bool paused )
     {
-        _service.SetStatus(newStatus.StatusText, newStatus.Status, newStatus.CPULevel);
+        _service.Paused = paused;
     }
 }
 
