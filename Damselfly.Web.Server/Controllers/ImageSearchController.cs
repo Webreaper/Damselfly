@@ -22,6 +22,7 @@ public class ImageSearchController : ControllerBase
     {
         _searchService = searchService;
         _logger = logger;
+        _logger.LogInformation($"Initialised ImageSearch controller");
     }
 
     [HttpGet]

@@ -209,6 +209,10 @@ public class Program
 #if DEBUG
         builder.Services.AddSwaggerGen();
 #endif
+        builder.Services.AddControllersWithViews()
+                .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+        builder.Services.AddRazorPages();
+        builder.Services.AddSwaggerGen();
 
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();

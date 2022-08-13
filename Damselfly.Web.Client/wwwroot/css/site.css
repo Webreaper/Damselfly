@@ -1907,7 +1907,6 @@ hr.separator {
     background: rgba(0,100,0,0.4);
 }
 
-
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
@@ -1969,4 +1968,3 @@ hr.separator {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Damselfly is Loading...");
     }
-

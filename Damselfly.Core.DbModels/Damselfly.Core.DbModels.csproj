@@ -38,6 +38,5 @@
     <None Remove="Models\SideCars\" />
     <None Remove="FluentValidation" />
     <None Remove="Images\" />
-    <None Remove="MudBlazor" />
   </ItemGroup>
 </Project>

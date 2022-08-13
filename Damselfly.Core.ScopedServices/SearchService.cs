@@ -26,10 +26,10 @@ public class SearchService : BaseClientService
 {
     public SearchService(HttpClient client, CachedDataService dataService) : base(client)
     {
-        _dataService = dataService;
+        _service = dataService;
     }
 
-    private readonly CachedDataService _dataService;
+    private readonly CachedDataService _service;
     private readonly SearchQuery query = new SearchQuery();
     public List<Image> SearchResults { get; private set; } = new List<Image>();
 

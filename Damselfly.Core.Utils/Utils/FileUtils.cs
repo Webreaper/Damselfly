@@ -33,13 +33,55 @@ public static class FileUtils
         {
             if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
             {
-                // Special case: on Windows, C:\ seems to always have the hidden
-                // attribute, which can result in the whole tree being assumed
-                // to be hidden. So we check for that by looking for the Parent
-                // to be null, and if it is, we ignore the hidden attribute.
-                // See https://github.com/Webreaper/Damselfly/issues/333
-                if (dir.Parent != null)
-                    return true;
+                if ((dir.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    // Special case: on Windows, C:\ seems to always have the hidden
+                    // attribute, which can result in the whole tree being assumed
+                    // to be hidden. So we check for that by looking for the Parent
+                    // to be null, and if it is, we ignore the hidden attribute.
+                    // See https://github.com/Webreaper/Damselfly/issues/333
+                    if (dir.Parent != null)
+                        return true;
+                }
+
+                dir = dir.Parent;
+            }                
+
+            return false;
+        }
+
+        /// <summary>
+        /// Predicate to filter out unwanted folders. We don't care about
+        /// folders which are hidden (including .folder) and we don't want
+        /// to look at @eaDir folders on Synology.
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <returns></returns>
+        public static bool IsMonitoredFolder( this DirectoryInfo folder )
+        {
+            if (!folder.Exists)
+                return false;
+
+            if((folder.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden )
+                return false;
+
+            if (folder.FullName.Contains("@eaDir", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (folder.Name.StartsWith("."))
+                return false;
+
+            if (File.Exists(Path.Combine(folder.FullName, ".nomedia")))
+                return false;
+
+            // If the folder, or any of its descendents, start with a ., skip
+            var parent = folder;
+            while (parent != null)
+            {
+                if (parent.Name.StartsWith("."))
+                    return false;
+
+                parent = parent.Parent;
             }
 
             dir = dir.Parent;
