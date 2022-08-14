@@ -144,14 +144,14 @@ public class SearchService : BaseClientService
 
             if ( CameraId > 0 )
             {
-                var cam = _dataService.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
+                var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
                 if (cam != null)
                     hints.Add($"Camera: {cam.Model}");
             }
 
             if (LensId > 0)
             {
-                var lens = _dataService.Lenses.FirstOrDefault(x => x.LensId == LensId);
+                var lens = _service.Lenses.FirstOrDefault(x => x.LensId == LensId);
                 if (lens != null)
                     hints.Add($"Lens: {lens.Model}");
             }
