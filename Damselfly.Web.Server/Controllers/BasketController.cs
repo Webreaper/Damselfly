@@ -25,12 +25,6 @@ public class BasketController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("/api/basket/exists/{name}")]
-    public async Task<bool> BasketExists(string name)
-    {
-        return await _service.BasketExists(name);
-    }
-
     [HttpDelete("/api/basket/{basketId}")]
     public async Task DeleteBasket( int basketId)
     {

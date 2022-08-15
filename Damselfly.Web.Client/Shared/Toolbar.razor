@@ -1,5 +1,5 @@
 ﻿@inject NavigationManager NavigationManager
-@inject Logger<Toolbar> logger
+@inject ILogger<Toolbar> logger
 
 <div>
     <button title="Config and Tasks" @onclick="@(() => ShowConfigDialog())" class="btn btn-primary"><i class="fa fa-cogs" /></button>

@@ -25,18 +25,21 @@ public class ThemeController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("/api/theme")]
+    public async Task<ThemeConfig> GetDefaultTheme()
+    {
+        return new ThemeConfig { MudTheme = _service.DarkTheme, Name = "Dark Theme", Path = String.Empty };
+    }
+
     [HttpGet("/api/theme/{name}")]
     public async Task<ThemeConfig> Get( string name)
     {
-        if (string.IsNullOrEmpty(name))
-            name = "Green"; // Default
+        if (!string.IsNullOrEmpty(name))
+        {
+            return _service.Themes.FirstOrDefault(x => x.Name == name);
+        }
 
-        var theme = _service.Themes.FirstOrDefault(x => x.Name == name);
-
-        if( theme == null )
-            theme = new ThemeConfig { MudTheme = _service.DarkTheme, Name = "Dark Theme", Path = String.Empty };
-
-        return theme;
+        return await GetDefaultTheme();
     }
 }
 

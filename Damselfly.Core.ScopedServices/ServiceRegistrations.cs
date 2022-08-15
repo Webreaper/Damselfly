@@ -12,6 +12,7 @@ public static class ServiceRegistrations
         services.AddScoped<CachedDataService>();
         services.AddScoped<APIBasketService>();
         services.AddScoped<APIDownloadService>();
+        services.AddScoped<ClientThemeService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<SearchService>();
         services.AddScoped<APIConfigService>();

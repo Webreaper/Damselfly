@@ -19,11 +19,11 @@ public class WordpressService
 {
     private WordPressClient _client;
     private readonly StatusService _statusService;
-    private readonly APIConfigService _configService;
+    private readonly ConfigService _configService;
     private readonly ImageProcessService _imageProcessService;
 
     public WordpressService( ImageProcessService imageService,
-                             APIConfigService configService,
+                             ConfigService configService,
                              StatusService statusService)
     {
         _configService = configService;

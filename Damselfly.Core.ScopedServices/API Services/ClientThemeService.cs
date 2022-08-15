@@ -2,24 +2,45 @@
 using Damselfly.Core.DbModels;
 using System.Net.Http.Json;
 using MudBlazor;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components;
+using System.Xml.Linq;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientThemeService : BaseClientService
 {
-    public ClientThemeService( HttpClient client ) : base( client )  {  }
+    public ClientThemeService( HttpClient client, ILogger<ClientThemeService> logger ) : base( client )  { _logger = logger; }
+
+    private ILogger<ClientThemeService> _logger;
 
     // WASM: TODO: 
     public event Action<ThemeConfig> OnChangeTheme;
 
     public async Task<ThemeConfig> GetTheme(string name)
     {
-        return await httpClient.GetFromJsonAsync<ThemeConfig>($"/api/theme/{name}");
+        try {
+            return await httpClient.GetFromJsonAsync<ThemeConfig>($"/api/theme/{name}");
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError($"Error in GetTheme: {ex}");
+            return await GetDefaultTheme();
+        }
     }
 
-    public async Task<ThemeConfig> GetTheme()
+
+    public async Task<ThemeConfig> GetDefaultTheme()
     {
-        return await httpClient.GetFromJsonAsync<ThemeConfig>($"/api/theme");
+        try
+        {
+            return await httpClient.GetFromJsonAsync<ThemeConfig>($"/api/theme");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error in GetTheme: {ex}");
+            return null;
+        }
     }
 }
 

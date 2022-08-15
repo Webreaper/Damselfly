@@ -15,5 +15,14 @@ public class ClientUserService : BaseClientService
     {
         get { return null; }
     }
+
+    // WASM: TODO
+    public bool RolesEnabled { get { return false; } }
+
+    // WASM: TODO
+    public async Task<bool> PolicyApplies( string policy )
+    {
+        return false;
+    }
 }
 

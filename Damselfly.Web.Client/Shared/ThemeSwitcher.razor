@@ -3,7 +3,7 @@
 
 @inject ClientThemeService themeService
 @inject APIConfigService configService
-@inject Logger<ThemeSwitcher> logger
+@inject ILogger<ThemeSwitcher> logger
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 
@@ -13,20 +13,12 @@
     private long cacheBuster = 1;
     private MudTheme MudTheme;
 
-    protected override async Task OnInitializedAsync()
-    {
-        base.OnInitialized();
-
-        // TODO WASM: Default?
-        var theme = await themeService.GetTheme();
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             themeService.OnChangeTheme += SwitchTheme;
-            var theme = await themeService.GetTheme();
+            var theme = await themeService.GetDefaultTheme();
             SwitchTheme(theme);
         }
     }

@@ -2,7 +2,7 @@
 @inject SearchService searchService
 @inject ClientPeopleService peopleService
 @inject UserStatusService statusService
-@inject Logger<AIObject> logger
+@inject ILogger<AIObject> logger
 
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
     @if (Editing)

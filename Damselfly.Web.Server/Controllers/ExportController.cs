@@ -32,7 +32,7 @@ public class ExportController : ControllerBase
     {
         using var db = new ImageContext();
 
-        var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == configId;
+        var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == configId );
 
         await db.BatchDelete(existingConfig);
     }
