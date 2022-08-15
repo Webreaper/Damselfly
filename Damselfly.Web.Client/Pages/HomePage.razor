@@ -6,6 +6,7 @@
 @implements IDisposable
 
 @inject NavigationManager navigationManager
+@inject ViewDataService viewdataService
 
 <div class="damselfly-imagebrowser">
     <SearchBar OnThumbSizeChanged="ThumbSizeChanged" />
@@ -110,13 +111,14 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        /*
-        navContext.CurrentImage = null;
 
-        ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
+        // WASM: TODO:
+        // navContext.CurrentImage = null;
+
+        // WASM: TODO:
+        viewdataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
 
         navigationManager.LocationChanged += HandleLocationChanged;
-        */
     }
 
     void HandleLocationChanged(object sender, LocationChangedEventArgs e)

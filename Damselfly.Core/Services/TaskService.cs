@@ -259,7 +259,8 @@ public class TaskService
             Logging.LogVerbose("Completed execution for task {0}.", task.Type);
 
             TaskCompleted(task);
-            Stopwatch.WriteTotals();
+            Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
+            Stopwatch.WriteTotals( logFunc );
         }
     }
 

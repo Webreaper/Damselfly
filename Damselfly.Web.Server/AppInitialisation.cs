@@ -112,7 +112,10 @@ public static class AppInitialiser
         {
             Type = ScheduledTask.TaskType.DumpPerformance,
             ExecutionFrequency = new TimeSpan(24, 0, 0),
-            WorkMethod = () => Stopwatch.WriteTotals(false),
+            WorkMethod = () => {
+                Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
+                Stopwatch.WriteTotals(logFunc);
+            },
             ImmediateStart = false
         });
 

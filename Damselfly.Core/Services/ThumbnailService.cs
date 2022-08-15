@@ -308,7 +308,8 @@ public class ThumbnailService : IProcessJobFactory
                 if( imagesToScan.Length > 1 )
                     _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
 
-                Stopwatch.WriteTotals();
+                Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
+                Stopwatch.WriteTotals(logFunc);
             }
             else
                 Logging.LogVerbose("No images found to scan.");
