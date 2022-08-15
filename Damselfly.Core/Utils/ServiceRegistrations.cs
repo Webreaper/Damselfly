@@ -28,7 +28,7 @@ public static class ServiceRegistrations
         return services;
     }
 
-    public static IServiceCollection AddBackEndServices(this IServiceCollection services)
+    public static IServiceCollection AddBlazorServerBackEndServices(this IServiceCollection services)
     {
         services.AddSingleton<ConfigService>();
         services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
@@ -55,7 +55,7 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddHostedBlazorBackEndServices( this IServiceCollection services )
     {
-        services.AddBackEndServices();
+        services.AddBlazorServerBackEndServices();
 
         services.AddSingleton<SearchQueryService>();
 
@@ -64,6 +64,7 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddBlazorServerUIServices( this IServiceCollection services )
 	{
+        services.AddScoped<CachedDataService>(); // WRapper service to get cameras from metadata service and Exiftool
         services.AddScoped<SearchService>();
         services.AddScoped<SearchQueryService>();
         services.AddScoped<NavigationService>();

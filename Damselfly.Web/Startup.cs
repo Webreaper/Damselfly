@@ -85,7 +85,7 @@ namespace Damselfly.Web
             services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
             services.AddImageServices();
-            services.AddBackEndServices();
+            services.AddBlazorServerBackEndServices();
             services.AddMLServices();
 
             // Radzen

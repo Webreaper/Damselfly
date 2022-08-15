@@ -2,15 +2,16 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
 /// <summary>
 /// Cached static data that the server knows, but the client needs to know
 /// </summary>
-public class CachedDataService : BaseClientService
+public class ClientDataService : BaseClientService, ICachedDataService
 {
-    public CachedDataService(HttpClient client) : base(client) { }
+    public ClientDataService(HttpClient client) : base(client) { }
 
     private async Task InitialiseData()
     {

@@ -11,7 +11,7 @@ public static class ServiceRegistrations
     public static IServiceCollection AddDamselflyUIServices( this IServiceCollection services )
     {
         services.AddScoped<ViewDataService>();
-        services.AddScoped<CachedDataService>();
+        services.AddScoped<ClientDataService>();
         services.AddScoped<APIBasketService>();
         services.AddScoped<APIDownloadService>();
         services.AddScoped<ClientThemeService>();
@@ -24,6 +24,7 @@ public static class ServiceRegistrations
         services.AddScoped<UserStatusService>();
         services.AddScoped<APIFolderService>();
 
+        services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
         services.AddScoped<IConfigService>(x => x.GetRequiredService<APIConfigService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<APIFolderService>());
         services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());

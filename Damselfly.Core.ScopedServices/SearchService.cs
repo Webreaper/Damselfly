@@ -12,6 +12,7 @@ using static System.Net.WebRequestMethods;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net.Http.Json;
 using System.Net.Http;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -24,12 +25,12 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class SearchService : BaseClientService
 {
-    public SearchService(HttpClient client, CachedDataService dataService) : base(client)
+    public SearchService(HttpClient client, ICachedDataService dataService) : base(client)
     {
         _service = dataService;
     }
 
-    private readonly CachedDataService _service;
+    private readonly ICachedDataService _service;
     private readonly SearchQuery query = new SearchQuery();
     public List<Image> SearchResults { get; private set; } = new List<Image>();
 
