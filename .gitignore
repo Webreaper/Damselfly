@@ -14,7 +14,7 @@ Damselfly.Web/wwwroot/desktop
 Damselfly.Web/wwwroot/[Dd]ownloads
 Damselfly.Web/config/
 Damselfly.Desktop/dist/
-
+Damselfly.Web.Server/config/
 
 # User-specific files
 *.rsuser

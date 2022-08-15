@@ -5,8 +5,6 @@
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
 
-@using Damselfly.Web.Utils
-
 @code {
     public bool IsDesktopHosted => !string.IsNullOrEmpty(DesktopVersion);
     public string DesktopVersion { get; set; }

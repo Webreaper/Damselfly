@@ -9,7 +9,6 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Images;
-using Damselfly.Web.Utils;
 
 namespace Damselfly.Core.Services;
 

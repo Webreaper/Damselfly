@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Damselfly.Web.Utils;
+namespace Damselfly.Core.Utils;
 
 public static class PathUtils
 {

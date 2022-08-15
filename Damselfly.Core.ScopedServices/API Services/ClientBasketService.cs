@@ -83,6 +83,7 @@ public class ClientBasketService : BaseClientService, IBasketService
         {
             return new List<Basket>();
 
+            // WASM: TODO:
             // return await httpClient.GetFromJsonAsync<ICollection<Basket>>(uri);
         }
         catch( Exception ex )

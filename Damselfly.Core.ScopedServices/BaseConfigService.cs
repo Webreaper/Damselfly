@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Damselfly.Core.Models;
 
-namespace Damselfly.Web.Utils;
+namespace Damselfly.Core.ScopedServices;
 
 public abstract class BaseConfigService
 {

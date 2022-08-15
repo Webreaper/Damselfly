@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace Damselfly.Web.Utils
+namespace Damselfly.Core.Utils
 {
     /// <summary>
     /// Event conflator. Ensures we don't call methods many times for
