@@ -50,6 +50,10 @@ public static class ServiceRegistrations
         services.AddSingleton<ImageRecognitionService>();
         services.AddSingleton<ImageCache>();
         services.AddSingleton<WorkService>();
+
+        services.AddSingleton<CachedDataService>();
+        services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
+
         return services;
     }
 
@@ -64,7 +68,6 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddBlazorServerUIServices( this IServiceCollection services )
 	{
-        services.AddScoped<CachedDataService>(); // WRapper service to get cameras from metadata service and Exiftool
         services.AddScoped<SearchService>();
         services.AddScoped<SearchQueryService>();
         services.AddScoped<NavigationService>();
