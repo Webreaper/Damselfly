@@ -32,9 +32,15 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet("/api/baskets/{userId}")]
-    public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
+    public async Task<ICollection<Basket>> GetUserBaskets(int userId)
     {
         return await _service.GetUserBaskets(userId);
+    }
+
+    [HttpGet("/api/baskets")]
+    public async Task<ICollection<Basket>> GetUserBaskets()
+    {
+        return await _service.GetUserBaskets(null);
     }
 }
 

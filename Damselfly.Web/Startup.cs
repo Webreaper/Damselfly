@@ -92,55 +92,11 @@ namespace Damselfly.Web
             services.AddScoped<ContextMenuService>();
 
             // This needs to happen after ConfigService has been registered.
-            services.AddAuthorization(config => SetupPolicies(config, services));
+            services.AddAuthorization(config => config.SetupPolicies(services));
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
 
             services.AddBlazorServerUIServices();
-        }
-
-        private void SetupPolicies(AuthorizationOptions config, IServiceCollection services)
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            var configService = serviceProvider.GetService<ConfigService>();
-
-            var enablePolicies = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
-
-            if( enablePolicies )
-            {
-                Logging.Log("Polices and Roles are enabled.");
-
-                // Anyone in the Admin group is an admin (d'uh)
-                config.AddPolicy(PolicyDefinitions.s_IsLoggedIn, policy => policy.RequireAuthenticatedUser());
-
-                // Anyone in the Admin group is an admin (d'uh)
-                config.AddPolicy(PolicyDefinitions.s_IsAdmin, policy => policy.RequireRole(
-                                                                RoleDefinitions.s_AdminRole));
-
-                // Users and Admins can edit content (keywords)
-                config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireRole(
-                                                                RoleDefinitions.s_AdminRole,
-                                                                RoleDefinitions.s_UserRole));
-                // Admins, Users and ReadOnly users can download
-                config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireRole(
-                                                                RoleDefinitions.s_AdminRole,
-                                                                RoleDefinitions.s_UserRole,
-                                                                RoleDefinitions.s_ReadOnlyRole));
-            }
-            else
-            {
-                Logging.Log("Polices and Roles have been deactivated.");
-
-                config.AddPolicy(PolicyDefinitions.s_IsLoggedIn, policy => policy.RequireAssertion(
-                                                                    context => true));
-                config.AddPolicy(PolicyDefinitions.s_IsAdmin, policy => policy.RequireAssertion(
-                                                                    context => true));
-                config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireAssertion(
-                                                                context => true));
-                config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireAssertion(
-                                                                context => true));
-            }
-
         }
 
         /// <summary>

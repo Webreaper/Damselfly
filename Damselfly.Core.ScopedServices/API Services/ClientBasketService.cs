@@ -4,12 +4,20 @@ using System.Net.Http.Json;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientBasketService : BaseClientService, IBasketService
 {
-	public ClientBasketService(HttpClient client) : base(client) { }
+    protected ILogger<ClientBasketService> _logger;
+
+    public ClientBasketService(HttpClient client, ILogger<ClientBasketService> logger) : base( client )
+    {
+        httpClient = client;
+        _logger = logger;
+    }
 
     /// <summary>
     /// The list of selected images in the basket
@@ -65,8 +73,23 @@ public class ClientBasketService : BaseClientService, IBasketService
 
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
-        return await httpClient.GetFromJsonAsync<ICollection<Basket>>($"/api/baskets/{userId}");
+        var uri = "/api/baskets";
+        if (userId.HasValue)
+            uri = $"/api/baskets/{userId}";
 
+        _logger.LogInformation($"Loading baskets from URI: {uri}");
+
+        try
+        {
+            return new List<Basket>();
+
+            // return await httpClient.GetFromJsonAsync<ICollection<Basket>>(uri);
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError($"Error Retrieving Baskets: {ex}");
+            throw;
+        }
     }
 }
 

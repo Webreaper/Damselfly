@@ -7,6 +7,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Radzen;
 using MudBlazor.Services;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Web.Client;
 
@@ -27,6 +28,7 @@ public class Program
         builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DamselflyAPI"));
 
         builder.Services.AddApiAuthorization();
+        builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
 

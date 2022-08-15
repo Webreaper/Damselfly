@@ -19,8 +19,13 @@ public class ClientThemeService : BaseClientService
 
     public async Task<ThemeConfig> GetTheme(string name)
     {
-        try {
-            return await httpClient.GetFromJsonAsync<ThemeConfig>($"/api/theme/{name}");
+        var uri = $"/api/theme";
+        if( !string.IsNullOrEmpty( name ))
+            uri = $"/api/theme/{name}";
+
+        try
+        {
+            return await httpClient.GetFromJsonAsync<ThemeConfig>(uri);
         }
         catch( Exception ex )
         {

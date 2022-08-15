@@ -23,6 +23,9 @@ using Microsoft.Extensions.FileProviders;
 using Syncfusion.Licensing;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Damselfly.Core.DbModels;
 
 namespace Damselfly.Web;
 
@@ -195,6 +198,8 @@ public class Program
 
         builder.Services.AddIdentityServer()
             .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+
+        builder.Services.AddAuthorization(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddAuthentication()
             .AddIdentityServerJwt();
