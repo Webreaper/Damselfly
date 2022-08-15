@@ -2,10 +2,12 @@
 @using System.ComponentModel.DataAnnotations
 @using Damselfly.Core.Interfaces
 
-@inject BasketService basketService
-@inject UserService userService
+@inject IBasketService basketService
+@inject ClientUserService userService
 @inject UserStatusService statusService
-@inject ConfigService configService
+@inject ClientExportService exportService
+@inject IConfigService configService
+@inject Logger<ExportConfigDialog> logger;
 
 <MudDialog>
     <TitleContent>
@@ -78,43 +80,24 @@
 
     async Task DeleteConfig()
     {
-        using var db = new ImageContext();
-
-        var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == Config.ExportConfigId);
-
-        await db.BatchDelete(existingConfig);
-
-        statusService.StatusText = $"Config '{Config.Name}' was deleted.";
+        await exportService.Delete( Config );
 
         MudDialog.Close(DialogResult.Ok(true));
     }
 
     async Task Save()
     {
-        using var db = new ImageContext();
-
         try
         {
             if (Mode == "Add")
             {
-                if (db.DownloadConfigs.Any(x => x.Name.Equals(Config.Name) ))
-                {
-                    DisplayError($"Config '{Config.Name}' already exists. Please choose another name.");
-                    return;
-                }
-                else
-                {
-                    db.DownloadConfigs.Add(Config);
-                    await db.SaveChangesAsync("SaveExportConfig");
+                await exportService.Create(Config);
 
-                    statusService.StatusText = $"New download config '{Config.Name}' was created.";
-                }
+                statusService.StatusText = $"New download config '{Config.Name}' was created.";
             }
             else if (Mode == "Edit")
             {
-                db.DownloadConfigs.Update(Config);
-                await db.SaveChangesAsync("SaveExportConfig");
-
+                await exportService.Save(Config);
 
                 statusService.StatusText = $"Config '{Config.Name}' saved.";
             }
@@ -123,7 +106,7 @@
         }
         catch (Exception ex)
         {
-            Logging.LogError($"Unexpected error saving export config: {ex}");
+            logger.LogError($"Unexpected error saving export config: {ex}");
             DisplayError($"Unexpected error saving export config {ex.Message}");
         }
     }

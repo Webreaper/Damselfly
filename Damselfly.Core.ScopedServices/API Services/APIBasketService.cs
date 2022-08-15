@@ -16,7 +16,11 @@ public class APIBasketService : BaseClientService, IBasketService
 
     public event Action OnBasketChanged;
 
-    public async Task Clear()
+    public async Task Clear( int basketId )
+    {
+    }
+
+    public async Task DeleteBasket(int basketId)
     {
     }
 
@@ -45,12 +49,12 @@ public class APIBasketService : BaseClientService, IBasketService
 		return false;
 	}
 
-    public async Task<Basket> CreateNewBasket(string name, int? userId)
+    public async Task<Basket> Create(string name, int? userId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task ModifyBasket(Basket basket, string name, int? userId)
+    public async Task Save(Basket basket, string name, int? userId)
     {
         throw new NotImplementedException();
     }

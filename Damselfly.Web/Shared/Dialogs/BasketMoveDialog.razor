@@ -38,7 +38,7 @@
     async Task Move()
     {
         await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
-        await basketService.Clear();
+        await basketService.Clear(selectedBasket.BasketId);
 
         MudDialog.Close(DialogResult.Ok(true));
     }

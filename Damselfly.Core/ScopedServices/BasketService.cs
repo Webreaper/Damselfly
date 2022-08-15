@@ -76,20 +76,35 @@ public class BasketService : IBasketService
 
         NotifyStateChanged();
     }
+    /// <summary>
+    /// Clears the selection from the basket
+    /// </summary>
+    /// <returns></returns>
+    public async Task Delete( int basketId )
+    {
+        using var db = new ImageContext();
+
+        var existingBasket = db.Baskets.Where(x => x.BasketId == basketId);
+
+        await db.BatchDelete(existingBasket);
+    }
 
     /// <summary>
     /// Clears the selection from the basket
     /// </summary>
     /// <returns></returns>
-    public async Task Clear()
+    public async Task Clear( int basketId = -1)
     {
         using var db = new ImageContext();
 
         try
         {
+            if( basketId == -1 )
+                basketId = CurrentBasket.BasketId;
+
             BasketImages.Clear();
-            await db.BatchDelete( db.BasketEntries.Where( x => x.BasketId.Equals( CurrentBasket.BasketId ) ) );
-            Logging.Log("Basket cleared.");
+            await db.BatchDelete( db.BasketEntries.Where( x => x.BasketId.Equals( basketId ) ) );
+            Logging.Log($"Basket id {basketId} cleared.");
 
             NotifyStateChanged();
 
@@ -266,19 +281,26 @@ public class BasketService : IBasketService
     }
 
     // TODO: Async
-    public async Task<Basket> CreateNewBasket( string name, int? userId )
+    public async Task<Basket> Create( string name, int? userId )
     {
         using var db = new ImageContext();
 
-        // TODO: check there isn't an existing basket with the same name and user?
-        var newBasket = new Basket { Name = name, UserId = userId };
-        db.Baskets.Add(newBasket);
-        await db.SaveChangesAsync("SaveBasket");
+        var existing = db.Baskets.FirstOrDefault(x => x.Name == name);
 
-        return newBasket;
+        if (existing == null)
+        {
+            // TODO: check there isn't an existing basket with the same name and user?
+            var newBasket = new Basket { Name = name, UserId = userId };
+            db.Baskets.Add(newBasket);
+            await db.SaveChangesAsync("SaveBasket");
+
+            return newBasket;
+        }
+        else
+            throw new ArgumentException($"A basket called {name} already exists.");
     }
 
-    public async Task ModifyBasket(Basket basket, string newName, int? newUserId )
+    public async Task Save(Basket basket, string newName, int? newUserId )
     {
         using var db = new ImageContext();
 
@@ -336,5 +358,10 @@ public class BasketService : IBasketService
         await SwitchBasketById(defaultBasket.BasketId);
 
         return defaultBasket;
+    }
+
+    public Task DeleteBasket(int basketId)
+    {
+        throw new NotImplementedException();
     }
 }

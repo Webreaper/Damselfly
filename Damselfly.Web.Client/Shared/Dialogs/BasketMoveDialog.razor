@@ -1,10 +1,10 @@
 ﻿
 @using System.Linq
 
-@inject BasketService basketService
-@inject UserService userService
+@inject IBasketService basketService
+@inject ClientUserService userService
 @inject UserStatusService userStatusService
-@inject StatusService statusService    
+@inject IStatusService statusService    
 
 <MudDialog>
     <DialogContent>
@@ -37,7 +37,7 @@
     async Task Move()
     {
         await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
-        await basketService.Clear();
+        await basketService.Clear(selectedBasket.BasketId);
 
         MudDialog.Close(DialogResult.Ok(true));
     }

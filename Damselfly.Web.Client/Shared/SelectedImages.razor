@@ -42,7 +42,7 @@ else
     <div class="damselfly-imagebuttons">
         <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
             <ToolbarButton IconStyle="fa-shopping-basket" OnClickCallback="@AddSelectedToBasket" Enabled="@ImagesSelected" title="Add Selection to Basket" />
-            <ToolbarButton IconStyle="fa-times-circle" OnClickCallback="@(()=>basketService.Clear())" Enabled="@BasketHasImages" title="Clear Basket" />
+            <ToolbarButton IconStyle="fa-times-circle" OnClickCallback="@(()=>basketService.Clear(-1))" Enabled="@BasketHasImages" title="Clear Basket" />
             <ToolbarButton IconStyle="fa-copy" OnClickCallback="@BasketCopy" Enabled="@BasketHasImages" title="Copy/Move to another basket" />
             <ToolbarButton IconStyle="fa-edit" OnClickCallback="@OpenEditBasketDialog" title="Edit basket" />
             <ToolbarButton IconStyle="fa-plus-circle" OnClickCallback="@OpenAddBasketDialog" title="Create a new basket" />

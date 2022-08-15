@@ -1,5 +1,4 @@
 ﻿
-using Damselfly.Core.Services;
 /// <summary>
 /// State helpers for the scrollview
 /// </summary>

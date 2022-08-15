@@ -47,14 +47,14 @@
 </MudDialog>
 
 @code {
-        [CascadingParameter]
-        MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
 
-        [Parameter]
-        public Basket Basket { get; set; } = new Basket();
+    [Parameter]
+    public Basket Basket { get; set; } = new Basket();
 
-        [Parameter]
-        public string Mode { get; set; }
+    [Parameter]
+    public string Mode { get; set; }
 
     public class BasketForm
     {
@@ -103,23 +103,17 @@
 
             if (Mode == "Add")
             {
-                if (db.Baskets.Any(x => x.Name.Equals(model.BasketName) && userId.Equals(x.UserId)))
-                {
-                    DisplayError($"Basket '{model.BasketName}' already exists. Please choose another name.");
-                    return;
-                }
-                else
-                {
-                    var newBasket = await basketService.CreateNewBasket(model.BasketName, userId);
-                    statusAudience.StatusText = $"New basket '{model.BasketName}' was created.";
+                var newBasket = await basketService.Create(model.BasketName, userId);
 
-                    // Force it to reload
-                    await basketService.SwitchBasketById(newBasket.BasketId);
-                }
+                // Force it to reload
+                await basketService.SwitchBasketById(newBasket.BasketId);
+
+                statusAudience.StatusText = $"New basket '{model.BasketName}' was created.";
+
             }
             else if (Mode == "Edit")
             {
-                await basketService.ModifyBasket(Basket, model.BasketName, userId);
+                await basketService.Save(Basket, model.BasketName, userId);
 
                 statusService.StatusText = $"Basket '{model.BasketName}' saved.";
             }
