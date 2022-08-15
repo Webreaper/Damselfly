@@ -211,7 +211,9 @@ else
 
     protected async Task ProcessUpdatedFilter()
     {
-        folderItems = await folderService.GetFilteredFolders(filterTerm);
+        var folders = await folderService.GetFilteredFolders(filterTerm);
+
+        folderItems = folders.ToList();
 
         await InvokeAsync(StateHasChanged);
     }

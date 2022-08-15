@@ -12,11 +12,11 @@ public interface IBasketService
     Basket CurrentBasket { get; }
     event Action OnBasketChanged;
     Task<Basket> Create(string name, int? userId);
-    Task Save(Basket basket, string name, int? userId);
+    Task Save(Basket basket);
     Task SetBasketState(ICollection<Image> images, bool newState, Basket basket = null);
     Task<Basket> SwitchBasketById(int basketId);
     Task<Basket> SwitchToDefaultBasket(AppIdentityUser user);
-    Task<ICollection<Basket>> GetUserBaskets(AppIdentityUser user);
+    Task<ICollection<Basket>> GetUserBaskets(int? userId);
     bool IsSelected(Image image);
     Task Clear( int basketId );
     Task DeleteBasket(int basketId);

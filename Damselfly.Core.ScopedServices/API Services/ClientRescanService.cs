@@ -4,9 +4,9 @@ using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class APIRescanService : BaseClientService
+public class ClientRescanService : BaseClientService
 {
-    public APIRescanService(HttpClient client) : base(client) { }
+    public ClientRescanService(HttpClient client) : base(client) { }
 
     public async Task MarkFolderForRescan( RescanTypes rescanType, Folder folder )
     {

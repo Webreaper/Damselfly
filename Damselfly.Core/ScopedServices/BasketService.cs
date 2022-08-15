@@ -121,13 +121,8 @@ public class BasketService : IBasketService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<ICollection<Basket>> GetUserBaskets( AppIdentityUser user )
+    public async Task<ICollection<Basket>> GetUserBaskets( int? userId )
     {
-        int userId = 0;
-
-        if( user != null )
-            userId = user.Id;
-
         using var db = new ImageContext();
 
         var myBaskets = await db.Baskets.Where(x => x.UserId == null || x.UserId == userId)
@@ -138,16 +133,16 @@ public class BasketService : IBasketService
         if( ! myBaskets.Any( x => x.UserId == userId ))
         {
 
-            var newBasketName = (user != null) ? s_MyBasket : s_DefaultBasket;
+            var newBasketName = (userId.HasValue) ? s_MyBasket : s_DefaultBasket;
 
-            if( user == null && myBaskets.Any( x => x.Name.Equals(s_DefaultBasket)))
+            if( userId.HasValue && myBaskets.Any( x => x.Name.Equals(s_DefaultBasket)))
             {
                 // Don't create another default basket if one already exists.
                 return myBaskets;
             }
 
             // Create a default (user) basket if none exists.
-            var userBasket = new Basket { Name = newBasketName, UserId = user?.Id };
+            var userBasket = new Basket { Name = newBasketName, UserId = userId };
             db.Baskets.Add(userBasket);
             await db.SaveChangesAsync("SaveBasket");
 
@@ -300,12 +295,10 @@ public class BasketService : IBasketService
             throw new ArgumentException($"A basket called {name} already exists.");
     }
 
-    public async Task Save(Basket basket, string newName, int? newUserId )
+    public async Task Save(Basket basket)
     {
         using var db = new ImageContext();
 
-        basket.Name = newName;
-        basket.UserId = newUserId;
         db.Baskets.Update(basket);
         await db.SaveChangesAsync("EditBasket");
 
@@ -344,7 +337,7 @@ public class BasketService : IBasketService
     {
         // Get the list of user baskets. This will always return at
         // least one (because if there are none, one will be created).
-        var userBaskets = await GetUserBaskets( user );
+        var userBaskets = await GetUserBaskets( user?.Id );
 
         var defaultBasket = userBaskets.FirstOrDefault(x => x.Name == s_MyBasket && x.UserId == user?.Id );
 

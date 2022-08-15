@@ -6,7 +6,7 @@
 @inject IBasketService basketService
 @inject NavigationManager NavigationManager
 @inject ClientUserService userService
-@inject APIConfigService userConfigService
+@inject ClientConfigService userConfigService
 
 <div class="SearchBox">
     <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
@@ -82,7 +82,7 @@
     {
         var watch = new Stopwatch("LoadBaskets");
 
-        var myBaskets = await basketService.GetUserBaskets(userService.User);
+        var myBaskets = await basketService.GetUserBaskets(userService.User?.Id);
 
         this.baskets.Clear();
         this.baskets.AddRange(myBaskets);

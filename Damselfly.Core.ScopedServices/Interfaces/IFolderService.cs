@@ -6,7 +6,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 public interface IFolderService
 {
     event Action OnChange;
-    Task<List<Folder>> GetFilteredFolders(string filterTerm);
+    Task<ICollection<Folder>> GetFilteredFolders(string filterTerm);
     void ToggleExpand(Folder item);
 }
 

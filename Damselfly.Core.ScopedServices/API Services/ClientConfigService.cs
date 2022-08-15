@@ -8,7 +8,7 @@ using Damselfly.Web.Utils;
 namespace Damselfly.Core.ScopedServices;
 
 // TODO: Write values to the back-end service
-public class APIConfigService : BaseConfigService, IConfigService
+public class ClientConfigService : BaseConfigService, IConfigService
 {
     public override void InitialiseCache()
     {

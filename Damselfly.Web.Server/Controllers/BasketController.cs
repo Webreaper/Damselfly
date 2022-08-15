@@ -30,5 +30,11 @@ public class BasketController : ControllerBase
     {
         _service.DeleteBasket(basketId);
     }
+
+    [HttpGet("/api/baskets/{userId}")]
+    public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
+    {
+        return await _service.GetUserBaskets(userId);
+    }
 }
 

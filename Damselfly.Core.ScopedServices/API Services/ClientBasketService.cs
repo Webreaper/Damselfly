@@ -1,13 +1,15 @@
 ﻿using System;
+using Damselfly.Core.Constants;
+using System.Net.Http.Json;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class APIBasketService : BaseClientService, IBasketService
+public class ClientBasketService : BaseClientService, IBasketService
 {
-	public APIBasketService(HttpClient client) : base(client) { }
+	public ClientBasketService(HttpClient client) : base(client) { }
 
     /// <summary>
     /// The list of selected images in the basket
@@ -39,10 +41,10 @@ public class APIBasketService : BaseClientService, IBasketService
         if (basket == null)
             basket = CurrentBasket;
 
-        throw new NotImplementedException();
-	}
+        await httpClient.GetFromJsonAsync<ServiceStatus>($"/api/basket/state/{newState}");
+    }
 
-	public Basket CurrentBasket { get; }
+    public Basket CurrentBasket { get; }
 
 	public bool IsSelected( Image image )
 	{
@@ -51,17 +53,20 @@ public class APIBasketService : BaseClientService, IBasketService
 
     public async Task<Basket> Create(string name, int? userId)
     {
-        throw new NotImplementedException();
+        var basket = new Basket { Name = name, UserId = userId };
+        var response = await httpClient.PutAsJsonAsync<Basket>($"/api/basket", basket);
+        return await response.Content.ReadFromJsonAsync<Basket>();
     }
 
-    public async Task Save(Basket basket, string name, int? userId)
+    public async Task Save(Basket basket)
     {
-        throw new NotImplementedException();
+        var response = await httpClient.PutAsJsonAsync<Basket>($"/api/basket", basket);
     }
 
-    public async Task<ICollection<Basket>> GetUserBaskets(AppIdentityUser user)
+    public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
-        throw new NotImplementedException();
+        return await httpClient.GetFromJsonAsync<ICollection<Basket>>($"/api/baskets/{userId}");
+
     }
 }
 

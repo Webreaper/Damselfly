@@ -84,7 +84,7 @@
     {
         var watch = new Stopwatch("LoadBaskets");
 
-        var myBaskets = await basketService.GetUserBaskets(userService.User);
+        var myBaskets = await basketService.GetUserBaskets(userService.User?.Id);
 
         this.baskets.Clear();
         this.baskets.AddRange(myBaskets);

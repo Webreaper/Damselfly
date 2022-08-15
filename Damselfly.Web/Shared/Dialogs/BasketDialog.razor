@@ -113,7 +113,9 @@
             }
             else if (Mode == "Edit")
             {
-                await basketService.Save(Basket, model.BasketName, userId);
+                Basket.Name = model.BasketName;
+                Basket.UserId = userId;
+                await basketService.Save(Basket);
 
                 statusService.StatusText = $"Basket '{model.BasketName}' saved.";
             }
