@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
+using System.Text.Json.Serialization;
 using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Models;
@@ -35,6 +36,7 @@ public class Image
     public DateTime LastUpdated { get; set; }
 
     public virtual ImageMetaData MetaData { get; set; }
+    [JsonIgnore]
     public virtual Hash Hash { get; set; }
 
     // An image can appear in many baskets

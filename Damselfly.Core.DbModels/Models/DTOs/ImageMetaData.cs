@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -35,9 +36,11 @@ public class ImageMetaData
     public double? Longitude { get; set; }
 
     public int? CameraId { get; set; }
+    [JsonIgnore]
     public virtual Camera Camera { get; set; }
 
     public int? LensId { get; set; }
+    [JsonIgnore]
     public virtual Lens Lens { get; set; }
 
     public string DominantColor { get; set; }

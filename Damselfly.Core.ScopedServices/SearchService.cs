@@ -13,6 +13,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net.Http.Json;
 using System.Net.Http;
 using Damselfly.Core.ScopedServices.Interfaces;
+using System.Text.Json;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -166,18 +167,6 @@ public class SearchService : BaseClientService
 
     public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
     {
-        //var response = await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
-
-        var response = await httpClient.GetAsync("/api/search");
-        var json = await response.Content.ReadAsStringAsync();
-
-        Console.WriteLine($"JSON: {json}");
-
-        var watch = new Stopwatch("Deserialize");
-        var results = System.Text.Json.JsonSerializer.Deserialize<SearchResponse>(json)!;
-        watch.Stop();
-
-        Console.WriteLine($"Deserialized images in {watch.ElapsedTime}ms");
-        return results;
+        return await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
     }
 }

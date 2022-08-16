@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Damselfly.Core.Models;
 
@@ -18,6 +19,7 @@ public class Folder
     public DateTime? FolderScanDate { get; set; }
     public ICollection<Folder> Children { get; set; }
 
+    [JsonIgnore]
     public virtual List<Image> Images { get; } = new List<Image>();
 
     public override string ToString()
