@@ -17,6 +17,7 @@ public class Folder
     public virtual Folder? Parent { get; set; }
 
     public DateTime? FolderScanDate { get; set; }
+    [JsonIgnore]
     public ICollection<Folder> Children { get; set; }
 
     [JsonIgnore]

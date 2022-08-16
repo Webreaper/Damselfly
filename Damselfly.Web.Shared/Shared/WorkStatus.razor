@@ -64,10 +64,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
         ProcessingStatus = await workService.GetWorkStatus();
         workService.OnStatusChanged += StatusChanged;
+
+        await base.OnInitializedAsync();
     }
 
     public void Dispose()
