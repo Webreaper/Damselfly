@@ -28,7 +28,7 @@ public class ThemeController : ControllerBase
     [HttpGet("/api/theme")]
     public async Task<ThemeConfig> GetDefaultTheme()
     {
-        return _service.DarkTheme;
+        return await Get( "Green" );
     }
 
     [HttpGet("/api/theme/{name}")]
@@ -39,7 +39,7 @@ public class ThemeController : ControllerBase
             return _service.Themes.FirstOrDefault(x => x.Name == name);
         }
 
-        return await GetDefaultTheme();
+        return _service.DarkTheme;
     }
 }
 

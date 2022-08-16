@@ -208,7 +208,8 @@ public class Program
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
         builder.Services.AddControllersWithViews()
-                .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+                .AddJsonOptions(o => {
+                    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; });
         builder.Services.AddRazorPages();
 
 #if DEBUG

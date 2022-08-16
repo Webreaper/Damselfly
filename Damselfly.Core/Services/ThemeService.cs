@@ -167,7 +167,8 @@ public class ThemeService
         TableLines = "rgba(255,255,255, 0.12)",
         LinesDefault = "rgba(255,255,255, 0.12)",
         LinesInputs = "rgba(255,255,255, 0.3)",
-        TextDisabled = "rgba(255,255,255, 0.2)"
+        TextDisabled = "rgba(255,255,255, 0.2)",
+        Tertiary = "#2f2f2f" // Unknown
     };
 
     public ThemeConfig LightTheme = new ThemeConfig
@@ -197,6 +198,7 @@ public class ThemeService
         LinesDefault = "rgba(200,200,200, 0.12)",
         LinesInputs = "rgba(255,255,255, 0.3)",
         TextDisabled = "rgba(100,100,100, 0.2)",
-        Warning = "#666600"
+        Warning = "#666600",
+        Tertiary = "#2f2f2f" // Unknown
     };
 }

@@ -166,9 +166,18 @@ public class SearchService : BaseClientService
 
     public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
     {
-        Stopwatch watch = new Stopwatch("GetImagesFromJson");
-        var response = await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
+        //var response = await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
+
+        var response = await httpClient.GetAsync("/api/search");
+        var json = await response.Content.ReadAsStringAsync();
+
+        Console.WriteLine($"JSON: {json}");
+
+        var watch = new Stopwatch("Deserialize");
+        var results = System.Text.Json.JsonSerializer.Deserialize<SearchResponse>(json)!;
         watch.Stop();
-        return response;
+
+        Console.WriteLine($"Deserialized images in {watch.ElapsedTime}ms");
+        return results;
     }
 }
