@@ -7,6 +7,7 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Services;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -17,10 +18,10 @@ namespace Damselfly.Core.ScopedServices;
 public class UserFolderService
 {
     private readonly FolderService _folderService;
-    private readonly SearchService _searchService;
+    private readonly ISearchService _searchService;
     private readonly UserConfigService _configService;
 
-    public UserFolderService( FolderService folderService, SearchService searchService, UserConfigService configService)
+    public UserFolderService( FolderService folderService, ISearchService searchService, UserConfigService configService)
     {
         _folderService = folderService;
         _searchService = searchService;

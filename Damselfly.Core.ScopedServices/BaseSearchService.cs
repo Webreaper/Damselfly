@@ -24,9 +24,9 @@ namespace Damselfly.Core.ScopedServices;
 /// back (say) 200 images, and then requery for the next 200 when the user scrolls.
 /// This saves us returning thousands of items for a search.
 /// </summary>
-public class SearchService : BaseClientService
+public abstract class BaseSearchService : BaseClientService
 {
-    public SearchService(HttpClient client, ICachedDataService dataService) : base(client)
+    public BaseSearchService(HttpClient client, ICachedDataService dataService) : base(client)
     {
         _service = dataService;
     }
@@ -34,6 +34,8 @@ public class SearchService : BaseClientService
     private readonly ICachedDataService _service;
     private readonly SearchQuery query = new SearchQuery();
     public List<Image> SearchResults { get; private set; } = new List<Image>();
+
+    public abstract Task<SearchResponse> GetQueryImagesAsync(int start, int count);
 
     public void NotifyStateChanged()
     {
@@ -163,10 +165,5 @@ public class SearchService : BaseClientService
 
             return "No Filter";
         }
-    }
-
-    public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
-    {
-        return await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
     }
 }

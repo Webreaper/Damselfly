@@ -9,4 +9,10 @@ public class SearchResponse
     public Image[] SearchResults { get; set; }
 }
 
+public class SearchRequest
+{
+    public SearchQuery Query { get; set; }
+    public int First { get; set; }
+    public int Count { get; set; }
+}
 

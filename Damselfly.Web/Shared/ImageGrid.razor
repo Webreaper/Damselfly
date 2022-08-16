@@ -2,8 +2,7 @@
 @inject ThumbnailService thumbService
 @inject UserStatusService statusService
 @inject BasketService basketService
-@inject SearchService searchService
-@inject SearchQueryService searchQueryService
+@inject ISearchService searchService
 
 @inject ImageCache imageCache
 @inject UserConfigService configService
@@ -282,8 +281,7 @@
 
             ChangeThumbSize(CurrentThumbSize);
 
-            var query = searchService.Query;
-            var response = await searchQueryService.GetQueryImagesAsync(query, gridImages.Count(), imagesToLoad);
+            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
             if (response.SearchResults.Any())
             {

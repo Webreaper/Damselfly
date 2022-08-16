@@ -17,8 +17,6 @@ namespace Damselfly.Core.Services;
 
 public class SearchQueryService
 {
-    public List<Image> SearchResults { get; private set; } = new List<Image>();
-
     private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly IConfigService _configService;
@@ -53,32 +51,13 @@ public class SearchQueryService
     /// <param name="first"></param>
     /// <param name="count"></param>
     /// <returns>True if there's more data available for the requested range</returns>
-    private async Task<bool> LoadMoreData(SearchQuery query, int first, int count)
+    private async Task<SearchResponse> LoadMoreData(SearchQuery query, int first, int count)
     {
+        var response = new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
+
         // Assume there is more data available - unless the search
         // returns less than we asked for (see below).
         var moreDataAvailable = true;
-
-        if (first < SearchResults.Count() && first + count < SearchResults.Count())
-        {
-            // Data already loaded. Nothing to do.
-            return moreDataAvailable;
-        }
-
-        // Calculate how many results we have already
-        if (SearchResults.Count > first)
-        {
-            int firstOffset = SearchResults.Count - first;
-            first = SearchResults.Count;
-            count -= firstOffset;
-        }
-
-        if (count == 0)
-        {
-            // If we have exactly the right number of results,
-            // assume there's more to come
-            return true;
-        }
 
         using var db = new ImageContext();
         var watch = new Stopwatch("ImagesLoadData");
@@ -297,25 +276,17 @@ public class SearchQueryService
         }
 
         // Set the results on the service property
-        SearchResults.AddRange(enrichedImages);
+        response.SearchResults = enrichedImages.ToArray();
 
         _statusService.StatusText = $"Found at least {enrichedImages.Count} images that match the search query.";
 
-        return moreDataAvailable;
-    }
-
-    public async Task<SearchResponse> GetQueryImagesAsync(SearchQuery query, int first, int count)
-    {
-        // Load more data if we need it.
-        bool moreDataAvailable = await LoadMoreData(query, first, count);
-
-        var response = new SearchResponse
-        {
-            MoreDataAvailable = moreDataAvailable,
-            SearchResults = SearchResults.Skip(first).Take(count).ToArray()
-        };
-
         return response;
     }
+
+    public async Task<SearchResponse> GetQueryImagesAsync(SearchRequest request)
+    {
+        // Load more data if we need it.
+        return await LoadMoreData(request.Query, request.First, request.Count);
+   }
 }
 

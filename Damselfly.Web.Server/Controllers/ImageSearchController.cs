@@ -26,11 +26,10 @@ public class ImageSearchController : ControllerBase
         _logger.LogInformation($"Initialised ImageSearch controller");
     }
 
-    [HttpGet]
-    public async Task<SearchResponse> Get()
+    [HttpPost]
+    public async Task<SearchResponse> SubmitSearch( SearchRequest request )
     {
-        var query = new SearchQuery();
-        return await _searchService.GetQueryImagesAsync(query, 0, 100);
+        return await _searchService.GetQueryImagesAsync( request );
     }
 }
 

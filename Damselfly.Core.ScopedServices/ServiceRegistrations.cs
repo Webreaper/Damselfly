@@ -20,13 +20,14 @@ public static class ServiceRegistrations
         services.AddScoped<ClientWordpressService>();
         services.AddScoped<ClientWorkService>();
         services.AddScoped<NavigationService>();
-        services.AddScoped<SearchService>();
+        services.AddScoped<ClientSearchService>();
         services.AddScoped<ClientConfigService>();
         services.AddScoped<StatusService>();
         services.AddScoped<UserStatusService>();
         services.AddScoped<ClientFolderService>();
         services.AddScoped<ClientImageCacheService>();
 
+        services.AddScoped<ISearchService>(x => x.GetRequiredService<ClientSearchService>());
         services.AddScoped<IWorkService>(x => x.GetRequiredService<ClientWorkService>());
         services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());
         services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());

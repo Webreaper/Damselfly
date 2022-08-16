@@ -23,9 +23,9 @@ public class NavigationService
     public NavigationContexts Context { get; set; } = NavigationContexts.Search;
     public Image CurrentImage { get { return theImage; } set { theImage = value; NotifyStateChanged( theImage ); } }
     private readonly IBasketService _basketService;
-    private readonly SearchService _searchService;
+    private readonly ISearchService _searchService;
 
-    public NavigationService( IBasketService basketService, SearchService searchService)
+    public NavigationService( IBasketService basketService, ISearchService searchService)
     {
         _basketService = basketService;
         _searchService = searchService;

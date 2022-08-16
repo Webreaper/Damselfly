@@ -74,7 +74,7 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddBlazorServerUIServices( this IServiceCollection services )
 	{
-        services.AddScoped<SearchService>();
+        services.AddScoped<ServerSearchService>();
         services.AddScoped<SearchQueryService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<BasketService>();
@@ -87,6 +87,7 @@ public static class ServiceRegistrations
         services.AddScoped<UserThemeService>();
         services.AddScoped<UserTagFavouritesService>();
 
+        services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());
         services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
 
