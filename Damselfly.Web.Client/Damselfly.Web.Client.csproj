@@ -34,8 +34,9 @@
     <None Remove="Blazored.FluentValidation" />
     <None Remove="FluentValidation" />
     <None Remove="Humanizer" />
-    <None Remove="Shared\Dialogs\" />
     <None Remove="Components\" />
+    <None Remove="Shared\" />
+    <None Remove="Pages\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
@@ -58,7 +59,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Shared\Dialogs\" />
     <Folder Include="Components\" />
+    <Folder Include="Shared\" />
+    <Folder Include="Pages\" />
   </ItemGroup>
 </Project>

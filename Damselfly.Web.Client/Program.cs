@@ -35,7 +35,7 @@ public class Program
         builder.Services.AddScoped<ContextMenuService>();
 
         builder.Services.AddDamselflyUIServices();
-       
+
         await builder.Build().RunAsync();
     }
 }

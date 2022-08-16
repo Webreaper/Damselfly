@@ -7,23 +7,23 @@
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
     @if (Editing)
     {
-    <div class="object-editor">
-        <BlazoredTypeahead SearchMethod="SearchNames" EnableDropDown="false"
-                           placeholder="Enter a Name" Debounce="100" 
-                           @bind-Value="@TypeAheadName" @onblur="@LostFocus">
-            <SelectedTemplate>
-                @{
-                    _ = UpdateName(context);
-                }
-            </SelectedTemplate>
-            <ResultTemplate>
-                @context
-            </ResultTemplate>
-            <NotFoundTemplate>
-                @tagSearchText
-            </NotFoundTemplate>
-        </BlazoredTypeahead>
-    </div>
+        <div class="object-editor">
+            <BlazoredTypeahead SearchMethod="SearchNames" EnableDropDown="false"
+                               placeholder="Enter a Name" Debounce="100"
+                               @bind-Value="@TypeAheadName" @onblur="@LostFocus">
+                <SelectedTemplate>
+                    @{
+                        _ = UpdateName(context);
+                    }
+                </SelectedTemplate>
+                <ResultTemplate>
+                    @context
+                </ResultTemplate>
+                <NotFoundTemplate>
+                    @tagSearchText
+                </NotFoundTemplate>
+            </BlazoredTypeahead>
+        </div>
     }
     else
     {

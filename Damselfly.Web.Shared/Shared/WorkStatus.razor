@@ -3,18 +3,22 @@
 
 @inject NavigationManager Navigation
 @inject ClientConfigService configService
-@inject ClientWorkService workService
+@inject IWorkService workService
 @inject ClientUserService userService
 @inject ContextMenuService contextMenuService
 
 @implements IDisposable
 
-<div class="damselfly-statusbarpanel" title="@StatusTitle"
-        @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true"
-        @onclick="@(args => ShowContextMenu(args))">
-    <i class="processing-icon fas @StatusIcon" />
-    <label>@ProcessingStatus.StatusText</label>
-</div>
+@if (ProcessingStatus != null )
+{
+    <div class="damselfly-statusbarpanel" title="@StatusTitle"
+            @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true"
+            @onclick="@(args => ShowContextMenu(args))">
+        <i class="processing-icon fas @StatusIcon" />
+        <label>@ProcessingStatus.StatusText</label>
+    </div>
+}
+
 @code{
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }

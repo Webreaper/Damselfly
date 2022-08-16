@@ -18,18 +18,19 @@ namespace Damselfly.Web.Controllers;
 /// Image Controller used for dynamic as-loaded transforms
 /// TODO: Convert this to use minimal APIs?
 /// </summary>
-[Produces("image/jpeg")]
 [Route("images")]
 [ApiController]
 [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller methods cannot be static")]
 public class ImageController : Controller
 {
+    [Produces("image/jpeg")]
     [HttpGet("/dlimage/{imageId}")]
     public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache)
     {
         return await Image(imageId, cancel, imageCache, true);
     }
 
+    [Produces("image/jpeg")]
     [HttpGet("/rawimage/{imageId}")]
     public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache, bool isDownload = false )
     {
@@ -70,6 +71,7 @@ public class ImageController : Controller
         return result;
     }
 
+    [Produces("image/jpeg")]
     [HttpGet("/thumb/{thumbSize}/{imageId}")]
     public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel,
                     [FromServices] ImageCache imageCache, [FromServices] ThumbnailService thumbService)
@@ -177,6 +179,7 @@ public class ImageController : Controller
         }
     }
 
+    [Produces("image/jpeg")]
     [HttpGet("/face/{faceId}")]
     public async Task<IActionResult> Face(string faceId, CancellationToken cancel,
             [FromServices] ImageProcessService imageProcessor,
@@ -228,5 +231,10 @@ public class ImageController : Controller
 
         return result;
     }
-   
+
+    [HttpGet("/api/image/{imageId}")]
+    public async Task<Image> Get(int imageId, [FromServices] ImageCache imageCache)
+    {
+        return await imageCache.GetCachedImage( imageId, null );
+    }
 }

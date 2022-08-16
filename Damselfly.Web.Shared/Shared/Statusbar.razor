@@ -1,0 +1,43 @@
+﻿@using Damselfly
+
+@implements IDisposable
+
+@inject UserStatusService statusService
+
+<div class="damselfly-statusbar">
+    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
+    <WorkStatus />
+    <LoginDisplay />
+    <Toolbar />
+</div>
+
+@code
+{
+    private string StatusText { get; set; }
+
+    private void UpdateStatus(string newText)
+    {
+        InvokeAsync(() =>
+        {
+            if (StatusText != newText)
+            {
+                StatusText = newText;
+                StateHasChanged();
+            }
+        });
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            statusService.OnChange += UpdateStatus;
+        }
+    }
+
+    public void Dispose()
+    {
+        statusService.OnChange -= UpdateStatus;
+    }
+
+}

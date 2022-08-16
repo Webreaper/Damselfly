@@ -25,6 +25,12 @@ public class WorkController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("/api/work/status")]
+    public async Task<ServiceStatus> GetStatus()
+    {
+        return await _service.GetWorkStatus();
+    }
+
     [HttpPost("/api/work/pause")]
     public async Task PauseWork( bool paused )
     {

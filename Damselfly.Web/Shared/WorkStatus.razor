@@ -1,9 +1,8 @@
-﻿@using Damselfly.Core.DbModels
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
 
 @inject NavigationManager Navigation
 @inject ConfigService configService
-@inject WorkService workService
+@inject IWorkService workService
 @inject UserService userService
 @inject ContextMenuService contextMenuService
 
@@ -58,11 +57,11 @@
         } );
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        base.OnInitializedAsync();
 
-        ProcessingStatus = workService.Status;
+        ProcessingStatus = await workService.GetWorkStatus();
         workService.OnStatusChanged += StatusChanged;
     }
 
@@ -86,13 +85,13 @@
                 menuList.Add(new ContextMenuItem() { Text = "Pause Processing", Value = 0 });
             }
 
-            contextMenuService.Open(args, menuList, (args) =>
+            contextMenuService.Open(args, menuList, async (args) =>
             {
                 contextMenuService.Close();
                 switch (args.Value)
                 {
-                    case 0: workService.Paused = true; break;
-                    case 1: workService.Paused = false; break;
+                    case 0: await workService.Pause( true ); break;
+                    case 1: await workService.Pause( false ); break;
                 }
             });
         }

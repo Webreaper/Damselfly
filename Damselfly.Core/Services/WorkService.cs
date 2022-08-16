@@ -6,6 +6,8 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using System.Threading;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services;
 
@@ -17,7 +19,7 @@ namespace Damselfly.Core.Services;
 /// This class also has the option to throttle CPU usage, so that the processor
 /// won't get absolutely hammered.
 /// </summary>
-public class WorkService
+public class WorkService : IWorkService
 {
 
 #if DEBUG
@@ -36,7 +38,9 @@ public class WorkService
     private CPULevelSettings _cpuSettings = new CPULevelSettings();
 
     public bool Paused { get; set; }
-    public ServiceStatus Status { get; private set; } = new ServiceStatus();
+    public Task Pause(bool paused) { Paused = paused; return Task.CompletedTask; }
+    public Task<ServiceStatus> GetWorkStatus() { return Task.FromResult(Status); }
+    private ServiceStatus Status { get; set; } = new ServiceStatus();
     public event Action<ServiceStatus> OnStatusChanged;
 
     public WorkService( ConfigService configService )

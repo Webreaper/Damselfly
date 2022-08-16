@@ -50,6 +50,7 @@ public static class ServiceRegistrations
         services.AddSingleton<ImageRecognitionService>();
         services.AddSingleton<ImageCache>();
         services.AddSingleton<WorkService>();
+        services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
 
         services.AddSingleton<CachedDataService>();
         services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
