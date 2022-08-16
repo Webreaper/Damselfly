@@ -53,6 +53,9 @@
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Web.Components\Damselfly.Web.Components.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Shared\Dialogs\" />

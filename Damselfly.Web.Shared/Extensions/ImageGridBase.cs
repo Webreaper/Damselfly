@@ -12,7 +12,7 @@ namespace Damselfly.Web.Models;
 /// Base class for the main image grid and basket image grids.
 /// Implements the selection model logic for Mouse-clicks
 /// </summary>
-public class ImageGridBase : ComponentBase 
+public class ImageGridBase : ComponentBase
 {
     [Inject]
     protected SelectionService selectionService { get; set; }

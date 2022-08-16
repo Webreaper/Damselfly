@@ -1,24 +1,27 @@
 ﻿
-@using MudBlazor.Utilities;
-
 @inject ClientThemeService themeService
 @inject ClientConfigService configService
 @inject ILogger<ThemeSwitcher> logger
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 
-<MudThemeProvider Theme="@MudTheme" />
+@if (mudTheme != null)
+{
+    <MudThemeProvider Theme="@mudTheme" />
+}
 
 @code {
     private long cacheBuster = 1;
-    private MudTheme MudTheme;
+    private MudTheme? mudTheme;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             themeService.OnChangeTheme += SwitchTheme;
+
             var theme = await themeService.GetDefaultTheme();
+
             SwitchTheme(theme);
         }
     }
@@ -28,10 +31,11 @@
         themeService.OnChangeTheme -= SwitchTheme;
     }
 
-    private static MudColor CreateMudColor( string value)
+    private static MudColor? CreateMudColor( string value)
     {
         if (string.IsNullOrEmpty(value))
             return null;
+
         return new MudColor(value);
     }
 
@@ -50,7 +54,7 @@
                 TableLines = CreateMudColor( theme.TableLines),
                 LinesInputs = CreateMudColor( theme.LinesInputs),
                 TextDisabled = CreateMudColor( theme.TextDisabled),
-                Tertiary = CreateMudColor( theme.Tertiary),
+                //Tertiary = CreateMudColor( theme.Tertiary),
                 ActionDisabledBackground = CreateMudColor( theme.ActionDisabledBackground),
                 ActionDisabled = CreateMudColor( theme.ActionDisabled),
                 Background = CreateMudColor( theme.Background),
@@ -77,7 +81,7 @@
             var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
             _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);
 
-            MudTheme = CreateMudTheme(newTheme);
+            mudTheme = CreateMudTheme(newTheme);
 
             // Trigger a statechanged for Mud
             StateHasChanged();
