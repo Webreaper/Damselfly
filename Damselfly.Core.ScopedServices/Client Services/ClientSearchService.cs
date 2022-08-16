@@ -25,14 +25,36 @@ public class ClientSearchService : BaseSearchService, ISearchService
 {
     public ClientSearchService(HttpClient client, ICachedDataService dataService) : base(client, dataService) { }
 
-    public override async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
+    public override async Task<SearchResponse> GetQueryImagesAsync( int first, int count )
     {
+        if (first < SearchResults.Count() && first + count < SearchResults.Count())
+        {
+            // Data already loaded. Nothing to do.
+            return new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
+        }
+
+        // Calculate how many results we have already
+        if (SearchResults.Count > first)
+        {
+            int firstOffset = SearchResults.Count - first;
+            first = SearchResults.Count;
+            count -= firstOffset;
+        }
+
+        if (count == 0)
+        {
+            // If we have exactly the right number of results,
+            // assume there's more to come
+            return new SearchResponse { MoreDataAvailable = true, SearchResults = new Image[0] };
+        }
+
         var request = new SearchRequest
         {
             Query = this.Query,
-            First = start,
+            First = first,
             Count = count
         };
+
         var response = await httpClient.PostAsJsonAsync("/api/search", request );
 
         return await response.Content.ReadFromJsonAsync<SearchResponse>();
