@@ -1,6 +1,7 @@
 ﻿using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
@@ -15,7 +16,7 @@ namespace Damselfly.Web.Server.Controllers;
 [Route("/api/basket")]
 public class BasketController : ControllerBase
 {
-    private readonly BasketService _service;
+    private readonly IBasketService _service;
 
     private readonly ILogger<BasketController> _logger;
 

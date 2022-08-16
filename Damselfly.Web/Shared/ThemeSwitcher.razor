@@ -7,20 +7,20 @@
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 
-<MudThemeProvider Theme="@MudTheme" />
+<MudThemeProvider Theme="@themeConfig.MudTheme" />
 
 @code {
     private long cacheBuster = 1;
-    private MudTheme MudTheme;
+    private ThemeConfig themeConfig;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        MudTheme = userthemeService.CurrentTheme.MudTheme;
+        themeConfig = userthemeService.CurrentTheme;
 
-        if (MudTheme == null)
-            MudTheme = themeService.DarkTheme;
+        if (themeConfig == null)
+            themeConfig = themeService.DarkTheme;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -48,13 +48,13 @@
 
             if (newTheme.MudTheme != null)
             {
-                MudTheme = newTheme.MudTheme;
+                themeConfig = newTheme;
             }
 
-            if (MudTheme == null)
+            if (themeConfig == null)
             {
                 Logging.Log("No palatte - defaulting");
-                MudTheme = themeService.DarkTheme;
+                themeConfig = themeService.DarkTheme;
             }
 
             // Trigger a statechanged for Mud

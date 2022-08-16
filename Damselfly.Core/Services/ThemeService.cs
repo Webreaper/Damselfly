@@ -45,11 +45,7 @@ public class ThemeService
             var themeFullPath = Path.Combine(themesFolder.FullName, themeFile);
 
             // Do the mapping to create a matching MudTheme from the theme
-            var mudTheme = CreateMudPalletteFromCSS(themeFullPath);
-
-            var config = new ThemeConfig { MudTheme = mudTheme,
-                                           Path = $"themes/{themeFile}",
-                                           Name = name };
+            var config = CreateThemeConfigFromCSS(themeFullPath, $"themes/{themeFile}", name );
 
             Logging.Log($"Configured theme '{name}'.");
             _themeConfigs.Add(name, config);
@@ -74,13 +70,13 @@ public class ThemeService
         return null;
     }
 
-    private MudColor Color( IDictionary<string, string> pairs, string ID )
+    private string Color( IDictionary<string, string> pairs, string ID )
     {
         var value = string.Empty;
         try
         {
-            if( pairs.TryGetValue( ID, out value ) )
-                return new MudColor(value);
+            if (pairs.TryGetValue(ID, out value))
+                return value;
         }
         catch( Exception ex )
         {
@@ -96,7 +92,7 @@ public class ThemeService
     /// </summary>
     /// <param name="newTheme"></param>
     /// <returns></returns>
-    private MudTheme CreateMudPalletteFromCSS(string themeFullPath)
+    private ThemeConfig CreateThemeConfigFromCSS(string themeFullPath, string configPath, string themeName)
     {
 
         try
@@ -110,7 +106,7 @@ public class ThemeService
                                 .Select(x => x.Split(':', 2))
                                 .ToDictionary(x => x.First().Trim(), y => y.Last().Trim());
 
-            var palette = new Palette
+            var themeConfig = new ThemeConfig
             {
                 Black = Color(pairs, "main-background"),
                 Primary = Color(pairs, "body-text"), // Primary highlighted text, such as selected tab text
@@ -138,7 +134,7 @@ public class ThemeService
                 LinesDefault = Color(pairs, "keyword-border"), // Unknown
             };
 
-            return new MudTheme { Palette = palette };
+            return themeConfig;
         }
         catch (Exception ex)
         {
@@ -147,64 +143,62 @@ public class ThemeService
         }
     }
 
-    public MudTheme DarkTheme = new MudTheme
+    public ThemeConfig DarkTheme = new ThemeConfig
     {
-        Palette = new Palette
-        {
-            Primary = "#dddddd",
-            PrimaryDarken = "#aaaaaa",
-            PrimaryLighten = "#FFFFFF",
-            Black = "#222222",
-            Background = "#000000",
-            BackgroundGrey = "#232323",
-            Surface = "#272727",
-            DrawerBackground = "#2f2f2f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#2f2f2f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(255,255,255, 0.50)",
-            TextSecondary = "rgba(255,255,255, 0.70)",
-            ActionDefault = "#adadad",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            Divider = "rgba(255,255,255, 0.12)",
-            DividerLight = "rgba(255,255,255, 0.06)",
-            TableLines = "rgba(255,255,255, 0.12)",
-            LinesDefault = "rgba(255,255,255, 0.12)",
-            LinesInputs = "rgba(255,255,255, 0.3)",
-            TextDisabled = "rgba(255,255,255, 0.2)"
-        }
+        Name = "Dark Theme",
+
+        Primary = "#dddddd",
+        PrimaryDarken = "#aaaaaa",
+        PrimaryLighten = "#FFFFFF",
+        Black = "#222222",
+        Background = "#000000",
+        BackgroundGrey = "#232323",
+        Surface = "#272727",
+        DrawerBackground = "#2f2f2f",
+        DrawerText = "rgba(255,255,255, 0.50)",
+        DrawerIcon = "rgba(255,255,255, 0.50)",
+        AppbarBackground = "#2f2f2f",
+        AppbarText = "rgba(255,255,255, 0.70)",
+        TextPrimary = "rgba(255,255,255, 0.50)",
+        TextSecondary = "rgba(255,255,255, 0.70)",
+        ActionDefault = "#adadad",
+        ActionDisabled = "rgba(255,255,255, 0.26)",
+        ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+        Divider = "rgba(255,255,255, 0.12)",
+        DividerLight = "rgba(255,255,255, 0.06)",
+        TableLines = "rgba(255,255,255, 0.12)",
+        LinesDefault = "rgba(255,255,255, 0.12)",
+        LinesInputs = "rgba(255,255,255, 0.3)",
+        TextDisabled = "rgba(255,255,255, 0.2)"
     };
 
-    public MudTheme LightTheme = new MudTheme
+    public ThemeConfig LightTheme = new ThemeConfig
     {
-        Palette = new Palette
-        {
-            Primary = "#444444",
-            PrimaryDarken = "#222222",
-            PrimaryLighten = "#777777",
-            Black = "#A7A7A7",
-            Background = "#f2f2f2",
-            BackgroundGrey = "#cfcfcf",
-            Surface = "#f7f7f7",
-            DrawerBackground = "#9f9f9f",
-            DrawerText = "rgba(255,255,255, 0.50)",
-            DrawerIcon = "rgba(255,255,255, 0.50)",
-            AppbarBackground = "#9f9f9f",
-            AppbarText = "rgba(255,255,255, 0.70)",
-            TextPrimary = "rgba(40,40,40, 0.80)",
-            TextSecondary = "rgba(100,100,100, 0.80)",
-            ActionDefault = "#2d2d2d",
-            ActionDisabled = "rgba(255,255,255, 0.26)",
-            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
-            Divider = "rgba(100,100,100, 0.12)",
-            DividerLight = "rgba(150,150,150, 0.06)",
-            TableLines = "rgba(100,100,100, 0.12)",
-            LinesDefault = "rgba(200,200,200, 0.12)",
-            LinesInputs = "rgba(255,255,255, 0.3)",
-            TextDisabled = "rgba(100,100,100, 0.2)",
-            Warning = "#666600"
-        }
+        Name = "Light Theme",
+
+        Primary = "#444444",
+        PrimaryDarken = "#222222",
+        PrimaryLighten = "#777777",
+        Black = "#A7A7A7",
+        Background = "#f2f2f2",
+        BackgroundGrey = "#cfcfcf",
+        Surface = "#f7f7f7",
+        DrawerBackground = "#9f9f9f",
+        DrawerText = "rgba(255,255,255, 0.50)",
+        DrawerIcon = "rgba(255,255,255, 0.50)",
+        AppbarBackground = "#9f9f9f",
+        AppbarText = "rgba(255,255,255, 0.70)",
+        TextPrimary = "rgba(40,40,40, 0.80)",
+        TextSecondary = "rgba(100,100,100, 0.80)",
+        ActionDefault = "#2d2d2d",
+        ActionDisabled = "rgba(255,255,255, 0.26)",
+        ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+        Divider = "rgba(100,100,100, 0.12)",
+        DividerLight = "rgba(150,150,150, 0.06)",
+        TableLines = "rgba(100,100,100, 0.12)",
+        LinesDefault = "rgba(200,200,200, 0.12)",
+        LinesInputs = "rgba(255,255,255, 0.3)",
+        TextDisabled = "rgba(100,100,100, 0.2)",
+        Warning = "#666600"
     };
 }

@@ -63,6 +63,11 @@ public static class ServiceRegistrations
 
         services.AddSingleton<SearchQueryService>();
 
+        services.AddScoped<BasketService>();
+        services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
+
+        services.AddScoped<UserStatusService>();
+
         return services;
     }
 

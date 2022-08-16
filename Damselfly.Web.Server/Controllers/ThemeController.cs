@@ -28,7 +28,7 @@ public class ThemeController : ControllerBase
     [HttpGet("/api/theme")]
     public async Task<ThemeConfig> GetDefaultTheme()
     {
-        return new ThemeConfig { MudTheme = _service.DarkTheme, Name = "Dark Theme", Path = String.Empty };
+        return _service.DarkTheme;
     }
 
     [HttpGet("/api/theme/{name}")]

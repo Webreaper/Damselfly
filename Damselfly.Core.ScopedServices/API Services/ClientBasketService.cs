@@ -73,24 +73,16 @@ public class ClientBasketService : BaseClientService, IBasketService
 
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
-        var uri = "/api/baskets";
-        if (userId.HasValue)
-            uri = $"/api/baskets/{userId}";
-
-        _logger.LogInformation($"Loading baskets from URI: {uri}");
-
         try
         {
-            return new List<Basket>();
-
-            // WASM: TODO:
-            // return await httpClient.GetFromJsonAsync<ICollection<Basket>>(uri);
+            return await httpClient.GetFromJsonAsync<ICollection<Basket>>("/api/baskets/");
         }
         catch( Exception ex )
         {
             _logger.LogError($"Error Retrieving Baskets: {ex}");
-            throw;
         }
+
+        return new List<Basket>();
     }
 }
 
