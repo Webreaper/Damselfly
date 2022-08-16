@@ -166,7 +166,9 @@ public class SearchService : BaseClientService
 
     public async Task<SearchResponse> GetQueryImagesAsync( int start, int count )
     {
-        //return new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
-        return await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
+        Stopwatch watch = new Stopwatch("GetImagesFromJson");
+        var response = await httpClient.GetFromJsonAsync<SearchResponse>("/api/search");
+        watch.Stop();
+        return response;
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System;
-using MudBlazor;
-using MudBlazor.Utilities;
 
 namespace Damselfly.Core.DbModels;
 
@@ -35,48 +33,5 @@ public class ThemeConfig
     public string LinesInputs { get; set; }
     public string TextDisabled { get; set; }
     public string Warning { get; set; }
-
-    private static MudColor CreateMudColor( string value )
-    {
-        if (string.IsNullOrEmpty(value))
-            return null;
-        return new MudColor(value);
-    }
-
-    public MudTheme MudTheme
-    {
-        get
-        {
-            return new MudTheme
-            {
-                Palette = new Palette
-                {
-                    Black = CreateMudColor(Black),
-                    Primary = CreateMudColor(Primary), 
-                    Surface = CreateMudColor(Surface),
-                    TextPrimary = CreateMudColor(TextPrimary),
-                    TextSecondary = CreateMudColor(TextSecondary),
-                    ActionDefault = CreateMudColor(ActionDefault),
-                    TableLines = CreateMudColor(TableLines),
-                    LinesInputs = CreateMudColor(LinesInputs),
-                    TextDisabled = CreateMudColor(TextDisabled),
-                    Tertiary = CreateMudColor(Tertiary),
-                    ActionDisabledBackground = CreateMudColor(ActionDisabledBackground),
-                    ActionDisabled = CreateMudColor(ActionDisabled),
-                    Background = CreateMudColor(Background),
-                    BackgroundGrey = CreateMudColor(BackgroundGrey),
-                    DrawerBackground = CreateMudColor(DrawerBackground),
-                    DrawerText = CreateMudColor(DrawerText),
-                    DrawerIcon = CreateMudColor(DrawerIcon),
-                    AppbarBackground = CreateMudColor(AppbarBackground),
-                    AppbarText = CreateMudColor(AppbarText),
-                    Divider = CreateMudColor(Divider),
-                    DividerLight = CreateMudColor(DividerLight),
-                    LinesDefault = CreateMudColor(LinesDefault),
-                }
-            };
-
-        }
-    }
 
 }

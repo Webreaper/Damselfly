@@ -1,9 +1,9 @@
 ﻿{
   "name": "Damselfly.Web",
-  "short_name": "Damselfly.Web",
+  "short_name": "Damselfly",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#000000",
   "theme_color": "#03173d",
   "prefer_related_applications": false,
   "icons": [
