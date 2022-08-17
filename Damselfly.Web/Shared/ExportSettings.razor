@@ -29,7 +29,7 @@
                 <div>
                     @if (FileExporter != null && FileExporter.IsDesktopHosted)
                     {
-                        <button @onclick="@FileExporter.ExportBasketToLocalFilesystem" class="btn btn-primary">Save Locally</button>
+                        <button @onclick="@ExportImagesToLocal" class="btn btn-primary">Save Locally</button>
                         }
                     <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
                 </div>
@@ -57,6 +57,11 @@
             StatusMessage = $"Loaded Config for '{selectedConfig.Name}'";
 
         StateHasChanged();
+    }
+
+    private async void ExportImagesToLocal()
+    {
+        await FileExporter.ExportImagesToLocalFilesystem(basketService.BasketImages);
     }
 
     private async Task SaveConfig()
