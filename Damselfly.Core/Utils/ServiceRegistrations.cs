@@ -42,7 +42,6 @@ public static class ServiceRegistrations
         services.AddSingleton<MetaDataService>();
         services.AddSingleton<ThumbnailService>();
         services.AddSingleton<ExifService>();
-        services.AddSingleton<TaskService>();
         services.AddSingleton<FolderService>();
         services.AddSingleton<DownloadService>();
         services.AddSingleton<WordpressService>();
@@ -55,6 +54,8 @@ public static class ServiceRegistrations
         services.AddSingleton<CachedDataService>();
         services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
 
+        services.AddSingleton<TaskService>();
+        services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
         return services;
     }
 

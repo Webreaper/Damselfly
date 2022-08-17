@@ -1,14 +1,13 @@
 ﻿using System;
 using Damselfly.Core.Models;
 
-namespace Damselfly.Core.ScopedServices.Interfaces
+namespace Damselfly.Core.ScopedServices.Interfaces;
+
+public interface ICachedDataService
 {
-    public interface ICachedDataService
-    {
-        string ImagesRootFolder { get; }
-        string ExifToolVer { get; }
-        ICollection<Camera> Cameras { get; }
-        ICollection<Lens> Lenses { get; }
-    }
+    string ImagesRootFolder { get; }
+    string ExifToolVer { get; }
+    ICollection<Camera> Cameras { get; }
+    ICollection<Lens> Lenses { get; }
 }
 

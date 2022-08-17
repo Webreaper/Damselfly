@@ -11,6 +11,10 @@ public static class ServiceRegistrations
     public static IServiceCollection AddDamselflyUIServices( this IServiceCollection services )
     {
         services.AddScoped<ViewDataService>();
+        services.AddScoped<StatusService>();
+        services.AddScoped<NavigationService>();
+        services.AddScoped<UserStatusService>();
+
         services.AddScoped<ClientDataService>();
         services.AddScoped<ClientBasketService>();
         services.AddScoped<ClientDownloadService>();
@@ -19,14 +23,16 @@ public static class ServiceRegistrations
         services.AddScoped<ClientRescanService>();
         services.AddScoped<ClientWordpressService>();
         services.AddScoped<ClientWorkService>();
-        services.AddScoped<NavigationService>();
         services.AddScoped<ClientSearchService>();
         services.AddScoped<ClientConfigService>();
-        services.AddScoped<StatusService>();
-        services.AddScoped<UserStatusService>();
         services.AddScoped<ClientFolderService>();
         services.AddScoped<ClientImageCacheService>();
+        services.AddScoped<ClientTagService>();
+        services.AddScoped<ClientTaskService>();
 
+        services.AddScoped<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
+        services.AddScoped<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ISearchService>(x => x.GetRequiredService<ClientSearchService>());
         services.AddScoped<IWorkService>(x => x.GetRequiredService<ClientWorkService>());
         services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());

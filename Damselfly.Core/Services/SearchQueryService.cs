@@ -53,11 +53,9 @@ public class SearchQueryService
     /// <returns>True if there's more data available for the requested range</returns>
     private async Task<SearchResponse> LoadMoreData(SearchQuery query, int first, int count)
     {
-        var response = new SearchResponse { MoreDataAvailable = false, SearchResults = new Image[0] };
-
         // Assume there is more data available - unless the search
         // returns less than we asked for (see below).
-        var moreDataAvailable = true;
+        var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new Image[0] };
 
         using var db = new ImageContext();
         var watch = new Stopwatch("ImagesLoadData");
@@ -247,7 +245,7 @@ public class SearchQueryService
         {
             // The number of returned IDs is less than we asked for
             // so we must have reached the end of the results.
-            moreDataAvailable = false;
+            response.MoreDataAvailable = false;
         }
 
         // Now load the tags....

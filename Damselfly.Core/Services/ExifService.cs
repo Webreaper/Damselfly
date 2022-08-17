@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Interfaces;
 using System.Text.Json;
+using Damselfly.Core.ScopedServices.Interfaces;
+using MailKit.Search;
 
 namespace Damselfly.Core.Services;
 
@@ -20,7 +22,7 @@ namespace Damselfly.Core.Services;
 /// (which would be lossy, and therefore destructive). Plus ExifTool
 /// is FAST!
 /// </summary>
-public class ExifService : IProcessJobFactory
+public class ExifService : IProcessJobFactory, ITagService
 {
     public static string ExifToolVer { get; private set; }
     private readonly StatusService _statusService;
@@ -30,14 +32,14 @@ public class ExifService : IProcessJobFactory
 
     public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
     public event Action OnFavouritesChanged;
-    public event Action<List<string>> OnUserTagsAdded;
+    public event Action<ICollection<string>> OnUserTagsAdded;
 
     private void NotifyFavouritesChanged()
     {
         OnFavouritesChanged?.Invoke();
     }
 
-    private void NotifyUserTagsAdded(List<string> tagsAdded)
+    private void NotifyUserTagsAdded(ICollection<string> tagsAdded)
     {
         OnUserTagsAdded?.Invoke(tagsAdded);
     }
@@ -163,7 +165,7 @@ public class ExifService : IProcessJobFactory
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(Image[] images, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null)
+    public async Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> addTags, ICollection<string> removeTags = null, AppIdentityUser user = null)
     {
         // TODO: Split tags with commas here?
         var timestamp = DateTime.UtcNow;
@@ -711,5 +713,4 @@ public class ExifService : IProcessJobFactory
 
         return jobs;
     }
-
 }

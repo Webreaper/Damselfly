@@ -24,5 +24,10 @@ public class ClientUserService : BaseClientService
     {
         return false;
     }
+
+    public async Task<ICollection<AppIdentityUser>> GetUsers()
+    {
+        throw new NotImplementedException();
+    }
 }
 

@@ -1,8 +1,7 @@
 ﻿using System;
-namespace Damselfly.Core.ScopedServices.Interfaces
+namespace Damselfly.Core.ScopedServices.Interfaces;
+
+public interface IStatusService
 {
-    public interface IStatusService
-    {
-        string StatusText { set;  }
-    }
+    string StatusText { set;  }
 }

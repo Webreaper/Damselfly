@@ -70,9 +70,7 @@
     protected override async Task OnInitializedAsync()
     {
         // TODO: Called twice?
-        var result = await taskScheduler.GetTasksAsync();
-
-        tasks = result;
+        tasks = await taskScheduler.GetTasksAsync();
     }
 
     private void RunTask(ScheduledTask task)

@@ -2,8 +2,7 @@
 @using Damselfly.Core.Services
 @using Blazored.Typeahead
 
-@inject ThumbnailService thumbService
-@inject MetaDataService metadataService
+@inject ITagSearchService tagSearchService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
@@ -68,30 +67,6 @@
 
     private async Task<IEnumerable<string>> SearchTags(string text)
     {
-        var searchText = text.Trim();
-
-        // Store the search text which is used in the NotFound template
-        tagSearchText = searchText;
-
-        // Only query the DB if we have more than 2 chars.
-        if (searchText.Length > 1)
-        {
-            // We include any keyword that contains the search term - but exclude 
-            // the actual search term, as we'll add it explicitly at the top of the list. 
-            var results = await Task.FromResult(metadataService.CachedTags
-                                .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
-                                            && ! x.Keyword.Equals( searchText, StringComparison.OrdinalIgnoreCase))
-                                .OrderBy(x => x.Favourite ? 0 : 1 ) // Favourites first
-                                .ThenBy(x => x.Keyword) // Then order alphabetically
-                                .Take( 30 ) // Don't go mad with the number we return
-                                .Select(t => t.Keyword)
-                                .ToList());
-
-            results.Insert(0, searchText);
-
-            return results;
-        }
-
-        return new List<string>();
+        return await tagSearchService.SearchTags(text);
     }
 }

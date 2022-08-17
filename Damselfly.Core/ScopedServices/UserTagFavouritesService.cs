@@ -3,15 +3,17 @@ using System.Linq;
 using System.Collections.Generic;
 using Damselfly.Core.Services;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class UserTagFavouritesService : IDisposable
+public class UserTagFavouritesService : IRecentTagService, IDisposable
 {
     private readonly ExifService _exifService;
     private readonly UserConfigService _configService;
 
     public event Action OnRecentsChanged;
+
     public List<string> RecentTags { get; private set; } = new List<string>();
 
     public UserTagFavouritesService(ExifService exifService, UserConfigService configService)

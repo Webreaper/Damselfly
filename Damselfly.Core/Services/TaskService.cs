@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Threading.Tasks;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -15,7 +16,7 @@ namespace Damselfly.Core.Services;
 /// certain tasks can be made mutually exclusive. For example, we don't want to
 /// run an incremental indexing task while a full indexing task is in progress.
 /// </summary>
-public class TaskService
+public class TaskService : ITaskService
 {
     private Timer timer;
     private readonly TimeSpan timerFreq = new TimeSpan(0, 1, 0); // Every minute
@@ -46,12 +47,11 @@ public class TaskService
     /// in the UI).
     /// </summary>
     /// <returns></returns>
-    public Task<ScheduledTask[]> GetTasksAsync()
+    public Task<List<ScheduledTask>> GetTasksAsync()
     {
         lock( runningTaskLock )
         {
-            var tasks = taskDefinitions.ToArray();
-            return Task.FromResult(tasks);
+            return Task.FromResult(taskDefinitions);
         }
     }
 
