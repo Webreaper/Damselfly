@@ -26,9 +26,10 @@ public class ClientUserService : BaseClientService, IUserService
         return false;
     }
 
+    // WASM: TODO:
     public async Task<ICollection<AppIdentityUser>> GetUsers()
     {
-        throw new NotImplementedException();
+        return new List<AppIdentityUser>();
     }
 }
 

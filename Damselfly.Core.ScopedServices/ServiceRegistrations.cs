@@ -14,7 +14,7 @@ public static class ServiceRegistrations
         services.AddScoped<StatusService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<UserStatusService>();
-        services.AddScoped<IUserFolderService>();
+        services.AddScoped<UserFolderService>();
 
         services.AddScoped<ClientDataService>();
         services.AddScoped<ClientBasketService>();
@@ -31,6 +31,8 @@ public static class ServiceRegistrations
         services.AddScoped<ClientTagService>();
         services.AddScoped<ClientTaskService>();
 
+        services.AddScoped<IThemeService>(x => x.GetRequiredService<ClientThemeService>());
+        services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<ITagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
