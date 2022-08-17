@@ -292,7 +292,7 @@ public class ExifService : IProcessJobFactory, ITagService
     {
         bool success = false;
 
-        var image = await _imageCache.GetCachedImage(imageId, null);
+        var image = await _imageCache.GetCachedImage(imageId);
 
         Logging.LogVerbose("Updating tags for file {0}", image.FullPath);
         string args = string.Empty;
@@ -421,7 +421,7 @@ public class ExifService : IProcessJobFactory, ITagService
 
                 // Updating the timestamp on the image to newer than its metadata will
                 // trigger its metadata and tags to be refreshed during the next scan
-                await _indexingService.MarkImagesForScan(new[] { image });
+                await _indexingService.MarkImagesForScan(new List<Image> { image });
             }
             else
             {

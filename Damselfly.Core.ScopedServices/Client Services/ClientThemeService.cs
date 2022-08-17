@@ -3,10 +3,11 @@ using Damselfly.Core.DbModels;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientThemeService : BaseClientService
+public class ClientThemeService : BaseClientService, IThemeService
 {
     public ClientThemeService( HttpClient client, ILogger<ClientThemeService> logger ) : base( client )  { _logger = logger; }
 
@@ -15,9 +16,10 @@ public class ClientThemeService : BaseClientService
     // WASM: TODO: 
     public event Action<ThemeConfig> OnChangeTheme;
 
-    public async Task<ThemeConfig> GetTheme(string name)
+    public async Task<ThemeConfig> GetThemeConfig(string name)
     {
         var uri = $"/api/theme";
+
         if( !string.IsNullOrEmpty( name ))
             uri = $"/api/theme/{name}";
 

@@ -1,7 +1,7 @@
 ﻿@using Damselfly.Core.Interfaces
 
 @inject ISearchService searchService
-@inject IFolderService folderService
+@inject IUserFolderService folderService
 @inject ContextMenuService contextMenuService
 @inject IConfigService configService
 @inject IDialogService DialogService
@@ -38,7 +38,7 @@ else
                  @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
                 <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
                 <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
-                    @context.FolderItem.DisplayName (@context.FolderItem.TotalImages)
+                    @context.MetaData.DisplayName (@context.MetaData.TotalImages)
                 </span>
             </div>
         </Virtualize>
@@ -135,7 +135,7 @@ else
         var parameters = new DialogParameters { { "allimages", true } };
 
         if (folder != null)
-            parameters = new DialogParameters { { "folder", folder }, { "count", folder.FolderItem.ImageCount } };
+            parameters = new DialogParameters { { "folder", folder }, { "count", folder.MetaData.ImageCount } };
 
         var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
@@ -151,7 +151,7 @@ else
     {
         if (!FlatView)
         {
-            if (folder.FolderItem.IsExpanded)
+            if (folderService.IsExpanded( folder) )
                 return "fa-folder-open";
             else if (folder.HasSubFolders)
                 return "fa-folder-plus";
@@ -164,7 +164,7 @@ else
         if (FlatView)
             return string.Empty;
 
-        return $"margin-left:{folder.FolderItem.Depth * 10}px;";
+        return $"margin-left:{folder.MetaData.Depth * 10}px;";
     }
 
     string FolderStyle(int folderId)
@@ -222,7 +222,7 @@ else
     {
         if (firstRender)
         {
-            folderService.OnChange += OnFoldersChanged;
+            folderService.OnFoldersChanged += OnFoldersChanged;
             searchService.OnSearchChanged += OnSearchChanged;
 
             // Kick off the data load
@@ -232,7 +232,7 @@ else
 
     public void Dispose()
     {
-        folderService.OnChange -= OnFoldersChanged;
+        folderService.OnFoldersChanged -= OnFoldersChanged;
         searchService.OnSearchChanged -= OnSearchChanged;
     }
 

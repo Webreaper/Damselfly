@@ -14,6 +14,7 @@ public static class ServiceRegistrations
         services.AddScoped<StatusService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<UserStatusService>();
+        services.AddScoped<IUserFolderService>();
 
         services.AddScoped<ClientDataService>();
         services.AddScoped<ClientBasketService>();
@@ -30,6 +31,8 @@ public static class ServiceRegistrations
         services.AddScoped<ClientTagService>();
         services.AddScoped<ClientTaskService>();
 
+        services.AddScoped<ITagService>(x => x.GetRequiredService<ClientTagService>());
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
@@ -38,6 +41,7 @@ public static class ServiceRegistrations
         services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());
         services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
         services.AddScoped<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
+        services.AddScoped<IUserService>(x => x.GetRequiredService<ClientUserService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
         services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<ClientBasketService>());

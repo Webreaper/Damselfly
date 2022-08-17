@@ -53,7 +53,7 @@
     {
         if (Int32.TryParse(ImageID, out var imageId))
         {
-            CurrentImage = await imageCache.GetCachedImage(imageId, null);
+            CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
         }
     }

@@ -12,14 +12,9 @@ public class ClientFolderService : BaseClientService, IFolderService
 
     public event Action OnChange;
 
-    public async Task<ICollection<Folder>> GetFilteredFolders(string filterTerm)
+    public async Task<ICollection<Folder>> GetFolders()
     {
-        return await httpClient.GetFromJsonAsync<ICollection<Folder>>($"/api/folders");
-    }
-
-    public void ToggleExpand(Folder item)
-    {
-        throw new NotImplementedException();
+        return await httpClient.GetFromJsonAsync<ICollection<Folder>>("/api/folders");
     }
 }
 

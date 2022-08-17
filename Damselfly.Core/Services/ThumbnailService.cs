@@ -343,7 +343,9 @@ public class ThumbnailService : IProcessJobFactory
     {
         using var db = new ImageContext();
 
-        var image = await _imageCache.GetCachedImage(imageId, db);
+        var image = await _imageCache.GetCachedImage(imageId);
+
+        db.Attach(image);
 
         // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
         image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
@@ -420,7 +422,7 @@ public class ThumbnailService : IProcessJobFactory
         try
         {
             string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs");
-            var image = await _imageCache.GetCachedImage(face.ImageId, null);
+            var image = await _imageCache.GetCachedImage(face.ImageId);
             var file = new FileInfo(image.FullPath);
             var thumbPath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
 

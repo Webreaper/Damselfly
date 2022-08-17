@@ -25,14 +25,14 @@ public class Folder
 
     public override string ToString()
     {
-        return $"{Path} [{FolderId}] {FolderItem?.ToString()}";
+        return $"{Path} [{FolderId}] {MetaData?.ToString()}";
     }
 
     [NotMapped]
     public string Name { get { return System.IO.Path.GetFileName(Path); } }
 
     [NotMapped]
-    public FolderListItem FolderItem { get; set; }
+    public FolderMetadata MetaData { get; set; }
 
     [NotMapped]
     public IEnumerable<Folder> Subfolders
@@ -62,19 +62,5 @@ public class Folder
 
     [NotMapped]
     public bool HasSubFolders {  get { return Children != null && Children.Any(); } }
-
-    /// <summary>
-    /// Recursive method to create the sorted list of all hierarchical folders
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="folder"></param>
-    /// <param name="sortFunc"></param>
-    /// <returns></returns>
-    public IEnumerable<Folder> SortedChildren<T>(Func<Folder, T> sortFunc, bool descending = true)
-    {
-        IEnumerable<Folder> sortedChildren = descending ? Children.OrderBy(sortFunc) : Children.OrderByDescending(sortFunc);
-
-        return new[] { this }.Concat(sortedChildren.SelectMany(x => x.SortedChildren(sortFunc, descending)));
-    }
 }
 

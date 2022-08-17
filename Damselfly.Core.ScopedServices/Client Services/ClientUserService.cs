@@ -4,10 +4,11 @@ using System.Net.Http;
 using Damselfly.Core.Models;
 using System.Net.Http.Json;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientUserService : BaseClientService
+public class ClientUserService : BaseClientService, IUserService
 {
     public ClientUserService(HttpClient client) : base(client) { }
 

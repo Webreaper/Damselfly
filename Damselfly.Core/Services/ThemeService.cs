@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.ScopedServices.Interfaces;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -15,13 +17,15 @@ namespace Damselfly.Core.ScopedServices;
 /// download. The service can also perform transforms on the images before they're
 /// zipped for download, such as resizing, rotations, watermarking etc.
 /// </summary>
-public class ThemeService
+public class ThemeService : IThemeService
 {
     private readonly IDictionary<string, ThemeConfig> _themeConfigs = new Dictionary<string, ThemeConfig>( StringComparer.OrdinalIgnoreCase );
 
     public ThemeService()
     {
     }
+
+    public event Action<ThemeConfig> OnChangeTheme;
 
     /// <summary>
     /// Initialise the service with the download file path - which will usually
@@ -60,7 +64,12 @@ public class ThemeService
         }
     }
 
-    public ThemeConfig GetThemeConfig( string name )
+    public async Task<ThemeConfig> GetDefaultTheme()
+    {
+        return await GetThemeConfig("Green");
+    }
+
+    public async Task<ThemeConfig> GetThemeConfig( string name )
     {
         if (_themeConfigs.TryGetValue(name, out var config))
             return config;

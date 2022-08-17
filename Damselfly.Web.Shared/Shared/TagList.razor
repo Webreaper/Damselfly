@@ -5,15 +5,15 @@
 @using Damselfly.Core.DbModels
 
 @inject IJSRuntime JsRuntime
-@inject SelectionService selectionService
-@inject ClientImageCacheService imageCache
+@inject IImageCacheService imageCache
 @inject ITagService tagService
+@inject IUserService userService
 @inject IRecentTagService recentTagService
+@inject SelectionService selectionService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 @inject UserManager<AppIdentityUser> UserManager
-@inject ClientUserService userService
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -81,7 +81,7 @@
             @if (CurrentImages != null && CurrentImages.Any())
             {
                 @if ((theImageTags != null && theImageTags.Any()) ||
-                 (theObjectTags != null && theObjectTags.Any()))
+               (theObjectTags != null && theObjectTags.Any()))
                 {
                     @foreach (var tag in theImageTags)
                     {

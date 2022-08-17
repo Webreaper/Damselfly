@@ -14,6 +14,7 @@ using AuthenticationState = Microsoft.AspNetCore.Components.Authorization.Authen
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Damselfly.Core.Services;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -22,7 +23,7 @@ namespace Damselfly.Core.ScopedServices;
 /// role - so they're either an Admin, User or ReadOnly. Roles can be combinatorial
 /// but it's simpler to have a single role per user.
 /// </summary>
-public class UserService
+public class UserService : IUserService
 {
     private UserManager<AppIdentityUser> _userManager;
     private RoleManager<ApplicationRole> _roleManager;

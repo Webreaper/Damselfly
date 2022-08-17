@@ -66,9 +66,6 @@
     <Content Remove="Shared\Images\ImagePropertyField.razor" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="Shared\FolderList.razor">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>
     <Content Update="wwwroot\themes\flat.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

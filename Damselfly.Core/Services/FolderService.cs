@@ -5,8 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
-using System.IO;
-using System.Text.RegularExpressions;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -14,7 +13,7 @@ namespace Damselfly.Core.Services;
 /// Service to load all of the folders monitored by Damselfly, and present
 /// them as a single collection to the UI.
 /// </summary>
-public class FolderService
+public class FolderService : IFolderService
 {
     private List<Folder> allFolders = new List<Folder>();
     public event Action OnChange;
@@ -39,7 +38,10 @@ public class FolderService
         _ = LoadFolders();
     }
 
-    public List<Folder> FolderItems { get { return allFolders;  } }
+    public async Task<ICollection<Folder>> GetFolders()
+    {
+        return allFolders;
+    }
 
     private void NotifyStateChanged()
     {
@@ -64,7 +66,7 @@ public class FolderService
         {
             allFolders = await db.Folders
                             .Include(x => x.Children)
-                            .Select(x => EnrichFolder(x, x.Images.Count, x.Images.Max(i => i.SortDate)))
+                            .Select(x => CreateFolderWrapper(x, x.Images.Count, x.Images.Max(i => i.SortDate)))
                             .ToListAsync();
         }
         catch (Exception ex)
@@ -78,8 +80,6 @@ public class FolderService
         NotifyStateChanged();
     }
 
-
-
     /// <summary>
     /// Bolt some metadata onto the folder object so it can be used by the UI.
     /// </summary>
@@ -87,35 +87,34 @@ public class FolderService
     /// <param name="imageCount"></param>
     /// <param name="maxDate"></param>
     /// <returns></returns>
-    private static Folder EnrichFolder( Folder folder, int imageCount, DateTime? maxDate )
+    private static Folder CreateFolderWrapper( Folder folder, int imageCount, DateTime? maxDate )
     {
 
-        var item = folder.FolderItem;
+        var item = folder.MetaData;
 
         if( item == null )
         {
-            item = new FolderListItem
+            item = new FolderMetadata
             {
                 ImageCount = imageCount,
                 MaxImageDate = maxDate,
-                DisplayName = GetFolderDisplayName(folder),
-                IsExpanded = folder.HasSubFolders
+                DisplayName = GetFolderDisplayName(folder)
             };
 
-            folder.FolderItem = item;
+            folder.MetaData = item;
         };
 
         var parent = folder.Parent;
 
         while ( parent != null )
         {
-            if (parent.FolderItem == null)
-                parent.FolderItem = new FolderListItem { DisplayName = GetFolderDisplayName(parent) };
+            if (parent.MetaData == null)
+                parent.MetaData = new FolderMetadata { DisplayName = GetFolderDisplayName(parent) };
 
-            if (parent.FolderItem.MaxImageDate == null || parent.FolderItem.MaxImageDate < maxDate)
-                parent.FolderItem.MaxImageDate = maxDate;
+            if (parent.MetaData.MaxImageDate == null || parent.MetaData.MaxImageDate < maxDate)
+                parent.MetaData.MaxImageDate = maxDate;
 
-            parent.FolderItem.ChildImageCount += imageCount;
+            parent.MetaData.ChildImageCount += imageCount;
 
             item.Depth++;
             parent = parent.Parent;

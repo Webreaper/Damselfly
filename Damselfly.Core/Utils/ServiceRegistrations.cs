@@ -49,12 +49,18 @@ public static class ServiceRegistrations
         services.AddSingleton<ImageRecognitionService>();
         services.AddSingleton<ImageCache>();
         services.AddSingleton<WorkService>();
-        services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
-
         services.AddSingleton<CachedDataService>();
-        services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
-
         services.AddSingleton<TaskService>();
+
+        services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
+        services.AddSingleton<ITagSearchService>(x => x.GetRequiredService<MetaDataService>());
+        services.AddSingleton<IImageCacheService>(x => x.GetRequiredService<ImageCache>());
+        services.AddSingleton<ITagService>(x => x.GetRequiredService<ExifService>());
+        services.AddSingleton<IFolderService>(x => x.GetRequiredService<FolderService>());
+        services.AddSingleton<IWordpressService>(x => x.GetRequiredService<WordpressService>());
+        services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
+        services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
+        services.AddSingleton<IThemeService>(x => x.GetRequiredService<ThemeService>());
         services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
         return services;
     }
@@ -67,6 +73,9 @@ public static class ServiceRegistrations
 
         services.AddScoped<BasketService>();
         services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
+
+        services.AddScoped<FolderService>();
+        services.AddScoped<IFolderService>(x => x.GetRequiredService<FolderService>());
 
         services.AddScoped<UserStatusService>();
 
@@ -88,6 +97,9 @@ public static class ServiceRegistrations
         services.AddScoped<UserThemeService>();
         services.AddScoped<UserTagFavouritesService>();
 
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagFavouritesService>());
+        services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
+        services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());
         services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());

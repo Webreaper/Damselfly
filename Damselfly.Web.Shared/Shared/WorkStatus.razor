@@ -2,9 +2,9 @@
 @using Microsoft.AspNetCore.Identity
 
 @inject NavigationManager Navigation
-@inject ClientConfigService configService
+@inject IConfigService configService
 @inject IWorkService workService
-@inject ClientUserService userService
+@inject IUserService userService
 @inject ContextMenuService contextMenuService
 
 @implements IDisposable

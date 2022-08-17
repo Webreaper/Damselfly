@@ -8,14 +8,14 @@ using Damselfly.Core.Models;
 using System.IO;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
-using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
 /// <summary>
 /// Service for accessing Wordpress and uploading media.
 /// </summary>
-public class WordpressService
+public class WordpressService : IWordpressService
 {
     private WordPressClient _client;
     private readonly StatusService _statusService;

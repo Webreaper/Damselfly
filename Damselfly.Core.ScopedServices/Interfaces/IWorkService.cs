@@ -1,6 +1,4 @@
-﻿using System;
-using Damselfly.Core.Constants;
-using Damselfly.Core.Models;
+﻿using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
 

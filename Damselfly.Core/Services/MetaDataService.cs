@@ -426,7 +426,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         List<string> sideCarTags = new List<string>();
         List<ImageObject> xmpFaces = null;
          
-        var img = await _imageCache.GetCachedImage(imageId, db);
+        var img = await _imageCache.GetCachedImage(imageId);
+
+        db.Attach(img);
 
         try
         {

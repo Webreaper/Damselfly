@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -32,7 +33,7 @@ namespace Damselfly.Core.Services;
 ///   2. We need to be careful to explicitly evict images when things change,
 ///      such as re-indexing, keywords being added, thumbnails regenerated, etc.
 /// </summary>
-public class ImageCache
+public class ImageCache : IImageCacheService
 {
     private readonly IMemoryCache _memoryCache;
     private readonly MemoryCacheEntryOptions _cacheOptions;
@@ -79,7 +80,7 @@ public class ImageCache
     /// </summary>
     /// <param name="imgId"></param>
     /// <returns></returns>
-    public async Task<Image> GetCachedImage(int imgId, DbContext contextToAttach)
+    public async Task<Image> GetCachedImage(int imgId)
     {
         Image cachedImage;
 
@@ -87,10 +88,6 @@ public class ImageCache
         var cachedImages = await EnrichAndCache( ids );
 
         cachedImage = cachedImages.FirstOrDefault();
-
-        // Attach to the context
-        if( contextToAttach != null )
-            contextToAttach.Attach(cachedImage);
 
         return cachedImage;
     }
@@ -104,7 +101,7 @@ public class ImageCache
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    public async Task<List<Image>> GetCachedImages(List<int> imgIds)
+    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds)
     {
         var result = new List<Image>();
 

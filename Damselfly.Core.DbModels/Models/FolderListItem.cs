@@ -8,13 +8,12 @@ namespace Damselfly.Core.Models
     /// item. We create/load this once and it provides bindable
     /// propeties that will simplify the view code. 
     /// </summary>
-	public class FolderListItem
+	public class FolderMetadata
 	{
         public string DisplayName { get; set; }
 		public int ImageCount { get; set; }
         public int ChildImageCount { get; set; }
 		public DateTime? MaxImageDate { get; set; }
-        public bool IsExpanded { get; set; }
         public int Depth { get; set; } = 1;
 
         public int TotalImages => ImageCount + ChildImageCount;

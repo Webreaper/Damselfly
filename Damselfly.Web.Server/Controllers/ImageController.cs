@@ -42,7 +42,7 @@ public class ImageController : Controller
         {
             try
             {
-                var image = await imageCache.GetCachedImage(id, null);
+                var image = await imageCache.GetCachedImage(id);
 
                 if (cancel.IsCancellationRequested)
                     return result;
@@ -86,7 +86,7 @@ public class ImageController : Controller
             {
                 Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
-                var image = await imageCache.GetCachedImage(id, null);
+                var image = await imageCache.GetCachedImage(id);
 
                 if (cancel.IsCancellationRequested)
                     return result;
@@ -235,6 +235,6 @@ public class ImageController : Controller
     [HttpGet("/api/image/{imageId}")]
     public async Task<Image> Get(int imageId, [FromServices] ImageCache imageCache)
     {
-        return await imageCache.GetCachedImage( imageId, null );
+        return await imageCache.GetCachedImage( imageId );
     }
 }
