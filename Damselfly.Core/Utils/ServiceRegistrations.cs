@@ -73,7 +73,7 @@ public static class ServiceRegistrations
 
         services.AddSingleton<SearchQueryService>();
         services.AddSingleton<RescanService>();
-        services.AddSingleton<ClientNotificationsService>();
+        services.AddSingleton<NotificationsService>();
         services.AddScoped<BasketService>();
         services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
 

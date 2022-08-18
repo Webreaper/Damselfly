@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Damselfly.Core.DbModels;
 using Damselfly.Web.Server;
+using Damselfly.Shared.Utils;
 
 namespace Damselfly.Web;
 
@@ -275,7 +276,7 @@ public class Program
         // Map the signalR notifications endpoints
         app.UseEndpoints(ep =>
         {
-            ep.MapHub<NotificationHub>("/notifications");
+            ep.MapHub<NotificationHub>(NotificationHub.NotificationRoot);
         });
 
         app.UseSwagger();

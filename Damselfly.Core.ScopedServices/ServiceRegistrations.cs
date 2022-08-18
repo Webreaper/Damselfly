@@ -10,6 +10,8 @@ public static class ServiceRegistrations
 {
     public static IServiceCollection AddDamselflyUIServices( this IServiceCollection services )
     {
+        services.AddSingleton<NotificationsService>();
+
         services.AddScoped<ViewDataService>();
         services.AddScoped<StatusService>();
         services.AddScoped<NavigationService>();
@@ -29,11 +31,10 @@ public static class ServiceRegistrations
         services.AddScoped<ClientImageCacheService>();
         services.AddScoped<ClientTagService>();
         services.AddScoped<ClientTaskService>();
-        services.AddScoped<ClientNotificationsService>();
         services.AddScoped<ClientWordpressService>();
 
-        services.AddSingleton<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
-        services.AddSingleton<IRescanService>(x => x.GetRequiredService<ClientRescanService>());
+        services.AddScoped<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
+        services.AddScoped<IRescanService>(x => x.GetRequiredService<ClientRescanService>());
         services.AddScoped<IThemeService>(x => x.GetRequiredService<ClientThemeService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<ITagService>(x => x.GetRequiredService<ClientTagService>());

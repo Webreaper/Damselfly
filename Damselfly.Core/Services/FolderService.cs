@@ -55,7 +55,7 @@ public class FolderService : IFolderService
 
         OnChange?.Invoke();
 
-        _ = _hubContext.Clients.All.SendAsync("Notify", "FolderChanged");
+        _ = _hubContext.Clients.All.SendAsync("NotifyFolderChanged");
     }
 
     /// <summary>
