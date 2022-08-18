@@ -8,8 +8,13 @@ namespace Damselfly.Core.ScopedServices;
 
 public class ClientFolderService : BaseClientService, IFolderService
 {
-    public ClientFolderService(HttpClient client) : base(client) { }
+    public ClientFolderService(HttpClient client, ClientNotificationsService notificationService) : base(client)
+    {
+        Console.WriteLine($"Initialising notifications: {notificationService}");
+        _notificationService = notificationService;
+    }
 
+    private readonly ClientNotificationsService _notificationService;
     public event Action OnChange;
 
     public async Task<ICollection<Folder>> GetFolders()

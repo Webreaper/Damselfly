@@ -26,6 +26,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Damselfly.Core.DbModels;
+using Damselfly.Web.Server;
 
 namespace Damselfly.Web;
 
@@ -220,6 +221,15 @@ public class Program
         builder.Services.AddRazorPages();
         builder.Services.AddSwaggerGen();
 
+        // Server to client notifications
+        builder.Services.AddSignalR();
+        builder.Services.AddResponseCompression(opts =>
+        {
+            opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                new[] { "application/octet-stream" });
+        });
+
+        // Damselfly Services
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
         builder.Services.AddMLServices();
@@ -259,8 +269,14 @@ public class Program
 
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
-
+        app.UseResponseCompression();
         app.UseRouting();
+
+        // Map the signalR notifications endpoints
+        app.UseEndpoints(ep =>
+        {
+            ep.MapHub<NotificationHub>("/notifications");
+        });
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
@@ -275,8 +291,9 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
-
         app.Environment.SetupServices( app.Services );
+
+        app.Urls.Add("http://+:6363"); 
 
         Logging.StartupCompleted();
         Logging.Log("Starting Damselfly webserver...");

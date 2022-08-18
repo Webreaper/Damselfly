@@ -27,7 +27,8 @@ public class FolderController : ControllerBase
     [HttpGet("/api/folders")]
     public async Task<ICollection<Folder>> Get()
     {
-        return await _service.GetFolders();
+        var folders = await _service.GetFolders();
+        return folders;
     }
 }
 

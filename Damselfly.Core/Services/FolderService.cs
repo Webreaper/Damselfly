@@ -7,6 +7,8 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
+using Damselfly.Core.ScopedServices;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Damselfly.Core.Services;
 
@@ -19,9 +21,12 @@ public class FolderService : IFolderService
     private List<Folder> allFolders = new List<Folder>();
     public event Action OnChange;
     private EventConflator conflator = new EventConflator(10 * 1000);
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-    public FolderService( IndexingService _indexingService)
+    public FolderService( IndexingService _indexingService, IHubContext<NotificationHub> hubContext)
     {
+        _hubContext = hubContext;
+
         // After we've loaded the data, start listening
         _indexingService.OnFoldersChanged += OnFoldersChanged;
 
@@ -49,6 +54,8 @@ public class FolderService : IFolderService
         Logging.Log($"Folders changed: {allFolders.Count}");
 
         OnChange?.Invoke();
+
+        _ = _hubContext.Clients.All.SendAsync("Notify", "FolderChanged");
     }
 
     /// <summary>

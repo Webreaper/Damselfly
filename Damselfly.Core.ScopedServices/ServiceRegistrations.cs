@@ -22,7 +22,6 @@ public static class ServiceRegistrations
         services.AddScoped<ClientThemeService>();
         services.AddScoped<ClientUserService>();
         services.AddScoped<ClientRescanService>();
-        services.AddScoped<ClientWordpressService>();
         services.AddScoped<ClientWorkService>();
         services.AddScoped<ClientSearchService>();
         services.AddScoped<ClientConfigService>();
@@ -30,7 +29,10 @@ public static class ServiceRegistrations
         services.AddScoped<ClientImageCacheService>();
         services.AddScoped<ClientTagService>();
         services.AddScoped<ClientTaskService>();
+        services.AddScoped<ClientNotificationsService>();
+        services.AddScoped<ClientWordpressService>();
 
+        services.AddSingleton<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
         services.AddSingleton<IRescanService>(x => x.GetRequiredService<ClientRescanService>());
         services.AddScoped<IThemeService>(x => x.GetRequiredService<ClientThemeService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
