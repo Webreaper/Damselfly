@@ -12,6 +12,7 @@ public interface ITagService
 
     Task ToggleFavourite(Tag tag);
     Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, AppIdentityUser currentUser);
+    Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null);
 }
 
 public interface IRecentTagService

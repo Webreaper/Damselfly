@@ -1,10 +1,11 @@
 ﻿using System;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientRescanService : BaseClientService
+public class ClientRescanService : BaseClientService, IRescanService
 {
     public ClientRescanService(HttpClient client) : base(client) { }
 

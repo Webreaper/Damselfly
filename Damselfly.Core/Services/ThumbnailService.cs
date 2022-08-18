@@ -10,10 +10,11 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Images;
 using Damselfly.Shared.Utils;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
-public class ThumbnailService : IProcessJobFactory
+public class ThumbnailService : IProcessJobFactory, IRescanProvider
 {
     private static string _thumbnailRootFolder;
     private const string _requestRoot = "/images";
@@ -608,7 +609,7 @@ public class ThumbnailService : IProcessJobFactory
         return result;
     }
 
-    public async Task MarkAllImagesForScan()
+    public async Task MarkAllForScan()
     {
         using var db = new ImageContext();
 

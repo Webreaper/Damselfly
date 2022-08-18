@@ -1,14 +1,12 @@
 ﻿
-@inject ThumbnailService thumbService
-@inject IndexingService indexService
-@inject BasketService basketService
+@inject IBasketService basketService
 @inject ISearchService searchService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
-@inject UserConfigService configService
-@inject UserService userService
-@inject ImageRecognitionService aiService
-@inject ExifService exifService
+@inject IConfigService configService
+@inject IUserService userService
+@inject IRescanService rescanService
+@inject ITagService tagService
 
 @inject IJSRuntime JsRuntime
 @implements IDisposable
@@ -132,15 +130,19 @@ else
         Expanded = false;
         configService.Set("ShowExtendedProps", Expanded.ToString());
     }
-
+    // WASM: TODO: This needs to move to a server-side service, which will
+    // be called by SetExifProperty and will update the named property with
+    // the new value and persist it to the DB
     private async Task SaveProperty( Action<ImageMetaData> propertyUpdate )
     {
-        using var db = new ImageContext();
-        var metadata = CurrentImage.MetaData;
-        db.Attach(metadata);
-        propertyUpdate.Invoke(CurrentImage.MetaData);
-        db.Update(metadata);
-        await db.SaveChangesAsync("UpdateMetaData");
+        throw new NotImplementedException();
+
+        //using var db = new ImageContext();
+        //var metadata = CurrentImage.MetaData;
+        //db.Attach(metadata);
+        //propertyUpdate.Invoke(metadata);
+        //db.Update(metadata);
+        //await db.SaveChangesAsync("UpdateMetaData");
 
         StateHasChanged();
     }
@@ -164,7 +166,7 @@ else
         if (newValue != CurrentImage.MetaData.Rating)
         {
             await SaveProperty(x => x.Rating = newValue);
-            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.User);
         }
     }
 
@@ -175,7 +177,7 @@ else
         if( CurrentImage.MetaData.Caption != newValue )
         {
             await SaveProperty(x => x.Caption = newValue);
-            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.User);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.User);
         }
     }
 
@@ -185,7 +187,7 @@ else
         if( CurrentImage.MetaData.Description != newValue )
         {
             await SaveProperty(x => x.Description = newValue);
-            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Description, newValue.ToString(), userService.User);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Description, newValue.ToString(), userService.User);
         }
     }
 
@@ -195,7 +197,7 @@ else
         if( CurrentImage.MetaData.Copyright != newValue )
         {
             await SaveProperty(x => x.Copyright = newValue);
-            await exifService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.User);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.User);
         }
     }
 
@@ -282,11 +284,11 @@ else
 
     public async Task RefreshThumb()
     {
-        await thumbService.MarkImagesForScan(new List<Image> { CurrentImage });
+        await rescanService.MarkImagesForRescan( RescanTypes.Thumbnails, new List<Image> { CurrentImage });
     }
 
     public async Task RefreshAI()
     {
-        await aiService.MarkImagesForScan(new List<Image> { CurrentImage });
+        await rescanService.MarkImagesForRescan( RescanTypes.AI, new List<Image> { CurrentImage });
     }
 }

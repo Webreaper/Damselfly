@@ -58,5 +58,10 @@ public class ClientTagService : BaseClientService, ITagService, IRecentTagServic
     {
         throw new NotImplementedException();
     }
+
+    public Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null)
+    {
+        throw new NotImplementedException();
+    }
 }
 

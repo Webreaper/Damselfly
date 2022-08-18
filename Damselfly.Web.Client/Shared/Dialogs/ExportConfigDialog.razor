@@ -4,8 +4,8 @@
 @using Damselfly.Core.Interfaces
 
 @inject IBasketService basketService
-@inject ClientUserService userService
-@inject UserStatusService statusService
+@inject IUserService userService
+@inject IStatusService statusService
 @inject ClientExportService exportService
 @inject IConfigService configService
 @inject ILogger<ExportConfigDialog> logger;
