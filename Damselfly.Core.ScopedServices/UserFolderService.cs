@@ -16,19 +16,23 @@ public class UserFolderService : IDisposable, IUserFolderService
     private readonly IFolderService _folderService;
     private readonly ISearchService _searchService;
     private readonly IConfigService _configService;
+    private readonly NotificationsService _notifications;
 
     // WASM: TODO:
     public event Action OnFoldersChanged;
     private ICollection<Folder> folderItems;
     private IDictionary<int, bool> expandedSate;
 
-    public UserFolderService( IFolderService folderService, ISearchService searchService, IConfigService configService)
+    public UserFolderService( IFolderService folderService, ISearchService searchService, IConfigService configService, NotificationsService notifications)
     {
         _folderService = folderService;
         _searchService = searchService;
         _configService = configService;
+        _notifications = notifications;
 
         _folderService.OnChange += OnFolderChanged;
+
+        _notifications.SubscribeToNotification("NotifyFolderChanged", OnFolderChanged);
     }
 
     public void Dispose()

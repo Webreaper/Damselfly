@@ -87,17 +87,17 @@ else
                 new ContextMenuItem(){ Text = sortText, Value = 4 },
                 new ContextMenuItem(){ Text = sortDirection, Value = 5 },
                  }, (args) =>
-             {
-                 contextMenuService.Close();
-                 switch (args.Value)
                  {
-                     case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
-                     case 1: _ = ShowRescanDialog(folder); break;
-                     case 3: _ = ToggleFlatView(); break;
-                     case 4: _ = ToggleSortMode(); break;
-                     case 5: _ = ToggleSortAscendingView(); break;
-                 }
-             });
+                     contextMenuService.Close();
+                     switch (args.Value)
+                     {
+                         case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
+                         case 1: _ = ShowRescanDialog(folder); break;
+                         case 3: _ = ToggleFlatView(); break;
+                         case 4: _ = ToggleSortMode(); break;
+                         case 5: _ = ToggleSortAscendingView(); break;
+                     }
+                 });
     }
 
     private async Task ToggleFlatView()
@@ -213,9 +213,10 @@ else
     {
         var folders = await folderService.GetFilteredFolders(filterTerm);
 
+        Console.WriteLine($"Retrieved {folders.Count} folders");
         folderItems = folders.ToList();
 
-        await InvokeAsync(StateHasChanged);
+        await InvokeAsync( StateHasChanged );
     }
 
     protected override async void OnAfterRender(bool firstRender)
@@ -238,8 +239,10 @@ else
 
     private void OnFoldersChanged()
     {
+        Console.WriteLine("Refreshing folders in folderlist");
+
         // Be careful of threading - we may get called from anywhere
-        _ = ProcessUpdatedFilter();
+        _ = InvokeAsync( ProcessUpdatedFilter );
     }
 
     private void OnSearchChanged()

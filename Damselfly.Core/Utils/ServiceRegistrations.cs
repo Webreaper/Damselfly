@@ -74,13 +74,9 @@ public static class ServiceRegistrations
         services.AddSingleton<SearchQueryService>();
         services.AddSingleton<RescanService>();
         services.AddSingleton<NotificationsService>();
-        services.AddScoped<BasketService>();
-        services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
-
-        services.AddScoped<FolderService>();
-        services.AddScoped<IFolderService>(x => x.GetRequiredService<FolderService>());
-
-        services.AddScoped<UserStatusService>();
+        services.AddSingleton<FolderService>();
+        services.AddSingleton<UserStatusService>(); // WRONG
+        services.AddSingleton<BasketService>();
 
         return services;
     }

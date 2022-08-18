@@ -11,5 +11,13 @@ public class NotificationHub : Hub
     {
         await Clients.All.SendAsync("Notify", type, payload);
     }
+
+    public override async Task OnConnectedAsync()
+    {
+        Console.WriteLine("Notify Service connected.");
+        await base.OnConnectedAsync();
+    }
+
+
 }
 
