@@ -18,8 +18,7 @@ public class UserThemeService
         _configService = configService;
         _themeService = themeService;
 
-        var userTheme = _configService.Get(ConfigSettings.Theme, "green");
-        _currentTheme = _themeService.GetThemeConfig(userTheme).Result;
+        CurrentThemeName = _configService.Get(ConfigSettings.Theme, "green");
     }
 
     public string CurrentThemeName
@@ -30,9 +29,14 @@ public class UserThemeService
         }
         set
         {
-            _currentTheme = _themeService.GetThemeConfig(value).Result;
-            _configService.Set(ConfigSettings.Theme, value);
-            OnChangeTheme?.Invoke(_currentTheme);
+            var newTheme = _themeService.GetThemeConfig(value).Result;
+
+            if (newTheme is not null)
+            {
+                _currentTheme = newTheme;
+                _configService.Set(ConfigSettings.Theme, value);
+                OnChangeTheme?.Invoke(_currentTheme);
+            }
         }
     }
 

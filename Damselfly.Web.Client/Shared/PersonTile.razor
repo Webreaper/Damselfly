@@ -1,5 +1,5 @@
 ﻿
-@inject ImageRecognitionService faceService
+@inject ClientPeopleService faceService
 @inject UserStatusService statusService
 @inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
@@ -28,7 +28,7 @@
         if (!string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name))
         {
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
-            _ = faceService.UpdateName(Person, newName);
+            _ = faceService.UpdatePerson(Person, newName);
             statusService.StatusText = $"Name set to '{newName}'";
         }
     }

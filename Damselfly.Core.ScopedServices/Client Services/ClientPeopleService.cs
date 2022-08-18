@@ -18,5 +18,10 @@ public class ClientPeopleService : BaseClientService
     {
         await httpClient.PutAsJsonAsync<string>($"/api/people/name/{theObject.ImageObjectId}", newName);
     }
+
+    public async Task UpdatePerson(Person thePerson, string newName)
+    {
+        await httpClient.PutAsJsonAsync<string>($"/api/people/name/{thePerson.PersonId}", newName);
+    }
 }
 

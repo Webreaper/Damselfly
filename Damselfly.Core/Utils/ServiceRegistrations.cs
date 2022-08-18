@@ -52,6 +52,7 @@ public static class ServiceRegistrations
         services.AddSingleton<CachedDataService>();
         services.AddSingleton<TaskService>();
         services.AddSingleton<RescanService>();
+        services.AddSingleton<ServerNotifierService>();
 
         services.AddSingleton<IRescanService>(x => x.GetRequiredService<RescanService>());
         services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
@@ -95,6 +96,7 @@ public static class ServiceRegistrations
         services.AddScoped<ViewDataService>();
         services.AddScoped<UserThemeService>();
         services.AddScoped<UserTagFavouritesService>();
+        services.AddScoped<NotificationsService>();
 
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagFavouritesService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());

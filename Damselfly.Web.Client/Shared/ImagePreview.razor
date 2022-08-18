@@ -6,11 +6,10 @@
 -->
 
 @inject IJSRuntime JsRuntime
-@inject UserStatusService statusService
 @inject IConfigService userConfigService
-@inject ContextMenuService contextMenuService
-@inject UserManager<AppIdentityUser> UserManager
 @inject IDialogService DialogService
+@inject UserStatusService statusService
+@inject ContextMenuService contextMenuService
 
 <LocalFileExporter @ref="FileExporter" />
 
@@ -62,7 +61,7 @@
     private string ZoomKey => $"zoom{theImage.ImageId}";
     private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
-    private string ImageUrlHighRes => theImage.ThumbUrl( ThumbSize.ExtraLarge );
+    private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
     private string ImageUrlZoom => GetZoomUrl(theImage);
 
     private readonly List<string> browserRenderedExtensions = new List<string> { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
@@ -110,7 +109,7 @@
     void ShowContextMenu(MouseEventArgs args)
     {
         var menuItems = new List<ContextMenuItem>()
-            {
+    {
                 new ContextMenuItem(){ Text = ShowObjectsMenuText, Value = 0 },
                 new ContextMenuItem(){ Text = ShowZoomMenuText, Value = 1 },
                 new ContextMenuItem(){ Text = "Download", Value = 2 },
@@ -128,7 +127,7 @@
                 case 0: SetShowObjects(!ShowObjects); break;
                 case 1: SetZoomEnabled(!ZoomEnabled); break;
                 case 2: await DownloadImage(); break;
-                case 3: await FileExporter.ExportImagesToLocalFilesystem( new List<Image>() { theImage } ); break;
+                case 3: await FileExporter.ExportImagesToLocalFilesystem(new List<Image>() { theImage }); break;
                 case 4: await ShowRescanDialog(); break;
             }
         });

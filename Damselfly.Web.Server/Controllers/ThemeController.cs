@@ -32,14 +32,16 @@ public class ThemeController : ControllerBase
     }
 
     [HttpGet("/api/theme/{name}")]
-    public async Task<ThemeConfig> Get( string name)
+    public async Task<ThemeConfig?> Get( string name)
     {
+        var theme = _service.DarkTheme;
+
         if (!string.IsNullOrEmpty(name))
         {
-            return _service.Themes.FirstOrDefault(x => x.Name == name);
+            theme = _service.Themes.FirstOrDefault(x => x.Name == name);
         }
 
-        return _service.DarkTheme;
+        return theme;
     }
 }
 

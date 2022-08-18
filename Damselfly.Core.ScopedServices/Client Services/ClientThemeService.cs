@@ -43,7 +43,7 @@ public class ClientThemeService : BaseClientService, IThemeService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error in GetTheme: {ex}");
+            _logger.LogError($"Error in GetTheme: {ex.Message}");
             return null;
         }
     }

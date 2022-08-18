@@ -156,7 +156,7 @@ public class ThemeService : IThemeService
         }
     }
 
-    public ThemeConfig DarkTheme = new ThemeConfig
+    public ThemeConfig LightTheme = new ThemeConfig
     {
         Name = "Dark Theme",
 
@@ -186,7 +186,7 @@ public class ThemeService : IThemeService
         Tertiary = "#2f2f2f" // Unknown
     };
 
-    public ThemeConfig LightTheme = new ThemeConfig
+    public ThemeConfig DarkTheme = new ThemeConfig
     {
         Name = "Light Theme",
 

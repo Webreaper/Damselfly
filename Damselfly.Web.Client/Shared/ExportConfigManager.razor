@@ -1,0 +1,89 @@
+﻿
+@inject NavigationManager NavigationManager
+@inject IWordpressService wpService
+@inject IDialogService DialogService
+
+<div class="SearchBox">
+    <select @onchange="ConfigChanged" class="SearchField">
+        @foreach (var config in configs)
+        {
+            <option value="@config.ExportConfigId">@config.Name</option>
+        }
+    </select>
+    <div class="SearchFieldIcon" title="Add an Export Config"><i class="fas fa-plus-circle" @onclick="OpenAddBasketDialog" /></div>
+    @if (CurrentConfig != null)
+    {
+        <div class="SearchFieldIcon" title="Edit this Export Config"><i class="fas fa-edit" @onclick="OpenEditBasketDialog" /></div>
+    }
+</div>
+
+
+@code
+{
+    readonly List<ExportConfig> configs = new List<ExportConfig>();
+
+    [Parameter]
+    public ExportConfig CurrentConfig { get; set; }
+
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
+
+    async Task ConfigChanged(ChangeEventArgs e)
+    {
+        int id = Convert.ToInt32(e.Value);
+
+        if (id >= 0)
+            CurrentConfig = configs.FirstOrDefault(x => x.ExportConfigId == id);
+
+        await OnValueChanged.InvokeAsync( new ChangeEventArgs {  Value = CurrentConfig });
+    }
+
+    private async Task OpenAddBasketDialog()
+    {
+        var newConfig = new ExportConfig { Name = "New Config" };
+
+        var parameters = new DialogParameters { { "Config", newConfig }, { "mode", "Add" } };
+        var dialog = DialogService.Show<ExportConfigDialog>("Add New Config", parameters);
+        var result = await dialog.Result;
+
+        await LoadData();
+    }
+
+    private async Task OpenEditBasketDialog()
+    {
+        var parameters = new DialogParameters { { "Config", CurrentConfig }, { "mode", "Edit" } };
+        var dialog = DialogService.Show<ExportConfigDialog>("Edit Config", parameters);
+        var result = await dialog.Result;
+
+        await LoadData();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadData();
+        }
+    }
+
+    public async Task LoadData()
+    {
+        /*
+
+            WASM: TODO:
+        var watch = new Stopwatch("LoadConfigs");
+        using var db = new ImageContext();
+        this.configs.Clear();
+        this.configs.AddRange(db.DownloadConfigs);
+        watch.Stop();
+
+        if (CurrentConfig == null)
+        {
+            CurrentConfig = configs.FirstOrDefault();
+            await OnValueChanged.InvokeAsync(new ChangeEventArgs { Value = CurrentConfig });
+        }
+        */
+        await InvokeAsync(StateHasChanged);
+    }
+}
+

@@ -21,11 +21,11 @@ public class FolderService : IFolderService
     private List<Folder> allFolders = new List<Folder>();
     public event Action OnChange;
     private EventConflator conflator = new EventConflator(10 * 1000);
-    private readonly IHubContext<NotificationHub> _hubContext;
+    private ServerNotifierService _notifier;
 
-    public FolderService( IndexingService _indexingService, IHubContext<NotificationHub> hubContext)
+    public FolderService( IndexingService _indexingService, ServerNotifierService notifier)
     {
-        _hubContext = hubContext;
+        _notifier = notifier;
 
         // After we've loaded the data, start listening
         _indexingService.OnFoldersChanged += OnFoldersChanged;
@@ -55,7 +55,7 @@ public class FolderService : IFolderService
 
         OnChange?.Invoke();
 
-        _ = _hubContext.Clients.All.SendAsync("NotifyFolderChanged");
+        _ = _notifier.NotifyClients("NotifyFoldersChanged");
     }
 
     /// <summary>
