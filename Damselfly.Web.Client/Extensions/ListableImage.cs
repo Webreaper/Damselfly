@@ -1,7 +1,7 @@
 ﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 
-namespace Damselfly.Web.Models;
+namespace Damselfly.Web.Components;
 
 public class ListableImage
 {

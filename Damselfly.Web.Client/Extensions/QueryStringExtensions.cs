@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
-namespace Damselfly.Web.Extensions;
+namespace Damselfly.Web.Components;
 
 /// <summary>
 /// from https://www.meziantou.net/bind-parameters-from-the-query-string-in-blazor.htm

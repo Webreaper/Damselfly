@@ -7,7 +7,7 @@ using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Damselfly.Web.Models;
+namespace Damselfly.Web.Components;
 
 /// <summary>
 /// Base class for the main image grid and basket image grids.

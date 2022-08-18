@@ -38,20 +38,26 @@ public class ThemeService : IThemeService
 
         Logging.Log($"Scanning for themes in {themesFolder}...");
 
-        var themes = themesFolder.GetFiles("*.css")
-                                         .Select(x => x.Name)
-                                         .ToList();
-        foreach (var themeFile in themes)
+        if (themesFolder.Exists)
         {
-            var name = Path.GetFileNameWithoutExtension(themeFile);
-            var themeFullPath = Path.Combine(themesFolder.FullName, themeFile);
+            var themes = themesFolder.GetFiles("*.css")
+                                             .Select(x => x.Name)
+                                             .ToList();
+            foreach (var themeFile in themes)
+            {
+                var name = Path.GetFileNameWithoutExtension(themeFile);
+                var themeFullPath = Path.Combine(themesFolder.FullName, themeFile);
 
-            // Do the mapping to create a matching MudTheme from the theme
-            var config = CreateThemeConfigFromCSS(themeFullPath, $"themes/{themeFile}", name );
+                // Do the mapping to create a matching MudTheme from the theme
+                var config = CreateThemeConfigFromCSS(themeFullPath, $"themes/{themeFile}", name);
 
-            Logging.Log($"Configured theme '{name}'.");
-            _themeConfigs.Add(name, config);
+                Logging.Log($"Configured theme '{name}'.");
+                _themeConfigs.Add(name, config);
+            }
         }
+        else
+            Logging.LogError($"Themes folder {themesFolder} was not found.");
+
     }
 
     public List<ThemeConfig> Themes

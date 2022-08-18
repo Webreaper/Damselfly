@@ -43,41 +43,23 @@
     <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\Damselfly.Web.Components\Damselfly.Web.Components.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
     <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+    <ProjectReference Include="..\Damselfly.Web.Client\Damselfly.Web.Client.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="wwwroot\downloads\" />
-    <Folder Include="wwwroot\css\" />
     <Folder Include="Controllers\" />
-    <Folder Include="wwwroot\themes\" />
-    <Folder Include="wwwroot\zoom\" />
-    <Folder Include="wwwroot\vScroll\" />
-    <Folder Include="wwwroot\objectrects\" />
     <Folder Include="Pages\Shared\" />
     <Folder Include="Shared\Dialogs\" />
     <Folder Include="Components\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="Shared\Images\ImagePropertyField.razor" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="wwwroot\themes\flat.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\themes\white.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\themes\green.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\themes\grey.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Remove="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />

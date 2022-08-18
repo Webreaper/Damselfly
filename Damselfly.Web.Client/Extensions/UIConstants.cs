@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace Damselfly.Web.Models;
+namespace Damselfly.Web.Components;
 
 public static class UIConstants
 {
