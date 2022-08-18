@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
+using Damselfly.Shared.Utils;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.Jpeg;

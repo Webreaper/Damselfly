@@ -13,6 +13,7 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Damselfly.Shared.Utils;
 using Image = SixLabors.ImageSharp.Image;
 
 namespace Damselfly.Core.ImageProcessing

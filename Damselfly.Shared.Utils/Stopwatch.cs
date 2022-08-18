@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Humanizer;
 
-namespace Damselfly.Core.Utils;
+namespace Damselfly.Shared.Utils;
 
 /// <summary>
 /// Timer class for tracking performance. Keeps a running stat of the max times

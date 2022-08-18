@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Accord.Vision.Detection;
 using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
 using Damselfly.Core.Utils.ML;
 
 namespace Damselfly.ML.Face.Accord

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Damselfly.Shared.Utils;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Interfaces;
 using System.Net.Http.Headers;

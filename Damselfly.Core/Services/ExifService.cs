@@ -10,7 +10,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.Interfaces;
 using System.Text.Json;
 using Damselfly.Core.ScopedServices.Interfaces;
-using MailKit.Search;
+using Damselfly.Shared.Utils;
 
 namespace Damselfly.Core.Services;
 

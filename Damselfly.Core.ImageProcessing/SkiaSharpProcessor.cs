@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Constants;
+using Damselfly.Shared.Utils;
 
 namespace Damselfly.Core.ImageProcessing
 {

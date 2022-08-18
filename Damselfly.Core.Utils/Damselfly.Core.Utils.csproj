@@ -20,4 +20,7 @@
     <None Remove="System.Drawing.Common" />
     <None Remove="Classes\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
+  </ItemGroup>
 </Project>

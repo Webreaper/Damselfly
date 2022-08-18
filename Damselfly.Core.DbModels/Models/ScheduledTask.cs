@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
 
 namespace Damselfly.Core.Models
 {

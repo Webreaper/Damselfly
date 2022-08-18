@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Humanizer;
 
-namespace Damselfly.Core.Utils
+namespace Damselfly.Shared.Utils
 {
     public static class StringExtensions
     {

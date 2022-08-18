@@ -14,6 +14,7 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
 
 namespace Damselfly.Web;
 

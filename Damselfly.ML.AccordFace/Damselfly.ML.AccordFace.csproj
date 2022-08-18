@@ -18,5 +18,6 @@
     <ProjectReference Include="..\Accord\Accord.Statistics\Accord.Statistics.csproj" />
     <ProjectReference Include="..\Accord\Accord.Math.Core\Accord.Math.Core.csproj" />
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+    <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
   </ItemGroup>
 </Project>

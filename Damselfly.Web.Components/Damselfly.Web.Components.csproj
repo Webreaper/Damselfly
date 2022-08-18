@@ -4,8 +4,12 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>Damselfly.Web.Shared</AssemblyName>
   </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0-preview.7.22375.6" />
@@ -26,28 +30,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Shared\" />
-    <None Remove="Microsoft.Extensions.Logging.Abstractions" />
-    <None Remove="Shared\Dialogs\" />
-    <None Remove="Microsoft.AspNetCore.Authorization" />
-    <None Remove="Microsoft.AspNetCore.Components.Authorization" />
-    <None Remove="Microsoft.AspNetCore.Identity" />
+    <None Remove="Blazored.Typeahead" />
+    <None Remove="Radzen.Blazor" />
+    <None Remove="MudBlazor" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Shared\" />
-    <Folder Include="wwwroot\" />
-    <Folder Include="Shared\Dialogs\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="wwwroot\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
     <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+    <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
+    <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
   </ItemGroup>
 </Project>

@@ -17,7 +17,7 @@ using Damselfly.ML.ImageClassification;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using System.Runtime.InteropServices;
-using Damselfly.Core.Constants;
+using Damselfly.Shared.Utils;
 
 namespace Damselfly.Core.Services;
 
