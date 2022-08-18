@@ -28,17 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="MudBlazor" />
-    <None Remove="Radzen.Blazor" />
-    <None Remove="Blazored.Typeahead" />
-    <None Remove="Blazored.FluentValidation" />
-    <None Remove="FluentValidation" />
-    <None Remove="Humanizer" />
-    <None Remove="Components\" />
-    <None Remove="Shared\" />
-    <None Remove="Pages\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>

@@ -9,7 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-    <ProjectReference Include="..\Damselfly.Web.Utils\Damselfly.Web.Utils.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Interfaces\" />
