@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +13,13 @@ public class NotificationsService : IAsyncDisposable
 {
     private readonly HubConnection hubConnection;
 
-    public NotificationsService()
+    public NotificationsService( NavigationManager navManager )
     {
+        var hubUrl = $"{navManager.BaseUri}{NotificationHub.NotificationRoot}";
+        Console.WriteLine($"Setting up notifications listener on {hubUrl}...");
+
         hubConnection = new HubConnectionBuilder()
-                        .WithUrl($"http://localhost:6363{NotificationHub.NotificationRoot}")
+                        .WithUrl( hubUrl )
                         .WithAutomaticReconnect()
                         .Build();
 

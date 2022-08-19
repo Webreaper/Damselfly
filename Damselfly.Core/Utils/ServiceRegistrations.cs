@@ -52,7 +52,6 @@ public static class ServiceRegistrations
         services.AddSingleton<CachedDataService>();
         services.AddSingleton<TaskService>();
         services.AddSingleton<RescanService>();
-        services.AddSingleton<ServerNotifierService>();
 
         services.AddSingleton<IRescanService>(x => x.GetRequiredService<RescanService>());
         services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
@@ -72,9 +71,9 @@ public static class ServiceRegistrations
     {
         services.AddBlazorServerBackEndServices();
 
+        services.AddSingleton<ServerNotifierService>();
         services.AddSingleton<SearchQueryService>();
         services.AddSingleton<RescanService>();
-        services.AddSingleton<NotificationsService>();
         services.AddSingleton<FolderService>();
         services.AddSingleton<UserStatusService>(); // WRONG
         services.AddSingleton<BasketService>();

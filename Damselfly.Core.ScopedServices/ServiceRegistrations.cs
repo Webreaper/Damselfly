@@ -10,7 +10,7 @@ public static class ServiceRegistrations
 {
     public static IServiceCollection AddDamselflyUIServices( this IServiceCollection services )
     {
-        services.AddSingleton<NotificationsService>();
+        services.AddScoped<NotificationsService>();
 
         services.AddScoped<ViewDataService>();
         services.AddScoped<StatusService>();

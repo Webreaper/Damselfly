@@ -276,7 +276,7 @@ public class Program
         // Map the signalR notifications endpoints
         app.UseEndpoints(ep =>
         {
-            ep.MapHub<NotificationHub>(NotificationHub.NotificationRoot);
+            ep.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}");
         });
 
         app.UseSwagger();
