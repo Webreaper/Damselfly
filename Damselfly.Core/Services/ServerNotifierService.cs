@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.SignalR;
 
@@ -14,9 +15,14 @@ public class ServerNotifierService
         _hubContext = hubContext;
     }
 
-    public async Task NotifyClients( string message )
+    public async Task NotifyClients( NotificationType type, string payloadMsg = null )
     {
-        await _hubContext.Clients.All.SendAsync(message);
+        string methodName = type.ToString();
+
+        if (payloadMsg is null)
+            payloadMsg = string.Empty;
+
+        await _hubContext.Clients.All.SendAsync(methodName, payloadMsg);
     }
 }
 

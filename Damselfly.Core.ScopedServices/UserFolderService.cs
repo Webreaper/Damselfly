@@ -32,7 +32,7 @@ public class UserFolderService : IDisposable, IUserFolderService
 
         _folderService.OnChange += OnFolderChanged;
 
-        _notifications.SubscribeToNotification("§NotifyFoldersChanged", OnFolderChanged);
+        _notifications.SubscribeToNotification(NotificationType.FoldersChanged, OnFolderChanged);
     }
 
     public void Dispose()

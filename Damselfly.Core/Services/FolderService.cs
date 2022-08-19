@@ -9,6 +9,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices;
 using Microsoft.AspNetCore.SignalR;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Services;
 
@@ -55,7 +56,7 @@ public class FolderService : IFolderService
 
         OnChange?.Invoke();
 
-        _ = _notifier.NotifyClients("NotifyFoldersChanged");
+        _ = _notifier.NotifyClients(NotificationType.FoldersChanged);
     }
 
     /// <summary>

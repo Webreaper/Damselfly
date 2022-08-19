@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -23,16 +24,24 @@ public class NotificationsService : IAsyncDisposable
             await hubConnection.StartAsync();
         });
     }
-    public void SubscribeToNotification( string notificationType, Action action)
+
+    /// <summary>
+    /// WASM: TODO: Unsubscribe and decompose
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="action"></param>
+    public void SubscribeToNotification(NotificationType type, Action action)
     {
-        hubConnection.On(notificationType, () =>
+        var methodName = type.ToString();
+
+        hubConnection.On<string>(methodName, (payload) =>
         {
-            Console.WriteLine($"Received {notificationType} - calling action.");
+            var payloadLog = string.IsNullOrEmpty(payload) ? "(no payload)" : $"(payload: {payload})";
+            Console.WriteLine($"Received {methodName.ToString()} - calling action {payloadLog}");
             action.Invoke();
-            // WASM: TODO: Unsubscribe and decompose
         });
 
-        Console.WriteLine($"Subscribed to {notificationType}");
+        Console.WriteLine($"Subscribed to {methodName}");
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
