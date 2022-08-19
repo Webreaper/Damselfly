@@ -281,30 +281,36 @@
             ChangeThumbSize(CurrentThumbSize);
             var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
-            if (response.SearchResults.Any())
+            if (response != null && response.SearchResults != null)
             {
-                await LoadImages(response.SearchResults);
+                if (response.SearchResults.Any())
+                {
+                    await LoadImages(response.SearchResults);
+                }
+
+                // Flag the 'more' div if we loaded at least as many as we requested.
+                endOfImages = !response.MoreDataAvailable;
+
+                // If we've tried to load data and there isn't any more, show the toast.
+                toastClass = endOfImages ? "show" : string.Empty;
+
+                IsLoading = false;
+
+                _ = InvokeAsync(StateHasChanged);
             }
-
-            // Flag the 'more' div if we loaded at least as many as we requested.
-            endOfImages = !response.MoreDataAvailable;
-
-            // If we've tried to load data and there isn't any more, show the toast.
-            toastClass = endOfImages ? "show" : string.Empty;
-
-            IsLoading = false;
-
-            _ = InvokeAsync(StateHasChanged);
+            else
+                logger.LogError("No search response back from image query ssrvice!");
         }
     }
 
     private async Task LoadImages(ICollection<int> imageIds)
     {
         bool useParallel = false;
+        int batchSize = 1;
 
         var tasks = new List<Task>();
 
-        var batches = imageIds.Chunk(10);
+        var batches = imageIds.Chunk(batchSize);
 
         if( useParallel )
         {
@@ -324,10 +330,21 @@
         }
         else
         {
-            foreach (var id in imageIds)
+            if( batchSize == 1 )
             {
-                var img = await imageCache.GetCachedImage(id);
-                gridImages.Add(img);
+                foreach (var id in imageIds)
+                {
+                    var img = await imageCache.GetCachedImage(id);
+                    gridImages.Add(img);
+                }
+            }
+            else
+            {
+                foreach (var batch in batches)
+                {
+                    var imgs = await imageCache.GetCachedImages(batch);
+                    gridImages.AddRange(imgs);
+                }
             }
         }
     }

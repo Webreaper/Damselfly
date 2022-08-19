@@ -250,16 +250,6 @@ public class ImageController : Controller
     public async Task<List<Image>> GetImages(ICollection<int> images, [FromServices] ImageCache imageCache)
     {
         _logger.LogInformation($"Loading {images.Count} images from server cache.");
-        var result = await imageCache.GetCachedImages(images);
-
-        foreach( var img in result )
-        {
-            img.Folder.Images.Clear();
-            if( img.Folder.Children is not null )
-                img.Folder.Children.Clear();
-            img.ImageTags.Clear();
-        }
-
-        return result;
+        return await imageCache.GetCachedImages(images);
     }
 }

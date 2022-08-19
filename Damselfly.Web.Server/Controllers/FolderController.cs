@@ -28,6 +28,10 @@ public class FolderController : ControllerBase
     public async Task<ICollection<Folder>> Get()
     {
         var folders = await _service.GetFolders();
+
+        foreach (var folder in folders)
+            folder.Images.Clear();
+
         return folders;
     }
 }

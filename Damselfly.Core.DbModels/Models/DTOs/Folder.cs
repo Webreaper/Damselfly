@@ -19,7 +19,6 @@ public class Folder
     public DateTime? FolderScanDate { get; set; }
     public ICollection<Folder> Children { get; set; }
 
-    [JsonIgnore]
     public virtual List<Image> Images { get; } = new List<Image>();
 
     public override string ToString()

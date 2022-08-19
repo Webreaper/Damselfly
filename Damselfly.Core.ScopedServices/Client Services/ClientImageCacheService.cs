@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
@@ -14,16 +16,16 @@ public class ClientImageCacheService : BaseClientService, IImageCacheService
 {
     public ClientImageCacheService(HttpClient client) : base(client) { }
 
+    private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve };
+
     public async Task<Image> GetCachedImage(int imgId)
     {
-        return await httpClient.GetFromJsonAsync<Image>($"/api/image/{imgId}");
+        return await httpClient.CustomGetFromJsonAsync<Image>($"/api/image/{imgId}");
     }
 
     public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds)
     {
-        var response = await httpClient.PostAsJsonAsync<ICollection<int>>($"/api/images/", imgIds);
-
-        return await response.Content.ReadFromJsonAsync<List<Image>>();
+        return await httpClient.CustomPutAsJsonAsync<ICollection<int>, List<Image>>($"/api/images/", imgIds);
     }
 }
 

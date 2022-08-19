@@ -211,9 +211,7 @@ public class Program
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
         builder.Services.AddControllersWithViews()
-                .AddJsonOptions(o => {
-                    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-                });
+                .AddJsonOptions(o => { o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; });
 
         builder.Services.AddRazorPages();
 

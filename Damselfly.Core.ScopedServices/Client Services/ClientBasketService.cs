@@ -6,6 +6,8 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
+using System.Text.Json;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -49,7 +51,7 @@ public class ClientBasketService : BaseClientService, IBasketService
         if (basket == null)
             basket = CurrentBasket;
 
-        await httpClient.GetFromJsonAsync<ServiceStatus>($"/api/basket/state/{newState}");
+        await httpClient.CustomGetFromJsonAsync<ServiceStatus>($"/api/basket/state/{newState}");
     }
 
     public Basket CurrentBasket { get; }
@@ -62,20 +64,19 @@ public class ClientBasketService : BaseClientService, IBasketService
     public async Task<Basket> Create(string name, int? userId)
     {
         var basket = new Basket { Name = name, UserId = userId };
-        var response = await httpClient.PutAsJsonAsync<Basket>($"/api/basket", basket);
-        return await response.Content.ReadFromJsonAsync<Basket>();
+        return await httpClient.CustomPostAsJsonAsync<Basket, Basket>($"/api/basket", basket);
     }
 
     public async Task Save(Basket basket)
     {
-        var response = await httpClient.PutAsJsonAsync<Basket>($"/api/basket", basket);
+        var response = await httpClient.CustomPutAsJsonAsync<Basket>($"/api/basket", basket);
     }
 
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
         try
         {
-            return await httpClient.GetFromJsonAsync<ICollection<Basket>>("/api/baskets/");
+            return await httpClient.CustomGetFromJsonAsync<ICollection<Basket>>("/api/baskets/");
         }
         catch( Exception ex )
         {

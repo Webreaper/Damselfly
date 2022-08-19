@@ -14,6 +14,7 @@ using System.Net.Http.Json;
 using System.Net.Http;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Text.Json;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -55,8 +56,6 @@ public class ClientSearchService : BaseSearchService, ISearchService
             Count = count
         };
 
-        var response = await httpClient.PostAsJsonAsync("/api/search", request );
-
-        return await response.Content.ReadFromJsonAsync<SearchResponse>();
+        return await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request );
     }
 }
