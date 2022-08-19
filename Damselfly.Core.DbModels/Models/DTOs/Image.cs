@@ -36,7 +36,6 @@ public class Image
     public DateTime LastUpdated { get; set; }
 
     public virtual ImageMetaData MetaData { get; set; }
-    [JsonIgnore]
     public virtual Hash Hash { get; set; }
 
     // An image can appear in many baskets

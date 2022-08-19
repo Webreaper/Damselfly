@@ -11,12 +11,10 @@ public class ImageTag
 {
     [Key]
     public int ImageId { get; set; }
-    [JsonIgnore]
     public virtual Image Image { get; set; }
 
     [Key]
     public int TagId { get; set; }
-    [JsonIgnore]
     public virtual Tag Tag { get; set; }
 
     public override string ToString()

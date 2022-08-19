@@ -24,6 +24,13 @@ namespace Damselfly.Web.Controllers;
 [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Controller methods cannot be static")]
 public class ImageController : Controller
 {
+    private ILogger<ImageController> _logger;
+
+    public ImageController( ILogger<ImageController> logger )
+    {
+        _logger = logger;
+    }
+
     [Produces("image/jpeg")]
     [HttpGet("/dlimage/{imageId}")]
     public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache)
@@ -237,5 +244,22 @@ public class ImageController : Controller
     public async Task<Image> Get(int imageId, [FromServices] ImageCache imageCache)
     {
         return await imageCache.GetCachedImage( imageId );
+    }
+
+    [HttpPost("/api/images")]
+    public async Task<List<Image>> GetImages(ICollection<int> images, [FromServices] ImageCache imageCache)
+    {
+        _logger.LogInformation($"Loading {images.Count} images from server cache.");
+        var result = await imageCache.GetCachedImages(images);
+
+        foreach( var img in result )
+        {
+            img.Folder.Images.Clear();
+            if( img.Folder.Children is not null )
+                img.Folder.Children.Clear();
+            img.ImageTags.Clear();
+        }
+
+        return result;
     }
 }

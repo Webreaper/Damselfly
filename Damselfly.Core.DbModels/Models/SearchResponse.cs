@@ -6,7 +6,7 @@ namespace Damselfly.Core.DbModels;
 public class SearchResponse
 {
     public bool MoreDataAvailable { get; set; }
-    public Image[] SearchResults { get; set; }
+    public int[] SearchResults { get; set; }
 }
 
 public class SearchRequest

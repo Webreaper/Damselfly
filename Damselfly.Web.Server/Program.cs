@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Damselfly.Core.DbModels;
 using Damselfly.Web.Server;
 using Damselfly.Shared.Utils;
+using System.Text.Json;
 
 namespace Damselfly.Web;
 
@@ -211,14 +212,15 @@ public class Program
 
         builder.Services.AddControllersWithViews()
                 .AddJsonOptions(o => {
-                    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; });
+                    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                });
+
         builder.Services.AddRazorPages();
 
 #if DEBUG
         builder.Services.AddSwaggerGen();
 #endif
-        builder.Services.AddControllersWithViews()
-                .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
         builder.Services.AddRazorPages();
         builder.Services.AddSwaggerGen();
 

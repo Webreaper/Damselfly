@@ -2,10 +2,13 @@
 @inject ISearchService searchService
 @inject IConfigService configService
 @inject IBasketService basketService
+@inject IImageCacheService imageCache
 @inject ILogger<ImageGrid> logger
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 @inherits ImageGridBase
+
+@using System.Collections.Concurrent
 
 <LocalFileExporter @ref="FileExporter" />
 <ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" />
@@ -105,14 +108,14 @@
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
-       // await basketService.SetBasketState(grouping.Images, true);
-       // statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
+        // await basketService.SetBasketState(grouping.Images, true);
+        // statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
     }
 
     async Task RemoveGroupFromBasket(ImageGrouping grouping)
     {
-       // await basketService.SetBasketState(grouping.Images, false);
-       // statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+        // await basketService.SetBasketState(grouping.Images, false);
+        // statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
     }
 
     void SelectGroup(ImageGrouping grouping)
@@ -280,7 +283,7 @@
 
             if (response.SearchResults.Any())
             {
-                gridImages.AddRange(response.SearchResults);
+                await LoadImages(response.SearchResults);
             }
 
             // Flag the 'more' div if we loaded at least as many as we requested.
@@ -292,6 +295,40 @@
             IsLoading = false;
 
             _ = InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task LoadImages(ICollection<int> imageIds)
+    {
+        bool useParallel = false;
+
+        var tasks = new List<Task>();
+
+        var batches = imageIds.Chunk(10);
+
+        if( useParallel )
+        {
+            foreach (var batch in batches)
+            {
+                async Task func()
+                {
+                    logger.LogInformation($"Loading images {string.Join( ", ", batch)}...");
+                    var imgs = await imageCache.GetCachedImages(batch);
+                    gridImages.AddRange(imgs);
+                }
+
+                tasks.Add(func());
+            }
+
+            await Task.WhenAll(tasks);
+        }
+        else
+        {
+            foreach (var id in imageIds)
+            {
+                var img = await imageCache.GetCachedImage(id);
+                gridImages.Add(img);
+            }
         }
     }
 }

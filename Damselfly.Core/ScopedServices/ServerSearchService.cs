@@ -39,7 +39,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
         if (first < SearchResults.Count() && first + count < SearchResults.Count())
         {
             // Data already loaded. Nothing to do.
-            return new SearchResponse {  MoreDataAvailable = false, SearchResults = new Image[0] };
+            return new SearchResponse {  MoreDataAvailable = false, SearchResults = new int[0] };
         }
 
         // Calculate how many results we have already
@@ -54,7 +54,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
         {
             // If we have exactly the right number of results,
             // assume there's more to come
-            return new SearchResponse { MoreDataAvailable = true, SearchResults = new Image[0] };
+            return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
         }
 
         var request = new SearchRequest

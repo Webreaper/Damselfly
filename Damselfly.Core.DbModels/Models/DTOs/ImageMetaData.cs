@@ -36,11 +36,9 @@ public class ImageMetaData
     public double? Longitude { get; set; }
 
     public int? CameraId { get; set; }
-    [JsonIgnore]
     public virtual Camera Camera { get; set; }
 
     public int? LensId { get; set; }
-    [JsonIgnore]
     public virtual Lens Lens { get; set; }
 
     public string DominantColor { get; set; }

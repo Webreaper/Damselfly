@@ -56,7 +56,7 @@ public class SearchQueryService
     {
         // Assume there is more data available - unless the search
         // returns less than we asked for (see below).
-        var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new Image[0] };
+        var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
 
         using var db = new ImageContext();
         var watch = new Stopwatch("ImagesLoadData");
@@ -275,7 +275,7 @@ public class SearchQueryService
         }
 
         // Set the results on the service property
-        response.SearchResults = enrichedImages.ToArray();
+        response.SearchResults = enrichedImages.Select( x => x.ImageId ).ToArray();
 
         _statusService.StatusText = $"Found at least {enrichedImages.Count} images that match the search query.";
 
@@ -286,6 +286,6 @@ public class SearchQueryService
     {
         // Load more data if we need it.
         return await LoadMoreData(request.Query, request.First, request.Count);
-   }
+    }
 }
 
