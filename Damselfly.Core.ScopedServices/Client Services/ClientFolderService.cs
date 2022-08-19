@@ -10,7 +10,6 @@ public class ClientFolderService : BaseClientService, IFolderService
 {
     public ClientFolderService(HttpClient client, NotificationsService notificationService) : base(client)
     {
-        Console.WriteLine($"Initialising notifications: {notificationService}");
         _notificationService = notificationService;
     }
 

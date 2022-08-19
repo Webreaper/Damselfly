@@ -5,6 +5,7 @@
 @inject ContextMenuService contextMenuService
 @inject IConfigService configService
 @inject IDialogService DialogService
+@inject ILogger<FolderList> logger;
 
 @implements IDisposable
 
@@ -213,7 +214,7 @@ else
     {
         var folders = await folderService.GetFilteredFolders(filterTerm);
 
-        Console.WriteLine($"Retrieved {folders.Count} folders");
+        logger.LogInformation($"Retrieved {folders.Count} folders");
         folderItems = folders.ToList();
 
         await InvokeAsync( StateHasChanged );
@@ -239,8 +240,6 @@ else
 
     private void OnFoldersChanged()
     {
-        Console.WriteLine("Refreshing folders in folderlist");
-
         // Be careful of threading - we may get called from anywhere
         _ = InvokeAsync( ProcessUpdatedFilter );
     }

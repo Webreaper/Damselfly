@@ -6,27 +6,39 @@ using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class NotificationsService : IAsyncDisposable
 {
+    private ILogger<NotificationsService> _logger;
     private readonly HubConnection hubConnection;
+    private bool isWebAssembly { get; }
 
-    public NotificationsService( NavigationManager navManager )
+    public NotificationsService( NavigationManager navManager, IJSRuntime jsRuntime, ILogger<NotificationsService> logger )
     {
-        var hubUrl = $"{navManager.BaseUri}{NotificationHub.NotificationRoot}";
-        Console.WriteLine($"Setting up notifications listener on {hubUrl}...");
+        _logger = logger;
+        isWebAssembly = jsRuntime is IJSInProcessRuntime;
 
-        hubConnection = new HubConnectionBuilder()
-                        .WithUrl( hubUrl )
-                        .WithAutomaticReconnect()
-                        .Build();
-
-        _ = Task.Run(async () =>
+        if (isWebAssembly)
         {
-            await hubConnection.StartAsync();
-        });
+            var hubUrl = $"{navManager.BaseUri}{NotificationHub.NotificationRoot}";
+            _logger.LogInformation($"Setting up notifications listener on {hubUrl}...");
+
+            hubConnection = new HubConnectionBuilder()
+                            .WithUrl(hubUrl)
+                            .WithAutomaticReconnect()
+                            .Build();
+
+            _ = Task.Run(async () =>
+            {
+                await hubConnection.StartAsync();
+            });
+        }
+        else
+            _logger.LogInformation("Skipping notification service setup in Blazor Server mode.");
     }
 
     /// <summary>
@@ -36,16 +48,22 @@ public class NotificationsService : IAsyncDisposable
     /// <param name="action"></param>
     public void SubscribeToNotification(NotificationType type, Action action)
     {
+        if (!isWebAssembly)
+        {
+            _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
+            return;
+        }
+
         var methodName = type.ToString();
 
         hubConnection.On<string>(methodName, (payload) =>
         {
             var payloadLog = string.IsNullOrEmpty(payload) ? "(no payload)" : $"(payload: {payload})";
-            Console.WriteLine($"Received {methodName.ToString()} - calling action {payloadLog}");
+            _logger.LogInformation($"Received {methodName.ToString()} - calling action {payloadLog}");
             action.Invoke();
         });
 
-        Console.WriteLine($"Subscribed to {methodName}");
+        _logger.LogInformation($"Subscribed to {methodName}");
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()
