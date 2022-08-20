@@ -281,71 +281,20 @@
             ChangeThumbSize(CurrentThumbSize);
             var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
-            if (response != null && response.SearchResults != null)
+            if (response.SearchResults.Any())
             {
-                if (response.SearchResults.Any())
-                {
-                    await LoadImages(response.SearchResults);
-                }
-
-                // Flag the 'more' div if we loaded at least as many as we requested.
-                endOfImages = !response.MoreDataAvailable;
-
-                // If we've tried to load data and there isn't any more, show the toast.
-                toastClass = endOfImages ? "show" : string.Empty;
-
-                IsLoading = false;
-
-                _ = InvokeAsync(StateHasChanged);
-            }
-            else
-                logger.LogError("No search response back from image query ssrvice!");
-        }
-    }
-
-    private async Task LoadImages(ICollection<int> imageIds)
-    {
-        bool useParallel = false;
-        int batchSize = 1;
-
-        var tasks = new List<Task>();
-
-        var batches = imageIds.Chunk(batchSize);
-
-        if( useParallel )
-        {
-            foreach (var batch in batches)
-            {
-                async Task func()
-                {
-                    logger.LogInformation($"Loading images {string.Join( ", ", batch)}...");
-                    var imgs = await imageCache.GetCachedImages(batch);
-                    gridImages.AddRange(imgs);
-                }
-
-                tasks.Add(func());
+                await imageCache.GetCachedImages(response.SearchResults);
             }
 
-            await Task.WhenAll(tasks);
-        }
-        else
-        {
-            if( batchSize == 1 )
-            {
-                foreach (var id in imageIds)
-                {
-                    var img = await imageCache.GetCachedImage(id);
-                    gridImages.Add(img);
-                }
-            }
-            else
-            {
-                foreach (var batch in batches)
-                {
-                    var imgs = await imageCache.GetCachedImages(batch);
-                    gridImages.AddRange(imgs);
-                }
-            }
+            // Flag the 'more' div if we loaded at least as many as we requested.
+            endOfImages = !response.MoreDataAvailable;
+
+            // If we've tried to load data and there isn't any more, show the toast.
+            toastClass = endOfImages ? "show" : string.Empty;
+
+            IsLoading = false;
+
+            _ = InvokeAsync(StateHasChanged);
         }
     }
 }
