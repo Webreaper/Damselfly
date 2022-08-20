@@ -15,17 +15,19 @@ namespace Damselfly.Core.ScopedServices;
 /// <summary>
 /// Cached static data that the server knows, but the client needs to know
 /// </summary>
-public class ClientImageCacheService : BaseClientService, IImageCacheService
+public class ClientImageCacheService : IImageCacheService
 {
     private readonly ILogger<ClientImageCacheService> _logger;
+    private readonly RestClient httpClient;
     private readonly IMemoryCache _memoryCache;
     private readonly MemoryCacheEntryOptions _cacheOptions;
     private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve };
 
-    public ClientImageCacheService(HttpClient client, IMemoryCache cache, ILogger<ClientImageCacheService> logger) : base(client)
+    public ClientImageCacheService(RestClient client, IMemoryCache cache, ILogger<ClientImageCacheService> logger)
     {
         _logger = logger;
         _memoryCache = cache;
+        httpClient = client;
         _cacheOptions = new MemoryCacheEntryOptions()
                         .SetSize(1)
                         .SetSlidingExpiration(TimeSpan.FromHours(4));

@@ -8,31 +8,31 @@ using System.Threading.Tasks;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class UserTagFavouritesService : IRecentTagService, IDisposable
+public class UserTagRecentsService : IRecentTagService, IDisposable
 {
     private readonly ExifService _exifService;
     private readonly UserConfigService _configService;
-    private readonly List<string> faveTags = new List<string>();
+    private readonly List<string> recentTags = new List<string>();
 
     public event Action OnRecentsChanged;
 
-    public async Task<List<string>> GetRecentTags()
+    public async Task<ICollection<string>> GetRecentTags()
     {
-        return faveTags;
+        return recentTags;
     }
 
-    public UserTagFavouritesService(ExifService exifService, UserConfigService configService)
+    public UserTagRecentsService(ExifService exifService, UserConfigService configService)
     {
         _configService = configService;
         _exifService = exifService;
 
         _exifService.OnUserTagsAdded += AddRecentTags;
 
-        string recents = configService.Get("FavouriteTags");
+        string recents = configService.Get("RecentTags");
 
         if( ! string.IsNullOrEmpty( recents ) )
         {
-            faveTags.AddRange(recents.Split(",").Select(x => x.Trim()).ToList());
+            recentTags.AddRange(recents.Split(",").Select(x => x.Trim()).ToList());
         }
     }
 
@@ -45,27 +45,20 @@ public class UserTagFavouritesService : IRecentTagService, IDisposable
     /// Add most-recent tags to the list
     /// </summary>
     /// <param name="recentTags"></param>
-    private async void AddRecentTags(ICollection<string> recentTags)
-    {
-        // WASM: Sort out this mess
-        Task.Run(() => { AddRecentTagsAsync(recentTags); });
-    }
-
-    private async Task AddRecentTagsAsync(ICollection<string> recentTags)
+    private async void AddRecentTags(ICollection<string> newRecents)
     {
         const int maxRecents = 5;
 
         var faves = await _exifService.GetFavouriteTags();
 
-        var newRecent = recentTags.Concat(faveTags)
+        var newRecent = recentTags.Concat(newRecents)
                                     .Except(faves.Select(x => x.Keyword))
                                     .Distinct()
                                     .Take(maxRecents).ToList();
+        recentTags.Clear();
+        recentTags.AddRange(newRecent);
 
-        faveTags.Clear();
-        faveTags.AddRange(newRecent);
-
-        _configService.Set("FavouriteTags", string.Join(",", faveTags));
+        _configService.Set("RecentTags", string.Join(",", recentTags));
         NotifyRecentsChanged();
     }
 

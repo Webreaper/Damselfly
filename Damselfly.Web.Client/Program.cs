@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Radzen;
 using MudBlazor.Services;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Web.Client;
 
@@ -34,6 +35,7 @@ public class Program
         builder.Services.AddMudServices();
 
         builder.Services.AddScoped<ContextMenuService>();
+        builder.Services.AddSingleton<RestClient>();
 
         builder.Services.AddDamselflyUIServices();
 

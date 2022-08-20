@@ -5,12 +5,18 @@ using Damselfly.Core.Models;
 using System.Net.Http.Json;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientUserService : BaseClientService, IUserService
+public class ClientUserService : IUserService
 {
-    public ClientUserService(HttpClient client) : base(client) { }
+    private readonly RestClient httpClient;
+
+    public ClientUserService(RestClient client)
+    {
+        httpClient = client;
+    }
 
     public AppIdentityUser User
     {

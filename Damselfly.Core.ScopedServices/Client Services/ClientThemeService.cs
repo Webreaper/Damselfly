@@ -4,13 +4,19 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientThemeService : BaseClientService, IThemeService
+public class ClientThemeService : IThemeService
 {
-    public ClientThemeService( HttpClient client, ILogger<ClientThemeService> logger ) : base( client )  { _logger = logger; }
+    public ClientThemeService( RestClient client, ILogger<ClientThemeService> logger )
+    {
+        httpClient = client;
+        _logger = logger;
+    }
 
+    private readonly RestClient httpClient;
     private ILogger<ClientThemeService> _logger;
 
     // WASM: TODO: 
@@ -25,7 +31,7 @@ public class ClientThemeService : BaseClientService, IThemeService
 
         try
         {
-            return await httpClient.GetFromJsonAsync<ThemeConfig>(uri);
+            return await httpClient.CustomGetFromJsonAsync<ThemeConfig>(uri);
         }
         catch( Exception ex )
         {
@@ -39,7 +45,7 @@ public class ClientThemeService : BaseClientService, IThemeService
     {
         try
         {
-            return await httpClient.GetFromJsonAsync<ThemeConfig>($"/api/theme");
+            return await httpClient.CustomGetFromJsonAsync<ThemeConfig>($"/api/theme");
         }
         catch (Exception ex)
         {

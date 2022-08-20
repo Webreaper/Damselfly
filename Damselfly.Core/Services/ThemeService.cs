@@ -36,10 +36,10 @@ public class ThemeService : IThemeService
     {
         var themesFolder = new DirectoryInfo(Path.Combine(contentRootPath, "themes"));
 
-        Logging.Log($"Scanning for themes in {themesFolder}...");
-
         if (themesFolder.Exists)
         {
+            Logging.Log($"Scanning for themes in {themesFolder}...");
+
             var themes = themesFolder.GetFiles("*.css")
                                              .Select(x => x.Name)
                                              .ToList();
@@ -121,6 +121,8 @@ public class ThemeService : IThemeService
 
             var themeConfig = new ThemeConfig
             {
+                Name = themeName,
+                Path = configPath,
                 Black = Color(pairs, "main-background"),
                 Primary = Color(pairs, "body-text"), // Primary highlighted text, such as selected tab text
                 Surface = Color(pairs, "statusbar-gradend"), // Tab backgrounds, dropdown control backgrounds

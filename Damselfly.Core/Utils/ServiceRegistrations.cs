@@ -95,10 +95,10 @@ public static class ServiceRegistrations
         services.AddScoped<UserConfigService>();
         services.AddScoped<ViewDataService>();
         services.AddScoped<UserThemeService>();
-        services.AddScoped<UserTagFavouritesService>();
+        services.AddScoped<UserTagRecentsService>();
         services.AddScoped<NotificationsService>();
 
-        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagFavouritesService>());
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());

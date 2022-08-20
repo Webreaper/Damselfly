@@ -34,4 +34,8 @@ public class ThemeConfig
     public string TextDisabled { get; set; }
     public string Warning { get; set; }
 
+    public override string ToString()
+    {
+        return $"Theme: {Name} [bg: {Background}, fg: {Primary}] Path: {Path}";
+    }
 }

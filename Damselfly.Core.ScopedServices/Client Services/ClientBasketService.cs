@@ -11,11 +11,12 @@ using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientBasketService : BaseClientService, IBasketService
+public class ClientBasketService : IBasketService
 {
     protected ILogger<ClientBasketService> _logger;
+    private readonly RestClient httpClient;
 
-    public ClientBasketService(HttpClient client, ILogger<ClientBasketService> logger) : base( client )
+    public ClientBasketService(RestClient client, ILogger<ClientBasketService> logger) 
     {
         httpClient = client;
         _logger = logger;

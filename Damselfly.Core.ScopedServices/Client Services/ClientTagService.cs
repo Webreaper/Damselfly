@@ -5,35 +5,36 @@ using Damselfly.Core.Models;
 using System.Net.Http.Json;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientTagService : BaseClientService, ITagService, IRecentTagService, ITagSearchService
+public class ClientTagService : ITagService, IRecentTagService, ITagSearchService
 {
-    public ClientTagService(HttpClient client) : base(client) { }
-
-    private List<Tag> _favouriteTags;
-    private List<string> _recentTags;
+    private readonly RestClient httpClient;
+    private ICollection<Tag> _favouriteTags;
+    private ICollection<string> _recentTags;
 
     // WASM: TODO:
     public event Action OnFavouritesChanged;
 
-    public async Task<List<Tag>> GetFavouriteTags()
+    public ClientTagService(RestClient client)
     {
-        if (_favouriteTags == null)
-        {
-            _favouriteTags = await httpClient.GetFromJsonAsync<List<Tag>>("/api/tags/favourites");
-        }
+        httpClient = client;
+    }
+
+    public async Task<ICollection<Tag>> GetFavouriteTags()
+    {
+        // WASM: Cache here?
+        _favouriteTags = await httpClient.CustomGetFromJsonAsync<ICollection<Tag>>("/api/tags/favourites");
 
         return _favouriteTags;
     }
 
-    public async Task<List<string>> GetRecentTags()
+    public async Task<ICollection<string>> GetRecentTags()
     {
-        if (_recentTags == null)
-        {
-            _recentTags = await httpClient.GetFromJsonAsync<List<string>>("/api/tags/recents");
-        }
+        // WASM: Cache here?
+        _recentTags = await httpClient.CustomGetFromJsonAsync<ICollection<string>>("/api/tags/recents");
 
         return _recentTags;
     }

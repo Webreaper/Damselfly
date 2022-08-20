@@ -24,9 +24,9 @@ namespace Damselfly.Core.ScopedServices;
 /// back (say) 200 images, and then requery for the next 200 when the user scrolls.
 /// This saves us returning thousands of items for a search.
 /// </summary>
-public abstract class BaseSearchService : BaseClientService
+public abstract class BaseSearchService
 {
-    public BaseSearchService(HttpClient client, ICachedDataService dataService) : base(client)
+    public BaseSearchService(ICachedDataService dataService)
     {
         _service = dataService;
     }

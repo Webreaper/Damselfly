@@ -53,4 +53,14 @@
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\" />
+    <Content Remove="wwwroot\themes\" />
+    <Content Remove="wwwroot\fonts\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\themes\" />
+    <Folder Include="wwwroot\fonts\" />
+  </ItemGroup>
 </Project>

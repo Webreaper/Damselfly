@@ -29,7 +29,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
 {
     private SearchQueryService _queryService;
 
-    public ServerSearchService(HttpClient client, ICachedDataService dataService, SearchQueryService queryService) : base(client, dataService)
+    public ServerSearchService(ICachedDataService dataService, SearchQueryService queryService) : base(dataService)
     {
         _queryService = queryService;
     }

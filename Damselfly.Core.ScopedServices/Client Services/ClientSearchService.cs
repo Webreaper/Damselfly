@@ -24,7 +24,14 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class ClientSearchService : BaseSearchService, ISearchService
 {
-    public ClientSearchService(HttpClient client, ICachedDataService dataService) : base(client, dataService) { }
+    private readonly RestClient httpClient;
+    private readonly ICachedDataService _dataService;
+
+    public ClientSearchService(RestClient client, ICachedDataService dataService) : base( dataService )
+    {
+        httpClient = client;
+        _dataService = dataService;
+    }
 
     public override async Task<SearchResponse> GetQueryImagesAsync( int first, int count )
     {

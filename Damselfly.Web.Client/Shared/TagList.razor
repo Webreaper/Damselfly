@@ -146,8 +146,8 @@
         public string Icon { get; set; }
     }
 
-    private IList<Tag> faveTags { get; set; } = new List<Tag>();
-    private IList<string> recentTags { get; set; } = new List<string>();
+    private readonly List<Tag> faveTags = new List<Tag>();
+    private readonly List<string> recentTags = new List<string>();
     private IList<Tag> theImageTags { get; set; }
     private IList<AITag> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
@@ -316,8 +316,10 @@
     protected override async Task OnParametersSetAsync()
     {
         theImageTags = GetImageTags();
-        faveTags = await tagService.GetFavouriteTags();
-        recentTags = await recentTagService.GetRecentTags();
+        faveTags.Clear();
+        recentTags.Clear();
+        faveTags.AddRange(  await tagService.GetFavouriteTags() );
+        recentTags.AddRange( await recentTagService.GetRecentTags() );
 
         theObjectTags = GetObjectTags(theImageTags);
 

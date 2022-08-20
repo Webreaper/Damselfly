@@ -5,24 +5,30 @@ using Damselfly.Core.Models;
 using System.Net.Http.Json;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientWorkService : BaseClientService, IWorkService
+public class ClientWorkService : IWorkService
 {
-    public ClientWorkService(HttpClient client) : base(client) { }
+    private readonly RestClient httpClient;
+
+    public ClientWorkService(RestClient client)
+    {
+        httpClient = client;
+    }
 
     // WASM: TODO: 
     public event Action<ServiceStatus> OnStatusChanged;
 
     public async Task Pause(bool paused)
     {
-        await httpClient.PostAsJsonAsync($"/api/work/pause", paused);
+        await httpClient.CustomPostAsJsonAsync($"/api/work/pause", paused);
     }
 
     public async Task<ServiceStatus> GetWorkStatus()
     {
-        return await httpClient.GetFromJsonAsync<ServiceStatus>("/api/work/status");
+        return await httpClient.CustomGetFromJsonAsync<ServiceStatus>("/api/work/status");
     }
 }
 

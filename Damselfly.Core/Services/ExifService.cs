@@ -34,7 +34,7 @@ public class ExifService : IProcessJobFactory, ITagService
     public event Action OnFavouritesChanged;
     public event Action<ICollection<string>> OnUserTagsAdded;
 
-    public async Task<List<Tag>> GetFavouriteTags()
+    public async Task<ICollection<Tag>> GetFavouriteTags()
     {
         return faveTags;
     }

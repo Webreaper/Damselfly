@@ -292,6 +292,8 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
+
+        // Start up all the Damselfly Services
         app.Environment.SetupServices( app.Services );
 
         app.Urls.Add("http://+:6363"); 

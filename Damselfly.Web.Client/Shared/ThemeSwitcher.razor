@@ -71,9 +71,10 @@
 
     private void SwitchTheme(ThemeConfig newTheme)
     {
-
         if (newTheme != null)
         {
+            logger.LogInformation($"Switching theme to {newTheme}");
+
             // Apply the new stylesheet to Damselfly
             var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
             _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);

@@ -9,17 +9,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientFolderService : BaseClientService, IFolderService
+public class ClientFolderService : IFolderService
 {
-    public ClientFolderService(HttpClient client, NotificationsService notificationService, ILogger<ClientFolderService> logger) : base(client)
+    protected ILogger<ClientFolderService> _logger;
+    private readonly RestClient httpClient;
+    private readonly NotificationsService _notificationService;
+    public event Action OnChange;
+
+    public ClientFolderService(RestClient client, NotificationsService notificationService, ILogger<ClientFolderService> logger)
     {
+        httpClient = client;
         _logger = logger;
         _notificationService = notificationService;
     }
 
-    private readonly ILogger<ClientFolderService> _logger;
-    private readonly NotificationsService _notificationService;
-    public event Action OnChange;
 
     public async Task<ICollection<Folder>> GetFolders()
     {

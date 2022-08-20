@@ -8,7 +8,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 public interface ITagService
 {
     event Action OnFavouritesChanged;
-    Task<List<Tag>> GetFavouriteTags();
+    Task<ICollection<Tag>> GetFavouriteTags();
     Task ToggleFavourite(Tag tag);
     Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, AppIdentityUser currentUser);
     Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null);
@@ -16,7 +16,7 @@ public interface ITagService
 
 public interface IRecentTagService
 {
-    Task<List<string>> GetRecentTags();
+    Task<ICollection<string>> GetRecentTags();
 }
 
 public interface ITagSearchService
