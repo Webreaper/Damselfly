@@ -8,21 +8,25 @@
 <ErrorBoundary>
     <ChildContent>
         <CascadingAuthenticationState>
+        <ErrorBoundary>
             <LoginForcer />
             <ThemeSwitcher />
-            <div class="damselfly-container">
-                <div class="damselfly-application">
-                    <SplitView>
-                        <LeftPane>
-                            <SideBar />
-                        </LeftPane>
-                        <RightPane>
-                            @Body
-                        </RightPane>
-                    </SplitView>
-                </div>
-                <Statusbar />
+        </ErrorBoundary>
+        <div class="damselfly-container">
+            <div class="damselfly-application">
+                <SplitView>
+                    <LeftPane>
+                        <SideBar />
+                    </LeftPane>
+                    <RightPane>
+                        @Body
+                    </RightPane>
+                </SplitView>
             </div>
+            <ErrorBoundary>
+                <Statusbar />
+            </ErrorBoundary>
+        </div>
         </CascadingAuthenticationState>
     </ChildContent>
     <ErrorContent>

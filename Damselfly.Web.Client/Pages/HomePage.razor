@@ -6,8 +6,13 @@
 @inject ViewDataService viewdataService
 
 <div class="damselfly-imagebrowser">
-    <SearchBar OnThumbSizeChanged="ThumbSizeChanged" />
-    <ImageGrid CurrentThumbSize="@thumbSize" />
+
+    <ErrorBoundary>
+        <SearchBar OnThumbSizeChanged="ThumbSizeChanged" />
+    </ErrorBoundary>
+    <ErrorBoundary>
+        <ImageGrid CurrentThumbSize="@thumbSize" />
+    </ErrorBoundary>
 </div>
 
 @code

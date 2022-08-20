@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Services;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using System.Threading.Tasks;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -11,10 +12,14 @@ public class UserTagFavouritesService : IRecentTagService, IDisposable
 {
     private readonly ExifService _exifService;
     private readonly UserConfigService _configService;
+    private readonly List<string> faveTags = new List<string>();
 
     public event Action OnRecentsChanged;
 
-    public List<string> RecentTags { get; private set; } = new List<string>();
+    public async Task<List<string>> GetRecentTags()
+    {
+        return faveTags;
+    }
 
     public UserTagFavouritesService(ExifService exifService, UserConfigService configService)
     {
@@ -27,7 +32,7 @@ public class UserTagFavouritesService : IRecentTagService, IDisposable
 
         if( ! string.IsNullOrEmpty( recents ) )
         {
-            RecentTags.AddRange(recents.Split(",").Select(x => x.Trim()).ToList());
+            faveTags.AddRange(recents.Split(",").Select(x => x.Trim()).ToList());
         }
     }
 
@@ -40,19 +45,27 @@ public class UserTagFavouritesService : IRecentTagService, IDisposable
     /// Add most-recent tags to the list
     /// </summary>
     /// <param name="recentTags"></param>
-    private void AddRecentTags(ICollection<string> recentTags )
+    private async void AddRecentTags(ICollection<string> recentTags)
+    {
+        // WASM: Sort out this mess
+        Task.Run(() => { AddRecentTagsAsync(recentTags); });
+    }
+
+    private async Task AddRecentTagsAsync(ICollection<string> recentTags)
     {
         const int maxRecents = 5;
 
-        var newRecent = recentTags.Concat(RecentTags)
-                                    .Except(_exifService.FavouriteTags.Select(x => x.Keyword))
+        var faves = await _exifService.GetFavouriteTags();
+
+        var newRecent = recentTags.Concat(faveTags)
+                                    .Except(faves.Select(x => x.Keyword))
                                     .Distinct()
                                     .Take(maxRecents).ToList();
 
-        RecentTags.Clear();
-        RecentTags.AddRange(newRecent);
+        faveTags.Clear();
+        faveTags.AddRange(newRecent);
 
-        _configService.Set("FavouriteTags", string.Join(",",RecentTags));
+        _configService.Set("FavouriteTags", string.Join(",", faveTags));
         NotifyRecentsChanged();
     }
 

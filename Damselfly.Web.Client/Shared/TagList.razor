@@ -13,7 +13,6 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
-@inject UserManager<AppIdentityUser> UserManager
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -25,51 +24,45 @@
     @if (ShowFavourites)
     {
         <div class="damselfly-keywordlist">
-            @if (tagService.FavouriteTags != null && tagService.FavouriteTags.Any())
+            @foreach (var tag in faveTags)
             {
-                @foreach (var tag in tagService.FavouriteTags)
+                @if (CurrentImages != null && CurrentImages.Any())
                 {
-                    @if (CurrentImages != null && CurrentImages.Any())
-                    {
-                        <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to image"
-                             @onclick="@(() => QuickAddTag(tag.Keyword))"
-                             @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
-                            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                                <div class="damselfly-addtag"><i class="fa fa-plus-circle" /></div>
-                            </AuthorizeView>
-                            <div class="damselfly-keywordtext">@tag.Keyword</div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to Selection"
-                             @oncontextmenu=@(args => ShowContextMenu(args, tag, true )) @oncontextmenu:preventDefault="true">
-                            <div class="damselfly-keywordtext-disabled">@tag.Keyword</div>
-                        </div>
-                    }
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to image"
+                            @onclick="@(() => QuickAddTag(tag.Keyword))"
+                            @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
+                        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                            <div class="damselfly-addtag"><i class="fa fa-plus-circle" /></div>
+                        </AuthorizeView>
+                        <div class="damselfly-keywordtext">@tag.Keyword</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to Selection"
+                            @oncontextmenu=@(args => ShowContextMenu(args, tag, true )) @oncontextmenu:preventDefault="true">
+                        <div class="damselfly-keywordtext-disabled">@tag.Keyword</div>
+                    </div>
                 }
             }
 
-            @if (recentTagService.RecentTags != null && recentTagService.RecentTags.Any())
+            @foreach (var tag in recentTags )
             {
-                @foreach (var tag in recentTagService.RecentTags)
+                @if (CurrentImages != null && CurrentImages.Any())
                 {
-                    @if (CurrentImages != null && CurrentImages.Any())
-                    {
-                        <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to image"
-                             @onclick="@(() => QuickAddTag(tag))">
-                            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                                <div class="damselfly-addtag"><i class="fa fa-history" /></div>
-                            </AuthorizeView>
-                            <div class="damselfly-keywordtext">@tag</div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to Selection">
-                            <div class="damselfly-keywordtext-disabled">@tag</div>
-                        </div>
-                    }
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to image"
+                            @onclick="@(() => QuickAddTag(tag))">
+                        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                            <div class="damselfly-addtag"><i class="fa fa-history" /></div>
+                        </AuthorizeView>
+                        <div class="damselfly-keywordtext">@tag</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to Selection">
+                        <div class="damselfly-keywordtext-disabled">@tag</div>
+                    </div>
                 }
             }
         </div>
@@ -153,6 +146,8 @@
         public string Icon { get; set; }
     }
 
+    private IList<Tag> faveTags { get; set; } = new List<Tag>();
+    private IList<string> recentTags { get; set; } = new List<string>();
     private IList<Tag> theImageTags { get; set; }
     private IList<AITag> theObjectTags { get; set; }
     public bool IsDisabled { get { return CurrentImages == null || !CurrentImages.Any(); } }
@@ -174,10 +169,11 @@
     /// <returns></returns>
     private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
     {
-        var authState = await authenticationStateTask;
-        var currentUser = await UserManager.GetUserAsync(authState.User); // May return NULL if not logged in
+        // WASM: https://stackoverflow.com/questions/65397419/how-to-use-usermanager-on-a-blazor-page
+        //var authState = await authenticationStateTask;
+        //var currentUser = await UserManager.GetUserAsync(authState.User); // May return NULL if not logged in
 
-        await tagService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, currentUser);
+        //await tagService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, currentUser);
 
         StateHasChanged();
     }
@@ -320,6 +316,8 @@
     protected override async Task OnParametersSetAsync()
     {
         theImageTags = GetImageTags();
+        faveTags = await tagService.GetFavouriteTags();
+        recentTags = await recentTagService.GetRecentTags();
 
         theObjectTags = GetObjectTags(theImageTags);
 

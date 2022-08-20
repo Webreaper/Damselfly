@@ -18,30 +18,24 @@ public class ClientTagService : BaseClientService, ITagService, IRecentTagServic
     // WASM: TODO:
     public event Action OnFavouritesChanged;
 
-    public List<Tag> FavouriteTags
+    public async Task<List<Tag>> GetFavouriteTags()
     {
-        get
+        if (_favouriteTags == null)
         {
-            if (_favouriteTags == null)
-            {
-                _favouriteTags = httpClient.GetFromJsonAsync<List<Tag>>("/api/tags/favourites").Result;
-            }
-
-            return _favouriteTags;
+            _favouriteTags = await httpClient.GetFromJsonAsync<List<Tag>>("/api/tags/favourites");
         }
+
+        return _favouriteTags;
     }
 
-    public List<string> RecentTags
+    public async Task<List<string>> GetRecentTags()
     {
-        get
+        if (_recentTags == null)
         {
-            if (_recentTags == null)
-            {
-                _recentTags = httpClient.GetFromJsonAsync<List<string>>("/api/tags/recents").Result;
-            }
-
-            return _recentTags;
+            _recentTags = await httpClient.GetFromJsonAsync<List<string>>("/api/tags/recents");
         }
+
+        return _recentTags;
     }
 
     public async Task ToggleFavourite(Tag tag)

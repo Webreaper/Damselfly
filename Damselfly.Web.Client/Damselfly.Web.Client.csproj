@@ -50,13 +50,11 @@
     <Folder Include="Shared\" />
     <Folder Include="Pages\" />
     <Folder Include="Extensions\" />
-    <Folder Include="Shared\Disabled\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Extensions\" />
     <None Remove="Microsoft.AspNetCore.WebUtilities" />
     <None Remove="Syncfusion.Blazor.Maps" />
     <None Remove="Microsoft.AspNetCore.SignalR.Client" />
-    <None Remove="Shared\Disabled\" />
   </ItemGroup>
 </Project>

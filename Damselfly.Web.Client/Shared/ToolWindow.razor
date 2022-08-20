@@ -16,7 +16,9 @@
         </div>
     </div>
     <div class="toolwindow-content @DisplayClass">
-        @ChildContent
+        <ErrorBoundary>
+            @ChildContent
+        </ErrorBoundary>
     </div>
 </div>
 

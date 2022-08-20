@@ -3,6 +3,9 @@
     Init: function (scrollAreaID, endMarkerId, DotNetRef) {
         var scrollArea = document.getElementById(scrollAreaID);
 
+        if (scrollArea === null) {
+            return false;
+        }
         var markerIsVisible = function ()
         {
             var endMarker = document.getElementById(endMarkerId);

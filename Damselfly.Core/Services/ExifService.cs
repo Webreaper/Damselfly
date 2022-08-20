@@ -29,10 +29,15 @@ public class ExifService : IProcessJobFactory, ITagService
     private readonly ImageCache _imageCache;
     private readonly IndexingService _indexingService;
     private readonly WorkService _workService;
+    private readonly List<Tag> faveTags = new List<Tag>();
 
-    public List<Tag> FavouriteTags { get; private set; } = new List<Tag>();
     public event Action OnFavouritesChanged;
     public event Action<ICollection<string>> OnUserTagsAdded;
+
+    public async Task<List<Tag>> GetFavouriteTags()
+    {
+        return faveTags;
+    }
 
     private void NotifyFavouritesChanged()
     {
@@ -658,10 +663,10 @@ public class ExifService : IProcessJobFactory, ITagService
                                     .OrderBy(x => x.Keyword)
                                     .ToList());
 
-        if (!faves.SequenceEqual(FavouriteTags))
+        if (!faves.SequenceEqual(faveTags))
         {
-            FavouriteTags.Clear();
-            FavouriteTags.AddRange(faves);
+            faveTags.Clear();
+            faveTags.AddRange(faves);
 
             NotifyFavouritesChanged();
         }
