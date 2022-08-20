@@ -283,7 +283,8 @@
 
             if (response.SearchResults.Any())
             {
-                await imageCache.GetCachedImages(response.SearchResults);
+                var images = await imageCache.GetCachedImages(response.SearchResults);
+                gridImages.AddRange(images);
             }
 
             // Flag the 'more' div if we loaded at least as many as we requested.
