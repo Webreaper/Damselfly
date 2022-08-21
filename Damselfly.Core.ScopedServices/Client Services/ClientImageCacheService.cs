@@ -104,65 +104,43 @@ public class ClientImageCacheService : IImageCacheService
         return response.Images;
     }
 
+    /// <summary>
+    /// Submit the image load requests in parallel so we wait as little a time as possible.
+    /// TODO: Still need to understand why GetImages doesn't work (so we could submit them
+    /// in batches.
+    /// </summary>
+    /// <param name="imageIds"></param>
+    /// <returns></returns>
     private async Task LoadAndCacheImages(ICollection<int> imageIds)
     {
-        bool useParallel = true;
         int batchSize = 1;
 
         var tasks = new List<Task>();
 
         var batches = imageIds.Chunk(batchSize);
 
-        if (useParallel)
+        foreach (var batch in batches)
         {
-            foreach (var batch in batches)
+            async Task func()
             {
-                async Task func()
+                _logger.LogInformation($"Loading images {string.Join(", ", batch)}...");
+                if (batch.Count() == 1)
                 {
-                    _logger.LogInformation($"Loading images {string.Join(", ", batch)}...");
-                    if (batch.Count() == 1)
-                    {
-                        var i = await GetImage(batch.First());
-                        _memoryCache.Set(i.ImageId, i, _cacheOptions);
-                    }
-                    else
-                    {
-                        var imgs = await GetImages(batch);
-                        foreach (var i in imgs)
-                            _memoryCache.Set(i.ImageId, i, _cacheOptions);
-                    }
-                }
-
-                tasks.Add(func());
-            }
-
-            await Task.WhenAll(tasks);
-        }
-        else
-        {
-            if (batchSize == 1)
-            {
-                foreach (var id in imageIds)
-                {
-                    _logger.LogInformation($"Adding image {id} to cache...");
-                    var i = await GetImage(id);
+                    var i = await GetImage(batch.First());
                     _memoryCache.Set(i.ImageId, i, _cacheOptions);
                 }
-            }
-            else
-            {
-                foreach (var batch in batches)
+                else
                 {
-                    _logger.LogInformation($"Loading batch of {batch.Count()} images ({string.Join(", ", batch)})...");
                     var imgs = await GetImages(batch);
                     foreach (var i in imgs)
-                    {
-                        _logger.LogInformation($"Adding images {string.Join(", ", batch)} to cache...");
                         _memoryCache.Set(i.ImageId, i, _cacheOptions);
-                    }
                 }
             }
+
+            tasks.Add(func());
         }
+
+        await Task.WhenAll(tasks);
     }
 }
 

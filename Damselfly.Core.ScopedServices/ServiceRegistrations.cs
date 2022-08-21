@@ -38,7 +38,6 @@ public static class ServiceRegistrations
         services.AddScoped<IThemeService>(x => x.GetRequiredService<ClientThemeService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<ITagService>(x => x.GetRequiredService<ClientTagService>());
-        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());

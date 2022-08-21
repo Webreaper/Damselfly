@@ -26,7 +26,7 @@ public class ImageSearchController : ControllerBase
         _logger.LogInformation($"Initialised ImageSearch controller");
     }
 
-    [HttpPost]
+    [HttpPost("/api/search")]
     public async Task<SearchResponse> SubmitSearch( SearchRequest request )
     {
         return await _searchService.GetQueryImagesAsync( request );

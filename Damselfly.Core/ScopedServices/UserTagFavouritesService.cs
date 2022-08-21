@@ -5,13 +5,14 @@ using Damselfly.Core.Services;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Threading.Tasks;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class UserTagRecentsService : IRecentTagService, IDisposable
 {
     private readonly ExifService _exifService;
-    private readonly UserConfigService _configService;
+    private readonly IConfigService _configService;
     private readonly List<string> recentTags = new List<string>();
 
     public event Action OnRecentsChanged;
@@ -21,7 +22,7 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
         return recentTags;
     }
 
-    public UserTagRecentsService(ExifService exifService, UserConfigService configService)
+    public UserTagRecentsService(ExifService exifService, IConfigService configService)
     {
         _configService = configService;
         _exifService = exifService;

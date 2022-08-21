@@ -25,20 +25,22 @@ namespace Damselfly.Web.Controllers;
 public class ImageAPIController : ControllerBase
 {
     private ILogger<ImageAPIController> _logger;
+    private ImageCache imageCache;
 
-    public ImageAPIController( ILogger<ImageAPIController> logger )
+    public ImageAPIController( ILogger<ImageAPIController> logger, ImageCache cache)
     {
+        imageCache = cache;
         _logger = logger;
     }
 
     [HttpGet("/api/image/{imageId}")]
-    public async Task<Image> Get(int imageId, [FromServices] ImageCache imageCache)
+    public async Task<Image> Get(int imageId)
     {
         return await imageCache.GetCachedImage( imageId );
     }
 
     [HttpPost("/api/images")]
-    public async Task<ImageResponse> GetImages(ImageRequest req, [FromServices] ImageCache imageCache)
+    public async Task<ImageResponse> GetImages(ImageRequest req)
     {
         _logger.LogInformation($"Loading {req.ImageIds.Count} images from server cache.");
         var images = await imageCache.GetCachedImages(req.ImageIds);

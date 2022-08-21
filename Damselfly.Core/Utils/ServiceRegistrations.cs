@@ -78,6 +78,9 @@ public static class ServiceRegistrations
         services.AddSingleton<FolderService>();
         services.AddSingleton<UserStatusService>(); // WRONG
         services.AddSingleton<BasketService>();
+        services.AddSingleton<UserTagRecentsService>();
+
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
 
         return services;
     }
