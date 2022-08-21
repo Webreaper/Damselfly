@@ -29,6 +29,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Web.Server;
 using Damselfly.Shared.Utils;
 using System.Text.Json;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Web;
 
@@ -211,7 +212,7 @@ public class Program
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
         builder.Services.AddControllersWithViews()
-                .AddJsonOptions(o => { o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; });
+                .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions);  });
 
         builder.Services.AddRazorPages();
 
