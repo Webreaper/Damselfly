@@ -26,6 +26,9 @@ public class ClientSearchService : BaseSearchService, ISearchService
 {
     private readonly RestClient httpClient;
     private readonly ICachedDataService _dataService;
+    private readonly List<int> _searchResults = new List<int>();
+
+    public ICollection<int> SearchResults { get { return _searchResults;  } }
 
     public ClientSearchService(RestClient client, ICachedDataService dataService) : base( dataService )
     {
@@ -63,6 +66,11 @@ public class ClientSearchService : BaseSearchService, ISearchService
             Count = count
         };
 
-        return await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request );
+        var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request );
+
+        // WASM: should this just get added into the navigation manager directly?
+        _searchResults.AddRange(response.SearchResults);
+
+        return response;
     }
 }

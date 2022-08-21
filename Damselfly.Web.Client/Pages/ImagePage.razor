@@ -57,8 +57,8 @@ else
     public string ImageID { get; set; }
 
     private Image CurrentImage;
-    private Image nextImage;
-    private Image prevImage;
+    private int nextImage;
+    private int prevImage;
     private ElementReference ImageView;
 
     private bool ZoomEnabled => theImagePreview == null ? false : theImagePreview.ZoomEnabled;
@@ -72,10 +72,10 @@ else
 
     public CropJsHelper JsHelper { get; set; }
 
-    private bool NextEnabled => nextImage != null && nextImage.ImageId != CurrentImage.ImageId;
-    private bool PrevEnabled => prevImage != null && prevImage.ImageId != CurrentImage.ImageId;
-    private string PrevImageIDUrl => $"/image/{prevImage.ImageId}";
-    private string NextImageIDUrl => $"/image/{nextImage.ImageId}";
+    private bool NextEnabled => nextImage != null && nextImage != CurrentImage.ImageId;
+    private bool PrevEnabled => prevImage != null && prevImage != CurrentImage.ImageId;
+    private string PrevImageIDUrl => $"/image/{prevImage}";
+    private string NextImageIDUrl => $"/image/{nextImage}";
 
     protected override void OnInitialized()
     {
@@ -147,8 +147,8 @@ else
             ImageUrl = CurrentImage.ThumbUrl( ThumbSize.Medium );
             ImageUrlHighRes = CurrentImage.ThumbUrl(ThumbSize.ExtraLarge); ;
 
-            nextImage = await navContext.GetNextImageAsync(true);
-            prevImage = await navContext.GetNextImageAsync(false);
+            nextImage = await navContext.GetNextImage(true);
+            prevImage = await navContext.GetNextImage(false);
 
             StateHasChanged();
         }
@@ -156,15 +156,15 @@ else
 
     private void Next()
     {
-        if (nextImage != null && nextImage.ImageId != CurrentImage.ImageId)
-            NavigationManager.NavigateTo("/image/" + nextImage.ImageId);
+        if (nextImage >= 0 && nextImage != CurrentImage.ImageId)
+            NavigationManager.NavigateTo($"/image/{nextImage}");
 
     }
 
     private void Prev()
     {
-        if (prevImage != null && prevImage.ImageId != CurrentImage.ImageId)
-            NavigationManager.NavigateTo("/image/" + prevImage.ImageId);
+        if (prevImage >= 0 && prevImage != CurrentImage.ImageId)
+            NavigationManager.NavigateTo($"/image/{prevImage}");
     }
 
     public void RefreshImage()

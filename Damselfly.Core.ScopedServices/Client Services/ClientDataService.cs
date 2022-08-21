@@ -16,19 +16,25 @@ public class ClientDataService : ICachedDataService
     private readonly RestClient httpClient;
     private readonly List<Camera> _cameras = new List<Camera>();
     private readonly List<Lens> _lenses = new List<Lens>();
+    private readonly ILogger<ClientDataService> _logger;
 
-    public ClientDataService(RestClient client)
+    public ClientDataService(RestClient client, ILogger<ClientDataService> logger)
     {
         httpClient = client;
+        _logger = logger;
     }
 
-    private async Task InitialiseData()
+    public async Task InitialiseData()
     {
+        _logger.LogInformation("Loading static Data");
+
         _cameras.Clear();
         _lenses.Clear();
         // WASM: AwaitALL
-        _cameras.AddRange( await httpClient.CustomGetFromJsonAsync<List<Camera>>($"/api/cameras") );
-        _lenses.AddRange( await httpClient.CustomGetFromJsonAsync<List<Lens>>($"/api/lenses") );
+        _cameras.AddRange( await httpClient.CustomGetFromJsonAsync<List<Camera>>("/api/data/cameras") );
+        _lenses.AddRange( await httpClient.CustomGetFromJsonAsync<List<Lens>>("/api/data/lenses") );
+
+        _logger.LogInformation($"Loaded {_cameras.Count()} cameras, {_lenses.Count} lenses.");
     }
 
     // WASM: TODO:

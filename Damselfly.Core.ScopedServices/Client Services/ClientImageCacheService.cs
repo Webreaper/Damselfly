@@ -86,7 +86,7 @@ public class ClientImageCacheService : IImageCacheService
         }
         catch (Exception ex)
         {
-            Logging.LogError($"Exception during caching/enrichment: {ex}");
+            Logging.LogError($"Exception during caching enrichment: {ex.Message}");
         }
 
         return result;
@@ -99,12 +99,12 @@ public class ClientImageCacheService : IImageCacheService
 
     private async Task<List<Image>> GetImages(ICollection<int> imgIds)
     {
-        return await httpClient.CustomPutAsJsonAsync<ICollection<int>, List<Image>>($"/api/images/", imgIds);
+        return await httpClient.CustomPostAsJsonAsync<ICollection<int>, List<Image>>("/api/images", imgIds);
     }
 
     private async Task LoadAndCacheImages(ICollection<int> imageIds)
     {
-        bool useParallel = false;
+        bool useParallel = true;
         int batchSize = 1;
 
         var tasks = new List<Task>();
@@ -118,9 +118,17 @@ public class ClientImageCacheService : IImageCacheService
                 async Task func()
                 {
                     _logger.LogInformation($"Loading images {string.Join(", ", batch)}...");
-                    var imgs = await GetImages(batch);
-                    foreach( var i in imgs)
+                    if (batch.Count() == 1)
+                    {
+                        var i = await GetImage(batch.First());
                         _memoryCache.Set(i.ImageId, i, _cacheOptions);
+                    }
+                    else
+                    {
+                        var imgs = await GetImages(batch);
+                        foreach (var i in imgs)
+                            _memoryCache.Set(i.ImageId, i, _cacheOptions);
+                    }
                 }
 
                 tasks.Add(func());
@@ -143,6 +151,7 @@ public class ClientImageCacheService : IImageCacheService
             {
                 foreach (var batch in batches)
                 {
+                    _logger.LogInformation($"Loading batch of {batch.Count()} images ({string.Join(", ", batch)})...");
                     var imgs = await GetImages(batch);
                     foreach (var i in imgs)
                     {

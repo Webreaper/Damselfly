@@ -9,7 +9,7 @@ public interface ISearchService
 {
     event Action OnSearchChanged;
 
-    List<Image> SearchResults { get; }
+    ICollection<int> SearchResults { get; }
 
     string SearchText { get; set; }
     Folder Folder { get; set; }

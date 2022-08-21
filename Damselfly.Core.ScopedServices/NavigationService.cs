@@ -39,18 +39,6 @@ public class NavigationService
     public event Action<Image> OnChange;
 
     /// <summary>
-    /// Get the URL of the next or previous image
-    /// </summary>
-    /// <param name="image"></param>
-    /// <param name="next"></param>
-    /// <returns></returns>
-    public async Task<Image> GetNextImageAsync( bool next)
-    {
-        var task = Task.Run(() => GetNextImage( next ));
-        return await task;
-    }
-
-    /// <summary>
     /// Calculates the URL of the next or previous image, based on the
     /// current context, and the current image position. This is passed
     /// back to the UI and is used to form the 'click' URL for the next
@@ -63,18 +51,18 @@ public class NavigationService
     /// <param name="image"></param>
     /// <param name="next"></param>
     /// <returns></returns>
-    private Image GetNextImage( bool next )
+    public async Task<int> GetNextImage( bool next )
     { 
-        List<Image> navigationItems = null;
+        List<int> navigationItems = new List<int>();
 
         if (Context == NavigationContexts.Basket)
-            navigationItems = _basketService.BasketImages;
+            navigationItems.AddRange( _basketService.BasketImages.Select( x => x.ImageId ) );
         else if (Context == NavigationContexts.Search)
-            navigationItems = _searchService.SearchResults;
+            navigationItems.AddRange( _searchService.SearchResults );
 
         if ( this.CurrentImage != null && navigationItems != null )
         {
-            int currentIndex = navigationItems.FindIndex( x => x.ImageId == CurrentImage.ImageId );
+            int currentIndex = navigationItems.FindIndex( x => x == CurrentImage.ImageId );
 
             if (currentIndex != -1)
             {
@@ -92,6 +80,6 @@ public class NavigationService
             }
         }
 
-        return null;
+        return -1;
     }
 }

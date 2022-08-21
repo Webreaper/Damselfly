@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -22,5 +23,10 @@ public class CachedDataService : ICachedDataService
     public ICollection<Camera> Cameras => _metaDataService.Cameras;
 
     public ICollection<Lens> Lenses => _metaDataService.Lenses;
+
+    public async Task InitialiseData()
+    {
+        // Nothng to do here in the Blazor Server version
+    }
 }
 

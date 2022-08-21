@@ -56,10 +56,14 @@
     <Folder Include="Shared\Dialogs\" />
     <Folder Include="Components\" />
     <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\fonts\" />
+    <Folder Include="wwwroot\themes\" />
   </ItemGroup>
   <ItemGroup>
     <Content Remove="Shared\Images\ImagePropertyField.razor" />
     <Content Remove="wwwroot\" />
+    <Content Remove="wwwroot\fonts\" />
+    <Content Remove="wwwroot\themes\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />

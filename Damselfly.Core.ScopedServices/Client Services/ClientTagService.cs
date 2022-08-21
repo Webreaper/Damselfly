@@ -26,7 +26,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
         // WASM: Cache here?
-        _favouriteTags = await httpClient.CustomGetFromJsonAsync<ICollection<Tag>>("/api/tags/favourites");
+        _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
 
         return _favouriteTags;
     }
@@ -34,7 +34,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     public async Task<ICollection<string>> GetRecentTags()
     {
         // WASM: Cache here?
-        _recentTags = await httpClient.CustomGetFromJsonAsync<ICollection<string>>("/api/tags/recents");
+        _recentTags = await httpClient.CustomGetFromJsonAsync<List<string>>("/api/tags/recents");
 
         return _recentTags;
     }

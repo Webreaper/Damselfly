@@ -33,7 +33,9 @@ public abstract class BaseSearchService
 
     private readonly ICachedDataService _service;
     private readonly SearchQuery query = new SearchQuery();
-    public List<Image> SearchResults { get; private set; } = new List<Image>();
+    protected readonly List<int> _searchResults = new List<int>();
+
+    public ICollection<int> SearchResults { get { return _searchResults; } }
 
     public abstract Task<SearchResponse> GetQueryImagesAsync(int start, int count);
 

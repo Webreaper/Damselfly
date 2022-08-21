@@ -5,6 +5,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface ICachedDataService
 {
+    Task InitialiseData();
     string ImagesRootFolder { get; }
     string ExifToolVer { get; }
     ICollection<Camera> Cameras { get; }
