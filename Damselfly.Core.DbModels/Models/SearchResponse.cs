@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.DbModels;
@@ -16,3 +17,12 @@ public class SearchRequest
     public int Count { get; set; }
 }
 
+public class ImageRequest
+{
+    public List<int> ImageIds { get; set; }
+}
+
+public class ImageResponse
+{
+    public List<Image> Images { get; set; }
+}

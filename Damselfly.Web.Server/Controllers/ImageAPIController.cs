@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Services;
+using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
@@ -37,9 +38,10 @@ public class ImageAPIController : ControllerBase
     }
 
     [HttpPost("/api/images")]
-    public async Task<List<Image>> GetImages(ICollection<int> images, [FromServices] ImageCache imageCache)
+    public async Task<ImageResponse> GetImages(ImageRequest req, [FromServices] ImageCache imageCache)
     {
-        _logger.LogInformation($"Loading {images.Count} images from server cache.");
-        return await imageCache.GetCachedImages(images);
+        _logger.LogInformation($"Loading {req.ImageIds.Count} images from server cache.");
+        var images = await imageCache.GetCachedImages(req.ImageIds);
+        return new ImageResponse { Images = images };
     }
 }
