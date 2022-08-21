@@ -27,14 +27,7 @@ public class PeopleController : ControllerBase
     [HttpGet("/api/people/{searchText}")]
     public async Task<List<string>> Get( string searchText )
     {
-        // Union the search term with the results from the DB. Order them so that the
-        // closest matches to the start of the string come first.
-        var names = _aiService.GetCachedPeople().Where(x => x.Name.StartsWith(searchText.Trim(), StringComparison.OrdinalIgnoreCase))
-                                           .Select(x => x.Name)
-                                           .Distinct()
-                                           .OrderBy(x => x.ToUpper().IndexOf(searchText.ToUpper()))
-                                           .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
-                                           .ToList();
+        var names = await _aiService.GetPeopleNames(searchText);
         return names;
     }
 }

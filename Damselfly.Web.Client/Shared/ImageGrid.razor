@@ -274,22 +274,25 @@
     {
         if (!IsLoading)
         {
-            logger.LogInformation($"Loading {imagesToLoad} more data into image grid.");
-
             IsLoading = true;
 
             ChangeThumbSize(CurrentThumbSize);
 
-            // First add the ones we've already got in the search service
-            var existingSearchResults = await imageCache.GetCachedImages(searchService.SearchResults);
-            gridImages.AddRange(existingSearchResults);
+            if( gridImages.Count < searchService.SearchResults.Count() )
+            {
+                // First add the ones we've already got in the search service
+                var existingSearchResults = await imageCache.GetCachedImages(searchService.SearchResults);
+                gridImages.Clear();
+                gridImages.AddRange(existingSearchResults);
+            }
 
             // Now, see if we need to load any more
-            var response = await searchService.GetQueryImagesAsync(0, imagesToLoad);
+            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
 
             if (response.SearchResults.Any())
             {
                 var images = await imageCache.GetCachedImages(response.SearchResults);
+                logger.LogInformation($"Loading {images.Count()} more images into image grid.");
                 gridImages.AddRange(images);
             }
 

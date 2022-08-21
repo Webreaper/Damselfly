@@ -18,10 +18,12 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using System.Runtime.InteropServices;
 using Damselfly.Shared.Utils;
+using Damselfly.Core.ScopedServices.Interfaces;
+using MailKit;
 
 namespace Damselfly.Core.Services;
 
-public class ImageRecognitionService : IProcessJobFactory
+public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 {
     private readonly ObjectDetector _objectDetector;
     private readonly AccordFaceService _accordFaceService;
@@ -37,7 +39,8 @@ public class ImageRecognitionService : IProcessJobFactory
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessor;
 
-    private IDictionary<string, Person> _peopleCache = null;
+    // WASM: This should be a MemoryCache
+    private readonly IDictionary<string, Person> _peopleCache = new ConcurrentDictionary<string, Person>();
 
     public static bool EnableImageRecognition { get; set; } = true;
 
@@ -68,11 +71,27 @@ public class ImageRecognitionService : IProcessJobFactory
     {
     }
 
-    public List<Person> GetCachedPeople()
+    public async Task<List<Person>> GetCachedPeople()
     {
-        LoadPersonCache();
+        await LoadPersonCache();
 
         return _peopleCache.Values.OrderBy(x => x?.Name).ToList();
+    }
+
+    public async Task<List<string>> GetPeopleNames( string searchText )
+    {
+        await LoadPersonCache();
+
+        // Union the search term with the results from the DB. Order them so that the
+        // closest matches to the start of the string come first.
+        var names = _peopleCache.Values
+                                .Where(x => x.Name.StartsWith(searchText.Trim(), StringComparison.OrdinalIgnoreCase))
+                                           .Select(x => x.Name)
+                                           .Distinct()
+                                           .OrderBy(x => x.ToUpper().IndexOf(searchText.ToUpper()))
+                                           .ThenBy(x => x, StringComparer.OrdinalIgnoreCase)
+                                           .ToList();
+        return names;
     }
 
     private int GetPersonIDFromCache( Guid? azurePersonId )
@@ -91,35 +110,34 @@ public class ImageRecognitionService : IProcessJobFactory
     /// Initialise the in-memory cache of people.
     /// </summary>
     /// <param name="force"></param>
-    private void LoadPersonCache(bool force = false)
+    private async Task LoadPersonCache(bool force = false)
     {
         try
         {
-            if (_peopleCache == null )
-                _peopleCache = new ConcurrentDictionary<string, Person>();
-
-            if (force)
+            if (force || !_peopleCache.Any())
+            {
                 _peopleCache.Clear();
 
-            var watch = new Stopwatch("LoadPersonCache");
+                var watch = new Stopwatch("LoadPersonCache");
 
-            using var db = new ImageContext();
+                using var db = new ImageContext();
 
-            var dict = db.People.Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
-                                .AsNoTracking()
-                                .Select(p => new { p.AzurePersonId, Person = p } )
-                                .ToList();
+                var dict = await db.People.Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
+                                    .AsNoTracking()
+                                    .Select(p => new { p.AzurePersonId, Person = p })
+                                    .ToListAsync();
 
-            if (dict.Any())
-            {
-                // Merge the items into the people cache. Note that we use
-                // the indexer to avoid dupe key issues. TODO: Should the table be unique?
-                dict.ToList().ForEach(x => _peopleCache[x.AzurePersonId] = x.Person);
+                if (dict.Any())
+                {
+                    // Merge the items into the people cache. Note that we use
+                    // the indexer to avoid dupe key issues. TODO: Should the table be unique?
+                    dict.ToList().ForEach(x => _peopleCache[x.AzurePersonId] = x.Person);
 
-                Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
+                    Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
+                }
+
+                watch.Stop();
             }
-
-            watch.Stop();
         }
         catch (Exception ex)
         {
@@ -155,7 +173,7 @@ public class ImageRecognitionService : IProcessJobFactory
 
     }
 
-    public async Task UpdateName( Person person, string name )
+    public async Task UpdatePerson( Person person, string name )
     {
         using var db = new ImageContext();
 
@@ -630,7 +648,7 @@ public class ImageRecognitionService : IProcessJobFactory
             return;
         }
 
-        LoadPersonCache();
+        _ = LoadPersonCache();
 
         _workService.AddJobSource(this);
     }

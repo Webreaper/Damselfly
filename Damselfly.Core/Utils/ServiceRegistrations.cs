@@ -54,6 +54,7 @@ public static class ServiceRegistrations
         services.AddSingleton<RescanService>();
         services.AddSingleton<ServerNotifierService>();
 
+        services.AddSingleton<IPeopleService>(x => x.GetRequiredService<ImageRecognitionService>());
         services.AddSingleton<IRescanService>(x => x.GetRequiredService<RescanService>());
         services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
         services.AddSingleton<ITagSearchService>(x => x.GetRequiredService<MetaDataService>());

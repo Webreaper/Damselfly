@@ -3,10 +3,11 @@ using Damselfly.Core.DbModels;
 using System.Net.Http.Json;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientPeopleService 
+public class ClientPeopleService : IPeopleService
 {
     private readonly RestClient httpClient;
 

@@ -32,7 +32,9 @@ public static class ServiceRegistrations
         services.AddScoped<ClientTagService>();
         services.AddScoped<ClientTaskService>();
         services.AddScoped<ClientWordpressService>();
+        services.AddScoped<ClientPeopleService>();
 
+        services.AddScoped<IPeopleService>(x => x.GetRequiredService<ClientPeopleService>());
         services.AddScoped<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
         services.AddScoped<IRescanService>(x => x.GetRequiredService<ClientRescanService>());
         services.AddScoped<IThemeService>(x => x.GetRequiredService<ClientThemeService>());

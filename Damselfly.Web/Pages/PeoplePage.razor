@@ -118,9 +118,9 @@
 
     private async Task LoadData()
     {
-        filteredPeople = faceService.GetCachedPeople()
-                          .Where(x => FilterFunc(x))
-                          .ToList();
+        var names = await faceService.GetCachedPeople();
+        filteredPeople = names.Where(x => FilterFunc(x))
+                              .ToList();
 
         await InvokeAsync( StateHasChanged );
     }
