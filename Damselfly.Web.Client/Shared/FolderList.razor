@@ -54,7 +54,7 @@ else
     private List<Folder> folderItems;
     Folder SelectedItem { get; set; }
     bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
-    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, true);
+    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, false);
     string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
     string SortClass => SortMode == "Date" ? (Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up") : (Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z");
     string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
