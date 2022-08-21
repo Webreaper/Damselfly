@@ -39,16 +39,17 @@ public class Image
     public virtual Hash Hash { get; set; }
 
     // An image can appear in many baskets
-    public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
+    public virtual List<BasketEntry> BasketEntries { get; init;  } = new List<BasketEntry>();
     // An image can have many tags
-    public virtual List<ImageTag> ImageTags { get; } = new List<ImageTag>();
+    public virtual List<ImageTag> ImageTags { get; init; } = new List<ImageTag>();
 
     // Machine learning fields
     public int? ClassificationId { get; set; }
     public virtual ImageClassification Classification { get; set; }
     public double ClassificationScore { get; set; }
 
-    public virtual List<ImageObject> ImageObjects { get; } = new List<ImageObject>();
+    // NOTE: setter needed for serialization only
+    public virtual List<ImageObject> ImageObjects { get; init; } = new List<ImageObject>();
 
     public override string ToString()
     {

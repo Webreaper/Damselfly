@@ -15,6 +15,7 @@ using System.Net.Http;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Text.Json;
 using Damselfly.Core.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -29,7 +30,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
 {
     private SearchQueryService _queryService;
 
-    public ServerSearchService(ICachedDataService dataService, SearchQueryService queryService) : base(dataService)
+    public ServerSearchService(ICachedDataService dataService, SearchQueryService queryService, ILogger<BaseSearchService> logger ) : base(dataService, logger)
     {
         _queryService = queryService;
     }

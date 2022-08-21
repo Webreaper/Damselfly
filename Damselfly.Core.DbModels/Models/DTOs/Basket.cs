@@ -19,5 +19,5 @@ public class Basket
     public int? UserId { get; set; }
     public virtual AppIdentityUser User { get; set; }
 
-    public virtual List<BasketEntry> BasketEntries { get; } = new List<BasketEntry>();
+    public virtual List<BasketEntry> BasketEntries { get; init; } = new List<BasketEntry>();
 }

@@ -15,6 +15,7 @@ using System.Net.Http;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Text.Json;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -22,7 +23,7 @@ namespace Damselfly.Core.ScopedServices;
 /// The client search service is used in WASM. It calls the server-side API to query
 /// search service there. 
 /// </summary>
-public class ClientSearchService : BaseSearchService, ISearchService
+public class ClientSearchService : BaseSearchService, ISearchService, IDisposable
 {
     private readonly RestClient httpClient;
     private readonly ICachedDataService _dataService;
@@ -30,14 +31,23 @@ public class ClientSearchService : BaseSearchService, ISearchService
 
     public ICollection<int> SearchResults { get { return _searchResults;  } }
 
-    public ClientSearchService(RestClient client, ICachedDataService dataService) : base( dataService )
+    public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) : base( dataService, logger )
     {
         httpClient = client;
         _dataService = dataService;
+
+        OnSearchChanged += ClearSearchResults;
+    }
+
+    private void ClearSearchResults()
+    {
+        _searchResults.Clear();
     }
 
     public override async Task<SearchResponse> GetQueryImagesAsync( int first, int count )
     {
+        _logger.LogTrace($"Running search query for {first}...{first + count}");
+
         if (first < SearchResults.Count() && first + count < SearchResults.Count())
         {
             // Data already loaded. Nothing to do.
@@ -72,5 +82,10 @@ public class ClientSearchService : BaseSearchService, ISearchService
         _searchResults.AddRange(response.SearchResults);
 
         return response;
+    }
+
+    public void Dispose()
+    {
+        OnSearchChanged -= ClearSearchResults;
     }
 }

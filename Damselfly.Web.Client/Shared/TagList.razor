@@ -315,12 +315,12 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        theImageTags = GetImageTags();
         faveTags.Clear();
         recentTags.Clear();
         faveTags.AddRange(  await tagService.GetFavouriteTags() );
         recentTags.AddRange( await recentTagService.GetRecentTags() );
 
+        theImageTags = GetImageTags();
         theObjectTags = GetObjectTags(theImageTags);
 
         await InvokeAsync(StateHasChanged);

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Damselfly.Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices.ClientServices;
 
@@ -32,9 +33,11 @@ public class RestClient
 
     private readonly JsonSerializerOptions jsonOptions;
     private readonly HttpClient _restClient;
+    private readonly ILogger<RestClient> _logger;
 
-    public RestClient( HttpClient client )
+    public RestClient( HttpClient client, ILogger<RestClient> logger )
     {
+        _logger = logger;
         _restClient = client;
         jsonOptions = new JsonSerializerOptions();
 
@@ -45,6 +48,7 @@ public class RestClient
     {
         try {
             return await _restClient.GetFromJsonAsync<T>(requestUri, jsonOptions);
+
         }
         catch( JsonException ex )
         {

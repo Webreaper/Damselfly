@@ -14,6 +14,7 @@ using System.Net.Http.Json;
 using System.Net.Http;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -26,11 +27,13 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public abstract class BaseSearchService
 {
-    public BaseSearchService(ICachedDataService dataService)
+    public BaseSearchService(ICachedDataService dataService, ILogger<BaseSearchService> logger)
     {
         _service = dataService;
+        _logger = logger;
     }
 
+    protected readonly ILogger<BaseSearchService> _logger;
     private readonly ICachedDataService _service;
     private readonly SearchQuery query = new SearchQuery();
     protected readonly List<int> _searchResults = new List<int>();
@@ -41,7 +44,7 @@ public abstract class BaseSearchService
 
     public void NotifyStateChanged()
     {
-        Logging.LogVerbose($"Filter changed: {query}");
+        _logger.LogTrace($"Filter changed: {query}");
 
         OnSearchChanged?.Invoke();
     }

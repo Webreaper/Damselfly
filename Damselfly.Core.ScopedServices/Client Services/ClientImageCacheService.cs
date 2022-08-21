@@ -62,11 +62,11 @@ public class ClientImageCacheService : IImageCacheService
             // Now load and cache them
             if (needLoad.Any())
             {
-                _logger.LogInformation("Some images were not in the client side cache");
+                _logger.LogTrace("Some images were not in the client side cache");
                 await LoadAndCacheImages(needLoad);
             }
             else
-                _logger.LogInformation("All images were in the client side cache");
+                _logger.LogTrace("All images were in the client side cache");
 
             // Now, re-enumerate the list, but in-order. Note that everything
             // should be in the cache this time

@@ -36,7 +36,9 @@ public class ImageAPIController : ControllerBase
     [HttpGet("/api/image/{imageId}")]
     public async Task<Image> Get(int imageId)
     {
-        return await imageCache.GetCachedImage( imageId );
+        var image = await imageCache.GetCachedImage( imageId );
+
+        return image;
     }
 
     [HttpPost("/api/images")]
