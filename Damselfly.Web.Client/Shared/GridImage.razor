@@ -67,8 +67,7 @@ else
 
     private async Task SetBasketState(bool newState)
     {
-        // WASM: Fix later
-        // await basketService.SetBasketState(new[] { CurrentImage }, newState);
+        await basketService.SetBasketState(new[] { CurrentImage }, newState);
 
         // Notify the image list that the selection has changed
         StateHasChanged();

@@ -204,6 +204,9 @@ public class BasketService : IBasketService
             bool changed = false;
             var watch = new Stopwatch("SetSelection");
 
+            if (basket == null)
+                basket = CurrentBasket;
+
             var existingEntries = db.BasketEntries.Where(x => x.BasketId == basket.BasketId &&
                         images.Select(img => img.ImageId).Contains(x.ImageId)).ToList();
 
