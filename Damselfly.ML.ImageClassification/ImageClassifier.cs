@@ -32,6 +32,11 @@ namespace Damselfly.ML.ImageClassification
         public ImageDetectResult DetectObjects(Bitmap image)
         {
             var modelDir = MLUtils.ModelFolder;
+            if (modelDir == null)
+            {
+                Logging.LogError($"Image classification modelDire was null.");
+                return null;
+            }
 
             ImageDetectResult result = null;
 

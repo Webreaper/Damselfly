@@ -104,6 +104,8 @@ namespace Damselfly.ML.Face.Emgu
                     }
                 }
             }
+            else
+                Logging.LogError($"EMGU Classifiers not foundn modelDir was null.");
         }
 
         public List<ImageDetectResult> DetectFaces( string path )
