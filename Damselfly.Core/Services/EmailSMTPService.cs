@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -21,7 +22,7 @@ public class EmailSmtpService : IEmailSender
         public string Sender { get; set; }
         public string Password { get; set; }
 
-        public void Load( ConfigService configService )
+        public void Load( IConfigService configService )
         {
             MailServer = configService.Get(ConfigSettings.SmtpServer);
             MailPort = configService.GetInt(ConfigSettings.SmtpPort);
@@ -30,7 +31,7 @@ public class EmailSmtpService : IEmailSender
             SenderName = configService.Get(ConfigSettings.SmtpSenderName);
         }
 
-        public void Save(ConfigService configService)
+        public void Save( IConfigService configService)
         {
             configService.Set(ConfigSettings.SmtpServer, MailServer);
             configService.Set(ConfigSettings.SmtpPort, MailPort.ToString());
@@ -47,7 +48,7 @@ public class EmailSmtpService : IEmailSender
 
     private readonly SmtpSettings _emailSettings = new SmtpSettings();
 
-    public EmailSmtpService( ConfigService configService )
+    public EmailSmtpService(IConfigService configService )
     {
         _emailSettings.Load(configService);
     }

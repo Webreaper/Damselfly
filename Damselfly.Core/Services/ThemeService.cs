@@ -7,6 +7,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -21,8 +22,9 @@ public class ThemeService : IThemeService
 {
     private readonly IDictionary<string, ThemeConfig> _themeConfigs = new Dictionary<string, ThemeConfig>( StringComparer.OrdinalIgnoreCase );
 
-    public ThemeService()
+    public ThemeService(IWebHostEnvironment env)
     {
+        SetContentPath(env.WebRootPath);
     }
 
     public event Action<ThemeConfig> OnChangeTheme;

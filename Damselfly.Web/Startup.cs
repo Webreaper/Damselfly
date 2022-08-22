@@ -162,14 +162,6 @@ namespace Damselfly.Web
             // Prime the cache
             imageCache.WarmUp().Wait();
 
-            // TODO: Save this in ConfigService
-            string contentRootPath = Path.Combine(env.WebRootPath);
-
-            // TODO: Fix this, or not if Skia doesn't need it
-            imageService.SetContentPath(contentRootPath);
-            download.SetDownloadPath(contentRootPath);
-            themeService.SetContentPath(contentRootPath);
-
             // Start the work processing queue for AI, Thumbs, etc
             workService.StartService();
 

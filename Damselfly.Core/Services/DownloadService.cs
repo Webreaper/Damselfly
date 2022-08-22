@@ -8,6 +8,7 @@ using Damselfly.Core.Models;
 using System.Collections.Generic;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Damselfly.Core.Services;
 
@@ -39,7 +40,7 @@ public class DownloadService : IDownloadService
         }
     }
 
-    private readonly IUserStatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ImageProcessService _imageProcessingService;
     public static DesktopAppPaths DesktopAppInfo { get; private set; } = new DesktopAppPaths();
     private static DirectoryInfo desktopPath;
@@ -48,10 +49,12 @@ public class DownloadService : IDownloadService
     private const string s_downloadVPath = "downloads";
     private const string s_completionMsg = "Zip created.";
 
-    public DownloadService(IUserStatusService statusService, ImageProcessService imageService)
+    public DownloadService(IStatusService statusService, ImageProcessService imageService, IWebHostEnvironment env)
     {
         _statusService = statusService;
         _imageProcessingService = imageService;
+
+        SetDownloadPath(env.WebRootPath);
     }
 
     /// <summary>
@@ -172,7 +175,7 @@ public class DownloadService : IDownloadService
                 File.Delete(serverZipPath);
 
             Logging.Log($" Opening zip archive: {serverZipPath}");
-            _statusService.UpdateUserStatus( $"Preparing to zip {filesToZip.Count()} images..." );
+            _statusService.UpdateStatus( $"Preparing to zip {filesToZip.Count()} images..." );
 
             using (ZipArchive zip = ZipFile.Open(serverZipPath, ZipArchiveMode.Create))
             {
@@ -223,10 +226,10 @@ public class DownloadService : IDownloadService
                     // Yield a bit, otherwise 
                     await Task.Delay(50);
 
-                    _statusService.UpdateUserStatus( $"Zipping image {imagePath.Name}... ({percentComplete}% complete)" );
+                    _statusService.UpdateStatus( $"Zipping image {imagePath.Name}... ({percentComplete}% complete)" );
                 }
 
-                _statusService.UpdateUserStatus( s_completionMsg );
+                _statusService.UpdateStatus( s_completionMsg );
             }
 
             return virtualZipPath;

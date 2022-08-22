@@ -32,19 +32,10 @@ public static class AppInitialiser
         var tasks = services.GetRequiredService<TaskService>();
         var thumbService = services.GetRequiredService<ThumbnailService>();
         var exifService = services.GetRequiredService<ExifService>();
-        var themeService = services.GetRequiredService<ThemeService>();
         var imageProcService = services.GetRequiredService<ImageProcessService>();
 
         // Prime the cache
         services.GetRequiredService<ImageCache>().WarmUp().Wait();
-
-        // TODO: Save this in ConfigService
-        string contentRootPath = Path.Combine(env.WebRootPath);
-
-        // TODO: Fix this, or not if Skia doesn't need it
-        imageProcService.SetContentPath(contentRootPath);
-        download.SetDownloadPath(contentRootPath);
-        themeService.SetContentPath(contentRootPath);
 
         // Start the work processing queue for AI, Thumbs, etc
         services.GetRequiredService<WorkService>().StartService();

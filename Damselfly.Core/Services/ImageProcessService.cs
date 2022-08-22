@@ -4,6 +4,7 @@ using Damselfly.Core.Interfaces;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Damselfly.Core.Services;
 
@@ -22,14 +23,11 @@ public class ImageProcessService : IImageProcessor, IHashProvider
 {
     private readonly IImageProcessorFactory _factory;
 
-    public ImageProcessService( IImageProcessorFactory factory )
+    public ImageProcessService( IImageProcessorFactory factory, IWebHostEnvironment env )
     {
         _factory = factory;
-    }
 
-    public void SetContentPath( string path )
-    {
-        _factory.SetContentPath(path);
+        _factory.SetContentPath(env.WebRootPath);
     }
 
     public string GetPerceptualHash( string path )

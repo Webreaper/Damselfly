@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -18,7 +19,7 @@ public class EmailSendGridService : IEmailSender
         public string SendGridFromAddress { get; set; }
         public string SendGridKey { get; set; }
 
-        public void Load(ConfigService configService)
+        public void Load(IConfigService configService)
         {
             SendGridKey = configService.Get(ConfigSettings.SendGridKey);
             SendGridFromAddress = configService.Get(ConfigSettings.SendGridFromAddress);
@@ -31,7 +32,7 @@ public class EmailSendGridService : IEmailSender
         }
     }
 
-    public EmailSendGridService(ConfigService configService)
+    public EmailSendGridService(IConfigService configService)
     {
         _options.Load(configService);
     }

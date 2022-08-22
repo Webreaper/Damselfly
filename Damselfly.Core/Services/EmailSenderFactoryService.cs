@@ -2,6 +2,7 @@
 using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Damselfly.Core.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -16,7 +17,7 @@ public class EmailSenderFactoryService : IEmailSender
 {
     private IEmailSender _senderInstance;
 
-    public EmailSenderFactoryService( ConfigService configService )
+    public EmailSenderFactoryService( IConfigService configService )
     {
         _senderInstance = null;
 
