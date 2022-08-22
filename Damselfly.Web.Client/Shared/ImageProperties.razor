@@ -4,6 +4,7 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject IConfigService configService
+@inject IImageCacheService imageCache
 @inject IUserService userService
 @inject IRescanService rescanService
 @inject ITagService tagService
@@ -225,7 +226,6 @@ else
     {
         InvokeAsync(StateHasChanged);
     }
-
 
     protected void NavigationChanged(Image image)
     {

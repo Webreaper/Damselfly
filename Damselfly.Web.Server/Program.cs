@@ -243,8 +243,6 @@ public class Program
 
         Logging.ChangeLogLevel(logLevel);
 
-        SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
-
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 using Microsoft.JSInterop;
+using System.Text.Json;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -39,6 +41,43 @@ public class NotificationsService : IAsyncDisposable
         }
         else
             _logger.LogInformation("Skipping notification service setup in Blazor Server mode.");
+    }
+
+    /// <summary>
+    /// WASM: TODO: Unsubscribe and decompose
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="action"></param>
+    public void SubscribeToNotification<T>(NotificationType type, Action<T> action)
+    {
+        if (action is null)
+            throw new ArgumentException("Action cannot be null");
+
+        if (!isWebAssembly)
+        {
+            _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
+            return;
+        }
+
+        var methodName = type.ToString();
+
+        hubConnection.On<string>(methodName, (payload) =>
+        {
+            try
+            {
+                T theObj = JsonSerializer.Deserialize<T>(payload);
+
+                var payloadLog = string.IsNullOrEmpty(payload) ? "(no payload)" : $"(payload: {payload})";
+                _logger.LogInformation($"Received {methodName.ToString()} - calling action {payloadLog}");
+                action.Invoke(theObj);
+            }
+            catch( Exception ex )
+            {
+                _logger.LogError( $"Error processing serialized object for {methodName}: {payload}.");
+            }
+        });
+
+        _logger.LogInformation($"Subscribed to {methodName}");
     }
 
     /// <summary>

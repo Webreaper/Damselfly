@@ -9,6 +9,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Serilog.Core;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -86,7 +87,7 @@ public class ClientImageCacheService : IImageCacheService
         }
         catch (Exception ex)
         {
-            Logging.LogError($"Exception during caching enrichment: {ex.Message}");
+            _logger.LogError($"Exception during caching enrichment: {ex.Message}");
         }
 
         return result;

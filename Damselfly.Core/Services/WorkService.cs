@@ -42,10 +42,13 @@ public class WorkService : IWorkService
     public Task Pause(bool paused) { Paused = paused; return Task.CompletedTask; }
     public Task<ServiceStatus> GetWorkStatus() { return Task.FromResult(Status); }
     private ServiceStatus Status { get; set; } = new ServiceStatus();
+    private ServerNotifierService _notifier;
+
     public event Action<ServiceStatus> OnStatusChanged;
 
-    public WorkService( ConfigService configService )
+    public WorkService( ConfigService configService, ServerNotifierService notifier )
     {
+        _notifier = notifier;
         _cpuSettings.Load(configService);
     }
 
@@ -68,7 +71,9 @@ public class WorkService : IWorkService
             Status.StatusText = newStatusText;
             Status.Status = newStatus;
             Status.CPULevel = newCPULevel;
+
             OnStatusChanged?.Invoke(Status);
+            _ = _notifier.NotifyClients(NotificationType.WorkStatusChanged, Status);
         }
     }
 

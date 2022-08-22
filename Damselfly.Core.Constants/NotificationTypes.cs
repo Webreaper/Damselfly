@@ -6,5 +6,6 @@ namespace Damselfly.Core.Constants;
 /// </summary>
 public enum NotificationType
 {
-    FoldersChanged
+    FoldersChanged,
+    WorkStatusChanged
 }

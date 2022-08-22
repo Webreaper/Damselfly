@@ -18,6 +18,9 @@ public class ImageGridBase : ComponentBase
     [Inject]
     protected SelectionService selectionService { get; set; }
 
+    [Inject]
+    private ILogger<ImageGridBase> _logger { get; set; }
+
     public class SelectionInfo
     {
         public Image image;
@@ -29,7 +32,6 @@ public class ImageGridBase : ComponentBase
         public string Key { get; set; }
         public List<Image> Images { get; set; }
     }
-
 
     // Grid images is a list of lists of images.
     protected readonly List<Image> gridImages = new List<Image>();
@@ -57,7 +59,7 @@ public class ImageGridBase : ComponentBase
                 first = temp;
             }
 
-            Logging.LogVerbose($"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");
+            _logger.LogTrace($"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");
 
             var selectedImages = gridImages.Skip(first).Take(last - (first - 1)).ToList();
             selectionService.SelectImages(selectedImages);

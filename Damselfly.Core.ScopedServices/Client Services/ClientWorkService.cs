@@ -12,10 +12,19 @@ namespace Damselfly.Core.ScopedServices;
 public class ClientWorkService : IWorkService
 {
     private readonly RestClient httpClient;
+    private readonly NotificationsService _notifications;
 
-    public ClientWorkService(RestClient client)
+    public ClientWorkService(RestClient client, NotificationsService notifications)
     {
         httpClient = client;
+        _notifications = notifications;
+
+        _notifications.SubscribeToNotification<ServiceStatus>(NotificationType.WorkStatusChanged, NotifyStatusChanged);
+    }
+
+    private void NotifyStatusChanged( ServiceStatus newStatus )
+    {
+        OnStatusChanged?.Invoke(newStatus);
     }
 
     // WASM: TODO: 

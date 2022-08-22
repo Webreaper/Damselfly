@@ -112,7 +112,7 @@ namespace Damselfly.Web
             ImageRecognitionService aiService, ObjectDetector objectDetector, ThemeService themeService, WorkService workService,
             MetaDataService metaDataService, UserService userService)
         {
-            SyncfusionLicenseProvider.RegisterLicense("NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
+            SyncfusionLicence.RegisterSyncfusionLicence();
 
             var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 

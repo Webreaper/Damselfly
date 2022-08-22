@@ -7,10 +7,12 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Radzen;
 using MudBlazor.Services;
+using Damselfly.Shared.Utils;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Syncfusion.Blazor;
 using Microsoft.Extensions.Options;
+using Syncfusion.Licensing;
 
 namespace Damselfly.Web.Client;
 
@@ -18,6 +20,8 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        SyncfusionLicence.RegisterSyncfusionLicence();
+
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
