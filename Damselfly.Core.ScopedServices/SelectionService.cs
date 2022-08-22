@@ -11,13 +11,15 @@ public class SelectionService
     // Maintain a look up of all selected images, by ID
     private readonly IDictionary<int, Image> selectedImages = new Dictionary<int, Image>();
     private readonly IStatusService _statusService;
+    private readonly IUserService _userService;
     public event Action OnSelectionChanged;
 
     // TODO: Remember last selected image and use it for range selections etc?
 
-    public SelectionService( IStatusService statusService )
+    public SelectionService( IStatusService statusService, IUserService userService )
     {
         _statusService = statusService;
+        _userService = userService;
     }
 
     private void NotifyStateChanged()
@@ -36,7 +38,7 @@ public class SelectionService
             NotifyStateChanged();
 
             if( _statusService != null )
-                _statusService.StatusText = "Selection cleared.";
+                _statusService.UpdateUserStatus( "Selection cleared." );
         }
     }
 
@@ -58,7 +60,7 @@ public class SelectionService
         {
             NotifyStateChanged();
             if( images.Count > 1 && _statusService != null )
-                _statusService.StatusText = $"{images.Count} images selected.";
+                _statusService.UpdateUserStatus( $"{images.Count} images selected." );
         }
     }
 

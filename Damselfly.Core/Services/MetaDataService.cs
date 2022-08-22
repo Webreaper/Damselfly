@@ -28,7 +28,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
     private IDictionary<string, Camera> _cameraCache;
     private IDictionary<string, Lens> _lensCache;
 
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ExifService _exifService;
     private readonly ConfigService _configService;
     private readonly WorkService _workService;
@@ -38,7 +38,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
     public ICollection<Lens> Lenses { get { return _lensCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList(); } }
     public IEnumerable<Models.Tag> CachedTags { get { return _tagCache.Values.ToList(); } }
 
-    public MetaDataService(StatusService statusService, ExifService exifService,
+    public MetaDataService(IStatusService statusService, ExifService exifService,
                                 ConfigService config, ImageCache imageCache, WorkService workService)
     {
         _statusService = statusService;
@@ -985,7 +985,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         int updated = await ImageContext.UpdateMetadataFields(db, folder, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
 
         if( updated != 0)
-            _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for Metadata scanning.";
+            _statusService.UpdateStatus( $"{updated} images in folder {folder.Name} flagged for Metadata scanning." );
 
         _workService.FlagNewJobs(this);
     }
@@ -996,7 +996,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-        _statusService.StatusText = $"All {updated} images flagged for Metadata scanning.";
+        _statusService.UpdateStatus( $"All {updated} images flagged for Metadata scanning." );
 
         _workService.FlagNewJobs(this);
     }
@@ -1011,7 +1011,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
         var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
-        _statusService.StatusText = $"{msgText} flagged for Metadata scanning.";
+        _statusService.UpdateStatus( $"{msgText} flagged for Metadata scanning." );
     }
 
     public class MetadataProcess : IProcessJob

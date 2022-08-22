@@ -39,7 +39,7 @@ public class DownloadService : IDownloadService
         }
     }
 
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ImageProcessService _imageProcessingService;
     public static DesktopAppPaths DesktopAppInfo { get; private set; } = new DesktopAppPaths();
     private static DirectoryInfo desktopPath;
@@ -48,7 +48,7 @@ public class DownloadService : IDownloadService
     private const string s_downloadVPath = "downloads";
     private const string s_completionMsg = "Zip created.";
 
-    public DownloadService( StatusService statusService, ImageProcessService imageService)
+    public DownloadService(IStatusService statusService, ImageProcessService imageService)
     {
         _statusService = statusService;
         _imageProcessingService = imageService;
@@ -172,7 +172,7 @@ public class DownloadService : IDownloadService
                 File.Delete(serverZipPath);
 
             Logging.Log($" Opening zip archive: {serverZipPath}");
-            _statusService.StatusText = $"Preparing to zip {filesToZip.Count()} images...";
+            _statusService.UpdateUserStatus( $"Preparing to zip {filesToZip.Count()} images..." );
 
             using (ZipArchive zip = ZipFile.Open(serverZipPath, ZipArchiveMode.Create))
             {
@@ -223,10 +223,10 @@ public class DownloadService : IDownloadService
                     // Yield a bit, otherwise 
                     await Task.Delay(50);
 
-                    _statusService.StatusText = $"Zipping image {imagePath.Name}... ({percentComplete}% complete)";
+                    _statusService.UpdateUserStatus( $"Zipping image {imagePath.Name}... ({percentComplete}% complete)" );
                 }
 
-                _statusService.StatusText = s_completionMsg;
+                _statusService.UpdateUserStatus( s_completionMsg );
             }
 
             return virtualZipPath;

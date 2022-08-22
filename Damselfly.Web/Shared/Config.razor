@@ -10,7 +10,7 @@
 @inject UserConfigService userConfigService
 @inject UserThemeService userThemeService
 @inject ThemeService themeService
-@inject UserStatusService statusService
+@inject IStatusService statusService
 @inject UserService userService
 @inject WordpressService wpService
 @inject ImageRecognitionService imageService
@@ -360,7 +360,7 @@
 
     private void HandleValidSubmit()
     {
-        statusService.StatusText = "Settings saved.";
+        statusService.UpdateUserStatus( "Settings saved." );
 
         try
         {
@@ -408,7 +408,7 @@
         }
         catch (Exception ex)
         {
-            statusService.StatusText = $"Error saving settings: {ex.Message}";
+            statusService.UpdateUserStatus( $"Error saving settings: {ex.Message}" );
             Logging.LogError($"Error saving settings: {ex}");
         }
     }

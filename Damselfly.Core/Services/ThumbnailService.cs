@@ -19,12 +19,12 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     private static string _thumbnailRootFolder;
     private const string _requestRoot = "/images";
     private static int s_maxThreads = GetMaxThreads();
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessingService;
     private readonly WorkService _workService;
 
-    public ThumbnailService( StatusService statusService,
+    public ThumbnailService(IStatusService statusService,
                     ImageProcessService imageService,
                     ImageCache imageCache, WorkService workService)
     {
@@ -307,7 +307,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                 watch.Stop();
 
                 if( imagesToScan.Length > 1 )
-                    _statusService.StatusText = $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).";
+                    _statusService.UpdateStatus( $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime})." );
 
                 Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
                 Stopwatch.WriteTotals(logFunc);
@@ -616,7 +616,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
         int updated = await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null");
 
-        _statusService.StatusText = $"All {updated} images flagged for thumbnail re-generation.";
+        _statusService.UpdateStatus( $"All {updated} images flagged for thumbnail re-generation." );
     }
 
     public async Task MarkFolderForScan(Folder folder)
@@ -626,7 +626,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         int updated = await ImageContext.UpdateMetadataFields(db, folder, "ThumbLastUpdated", "null");
 
         if( updated != 0 )
-            _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for thumbnail re-generation.";
+            _statusService.UpdateStatus( $"{updated} images in folder {folder.Name} flagged for thumbnail re-generation." );
     }
 
     public async Task MarkImagesForScan(ICollection<Image> images)
@@ -640,7 +640,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         await db.Database.ExecuteSqlRawAsync(sql);
 
         var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
-        _statusService.StatusText = $"{msgText} flagged for thumbnail re-generation.";
+        _statusService.UpdateStatus( $"{msgText} flagged for thumbnail re-generation." );
 
         _workService.FlagNewJobs(this);
     }

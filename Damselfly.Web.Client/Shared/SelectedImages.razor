@@ -95,7 +95,7 @@ else
         var selected = selectionService.Selection.ToList();
         await basketService.SetBasketState(selected, true);
 
-        statusService.StatusText = $"{selected.Count()} images added to the basket";
+        statusService.UpdateUserStatus( $"{selected.Count()} images added to the basket" );
     }
 
     private void ShowDownloads()

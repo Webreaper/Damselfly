@@ -7,6 +7,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.Models;
 using System.Threading.Tasks;
 using System.Threading;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -17,11 +18,11 @@ public class FolderWatcherService
 
     private bool _fileWatchersDisabled = false;
     private readonly ImageProcessService _imageProcessService;
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private IndexingService _indexingService;
     private Task _queueTask;
 
-    public FolderWatcherService(StatusService statusService,
+    public FolderWatcherService(IStatusService statusService,
                                 ImageProcessService imageService)
     {
         _statusService = statusService;
@@ -119,7 +120,7 @@ public class FolderWatcherService
                 {
                     _fileWatchersDisabled = true;
 
-                    _statusService.StatusText = "OS inotify/file watcher limit reached. See the installation guide on how to increase this.";
+                    _statusService.UpdateStatus( "OS inotify/file watcher limit reached. See the installation guide on how to increase this." );
 
                     Logging.LogError(@"OS inotify/ file-watcher limit reached. Damselfly cannot monitor any more folders for changes.");
                     Logging.LogError("You should increase the watcher limit - see this article: https://github.com/Webreaper/Damselfly/blob/master/docs/Installation.md#filewatcher-inotify-limits");

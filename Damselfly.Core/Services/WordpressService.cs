@@ -18,13 +18,13 @@ namespace Damselfly.Core.Services;
 public class WordpressService : IWordpressService
 {
     private WordPressClient _client;
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ConfigService _configService;
     private readonly ImageProcessService _imageProcessService;
 
     public WordpressService( ImageProcessService imageService,
                              ConfigService configService,
-                             StatusService statusService)
+                             IStatusService statusService)
     {
         _configService = configService;
         _statusService = statusService;
@@ -42,7 +42,7 @@ public class WordpressService : IWordpressService
     {
         try
         {
-            _statusService.StatusText = $"Uploading {images.Count()} to Wordpress...";
+            _statusService.UpdateUserStatus( $"Uploading {images.Count()} to Wordpress..." );
 
             Logging.LogVerbose($"Checking token validity...");
 
@@ -64,25 +64,25 @@ public class WordpressService : IWordpressService
                     // The position needs to be reset, before we push it to Wordpress
                     memoryStream.Position = 0; 
 
-                    _statusService.StatusText = $"Uploading {image.FileName} to Wordpress.";
+                    _statusService.UpdateUserStatus( $"Uploading {image.FileName} to Wordpress." );
 
                     await _client.Media.CreateAsync(memoryStream, image.FileName);
 
                     Logging.LogVerbose($"Image uploaded: {image.FullPath} successfully.");
                 }
 
-                _statusService.StatusText = $"{images.Count()} images uploaded to Wordpress.";
+                _statusService.UpdateUserStatus( $"{images.Count()} images uploaded to Wordpress." );
             }
             else
             {
                 Logging.LogError($"Token was invalid.");
-                _statusService.StatusText = $"Authentication error uploading to Wordpress.";
+                _statusService.UpdateUserStatus(  $"Authentication error uploading to Wordpress." );
             }
         }
         catch (Exception e)
         {
             Logging.LogError($"Error uploading to Wordpress: {e.Message}");
-            _statusService.StatusText = $"Error uploading images to Wordpress. Please check the logs.";
+            _statusService.UpdateUserStatus( $"Error uploading images to Wordpress. Please check the logs." );
         }
     }
 

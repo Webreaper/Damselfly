@@ -8,6 +8,7 @@ using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 
@@ -20,7 +21,7 @@ public class IndexingService : IProcessJobFactory
 {
     public static string RootFolder { get; set; }
     public static bool EnableIndexing { get; set; } = true;
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ConfigService _configService;
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessService;
@@ -28,7 +29,7 @@ public class IndexingService : IProcessJobFactory
     private readonly WorkService _workService;
     private bool _fullIndexComplete = false;
 
-    public IndexingService( StatusService statusService, ImageProcessService imageService,
+    public IndexingService(IStatusService statusService, ImageProcessService imageService,
         ConfigService config, ImageCache imageCache, FolderWatcherService watcherService,
         WorkService workService)
     {
@@ -328,8 +329,7 @@ public class IndexingService : IProcessJobFactory
 
         watch.Stop();
 
-        _statusService.StatusText = string.Format("Indexed folder {0}: processed {1} images ({2} new, {3} updated, {4} removed) in {5}.",
-                dbFolder.Name, dbFolder.Images.Count(), newImages, updatedImages, imagesToDelete.Count(), watch.HumanElapsedTime);
+        _statusService.UpdateStatus($"Indexed folder {dbFolder.Name}: processed {dbFolder.Images.Count()} images ({newImages} new, {updatedImages} updated, {imagesToDelete.Count} removed) in {watch.HumanElapsedTime}.");
 
         // Do this after we scan for images, because we only load folders if they have images.
         if (imagesWereAddedOrRemoved)
@@ -362,9 +362,9 @@ public class IndexingService : IProcessJobFactory
             await db.BatchUpdate(queryable, x => new Folder { FolderScanDate = null });
 
             if (folders.Count == 1)
-                _statusService.StatusText = $"Folder {folders.First().Name} flagged for re-indexing.";
+                _statusService.UpdateStatus( $"Folder {folders.First().Name} flagged for re-indexing." );
             else
-                _statusService.StatusText = $"{folders.Count} folders flagged for re-indexing.";
+                _statusService.UpdateStatus( $"{folders.Count} folders flagged for re-indexing." );
 
             _workService.FlagNewJobs(this);
         }
@@ -382,7 +382,7 @@ public class IndexingService : IProcessJobFactory
 
             int updated = await db.BatchUpdate(db.Folders, x => new Folder { FolderScanDate = null });
 
-            _statusService.StatusText = $"All {updated} folders flagged for re-indexing.";
+            _statusService.UpdateStatus( $"All {updated} folders flagged for re-indexing." );
 
             _workService.FlagNewJobs(this);
         }

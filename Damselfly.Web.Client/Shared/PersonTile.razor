@@ -29,7 +29,7 @@
         {
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
             _ = peopleService.UpdatePerson(Person, newName);
-            statusService.StatusText = $"Name set to '{newName}'";
+            statusService.UpdateUserStatus(  $"Name set to '{newName}'" );
         }
     }
 

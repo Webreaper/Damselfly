@@ -25,7 +25,7 @@ namespace Damselfly.Core.Services;
 public class ExifService : IProcessJobFactory, ITagService
 {
     public static string ExifToolVer { get; private set; }
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly IndexingService _indexingService;
     private readonly WorkService _workService;
@@ -49,7 +49,7 @@ public class ExifService : IProcessJobFactory, ITagService
         OnUserTagsAdded?.Invoke(tagsAdded);
     }
 
-    public ExifService(StatusService statusService, WorkService workService,
+    public ExifService(IStatusService statusService, WorkService workService,
             IndexingService indexingService, ImageCache imageCache)
     {
         _statusService = statusService;
@@ -150,7 +150,7 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, ops);
 
-            _statusService.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
+            _statusService.UpdateUserStatus( $"Saved tags ({changeDesc}) for {images.Count()} images." );
         }
         catch (Exception ex)
         {
@@ -227,7 +227,7 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.StatusText = $"Saved tags ({changeDesc}) for {images.Count()} images.";
+            _statusService.UpdateUserStatus(  $"Saved tags ({changeDesc}) for {images.Count()} images." );
         }
         catch (Exception ex)
         {
@@ -275,7 +275,7 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.StatusText = $"Saved {exifType} ({changeDesc}) for {images.Count()} images.";
+            _statusService.UpdateUserStatus($"Saved {exifType} ({changeDesc}) for {images.Count()} images.");
         }
         catch (Exception ex)
         {
@@ -445,7 +445,7 @@ public class ExifService : IProcessJobFactory, ITagService
                             .Select(x => $"{x.Key}: {x.Count()}")
                             .ToList());
 
-        _statusService.StatusText = $"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}";
+        _statusService.UpdateUserStatus( $"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}" );
 
         return success;
     }

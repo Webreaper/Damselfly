@@ -9,7 +9,7 @@
 @inject MetaDataService metadataService
 @inject NavigationService navContext
 @inject ISearchService searchService
-@inject UserStatusService statusService
+@inject IStatusService statusService
 @inject NavigationManager navigationManager
 
 <div class="damselfly-imagebrowser">
@@ -65,7 +65,7 @@
 
             if (folder != null)
             {
-                statusService.StatusText = $"Selected folder {folder.Name}";
+                statusService.UpdateUserStatus( $"Selected folder {folder.Name}" );
                 searchService.Folder = folder;
             }
         }
@@ -78,7 +78,7 @@
 
             if (person != null)
             {
-                statusService.StatusText = $"Selected person {person.Name}";
+                statusService.UpdateUserStatus( $"Selected person {person.Name}" );
                 searchService.Person = person;
             }
         }

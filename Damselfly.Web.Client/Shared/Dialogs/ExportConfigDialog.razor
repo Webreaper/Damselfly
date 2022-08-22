@@ -94,13 +94,13 @@
             {
                 await exportService.Create(Config);
 
-                statusService.StatusText = $"New download config '{Config.Name}' was created.";
+                statusService.UpdateUserStatus( $"New download config '{Config.Name}' was created." );
             }
             else if (Mode == "Edit")
             {
                 await exportService.Save(Config);
 
-                statusService.StatusText = $"Config '{Config.Name}' saved.";
+                statusService.UpdateUserStatus( $"Config '{Config.Name}' saved." );
             }
 
             MudDialog.Close(DialogResult.Ok(true));

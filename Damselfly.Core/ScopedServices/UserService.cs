@@ -27,7 +27,7 @@ public class UserService : IUserService
 {
     private UserManager<AppIdentityUser> _userManager;
     private RoleManager<ApplicationRole> _roleManager;
-    private UserStatusService _statusService;
+    private IStatusService _statusService;
     private ConfigService _configService;
     private IAuthorizationService _authService;
     private AuthenticationStateProvider _authenticationStateProvider;
@@ -38,7 +38,7 @@ public class UserService : IUserService
     public UserService(AuthenticationStateProvider authenticationStateProvider,
                             RoleManager<ApplicationRole> roleManager,
                             UserManager<AppIdentityUser> userManager,
-                            UserStatusService statusService,
+                            IStatusService statusService,
                             ConfigService configService,
                             IAuthorizationService authService)
     {
@@ -371,7 +371,7 @@ public class UserService : IUserService
         if (!string.IsNullOrEmpty(changes))
             changes += ". ";
 
-        _statusService.StatusText = $"{prefix}{changes}{errorMsg}";
+        _statusService.UpdateStatus( $"{prefix}{changes}{errorMsg}" );
         Logging.Log( $"SyncUserRoles: {prefix}{changes}{errorMsg}");
 
         return result;

@@ -1,6 +1,6 @@
 ﻿
 @inject ViewDataService ViewDataService
-@inject UserStatusService statusService
+@inject IStatusService statusService
 
 <div class="damselfly-logview">
     @if (logLines == null || !logLines.Any())
@@ -106,7 +106,7 @@
                     {
                         logLines.AddRange(lines);
                         await InvokeAsync(StateHasChanged);
-                        statusService.StatusText = $"Loaded {logLines.Count()} log lines...";
+                        statusService.UpdateUserStatus( $"Loaded {logLines.Count()} log lines..." );
                     }
                     else
                         break;
@@ -124,7 +124,7 @@
             finally
             {
                 await InvokeAsync(StateHasChanged);
-                statusService.StatusText = $"Loaded {logLines.Count()} log lines.";
+                statusService.UpdateUserStatus( $"Loaded {logLines.Count()} log lines." );
             }
         }
     }

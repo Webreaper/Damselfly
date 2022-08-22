@@ -2,7 +2,7 @@
 
 @implements IDisposable
 
-@inject UserStatusService statusService
+@inject IStatusService statusService
 
 <div class="damselfly-statusbar">
     <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
@@ -34,13 +34,13 @@
     {
         if (firstRender)
         {
-            statusService.OnChange += UpdateStatus;
+            statusService.OnStatusChanged += UpdateStatus;
         }
     }
 
     public void Dispose()
     {
-        statusService.OnChange -= UpdateStatus;
+        statusService.OnStatusChanged -= UpdateStatus;
     }
 
 }

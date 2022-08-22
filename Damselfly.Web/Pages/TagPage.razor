@@ -6,7 +6,7 @@
 
 @inject ThumbnailService thumbService
 @inject ViewDataService ViewDataService
-@inject UserStatusService statusService
+@inject IStatusService statusService
 @inject MetaDataService metadataService
 
 <div class="damselfly-tagview">
@@ -86,7 +86,7 @@
 
     private void DoSearch(string searchTerm)
     {
-        statusService.StatusText = $"Searching for {searchTerm}...";
+        statusService.UpdateUserStatus( $"Searching for {searchTerm}..." );
         searchText = searchTerm;
         InvokeAsync(StateHasChanged);
     }

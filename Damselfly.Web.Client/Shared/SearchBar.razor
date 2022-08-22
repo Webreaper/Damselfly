@@ -133,7 +133,7 @@
     private void DoSearch(string searchTerm)
     {
         if (!string.IsNullOrEmpty(searchTerm))
-            statusService.StatusText = $"Searching for keyword: {searchTerm}...";
+            statusService.UpdateUserStatus( $"Searching for keyword: {searchTerm}..." );
         searchService.SearchText = searchTerm;
     }
 

@@ -33,8 +33,8 @@ public static class ServiceRegistrations
         services.AddSingleton<ConfigService>();
         services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
 
-        services.AddSingleton<StatusService>();
-        services.AddSingleton<IStatusService>(x => x.GetRequiredService<StatusService>());
+        services.AddSingleton<ServerStatusService>();
+        services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
 
         services.AddSingleton<ObjectDetector>();
         services.AddSingleton<FolderWatcherService>();
@@ -53,7 +53,9 @@ public static class ServiceRegistrations
         services.AddSingleton<TaskService>();
         services.AddSingleton<RescanService>();
         services.AddSingleton<ServerNotifierService>();
+        services.AddSingleton<UserService>();
 
+        services.AddSingleton<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddSingleton<IPeopleService>(x => x.GetRequiredService<ImageRecognitionService>());
         services.AddSingleton<IRescanService>(x => x.GetRequiredService<RescanService>());
         services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
@@ -77,10 +79,11 @@ public static class ServiceRegistrations
         services.AddSingleton<SearchQueryService>();
         services.AddSingleton<RescanService>();
         services.AddSingleton<FolderService>();
-        services.AddSingleton<UserStatusService>(); // WRONG
+        services.AddSingleton<ServerStatusService>();
         services.AddSingleton<BasketService>();
         services.AddSingleton<UserTagRecentsService>();
 
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
 
         return services;
@@ -94,7 +97,6 @@ public static class ServiceRegistrations
         services.AddScoped<BasketService>();
         services.AddScoped<UserFolderService>();
         services.AddScoped<UserService>();
-        services.AddScoped<UserStatusService>();
         services.AddScoped<SelectionService>();
         services.AddScoped<UserConfigService>();
         services.AddScoped<ViewDataService>();
@@ -106,8 +108,8 @@ public static class ServiceRegistrations
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());
-        services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
+        services.AddScoped<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
 
         return services;
     }

@@ -277,7 +277,7 @@ public class SearchQueryService
         // Set the results on the service property
         response.SearchResults = enrichedImages.Select( x => x.ImageId ).ToArray();
 
-        _statusService.StatusText = $"Found at least {enrichedImages.Count} images that match the search query.";
+        _statusService.UpdateStatus(  $"Found at least {enrichedImages.Count} images that match the search query." );
 
         return response;
     }

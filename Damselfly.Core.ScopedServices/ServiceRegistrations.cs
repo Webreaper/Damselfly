@@ -1,7 +1,6 @@
 ﻿using System;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.ScopedServices;
@@ -13,11 +12,10 @@ public static class ServiceRegistrations
         services.AddScoped<NotificationsService>();
 
         services.AddScoped<ViewDataService>();
-        services.AddScoped<StatusService>();
         services.AddScoped<NavigationService>();
-        services.AddScoped<UserStatusService>();
         services.AddScoped<UserFolderService>();
 
+        services.AddScoped<ClientStatusService>();
         services.AddScoped<ClientDataService>();
         services.AddScoped<ClientBasketService>();
         services.AddScoped<ClientDownloadService>();
@@ -50,7 +48,7 @@ public static class ServiceRegistrations
         services.AddScoped<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<ClientUserService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
-        services.AddScoped<IStatusService>(x => x.GetRequiredService<UserStatusService>());
+        services.AddScoped<IStatusService>(x => x.GetRequiredService<ClientStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<ClientBasketService>());
         services.AddScoped<IDownloadService>(x => x.GetRequiredService<ClientDownloadService>());
 

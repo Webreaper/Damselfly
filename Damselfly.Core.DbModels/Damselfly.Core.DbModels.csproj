@@ -26,6 +26,7 @@
     <Folder Include="Models\DTOs\" />
     <Folder Include="Models\SideCars\" />
     <Folder Include="Images\" />
+    <Folder Include="Models\API Models\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
@@ -40,5 +41,6 @@
     <None Remove="FluentValidation" />
     <None Remove="Images\" />
     <None Remove="Microsoft.AspNetCore.Authorization" />
+    <None Remove="Models\API Models\" />
   </ItemGroup>
 </Project>

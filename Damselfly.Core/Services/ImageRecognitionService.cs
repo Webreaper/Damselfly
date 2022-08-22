@@ -29,7 +29,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     private readonly AccordFaceService _accordFaceService;
     private readonly AzureFaceService _azureFaceService;
     private readonly EmguFaceService _emguFaceService;
-    private readonly StatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly MetaDataService _metdataService;
     private readonly ThumbnailService _thumbService;
     private readonly ConfigService _configService;
@@ -44,7 +44,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public static bool EnableImageRecognition { get; set; } = true;
 
-    public ImageRecognitionService(StatusService statusService, ObjectDetector objectDetector,
+    public ImageRecognitionService(IStatusService statusService, ObjectDetector objectDetector,
                     MetaDataService metadataService, AzureFaceService azureFace,
                     AccordFaceService accordFace, EmguFaceService emguService,
                     ThumbnailService thumbs, ConfigService configService,
@@ -697,7 +697,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         int updated = await ImageContext.UpdateMetadataFields(db, folder, "AILastUpdated", "null");
 
         if( updated != 0 )
-            _statusService.StatusText = $"{updated} images in folder {folder.Name} flagged for AI reprocessing.";
+            _statusService.UpdateStatus( $"{updated} images in folder {folder.Name} flagged for AI reprocessing." );
 
         _workService.FlagNewJobs(this);
     }
@@ -708,7 +708,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
         int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { AILastUpdated = null });
 
-        _statusService.StatusText = $"All {updated} images flagged for AI reprocessing.";
+        _statusService.UpdateStatus( $"All {updated} images flagged for AI reprocessing." );
 
         _workService.FlagNewJobs(this);
     }
@@ -723,7 +723,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
         var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
-        _statusService.StatusText = $"{msgText} flagged for AI reprocessing.";
+        _statusService.UpdateStatus( $"{msgText} flagged for AI reprocessing." );
     }
 
     public class AIProcess : IProcessJob
