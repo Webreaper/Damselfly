@@ -4,6 +4,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -12,20 +13,23 @@ public class ClientStatusService : IUserStatusService
     public event Action<string>? OnStatusChanged;
     private readonly IUserService _userService;
     private readonly NotificationsService _notifications;
+    private readonly ILogger<ClientStatusService> _logger;
     private string statusText;
 
     private int CurrentUserId => _userService.User == null ? -1 : _userService.User.Id;
 
-    public ClientStatusService( NotificationsService notifications, IUserService userService )
+    public ClientStatusService( NotificationsService notifications, IUserService userService, ILogger<ClientStatusService> logger )
     {
         _notifications = notifications;
         _userService = userService;
+        _logger = logger;
 
         notifications.SubscribeToNotification<StatusUpdate>(Constants.NotificationType.StatusChanged, UpdateGlobalStatus);
     }
 
     private void NotifyStatusChanged( string newStatus )
     {
+        _logger.LogInformation($"GlobalStatus: {newStatus}");
         statusText = newStatus;
         OnStatusChanged?.Invoke(newStatus);
     }
@@ -39,7 +43,7 @@ public class ClientStatusService : IUserStatusService
 
     public void UpdateUserStatus(string newStatus)
     {
-        if( _userService.User != null )
+        if ( !_userService.RolesEnabled || _userService.User != null )
         {
             var update = new StatusUpdate { NewStatus = newStatus, UserID = CurrentUserId };
 
@@ -49,10 +53,10 @@ public class ClientStatusService : IUserStatusService
 
     public void UpdateGlobalStatus(StatusUpdate newStatus)
     {
-        if (newStatus.NewStatus != statusText)
+         if (newStatus.NewStatus != statusText)
         {
             // If it's -1, or it's meant for us, use it.
-            if (newStatus.UserID == -1 || newStatus.UserID == CurrentUserId )
+            if (! _userService.RolesEnabled || newStatus.UserID == -1 || newStatus.UserID == CurrentUserId )
             {
                 NotifyStatusChanged(newStatus.NewStatus);
             }
