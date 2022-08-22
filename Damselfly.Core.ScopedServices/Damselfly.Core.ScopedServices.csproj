@@ -11,7 +11,6 @@
     <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Interfaces\" />
     <Folder Include="API Services\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>

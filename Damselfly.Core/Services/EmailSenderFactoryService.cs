@@ -3,6 +3,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 

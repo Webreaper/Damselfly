@@ -4,6 +4,11 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Core.ScopedServices;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using Damselfly.Core.ScopedServices.Interfaces;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Core.Services;
 
@@ -12,22 +17,18 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class ConfigService : BaseConfigService, IConfigService
 {
-    public ConfigService()
+    public ConfigService( ILogger<IConfigService> logger ) : base ( logger )
     {
-        InitialiseCache();
+        _ = InitialiseCache();
     }
 
-    public override void InitialiseCache()
+    public override async Task<List<ConfigSetting>> GetAllSettings()
     {
-        ClearCache();
         using var db = new ImageContext();
 
-        var settings = db.ConfigSettings.Where(x => x.UserId == null || x.UserId == 0).ToList();
+        var settings = await db.ConfigSettings.Where(x => x.UserId == null || x.UserId == 0).ToListAsync();
 
-        foreach (var setting in settings)
-        {
-           SetSetting(setting.Name,  setting );
-        }
+        return settings;
     }
 
     public void Set(string name, string value )

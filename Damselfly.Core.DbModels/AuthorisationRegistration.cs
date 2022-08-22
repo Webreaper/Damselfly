@@ -1,6 +1,7 @@
 ﻿using System;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;

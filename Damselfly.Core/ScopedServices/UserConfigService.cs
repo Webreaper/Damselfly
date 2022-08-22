@@ -1,30 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class UserConfigService : BaseConfigService, IDisposable
 {
-    private UserService _userService;
+    private readonly UserService _userService;
     private AppIdentityUser _user;
 
-    public UserConfigService(UserService userService)
+    public UserConfigService(UserService userService, ILogger<IConfigService> logger) : base( logger )
     {
         _userService = userService;
         _userService.OnChange += UserChanged;
         _user = userService.User;
 
-        InitialiseCache();
+        _ = InitialiseCache();
     }
 
     private void UserChanged( AppIdentityUser user )
     {
         _user = user;
-        InitialiseCache();
+        _ = InitialiseCache();
     }
 
     public void Dispose()
@@ -32,21 +38,18 @@ public class UserConfigService : BaseConfigService, IDisposable
         _userService.OnChange -= UserChanged;
     }
 
-    public override void InitialiseCache()
+    public override async Task<List<ConfigSetting>> GetAllSettings()
     {
-        ClearCache();
-
         if (_user != null)
         {
             using var db = new ImageContext();
 
-            var settings = db.ConfigSettings.Where(x => x.UserId == _user.Id).ToList();
+            var settings = await db.ConfigSettings.Where(x => x.UserId == _user.Id).ToListAsync();
 
-            foreach (var setting in settings)
-            {
-                SetSetting(setting.Name, setting );
-            }
+            return settings;
         }
+
+        return new List<ConfigSetting>();
     }
 
     /// <summary>

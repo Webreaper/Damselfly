@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.Services;
 

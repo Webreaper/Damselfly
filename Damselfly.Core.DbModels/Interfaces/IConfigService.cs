@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Damselfly.Core.Constants;
+using Damselfly.Core.Models;
 
-namespace Damselfly.Core.Interfaces
+namespace Damselfly.Core.ScopedServices.Interfaces
 {
     public interface IConfigService
     {
@@ -9,5 +13,6 @@ namespace Damselfly.Core.Interfaces
         EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default) where EnumType : struct;
         bool GetBool(string name, bool defaultIfNotExists = default);
         int GetInt(string name, int defaultIfNotExists = default);
+        Task<List<ConfigSetting>> GetAllSettings();
     }
 }

@@ -13,6 +13,7 @@ using System.IO;
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
 using System.Drawing;
 using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.ML.Face.Azure
 {
