@@ -150,7 +150,7 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, ops);
 
-            _statusService.UpdateUserStatus( $"Saved tags ({changeDesc}) for {images.Count()} images." );
+            _statusService.UpdateStatus( $"Saved tags ({changeDesc}) for {images.Count()} images." );
         }
         catch (Exception ex)
         {
@@ -227,7 +227,7 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.UpdateUserStatus(  $"Saved tags ({changeDesc}) for {images.Count()} images." );
+            _statusService.UpdateStatus(  $"Saved tags ({changeDesc}) for {images.Count()} images." );
         }
         catch (Exception ex)
         {
@@ -275,7 +275,7 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.UpdateUserStatus($"Saved {exifType} ({changeDesc}) for {images.Count()} images.");
+            _statusService.UpdateStatus($"Saved {exifType} ({changeDesc}) for {images.Count()} images.");
         }
         catch (Exception ex)
         {
@@ -445,7 +445,7 @@ public class ExifService : IProcessJobFactory, ITagService
                             .Select(x => $"{x.Key}: {x.Count()}")
                             .ToList());
 
-        _statusService.UpdateUserStatus( $"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}" );
+        _statusService.UpdateStatus( $"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}" );
 
         return success;
     }

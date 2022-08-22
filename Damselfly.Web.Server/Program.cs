@@ -234,7 +234,6 @@ public class Program
         // Damselfly Services
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
-        builder.Services.AddMLServices();
 
         var app = builder.Build();
 

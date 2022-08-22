@@ -7,7 +7,7 @@ using Damselfly.Core.DbModels;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientStatusService : IStatusService
+public class ClientStatusService : IUserStatusService
 {
     public event Action<string>? OnStatusChanged;
     private readonly IUserService _userService;

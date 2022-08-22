@@ -7,6 +7,11 @@ namespace Damselfly.Core.ScopedServices;
 
 public static class ServiceRegistrations
 {
+    /// <summary>
+    /// Set up UI Services for Blazor WASM
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
     public static IServiceCollection AddDamselflyUIServices( this IServiceCollection services )
     {
         services.AddScoped<NotificationsService>();

@@ -10,13 +10,13 @@ public class SelectionService
 {
     // Maintain a look up of all selected images, by ID
     private readonly IDictionary<int, Image> selectedImages = new Dictionary<int, Image>();
-    private readonly IStatusService _statusService;
+    private readonly IUserStatusService _statusService;
     private readonly IUserService _userService;
     public event Action OnSelectionChanged;
 
     // TODO: Remember last selected image and use it for range selections etc?
 
-    public SelectionService( IStatusService statusService, IUserService userService )
+    public SelectionService( IUserStatusService statusService, IUserService userService )
     {
         _statusService = statusService;
         _userService = userService;

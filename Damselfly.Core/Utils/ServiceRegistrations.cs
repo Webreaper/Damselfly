@@ -28,14 +28,9 @@ public static class ServiceRegistrations
         return services;
     }
 
-    public static IServiceCollection AddBlazorServerBackEndServices(this IServiceCollection services)
+    public static IServiceCollection AddSingletonBackEndServices(this IServiceCollection services)
     {
         services.AddSingleton<ConfigService>();
-        services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-
-        services.AddSingleton<ServerStatusService>();
-        services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
-
         services.AddSingleton<ObjectDetector>();
         services.AddSingleton<FolderWatcherService>();
         services.AddSingleton<IndexingService>();
@@ -43,8 +38,6 @@ public static class ServiceRegistrations
         services.AddSingleton<ThumbnailService>();
         services.AddSingleton<ExifService>();
         services.AddSingleton<FolderService>();
-        services.AddSingleton<DownloadService>();
-        services.AddSingleton<WordpressService>();
         services.AddSingleton<ThemeService>();
         services.AddSingleton<ImageRecognitionService>();
         services.AddSingleton<ImageCache>();
@@ -53,43 +46,52 @@ public static class ServiceRegistrations
         services.AddSingleton<TaskService>();
         services.AddSingleton<RescanService>();
         services.AddSingleton<ServerNotifierService>();
-        services.AddSingleton<UserService>();
+        services.AddSingleton<ServerStatusService>();
 
-        services.AddSingleton<IUserService>(x => x.GetRequiredService<UserService>());
+        services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+        services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
         services.AddSingleton<IPeopleService>(x => x.GetRequiredService<ImageRecognitionService>());
         services.AddSingleton<IRescanService>(x => x.GetRequiredService<RescanService>());
-        services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
         services.AddSingleton<ITagSearchService>(x => x.GetRequiredService<MetaDataService>());
         services.AddSingleton<IImageCacheService>(x => x.GetRequiredService<ImageCache>());
         services.AddSingleton<ITagService>(x => x.GetRequiredService<ExifService>());
         services.AddSingleton<IFolderService>(x => x.GetRequiredService<FolderService>());
-        services.AddSingleton<IWordpressService>(x => x.GetRequiredService<WordpressService>());
         services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
         services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
         services.AddSingleton<IThemeService>(x => x.GetRequiredService<ThemeService>());
         services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
+
+        services.AddMLServices();
+
         return services;
     }
 
     public static IServiceCollection AddHostedBlazorBackEndServices( this IServiceCollection services )
     {
-        services.AddBlazorServerBackEndServices();
+        services.AddSingletonBackEndServices();
 
         services.AddSingleton<ServerNotifierService>();
         services.AddSingleton<SearchQueryService>();
         services.AddSingleton<RescanService>();
         services.AddSingleton<FolderService>();
         services.AddSingleton<ServerStatusService>();
-        services.AddSingleton<BasketService>();
-        services.AddSingleton<UserTagRecentsService>();
 
+        services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
+
+        services.AddScoped<DownloadService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<BasketService>();
+        services.AddScoped<UserTagRecentsService>();
+        services.AddScoped<ServerUserStatusService>();
+        services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
+        services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
-        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
+        services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
 
         return services;
     }
 
-    public static IServiceCollection AddBlazorServerUIServices( this IServiceCollection services )
+    public static IServiceCollection AddBlazorServerScopedServices( this IServiceCollection services )
 	{
         services.AddScoped<ServerSearchService>();
         services.AddScoped<SearchQueryService>();
@@ -103,13 +105,20 @@ public static class ServiceRegistrations
         services.AddScoped<UserThemeService>();
         services.AddScoped<UserTagRecentsService>();
         services.AddScoped<NotificationsService>();
+        services.AddScoped<ServerUserStatusService>();
+        services.AddScoped<UserService>();
+        services.AddScoped<WordpressService>();
+        services.AddScoped<DownloadService>();
 
+        services.AddScoped<IDownloadService>(x => x.GetRequiredService<DownloadService>());
+        services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
+        services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
-        services.AddScoped<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
+        services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
 
         return services;
     }

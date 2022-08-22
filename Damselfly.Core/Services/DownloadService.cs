@@ -39,7 +39,7 @@ public class DownloadService : IDownloadService
         }
     }
 
-    private readonly IStatusService _statusService;
+    private readonly IUserStatusService _statusService;
     private readonly ImageProcessService _imageProcessingService;
     public static DesktopAppPaths DesktopAppInfo { get; private set; } = new DesktopAppPaths();
     private static DirectoryInfo desktopPath;
@@ -48,7 +48,7 @@ public class DownloadService : IDownloadService
     private const string s_downloadVPath = "downloads";
     private const string s_completionMsg = "Zip created.";
 
-    public DownloadService(IStatusService statusService, ImageProcessService imageService)
+    public DownloadService(IUserStatusService statusService, ImageProcessService imageService)
     {
         _statusService = statusService;
         _imageProcessingService = imageService;

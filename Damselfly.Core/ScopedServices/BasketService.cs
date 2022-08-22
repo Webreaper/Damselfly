@@ -21,7 +21,7 @@ namespace Damselfly.Core.ScopedServices;
 public class BasketService : IBasketService
 {
     private readonly DownloadService _downloadService;
-    private readonly IStatusService _statusService;
+    private readonly IUserStatusService _statusService;
     private readonly ImageCache _imageCache;
 
     private const string s_MyBasket = "My Basket";
@@ -36,7 +36,7 @@ public class BasketService : IBasketService
     public List<Image> BasketImages { get; private set; } = new List<Image>();
 
 
-    public BasketService(IStatusService statusService,
+    public BasketService(IUserStatusService statusService,
                             DownloadService downloadService,
                             ImageCache imageCache)
     {
