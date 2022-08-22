@@ -9,6 +9,8 @@ using Radzen;
 using MudBlazor.Services;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Syncfusion.Blazor;
+using Microsoft.Extensions.Options;
 
 namespace Damselfly.Web.Client;
 
@@ -33,6 +35,7 @@ public class Program
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
+        builder.Services.AddSyncfusionBlazor(options => { options.IgnoreScriptIsolation = true; });
 
         builder.Services.AddScoped<ContextMenuService>();
         builder.Services.AddSingleton<RestClient>();

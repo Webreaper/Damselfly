@@ -1,0 +1,50 @@
+﻿@page
+@model Damselfly.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register a New Damselfly User Account";
+}
+
+
+@if (Model.CanRegister)
+{
+    <h1>@ViewData["Title"]</h1>
+    <div class="login-container">
+        <div class="login-fieldset">
+            <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="login-fieldrow">
+                    <label asp-for="Input.Email" class="login-fieldlabel"></label>
+                    <input asp-for="Input.Email" placeholder="Email" class="login-fieldcontrol" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+                <div class="login-fieldrow">
+                    <label asp-for="Input.Password" class="login-fieldlabel"></label>
+                    <input asp-for="Input.Password" placeholder="Password" class="login-fieldcontrol" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+                <div class="login-fieldrow">
+                    <label asp-for="Input.ConfirmPassword" class="login-fieldlabel"></label>
+                    <input asp-for="Input.ConfirmPassword" placeholder="Confirm Password" class="login-fieldcontrol" />
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="login-fieldrow">
+                    <button type="submit" class="btn btn-primary btn-login">Register</button>
+                </div>
+                <hr />
+                <div class="login-fieldrow">
+                    <div class="login-fieldcontrol">
+                        <a href="~/Identity/Account/Login">Log in with existing account</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <h2>Public registration is disabled. Please contact an administrator to get an account created.</h2>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

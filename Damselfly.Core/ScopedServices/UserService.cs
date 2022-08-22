@@ -139,7 +139,7 @@ public class UserService : IUserService
     {
         get
         {
-            return _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
+            return _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, true);
         }
     }
 

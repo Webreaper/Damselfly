@@ -24,7 +24,7 @@ public class ClientUserService : IUserService
     }
 
     // WASM: TODO
-    public bool RolesEnabled { get { return false; } }
+    public bool RolesEnabled { get { return true; } }
 
     // WASM: TODO
     public async Task<bool> PolicyApplies( string policy )

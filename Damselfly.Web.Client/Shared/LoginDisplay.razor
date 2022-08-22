@@ -2,10 +2,10 @@
 @using Microsoft.AspNetCore.Identity
 
 @inject NavigationManager Navigation
-@inject IConfigService configService
+@inject IUserService userService
 @inject SignInManager<AppIdentityUser> signInManager
 
-@if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+@if (userService.RolesEnabled)
 {
     <AuthorizeView>
         <Authorized>

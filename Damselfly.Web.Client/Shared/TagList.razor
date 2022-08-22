@@ -169,11 +169,7 @@
     /// <returns></returns>
     private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
     {
-        AppIdentityUser currentUser = null;
-
-        // WASM: https://stackoverflow.com/questions/65397419/how-to-use-usermanager-on-a-blazor-page
-        //var authState = await authenticationStateTask;
-        //currentUser = await UserManager.GetUserAsync(authState.User); // May return NULL if not logged in
+        AppIdentityUser currentUser = userService.User;
 
         await tagService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, currentUser);
 
