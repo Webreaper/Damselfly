@@ -29,7 +29,7 @@ public class ClientStatusService : IUserStatusService
 
     private void NotifyStatusChanged( string newStatus )
     {
-        _logger.LogInformation($"GlobalStatus: {newStatus}");
+        _logger.LogInformation($"Status: {newStatus}");
         statusText = newStatus;
         OnStatusChanged?.Invoke(newStatus);
     }
@@ -43,11 +43,10 @@ public class ClientStatusService : IUserStatusService
 
     public void UpdateUserStatus(string newStatus)
     {
-        if ( !_userService.RolesEnabled || _userService.User != null )
+        if (newStatus != statusText)
         {
-            var update = new StatusUpdate { NewStatus = newStatus, UserID = CurrentUserId };
-
-            UpdateGlobalStatus(update);
+            // This one is simple
+            NotifyStatusChanged(newStatus);
         }
     }
 

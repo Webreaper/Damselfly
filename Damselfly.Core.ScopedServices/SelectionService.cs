@@ -37,8 +37,7 @@ public class SelectionService
             selectedImages.Clear();
             NotifyStateChanged();
 
-            if( _statusService != null )
-                _statusService.UpdateUserStatus( "Selection cleared." );
+            _statusService.UpdateUserStatus( "Selection cleared." );
         }
     }
 
