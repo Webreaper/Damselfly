@@ -22,16 +22,20 @@ public class ClientImageCacheService : IImageCacheService
     private readonly RestClient httpClient;
     private readonly IMemoryCache _memoryCache;
     private readonly MemoryCacheEntryOptions _cacheOptions;
+    private readonly NotificationsService _notifications;
     private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve };
 
-    public ClientImageCacheService(RestClient client, IMemoryCache cache, ILogger<ClientImageCacheService> logger)
+    public ClientImageCacheService(RestClient client, IMemoryCache cache, NotificationsService notifications, ILogger<ClientImageCacheService> logger)
     {
         _logger = logger;
+        _notifications = notifications;
         _memoryCache = cache;
         httpClient = client;
         _cacheOptions = new MemoryCacheEntryOptions()
                         .SetSize(1)
                         .SetSlidingExpiration(TimeSpan.FromHours(4));
+
+        _notifications.SubscribeToNotification<string>(Constants.NotificationType.CacheEvict, Evict);
     }
 
     public async Task<Image> GetCachedImage(int imgId)
@@ -39,6 +43,21 @@ public class ClientImageCacheService : IImageCacheService
         var list = new int[] { imgId };
         var result = await GetCachedImages( list );
         return result.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// When we received a notification from the server,
+    /// evict an image from the cache. 
+    /// </summary>
+    /// <param name="imageId"></param>
+    private void Evict( string imageId )
+    {
+        _logger.LogTrace($"Evicting image {imageId} from client-side cache");
+
+        if( int.TryParse( imageId, out var id ))
+        {
+            _memoryCache.Remove(id);
+        }
     }
 
     /// <summary>

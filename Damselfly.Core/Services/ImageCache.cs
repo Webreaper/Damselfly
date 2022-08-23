@@ -38,9 +38,11 @@ public class ImageCache : IImageCacheService
 {
     private readonly IMemoryCache _memoryCache;
     private readonly MemoryCacheEntryOptions _cacheOptions;
+    private readonly ServerNotifierService _notifier;
 
-    public ImageCache(IMemoryCache memoryCache)
+    public ImageCache(IMemoryCache memoryCache, ServerNotifierService notifier)
     {
+        _notifier = notifier;
         _memoryCache = memoryCache;
         _cacheOptions = new MemoryCacheEntryOptions()
                         .SetSize(1)
@@ -299,6 +301,8 @@ public class ImageCache : IImageCacheService
     {
         Logging.LogVerbose($"Evicting from cache: {imageId}");
         _memoryCache.Remove(imageId);
+
+        _ = _notifier.NotifyClients<string>(Constants.NotificationType.CacheEvict, imageId.ToString());
     }
 
     /// <summary>
