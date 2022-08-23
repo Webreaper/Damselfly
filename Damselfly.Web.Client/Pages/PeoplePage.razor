@@ -1,13 +1,9 @@
 ﻿@page "/people"
 
-@using Damselfly.Core.Services;
-@using Damselfly.Core.Models;
-
-@inject ThumbnailService thumbService
 @inject IUserStatusService statusService
+@inject IRescanService rescanService
+@inject IPeopleService faceService
 @inject ViewDataService ViewDataService
-@inject ImageRecognitionService faceService
-@inject ThumbnailService thumbService
 
 <div class="damselfly-exportview">
     <div class="damselfly-pagetitlebar">
@@ -94,7 +90,7 @@
     {
         statusService.UpdateUserStatus( $"Deleting face thumbnails..." );
 
-        thumbService.ClearFaceThumbs();
+        _ = rescanService.ClearFaceThumbs();
     }
 
     private bool FilterFunc(Person person )
@@ -118,7 +114,7 @@
 
     private async Task LoadData()
     {
-        var names = await faceService.GetCachedPeople();
+        var names = await faceService.GetAllPeople();
         filteredPeople = names.Where(x => FilterFunc(x))
                               .ToList();
 

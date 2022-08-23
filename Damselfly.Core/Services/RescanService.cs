@@ -46,5 +46,10 @@ public class RescanService : IRescanService
 
         await provider.MarkImagesForScan(images);
     }
+
+    public async Task ClearFaceThumbs()
+    {
+        await Task.Run( () => _thumbService.ClearFaceThumbs() );
+    }
 }
 

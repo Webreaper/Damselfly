@@ -12,6 +12,8 @@ public interface IRescanService
     Task MarkFolderForRescan(RescanTypes rescanType, Folder folder);
     Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Image> images);
     Task MarkAllForRescan(RescanTypes rescanType);
+
+    Task ClearFaceThumbs();
 }
 
 public interface IRescanProvider
@@ -19,4 +21,5 @@ public interface IRescanProvider
     Task MarkFolderForScan(Folder folder);
     Task MarkImagesForScan(ICollection<Image> images);
     Task MarkAllForScan();
+
 }

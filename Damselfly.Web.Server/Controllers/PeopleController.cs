@@ -24,8 +24,15 @@ public class PeopleController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("/api/people")]
+    public async Task<List<Person>> Get(string searchText)
+    {
+        var names = await _aiService.GetAllPeople();
+        return names;
+    }
+
     [HttpGet("/api/people/{searchText}")]
-    public async Task<List<string>> Get( string searchText )
+    public async Task<List<string>> Search( string searchText )
     {
         var names = await _aiService.GetPeopleNames(searchText);
         return names;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -11,12 +12,12 @@ using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Iptc;
-using System.Linq;
 using TagTypes = Damselfly.Core.Models.Tag.TagTypes;
 using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using MetadataExtractor.Formats.Xmp;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Tag = Damselfly.Core.Models.Tag;
 
 namespace Damselfly.Core.Services;
 
@@ -24,7 +25,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 {
     // Some caching to avoid repeatedly reading tags, cameras and lenses
     // from the DB.
-    private IDictionary<string, Models.Tag> _tagCache;
+    private IDictionary<string, Tag> _tagCache;
     private IDictionary<string, Camera> _cameraCache;
     private IDictionary<string, Lens> _lensCache;
 
@@ -55,33 +56,42 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         _workService.AddJobSource(this);
     }
+    /// <summary>
+    /// Search for a set of tags - used for autocomplete.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public async Task<ICollection<Tag>> GetAllTags()
+    {
+        return CachedTags.ToList();
+    }
 
     /// <summary>
     /// Search for a set of tags - used for autocomplete.
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async Task<ICollection<string>> SearchTags(string text)
+    public async Task<ICollection<Tag>> SearchTags(string text)
     {
-        var results = new List<string>();
+        var results = new List<Tag>();
         var searchText = text.Trim();
 
         // Only query the DB if we have more than 2 chars.
         if (searchText.Length > 1)
         {
             // We include any keyword that contains the search term - but exclude 
-            // the actual search term, as we'll add it explicitly at the top of the list. 
-            results.AddRange( await Task.FromResult( CachedTags
+            // the actual search term, as we'll add it explicitly at the top of the list.
+            var tags = CachedTags
                                 .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
                                             && !x.Keyword.Equals(searchText, StringComparison.OrdinalIgnoreCase))
                                 .OrderBy(x => x.Favourite ? 0 : 1) // Favourites first
                                 .ThenBy(x => x.Keyword) // Then order alphabetically
-                                .Take(30) // Don't go mad with the number we return
-                                .Select(t => t.Keyword)
-                                .ToList() ) );
+                                .Take(30); // Don't go mad with the number we return
+
+            results.AddRange( tags );
         }
 
-        results.Insert(0, searchText);
+        results.Insert(0, new Tag { Keyword = text });
 
         return results;
     }

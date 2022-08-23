@@ -16,6 +16,11 @@ public class ClientPeopleService : IPeopleService
         httpClient = client;
     }
 
+    public async Task<List<Person>> GetAllPeople()
+    {
+        return await httpClient.CustomGetFromJsonAsync<List<Person>>($"/api/people");
+    }
+
     public async Task<List<string>> GetPeopleNames(string searchText)
     {
         return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/{searchText}");

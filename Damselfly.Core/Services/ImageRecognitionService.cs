@@ -71,7 +71,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     {
     }
 
-    public async Task<List<Person>> GetCachedPeople()
+    public async Task<List<Person>> GetAllPeople()
     {
         await LoadPersonCache();
 

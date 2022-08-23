@@ -401,7 +401,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     /// <summary>
     /// Clears the cache of face thumbs from the disk
     /// </summary>
-    public void ClearFaceThumbs()
+    public async Task ClearFaceThumbs()
     {
         DirectoryInfo dir = new DirectoryInfo( Path.Combine(_thumbnailRootFolder, "_FaceThumbs") );
 

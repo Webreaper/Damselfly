@@ -637,7 +637,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// </summary>
     /// <param name="tag"></param>
     /// <returns></returns>
-    public async Task ToggleFavourite(Tag tag)
+    public async Task<bool> ToggleFavourite(Tag tag)
     {
         using var db = new ImageContext();
         // TODO: Async - use BulkUpdateAsync?
@@ -647,6 +647,8 @@ public class ExifService : IProcessJobFactory, ITagService
         await db.SaveChangesAsync("Tag favourite");
 
         await LoadFavouriteTagsAsync();
+
+        return tag.Favourite;
     }
 
     /// <summary>

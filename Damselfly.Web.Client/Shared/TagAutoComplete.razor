@@ -66,6 +66,7 @@
 
     private async Task<IEnumerable<string>> SearchTags(string text)
     {
-        return await tagSearchService.SearchTags(text);
+        var results = await tagSearchService.SearchTags(text);
+        return results.Select(x => x.Keyword);
     }
 }

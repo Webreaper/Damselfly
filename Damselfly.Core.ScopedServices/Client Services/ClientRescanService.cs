@@ -15,6 +15,11 @@ public class ClientRescanService : IRescanService
         httpClient = client;       
     }
 
+    public async Task ClearFaceThumbs()
+    {
+        throw new NotImplementedException("To be done");
+    }
+
     public async Task MarkFolderForRescan( RescanTypes rescanType, Folder folder )
     {
         throw new NotImplementedException("To be done");

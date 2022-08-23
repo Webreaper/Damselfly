@@ -16,13 +16,15 @@ namespace Damselfly.Web.Server.Controllers;
 public class TagController : ControllerBase
 {
     private readonly ITagService _tagService;
+    private readonly ITagSearchService _tagSearch;
     private readonly IRecentTagService _recentTagService;
 
     private readonly ILogger<TagController> _logger;
 
-    public TagController(ITagService tagService, IRecentTagService recentTagService, ILogger<TagController> logger)
+    public TagController(ITagService tagService, IRecentTagService recentTagService, ITagSearchService tagSearchService, ILogger<TagController> logger)
     {
         _tagService = tagService;
+        _tagSearch = tagSearchService;
         _recentTagService = recentTagService;
         _logger = logger;
     }
@@ -38,5 +40,25 @@ public class TagController : ControllerBase
     {
         return await _recentTagService.GetRecentTags();
     }
+
+    [HttpGet("/api/tags/search/{filterText}")]
+    public async Task<ICollection<Tag>> SearchTags(string filterText)
+    {
+        return await _tagSearch.SearchTags( filterText );
+    }
+
+    [HttpGet("/api/tags")]
+    public async Task<ICollection<Tag>> GetAllTags()
+    {
+        return await _tagSearch.GetAllTags();
+    }
+
+
+    [HttpPost("/api/tags/togglefave")]
+    public async Task<bool> ToggleFavourite( Tag tag )
+    {
+        return await _tagService.ToggleFavourite( tag );
+    }
+
 }
 

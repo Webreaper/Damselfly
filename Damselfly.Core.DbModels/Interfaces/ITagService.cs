@@ -11,7 +11,7 @@ public interface ITagService
 {
     event Action OnFavouritesChanged;
     Task<ICollection<Tag>> GetFavouriteTags();
-    Task ToggleFavourite(Tag tag);
+    Task<bool> ToggleFavourite(Tag tag);
     Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, AppIdentityUser currentUser);
     Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null);
 }
@@ -23,5 +23,6 @@ public interface IRecentTagService
 
 public interface ITagSearchService
 {
-    Task<ICollection<string>> SearchTags(string filterText);
+    Task<ICollection<Tag>> SearchTags(string filterText);
+    Task<ICollection<Tag>> GetAllTags();
 }
