@@ -52,7 +52,12 @@ public class WorkService : IWorkService
         _cpuSettings.Load(configService);
     }
 
-    public void SetCPUSchedule( CPULevelSettings cpuSettings )
+    public async Task<CPULevelSettings> GetCPUSchedule()
+    {
+        return _cpuSettings;
+    }
+
+    public async Task SetCPUSchedule( CPULevelSettings cpuSettings )
     {
         Logging.Log($"Work service updated with new CPU settings: {cpuSettings}");
         _cpuSettings = cpuSettings;

@@ -7,6 +7,7 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.DbModels.Models;
 
 namespace Damselfly.Core.Services;
 
@@ -15,24 +16,6 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class EmailSendGridService : IEmailSender
 {
-    public class SendGridSettings
-    {
-        public string SendGridFromAddress { get; set; }
-        public string SendGridKey { get; set; }
-
-        public void Load(IConfigService configService)
-        {
-            SendGridKey = configService.Get(ConfigSettings.SendGridKey);
-            SendGridFromAddress = configService.Get(ConfigSettings.SendGridFromAddress);
-        }
-
-        public void Save(ConfigService configService)
-        {
-            configService.Set(ConfigSettings.SendGridKey, SendGridKey);
-            configService.Set(ConfigSettings.SendGridFromAddress, SendGridFromAddress);
-        }
-    }
-
     public EmailSendGridService(IConfigService configService)
     {
         _options.Load(configService);

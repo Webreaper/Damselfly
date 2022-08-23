@@ -1,4 +1,5 @@
 ﻿using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -16,13 +17,15 @@ namespace Damselfly.Web.Server.Controllers;
 public class StaticDataController : ControllerBase
 {
     private readonly MetaDataService _metaDataService;
+    private readonly StatisticsService _stats;
     private readonly IRecentTagService _recentTagService;
 
     private readonly ILogger<StaticDataController> _logger;
 
-    public StaticDataController(MetaDataService metaDataService, ILogger<StaticDataController> logger)
+    public StaticDataController(MetaDataService metaDataService, StatisticsService stats, ILogger<StaticDataController> logger)
     {
         _metaDataService = metaDataService;
+        _stats = stats;
         _logger = logger;
     }
 
@@ -36,6 +39,12 @@ public class StaticDataController : ControllerBase
     public async Task<ICollection<Lens>> GetLenses()
     {
         return _metaDataService.Lenses;
+    }
+
+    [HttpGet("/api/data/stats")]
+    public async Task<Statistics> GetStatistics()
+    {
+        return await _stats.GetStatistics();
     }
 }
 

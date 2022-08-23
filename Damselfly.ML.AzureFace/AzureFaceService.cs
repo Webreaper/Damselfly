@@ -40,13 +40,6 @@ namespace Damselfly.ML.Face.Azure
             get { return _detectionType; }
         }
 
-        public enum AzureDetection
-        {
-            Disabled = 0,
-            AllImages = 1,
-            ImagesWithFaces = 2
-        }
-
         public AzureFaceService(IConfigService configService, ITransactionThrottle transThrottle)
         {
             _configService = configService;

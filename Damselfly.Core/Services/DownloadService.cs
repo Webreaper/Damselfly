@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.AspNetCore.Hosting;
+using Damselfly.Core.DbModels.Models;
 
 namespace Damselfly.Core.Services;
 
@@ -21,28 +22,9 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class DownloadService : IDownloadService
 {
-    public class DesktopAppPaths
-    {
-        public string MacOSApp { get; set; }
-        public string MacOSArmApp { get; set; }
-        public string WindowsApp { get; set; }
-        public string LinuxApp { get; set; }
-
-        public bool AppsAvailable
-        {
-            get
-            {
-                return MacOSApp != null ||
-                       MacOSArmApp != null ||
-                       WindowsApp != null ||
-                       LinuxApp != null;
-            }
-        }
-    }
-
     private readonly IStatusService _statusService;
     private readonly ImageProcessService _imageProcessingService;
-    public static DesktopAppPaths DesktopAppInfo { get; private set; } = new DesktopAppPaths();
+    private DesktopAppPaths _desktopAppInfo = new DesktopAppPaths();
     private static DirectoryInfo desktopPath;
     private static DirectoryInfo downloadsPath;
     private const string s_appVPath = "desktop";
@@ -55,6 +37,11 @@ public class DownloadService : IDownloadService
         _imageProcessingService = imageService;
 
         SetDownloadPath(env.WebRootPath);
+    }
+
+    public async Task<DesktopAppPaths> GetDesktopAppInfo()
+    {
+        return await Task.FromResult( _desktopAppInfo );
     }
 
     /// <summary>
@@ -100,7 +87,7 @@ public class DownloadService : IDownloadService
 
         if (macAppPath != null)
         {
-            DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
+            _desktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
         }
         else
         {
@@ -108,24 +95,24 @@ public class DownloadService : IDownloadService
             macAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac.zip", StringComparison.OrdinalIgnoreCase));
 
             if (macAppPath != null)
-                DesktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
+                _desktopAppInfo.MacOSApp = Path.Combine(s_appVPath, macAppPath.Name);
 
             // We only care about the M1 version if the unversal isn't available.
             var m1AppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-mac-arm64.zip", StringComparison.OrdinalIgnoreCase));
 
             if (m1AppPath != null)
-                DesktopAppInfo.MacOSArmApp = Path.Combine(s_appVPath, m1AppPath.Name);
+                _desktopAppInfo.MacOSArmApp = Path.Combine(s_appVPath, m1AppPath.Name);
         }
 
         var winAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-win.zip", StringComparison.OrdinalIgnoreCase));
 
         if (winAppPath != null)
-            DesktopAppInfo.WindowsApp = Path.Combine(s_appVPath, winAppPath.Name);
+            _desktopAppInfo.WindowsApp = Path.Combine(s_appVPath, winAppPath.Name);
 
         var linuxAppPath = desktopFiles.FirstOrDefault(x => x.Name.EndsWith(".appimage", StringComparison.OrdinalIgnoreCase));
 
         if (linuxAppPath != null)
-            DesktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
+            _desktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
 
     }
 

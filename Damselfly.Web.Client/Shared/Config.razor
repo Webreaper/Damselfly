@@ -1,21 +1,12 @@
-﻿@using Damselfly.Core.Services;
-@using Damselfly.ML.Face.Azure;
-@using Damselfly.Core.DbModels;
-@using Damselfly.Core.Interfaces;
-@using Serilog.Events;
-@using Humanizer;
-
+﻿
 @inject IJSRuntime JsRuntime
-@inject ConfigService configService
-@inject UserConfigService userConfigService
-@inject UserThemeService userThemeService
-@inject ThemeService themeService
-@inject IUserStatusService statusService
-@inject UserService userService
-@inject WordpressService wpService
-@inject ImageRecognitionService imageService
-@inject AzureFaceService azureService
-@inject WorkService workService
+@inject IConfigService configService
+@inject IConfigService userConfigService
+@inject IThemeService themeService
+@inject IStatusService statusService
+@inject IUserService userService
+@inject IWordpressService wpService
+@inject IWorkService workService
 @inject IDialogService DialogService
 
 <div class="damselfly-config">
@@ -30,7 +21,7 @@
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
                                     <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
-                                        @foreach (var choice in themeService.Themes)
+                                        @foreach (var choice in allThemes)
                                         {
                                             <MudSelectItem T="string" Value="@choice.Name">
                                                 @choice.Name.Transform(To.SentenceCase)
@@ -201,11 +192,11 @@
 
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudSelect T="AzureFaceService.AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="UIConstants.MudVariant"
+                                    <MudSelect T="AzureDetection" Label="AI Application" @bind-Value="azureSettings.DetectionType" Variant="UIConstants.MudVariant"
                                                HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
-                                        @foreach (var choice in (AzureFaceService.AzureDetection[])Enum.GetValues(typeof(AzureFaceService.AzureDetection)))
+                                        @foreach (var choice in (AzureDetection[])Enum.GetValues(typeof(AzureDetection)))
                                         {
-                                            <MudSelectItem T="AzureFaceService.AzureDetection" Value="@choice">
+                                            <MudSelectItem T="AzureDetection" Value="@choice">
                                                 @choice.ToString().Humanize()
                                             </MudSelectItem>
                                         }
@@ -322,12 +313,13 @@
     private WordpressSettings wpSettings = new WordpressSettings();
     private AzureSettings azureSettings = new AzureSettings();
     private CPULevelSettings cpuSettings = new CPULevelSettings();
-    private EmailSmtpService.SmtpSettings smtpSettings = new EmailSmtpService.SmtpSettings();
-    private EmailSendGridService.SendGridSettings sendGridSettings = new EmailSendGridService.SendGridSettings();
+    private SmtpSettings smtpSettings = new SmtpSettings();
+    private SendGridSettings sendGridSettings = new SendGridSettings();
     private LogEventLevel logLevel;
     private LogEventLevel[] userLogLevels = new[] { LogEventLevel.Information, LogEventLevel.Verbose, LogEventLevel.Debug };
     private bool importSidecarKeywords = false;
     private string selectedTheme;
+    private ICollection<ThemeConfig> allThemes;
     private bool useSmtp = true;
     private bool forceLogin = false;
     private bool enableAIProcessing = true;
@@ -337,10 +329,16 @@
     private bool anableAuthAndRoles = false;
     private int similarityThreshold = 75;
 
+    protected override async Task OnInitializedAsync()
+    {
+        allThemes = await themeService.GetAllThemes();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+
             if (anableAuthAndRoles && !userService.GetUsers().GetAwaiter().GetResult().Any())
             {
                 var dialog = DialogService.Show<UserDialog>("Create Admin User");
@@ -360,7 +358,7 @@
 
     private void HandleValidSubmit()
     {
-        statusService.UpdateUserStatus( "Settings saved." );
+        statusService.UpdateStatus( "Settings saved." );
 
         try
         {
@@ -397,9 +395,9 @@
             Logging.ChangeLogLevel(logLevel);
 
             // Do this last as it has a material effect.
-            if (userThemeService.CurrentThemeName != selectedTheme)
+            if (themeService.CurrentThemeName != selectedTheme)
             {
-                userThemeService.CurrentThemeName = selectedTheme;
+                themeService.CurrentThemeName = selectedTheme;
             }
 
             userConfigService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString());
@@ -408,7 +406,7 @@
         }
         catch (Exception ex)
         {
-            statusService.UpdateUserStatus( $"Error saving settings: {ex.Message}" );
+            statusService.UpdateStatus( $"Error saving settings: {ex.Message}" );
             Logging.LogError($"Error saving settings: {ex}");
         }
     }
@@ -443,7 +441,7 @@
         azureSettings.Endpoint = configService.Get(ConfigSettings.AzureEndpoint);
         azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
         azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
-        azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureFaceService.AzureDetection.Disabled);
+        azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
 
         anableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
@@ -458,7 +456,7 @@
         sendGridSettings.Load(configService);
 
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
-        selectedTheme = userThemeService.CurrentThemeName;
+        selectedTheme = themeService.CurrentThemeName;
 
         cpuSettings.Load(configService);
 

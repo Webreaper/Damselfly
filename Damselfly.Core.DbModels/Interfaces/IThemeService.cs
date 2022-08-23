@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
@@ -11,5 +12,6 @@ public interface IThemeService
     event Action<ThemeConfig> OnChangeTheme;
     Task<ThemeConfig> GetDefaultTheme();
     Task<ThemeConfig> GetThemeConfig(string name);
+    Task<List<ThemeConfig>> GetAllThemes();
 }
 

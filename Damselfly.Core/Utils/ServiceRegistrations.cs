@@ -30,6 +30,7 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddSingletonBackEndServices(this IServiceCollection services)
     {
+        services.AddSingleton<StatisticsService>();
         services.AddSingleton<ConfigService>();
         services.AddSingleton<ObjectDetector>();
         services.AddSingleton<FolderWatcherService>();

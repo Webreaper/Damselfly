@@ -260,7 +260,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     /// <returns></returns>
     private bool UseAzureForRecogition(IList<ImageDetectResult> objects)
     {
-        if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.ImagesWithFaces)
+        if (_azureFaceService.DetectionType == AzureDetection.ImagesWithFaces)
         {
             if (objects.Any(x => string.Compare(x.Tag, "face", true) == 0 ||
                                  string.Compare(x.Tag, "person", true) == 0))
@@ -318,7 +318,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
 
-            if( enableAIProcessing || _azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages )
+            if( enableAIProcessing || _azureFaceService.DetectionType == AzureDetection.AllImages )
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
 
             if (!File.Exists(medThumb.FullName) )
@@ -388,7 +388,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 }
             }
 
-            if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.AllImages)
+            if (_azureFaceService.DetectionType == AzureDetection.AllImages)
             {
                 // Skip local face detection and just go straight to Azure
                 useAzureDetection = true;
@@ -527,7 +527,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 else
                 {
                     // If we're scanning because local face detection found a face, log the result.
-                    if (_azureFaceService.DetectionType == AzureFaceService.AzureDetection.ImagesWithFaces)
+                    if (_azureFaceService.DetectionType == AzureDetection.ImagesWithFaces)
                         Logging.Log($"Azure found no faces in image {fileName}");
                     else
                         Logging.LogVerbose($"Azure found no faces in image {fileName}");

@@ -36,5 +36,17 @@ public class WorkController : ControllerBase
     {
         _service.Paused = paused;
     }
+
+    [HttpGet("/api/work/settings")]
+    public async Task<CPULevelSettings> GetCPUSettings()
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpPost("/api/work/settings")]
+    public async Task SetCPUSettings(CPULevelSettings newSettings)
+    {
+        throw new NotImplementedException();
+    }
 }
 

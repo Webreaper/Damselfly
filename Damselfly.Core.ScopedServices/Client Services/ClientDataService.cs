@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -42,5 +43,10 @@ public class ClientDataService : ICachedDataService
     public string ExifToolVer { get; set; }
     public ICollection<Camera> Cameras => _cameras;
     public ICollection<Lens> Lenses => _lenses;
+
+    public async Task<Statistics> GetStatistics()
+    {
+        return await httpClient.CustomGetFromJsonAsync<Statistics>("/api/data/stats");
+    }
 }
 

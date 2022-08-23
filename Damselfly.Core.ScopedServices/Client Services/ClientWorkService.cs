@@ -39,5 +39,15 @@ public class ClientWorkService : IWorkService
     {
         return await httpClient.CustomGetFromJsonAsync<ServiceStatus>("/api/work/status");
     }
+
+    public async Task<CPULevelSettings> GetCPUSchedule()
+    {
+        return await httpClient.CustomGetFromJsonAsync<CPULevelSettings>($"/api/work/settings");
+    }
+
+    public async Task SetCPUSchedule(CPULevelSettings settings)
+    {
+        await httpClient.CustomPostAsJsonAsync($"/api/work/settings", settings);
+    }
 }
 
