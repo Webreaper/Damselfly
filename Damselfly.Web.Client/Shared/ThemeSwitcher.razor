@@ -16,10 +16,6 @@
         if (firstRender)
         {
             themeService.OnChangeTheme += SwitchTheme;
-
-            var theme = await themeService.GetDefaultTheme();
-
-            SwitchTheme(theme);
         }
     }
 

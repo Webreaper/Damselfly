@@ -31,8 +31,8 @@ public class FolderService : IFolderService
         // After we've loaded the data, start listening
         _indexingService.OnFoldersChanged += OnFoldersChanged;
 
-        // Trigger a change now to initiate pre-loading the folders.
-        OnFoldersChanged();
+        // Initiate pre-loading the folders.
+        _ = LoadFolders();
     }
 
     private void OnFoldersChanged()
