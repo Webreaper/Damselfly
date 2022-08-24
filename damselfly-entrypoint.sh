@@ -20,7 +20,12 @@ export COMPlus_EnableWriteXorExecute=0
 
 cd /app
 
-./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+if ! [ -z "$DAMSELFLY_WASM" ];
+then
+   ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+else
+   ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+fi;
 
 exec "$@"
 
