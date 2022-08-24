@@ -9,6 +9,7 @@
 @inject IWordpressService wpService
 @inject IWorkService workService
 @inject IDialogService DialogService
+@inject WebAssemblyStatusService wasmStatus 
  
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
@@ -330,14 +331,16 @@
     {
         if (firstRender)
         {
-            // WASM: TODO:
-            //var allUsers = await userService.GetUsers();
+            if(!wasmStatus.IsWebAssembly)
+            {
+                var allUsers = await userService.GetUsers();
 
-            //if (settingsModel.enableAuthAndRoles && !allUsers.Any())
-            //{
-                //var dialog = DialogService.Show<UserDialog>("Create Admin User");
-                //var result = await dialog.Result;
-            //}
+                if (settingsModel.enableAuthAndRoles && !allUsers.Any())
+                {
+                    var dialog = DialogService.Show<UserDialog>("Create Admin User");
+                    var result = await dialog.Result;
+                }
+            }
         }
     }
 

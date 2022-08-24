@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using System.ComponentModel.DataAnnotations
 
-@inject UserService userService
+@inject IUserService userService
 
 <MudDialog>
     <DialogContent>
@@ -163,7 +163,6 @@
             selectedRole = RoleDefinitions.s_UserRole;
 
             allRoles = await userService.GetRoles();
-
 
             if (User.UserRoles != null && User.UserRoles.Any())
             {

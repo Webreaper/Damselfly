@@ -3,6 +3,8 @@ namespace Damselfly.Core.Constants;
 
 public class ConfigSettings
 {
+    public const bool DefaultEnableRolesAndAuth = true;
+
     public const string ThumbSize = "ThumbSize";
     public const string Theme = "Theme";
     public const string SimilarityThreshold = "SimilarityThreshold";

@@ -11,6 +11,20 @@
     private long cacheBuster = 1;
     private MudTheme? mudTheme;
 
+    protected override async Task OnInitializedAsync()
+    {
+        if( mudTheme == null )
+        {
+            var themeName = configService.Get(ConfigSettings.Theme, "Green");
+
+            if( ! string.IsNullOrEmpty(themeName) )
+            {
+                var newTheme = await themeService.GetThemeConfig(themeName);
+                mudTheme = CreateMudTheme(newTheme);
+            }
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)

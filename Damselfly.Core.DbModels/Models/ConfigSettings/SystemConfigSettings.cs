@@ -19,11 +19,11 @@ public class SystemConfigSettings
     public bool importSidecarKeywords { get; set; } = false;
     public bool useSmtp { get; set; } = true;
     public bool forceLogin { get; set; } = false;
-    public bool enableAIProcessing { get; set; } = true;
+    public bool enableAIProcessing { get; set; } = ConfigSettings.DefaultEnableRolesAndAuth;
     public bool disableObjectDetector { get; set; } = false;
     public bool writeAITagsToImages { get; set; } = false;
     public bool allowExternalRegistration { get; set; } = false;
-    public bool enableAuthAndRoles { get; set; } = false;
+    public bool enableAuthAndRoles { get; set; } = true;
     public int similarityThreshold { get; set; } = 75;
 
     public void Save( IConfigService configService )
@@ -71,7 +71,7 @@ public class SystemConfigSettings
         azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
 
-        enableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
+        enableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, ConfigSettings.DefaultEnableRolesAndAuth);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
         allowExternalRegistration = configService.GetBool(ConfigSettings.AllowExternalRegistration);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);

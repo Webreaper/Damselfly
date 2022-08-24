@@ -6,6 +6,7 @@ using static Damselfly.Core.ScopedServices.ThemeService;
 
 namespace Damselfly.Core.ScopedServices;
 
+// WASM Do we need this now?
 public class UserThemeService
 {
     private readonly UserConfigService _configService;

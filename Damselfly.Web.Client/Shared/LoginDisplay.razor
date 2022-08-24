@@ -5,6 +5,8 @@
 @inject IUserService userService
 @inject SignInManager<AppIdentityUser> signInManager
 
+<!-- WASM: https://stackoverflow.com/questions/37693516/unable-to-obtain-configuration-from-well-known-openid-configuration ? -->
+
 @if (userService.RolesEnabled)
 {
     <AuthorizeView>
