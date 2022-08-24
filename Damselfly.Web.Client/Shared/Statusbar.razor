@@ -3,14 +3,20 @@
 @implements IDisposable
 
 @inject IUserStatusService statusService
+@inject WebAssemblyStatusService wasmState
+
 
 <div class="damselfly-statusbar">
     <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
     <WorkStatus />
-    <!--
-        WASM:
-       <LoginDisplay />
-    -->
+    @if (wasmState.IsWebAssembly)
+    {
+        <LoginDisplayWasm/>
+    }
+    else
+    {
+        <LoginDisplay />
+    }
     <Toolbar />
 </div>
 

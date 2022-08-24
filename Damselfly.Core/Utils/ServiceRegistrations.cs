@@ -120,6 +120,7 @@ public static class ServiceRegistrations
         services.AddScoped<ServerUserStatusService>();
         services.AddScoped<WordpressService>();
         services.AddScoped<SystemSettingsService>();
+        services.AddScoped<WebAssemblyStatusService>();
 
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());

@@ -17,14 +17,14 @@ public class NotificationsService : IAsyncDisposable
 {
     private ILogger<NotificationsService> _logger;
     private readonly HubConnection hubConnection;
-    private bool isWebAssembly { get; }
+    private readonly WebAssemblyStatusService _wasmState;
 
-    public NotificationsService( NavigationManager navManager, IJSRuntime jsRuntime, ILogger<NotificationsService> logger )
+    public NotificationsService( NavigationManager navManager, WebAssemblyStatusService wasmState, ILogger<NotificationsService> logger )
     {
         _logger = logger;
-        isWebAssembly = jsRuntime is IJSInProcessRuntime;
+        _wasmState = wasmState;
 
-        if (isWebAssembly)
+        if (_wasmState.IsWebAssembly)
         {
             var hubUrl = $"{navManager.BaseUri}{NotificationHub.NotificationRoot}";
             _logger.LogInformation($"Setting up notifications listener on {hubUrl}...");
@@ -53,7 +53,7 @@ public class NotificationsService : IAsyncDisposable
         if (action is null)
             throw new ArgumentException("Action cannot be null");
 
-        if (!isWebAssembly)
+        if (!_wasmState.IsWebAssembly)
         {
             _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
             return;
@@ -87,7 +87,7 @@ public class NotificationsService : IAsyncDisposable
     /// <param name="action"></param>
     public void SubscribeToNotification(NotificationType type, Action action)
     {
-        if (!isWebAssembly)
+        if (!_wasmState.IsWebAssembly)
         {
             _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
             return;
