@@ -4,7 +4,7 @@
 @inject IConfigService userConfigService
 @inject ISystemSettingsService settingsService
 @inject IThemeService themeService
-@inject IStatusService statusService
+@inject IUserStatusService statusService
 @inject IUserService userService
 @inject IWordpressService wpService
 @inject IWorkService workService
@@ -63,17 +63,17 @@
                             <h2>Security</h2>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudCheckBox @bind-Checked="@settingsModel.anableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)" />
+                                    <MudCheckBox @bind-Checked="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)" />
                                 </div>
                             </div>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(! settingsModel.anableAuthAndRoles)" Label="Enable public registration page" />
+                                    <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(! settingsModel.enableAuthAndRoles)" Label="Enable public registration page" />
                                 </div>
                             </div>
                             <div class="damselfly-configsetting">
                                 <div class="damselfly-configfield">
-                                    <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(! settingsModel.anableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
+                                    <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(! settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
                                 </div>
                             </div>
 
@@ -319,6 +319,10 @@
     protected override async Task OnInitializedAsync()
     {
         settingsModel = await settingsService.GetSystemSettings();
+
+        if (settingsModel is null)
+            settingsModel = new SystemConfigSettings();
+
         allThemes = await themeService.GetAllThemes();
     }
 
@@ -326,13 +330,14 @@
     {
         if (firstRender)
         {
+            // WASM: TODO:
+            //var allUsers = await userService.GetUsers();
 
-            if (settingsModel.anableAuthAndRoles && !userService.GetUsers().GetAwaiter().GetResult().Any())
-            {
-                // WASM: TODO:
+            //if (settingsModel.enableAuthAndRoles && !allUsers.Any())
+            //{
                 //var dialog = DialogService.Show<UserDialog>("Create Admin User");
                 //var result = await dialog.Result;
-            }
+            //}
         }
     }
 

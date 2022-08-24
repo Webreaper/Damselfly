@@ -23,7 +23,7 @@ public class SystemConfigSettings
     public bool disableObjectDetector { get; set; } = false;
     public bool writeAITagsToImages { get; set; } = false;
     public bool allowExternalRegistration { get; set; } = false;
-    public bool anableAuthAndRoles { get; set; } = false;
+    public bool enableAuthAndRoles { get; set; } = false;
     public int similarityThreshold { get; set; } = 75;
 
     public void Save( IConfigService configService )
@@ -46,7 +46,7 @@ public class SystemConfigSettings
         configService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString());
         configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
-        configService.Set(ConfigSettings.EnablePoliciesAndRoles, anableAuthAndRoles.ToString());
+        configService.Set(ConfigSettings.EnablePoliciesAndRoles, enableAuthAndRoles.ToString());
         configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
 
         smtpSettings.Save(configService);
@@ -54,8 +54,8 @@ public class SystemConfigSettings
         cpuSettings.Save(configService);
 
         // If roles are disabled, disable forced Login
-        var forceLoginProxy = anableAuthAndRoles && forceLogin;
-        var extRegistrationProxy = anableAuthAndRoles && allowExternalRegistration;
+        var forceLoginProxy = enableAuthAndRoles && forceLogin;
+        var extRegistrationProxy = enableAuthAndRoles && allowExternalRegistration;
         configService.Set(ConfigSettings.ForceLogin, forceLoginProxy.ToString());
         configService.Set(ConfigSettings.AllowExternalRegistration, extRegistrationProxy.ToString());
     }
@@ -71,7 +71,7 @@ public class SystemConfigSettings
         azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
 
-        anableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
+        enableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
         allowExternalRegistration = configService.GetBool(ConfigSettings.AllowExternalRegistration);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);

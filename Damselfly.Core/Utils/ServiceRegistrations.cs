@@ -87,14 +87,18 @@ public static class ServiceRegistrations
         services.AddScoped<BasketService>();
         services.AddScoped<UserTagRecentsService>();
         services.AddScoped<ServerUserStatusService>();
+        services.AddScoped<WordpressService>();
+        services.AddScoped<SystemSettingsService>();
+
+        services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
+        services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<SystemSettingsService>());
+        services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
 
         // WASM TEMP HACK
         services.AddScoped<TempHackUserService>();
         services.AddScoped<IUserService>(x => x.GetRequiredService<TempHackUserService>());
         // services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
-
-        services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
-        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
 
         return services;
     }
@@ -115,8 +119,8 @@ public static class ServiceRegistrations
         services.AddScoped<NotificationsService>();
         services.AddScoped<ServerUserStatusService>();
         services.AddScoped<WordpressService>();
+        services.AddScoped<SystemSettingsService>();
 
-        services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
