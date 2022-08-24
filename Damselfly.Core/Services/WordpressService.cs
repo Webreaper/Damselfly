@@ -165,7 +165,7 @@ public class WordpressService : IWordpressService
                 Logging.Log($"JWT Auth token generated successfully.");
             }
             else
-                Logging.Log("Wordpress integration was not configured.");
+                Logging.LogVerbose("Wordpress integration was not configured.");
         }
         catch (Exception ex)
         {
