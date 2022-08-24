@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Xml.Linq;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Damselfly.Core.ScopedServices;
 
 // TODO: Write values to the back-end service
-public class ClientConfigService : BaseConfigService, IConfigService
+public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService
 {
     private RestClient httpClient;
 
@@ -59,5 +60,15 @@ public class ClientConfigService : BaseConfigService, IConfigService
         }
 
         return existing;
+    }
+
+    public virtual async Task<SystemConfigSettings> GetSystemSettings()
+    {
+        return await httpClient.CustomGetFromJsonAsync<SystemConfigSettings>($"/api/config/settings");
+    }
+
+    public virtual async Task SaveSystemSettings(SystemConfigSettings settings)
+    {
+        await httpClient.CustomPostAsJsonAsync<SystemConfigSettings>($"/api/config/settings", settings);
     }
 }

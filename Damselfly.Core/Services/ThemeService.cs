@@ -29,6 +29,12 @@ public class ThemeService : IThemeService
 
     public event Action<ThemeConfig> OnChangeTheme;
 
+    public Task SetNewTheme( ThemeConfig newTheme )
+    {
+        OnChangeTheme?.Invoke(newTheme);
+        return Task.CompletedTask;
+    }
+
     /// <summary>
     /// Initialise the service with the download file path - which will usually
     /// be a subfolder of the wwwroot content folder.
@@ -62,14 +68,11 @@ public class ThemeService : IThemeService
 
     }
 
-    public List<ThemeConfig> Themes
+    public async Task<List<ThemeConfig>> GetAllThemes()
     {
-        get
-        {
-            return _themeConfigs.Values
-                                .OrderBy( x => x.Name )
-                                .ToList();
-        }
+        return await Task.FromResult( _themeConfigs.Values
+                            .OrderBy( x => x.Name )
+                            .ToList() );
     }
 
     public async Task<ThemeConfig> GetDefaultTheme()

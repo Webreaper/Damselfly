@@ -1,6 +1,7 @@
 ﻿using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
@@ -15,11 +16,11 @@ namespace Damselfly.Web.Server.Controllers;
 [Route("/api/theme")]
 public class ThemeController : ControllerBase
 {
-    private readonly ThemeService _service;
+    private readonly IThemeService _service;
 
     private readonly ILogger<ThemeController> _logger;
 
-    public ThemeController(ThemeService service, ILogger<ThemeController> logger)
+    public ThemeController(IThemeService service, ILogger<ThemeController> logger)
     {
         _service = service;
         _logger = logger;
@@ -29,6 +30,12 @@ public class ThemeController : ControllerBase
     public async Task<ThemeConfig> GetDefaultTheme()
     {
         return await _service.GetThemeConfig("green");
+    }
+
+    [HttpGet("/api/themes")]
+    public async Task<List<ThemeConfig>> GetAllThemes()
+    {
+        return await _service.GetAllThemes();
     }
 
     [HttpGet("/api/theme/{name}")]

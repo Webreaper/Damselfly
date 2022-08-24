@@ -1,49 +1,63 @@
 ﻿
 @inject IDownloadService DownloadService
 
-@if (DownloadService.DesktopAppInfo.AppsAvailable)
+@if (appInfo == null)
+    {
+    <p>Checking for Desktop Apps...</p>
+}
+else
 {
-<div>
-    <p>Download v<span />@Version of the Desktop App here:</p>
-    <div class="desktop-download-icons">
-        @if (DownloadService.DesktopAppInfo.MacOSApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
-                <NavLink href="@DownloadService.DesktopAppInfo.MacOSApp">
-                    <div class="InputAddOn-field">MacOS</div>
-                </NavLink>
-                @if (DownloadService.DesktopAppInfo.MacOSArmApp != null)
-                {
-                    <NavLink href="@DownloadService.DesktopAppInfo.MacOSArmApp">
-                        <div class="InputAddOn-field">(M1)</div>
-                    </NavLink>
-                }
+    @if (appInfo.AppsAvailable)
+    {
+        <div>
+            <p>Download v<span />@Version of the Desktop App here:</p>
+            <div class="desktop-download-icons">
+                @if (appInfo.MacOSApp != null)
+                    {
+                    <div class="InputAddOn">
+                        <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                        <NavLink href="@appInfo.MacOSApp">
+                            <div class="InputAddOn-field">MacOS</div>
+                        </NavLink>
+                        @if (appInfo.MacOSArmApp != null)
+                        {
+                            <NavLink href="@appInfo.MacOSArmApp">
+                                <div class="InputAddOn-field">(M1)</div>
+                            </NavLink>
+                            }
+                    </div>
+                    }
+                @if (appInfo.WindowsApp != null)
+                    {
+                    <div class="InputAddOn">
+                        <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                        <NavLink href="@appInfo.WindowsApp">
+                            <div class="InputAddOn-field">Windows</div>
+                        </NavLink>
+                    </div>
+                    }
+                @if (appInfo.LinuxApp != null)
+                    {
+                    <div class="InputAddOn">
+                        <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                        <NavLink href="@appInfo.LinuxApp">
+                            <div class="InputAddOn-field">Linux</div>
+                        </NavLink>
+                    </div>
+                    }
             </div>
-        }
-        @if (DownloadService.DesktopAppInfo.WindowsApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
-                <NavLink href="@DownloadService.DesktopAppInfo.WindowsApp">
-                    <div class="InputAddOn-field">Windows</div>
-                </NavLink>
-            </div>
-        }
-        @if (DownloadService.DesktopAppInfo.LinuxApp != null)
-        {
-            <div class="InputAddOn">
-                <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
-                <NavLink href="@DownloadService.DesktopAppInfo.LinuxApp">
-                    <div class="InputAddOn-field">Linux</div>
-                </NavLink>
-            </div>
-        }
-    </div>
-</div>
+        </div>
+    }
 }
 
 @code {
+    private DesktopAppPaths appInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        appInfo = await DownloadService.GetDesktopAppInfo();
+    }
+
     public string Version
     {
         get

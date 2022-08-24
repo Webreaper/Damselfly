@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Damselfly.Core.DbModels.Models;
+using Damselfly.ML.Face.Azure;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Core.Services;
 
@@ -17,9 +20,10 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class ConfigService : BaseConfigService, IConfigService
 {
-    public ConfigService( ILogger<IConfigService> logger ) : base ( logger )
+    public ConfigService( ILogger<IConfigService> logger) : base ( logger )
     {
         _ = InitialiseCache();
+
     }
 
     public override async Task<List<ConfigSetting>> GetAllSettings()

@@ -5,22 +5,26 @@ using Microsoft.Extensions.Logging;
 using System.Xml.Linq;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientThemeService : IThemeService
 {
-    public ClientThemeService( RestClient client, ILogger<ClientThemeService> logger )
+    public ClientThemeService( RestClient client, IConfigService configService, ILogger<ClientThemeService> logger )
     {
+        _configService = configService;
         httpClient = client;
         _logger = logger;
     }
 
+    private readonly IConfigService _configService;
     private readonly RestClient httpClient;
     private ILogger<ClientThemeService> _logger;
 
-    // WASM: TODO: 
     public event Action<ThemeConfig> OnChangeTheme;
+
+    // WASM: Need to load user's theme here
 
     public async Task<ThemeConfig> GetThemeConfig(string name)
     {
@@ -40,7 +44,6 @@ public class ClientThemeService : IThemeService
         }
     }
 
-
     public async Task<ThemeConfig> GetDefaultTheme()
     {
         try
@@ -52,6 +55,26 @@ public class ClientThemeService : IThemeService
             _logger.LogError($"Error in GetTheme: {ex.Message}");
             return null;
         }
+    }
+
+    public async Task<List<ThemeConfig>> GetAllThemes()
+    {
+        try
+        {
+            return await httpClient.CustomGetFromJsonAsync<List<ThemeConfig>>($"/api/themes");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error in GetThemes: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task SetNewTheme(ThemeConfig newTheme)
+    {
+        _configService.Set(ConfigSettings.Theme, newTheme.Name);
+
+        OnChangeTheme?.Invoke( newTheme );
     }
 }
 
