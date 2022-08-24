@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -9,11 +10,13 @@ namespace Damselfly.Core.ScopedServices;
 
 public class CachedDataService : ICachedDataService
 {
-    public CachedDataService( MetaDataService metaDataService )
+    public CachedDataService( MetaDataService metaDataService, StatisticsService stats )
     {
+        _stats = stats;
         _metaDataService = metaDataService;
     }
 
+    private readonly StatisticsService _stats;
     private MetaDataService _metaDataService;
 
     public string ImagesRootFolder => IndexingService.RootFolder;
@@ -27,6 +30,11 @@ public class CachedDataService : ICachedDataService
     public async Task InitialiseData()
     {
         // Nothng to do here in the Blazor Server version
+    }
+
+    public async Task<Statistics> GetStatistics()
+    {
+        return await _stats.GetStatistics();
     }
 }
 
