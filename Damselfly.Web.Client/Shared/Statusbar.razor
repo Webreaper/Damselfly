@@ -2,7 +2,8 @@
 
 @implements IDisposable
 
-@inject IUserStatusService statusService
+@inject IStatusService statusService
+@inject IUserStatusService userStatusService
 @inject WebAssemblyStatusService wasmState
 
 
@@ -11,7 +12,7 @@
     <WorkStatus />
     @if (wasmState.IsWebAssembly)
     {
-        <LoginDisplayWasm/>
+        <LoginDisplayWasm />
     }
     else
     {
@@ -41,12 +42,14 @@
         if (firstRender)
         {
             statusService.OnStatusChanged += UpdateStatus;
+            userStatusService.OnStatusChanged += UpdateStatus;
         }
     }
 
     public void Dispose()
     {
         statusService.OnStatusChanged -= UpdateStatus;
+        userStatusService.OnStatusChanged -= UpdateStatus;
     }
 
 }
