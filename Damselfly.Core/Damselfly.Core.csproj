@@ -40,6 +40,7 @@
     <Folder Include="Models\" />
     <Folder Include="Utils\" />
     <Folder Include="ScopedServices\" />
+    <Folder Include="DbAbstractions\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.ML.AccordFace\Damselfly.ML.AccordFace.csproj" />
@@ -60,5 +61,6 @@
     <None Remove="CoenM.ImageSharp.ImageHash" />
     <None Remove="MudBlazor" />
     <None Remove="Models\DTOs\" />
+    <None Remove="DbAbstractions\" />
   </ItemGroup>
 </Project>
