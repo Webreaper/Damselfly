@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
-using Damselfly.Core.DbModels.DBAbstractions;
+using Damselfly.Core.DBAbstractions;
 using System.Threading.Tasks;
 
-namespace Damselfly.Core.Models.DBAbstractions
+namespace Damselfly.Core.DBAbstractions
 {
     /// <summary>
     /// MySQL database specialisation. Pretty limited at present:

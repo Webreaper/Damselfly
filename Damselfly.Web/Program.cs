@@ -10,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Damselfly.Core.Services;
 using Damselfly.Core.Models;
-using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.Interfaces;
+using Damselfly.Core.DBAbstractions;
 using Damselfly.Migrations.Sqlite.Models;
 using Damselfly.Migrations.Postgres.Models;
-using Damselfly.Core.DbModels.DBAbstractions;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Web

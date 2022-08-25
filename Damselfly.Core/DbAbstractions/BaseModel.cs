@@ -4,14 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Damselfly.Core.DbModels.Interfaces;
+using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Damselfly.Core.DbModels;
 
-namespace Damselfly.Core.DbModels.DBAbstractions
+namespace Damselfly.Core.DBAbstractions
 {
     /// <summary>
     /// Base model for DB interactions. Will be passed a model class instance with an

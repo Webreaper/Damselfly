@@ -6,7 +6,7 @@ using System.Linq;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using Damselfly.Core.DbModels.DBAbstractions;
+using Damselfly.Core.DBAbstractions;
 using Humanizer;
 using Damselfly.Core.DbModels;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;

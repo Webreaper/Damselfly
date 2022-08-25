@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Linq.Expressions;
 using System;
-using Damselfly.Core.DbModels.DBAbstractions;
+using Damselfly.Core.DBAbstractions;
 using System.Threading.Tasks;
 
-namespace Damselfly.Core.DbModels.Interfaces
+namespace Damselfly.Core.Interfaces
 {
     /// <summary>
     /// Interface representing a type of DB (e.g., Sqlite, MySql or SQL Server.
