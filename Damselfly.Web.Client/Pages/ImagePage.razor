@@ -86,8 +86,10 @@ else
     {
         get
         {
-            var url = "http://localhost:6363" + $"/thumb/{ThumbSize.Large}/{ImageID}";
-            var imageUrl = System.Net.WebUtility.UrlEncode(url);
+            var baseUrl = new Uri(NavigationManager.BaseUri);
+
+            var url = new Uri(baseUrl, $"/thumb/{ThumbSize.Large}/{ImageID}");
+            var imageUrl = System.Net.WebUtility.UrlEncode(url.ToString());
             return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
         }
     }

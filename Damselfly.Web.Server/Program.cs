@@ -294,7 +294,7 @@ public class Program
         // Start up all the Damselfly Services
         app.Environment.SetupServices( app.Services );
 
-        app.Urls.Add("http://+:6363"); 
+        app.Urls.Add($"http://+:{listeningPort}"); 
 
         Logging.StartupCompleted();
         Logging.Log("Starting Damselfly webserver...");

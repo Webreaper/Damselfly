@@ -40,14 +40,12 @@
     {
         if (firstRender)
         {
-            statusService.OnStatusChanged += UpdateStatus;
             userStatusService.OnStatusChanged += UpdateStatus;
         }
     }
 
     public void Dispose()
     {
-        statusService.OnStatusChanged -= UpdateStatus;
         userStatusService.OnStatusChanged -= UpdateStatus;
     }
 
