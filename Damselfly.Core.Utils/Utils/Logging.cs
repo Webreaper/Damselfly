@@ -77,6 +77,7 @@ namespace Damselfly.Core.Utils
                                    retainedFileCountLimit: 10,
                                    levelSwitch: logLevel)
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                     .CreateLogger();
 
                 logger.Information("=== Damselfly Log Started ===");

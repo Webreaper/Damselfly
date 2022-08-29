@@ -155,7 +155,7 @@ public class Program
         }
     }
 
-    private static void SetupDbContext(IServiceCollection services, DamselflyOptions cmdLineOptions)
+    private static void SetupDbContext(WebApplicationBuilder builder, DamselflyOptions cmdLineOptions)
     {
         string dbFolder = Path.Combine(cmdLineOptions.ConfigPath, "db");
 
@@ -170,9 +170,9 @@ public class Program
         string connectionString = $"Data Source={dbPath}";
 
         // Add services to the container.
-        services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
+        builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
                                                     b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite")));
-        services.AddDatabaseDeveloperPageExceptionFilter();
+        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
     }
 
     /// <summary>
@@ -186,7 +186,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        SetupDbContext(builder.Services, cmdLineOptions);
+        SetupDbContext(builder, cmdLineOptions);
 
         SetupIdentity(builder.Services);
 
