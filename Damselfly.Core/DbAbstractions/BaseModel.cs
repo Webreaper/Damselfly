@@ -27,6 +27,11 @@ namespace Damselfly.Core.DBAbstractions
                                         IdentityUserClaim<int>, ApplicationUserRole, IdentityUserLogin<int>,
                                         IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
+
+        public BaseDBModel(DbContextOptions options) : base(options)
+        {
+        }
+
         public static readonly ILoggerFactory SqlLoggerFactory
             = LoggerFactory.Create(builder => { builder.AddConsole(); });
 

@@ -11,6 +11,7 @@ using Damselfly.Core.Interfaces;
 using System.Text.Json;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -25,6 +26,8 @@ namespace Damselfly.Core.Services;
 public class ExifService : IProcessJobFactory, ITagService
 {
     public static string ExifToolVer { get; private set; }
+
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly IndexingService _indexingService;
@@ -50,8 +53,9 @@ public class ExifService : IProcessJobFactory, ITagService
     }
 
     public ExifService(IStatusService statusService, WorkService workService,
-            IndexingService indexingService, ImageCache imageCache)
+            IndexingService indexingService, ImageCache imageCache, IServiceScopeFactory scopeFactory)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageCache = imageCache;
         _indexingService = indexingService;
@@ -125,7 +129,9 @@ public class ExifService : IProcessJobFactory, ITagService
         var timestamp = DateTime.UtcNow;
         var changeDesc = string.Empty;
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var ops = new List<ExifOperation>();
 
         if (faces != null)
@@ -176,7 +182,9 @@ public class ExifService : IProcessJobFactory, ITagService
         var timestamp = DateTime.UtcNow;
         var changeDesc = string.Empty;
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var keywordOps = new List<ExifOperation>();
 
         if (addTags != null)
@@ -254,7 +262,9 @@ public class ExifService : IProcessJobFactory, ITagService
         var timestamp = DateTime.UtcNow;
         var changeDesc = string.Empty;
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var keywordOps = new List<ExifOperation>();
 
         keywordOps.AddRange(images.Select(image => new ExifOperation
@@ -435,7 +445,8 @@ public class ExifService : IProcessJobFactory, ITagService
             }
         }
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Now write the updates
         await db.BulkUpdate(db.KeywordOperations, exifOperations);
@@ -482,7 +493,8 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="cleanupFreq"></param>
     public async Task CleanUpKeywordOperations(TimeSpan cleanupFreq)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Clean up completed operations older than 24hrs
         var cutOff = DateTime.UtcNow.AddDays(-1);
@@ -589,7 +601,8 @@ public class ExifService : IProcessJobFactory, ITagService
 
         if (discardedOps.Any())
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             // Mark the ops as discarded, and save them.
             discardedOps.ForEach(x => x.State = ExifOperation.FileWriteState.Discarded);
@@ -639,7 +652,9 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <returns></returns>
     public async Task<bool> ToggleFavourite(Tag tag)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         // TODO: Async - use BulkUpdateAsync?
         tag.Favourite = !tag.Favourite;
 
@@ -657,7 +672,8 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <returns></returns>
     private async Task LoadFavouriteTagsAsync()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // TODO: Clear the tag cache and reload, and get this from the cache
         var faves = await Task.FromResult(db.Tags
@@ -696,7 +712,8 @@ public class ExifService : IProcessJobFactory, ITagService
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // We skip any operations where the timestamp is more recent than 30s
         var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * 30);

@@ -9,17 +9,20 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class UserConfigService : BaseConfigService, IDisposable
 {
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly UserService _userService;
     private AppIdentityUser _user;
 
-    public UserConfigService(UserService userService, ILogger<IConfigService> logger) : base( logger )
+    public UserConfigService(IServiceScopeFactory scopeFactory, UserService userService, ILogger<IConfigService> logger) : base( logger )
     {
+        _scopeFactory = scopeFactory;
         _userService = userService;
         _userService.OnChange += UserChanged;
         _user = userService.User;

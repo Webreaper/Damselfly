@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
 using MailKit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -38,13 +39,15 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessor;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     // WASM: This should be a MemoryCache
     private readonly IDictionary<string, Person> _peopleCache = new ConcurrentDictionary<string, Person>();
 
     public static bool EnableImageRecognition { get; set; } = true;
 
-    public ImageRecognitionService(IStatusService statusService, ObjectDetector objectDetector,
+    public ImageRecognitionService(IServiceScopeFactory scopeFactory,
+                    IStatusService statusService, ObjectDetector objectDetector,
                     MetaDataService metadataService, AzureFaceService azureFace,
                     AccordFaceService accordFace, EmguFaceService emguService,
                     ThumbnailService thumbs, ConfigService configService,
@@ -52,6 +55,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                     WorkService workService, ExifService exifService,
                     ImageProcessService imageProcessor)
     {
+        _scopeFactory = scopeFactory;
         _thumbService = thumbs;
         _accordFaceService = accordFace;
         _azureFaceService = azureFace;
@@ -120,7 +124,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
                 var watch = new Stopwatch("LoadPersonCache");
 
-                using var db = new ImageContext();
+                using var scope = _scopeFactory.CreateScope();
+                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 var dict = await db.People.Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
                                     .AsNoTracking()
@@ -150,7 +155,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         if (!faceObject.IsFace)
             throw new ArgumentException("Image object passed to name update.");
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         if (faceObject.Person == null)
         {
@@ -175,7 +181,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public async Task UpdatePerson( Person person, string name )
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // TODO: If this is an existing person/name, we might need to merge in Azure
         person.Name = name;
@@ -197,7 +204,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     /// <returns></returns>
     public async Task CreateMissingPeople(IEnumerable<string> personIdsToAdd)
     {
-        using ImageContext db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         try
         {
@@ -549,7 +557,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
                 var allFound = foundObjects.Union(foundFaces).ToList();
 
-                using var db = new ImageContext();
+                using var scope = _scopeFactory.CreateScope();
+                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 // First, clear out the existing faces and objects - we don't want dupes
                 // TODO: Might need to be smarter about this once we add face names and
@@ -661,7 +670,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     /// <returns></returns>
     private async Task DetectObjects(int imageId)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var image = await _imageCache.GetCachedImage(imageId);
 
@@ -689,7 +699,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public async Task MarkFolderForScan(Folder folder)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         //var queryable = db.Set<ImageMetaData>().Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
@@ -704,7 +715,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public async Task MarkAllImagesForScan()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { AILastUpdated = null });
 
@@ -715,7 +727,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public async Task MarkImagesForScan(ICollection<Image> images)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var ids = images.Select(x => x.ImageId).ToList();
         var queryable = db.ImageMetaData.Where(i => ids.Contains(i.ImageId));
@@ -747,7 +760,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Only pull out images where the thumb *has* been processed, and the
         // metadata has already been scanned, the AI hasn't been processed.

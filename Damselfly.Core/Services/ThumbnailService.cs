@@ -11,6 +11,7 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Images;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -23,11 +24,14 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessingService;
     private readonly WorkService _workService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public ThumbnailService(IStatusService statusService,
+    public ThumbnailService(IServiceScopeFactory scopeFactory,
+                    IStatusService statusService,
                     ImageProcessService imageService,
                     ImageCache imageCache, WorkService workService)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageProcessingService = imageService;
         _imageCache = imageCache;
@@ -251,7 +255,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     /// </summary>
     private async Task ProcessThumbnailScan()
     {
-        using var db = new Models.ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         Logging.LogVerbose("Starting thumbnail scan...");
 
@@ -343,7 +348,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     /// <returns></returns>
     public async Task<IImageProcessResult> CreateThumb(int imageId)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var image = await _imageCache.GetCachedImage(imageId);
 
@@ -372,7 +378,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     {
         try
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
             Hash hash = image.Hash;
 
             if (hash == null)
@@ -611,7 +619,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
     public async Task MarkAllForScan()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
         int updated = await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null");
@@ -621,7 +630,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
     public async Task MarkFolderForScan(Folder folder)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         int updated = await ImageContext.UpdateMetadataFields(db, folder, "ThumbLastUpdated", "null");
 
@@ -631,7 +641,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
     public async Task MarkImagesForScan(ICollection<Image> images)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         string imageIds = string.Join(",", images.Select(x => x.ImageId));
         string sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})";
@@ -667,8 +678,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     {
         if (!EnableThumbnailGeneration)
             return new ThumbProcess[0];
-        
-        using var db = new ImageContext();
+
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
                                 .OrderByDescending(x => x.LastUpdated)

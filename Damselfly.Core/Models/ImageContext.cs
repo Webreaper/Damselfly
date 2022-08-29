@@ -40,6 +40,10 @@ namespace Damselfly.Core.Models
         public DbSet<CloudTransaction> CloudTransactions { get; set; }
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
+        public ImageContext(DbContextOptions options) : base(options)
+        {
+        }
+
         public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
         {
             return await base.ImageSearch<Image>(Images, query, IncludeAITags);

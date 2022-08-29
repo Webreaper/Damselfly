@@ -8,6 +8,7 @@ using Damselfly.Core.Models;
 using System.Threading.Tasks;
 using System.Threading;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -19,12 +20,15 @@ public class FolderWatcherService
     private bool _fileWatchersDisabled = false;
     private readonly ImageProcessService _imageProcessService;
     private readonly IStatusService _statusService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private IndexingService _indexingService;
     private Task _queueTask;
 
-    public FolderWatcherService(IStatusService statusService,
+    public FolderWatcherService(IServiceScopeFactory scopeFactory,
+                                IStatusService statusService,
                                 ImageProcessService imageService)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageProcessService = imageService;
 

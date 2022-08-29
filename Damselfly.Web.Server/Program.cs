@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.Internal;
-using Damselfly.Web.Server.Data;
 using Damselfly.Web.Server.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.ImageProcessing;
@@ -166,9 +165,6 @@ public class Program
                 Logging.Log(" Postgres Database location: {0}");
             }
 
-            // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli
-            BaseDBModel.InitDB<ImageContext>(dbType, o.ReadOnly);
-
             // Make ourselves low-priority.
             System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
@@ -296,14 +292,21 @@ public class Program
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Damselfly API V1");
         });
 
-        app.UseIdentityServer();
         app.UseAuthentication();
         app.UseAuthorization();
+
+        using var scope = app.Services.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        db.Database.Migrate();
+        // WASM TODO db.ReadOnly = false;
+
 
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
 
+        
         // Start up all the Damselfly Services
         app.Environment.SetupServices( app.Services );
 

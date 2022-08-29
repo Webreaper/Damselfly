@@ -10,6 +10,7 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Damselfly.Core.DbModels.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -22,6 +23,7 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class DownloadService : IDownloadService
 {
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
     private readonly ImageProcessService _imageProcessingService;
     private DesktopAppPaths _desktopAppInfo = new DesktopAppPaths();
@@ -31,8 +33,9 @@ public class DownloadService : IDownloadService
     private const string s_downloadVPath = "downloads";
     private const string s_completionMsg = "Zip created.";
 
-    public DownloadService(IStatusService statusService, ImageProcessService imageService, IWebHostEnvironment env)
+    public DownloadService(IStatusService statusService, ImageProcessService imageService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageProcessingService = imageService;
 

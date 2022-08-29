@@ -8,6 +8,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -36,12 +37,14 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class ImageCache : IImageCacheService
 {
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMemoryCache _memoryCache;
     private readonly MemoryCacheEntryOptions _cacheOptions;
     private readonly ServerNotifierService _notifier;
 
-    public ImageCache(IMemoryCache memoryCache, ServerNotifierService notifier)
+    public ImageCache(IMemoryCache memoryCache, IServiceScopeFactory scopeFactory, ServerNotifierService notifier)
     {
+        _scopeFactory = scopeFactory;
         _notifier = notifier;
         _memoryCache = memoryCache;
         _cacheOptions = new MemoryCacheEntryOptions()
@@ -61,7 +64,8 @@ public class ImageCache : IImageCacheService
 
             Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
 
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
                      .Take(warmupCount)
@@ -163,7 +167,8 @@ public class ImageCache : IImageCacheService
 
         var tagwatch = new Stopwatch("EnrichCache");
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // This is THE query. It has to be fast. The ImageTags many-to-many
         // join is *really* slow on a standard EFCore query, so we have to
@@ -220,7 +225,9 @@ public class ImageCache : IImageCacheService
     /// <returns></returns>
     private static async Task<Image> GetImage(Image image)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var watch = new Stopwatch("EnrichForCache");
         var loadtype = "unknown";
 

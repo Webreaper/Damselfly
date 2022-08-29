@@ -18,6 +18,7 @@ using Damselfly.Core.Interfaces;
 using MetadataExtractor.Formats.Xmp;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Tag = Damselfly.Core.Models.Tag;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -34,14 +35,16 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
     private readonly ConfigService _configService;
     private readonly WorkService _workService;
     private readonly ImageCache _imageCache;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public ICollection<Camera> Cameras { get { return _cameraCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList(); } }
     public ICollection<Lens> Lenses { get { return _lensCache.Values.OrderBy(x => x.Make).ThenBy(x => x.Model).ToList(); } }
     public IEnumerable<Models.Tag> CachedTags { get { return _tagCache.Values.ToList(); } }
 
-    public MetaDataService(IStatusService statusService, ExifService exifService,
+    public MetaDataService(IServiceScopeFactory scopeFactory, IStatusService statusService, ExifService exifService,
                                 ConfigService config, ImageCache imageCache, WorkService workService)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _configService = config;
         _exifService = exifService;
@@ -431,7 +434,10 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         Stopwatch watch = new Stopwatch("ScanMetadata");
 
         var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
-        using var db = new ImageContext();
+
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var updateTimeStamp = DateTime.UtcNow;
         var imageKeywords = new List<string>();
         List<string> sideCarTags = new List<string>();
@@ -550,7 +556,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
                 var names = xmpFaces.Select(x => x.Person.Name)
                                     .ToList();
 
-                using var db = new ImageContext();
+                using var scope = _scopeFactory.CreateScope();
+                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 var peopleLookup = db.People.Where(x => names.Contains(x.Name))
                                             .ToDictionary(x => x.Name, y => y.PersonId);
@@ -610,51 +617,50 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
             Logging.LogError("Exception adding Tags: {0}", ex);
         }
 
-        using ImageContext db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var transaction = db.Database.BeginTransaction();
 
-        using (var transaction = db.Database.BeginTransaction())
+        try
         {
-            try
+            // Create the new tag objects, pulling the tags from the cache
+            var newImageTags = imageKeywords.Select(keyword => new ImageTag
             {
-                // Create the new tag objects, pulling the tags from the cache
-                var newImageTags = imageKeywords.Select(keyword => new ImageTag
-                                                                {
-                                                                    ImageId = image.ImageId,
-                                                                    TagId = _tagCache[keyword].TagId
-                                                                })
-                                                            .ToList();
+                ImageId = image.ImageId,
+                TagId = _tagCache[keyword].TagId
+            })
+                                                        .ToList();
 
-                Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
+            Logging.LogTrace($"Updating {newImageTags.Count()} ImageTags");
 
-                // First, get the image tags for the image
-                var existingImageTagIds = image.ImageTags.Select(x => x.TagId).ToList();
+            // First, get the image tags for the image
+            var existingImageTagIds = image.ImageTags.Select(x => x.TagId).ToList();
 
-                // Figure out which tags are new, and which existing tags need to be removed.
-                var toDelete = existingImageTagIds.Where(id => ! newImageTags.Select(x => x.TagId).Contains(id) ).ToList();
-                var toAdd = newImageTags.Where(x => ! existingImageTagIds.Contains( x.TagId )).ToList();
+            // Figure out which tags are new, and which existing tags need to be removed.
+            var toDelete = existingImageTagIds.Where(id => !newImageTags.Select(x => x.TagId).Contains(id)).ToList();
+            var toAdd = newImageTags.Where(x => !existingImageTagIds.Contains(x.TagId)).ToList();
 
-                if (toDelete.Any())
-                {
-                    Stopwatch delWatch = new Stopwatch("AddTagsDelete");
-                    await db.BatchDelete(db.ImageTags.Where(y => y.ImageId == image.ImageId && toDelete.Contains(y.TagId)));
-                    delWatch.Stop();
-                }
-
-                if (toAdd.Any())
-                {
-                    Stopwatch addWatch = new Stopwatch("AddTagsInsert");
-                    await db.BulkInsert(db.ImageTags, toAdd); ;
-                    addWatch.Stop();
-                }
-                transaction.Commit();
-                tagsAdded = newImageTags.Count;
-            }
-            catch (Exception ex)
+            if (toDelete.Any())
             {
-                Logging.LogError("Exception adding ImageTags: {0}", ex);
+                Stopwatch delWatch = new Stopwatch("AddTagsDelete");
+                await db.BatchDelete(db.ImageTags.Where(y => y.ImageId == image.ImageId && toDelete.Contains(y.TagId)));
+                delWatch.Stop();
             }
+
+            if (toAdd.Any())
+            {
+                Stopwatch addWatch = new Stopwatch("AddTagsInsert");
+                await db.BulkInsert(db.ImageTags, toAdd); ;
+                addWatch.Stop();
+            }
+            transaction.Commit();
+            tagsAdded = newImageTags.Count;
         }
-
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception adding ImageTags: {0}", ex);
+        }
+ 
         watch.Stop();
 
         return tagsAdded;
@@ -804,7 +810,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
     {
         if (_lensCache == null)
         {
-            using ImageContext db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
             _lensCache = new ConcurrentDictionary<string, Lens>(db.Lenses
                                                                   .AsNoTracking()
                                                                   .ToDictionary(x => x.Make + x.Model, y => y));
@@ -812,7 +820,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         if (_cameraCache == null)
         {
-            using var db = new ImageContext();
+            using var scope = app.Services.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
             _cameraCache = new ConcurrentDictionary<string, Camera>(db.Cameras
                                                                        .AsNoTracking() // We never update, so this is faster
                                                                        .ToDictionary(x => x.Make + x.Model, y => y));
@@ -837,7 +846,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
             // It's a new one.
             cam = new Camera { Make = make, Model = model, Serial = serial };
 
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
             db.Cameras.Add(cam);
             db.SaveChanges("SaveCamera");
 
@@ -865,7 +876,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
             // It's a new one.
             lens = new Lens { Make = make, Model = model, Serial = serial };
 
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
             db.Lenses.Add(lens);
             db.SaveChanges("SaveLens");
 
@@ -887,7 +900,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
             {
                 var watch = new Stopwatch("LoadTagCache");
 
-                using var db = new ImageContext();
+                using var scope = _scopeFactory.CreateScope();
+                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 // Pre-cache tags from DB.
                 _tagCache = new ConcurrentDictionary<string, Models.Tag>(db.Tags
@@ -932,7 +946,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
     {
         Stopwatch watch = new Stopwatch("CreateTagsFromStrings");
 
-        using ImageContext db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Find the tags that aren't already in the cache
         var newTags = tags.Distinct().Where(x => !_tagCache.ContainsKey(x))
@@ -987,7 +1002,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
     public async Task MarkFolderForScan(Folder folder)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
@@ -1002,7 +1018,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
     public async Task MarkAllImagesForScan()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
@@ -1013,7 +1030,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
     public async Task MarkImagesForScan(ICollection<Image> images)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var ids = images.Select(x => x.ImageId).ToList();
         var queryable = db.ImageMetaData.Where(i => ids.Contains(i.ImageId));
@@ -1044,7 +1062,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Find all images where there's either no metadata, or where the image or sidecar file 
         // was updated more recently than the image metadata
