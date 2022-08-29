@@ -26,6 +26,5 @@ namespace Damselfly.Core.Interfaces
         Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class;
 
         IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class;
-        void CreateIndexes(ModelBuilder builder);
     }
 }

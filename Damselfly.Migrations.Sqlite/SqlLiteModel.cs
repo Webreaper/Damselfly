@@ -16,16 +16,10 @@ namespace Damselfly.Migrations.Sqlite.Models
     /// SQLite database specialisation. Assumes a Database path is set
     /// at construction.
     /// </summary>
-    public class SqlLiteModel : IDataBase
+    public class SqlLiteModel
     {
         private string DatabasePath { get; set; }
         private string sentinelPath;
-
-        public SqlLiteModel()
-        {
-            Console.WriteLine("Constructing Sqlite Model for EFCore Migrations...");
-            BaseDBModel.DatabaseSpecialisation = this;
-        }
 
         public SqlLiteModel( string dbPath )
         {
@@ -68,7 +62,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// Enable SQLite performance improvements
         /// </summary>
         /// <param name="db"></param>
-        private void IncreasePerformance(BaseDBModel db)
+        public void IncreasePerformance(BaseDBModel db)
         {
             // Increase the timeout from the default (which I think is 30s)
             // To help concurrency.
@@ -129,32 +123,6 @@ namespace Damselfly.Migrations.Sqlite.Models
         public void FlushDBWriteCache(BaseDBModel db)
         {
             ExecutePragma(db, "PRAGMA schema.wal_checkpoint;");
-        }
-
-        /// <summary>
-        /// SQLite specific initialisation. Run the migrations, and 
-        /// always run a VACUUM to optimise the DB at startup.
-        /// </summary>
-        /// <param name="db"></param>
-        public void Init( BaseDBModel db )
-        {
-            try
-            {
-                Logging.Log("Running Sqlite DB migrations...");
-                db.Database.Migrate();
-            }
-            catch( Exception ex )
-            {
-                Logging.LogWarning($"Migrations failed with exception: {ex}");
-
-                if( ex.InnerException != null )
-                    Logging.LogWarning($"InnerException: {ex.InnerException}");
-
-                Logging.Log($"Creating DB.");
-                db.Database.EnsureCreated();
-            }
-
-            IncreasePerformance(db);
         }
 
         /// <summary>

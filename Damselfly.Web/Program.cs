@@ -131,30 +131,6 @@ namespace Damselfly.Web
 
                 IDataBase dbType = null;
 
-                if (!o.UsePostgresDB)
-                {
-                    string dbFolder = Path.Combine(o.ConfigPath, "db");
-
-                    if (!Directory.Exists(dbFolder))
-                    {
-                        Logging.Log(" Created DB folder: {0}", dbFolder);
-                        Directory.CreateDirectory(dbFolder);
-                    }
-
-                    string dbPath = Path.Combine(dbFolder, "damselfly.db");
-                    dbType = new SqlLiteModel(dbPath);
-                    Logging.Log(" Sqlite Database location: {0}", dbPath);
-                }
-                else // Postgres
-                {
-                    // READ Postgres config json
-                    dbType = PostgresModel.ReadSettings("settings.json");
-                    Logging.Log(" Postgres Database location: {0}");
-                }
-
-                // TODO: https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/providers?tabs=dotnet-core-cli
-                BaseDBModel.InitDB<ImageContext>(dbType, o.ReadOnly);
-
                 // Make ourselves low-priority.
                 System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 

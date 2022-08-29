@@ -43,15 +43,10 @@ namespace Damselfly.Core.DBAbstractions
 
         static bool lazyLoad = false;
 
-        public static bool ReadOnly { get; private set; }
+        public static bool ReadOnly { get; set; }
 
         // Instance of our DB type that implements the Database interface
         public static IDataBase DatabaseSpecialisation { get; set; } 
-
-        public void AddSpecialisationIndexes( ModelBuilder modelBuilder )
-        {
-            DatabaseSpecialisation.CreateIndexes(modelBuilder);
-        }
 
         /// <summary>
         /// Basic initialisation for the DB that are generic to all DB types
@@ -68,12 +63,6 @@ namespace Damselfly.Core.DBAbstractions
             // Default to no tracking for performance. We can use Attach or 
             // AsTracking explicitly for when we need to do write operations.
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-
-            // See efmigrations.md
-            //var obj = Activator.CreateInstance("Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite.Models.SqlLiteModel");
-            //var obj = Activator.CreateInstance("Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres.Models.PostgresModel");
-
-            DatabaseSpecialisation.Configure(options);
         }
 
         /// <summary>

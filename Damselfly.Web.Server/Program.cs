@@ -142,33 +142,10 @@ public class Program
             Logging.Log($" Images Root set as {o.SourceDirectory}");
             Logging.Log($" TieredPGO Enabled={tieredPGO}");
 
-            IDataBase dbType = null;
-
-            if (!o.UsePostgresDB)
-            {
-                string dbFolder = Path.Combine(o.ConfigPath, "db");
-
-                if (!Directory.Exists(dbFolder))
-                {
-                    Logging.Log(" Created DB folder: {0}", dbFolder);
-                    Directory.CreateDirectory(dbFolder);
-                }
-
-                string dbPath = Path.Combine(dbFolder, "damselfly.db");
-                dbType = new SqlLiteModel(dbPath);
-                Logging.Log(" Sqlite Database location: {0}", dbPath);
-            }
-            else // Postgres
-            {
-                // READ Postgres config json
-                dbType = PostgresModel.ReadSettings("settings.json");
-                Logging.Log(" Postgres Database location: {0}");
-            }
-
             // Make ourselves low-priority.
             System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-            StartWebServer(o.Port, args);
+            StartWebServer(o, args);
 
             Logging.Log("Shutting down.");
         }
@@ -178,6 +155,26 @@ public class Program
         }
     }
 
+    private static void SetupDbContext(IServiceCollection services, DamselflyOptions cmdLineOptions)
+    {
+        string dbFolder = Path.Combine(cmdLineOptions.ConfigPath, "db");
+
+        if (!Directory.Exists(dbFolder))
+        {
+            Logging.Log(" Created DB folder: {0}", dbFolder);
+            Directory.CreateDirectory(dbFolder);
+        }
+
+        string dbPath = Path.Combine(dbFolder, "damselfly.db");
+
+        string connectionString = $"Data Source={dbPath}";
+
+        // Add services to the container.
+        services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
+                                                    b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite")));
+        services.AddDatabaseDeveloperPageExceptionFilter();
+    }
+
     /// <summary>
     /// Main entry point. Creates a bunch of services, and then kicks off
     /// the webserver, which is a blocking call (since it's the dispatcher
@@ -185,34 +182,13 @@ public class Program
     /// </summary>
     /// <param name="listeningPort"></param>
     /// <param name="args"></param>
-    private static void StartWebServer(int listeningPort, string[] args)
-    { 
+    private static void StartWebServer(DamselflyOptions cmdLineOptions, string[] args)
+    {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        builder.Services.AddDbContext<ImageContext>(options =>
-            options.UseSqlite(connectionString));
-        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+        SetupDbContext(builder.Services, cmdLineOptions);
 
-        builder.Services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-            .AddRoles<ApplicationRole>()
-            .AddEntityFrameworkStores<ImageContext>();
-
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-           .AddJwtBearer(options =>
-           {
-               options.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuer = true,
-                   ValidateAudience = true,
-                   ValidateLifetime = true,
-                   ValidateIssuerSigningKey = true,
-                   ValidIssuer = "https://localhost",
-                   ValidAudience = "https://localhost",
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama"))
-               };
-           });
+        SetupIdentity(builder.Services);
 
         // WASM: TODO
         // builder.Services.AddAuthorization(config => config.SetupPolicies(builder.Services));
@@ -221,7 +197,7 @@ public class Program
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
         builder.Services.AddControllersWithViews()
-                .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions);  });
+                .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
 
         builder.Services.AddRazorPages();
 
@@ -295,27 +271,70 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        using var scope = app.Services.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-        db.Database.Migrate();
-        // WASM TODO db.ReadOnly = false;
-
-
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
 
-        
-        // Start up all the Damselfly Services
-        app.Environment.SetupServices( app.Services );
+        InitialiseDB(app, cmdLineOptions);
 
-        app.Urls.Add($"http://+:{listeningPort}"); 
+        // Start up all the Damselfly Services
+        app.Environment.SetupServices(app.Services);
+
+        app.Urls.Add($"http://+:{cmdLineOptions.Port}");
 
         Logging.StartupCompleted();
         Logging.Log("Starting Damselfly webserver...");
 
         app.Run();
+    }
+
+    private static void InitialiseDB( WebApplication app, DamselflyOptions options)
+    {
+        using var scope = app.Services.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        try
+        {
+            Logging.Log("Running Sqlite DB migrations...");
+            db.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Logging.LogWarning($"Migrations failed with exception: {ex}");
+
+            if (ex.InnerException != null)
+                Logging.LogWarning($"InnerException: {ex.InnerException}");
+
+            Logging.Log($"Creating DB.");
+            db.Database.EnsureCreated();
+        }
+
+        // WASM: TODO
+        // db.IncreasePerformance();
+
+        ImageContext.ReadOnly = options.ReadOnly;
+    }
+
+    private static void SetupIdentity(IServiceCollection services)
+    {
+        services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            .AddRoles<ApplicationRole>()
+            .AddEntityFrameworkStores<ImageContext>();
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+           .AddJwtBearer(options =>
+           {
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateIssuer = true,
+                   ValidateAudience = true,
+                   ValidateLifetime = true,
+                   ValidateIssuerSigningKey = true,
+                   ValidIssuer = "https://localhost",
+                   ValidAudience = "https://localhost",
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama"))
+               };
+           });
     }
 }
 

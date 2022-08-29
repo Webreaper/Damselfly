@@ -16,7 +16,7 @@ namespace Damselfly.Core.DBAbstractions
     /// - no free-text searching/indexing.
     /// Work to do.
     /// </summary>
-    public class MySqlModel : IDataBase
+    public class MySqlModel
     {
         public void Configure(DbContextOptionsBuilder options)
         {
@@ -170,10 +170,6 @@ namespace Damselfly.Core.DBAbstractions
         {
             // TODO: What do we do here? Maybe something with LIKE?
             throw new NotImplementedException();
-        }
-
-        public void CreateIndexes(ModelBuilder builder)
-        {
         }
     }
 }

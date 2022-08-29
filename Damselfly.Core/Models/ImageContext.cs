@@ -129,8 +129,6 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<Hash>().HasIndex(x => new { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 } );
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
-            AddSpecialisationIndexes(modelBuilder);
-
             RoleDefinitions.OnModelCreating(modelBuilder);
         }
 
