@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 
-namespace ChrisSaintyExample.Client.Services;
+namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IAuthService
 {

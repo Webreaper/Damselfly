@@ -1,3 +1,90 @@
-﻿<div>
-    Not yet implemented
+﻿
+@inject IUserService userService
+@inject IDialogService DialogService
+
+<div>
+    <MudText Typo="Typo.h6">Registered Users</MudText>
+    <MudSpacer />
+    <MudTable Items="@allUsers" FixedHeader="true" Dense="true" Hover="true" Bordered="false" Striped="true"
+              Filter="new Func<AppIdentityUser,bool>(UserFilterFunc)">
+        <ToolBarContent>
+            <MudTextField @bind-Value="searchText" Variant="Variant.Filled" Placeholder="User Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<AppIdentityUser, object>(x=>x.UserName)">User Name</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<AppIdentityUser, object>(x=>x.Email)">Email</MudTableSortLabel></MudTh>
+            <MudTh>Roles</MudTh>
+            <MudTh>Edit User</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="User Name">@context.UserName</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="Roles">@string.Join(", ", GetUserRoleList(context)) </MudTd>
+            <MudTd DataLabel="Edit User">
+                <button class="btn btn-primary" @onclick="@(() => OpenUserDialog( context ) )"><i class="fas fa-edit" />Edit User</button>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+    <div/>
+    <button class="btn btn-primary" @onclick="@(() => OpenUserDialog( null ) )"><i class="fas fa-plus-circle" />Add New User</button>
 </div>
+
+@code {
+
+    private string searchText;
+    private List<AppIdentityUser> allUsers = new List<AppIdentityUser>();
+
+    private async Task OpenUserDialog( AppIdentityUser user)
+    {
+        var parameters = new DialogParameters { ["user"] = user };
+        var dialog = DialogService.Show<UserDialog>("Edit User", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            await LoadUsers();
+        }
+    }
+
+    private ICollection<string> GetUserRoleList(AppIdentityUser user)
+    {
+        var roles = user.UserRoles.Select(x => x.Role).Select(r => r.Name);
+        return roles.ToList();
+    }
+
+    private void AddRole(AppIdentityUser user)
+    {
+        // TODO: Popup here.
+    }
+
+    private void RemoveRole(AppIdentityUser user, string roleToRemove)
+    {
+        Logging.Log($"Removing user {user.UserName} from role '{roleToRemove}'");
+        // If admin, Only allow removal if another admin user exists.
+    }
+
+    private bool UserFilterFunc(AppIdentityUser user)
+    {
+        if (string.IsNullOrEmpty(searchText))
+            return true;
+
+        return user.UserName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             user.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task LoadUsers()
+    {
+        allUsers.Clear();
+        allUsers.AddRange(await userService.GetUsers());
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadUsers();
+        }
+    }
+}
+

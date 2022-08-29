@@ -9,7 +9,8 @@
 @inject IWordpressService wpService
 @inject IWorkService workService
 @inject IDialogService DialogService
-@inject WebAssemblyStatusService wasmStatus 
+@inject WebAssemblyStatusService wasmStatus
+@inject ILogger<Config> logger
  
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
@@ -331,11 +332,12 @@
     {
         if (firstRender)
         {
-            if(!wasmStatus.IsWebAssembly)
-            {
-                var allUsers = await userService.GetUsers();
+            var allUsers = await userService.GetUsers();
 
-                if (settingsModel.enableAuthAndRoles && !allUsers.Any())
+            if (!allUsers.Any() )
+            {
+                logger.LogWarning("Config Page: no users, checking if a new admin user needs to be created.");
+                //if( settingsModel.enableAuthAndRoles )
                 {
                     var dialog = DialogService.Show<UserDialog>("Create Admin User");
                     var result = await dialog.Result;

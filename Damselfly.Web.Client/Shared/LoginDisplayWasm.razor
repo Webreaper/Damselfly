@@ -5,6 +5,7 @@
 
 @inject NavigationManager Navigation
 @inject IUserService userService
+@inject IAuthService AuthService
 
 @if (userService.RolesEnabled)
 {
@@ -15,16 +16,26 @@
                 <NavLink href="/config">@context.User.Identity?.Name</NavLink>
             </div>
             <div>
-                <button class="btn btn-primary" onclick="location.href='LogOut'" type="button">Log Out</button>
+                <button class="btn btn-primary" @onclick="LogOut" type="button">Log Out</button>
             </div>
         </Authorized>
         <NotAuthorized>
             <div>
-                <button class="btn btn-primary" onclick="location.href='Login'" type="button">Log In</button>
+                <button class="btn btn-primary" @onclick="Login" type="button">Log In</button>
             </div>
         </NotAuthorized>
     </AuthorizeView>
 }
 
 @code{
+    async Task LogOut()
+    {
+        await AuthService.Logout();
+        Navigation.NavigateTo("/");
     }
+
+    void Login()
+    {
+        Navigation.NavigateTo("Login");
+    }
+}

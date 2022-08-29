@@ -1,6 +1,7 @@
 ﻿using Blazored.LocalStorage;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using System;
@@ -11,7 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace ChrisSaintyExample.Client.Services;
+namespace Damselfly.Core.ScopedServices.ClientServices;
 
 public class AuthService : IAuthService
 {

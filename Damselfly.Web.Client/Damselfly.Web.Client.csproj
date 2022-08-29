@@ -53,6 +53,7 @@
     <Folder Include="Shared\" />
     <Folder Include="Pages\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Extensions\" />
@@ -61,5 +62,9 @@
     <None Remove="Microsoft.AspNetCore.SignalR.Client" />
     <None Remove="Serilog" />
     <None Remove="Blazored.LocalStorage" />
+    <None Remove="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="Shared\UserManagement.razor" />
   </ItemGroup>
 </Project>

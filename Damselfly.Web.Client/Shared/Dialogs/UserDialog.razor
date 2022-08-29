@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations
 
 @inject IUserService userService
+@inject ILogger<UserDialog> logger
 
 <MudDialog>
     <DialogContent>
@@ -148,7 +149,7 @@
         }
         catch( Exception ex )
         {
-            Logging.LogError($"Exception when saving user settings: {ex}");
+            logger.LogError($"Exception when saving user settings: {ex}");
             DisplayError("Unexpected error while saving user settings. Please try again.");
         }
     }

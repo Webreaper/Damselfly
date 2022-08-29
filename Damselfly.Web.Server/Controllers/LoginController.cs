@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChrisSaintyExample.Server.Controllers;
+namespace Damselfly.Web.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

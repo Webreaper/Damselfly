@@ -14,8 +14,6 @@ using Syncfusion.Blazor;
 using Microsoft.Extensions.Options;
 using Syncfusion.Licensing;
 using Blazored.LocalStorage;
-using ChrisSaintyExample.Client;
-using ChrisSaintyExample.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Damselfly.Web.Client;

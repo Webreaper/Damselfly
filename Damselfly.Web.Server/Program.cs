@@ -190,9 +190,6 @@ public class Program
 
         SetupIdentity(builder.Services);
 
-        // WASM: TODO
-        // builder.Services.AddAuthorization(config => config.SetupPolicies(builder.Services));
-
         // Cache up to 10,000 images. Should be enough given cache expiry.
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
@@ -331,6 +328,8 @@ public class Program
                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama"))
                };
            });
+
+        services.AddAuthorization(config => config.SetupPolicies(services));
     }
 }
 

@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Damselfly.Core.ScopedServices.ClientServices;
 
-namespace ChrisSaintyExample.Client;
+namespace Damselfly.Core.ScopedServices.ClientServices;
 
 public class ApiAuthenticationStateProvider : AuthenticationStateProvider
 {
