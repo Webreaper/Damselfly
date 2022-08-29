@@ -820,8 +820,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         if (_cameraCache == null)
         {
-            using var scope = app.Services.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
+
             _cameraCache = new ConcurrentDictionary<string, Camera>(db.Cameras
                                                                        .AsNoTracking() // We never update, so this is faster
                                                                        .ToDictionary(x => x.Make + x.Model, y => y));

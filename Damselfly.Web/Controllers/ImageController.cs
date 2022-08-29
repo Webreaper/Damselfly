@@ -146,13 +146,11 @@ public class ImageController : Controller
         return result;
     }
 
-    private async Task UpdateThumbStatus(Image image, IImageProcessResult conversionResult)
+    private async Task UpdateThumbStatus(Image image, IImageProcessResult conversionResult, [FromServices] ImageContext db )
     {
         Logging.LogTrace($" - Updating metadata for {image.ImageId}");
         try
         {
-            using var db = new ImageContext();
-
             if (image.MetaData != null)
             {
                 db.Attach(image.MetaData);
@@ -182,10 +180,9 @@ public class ImageController : Controller
     public async Task<IActionResult> Face(string faceId, CancellationToken cancel,
             [FromServices] ImageProcessService imageProcessor,
             [FromServices] ThumbnailService thumbService,
-            [FromServices] ImageCache imageCache)
+            [FromServices] ImageCache imageCache,
+            [FromServices] ImageContext db)
     {
-        using var db = new ImageContext();
-
         IActionResult result = Redirect("/no-image.png");
 
         try

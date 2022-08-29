@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.ML.Face.Azure;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -20,7 +21,7 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class ConfigService : BaseConfigService, IConfigService
 {
-    public ConfigService( ILogger<IConfigService> logger) : base ( logger )
+    public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base (scopeFactory, logger)
     {
         _ = InitialiseCache();
 
@@ -28,7 +29,8 @@ public class ConfigService : BaseConfigService, IConfigService
 
     public override async Task<List<ConfigSetting>> GetAllSettings()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var settings = await db.ConfigSettings.Where(x => x.UserId == null || x.UserId == 0).ToListAsync();
 
@@ -37,7 +39,8 @@ public class ConfigService : BaseConfigService, IConfigService
 
     public void Set(string name, string value )
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var existing = GetSetting(name);
 

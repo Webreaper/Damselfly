@@ -268,7 +268,8 @@ public class DownloadService : IDownloadService
     /// <param name="config"></param>
     public async Task SaveDownloadConfig(ExportConfig config)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var existing = db.DownloadConfigs.SingleOrDefault(x => x.Name.Equals(config.Name));
 

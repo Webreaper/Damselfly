@@ -6,6 +6,7 @@
 @inject NavigationService navContext
 @inject ViewDataService ViewDataService
 @inject ImageCache imageCache
+@inject ImageContext db
 
 <div class="damselfly-export">
     <div class="damselfly-pagetitlebar">
@@ -77,14 +78,13 @@
     /// <returns></returns>
     public async Task<List<List<Image>>> GetImagesWithDuplicates()
     {
-        using var db = new ImageContext();
         var watch = new Stopwatch("GetImagesWithDupes");
 
         // Craft the SQL manually as server-side groupby isn't supported by EF Core.
         // Select all images that have the same hash as more than one image.
         var subQuery = @"SELECT MD5ImageHash FROM Hashes
-                        WHERE MD5ImageHash IS NOT NULL AND MD5ImageHash <> ""
-                        GROUP BY MD5ImageHash HAVING COUNT( DISTINCT ImageID ) > 1";
+                    WHERE MD5ImageHash IS NOT NULL AND MD5ImageHash <> ""
+                    GROUP BY MD5ImageHash HAVING COUNT( DISTINCT ImageID ) > 1";
         var sql = $"SELECT h.* FROM hashes h WHERE h.MD5ImageHash IN ({subQuery})";
 
         var dupeImages = await db.Hashes.FromSqlRaw(sql)

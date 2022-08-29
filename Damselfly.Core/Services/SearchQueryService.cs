@@ -13,6 +13,7 @@ using Damselfly.Core.ScopedServices;
 using Damselfly.Core.DbModels;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -22,10 +23,12 @@ public class SearchQueryService
     private readonly ImageCache _imageCache;
     private readonly IConfigService _configService;
     private readonly MetaDataService _metadataService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public SearchQueryService(IStatusService statusService, ImageCache cache,
+    public SearchQueryService(IStatusService statusService, IServiceScopeFactory scopeFactory, ImageCache cache,
                             MetaDataService metadataService, IConfigService configService)
     {
+        _scopeFactory = scopeFactory;
         _configService = configService;
         _statusService = statusService;
         _imageCache = cache;
@@ -58,7 +61,9 @@ public class SearchQueryService
         // returns less than we asked for (see below).
         var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var watch = new Stopwatch("ImagesLoadData");
         List<int> results = new List<int>();
 

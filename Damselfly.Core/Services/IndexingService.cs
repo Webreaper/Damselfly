@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -27,12 +28,14 @@ public class IndexingService : IProcessJobFactory
     private readonly ImageProcessService _imageProcessService;
     private readonly FolderWatcherService _watcherService;
     private readonly WorkService _workService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private bool _fullIndexComplete = false;
 
-    public IndexingService(IStatusService statusService, ImageProcessService imageService,
+    public IndexingService(IServiceScopeFactory scopeFactory, IStatusService statusService, ImageProcessService imageService,
         ConfigService config, ImageCache imageCache, FolderWatcherService watcherService,
         WorkService workService)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _configService = config;
         _imageProcessService = imageService;
@@ -75,7 +78,9 @@ public class IndexingService : IProcessJobFactory
 
         try
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
             // Load the existing folder and its images from the DB
             folderToScan = await db.Folders
                         .Where(x => x.Path.Equals(folder.FullName))
@@ -192,7 +197,8 @@ public class IndexingService : IProcessJobFactory
         bool imagesWereAddedOrRemoved = false;
         int folderImageCount = 0;
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Get the folder with the image list from the DB. 
         var dbFolder = await db.Folders.Where(x => x.FolderId == folderIdToScan)
@@ -354,7 +360,8 @@ public class IndexingService : IProcessJobFactory
     {
         try
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var ids = folders.Select(x => x.FolderId).Distinct();
 
@@ -378,7 +385,8 @@ public class IndexingService : IProcessJobFactory
     {
         try
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             int updated = await db.BatchUpdate(db.Folders, x => new Folder { FolderScanDate = null });
 
@@ -479,7 +487,8 @@ public class IndexingService : IProcessJobFactory
     {
         if (_fullIndexComplete)
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             // Now, see if there's any folders that have a null scan date.
             var folders = await db.Folders.Where(x => x.FolderScanDate == null)

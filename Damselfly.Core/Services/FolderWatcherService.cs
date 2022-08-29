@@ -68,7 +68,8 @@ public class FolderWatcherService
 
             if (_indexingService != null && folders.Any())
             {
-                using var db = new ImageContext();
+                using var scope = _scopeFactory.CreateScope();
+                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 var uniqueFolders = folders.Distinct(StringComparer.OrdinalIgnoreCase);
                 var pendingFolders = db.Folders.Where(f => uniqueFolders.Contains(f.Path)).ToList();
@@ -144,7 +145,8 @@ public class FolderWatcherService
     /// <param name="changeType"></param>
     private void EnqueueFolderChangeForRescan(FileInfo file, WatcherChangeTypes changeType)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var folder = file.Directory.FullName;
 

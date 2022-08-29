@@ -26,20 +26,16 @@ public class ExportController : ControllerBase
     }
 
     [HttpDelete("/api/export/config/{configId}")]
-    public async Task DeleteConfig(int configId)
+    public async Task DeleteConfig(int configId, [FromServices] ImageContext db)
     {
-        using var db = new ImageContext();
-
         var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == configId );
 
         await db.BatchDelete(existingConfig);
     }
 
     [HttpPatch("/api/export/config")]
-    public async Task UpdateConfig(ExportConfig config)
+    public async Task UpdateConfig(ExportConfig config, [FromServices] ImageContext db)
     {
-        using var db = new ImageContext();
-
         try
         {
             db.DownloadConfigs.Update(config);
@@ -53,10 +49,8 @@ public class ExportController : ControllerBase
     }
 
     [HttpPut("/api/export/config")]
-    public async Task CreateConfig(ExportConfig config)
+    public async Task CreateConfig(ExportConfig config, [FromServices] ImageContext db)
     {
-        using var db = new ImageContext();
-
         try
         {
             if (db.DownloadConfigs.Any(x => x.Name.Equals(config.Name)))

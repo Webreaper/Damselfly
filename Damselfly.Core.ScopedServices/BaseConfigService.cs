@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
@@ -12,9 +13,11 @@ public abstract class BaseConfigService
 {
     private readonly IDictionary<string, ConfigSetting> _cache = new ConcurrentDictionary<string, ConfigSetting>(StringComparer.OrdinalIgnoreCase);
     protected readonly ILogger<IConfigService> _logger;
+    protected readonly IServiceScopeFactory _scopeFactory;
 
-    protected BaseConfigService(ILogger<IConfigService> logger)
+    protected BaseConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger)
     {
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 

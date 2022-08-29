@@ -20,7 +20,7 @@ public class UserConfigService : BaseConfigService, IDisposable
     private readonly UserService _userService;
     private AppIdentityUser _user;
 
-    public UserConfigService(IServiceScopeFactory scopeFactory, UserService userService, ILogger<IConfigService> logger) : base( logger )
+    public UserConfigService(IServiceScopeFactory scopeFactory, UserService userService, ILogger<IConfigService> logger) : base( scopeFactory, logger )
     {
         _scopeFactory = scopeFactory;
         _userService = userService;
@@ -45,7 +45,8 @@ public class UserConfigService : BaseConfigService, IDisposable
     {
         if (_user != null)
         {
-            using var db = new ImageContext();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var settings = await db.ConfigSettings.Where(x => x.UserId == _user.Id).ToListAsync();
 
@@ -69,7 +70,8 @@ public class UserConfigService : BaseConfigService, IDisposable
         // UserID of zero indicates "no user", so default global setting
         int userId = _user != null ? _user.Id : 0;
 
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var existing = GetSetting(name);
 

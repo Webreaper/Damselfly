@@ -6,6 +6,7 @@
 @inject NavigationService navContext
 @inject ViewDataService ViewDataService
 @inject ImageCache imageCache
+@inject ImageContext db
 
 <div class="damselfly-pagetitlebar">
     <NavBack />
@@ -60,7 +61,6 @@
 
     public async Task<List<Image>> GetImageDuplicates(Image image)
     {
-        using var db = new ImageContext();
         var watch = new Stopwatch("GetImageDupes");
 
         var dupes = await db.Hashes

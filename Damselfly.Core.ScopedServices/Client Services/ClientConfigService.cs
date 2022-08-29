@@ -9,6 +9,7 @@ using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
@@ -18,7 +19,7 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
 {
     private RestClient httpClient;
 
-    public ClientConfigService( RestClient restClient, ILogger<IConfigService> logger ) : base(logger)
+    public ClientConfigService( RestClient restClient, IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger ) : base(scopeFactory, logger)
     {
         httpClient = restClient;
 

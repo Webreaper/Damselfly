@@ -10,6 +10,7 @@ using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices;
 using Microsoft.AspNetCore.SignalR;
 using Damselfly.Core.Constants;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
@@ -22,10 +23,12 @@ public class FolderService : IFolderService
     private List<Folder> allFolders = new List<Folder>();
     public event Action OnChange;
     private EventConflator conflator = new EventConflator(10 * 1000);
-    private ServerNotifierService _notifier;
+    private readonly ServerNotifierService _notifier;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public FolderService( IndexingService _indexingService, ServerNotifierService notifier)
+    public FolderService( IndexingService _indexingService, IServiceScopeFactory scopeFactory, ServerNotifierService notifier)
     {
+        _scopeFactory = scopeFactory;
         _notifier = notifier;
 
         // After we've loaded the data, start listening
@@ -66,7 +69,9 @@ public class FolderService : IFolderService
     /// </summary>
     public async Task LoadFolders()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var watch = new Stopwatch("GetFolders");
 
         Logging.Log("Loading folder data...");

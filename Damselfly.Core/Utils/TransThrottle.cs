@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Microsoft.Azure.CognitiveServices.Vision.Face.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 
 namespace Damselfly.Core.Utils;
@@ -26,20 +27,24 @@ public class TransThrottle : ITransactionThrottle
     private DateTime _windowStart = DateTime.MinValue;
     private volatile int _totalTransactions;
     private volatile int _windowTransactions;
-    private int _maxTransPerMinute;
-    private int _maxTransPerMonth;
-    private CloudTransaction.TransactionType _serviceType;
+    private int _maxTransPerMinute = 20;
+    private int _maxTransPerMonth = 30000;
+    private CloudTransaction.TransactionType _serviceType = CloudTransaction.TransactionType.AzureFace;
 
     private readonly MonthTransCount _monthTransCount;
-    
-    public TransThrottle(CloudTransaction.TransactionType serviceType, int maxTransPerMin = 20, int maxTransPerMonth = 30000 )
-    {
-        _serviceType = serviceType;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-        SetLimits(maxTransPerMin, maxTransPerMonth);
+    public TransThrottle( IServiceScopeFactory factory )
+    {
+        SetLimits(20, 30000);
 
         var date = DateTime.UtcNow.Date;
-        using var db = new ImageContext();
+
+        _scopeFactory = factory;
+
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var monthStart = new DateTime(date.Year, date.Month, 1, 0, 0, 0);
         var monthTrans = db.CloudTransactions.Where(x => x.Date >= monthStart && x.TransType == _serviceType)
                                                .Sum(x => x.TransCount);
@@ -203,7 +208,9 @@ public class TransThrottle : ITransactionThrottle
     /// </summary>
     public void ProcessNewTransactions()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
         var type = CloudTransaction.TransactionType.AzureFace;
 
         DateTime today = DateTime.UtcNow.Date;

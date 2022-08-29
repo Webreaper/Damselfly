@@ -223,7 +223,7 @@ public class ImageCache : IImageCacheService
     /// </summary>
     /// <param name="imageId"></param>
     /// <returns></returns>
-    private static async Task<Image> GetImage(Image image)
+    private async Task<Image> GetImage(Image image)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();

@@ -11,6 +11,7 @@
 @inject ISearchService searchService
 @inject IUserStatusService statusService
 @inject NavigationManager navigationManager
+@inject ImageContext db 
 
 <div class="damselfly-imagebrowser">
     <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
@@ -59,8 +60,6 @@
 
         if (FolderId != 0)
         {
-            using var db = new ImageContext();
-
             var folder = await db.Folders.FindAsync(FolderId);
 
             if (folder != null)
@@ -72,8 +71,6 @@
 
         if (PersonId != 0)
         {
-            using var db = new ImageContext();
-
             var person = await db.People.FindAsync(PersonId);
 
             if (person != null)

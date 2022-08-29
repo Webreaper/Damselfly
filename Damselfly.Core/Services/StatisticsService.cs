@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.Services;
@@ -11,15 +12,18 @@ namespace Damselfly.Core.Services;
 public class StatisticsService
 {
     private readonly ILogger<StatisticsService> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public StatisticsService( ILogger<StatisticsService> logger )
+    public StatisticsService(IServiceScopeFactory scopeFactory, ILogger<StatisticsService> logger )
     {
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
     public async Task<Statistics> GetStatistics()
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var stats = new Statistics
         {
