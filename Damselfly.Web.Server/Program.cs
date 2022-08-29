@@ -29,6 +29,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Syncfusion.Licensing;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Damselfly.Web;
 
@@ -192,20 +195,31 @@ public class Program
 
         // Add services to the container.
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        builder.Services.AddDbContext<ImageContext>(options =>
             options.UseSqlite(connectionString));
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-        builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        builder.Services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            .AddRoles<ApplicationRole>()
+            .AddEntityFrameworkStores<ImageContext>();
 
-        builder.Services.AddIdentityServer()
-            .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+           .AddJwtBearer(options =>
+           {
+               options.TokenValidationParameters = new TokenValidationParameters
+               {
+                   ValidateIssuer = true,
+                   ValidateAudience = true,
+                   ValidateLifetime = true,
+                   ValidateIssuerSigningKey = true,
+                   ValidIssuer = "https://localhost",
+                   ValidAudience = "https://localhost",
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama"))
+               };
+           });
 
-        builder.Services.AddAuthorization(config => config.SetupPolicies(builder.Services));
-
-        builder.Services.AddAuthentication()
-            .AddIdentityServerJwt();
+        // WASM: TODO
+        // builder.Services.AddAuthorization(config => config.SetupPolicies(builder.Services));
 
         // Cache up to 10,000 images. Should be enough given cache expiry.
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);

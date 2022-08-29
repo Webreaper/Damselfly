@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -31,6 +32,14 @@ public class RestClient
         opts.PropertyNameCaseInsensitive = true;
     }
 
+    public JsonSerializerOptions JsonOptions { get { return jsonOptions; } }
+
+    public AuthenticationHeaderValue AuthHeader
+    {
+        get { return _restClient.DefaultRequestHeaders.Authorization; }
+        set { _restClient.DefaultRequestHeaders.Authorization = value; }
+    }
+
     private readonly JsonSerializerOptions jsonOptions;
     private readonly HttpClient _restClient;
     private readonly ILogger<RestClient> _logger;
@@ -60,9 +69,9 @@ public class RestClient
         }
     }
 
-    public async Task CustomPostAsJsonAsync<PostObj>(string? requestUri, PostObj obj)
+    public async Task<HttpResponseMessage> CustomPostAsJsonAsync<PostObj>(string? requestUri, PostObj obj)
     {
-        await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, jsonOptions);
+        return await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, jsonOptions);
     }
 
     public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj)

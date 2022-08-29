@@ -13,6 +13,10 @@ using Damselfly.Core.ScopedServices.ClientServices;
 using Syncfusion.Blazor;
 using Microsoft.Extensions.Options;
 using Syncfusion.Licensing;
+using Blazored.LocalStorage;
+using ChrisSaintyExample.Client;
+using ChrisSaintyExample.Client.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Damselfly.Web.Client;
 
@@ -35,14 +39,17 @@ public class Program
         builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DamselflyAPI"));
         builder.Services.AddMemoryCache(x => x.SizeLimit = 500);
 
-        builder.Services.AddApiAuthorization();
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
         builder.Services.AddSyncfusionBlazor(options => { options.IgnoreScriptIsolation = true; });
+        builder.Services.AddBlazoredLocalStorage();
 
         builder.Services.AddScoped<ContextMenuService>();
         builder.Services.AddSingleton<RestClient>();
+
+        builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
 
         builder.Services.AddDamselflyUIServices();
 

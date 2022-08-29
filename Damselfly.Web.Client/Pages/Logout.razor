@@ -1,0 +1,15 @@
+﻿@page "/logout"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@using ChrisSaintyExample.Client.Services;
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+
+}
