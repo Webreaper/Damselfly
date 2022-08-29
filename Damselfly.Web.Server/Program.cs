@@ -205,9 +205,6 @@ public class Program
         builder.Services.AddSwaggerGen();
 #endif
 
-        builder.Services.AddRazorPages();
-        builder.Services.AddSwaggerGen();
-
         // Server to client notifications
         builder.Services.AddSignalR();
         builder.Services.AddResponseCompression(opts =>
@@ -309,8 +306,7 @@ public class Program
             db.Database.EnsureCreated();
         }
 
-        // WASM: TODO
-        // db.IncreasePerformance();
+        db.IncreasePerformance();
 
         ImageContext.ReadOnly = options.ReadOnly;
     }

@@ -16,33 +16,15 @@ namespace Damselfly.Migrations.Sqlite.Models
     /// SQLite database specialisation. Assumes a Database path is set
     /// at construction.
     /// </summary>
-    public class SqlLiteModel
+    public static class SqlLiteModel
     {
-        private string DatabasePath { get; set; }
-        private string sentinelPath;
-
-        public SqlLiteModel( string dbPath )
-        {
-            DatabasePath = dbPath;
-        }
-
-        /// <summary>
-        /// The SQLite-specific initialisation.
-        /// </summary>
-        /// <param name="options"></param>
-        public void Configure(DbContextOptionsBuilder options)
-        {
-            sentinelPath = Path.Combine(Path.GetDirectoryName(DatabasePath), "OptimiseDB.flag");
-            string dataSource = $"Data Source={DatabasePath}";
-            options.UseSqlite(dataSource, b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite"));
-        }
 
         /// <summary>
         /// SQLite pragma execution.
         /// </summary>
         /// <param name="db"></param>
         /// <param name="pragmaCommand"></param>
-        private void ExecutePragma(BaseDBModel db, string pragmaCommand)
+        private static void ExecutePragma(BaseDBModel db, string pragmaCommand)
         {
             try
             {
@@ -62,7 +44,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// Enable SQLite performance improvements
         /// </summary>
         /// <param name="db"></param>
-        public void IncreasePerformance(BaseDBModel db)
+        public static void IncreasePerformance(this BaseDBModel db)
         {
             // Increase the timeout from the default (which I think is 30s)
             // To help concurrency.
@@ -93,34 +75,14 @@ namespace Damselfly.Migrations.Sqlite.Models
             RebuildFreeText(db);
         }
 
-        private void WriteSentinelFile()
+        private static void OptimiseDB( DbContext db )
         {
-            try
-            {
-                if (!File.Exists(sentinelPath))
-                {
-                    File.WriteAllText(sentinelPath, "If this file exists, the DB will be optimised at next Damselfly Startup");
-                }
-            }
-            catch
-            {
-                Logging.LogWarning($"Unable to write optimise sentinal file: {sentinelPath}");
-            }
+            Logging.Log("Running Sqlite DB optimisation...");
+            db.Database.ExecuteSqlRaw("VACUUM;");
+            Logging.Log("DB optimisation complete.");
         }
 
-        private void OptimiseDB( DbContext db )
-        {
-            if( ! string.IsNullOrEmpty(sentinelPath) && File.Exists( sentinelPath ) )
-            {
-                FileUtils.SafeDelete(new FileInfo(sentinelPath));
-
-                Logging.Log("Running Sqlite DB optimisation...");
-                db.Database.ExecuteSqlRaw("VACUUM;");
-                Logging.Log("DB optimisation complete.");
-            }
-        }
-
-        public void FlushDBWriteCache(BaseDBModel db)
+        public static void FlushDBWriteCache(this BaseDBModel db)
         {
             ExecutePragma(db, "PRAGMA schema.wal_checkpoint;");
         }
@@ -133,7 +95,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public async Task<bool> BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
+        public static async Task<bool> BulkInsert<T>(BaseDBModel db, DbSet <T> collection, List<T> itemsToSave ) where T : class
         {
             if (BaseDBModel.ReadOnly)
             {
@@ -166,7 +128,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="collection"></param>
         /// <param name="itemsToSave"></param>
         /// <returns></returns>
-        public async Task<bool> BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
+        public static async Task<bool> BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             // TODO make this method protected and then move this check to the base class
             if (BaseDBModel.ReadOnly)
@@ -202,7 +164,7 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="collection"></param>
         /// <param name="itemsToDelete"></param>
         /// <returns></returns>
-        public async Task<bool> BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
+        public static async Task<bool> BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
             if (BaseDBModel.ReadOnly)
             {
@@ -218,8 +180,6 @@ namespace Damselfly.Migrations.Sqlite.Models
 
                 // TODO: Replace when EFCore 7 has this
                 //await db.BulkDeleteAsync(itemsToDelete);
-
-                WriteSentinelFile();
 
                 success = true;
             }
@@ -240,12 +200,12 @@ namespace Damselfly.Migrations.Sqlite.Models
         /// <param name="itemsToSave"></param>
         /// <param name="getKey"></param>
         /// <returns></returns>
-        public Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
+        public static Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> getKey) where T : class
         {
             throw new NotImplementedException();
         }
 
-        public async Task<int> BatchDelete<T>(BaseDBModel db, IQueryable<T> query) where T : class
+        public static async Task<int> BatchDelete<T>(BaseDBModel db, IQueryable<T> query) where T : class
         {
             // TODO Try/Catch here?
             var entities = await query.ToListAsync();
@@ -259,7 +219,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             return await db.SaveChangesAsync();
         }
 
-        public async Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
+        public static async Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T,T>> updateExpression) where T : class
         {
             // Broken with .Net 7 preview 6...
             // return await query.BatchUpdateAsync(updateExpression);
@@ -267,12 +227,13 @@ namespace Damselfly.Migrations.Sqlite.Models
             return await db.BulkUpdateWithSaveChanges(query, updateExpression);
         }
 
-        private string Sanitize( string input )
+        private static string Sanitize( string input )
         {
             return input.Replace(";", " ").Replace( "--", " ").Replace( "#", " ").Replace( "\'", "" ).Replace( "\"", "");
         }
 
-        public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
+
+        public static IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
         {
             // Convert the string from a set of terms to quote and add * so they're all exact partial matches
             // TODO: How do we handle suffix matches - i.e., contains. SQLite FTS doesn't support that. :(
@@ -318,12 +279,7 @@ namespace Damselfly.Migrations.Sqlite.Models
             return resultSet.FromSqlRaw(sql, terms);
         }
 
-        public void CreateIndexes(ModelBuilder builder)
-        {
-            // Nothing to do here.
-        }
-
-        private void RebuildFreeText(BaseDBModel db)
+        private static void RebuildFreeText(this BaseDBModel db)
         {
             const string delete = @"DELETE from FTSKeywords; DELETE from FTSImages; DELETE from FTSNames;";
             const string insertTags = @"INSERT INTO FTSKeywords (TagId, Keyword) SELECT t.TagId, t.Keyword FROM Tags t;";
