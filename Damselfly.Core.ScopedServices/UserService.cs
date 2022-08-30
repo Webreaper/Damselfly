@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -19,21 +20,20 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class UserService : IUserService, IDisposable
 {
-    private readonly UserManager<AppIdentityUser> _userManager;
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly IAuthorizationService _authService;
     private bool _initialised = false;
-    private AppIdentityUser _user = null;
-    public event Action<AppIdentityUser> OnUserChanged;
+    private int _userId = -1;
+    public event Action<int> OnUserIdChanged;
 
     public UserService(AuthenticationStateProvider authenticationStateProvider,
-                    IAuthorizationService authService,
-                    UserManager<AppIdentityUser> userManager)
+                         IAuthorizationService authService )
     {
-        _userManager = userManager;
         _authenticationStateProvider = authenticationStateProvider;
 
         _authenticationStateProvider.AuthenticationStateChanged += AuthStateChanged;
+
+        _ = GetCurrentUserId();
     }
 
     public void Dispose()
@@ -42,33 +42,31 @@ public class UserService : IUserService, IDisposable
     }
 
     public bool RolesEnabled => true;
+    public int UserId => _userId;
 
-    public AppIdentityUser User
+    private async Task GetCurrentUserId()
     {
-        get
-        {
-            if (!_initialised)
-            {
-                // Only do this once; Once we've initialised the first time,
-                // all other updates are from the StateChanged notifier
-                _initialised = true;
-                _authenticationStateProvider.AuthenticationStateChanged += AuthStateChanged;
-
-                try
-                {
-                    var authState = _authenticationStateProvider.GetAuthenticationStateAsync().Result;
-                    _user = _userManager.GetUserAsync(authState.User).Result;
-                }
-                catch
-                {
-                    // We don't care - this will happen before the auth state is established.
-                }
-            }
-
-            return _user;
-        }
+        var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        _userId = GetUserIdFromPrincipal( authState );
     }
 
+    private int GetUserIdFromPrincipal( AuthenticationState authState  )
+    {
+        try
+        {
+            if (authState.User.Identity.IsAuthenticated)
+            {
+                var userId = authState.User.FindFirst(c => c.Type == "sub")?.Value;
+
+                if (int.TryParse(userId, out var id))
+                {
+                    return id;
+                }
+            }
+        }
+        catch { }
+        return -1;
+    }
 
     /// <summary>
     /// Handler for when the authentication state changes. 
@@ -78,14 +76,14 @@ public class UserService : IUserService, IDisposable
     {
         var authState = await task;
 
-        _user = await _userManager.GetUserAsync(authState.User);
+        _userId = GetUserIdFromPrincipal(authState);
 
-        if (_user != null)
-            Logging.Log($"User changed to {_user.UserName}");
+        if (_userId != -1)
+            Logging.Log($"User changed to {_userId}");
         else
             Logging.Log($"User state changed to logged out");
 
-        OnUserChanged?.Invoke(_user);
+        OnUserIdChanged?.Invoke( _userId );
     }
 
 
@@ -99,9 +97,6 @@ public class UserService : IUserService, IDisposable
     {
         if (!RolesEnabled)
             return true;
-
-        if (_user == null)
-            return false;
 
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
 

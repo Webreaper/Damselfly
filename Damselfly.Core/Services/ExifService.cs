@@ -106,9 +106,9 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, AppIdentityUser user = null)
+    public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, int? userId = -1)
     {
-        await UpdateTagsAsync(new[] { image }, addTags, removeTags, user);
+        await UpdateTagsAsync(new[] { image }, addTags, removeTags, userId);
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateFaceDataAsync(Image[] images, List<ImageObject> faces, AppIdentityUser user = null)
+    public async Task UpdateFaceDataAsync(Image[] images, List<ImageObject> faces, int? userId = -1)
     {
 #if ! DEBUG
         // Not supported yet....
@@ -145,7 +145,7 @@ public class ExifService : IProcessJobFactory, ITagService
                     Type = ExifOperation.ExifType.Face,
                     Operation = ExifOperation.OperationType.Add,
                     TimeStamp = timestamp,
-                    UserId = user?.Id
+                    UserId = userId
                 }));
             }
         }
@@ -176,7 +176,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> addTags, ICollection<string> removeTags = null, AppIdentityUser user = null)
+    public async Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> addTags, ICollection<string> removeTags = null, int? userId = -1)
     {
         // TODO: Split tags with commas here?
         var timestamp = DateTime.UtcNow;
@@ -200,7 +200,7 @@ public class ExifService : IProcessJobFactory, ITagService
                     Type = ExifOperation.ExifType.Keyword,
                     Operation = ExifOperation.OperationType.Add,
                     TimeStamp = timestamp,
-                    UserId = user?.Id
+                    UserId = userId
                 }));
             }
 
@@ -242,7 +242,7 @@ public class ExifService : IProcessJobFactory, ITagService
             Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
         }
 
-        if (user != null)
+        if (userId != -1)
             NotifyUserTagsAdded(addTags);
 
         // Trigger the work service to look for new jobs
@@ -257,7 +257,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null)
+    public async Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, int? userId = -1)
     {
         var timestamp = DateTime.UtcNow;
         var changeDesc = string.Empty;
@@ -274,7 +274,7 @@ public class ExifService : IProcessJobFactory, ITagService
             Type = exifType,
             Operation = ExifOperation.OperationType.Add,
             TimeStamp = timestamp,
-            UserId = user?.Id
+            UserId = userId
         }));
 
         changeDesc += $"set {exifType}";

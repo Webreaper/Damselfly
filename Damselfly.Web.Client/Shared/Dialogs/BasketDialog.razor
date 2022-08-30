@@ -82,7 +82,7 @@
             statusService.UpdateStatus($"Basket '{model.BasketName}' was deleted.");
 
         // Force it to reload a new basket
-        await basketService.SwitchToDefaultBasket(userService.User);
+        await basketService.SwitchToDefaultBasket(userService.UserId);
 
         MudDialog.Close(DialogResult.Ok(true));
     }
@@ -94,7 +94,7 @@
             int? userId = null;
 
             if (!model.IsPublic)
-                userId = userService.User?.Id;
+                userId = userService.UserId;
 
             if (Mode == "Add")
             {

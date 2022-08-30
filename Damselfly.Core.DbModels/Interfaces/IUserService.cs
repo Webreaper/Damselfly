@@ -8,9 +8,9 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IUserService
 {
-    public event Action<AppIdentityUser> OnUserChanged;
+    public event Action<int> OnUserIdChanged;
 
-    AppIdentityUser User { get; }
+    int UserId { get; }
     Task<bool> PolicyApplies(string policy);
     bool RolesEnabled { get;  }
 }

@@ -168,9 +168,7 @@
     /// <returns></returns>
     private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
     {
-        AppIdentityUser currentUser = userService.User;
-
-        await tagService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, currentUser);
+        await tagService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, userService.UserId);
 
         StateHasChanged();
     }

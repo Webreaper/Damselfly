@@ -62,7 +62,7 @@
             if (selectedBasketId > 0)
                 await basketService.SwitchBasketById(selectedBasketId);
             else
-                await basketService.SwitchToDefaultBasket(userService.User);
+                await basketService.SwitchToDefaultBasket(userService.UserId);
             StateHasChanged();
         }
     }
@@ -82,7 +82,7 @@
     {
         var watch = new Stopwatch("LoadBaskets");
 
-        var myBaskets = await basketService.GetUserBaskets(userService.User?.Id);
+        var myBaskets = await basketService.GetUserBaskets(userService.UserId);
 
         this.baskets.Clear();
         this.baskets.AddRange(myBaskets);

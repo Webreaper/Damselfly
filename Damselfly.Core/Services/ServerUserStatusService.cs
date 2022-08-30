@@ -22,7 +22,7 @@ public class ServerUserStatusService : IUserStatusService
         _userService = userService;
     }
 
-    private int CurrentUserId => _userService.User == null ? -1 : _userService.User.Id;
+    private int CurrentUserId => _userService.UserId;
 
     private void NotifyStateChanged(StatusUpdate update)
     {

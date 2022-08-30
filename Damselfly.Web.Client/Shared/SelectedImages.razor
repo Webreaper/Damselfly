@@ -75,7 +75,7 @@ else
 
     private async Task OpenAddBasketDialog()
     {
-        var newBasket = new Basket { Name = "New Basket", UserId = userService.User?.Id };
+        var newBasket = new Basket { Name = "New Basket", UserId = userService.UserId };
 
         var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
         var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);

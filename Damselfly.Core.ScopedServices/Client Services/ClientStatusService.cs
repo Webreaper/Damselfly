@@ -16,7 +16,7 @@ public class ClientStatusService : IUserStatusService
     private readonly ILogger<ClientStatusService> _logger;
     private string statusText;
 
-    private int CurrentUserId => _userService.User == null ? -1 : _userService.User.Id;
+    private int CurrentUserId => _userService.UserId;
 
     public ClientStatusService( NotificationsService notifications, IUserService userService, ILogger<ClientStatusService> logger )
     {

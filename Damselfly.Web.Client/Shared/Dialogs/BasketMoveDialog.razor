@@ -61,7 +61,7 @@
     {
         await base.OnInitializedAsync();
 
-        var baskets = await basketService.GetUserBaskets(userService.User?.Id);
+        var baskets = await basketService.GetUserBaskets(userService.UserId);
         var destBaskets = baskets.Where(x => x.BasketId != basketService.CurrentBasket.BasketId)
                                    .ToList();
 

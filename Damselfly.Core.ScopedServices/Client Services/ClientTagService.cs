@@ -44,7 +44,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return await httpClient.CustomPostAsJsonAsync<Tag, bool>($"/api/tags/togglefave", tag);
     }
 
-    public async Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, AppIdentityUser currentUser)
+    public async Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, int? userId)
     {
         throw new NotImplementedException();
     }
@@ -60,7 +60,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     }
 
 
-    public Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, AppIdentityUser user = null)
+    public Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, int? userId = -1)
     {
         throw new NotImplementedException();
     }

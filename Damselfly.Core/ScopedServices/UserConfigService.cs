@@ -19,36 +19,36 @@ public class UserConfigService : BaseConfigService, IDisposable
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IUserService _userService;
-    private AppIdentityUser _user;
+    private int _userId;
 
     public UserConfigService(IUserService userService, ILogger<IConfigService> logger) : base( logger )
     {
         _userService = userService;
-        _userService.OnUserChanged += UserChanged;
-        _user = userService.User;
+        _userService.OnUserIdChanged += UserChanged;
+        _userId = userService.UserId;
 
         _ = InitialiseCache();
     }
 
-    private void UserChanged( AppIdentityUser user )
+    private void UserChanged( int userId )
     {
-        _user = user;
+        _userId = userId;
         _ = InitialiseCache();
     }
 
     public void Dispose()
     {
-        _userService.OnUserChanged -= UserChanged;
+        _userService.OnUserIdChanged -= UserChanged;
     }
 
     public override async Task<List<ConfigSetting>> GetAllSettings()
     {
-        if (_user != null)
+        if (_userId != -1)
         {
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            var settings = await db.ConfigSettings.Where(x => x.UserId == _user.Id).ToListAsync();
+            var settings = await db.ConfigSettings.Where(x => x.UserId == _userId).ToListAsync();
 
             return settings;
         }
@@ -67,9 +67,7 @@ public class UserConfigService : BaseConfigService, IDisposable
     /// <param name="value"></param>
     public void Set(string name, string value)
     {
-        // UserID of zero indicates "no user", so default global setting
-        int userId = _user != null ? _user.Id : 0;
-
+        // UserID of less than zero indicates "no user", so default global setting
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
@@ -81,7 +79,7 @@ public class UserConfigService : BaseConfigService, IDisposable
             {
                 Set(name, null);
 
-                if (_user != null)
+                if( _userId != -1 )
                 {
                     // Setting set to null - delete from the DB and cache
                     db.ConfigSettings.Remove(existing);
@@ -91,11 +89,11 @@ public class UserConfigService : BaseConfigService, IDisposable
             {
                 // Setting set to non-null - save in the DB and cache
                 existing.Value = value;
-                existing.UserId = userId;
+                existing.UserId = _userId;
 
                 SetSetting(name, existing );
 
-                if( _user != null )
+                if (_userId != -1)
                     db.ConfigSettings.Update(existing);
             }
         }
@@ -104,15 +102,15 @@ public class UserConfigService : BaseConfigService, IDisposable
             if (!String.IsNullOrEmpty(value))
             {
                 // Existing setting set to non-null - create in the DB and cache.
-                existing = new ConfigSetting { Name = name, Value = value, UserId = userId };
+                existing = new ConfigSetting { Name = name, Value = value, UserId = _userId };
                 SetSetting( name, existing );
 
-                if( _user != null )
+                if (_userId != -1)
                     db.ConfigSettings.Add(existing);
             }
         }
 
-        if( _user != null )
+        if (_userId != -1)
             db.SaveChanges("SaveConfig");
     }
 }

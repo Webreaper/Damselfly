@@ -352,13 +352,13 @@ public class BasketService : IBasketService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<Basket> SwitchToDefaultBasket( AppIdentityUser user )
+    public async Task<Basket> SwitchToDefaultBasket( int? userId )
     {
         // Get the list of user baskets. This will always return at
         // least one (because if there are none, one will be created).
-        var userBaskets = await GetUserBaskets( user?.Id );
+        var userBaskets = await GetUserBaskets( userId );
 
-        var defaultBasket = userBaskets.FirstOrDefault(x => x.Name == s_MyBasket && x.UserId == user?.Id );
+        var defaultBasket = userBaskets.FirstOrDefault(x => x.Name == s_MyBasket && x.UserId == userId );
 
         if (defaultBasket == null)
         {

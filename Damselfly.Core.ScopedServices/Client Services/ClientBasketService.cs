@@ -31,20 +31,22 @@ public class ClientBasketService : IBasketService
 
     public async Task Clear( int basketId )
     {
+        throw new NotImplementedException();
     }
 
     public async Task DeleteBasket(int basketId)
     {
+        throw new NotImplementedException();
     }
 
     public async Task<Basket> SwitchBasketById(int basketId)
     {
-        return null;
+        throw new NotImplementedException();
     }
 
-    public async Task<Basket> SwitchToDefaultBasket(AppIdentityUser user)
+    public async Task<Basket> SwitchToDefaultBasket(int? user)
     {
-        return null;
+        throw new NotImplementedException();
     }
 
     public async Task SetBasketState( ICollection<Image> images, bool newState, Basket basket = null)

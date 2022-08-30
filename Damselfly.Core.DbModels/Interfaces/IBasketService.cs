@@ -15,7 +15,7 @@ public interface IBasketService
     Task Save(Basket basket);
     Task SetBasketState(ICollection<Image> images, bool newState, Basket basket = null);
     Task<Basket> SwitchBasketById(int basketId);
-    Task<Basket> SwitchToDefaultBasket(AppIdentityUser user);
+    Task<Basket> SwitchToDefaultBasket(int? userId);
     Task<ICollection<Basket>> GetUserBaskets(int? userId);
     bool IsSelected(Image image);
     Task Clear( int basketId );
