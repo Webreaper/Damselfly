@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {
@@ -19,12 +20,12 @@ namespace Damselfly.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly UserManager<AppIdentityUser> _userManager;
-        private readonly UserService _userService;
+        private readonly IUserMgmtService _userService;
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(SignInManager<AppIdentityUser> signInManager,
-            ILogger<LoginModel> logger, UserService userService,
+            ILogger<LoginModel> logger, IUserMgmtService userService,
             UserManager<AppIdentityUser> userManager)
         {
             _userManager = userManager;

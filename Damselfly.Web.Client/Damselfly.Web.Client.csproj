@@ -64,7 +64,4 @@
     <None Remove="Blazored.LocalStorage" />
     <None Remove="Services\" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Remove="Shared\UserManagement.razor" />
-  </ItemGroup>
 </Project>

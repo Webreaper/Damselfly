@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Security.Claims;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Interfaces;
@@ -10,6 +11,7 @@ using Damselfly.ML.Face.Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -22,8 +24,22 @@ public class ConfigController : ControllerBase
 {
     private readonly IConfigService _configService;
     private readonly ISystemSettingsService _settingsService;
-
+    private readonly UserManager<AppIdentityUser> userManager;
     private readonly ILogger<ConfigController> _logger;
+
+    private async Task<AppIdentityUser> GetUser()
+    {
+        AppIdentityUser user = default;
+
+        if (User.Identity.IsAuthenticated)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            user = await userManager.FindByIdAsync(userId);
+        }
+
+        return user;
+    }
 
     public ConfigController( IConfigService configService, SystemSettingsService settingsService, ILogger<ConfigController> logger)
     {

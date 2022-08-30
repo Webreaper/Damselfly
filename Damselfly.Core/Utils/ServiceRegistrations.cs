@@ -9,6 +9,7 @@ using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Utils;
@@ -49,6 +50,7 @@ public static class ServiceRegistrations
         services.AddSingleton<ServerNotifierService>();
         services.AddSingleton<ServerStatusService>();
         services.AddSingleton<DownloadService>();
+        services.AddSingleton<UserManagementService>();
 
         services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
         services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
@@ -63,6 +65,7 @@ public static class ServiceRegistrations
         services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
         services.AddSingleton<IThemeService>(x => x.GetRequiredService<ThemeService>());
         services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
+        services.AddSingleton<IUserMgmtService>(x => x.GetRequiredService<UserManagementService>());
 
         services.AddMLServices();
 
@@ -94,11 +97,6 @@ public static class ServiceRegistrations
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<SystemSettingsService>());
         services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
-
-        // WASM TEMP HACK
-        services.AddScoped<TempHackUserService>();
-        services.AddScoped<IUserService>(x => x.GetRequiredService<TempHackUserService>());
-        // services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
 
         return services;
     }

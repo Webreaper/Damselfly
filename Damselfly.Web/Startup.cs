@@ -109,7 +109,7 @@ namespace Damselfly.Web
             DownloadService download, TaskService tasks, ThumbnailService thumbService, ExifService exifService,
             ImageCache imageCache, ImageProcessService imageService, AzureFaceService azureService, IndexingService indexingService,
             ImageRecognitionService aiService, ObjectDetector objectDetector, ThemeService themeService, WorkService workService,
-            MetaDataService metaDataService, UserService userService)
+            MetaDataService metaDataService, UserManagementService userManagement)
         {
             SyncfusionLicence.RegisterSyncfusionLicence();
 
@@ -178,7 +178,7 @@ namespace Damselfly.Web
                 objectDetector.InitScorer();
 
             // Validation check to ensure at least one user is an Admin
-            userService.CheckAdminUser().Wait();
+            userManagement.CheckAdminUser().Wait();
 
             StartTaskScheduler(tasks, download, thumbService, exifService);
 

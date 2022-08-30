@@ -13,11 +13,9 @@ public abstract class BaseConfigService
 {
     private readonly IDictionary<string, ConfigSetting> _cache = new ConcurrentDictionary<string, ConfigSetting>(StringComparer.OrdinalIgnoreCase);
     protected readonly ILogger<IConfigService> _logger;
-    protected readonly IServiceScopeFactory _scopeFactory;
 
-    protected BaseConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger)
+    protected BaseConfigService(ILogger<IConfigService> logger)
     {
-        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 

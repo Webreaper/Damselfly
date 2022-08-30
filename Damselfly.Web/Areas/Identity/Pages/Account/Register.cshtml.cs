@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {
@@ -23,13 +24,13 @@ namespace Damselfly.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<AppIdentityUser> _signInManager;
         private readonly UserManager<AppIdentityUser> _userManager;
-        private readonly UserService _userService;
+        private readonly IUserMgmtService _userService;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<AppIdentityUser> userManager,
             SignInManager<AppIdentityUser> signInManager,
-            UserService userService,
+            IUserMgmtService userService,
             IEmailSender emailSender)
         {
             _userManager = userManager;

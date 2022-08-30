@@ -19,13 +19,13 @@ public static class ServiceRegistrations
         services.AddScoped<ViewDataService>();
         services.AddScoped<NavigationService>();
         services.AddScoped<UserFolderService>();
+        services.AddScoped<UserService>();
 
         services.AddScoped<ClientStatusService>();
         services.AddScoped<ClientDataService>();
         services.AddScoped<ClientBasketService>();
         services.AddScoped<ClientDownloadService>();
         services.AddScoped<ClientThemeService>();
-        services.AddScoped<ClientUserService>();
         services.AddScoped<ClientRescanService>();
         services.AddScoped<ClientWorkService>();
         services.AddScoped<ClientSearchService>();
@@ -37,6 +37,7 @@ public static class ServiceRegistrations
         services.AddScoped<ClientWordpressService>();
         services.AddScoped<ClientPeopleService>();
         services.AddScoped<WebAssemblyStatusService>();
+        services.AddScoped<ClientUserMgmtService>();
 
         services.AddScoped<IPeopleService>(x => x.GetRequiredService<ClientPeopleService>());
         services.AddScoped<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
@@ -53,11 +54,12 @@ public static class ServiceRegistrations
         services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
         services.AddScoped<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<ClientConfigService>());
-        services.AddScoped<IUserService>(x => x.GetRequiredService<ClientUserService>());
+        services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
         services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ClientStatusService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<ClientBasketService>());
         services.AddScoped<IDownloadService>(x => x.GetRequiredService<ClientDownloadService>());
+        services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<ClientUserMgmtService>());
 
         services.AddScoped<SelectionService>();
 

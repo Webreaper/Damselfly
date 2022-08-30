@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting.Internal;
-using Damselfly.Web.Server.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.ImageProcessing;
 using Damselfly.Core.DBAbstractions;

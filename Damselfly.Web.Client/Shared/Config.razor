@@ -5,7 +5,7 @@
 @inject ISystemSettingsService settingsService
 @inject IThemeService themeService
 @inject IUserStatusService statusService
-@inject IUserService userService
+@inject IUserMgmtService userService
 @inject IWordpressService wpService
 @inject IWorkService workService
 @inject IDialogService DialogService
@@ -337,7 +337,8 @@
             if (!allUsers.Any() )
             {
                 logger.LogWarning("Config Page: no users, checking if a new admin user needs to be created.");
-                //if( settingsModel.enableAuthAndRoles )
+                // WASM TODO
+                // if( settingsModel.enableAuthAndRoles )
                 {
                     var dialog = DialogService.Show<UserDialog>("Create Admin User");
                     var result = await dialog.Result;

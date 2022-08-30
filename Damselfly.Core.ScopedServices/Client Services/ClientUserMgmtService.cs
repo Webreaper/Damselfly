@@ -6,37 +6,35 @@ using System.Net.Http.Json;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Components.Authorization;
+using Damselfly.Core.Utils;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class TempHackUserService : IUserService
+public class ClientUserMgmtService : IUserMgmtService
 {
-    public TempHackUserService()
-    {
-    }
+    private readonly RestClient httpClient;
 
-    public AppIdentityUser User
+    public ClientUserMgmtService(RestClient client)
     {
-        get { return null; }
+        httpClient = client;
     }
 
     // WASM: TODO
     public bool RolesEnabled { get { return true; } }
 
-    // WASM: TODO
-    public async Task<bool> PolicyApplies(string policy)
-    {
-        return false;
-    }
+    // WASM: should this be here?
+    public bool AllowPublicRegistration => true;
 
     // WASM: TODO:
     public async Task<ICollection<AppIdentityUser>> GetUsers()
     {
         return new List<AppIdentityUser>();
     }
+
     public Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, string newRole)
     {
         throw new NotImplementedException();
@@ -55,6 +53,11 @@ public class TempHackUserService : IUserService
     public async Task<ICollection<ApplicationRole>> GetRoles()
     {
         return new List<ApplicationRole>();
+    }
+
+    public Task AddUserToDefaultRoles(AppIdentityUser user)
+    {
+        throw new NotImplementedException();
     }
 }
 

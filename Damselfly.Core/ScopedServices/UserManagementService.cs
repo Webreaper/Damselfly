@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Damselfly.Core.Services;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.ScopedServices.ClientServices;
+using System.Security.Claims;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -23,95 +25,23 @@ namespace Damselfly.Core.ScopedServices;
 /// role - so they're either an Admin, User or ReadOnly. Roles can be combinatorial
 /// but it's simpler to have a single role per user.
 /// </summary>
-public class UserService : IUserService
+public class UserManagementService : IUserMgmtService
 {
     private UserManager<AppIdentityUser> _userManager;
     private RoleManager<ApplicationRole> _roleManager;
     private IStatusService _statusService;
     private ConfigService _configService;
-    private IAuthorizationService _authService;
-    private AuthenticationStateProvider _authenticationStateProvider;
-    private AppIdentityUser _user;
-    private bool _initialised;
-    public Action<AppIdentityUser> OnChange;
 
-    public UserService(AuthenticationStateProvider authenticationStateProvider,
-                            RoleManager<ApplicationRole> roleManager,
+    public UserManagementService(RoleManager<ApplicationRole> roleManager,
                             UserManager<AppIdentityUser> userManager,
                             IStatusService statusService,
                             ConfigService configService,
                             IAuthorizationService authService)
     {
-        _authenticationStateProvider = authenticationStateProvider;
         _userManager = userManager;
         _roleManager = roleManager;
-        _authService = authService;
         _statusService = statusService;
         _configService = configService;
-    }
-
-    public AppIdentityUser User
-    {
-        get
-        {
-            if (!_initialised)
-            {
-                // Only do this once; Once we've initialised the first time,
-                // all other updates are from the StateChanged notifier
-                _initialised = true;
-                _authenticationStateProvider.AuthenticationStateChanged += AuthStateChanged;
-
-                try
-                {
-                    var authState = _authenticationStateProvider.GetAuthenticationStateAsync().GetAwaiter().GetResult();
-                    _user = _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
-                }
-                catch
-                {
-                    // We don't care - this will happen before the auth state is established.
-                }
-            }
-
-            return _user;
-        }
-    }
-
-    /// <summary>
-    /// Handler for when the authentication state changes. 
-    /// </summary>
-    /// <param name="newState"></param>
-    private void AuthStateChanged(Task<AuthenticationState> newState)
-    {
-        var authState = newState.GetAwaiter().GetResult();
-        _user = _userManager.GetUserAsync(authState.User).GetAwaiter().GetResult();
-
-        if (_user != null)
-            Logging.Log($"User changed to {_user.UserName}");
-        else
-            Logging.Log($"User state changed to logged out");
-
-        OnChange?.Invoke(_user);
-    }
-
-    /// <summary>
-    /// Returns true if the policy passed in applies to the currently
-    /// logged-in user.
-    /// </summary>
-    /// <param name="policy"></param>
-    /// <returns></returns>
-    public async Task<bool> PolicyApplies( string policy )
-    {
-        if (!RolesEnabled)
-            return true;
-
-        if (_user == null)
-            return false;
-
-        var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-
-        var result = await _authService.AuthorizeAsync(authState.User, policy);
-
-        return result.Succeeded;
     }
 
     public /*async*/ Task<string> GetUserPasswordResetLink( AppIdentityUser user )

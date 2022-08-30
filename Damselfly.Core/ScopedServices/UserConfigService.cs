@@ -8,6 +8,7 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,14 +18,13 @@ namespace Damselfly.Core.ScopedServices;
 public class UserConfigService : BaseConfigService, IDisposable
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
     private AppIdentityUser _user;
 
-    public UserConfigService(IServiceScopeFactory scopeFactory, UserService userService, ILogger<IConfigService> logger) : base( scopeFactory, logger )
+    public UserConfigService(IUserService userService, ILogger<IConfigService> logger) : base( logger )
     {
-        _scopeFactory = scopeFactory;
         _userService = userService;
-        _userService.OnChange += UserChanged;
+        _userService.OnUserChanged += UserChanged;
         _user = userService.User;
 
         _ = InitialiseCache();
@@ -38,7 +38,7 @@ public class UserConfigService : BaseConfigService, IDisposable
 
     public void Dispose()
     {
-        _userService.OnChange -= UserChanged;
+        _userService.OnUserChanged -= UserChanged;
     }
 
     public override async Task<List<ConfigSetting>> GetAllSettings()

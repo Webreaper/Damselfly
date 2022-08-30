@@ -21,8 +21,12 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class ConfigService : BaseConfigService, IConfigService
 {
-    public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base (scopeFactory, logger)
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base (logger)
     {
+        _scopeFactory = scopeFactory;
+
         _ = InitialiseCache();
 
     }

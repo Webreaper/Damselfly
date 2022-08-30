@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Web.Client.Shared;
 
 namespace Damselfly.Web;
 
@@ -53,8 +54,7 @@ public static class AppInitialiser
             services.GetRequiredService<ObjectDetector>().InitScorer();
 
         // Validation check to ensure at least one user is an Admin
-        // WASM: TODO:
-        // services.GetRequiredService<UserService>().CheckAdminUser().Wait();
+        services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
 
         StartTaskScheduler(tasks, download, thumbService, exifService);
     }

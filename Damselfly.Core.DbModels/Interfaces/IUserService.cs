@@ -8,13 +8,10 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IUserService
 {
+    public event Action<AppIdentityUser> OnUserChanged;
+
     AppIdentityUser User { get; }
-    bool RolesEnabled { get; }
     Task<bool> PolicyApplies(string policy);
-    Task<ICollection<AppIdentityUser>> GetUsers();
-    Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, string newRole);
-    Task<IdentityResult> SetUserPasswordAsync(AppIdentityUser user, string password);
-    Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null);
-    Task<ICollection<ApplicationRole>> GetRoles();
+    bool RolesEnabled { get;  }
 }
 

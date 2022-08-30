@@ -10,7 +10,7 @@ using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+// [Authorize]
 [ApiController]
 [Route("/api/basket")]
 public class BasketController : ControllerBase

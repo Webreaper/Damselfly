@@ -9,20 +9,31 @@ using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
 // TODO: Write values to the back-end service
-public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService
+public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService, IDisposable
 {
     private RestClient httpClient;
+    private readonly AuthenticationStateProvider _authProvider;
 
-    public ClientConfigService( RestClient restClient, IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger ) : base(scopeFactory, logger)
+    public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider, ILogger<IConfigService> logger ) : base(logger)
     {
         httpClient = restClient;
+        _authProvider = authProvider;
 
+        _authProvider.AuthenticationStateChanged += AuthStateChanged;
+
+        _ = InitialiseCache();
+    }
+
+    private async void AuthStateChanged(Task<AuthenticationState> task)
+    {
+        // User has changed. Clear the cache
         _ = InitialiseCache();
     }
 
@@ -71,5 +82,10 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
     public virtual async Task SaveSystemSettings(SystemConfigSettings settings)
     {
         await httpClient.CustomPostAsJsonAsync<SystemConfigSettings>($"/api/config/settings", settings);
+    }
+
+    public void Dispose()
+    {
+        _authProvider.AuthenticationStateChanged -= AuthStateChanged;
     }
 }
