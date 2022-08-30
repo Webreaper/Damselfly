@@ -44,7 +44,6 @@ public class NotificationsService : IAsyncDisposable
     }
 
     /// <summary>
-    /// WASM: TODO: Unsubscribe and decompose
     /// </summary>
     /// <param name="type"></param>
     /// <param name="action"></param>
@@ -81,7 +80,6 @@ public class NotificationsService : IAsyncDisposable
     }
 
     /// <summary>
-    /// WASM: TODO: Unsubscribe and decompose
     /// </summary>
     /// <param name="type"></param>
     /// <param name="action"></param>

@@ -27,26 +27,27 @@ public class ClientBasketService : IBasketService
     /// </summary>
     public List<Image> BasketImages { get; private set; } = new List<Image>();
 
+    // WASM TODO
     public event Action OnBasketChanged;
 
     public async Task Clear( int basketId )
     {
-        throw new NotImplementedException();
+        await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/clear/{basketId}");
     }
 
     public async Task DeleteBasket(int basketId)
     {
-        throw new NotImplementedException();
+        await httpClient.CustomDeleteAsync($"/api/basket/{basketId}");
     }
 
     public async Task<Basket> SwitchBasketById(int basketId)
     {
-        throw new NotImplementedException();
+        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
     }
 
-    public async Task<Basket> SwitchToDefaultBasket(int? user)
+    public async Task<Basket> SwitchToDefaultBasket(int? userId)
     {
-        throw new NotImplementedException();
+        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/default/{userId}");
     }
 
     public async Task SetBasketState( ICollection<Image> images, bool newState, Basket basket = null)

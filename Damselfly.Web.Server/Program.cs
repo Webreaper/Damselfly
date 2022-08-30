@@ -215,6 +215,8 @@ public class Program
 
         var app = builder.Build();
 
+        InitialiseDB(app, cmdLineOptions);
+
         var configService = app.Services.GetRequiredService<ConfigService>();
         var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 
@@ -267,8 +269,6 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
-
-        InitialiseDB(app, cmdLineOptions);
 
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);

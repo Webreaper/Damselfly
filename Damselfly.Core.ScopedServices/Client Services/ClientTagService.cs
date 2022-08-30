@@ -12,15 +12,18 @@ namespace Damselfly.Core.ScopedServices;
 public class ClientTagService : ITagService, IRecentTagService, ITagSearchService
 {
     private readonly RestClient httpClient;
+    private readonly NotificationsService _notifications;
+
     private ICollection<Tag> _favouriteTags;
     private ICollection<string> _recentTags;
-
-    // WASM: TODO:
     public event Action OnFavouritesChanged;
 
-    public ClientTagService(RestClient client)
+    public ClientTagService(RestClient client, NotificationsService notifications )
     {
         httpClient = client;
+        _notifications = notifications;
+
+        _notifications.SubscribeToNotification(NotificationType.FavouritesChanged, OnFavouritesChanged);
     }
 
     public async Task<ICollection<Tag>> GetFavouriteTags()

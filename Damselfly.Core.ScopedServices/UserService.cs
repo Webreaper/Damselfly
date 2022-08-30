@@ -100,9 +100,14 @@ public class UserService : IUserService, IDisposable
 
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
 
-        var result = await _authService.AuthorizeAsync(authState.User, policy);
+        if (_authService != null)
+        {
+            var result = await _authService.AuthorizeAsync(authState.User, policy);
 
-        return result.Succeeded;
+            return result.Succeeded;
+        }
+
+        return false;
     }
 }
 

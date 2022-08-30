@@ -32,6 +32,8 @@ public class ExifService : IProcessJobFactory, ITagService
     private readonly ImageCache _imageCache;
     private readonly IndexingService _indexingService;
     private readonly WorkService _workService;
+    private readonly ServerNotifierService _notifier;
+
     private readonly List<Tag> faveTags = new List<Tag>();
 
     public event Action OnFavouritesChanged;
@@ -45,6 +47,8 @@ public class ExifService : IProcessJobFactory, ITagService
     private void NotifyFavouritesChanged()
     {
         OnFavouritesChanged?.Invoke();
+
+        _ = _notifier.NotifyClients(Constants.NotificationType.FavouritesChanged);
     }
 
     private void NotifyUserTagsAdded(ICollection<string> tagsAdded)
@@ -53,13 +57,15 @@ public class ExifService : IProcessJobFactory, ITagService
     }
 
     public ExifService(IStatusService statusService, WorkService workService,
-            IndexingService indexingService, ImageCache imageCache, IServiceScopeFactory scopeFactory)
+                    IndexingService indexingService, ImageCache imageCache,
+                    ServerNotifierService notifier, IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageCache = imageCache;
         _indexingService = indexingService;
         _workService = workService;
+        _notifier = notifier;
 
         GetExifToolVersion();
         _ = LoadFavouriteTagsAsync();
