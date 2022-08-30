@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:43485",
+      "applicationUrl": "http://localhost:6363",
       "sslPort": 44367
     }
   },
@@ -12,7 +12,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "applicationUrl": "https://localhost:7131;http://localhost:5106",
+      "applicationUrl": "https://localhost:6363;http://localhost:6363",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -29,7 +29,7 @@
       "commandName": "Project",
       "commandLineArgs": "/Users/markotway/Pictures",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:13960;http://localhost:53668",
+      "applicationUrl": "http://localhost:6363",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
