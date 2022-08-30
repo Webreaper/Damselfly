@@ -47,6 +47,9 @@ public class ClientBasketService : IBasketService
 
     public async Task<Basket> SwitchToDefaultBasket(int? userId)
     {
+        if( userId is null || userId == -1 )
+            return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/default");
+
         return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/default/{userId}");
     }
 

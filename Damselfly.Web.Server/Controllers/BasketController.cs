@@ -37,6 +37,18 @@ public class BasketController : ControllerBase
         return await _service.GetUserBaskets(userId);
     }
 
+    [HttpGet("/api/basket/default/{userId}")]
+    public async Task<Basket> SwitchToDefaultUserBasket(int userId)
+    {
+        return await _service.SwitchToDefaultBasket(userId);
+    }
+
+    [HttpGet("/api/basket/default")]
+    public async Task<Basket> SwitchToDefaultBasket()
+    {
+        return await _service.SwitchToDefaultBasket(-1);
+    }
+
     [HttpGet("/api/baskets")]
     public async Task<ICollection<Basket>> GetUserBaskets()
     {

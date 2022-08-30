@@ -32,6 +32,7 @@ public class BasketService : IBasketService
     public event Action OnBasketChanged;
     public Basket CurrentBasket { get; set; }
 
+    // WASM: Does this make sense in client-server?!
     /// <summary>
     /// The list of selected images in the basket
     /// </summary>
@@ -83,6 +84,7 @@ public class BasketService : IBasketService
 
         NotifyStateChanged();
     }
+
     /// <summary>
     /// Clears the selection from the basket
     /// </summary>
