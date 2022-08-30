@@ -12,7 +12,6 @@ using Damselfly.Core.Services;
 using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.DBAbstractions;
-using Damselfly.Migrations.Sqlite.Models;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Web

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Damselfly.Core.DbModels;
+using EFCore.BulkExtensions;
 
 namespace Damselfly.Core.DBAbstractions
 {
@@ -45,9 +46,6 @@ namespace Damselfly.Core.DBAbstractions
 
         public static bool ReadOnly { get; set; }
 
-        // Instance of our DB type that implements the Database interface
-        public static IDataBase DatabaseSpecialisation { get; set; } 
-
         /// <summary>
         /// Basic initialisation for the DB that are generic to all DB types
         /// </summary>
@@ -76,9 +74,26 @@ namespace Damselfly.Core.DBAbstractions
         public async Task<bool> BulkInsert<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
         {
             if (ReadOnly)
+            {
+                Logging.LogVerbose("Read-only mode - no data will be inserted.");
                 return true;
+            }
 
-            return await DatabaseSpecialisation.BulkInsert(this, collection, itemsToSave);
+            bool success = false;
+            try
+            {
+                var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 500 };
+
+                await this.BulkInsertAsync(itemsToSave, bulkConfig);
+
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception during bulk insert: {ex}");
+            }
+
+            return success;
         }
 
         /// <summary>
@@ -91,10 +106,30 @@ namespace Damselfly.Core.DBAbstractions
         /// <returns>True if the update succeeded</returns>
         public async Task<bool> BulkUpdate<T>(DbSet<T> collection, List<T> itemsToSave) where T : class
         {
+            // TODO make this method protected and then move this check to the base class
             if (ReadOnly)
+            {
+                Logging.LogVerbose("Read-only mode - no data will be updated.");
                 return true;
+            }
 
-            return await DatabaseSpecialisation.BulkUpdate(this, collection, itemsToSave);
+            bool success = false;
+            try
+            {
+                collection.UpdateRange(itemsToSave);
+                await SaveChangesAsync();
+
+                // TODO: Replace when EFCore 7 has this
+                //await db.BulkUpdateAsync(itemsToSave);
+
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"Exception during bulk update: {ex}");
+            }
+
+            return success;
         }
 
         /// <summary>
@@ -108,17 +143,28 @@ namespace Damselfly.Core.DBAbstractions
         public async Task<bool> BulkDelete<T>(DbSet<T> collection, List<T> itemsToDelete) where T : class
         {
             if (ReadOnly)
+            {
+                Logging.LogVerbose("Read-only mode - no data will be deleted.");
                 return true;
+            }
 
+            bool success = false;
             try
             {
-                return await DatabaseSpecialisation.BulkDelete(this, collection, itemsToDelete);
+                collection.RemoveRange(itemsToDelete);
+                await SaveChangesAsync();
+
+                // TODO: Replace when EFCore 7 has this
+                //await db.BulkDeleteAsync(itemsToDelete);
+
+                success = true;
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                Logging.LogError($"Exception during batch delete: {ex.Message}");
-                return false;
+                Logging.LogError($"Exception during bulk delete: {ex}");
             }
+
+            return success;
         }
 
         /// <summary>
@@ -132,15 +178,16 @@ namespace Damselfly.Core.DBAbstractions
             if (ReadOnly)
                 return 1;
 
-            try
+            // TODO Try/Catch here?
+            var entities = await query.ToListAsync();
+            var dbSet = this.Set<T>();
+
+            foreach (var e in entities)
             {
-                return await DatabaseSpecialisation.BatchDelete(this, query);
+                dbSet.Remove(e);
             }
-            catch(Exception ex )
-            {
-                Logging.LogError($"Exception during batch delete: {ex.Message}");
-                return 0;
-            }
+
+            return await SaveChangesAsync();
         }
 
         /// <summary>
@@ -155,56 +202,16 @@ namespace Damselfly.Core.DBAbstractions
                 return 1;
 
             try
-            { 
-                return await DatabaseSpecialisation.BatchUpdate(this, query, updateExpression);
+            {
+                // Broken with .Net 7 preview 6...
+                // return await query.BatchUpdateAsync(updateExpression);
+                
+                return await this.BulkUpdateWithSaveChanges(query, updateExpression);
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 Logging.LogError($"Exception during batch update: {ex.Message}");
                 return 0;
-            }
-        }
-
-
-        /// <summary>
-        /// Bulk insert weapper for the database specialisation type. 
-        /// </summary>
-        /// <typeparam name="T">Type of the object to insert</typeparam>
-        /// <param name="db">DB model</param>
-        /// <param name="collection">DbSet into which we're inserting the objects</param>
-        /// <param name="itemsToDelete">Objects to insert</param>
-        /// <returns>True if the insert succeeded</returns>
-        /// Note: Currently unused, hence private.
-        private async Task<bool> BulkInsertOrUpdate<T>(DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class
-        {
-            if (ReadOnly)
-                return true;
-
-            return await DatabaseSpecialisation.BulkInsertOrUpdate(this, collection, itemsToSave, isNew);
-        }
-
-        /// <summary>
-        /// If the DB supports it, and write-caching is enabled, flush.
-        /// </summary>
-        public void FlushDBWriteCache()
-        {
-            DatabaseSpecialisation.FlushDBWriteCache( this );
-        }
-
-        /// <summary>
-        /// Initialise the DB instance of the model type, using a DB specialisation. 
-        /// </summary>
-        /// <typeparam name="ModelType"></typeparam>
-        /// <param name="dbSpecialisation">Instance of our DB specialisation</param>
-        /// <param name="readOnly"></param>
-        public static void InitDB<ModelType>( IDataBase dbSpecialisation, bool readOnly ) where ModelType : BaseDBModel
-        {
-            DatabaseSpecialisation = dbSpecialisation;
-            ReadOnly = readOnly;
-
-            using (var db = Activator.CreateInstance<ModelType>())
-            {
-                dbSpecialisation.Init( db );
             }
         }
 
@@ -348,10 +355,143 @@ namespace Damselfly.Core.DBAbstractions
             return SaveChangesAsync(contextDesc).GetAwaiter().GetResult();
         }
 
-        // TODO - this is Sqlite specific and should move down into the MySqlite provider.
-        public async Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T:class
+        /// <summary>
+        /// SQLite pragma execution.
+        /// </summary>
+        /// <param name="db"></param>
+        /// <param name="pragmaCommand"></param>
+        private static void ExecutePragma(BaseDBModel db, string pragmaCommand)
         {
-            return await Task.Run(() => DatabaseSpecialisation.ImageSearch(resultSet, query, includeAITags));
+            try
+            {
+                var connection = db.Database.GetDbConnection();
+                connection.Open();
+                using var command = connection.CreateCommand();
+                command.CommandText = pragmaCommand;
+                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Logging.LogWarning($"Unable to execute pragma command {pragmaCommand}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Enable SQLite performance improvements
+        /// </summary>
+        /// <param name="db"></param>
+        public void IncreasePerformance()
+        {
+            // Increase the timeout from the default (which I think is 30s)
+            // To help concurrency.
+            Database.SetCommandTimeout(60);
+            // Enable journal mode - this will also improve
+            // concurrent acces
+            ExecutePragma(this, "PRAGMA journal_mode=WAL;");
+            // Turn off Synchronous mode. This means that writes aren't
+            // sync'd to disk every single time. 
+            ExecutePragma(this, "PRAGMA synchronous=OFF;");
+            // Increate the cache page size TODO: check this value
+            ExecutePragma(this, "PRAGMA cache_size=10000;");
+            // Use a shared cache - good for multi-threaded access
+            ExecutePragma(this, "PRAGMA cache=shared;");
+            // Allow reading from the cache. Means we might get stale
+            // data, but in most cases that's fine and concurrency will
+            // be improved. 
+            ExecutePragma(this, "PRAGMA read_uncommitted=true;");
+            // Store temporary tables in memory
+            ExecutePragma(this, "PRAGMA temp_store=MEMORY;");
+
+            // Massive hack....
+            Logging.LogTrace("Deleting corrupt ImageMetaData entries");
+            Database.ExecuteSqlRaw("delete from imagemetadata where Lastupdated = 1998;");
+
+            OptimiseDB();
+
+            RebuildFreeText();
+        }
+
+        private void OptimiseDB()
+        {
+            Logging.Log("Running Sqlite DB optimisation...");
+            Database.ExecuteSqlRaw("VACUUM;");
+            Logging.Log("DB optimisation complete.");
+        }
+
+        /// <summary>
+        /// If the DB supports it, and write-caching is enabled, flush.
+        /// </summary>
+        public void FlushDBWriteCache()
+        {
+            ExecutePragma(this, "PRAGMA schema.wal_checkpoint;");
+        }
+        
+        public async Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
+        {
+            // Convert the string from a set of terms to quote and add * so they're all exact partial matches
+            // TODO: How do we handle suffix matches - i.e., contains. SQLite FTS doesn't support that. :(
+            var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var sql = "SELECT i.* from Images i";
+            int i = 1;
+            var parms = new List<string>();
+
+            /// Some hoop-jumping to escape the text terms, and then put them into parameters so we can pass to ExecuteSqlRaw
+            /// without risk of SQL injection. Unfortunately, though, it appears that MATCH doesn't support @param type params
+            /// and gives a syntax error. So it doesn't seem there's any way around doing this right now. We'll mitigate by
+            /// stripping out semi-colons etc from the search term.
+            foreach (var term in terms.Select(x => Sanitize(x)))
+            {
+                parms.Add(term);
+
+                var ftsTerm = $"\"{term}\"*";
+                var termParam = $"{{{i - 1}}}"; // Param like {0}
+                var tagSubQuery = $"select distinct it.ImageId from FTSKeywords ftsKw join ImageTags it on it.tagId = ftsKw.TagId where ftsKw.Keyword MATCH ('{ftsTerm}')";
+                var joinSubQuery = tagSubQuery;
+
+                if (includeAITags)
+                {
+                    var objectSubQuery = $"select distinct io.ImageId from FTSKeywords ftsObj join ImageObjects io on io.tagId = ftsObj.TagId where ftsObj.Keyword MATCH ('{ftsTerm}')";
+                    var nameSubQuery = $"select distinct io.ImageId from FTSNames ftsName join ImageObjects io on io.PersonID = ftsName.PersonID where ftsName.Name MATCH ('{ftsTerm}')";
+                    joinSubQuery = $"{tagSubQuery} union {objectSubQuery} union {nameSubQuery}";
+                }
+
+                var imageSubQuery = $"select distinct fts.ImageId from FTSImages fts where ";
+                imageSubQuery += $"fts.Caption MATCH ('{ftsTerm}') OR ";
+                // imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR "; // Copyright search doesn't make that much sense
+                // imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}') OR ";
+                imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') ";
+                joinSubQuery = $"{joinSubQuery} union {imageSubQuery}";
+
+                // Subquery to produce the distinct set of images that match the term
+                var subQuery = $" join ({joinSubQuery}) term{i} on term{i}.ImageID = i.ImageId";
+                sql += subQuery;
+                i++;
+            }
+
+            return resultSet.FromSqlRaw(sql, terms);
+        }
+
+        private void RebuildFreeText()
+        {
+            const string delete = @"DELETE from FTSKeywords; DELETE from FTSImages; DELETE from FTSNames;";
+            const string insertTags = @"INSERT INTO FTSKeywords (TagId, Keyword) SELECT t.TagId, t.Keyword FROM Tags t;";
+            const string insertPeople = @"INSERT INTO FTSNames (PersonID, Name) SELECT PersonId, Name FROM people p where p.State = 1;";
+            const string insertImages = @"INSERT INTO FTSImages ( ImageId, Caption, Description, Copyright, Credit ) 
+                                SELECT i.ImageId, i.Caption, i.Description, i.CopyRight, i.Credit FROM imagemetadata i 
+                                WHERE (coalesce(i.Caption, '') <> '' OR coalesce(i.Description, '') <> '' 
+                                     OR coalesce(i.Copyright, '') <> '' OR coalesce(i.Credit, '') <> '');";
+
+            string sql = $"{delete} {insertTags} {insertPeople} {insertImages}";
+
+            Logging.LogVerbose("Rebuilding Free Text Index.");
+            Database.ExecuteSqlRaw(sql);
+            Logging.Log("Full-text search index rebuilt.");
+        }
+
+        private static string Sanitize(string input)
+        {
+            return input.Replace(";", " ").Replace("--", " ").Replace("#", " ").Replace("\'", "").Replace("\"", "");
         }
     }
 }
