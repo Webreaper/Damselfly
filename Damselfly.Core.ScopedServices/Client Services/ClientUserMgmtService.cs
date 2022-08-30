@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Damselfly.Core.DbModels.Models.APIModels;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -45,14 +46,18 @@ public class ClientUserMgmtService : IUserMgmtService
         throw new NotImplementedException();
     }
 
-    public Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null)
+    public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null)
     {
-        throw new NotImplementedException();
+        // /api/users
+        var req = new NewUserRequest { User = newUser, Password = password, Roles = roles };
+        var result = await httpClient.CustomPutAsJsonAsync<NewUserRequest, IdentityResult>("/api/users", req);
+
+        return result;
     }
 
     public async Task<ICollection<ApplicationRole>> GetRoles()
     {
-        return new List<ApplicationRole>();
+        return await httpClient.CustomGetFromJsonAsync<ICollection<ApplicationRole>>("/api/users/roles");
     }
 
     public Task AddUserToDefaultRoles(AppIdentityUser user)
