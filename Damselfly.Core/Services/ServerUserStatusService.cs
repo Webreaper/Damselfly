@@ -7,15 +7,18 @@ using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services;
 
+/// <summary>
+/// Equivalent of the Client User Status Service, but for Blazor Server
+/// </summary>
 public class ServerUserStatusService : IUserStatusService
 {
     public event Action<string> OnStatusChanged;
-    private readonly ServerStatusService _serverStatus;
+    private readonly IStatusService _statusService;
     private readonly IUserService _userService;
 
-    public ServerUserStatusService( ServerStatusService serverStatus, IUserService userService)
+    public ServerUserStatusService(IStatusService serverStatus, IUserService userService)
     {
-        _serverStatus = serverStatus;
+        _statusService = serverStatus;
         _userService = userService;
     }
 
@@ -27,7 +30,6 @@ public class ServerUserStatusService : IUserStatusService
         if (update.UserID == -1 || update.UserID == CurrentUserId)
         {
             OnStatusChanged?.Invoke(update.NewStatus);
-            _serverStatus.NotifyStateChanged( update );
         }
     }
 
@@ -38,17 +40,6 @@ public class ServerUserStatusService : IUserStatusService
     /// <param name="newText"></param>
     /// <param name="user"></param>
     public void UpdateStatus(string newText)
-    {
-        UpdateUserStatus( newText );
-    }
-
-    /// <summary>
-    /// Sets the global application status. If a user is specified
-    /// then the status will only be displayed for that user.
-    /// </summary>
-    /// <param name="newText"></param>
-    /// <param name="user"></param>
-    public void UpdateUserStatus(string newText)
     {
         NotifyStateChanged(new StatusUpdate { NewStatus = newText, UserID = CurrentUserId });
     }

@@ -40,7 +40,7 @@
                 // the image will be written locally on the client-side
                 string localPath = image.FullPath.MakePathRelativeTo(staticDataService.ImagesRootFolder);
 
-                statusService.UpdateUserStatus( $"Writing {image.FileName} to {localPath}..." );
+                statusService.UpdateStatus( $"Writing {image.FileName} to {localPath}..." );
 
                 // Now, shell out to Javascript, which will trigger the download in the Electron container
                 await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
@@ -58,10 +58,10 @@
                 
             }
 
-            statusService.UpdateUserStatus( "Local image download started." );
+            statusService.UpdateStatus( "Local image download started." );
         }
         else
-            statusService.UpdateUserStatus( "Local save is not available outside the Desktop Client." );
+            statusService.UpdateStatus( "Local save is not available outside the Desktop Client." );
     }
 
     /// <summary>

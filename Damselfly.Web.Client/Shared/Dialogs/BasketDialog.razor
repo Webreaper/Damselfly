@@ -5,6 +5,7 @@
 
 @inject IBasketService basketService
 @inject IUserService userService
+@inject IStatusService globalStatusService
 @inject IUserStatusService statusService
 @inject IConfigService configService
 @inject ILogger<BasketDialog> logger
@@ -75,10 +76,10 @@
     {
         await basketService.DeleteBasket(Basket.BasketId);
 
-        if( model.IsPublic )
-            statusService.UpdateStatus( $"Basket '{model.BasketName}' was deleted." );
+        if (model.IsPublic)
+            globalStatusService.UpdateStatus($"Basket '{model.BasketName}' was deleted.");
         else
-            statusService.UpdateUserStatus($"Basket '{model.BasketName}' was deleted.");
+            statusService.UpdateStatus($"Basket '{model.BasketName}' was deleted.");
 
         // Force it to reload a new basket
         await basketService.SwitchToDefaultBasket(userService.User);
@@ -101,10 +102,10 @@
                 // Force it to reload
                 await basketService.SwitchBasketById(newBasket.BasketId);
 
-                if( model.IsPublic )
-                    statusService.UpdateStatus( $"Basket '{newBasket.Name}' created." );
+                if (model.IsPublic)
+                    globalStatusService.UpdateStatus($"Basket '{newBasket.Name}' created.");
                 else
-                    statusService.UpdateUserStatus($"Basket '{newBasket.Name}' created.");
+                    statusService.UpdateStatus($"Basket '{newBasket.Name}' created.");
             }
             else if (Mode == "Edit")
             {
@@ -112,10 +113,10 @@
                 Basket.UserId = userId;
                 await basketService.Save(Basket);
 
-                if( model.IsPublic )
-                    statusService.UpdateStatus(  $"Basket '{model.BasketName}' saved." );
+                if (model.IsPublic)
+                    statusService.UpdateStatus($"Basket '{model.BasketName}' saved.");
                 else
-                    statusService.UpdateUserStatus($"Basket '{model.BasketName}' saved.");
+                    statusService.UpdateStatus($"Basket '{model.BasketName}' saved.");
             }
 
             MudDialog.Close(DialogResult.Ok(true));

@@ -228,7 +228,7 @@
             theImage = newImage;
             HiResImageLoaded = false;
             ImageUrl = $"/thumb/{ThumbSize.Medium}/{theImage.ImageId}";
-            statusService.UpdateUserStatus( "Loading hi-res image..." );
+            statusService.UpdateStatus( "Loading hi-res image..." );
             StateHasChanged();
         }
     }
@@ -252,7 +252,7 @@
         if (zoomEnabled)
             await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
-        statusService.UpdateUserStatus( "Hi-res image loaded." );
+        statusService.UpdateStatus( "Hi-res image loaded." );
         StateHasChanged();
 
         DoObjectBox();
@@ -283,7 +283,7 @@
                 _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
                 StateHasChanged();
-                statusService.UpdateUserStatus( $"Zoom level set to {ZoomLevel}%" );
+                statusService.UpdateStatus( $"Zoom level set to {ZoomLevel}%" );
             }
         }
     }

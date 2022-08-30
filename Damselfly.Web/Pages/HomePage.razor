@@ -64,7 +64,7 @@
 
             if (folder != null)
             {
-                statusService.UpdateUserStatus( $"Selected folder {folder.Name}" );
+                statusService.UpdateStatus( $"Selected folder {folder.Name}" );
                 searchService.Folder = folder;
             }
         }
@@ -75,7 +75,7 @@
 
             if (person != null)
             {
-                statusService.UpdateUserStatus( $"Selected person {person.Name}" );
+                statusService.UpdateStatus( $"Selected person {person.Name}" );
                 searchService.Person = person;
             }
         }

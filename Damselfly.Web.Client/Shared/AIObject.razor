@@ -107,7 +107,7 @@
 
             await peopleService.UpdateName(theObject, name);
 
-            statusService.UpdateUserStatus( $"Name saved as '{name}'" );
+            statusService.UpdateStatus( $"Name saved as '{name}'" );
 
             // Reset the tag
             Editing = false;

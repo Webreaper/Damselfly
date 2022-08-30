@@ -54,7 +54,8 @@ public static class AppInitialiser
             services.GetRequiredService<ObjectDetector>().InitScorer();
 
         // Validation check to ensure at least one user is an Admin
-        services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
+        // WASM: How, when it's scoped?
+        // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
 
         StartTaskScheduler(tasks, download, thumbService, exifService);
     }

@@ -106,7 +106,7 @@
                     {
                         logLines.AddRange(lines);
                         await InvokeAsync(StateHasChanged);
-                        statusService.UpdateUserStatus( $"Loaded {logLines.Count()} log lines..." );
+                        statusService.UpdateStatus( $"Loaded {logLines.Count()} log lines..." );
                     }
                     else
                         break;
@@ -124,7 +124,7 @@
             finally
             {
                 await InvokeAsync(StateHasChanged);
-                statusService.UpdateUserStatus( $"Loaded {logLines.Count()} log lines." );
+                statusService.UpdateStatus( $"Loaded {logLines.Count()} log lines." );
             }
         }
     }

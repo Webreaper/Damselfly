@@ -24,7 +24,7 @@ public class WordpressService : IWordpressService
 
     public WordpressService( ImageProcessService imageService,
                              ConfigService configService,
-                             IUserStatusService statusService)
+                             IStatusService statusService)
     {
         _configService = configService;
         _statusService = statusService;

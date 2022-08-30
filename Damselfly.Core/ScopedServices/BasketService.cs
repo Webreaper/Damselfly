@@ -22,7 +22,7 @@ namespace Damselfly.Core.ScopedServices;
 public class BasketService : IBasketService
 {
     private readonly DownloadService _downloadService;
-    private readonly IUserStatusService _statusService;
+    private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
 
@@ -39,7 +39,7 @@ public class BasketService : IBasketService
 
 
     public BasketService(IServiceScopeFactory scopeFactory,
-                         IUserStatusService statusService,
+                         IStatusService statusService,
                             DownloadService downloadService,
                             ImageCache imageCache)
     {
@@ -117,7 +117,8 @@ public class BasketService : IBasketService
 
             NotifyStateChanged();
 
-            _statusService.UpdateUserStatus( "Basket selection cleared." );
+            if( basketId == CurrentBasket.BasketId )
+                _statusService.UpdateStatus( "Basket selection cleared." );
         }
         catch (Exception ex)
         {
@@ -179,7 +180,7 @@ public class BasketService : IBasketService
 
         if (!string.IsNullOrEmpty(virtualZipPath))
         {
-            _statusService.UpdateUserStatus( $"Basket selection downloaded to {virtualZipPath}." );
+            _statusService.UpdateStatus( $"Basket selection downloaded to {virtualZipPath}." );
             Logging.Log($"Basket selection downloaded to {virtualZipPath}.");
 
             return virtualZipPath;
@@ -251,7 +252,7 @@ public class BasketService : IBasketService
                             });
 
                         changed = true;
-                        _statusService.UpdateUserStatus( $"Added {imagesToAdd.Count} image to the basket." );
+                        _statusService.UpdateStatus( $"Added {imagesToAdd.Count} image to the basket {CurrentBasket.Name}." );
                     }
                 }
             }
@@ -269,7 +270,7 @@ public class BasketService : IBasketService
                         BasketImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
                         changed = true;
 
-                        _statusService.UpdateUserStatus( $"Removed {existingEntries.Count} images from the basket." );
+                        _statusService.UpdateStatus( $"Removed {existingEntries.Count} images from the basket {CurrentBasket.Name}." );
                     }
                 }
             }

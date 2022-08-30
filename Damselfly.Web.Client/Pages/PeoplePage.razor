@@ -80,7 +80,7 @@
     {
         if( searchText != searchTerm )
         {
-            statusService.UpdateUserStatus( $"Searching for {searchTerm}..." );
+            statusService.UpdateStatus( $"Searching for {searchTerm}..." );
             searchText = searchTerm;
             _ = LoadData();
         }
@@ -88,7 +88,7 @@
 
     private void ClearFaceThumbs()
     {
-        statusService.UpdateUserStatus( $"Deleting face thumbnails..." );
+        statusService.UpdateStatus( $"Deleting face thumbnails..." );
 
         _ = rescanService.ClearFaceThumbs();
     }
