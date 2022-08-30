@@ -6,6 +6,7 @@ using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace Damselfly.Core.Services;
 
@@ -20,6 +21,8 @@ public class StatisticsService
         _logger = logger;
     }
 
+    private static string ArchString => $"{Environment.OSVersion} ({RuntimeInformation.ProcessArchitecture})";
+
     public async Task<Statistics> GetStatistics()
     {
         using var scope = _scopeFactory.CreateScope();
@@ -27,6 +30,7 @@ public class StatisticsService
 
         var stats = new Statistics
         {
+            OperatingSystem = ArchString,
             TotalImages = await db.Images.CountAsync(),
             TotalTags = await db.Tags.CountAsync(),
             TotalFolders = await db.Folders.CountAsync(),

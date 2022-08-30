@@ -16,5 +16,6 @@ public class Statistics
     public int ObjectsRecognised { get; set; }
     public int PeopleFound { get; set; }
     public int PeopleIdentified { get; set; }
+    public string OperatingSystem { get; set; }
 }
 

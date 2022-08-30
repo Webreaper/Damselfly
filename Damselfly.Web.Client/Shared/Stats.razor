@@ -12,7 +12,11 @@
             <tr><td colspan="2"><h4>System</h4></td></tr>
             <tr><td>.Net Version:</td><td>@Environment.Version</td></tr>
             <tr><td>OS Version:</td><td>@Environment.OSVersion</td></tr>
-            <tr><td>Process Architecture:</td><td>@System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture</td></tr>
+            @if (ClientPlatform != statistics.OperatingSystem)
+            {
+                <tr><td>Client Runtime:</td><td>@ClientPlatform</td></tr>
+            }
+            <tr><td>Server Architecture:</td><td>@statistics.OperatingSystem</td></tr>
             <tr><td>Processor Count:</td><td>@Environment.ProcessorCount</td></tr>
             <tr><td colspan="2"><h4>Photo Collection</h4></td></tr>
             <tr><td>Folders:</td><td>@statistics.TotalFolders</td></tr>
@@ -42,6 +46,7 @@
 
 @code {
     private Statistics statistics;
+    private string ClientPlatform = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

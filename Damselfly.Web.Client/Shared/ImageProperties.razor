@@ -214,6 +214,8 @@ else
 
         navContext.OnChange += NavigationChanged;
         basketService.OnBasketChanged += BasketStateChanged;
+
+        CurrentImage = navContext.CurrentImage;
     }
 
     public void Dispose()
@@ -232,9 +234,8 @@ else
         if (CurrentImage == null || image == null || image.ImageId != CurrentImage.ImageId)
         {
             CurrentImage = image;
+
             InvokeAsync(StateHasChanged);
-            if (CurrentImage != null)
-                logger.LogTrace($"ImageProperties: Set current image to {CurrentImage.ImageId} ({CurrentImage.FileName})");
         }
     }
 
