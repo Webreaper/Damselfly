@@ -57,46 +57,7 @@ namespace Damselfly.Web
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging();
-            services.AddResponseCompression();
-            services.AddResponseCaching();
-            services.AddRazorPages();
-            services.AddServerSideBlazor();
-            services.AddFileReaderService();
 
-            services.AddMudServices();
-            services.AddSyncfusionBlazor();
-
-            // Cache up to 10,000 images. Should be enough given cache expiry.
-            services.AddMemoryCache( x => x.SizeLimit = 5000 );
-
-            services.AddDbContext<ImageContext>();
-            services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
-            services.AddDataProtection().PersistKeysToDbContext<ImageContext>();
-
-            services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                                 .AddRoles<ApplicationRole>()
-                                 .AddEntityFrameworkStores<ImageContext>();
-
-            // Use transient here so that if the user preferences change, 
-            // we'll get a different instance the next time we send email. 
-            services.AddTransient<IEmailSender, EmailSenderFactoryService>();
-
-            services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-            services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
-
-            services.AddImageServices();
-            services.AddHostedBlazorBackEndServices();
-
-            // Radzen
-            services.AddScoped<ContextMenuService>();
-
-            // This needs to happen after ConfigService has been registered.
-            services.AddAuthorization(config => config.SetupPolicies(services));
-
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
-
-            services.AddBlazorServerScopedServices();
         }
 
         /// <summary>
@@ -111,79 +72,6 @@ namespace Damselfly.Web
             ImageRecognitionService aiService, ObjectDetector objectDetector, ThemeService themeService, WorkService workService,
             MetaDataService metaDataService, UserManagementService userManagement)
         {
-            SyncfusionLicence.RegisterSyncfusionLicence();
-
-            var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
-
-            Logging.ChangeLogLevel( logLevel );
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            if( Logging.Verbose )
-                app.UseSerilogRequestLogging();
-
-            app.UseResponseCompression();
-            app.UseRouting();
-            app.UseResponseCaching();
-
-            // Disable this for now
-            // app.UseHttpsRedirection();
-
-            // TODO: Do we need this if we serve all the images via the controller?
-            app.UseStaticFiles();
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
-                RequestPath = ThumbnailService.RequestRoot
-            });
-
-            // Enable auth
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                //endpoints.MapControllerRoute(name: "default", pattern: "{controller}/{action}");
-                endpoints.MapControllers();
-                endpoints.MapBlazorHub();
-                endpoints.MapFallbackToPage("/_Host");
-            });
-
-
-            // Prime the cache
-            imageCache.WarmUp().Wait();
-
-            // Start the work processing queue for AI, Thumbs, etc
-            workService.StartService();
-
-            // Start the face service before the thumbnail service
-            azureService.StartService().Wait();
-            metaDataService.StartService();
-            indexingService.StartService();
-            aiService.StartService();
-
-            // ObjectDetector can throw a segmentation fault if the docker container is pinned
-            // to a single CPU, so for now, to aid debugging, let's not even try and initialise
-            // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
-            if (!configService.GetBool(ConfigSettings.DisableObjectDetector, false))
-                objectDetector.InitScorer();
-
-            // Validation check to ensure at least one user is an Admin
-            userManagement.CheckAdminUser().Wait();
-
-            StartTaskScheduler(tasks, download, thumbService, exifService);
-
-            Logging.StartupCompleted();
-            Logging.Log("Starting Damselfly webserver...");
         }
 
         /// <summary>

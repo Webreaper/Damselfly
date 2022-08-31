@@ -169,7 +169,6 @@ public class Program
         // Add services to the container.
         builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
                                                     b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite")));
-        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
     }
 
     /// <summary>
@@ -212,6 +211,9 @@ public class Program
         builder.Services.AddHostedBlazorBackEndServices();
 
         var app = builder.Build();
+
+        // WASM: Todo
+        // app.UseSerilog();
 
         InitialiseDB(app, cmdLineOptions);
 

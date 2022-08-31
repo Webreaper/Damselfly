@@ -13,6 +13,27 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.Utils;
+using Microsoft.AspNetCore.Builder;
+using Damselfly.Areas.Identity;
+using Damselfly.Core.DbModels;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Components.Authorization;
+using Radzen;
+using Microsoft.Extensions.DependencyInjection;
+using MudBlazor.Services;
+using Tewr.Blazor.FileReader;
+using Syncfusion.Blazor;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Damselfly.Core.ImageProcessing;
+using Damselfly.Core.Constants;
+using Damselfly.Core.ScopedServices;
+using Damselfly.ML.ObjectDetection;
+using Damselfly.Shared.Utils;
+using MailKit;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.FileProviders;
 
 namespace Damselfly.Web
 {
@@ -127,12 +148,10 @@ namespace Damselfly.Web
                 Logging.Log($" Images Root set as {o.SourceDirectory}");
                 Logging.Log($" TieredPGO Enabled={tieredPGO}");
 
-                IDataBase dbType = null;
-
                 // Make ourselves low-priority.
                 System.Diagnostics.Process.GetCurrentProcess().PriorityClass = System.Diagnostics.ProcessPriorityClass.Idle;
 
-                StartWebServer(o.Port, args);
+                StartWebServer(o, args);
 
                 Logging.Log("Shutting down.");
             }
@@ -143,6 +162,51 @@ namespace Damselfly.Web
 
         }
 
+        private static void SetupDbContext(WebApplicationBuilder builder, DamselflyOptions cmdLineOptions)
+        {
+            string dbFolder = Path.Combine(cmdLineOptions.ConfigPath, "db");
+
+            if (!Directory.Exists(dbFolder))
+            {
+                Logging.Log(" Created DB folder: {0}", dbFolder);
+                Directory.CreateDirectory(dbFolder);
+            }
+
+            string dbPath = Path.Combine(dbFolder, "damselfly.db");
+
+            string connectionString = $"Data Source={dbPath}";
+
+            // Add services to the container.
+            builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
+                                                        b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite")));
+        }
+
+        private static void InitialiseDB(WebApplication app, DamselflyOptions options)
+        {
+            using var scope = app.Services.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+            try
+            {
+                Logging.Log("Running Sqlite DB migrations...");
+                db.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                Logging.LogWarning($"Migrations failed with exception: {ex}");
+
+                if (ex.InnerException != null)
+                    Logging.LogWarning($"InnerException: {ex.InnerException}");
+
+                Logging.Log($"Creating DB.");
+                db.Database.EnsureCreated();
+            }
+
+            db.IncreasePerformance();
+
+            ImageContext.ReadOnly = options.ReadOnly;
+        }
+
         /// <summary>
         /// Main entry point. Creates a bunch of services, and then kicks off
         /// the webserver, which is a blocking call (since it's the dispatcher
@@ -150,15 +214,124 @@ namespace Damselfly.Web
         /// </summary>
         /// <param name="listeningPort"></param>
         /// <param name="args"></param>
-        private static void StartWebServer(int listeningPort, string[] args )
+        private static void StartWebServer(DamselflyOptions cmdLineOptions, string[] args )
         {
             try
             {
                 Logging.Log("Initialising Damselfly...");
 
-                var host = BuildHost(listeningPort, args);
+                var builder = WebApplication.CreateBuilder(args);
 
-                host.Run();
+                var services = builder.Services;
+
+                services.AddLogging();
+                services.AddResponseCompression();
+                services.AddResponseCaching();
+                services.AddRazorPages();
+                services.AddServerSideBlazor();
+                services.AddFileReaderService();
+
+                services.AddMudServices();
+                services.AddSyncfusionBlazor();
+
+                // Cache up to 10,000 images. Should be enough given cache expiry.
+                services.AddMemoryCache(x => x.SizeLimit = 5000);
+
+                services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
+
+                SetupDbContext(builder, cmdLineOptions);
+
+                services.AddDataProtection().PersistKeysToDbContext<ImageContext>();
+
+                services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                                     .AddRoles<ApplicationRole>()
+                                     .AddEntityFrameworkStores<ImageContext>();
+
+                // Use transient here so that if the user preferences change, 
+                // we'll get a different instance the next time we send email. 
+                services.AddTransient<IEmailSender, EmailSenderFactoryService>();
+
+                services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+                services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
+
+                services.AddImageServices();
+                services.AddHostedBlazorBackEndServices();
+
+                // Radzen
+                services.AddScoped<ContextMenuService>();
+
+                // This needs to happen after ConfigService has been registered.
+                services.AddAuthorization(config => config.SetupPolicies(services));
+
+                services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
+
+                services.AddBlazorServerScopedServices();
+
+                var app = builder.Build();
+
+                InitialiseDB(app, cmdLineOptions);
+
+                SyncfusionLicence.RegisterSyncfusionLicence();
+
+                var configService = app.Services.GetRequiredService<ConfigService>();
+                var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
+
+                Logging.ChangeLogLevel(logLevel);
+
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
+                else
+                {
+                    app.UseExceptionHandler("/Error");
+                    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                    app.UseHsts();
+                }
+
+                if (Logging.Verbose)
+                    app.UseSerilogRequestLogging();
+
+                app.UseResponseCompression();
+                app.UseRouting();
+                app.UseResponseCaching();
+
+                // Disable this for now
+                // app.UseHttpsRedirection();
+
+                // TODO: Do we need this if we serve all the images via the controller?
+                app.UseStaticFiles();
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
+                    RequestPath = ThumbnailService.RequestRoot
+                });
+
+                // Enable auth
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    //endpoints.MapControllerRoute(name: "default", pattern: "{controller}/{action}");
+                    endpoints.MapControllers();
+                    endpoints.MapBlazorHub();
+                    endpoints.MapFallbackToPage("/_Host");
+                });
+
+                app.Environment.SetupServices(app.Services);
+
+                Logging.StartupCompleted();
+                Logging.Log("Starting Damselfly webserver...");
+
+                // WASM: Todo
+                // app.UseSerilog();
+
+                app.Urls.Add($"http://+:{cmdLineOptions.Port}");
+
+                app.Environment.SetupServices(app.Services);
+
+                app.Run();
 
                 Logging.LogWarning("Damselfly Webserver stopped. Exiting");
             }
@@ -167,35 +340,6 @@ namespace Damselfly.Web
                 Logging.Log("Damselfly Webserver terminated with exception: {0}", ex.Message);
             }
 
-        }
-
-        /// <summary>
-        /// Builds the web host; sets up the port for the webserver
-        /// and configures the logging etc. 
-        /// </summary>
-        /// <param name="port"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
-        public static IHost BuildHost(int port, string[] args)
-        {
-            return Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => BuildWebHost(webBuilder, port, args))
-                .UseSerilog()
-                .Build();
-        }
-
-        private static void BuildWebHost(IWebHostBuilder webBuilder, int port, string[] args)
-        {
-            string url = $"http://*:{port}";
-
-            webBuilder.UseConfiguration(new ConfigurationBuilder()
-                .AddCommandLine(args)
-                .Build())
-#if DEBUG
-                    .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
-#endif
-                    .UseStartup<Startup>()
-                .UseUrls(url);
         }
     }
 }
