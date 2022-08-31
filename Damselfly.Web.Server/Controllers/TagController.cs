@@ -1,4 +1,5 @@
 ﻿using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -53,6 +54,17 @@ public class TagController : ControllerBase
         return await _tagSearch.GetAllTags();
     }
 
+    [HttpPost("/api/tags")]
+    public async Task UpdateTags( TagUpdateRequest req )
+    {
+        await _tagService.UpdateTagsAsync( req.ImageIDs, req.TagsToAdd, req.TagsToDelete, req.UserId);
+    }
+
+    [HttpPost("/api/tags/exif")]
+    public async Task UpdateTags(ExifUpdateRequest req)
+    {
+        await _tagService.SetExifFieldAsync(req.ImageIDs, req.ExifType, req.NewValue, req.UserId);
+    }
 
     [HttpPost("/api/tags/togglefave")]
     public async Task<bool> ToggleFavourite( Tag tag )

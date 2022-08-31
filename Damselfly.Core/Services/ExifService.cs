@@ -100,8 +100,9 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <returns></returns>
     public async Task AddTagAsync(Image[] images, string tagToAdd)
     {
+        var imageIds = images.Select(x => x.ImageId).ToList();
         var tagList = new List<string> { tagToAdd };
-        await UpdateTagsAsync(images, tagList, null);
+        await UpdateTagsAsync(imageIds, tagList, null);
     }
 
     /// <summary>
@@ -114,7 +115,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <returns></returns>
     public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, int? userId = -1)
     {
-        await UpdateTagsAsync(new[] { image }, addTags, removeTags, userId);
+        await UpdateTagsAsync(new[] { image.ImageId }, addTags, removeTags, userId);
     }
 
     /// <summary>
@@ -182,7 +183,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> addTags, ICollection<string> removeTags = null, int? userId = -1)
+    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> addTags, ICollection<string> removeTags = null, int? userId = -1)
     {
         // TODO: Split tags with commas here?
         var timestamp = DateTime.UtcNow;
@@ -197,11 +198,11 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             var tagsToAdd = addTags.Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
 
-            foreach (var image in images)
+            foreach (var imageId in imageIds)
             {
                 keywordOps.AddRange(tagsToAdd.Select(keyword => new ExifOperation
                 {
-                    ImageId = image.ImageId,
+                    ImageId = imageId,
                     Text = keyword.Sanitise(),
                     Type = ExifOperation.ExifType.Keyword,
                     Operation = ExifOperation.OperationType.Add,
@@ -217,12 +218,12 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             var tagsToRemove = removeTags.Where(x => !string.IsNullOrEmpty(x.Trim())).ToList();
 
-            foreach (var image in images)
+            foreach (var imageId in imageIds)
             {
                 keywordOps.AddRange(tagsToRemove.Select(keyword =>
                     new ExifOperation
                     {
-                        ImageId = image.ImageId,
+                        ImageId = imageId,
                         Text = keyword.Sanitise(),
                         Type = ExifOperation.ExifType.Keyword,
                         Operation = ExifOperation.OperationType.Remove,
@@ -235,13 +236,13 @@ public class ExifService : IProcessJobFactory, ITagService
             changeDesc += $"removed: {string.Join(',', tagsToRemove)}";
         }
 
-        Logging.LogVerbose($"Bulk inserting {keywordOps.Count()} keyword operations (for {images.Count()}) into queue. ");
+        Logging.LogVerbose($"Bulk inserting {keywordOps.Count()} keyword operations (for {imageIds.Count()}) into queue. ");
 
         try
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.UpdateStatus(  $"Saved tags ({changeDesc}) for {images.Count()} images." );
+            _statusService.UpdateStatus(  $"Saved tags ({changeDesc}) for {imageIds.Count()} images." );
         }
         catch (Exception ex)
         {
@@ -263,7 +264,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, int? userId = -1)
+    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = -1)
     {
         var timestamp = DateTime.UtcNow;
         var changeDesc = string.Empty;
@@ -273,9 +274,9 @@ public class ExifService : IProcessJobFactory, ITagService
 
         var keywordOps = new List<ExifOperation>();
 
-        keywordOps.AddRange(images.Select(image => new ExifOperation
+        keywordOps.AddRange(imageIds.Select(imageId => new ExifOperation
         {
-            ImageId = image.ImageId,
+            ImageId = imageId,
             Text = newValue,
             Type = exifType,
             Operation = ExifOperation.OperationType.Add,
@@ -285,13 +286,13 @@ public class ExifService : IProcessJobFactory, ITagService
 
         changeDesc += $"set {exifType}";
 
-        Logging.LogVerbose($"Inserting {keywordOps.Count()} {exifType} operations (for {images.Count()}) into queue. ");
+        Logging.LogVerbose($"Inserting {keywordOps.Count()} {exifType} operations (for {imageIds.Count()}) into queue. ");
 
         try
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.UpdateStatus($"Saved {exifType} ({changeDesc}) for {images.Count()} images.");
+            _statusService.UpdateStatus($"Saved {exifType} ({changeDesc}) for {imageIds.Count()} images.");
         }
         catch (Exception ex)
         {

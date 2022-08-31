@@ -168,7 +168,7 @@ else
         if (newValue != CurrentImage.MetaData.Rating)
         {
             await SaveProperty(x => x.Rating = newValue);
-            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.UserId);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.UserId);
         }
     }
 
@@ -179,7 +179,7 @@ else
         if( CurrentImage.MetaData.Caption != newValue )
         {
             await SaveProperty(x => x.Caption = newValue);
-            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.UserId);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Caption, newValue.ToString(), userService.UserId);
         }
     }
 
@@ -189,7 +189,7 @@ else
         if( CurrentImage.MetaData.Description != newValue )
         {
             await SaveProperty(x => x.Description = newValue);
-            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Description, newValue.ToString(), userService.UserId);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Description, newValue.ToString(), userService.UserId);
         }
     }
 
@@ -199,7 +199,7 @@ else
         if( CurrentImage.MetaData.Copyright != newValue )
         {
             await SaveProperty(x => x.Copyright = newValue);
-            await tagService.SetExifFieldAsync(new[] { CurrentImage }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.UserId);
+            await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Copyright, newValue.ToString(), userService.UserId);
         }
     }
 

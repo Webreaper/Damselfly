@@ -12,8 +12,8 @@ public interface ITagService
     event Action OnFavouritesChanged;
     Task<ICollection<Tag>> GetFavouriteTags();
     Task<bool> ToggleFavourite(Tag tag);
-    Task UpdateTagsAsync(ICollection<Image> images, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, int? userId = -1);
-    Task SetExifFieldAsync(Image[] images, ExifOperation.ExifType exifType, string newValue, int? userId = -1);
+    Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, int? userId = -1);
+    Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = -1);
 }
 
 public interface IRecentTagService

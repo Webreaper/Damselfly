@@ -168,7 +168,7 @@
     /// <returns></returns>
     private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
     {
-        await tagService.UpdateTagsAsync(CurrentImages, tagsToAdd, tagsToDelete, userService.UserId);
+        await tagService.UpdateTagsAsync(CurrentImages.Select( x => x.ImageId ).ToList(), tagsToAdd, tagsToDelete, userService.UserId);
 
         StateHasChanged();
     }
