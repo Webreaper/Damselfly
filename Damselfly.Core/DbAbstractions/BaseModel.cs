@@ -91,6 +91,7 @@ namespace Damselfly.Core.DBAbstractions
             catch (Exception ex)
             {
                 Logging.LogError($"Exception during bulk insert: {ex}");
+                throw;
             }
 
             return success;
@@ -127,6 +128,7 @@ namespace Damselfly.Core.DBAbstractions
             catch (Exception ex)
             {
                 Logging.LogError($"Exception during bulk update: {ex}");
+                throw;
             }
 
             return success;
@@ -162,6 +164,7 @@ namespace Damselfly.Core.DBAbstractions
             catch (Exception ex)
             {
                 Logging.LogError($"Exception during bulk delete: {ex}");
+                throw;
             }
 
             return success;

@@ -19,7 +19,7 @@ public class UserConfigService : BaseConfigService, IDisposable
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IUserService _userService;
-    private int _userId;
+    private int? _userId;
 
     public UserConfigService(IUserService userService, ILogger<IConfigService> logger) : base( logger )
     {
@@ -30,7 +30,7 @@ public class UserConfigService : BaseConfigService, IDisposable
         _ = InitialiseCache();
     }
 
-    private void UserChanged( int userId )
+    private void UserChanged( int? userId )
     {
         _userId = userId;
         _ = InitialiseCache();

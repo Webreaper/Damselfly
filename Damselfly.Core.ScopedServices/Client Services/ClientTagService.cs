@@ -71,7 +71,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     }
 
 
-    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = -1)
+    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = null)
     {
         var payload = new ExifUpdateRequest {
             ImageIDs = imageIds,

@@ -23,8 +23,8 @@ public class UserService : IUserService, IDisposable
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly IAuthorizationService _authService;
     private bool _initialised = false;
-    private int _userId = -1;
-    public event Action<int> OnUserIdChanged;
+    private int? _userId = null;
+    public event Action<int?> OnUserIdChanged;
 
     public UserService(AuthenticationStateProvider authenticationStateProvider,
                          IAuthorizationService authService )
@@ -42,7 +42,7 @@ public class UserService : IUserService, IDisposable
     }
 
     public bool RolesEnabled => true;
-    public int UserId => _userId;
+    public int? UserId => _userId;
 
     private async Task GetCurrentUserId()
     {

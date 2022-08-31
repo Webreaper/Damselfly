@@ -16,7 +16,7 @@ public class ClientStatusService : IUserStatusService
     private readonly ILogger<ClientStatusService> _logger;
     private string statusText;
 
-    private int CurrentUserId => _userService.UserId;
+    private int? CurrentUserId => _userService.UserId;
 
     public ClientStatusService( NotificationsService notifications, IUserService userService, ILogger<ClientStatusService> logger )
     {
@@ -55,7 +55,7 @@ public class ClientStatusService : IUserStatusService
          if (newStatus.NewStatus != statusText)
         {
             // If it's -1, or it's meant for us, use it.
-            if (! _userService.RolesEnabled || newStatus.UserID == -1 || newStatus.UserID == CurrentUserId )
+            if (! _userService.RolesEnabled || newStatus.UserID is null || newStatus.UserID == CurrentUserId )
             {
                 NotifyStatusChanged(newStatus.NewStatus);
             }

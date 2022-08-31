@@ -31,7 +31,7 @@ public class ServerStatusService : IStatusService
     /// </summary>
     /// <param name="newText"></param>
     /// <param name="user"></param>
-    public void UpdateStatus(string newText, int userId = -1 )
+    public void UpdateStatus(string newText, int? userId = null )
     {
         NotifyStateChanged( new StatusUpdate {  NewStatus = newText, UserID = userId });
     }

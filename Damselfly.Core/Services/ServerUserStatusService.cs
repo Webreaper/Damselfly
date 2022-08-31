@@ -22,12 +22,12 @@ public class ServerUserStatusService : IUserStatusService
         _userService = userService;
     }
 
-    private int CurrentUserId => _userService.UserId;
+    private int? CurrentUserId => _userService.UserId;
 
     private void NotifyStateChanged(StatusUpdate update)
     {
         // UserID -1 means everyone should get it
-        if (update.UserID == -1 || update.UserID == CurrentUserId)
+        if (update.UserID is null || update.UserID == CurrentUserId)
         {
             OnStatusChanged?.Invoke(update.NewStatus);
         }

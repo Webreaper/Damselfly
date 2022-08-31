@@ -113,7 +113,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, int? userId = -1)
+    public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null, int? userId = null)
     {
         await UpdateTagsAsync(new[] { image.ImageId }, addTags, removeTags, userId);
     }
@@ -126,7 +126,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateFaceDataAsync(Image[] images, List<ImageObject> faces, int? userId = -1)
+    public async Task UpdateFaceDataAsync(Image[] images, List<ImageObject> faces, int? userId = null)
     {
 #if ! DEBUG
         // Not supported yet....
@@ -183,7 +183,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> addTags, ICollection<string> removeTags = null, int? userId = -1)
+    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> addTags, ICollection<string> removeTags = null, int? userId = null)
     {
         // TODO: Split tags with commas here?
         var timestamp = DateTime.UtcNow;
@@ -264,7 +264,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = -1)
+    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = null)
     {
         var timestamp = DateTime.UtcNow;
         var changeDesc = string.Empty;

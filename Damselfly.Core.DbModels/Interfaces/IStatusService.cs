@@ -10,7 +10,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 /// </summary>
 public interface IStatusService
 {
-    void UpdateStatus(string newStatus, int userId = -1);
+    void UpdateStatus(string newStatus, int? userId = null);
     event Action<string> OnStatusChanged;
 }
 
