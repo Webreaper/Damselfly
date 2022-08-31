@@ -29,11 +29,16 @@ public class LoginController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Login([FromBody] LoginModel login)
     {
-        var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, false);
-
-        if (!result.Succeeded) return BadRequest(new LoginResult { Successful = false, Error = "Username and password are invalid." });
-
         var user = await _signInManager.UserManager.FindByEmailAsync(login.Email);
+
+        if ( user == null )
+            return BadRequest(new LoginResult { Successful = false, Error = "Username or password was invalid." });
+
+        var result = await _signInManager.PasswordSignInAsync(user.UserName, login.Password, login.RememberMe, false);
+
+        if (!result.Succeeded)
+            return BadRequest(new LoginResult { Successful = false, Error = "Username or password was invalid." });
+
         var roles = await _signInManager.UserManager.GetRolesAsync(user);
         var claims = new List<Claim>();
 

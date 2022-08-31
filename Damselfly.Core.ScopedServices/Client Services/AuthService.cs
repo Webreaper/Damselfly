@@ -37,18 +37,14 @@ public class AuthService : IAuthService
 
     public async Task<LoginResult> Login(LoginModel loginModel)
     {
-        var response = await _httpClient.CustomPostAsJsonAsync("api/Login", loginModel);
-        var loginResult = JsonSerializer.Deserialize<LoginResult>(await response.Content.ReadAsStringAsync(), _httpClient.JsonOptions );
+        var loginResult = await _httpClient.CustomPostAsJsonAsync<LoginModel, LoginResult>("api/Login", loginModel);
 
-        if (!response.IsSuccessStatusCode)
+        if (loginResult.Successful)
         {
-            loginResult.Error = "Error logging in.";
-            return loginResult;
+            await _localStorage.SetItemAsync("authToken", loginResult.Token);
+            ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email);
+            _httpClient.AuthHeader = new AuthenticationHeaderValue("bearer", loginResult.Token);
         }
-
-        await _localStorage.SetItemAsync("authToken", loginResult.Token);
-        ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email);
-        _httpClient.AuthHeader = new AuthenticationHeaderValue("bearer", loginResult.Token);
 
         return loginResult;
     }
