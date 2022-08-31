@@ -28,6 +28,7 @@ using Damselfly.Core.ScopedServices.ClientServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ILogger = Serilog.ILogger;
 
 namespace Damselfly.Web;
 
@@ -105,10 +106,6 @@ public class Program
             if (!Directory.Exists(o.ConfigPath))
                 Directory.CreateDirectory(o.ConfigPath);
 
-            Logging.LogFolder = Path.Combine(o.ConfigPath, "logs");
-
-            Log.Logger = Logging.InitLogs();
-
             if (o.ReadOnly)
             {
                 o.NoEnableIndexing = true;
@@ -182,6 +179,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        var logFolder = Path.Combine(cmdLineOptions.ConfigPath, "logs");
+
+        builder.Host.UseSerilog((hostContext, services, configuration) => {
+            Logging.InitLogConfiguration(configuration, logFolder);
+        });
+
         SetupDbContext(builder, cmdLineOptions);
 
         SetupIdentity(builder.Services);
@@ -212,8 +215,8 @@ public class Program
 
         var app = builder.Build();
 
-        // WASM: Todo
-        // app.UseSerilog();
+        Logging.Logger = app.Services.GetRequiredService<ILogger>();
+        Logging.Logger.Information("=== Damselfly Blazor Server Log Started ===");
 
         InitialiseDB(app, cmdLineOptions);
 

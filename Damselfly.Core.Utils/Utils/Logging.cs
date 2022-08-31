@@ -24,8 +24,9 @@ namespace Damselfly.Core.Utils
             }
         }
 
-        public static Logger Logger { get; }
-        public static string LogFolder { get; set; }
+        public static ILogger Logger { get; set; }
+        public static string LogFolder { get; private set; }
+
         /// <summary>
         /// True if verbose logging is enabled
         /// </summary>
@@ -38,21 +39,21 @@ namespace Damselfly.Core.Utils
         private static readonly LoggingLevelSwitch consoleLogLevel = new LoggingLevelSwitch();
         private static readonly LoggingLevelSwitch logLevel = new LoggingLevelSwitch();
         private const string template = "[{Timestamp:HH:mm:ss.fff}-{ThreadID}-{Level:u3}] {Message:lj}{NewLine}{Exception}";
-        private static Logger logger;
-
 
         /// <summary>
         /// Initialise logging and add the thread enricher.
         /// </summary>
         /// <returns></returns>
-        public static Logger InitLogs()
+        public static void InitLogConfiguration( LoggerConfiguration config, string logFolder )
         {
             try
             {
-                if (!Directory.Exists(LogFolder))
+                LogFolder = logFolder;
+
+                if (!Directory.Exists(logFolder))
                 {
-                    Console.WriteLine($"Creating log folder {LogFolder}");
-                    Directory.CreateDirectory(LogFolder);
+                    Console.WriteLine($"Creating log folder {logFolder}");
+                    Directory.CreateDirectory(logFolder);
                 }
 
                 logLevel.MinimumLevel = LogEventLevel.Information;
@@ -64,10 +65,9 @@ namespace Damselfly.Core.Utils
                 if (Trace)
                     logLevel.MinimumLevel = LogEventLevel.Debug;
 
-                string logFilePattern = Path.Combine(LogFolder, "Damselfly-.log");
+                string logFilePattern = Path.Combine(logFolder, "Damselfly-.log");
 
-                logger = new LoggerConfiguration()
-                    .Enrich.With(new ThreadIDEnricher())
+                config.Enrich.With(new ThreadIDEnricher())
                     .WriteTo.Console(outputTemplate: template,
                                     levelSwitch: consoleLogLevel)
                     .WriteTo.File(logFilePattern,
@@ -77,19 +77,14 @@ namespace Damselfly.Core.Utils
                                    retainedFileCountLimit: 10,
                                    levelSwitch: logLevel)
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
-                    .CreateLogger();
-
-                logger.Information("=== Damselfly Log Started ===");
-                logger.Information("Log folder: {0}", LogFolder);
-                logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
+                    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
             }
             catch( Exception ex )
             {
                 Console.WriteLine($"Unable to initialise logs: {ex}");
             }
 
-            return logger;
+            return;
         }
 
         /// <summary>
@@ -115,33 +110,33 @@ namespace Damselfly.Core.Utils
             {
                 logLevel.MinimumLevel = newLevel;
 
-                logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
+                Logger.Information("LogLevel: {0}", logLevel.MinimumLevel);
             }
         }
 
         public static void LogError(string fmt, params object[] args)
         {
-            logger.Error(fmt, args);
+            Logger?.Error(fmt, args);
         }
 
         public static void LogWarning(string fmt, params object[] args)
         {
-            logger.Warning(fmt, args);
+            Logger?.Warning(fmt, args);
         }
 
         public static void LogVerbose(string fmt, params object[] args)
         {
-            logger.Verbose(fmt, args);
+            Logger?.Verbose(fmt, args);
         }
 
         public static void LogTrace(string fmt, params object[] args)
         {
-            logger.Debug(fmt, args);
+            Logger?.Debug(fmt, args);
         }
 
         public static void Log(string fmt, params object[] args)
         {
-            logger.Information(fmt, args);
+            Logger?.Information(fmt, args);
         }
     }
 }

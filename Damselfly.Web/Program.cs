@@ -114,10 +114,6 @@ namespace Damselfly.Web
                 if (!Directory.Exists(o.ConfigPath))
                     Directory.CreateDirectory(o.ConfigPath);
 
-                Logging.LogFolder = Path.Combine(o.ConfigPath, "logs");
-
-                Log.Logger = Logging.InitLogs();
-
                 if (o.ReadOnly)
                 {
                     o.NoEnableIndexing = true;
@@ -224,50 +220,59 @@ namespace Damselfly.Web
 
                 var services = builder.Services;
 
-                services.AddLogging();
-                services.AddResponseCompression();
-                services.AddResponseCaching();
-                services.AddRazorPages();
-                services.AddServerSideBlazor();
-                services.AddFileReaderService();
+                var logFolder = Path.Combine(cmdLineOptions.ConfigPath, "logs");
 
-                services.AddMudServices();
-                services.AddSyncfusionBlazor();
+                builder.Host.UseSerilog((hostContext, services, configuration) => {
+                    Logging.InitLogConfiguration( configuration, logFolder );
+                });
+
+                builder.Services.AddLogging();
+                builder.Services.AddResponseCompression();
+                builder.Services.AddResponseCaching();
+                builder.Services.AddRazorPages();
+                builder.Services.AddServerSideBlazor();
+                builder.Services.AddFileReaderService();
+
+                builder.Services.AddMudServices();
+                builder.Services.AddSyncfusionBlazor();
 
                 // Cache up to 10,000 images. Should be enough given cache expiry.
-                services.AddMemoryCache(x => x.SizeLimit = 5000);
+                builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
-                services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
+                builder.Services.ConfigureApplicationCookie(options => options.Cookie.Name = "Damselfly");
 
                 SetupDbContext(builder, cmdLineOptions);
 
-                services.AddDataProtection().PersistKeysToDbContext<ImageContext>();
+                builder.Services.AddDataProtection().PersistKeysToDbContext<ImageContext>();
 
-                services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                builder.Services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                                      .AddRoles<ApplicationRole>()
                                      .AddEntityFrameworkStores<ImageContext>();
 
                 // Use transient here so that if the user preferences change, 
                 // we'll get a different instance the next time we send email. 
-                services.AddTransient<IEmailSender, EmailSenderFactoryService>();
+                builder.Services.AddTransient<IEmailSender, EmailSenderFactoryService>();
 
-                services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-                services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
+                builder.Services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
+                builder.Services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
-                services.AddImageServices();
-                services.AddHostedBlazorBackEndServices();
+                builder.Services.AddImageServices();
+                builder.Services.AddHostedBlazorBackEndServices();
 
                 // Radzen
-                services.AddScoped<ContextMenuService>();
+                builder.Services.AddScoped<ContextMenuService>();
 
                 // This needs to happen after ConfigService has been registered.
-                services.AddAuthorization(config => config.SetupPolicies(services));
+                builder.Services.AddAuthorization(config => config.SetupPolicies(services));
 
-                services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
+                builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<AppIdentityUser>>();
 
-                services.AddBlazorServerScopedServices();
+                builder.Services.AddBlazorServerScopedServices();
 
                 var app = builder.Build();
+
+                Logging.Logger = app.Services.GetRequiredService<ILogger>();
+                Logging.Logger.Information("=== Damselfly Hosted Server Log Started ===");
 
                 InitialiseDB(app, cmdLineOptions);
 
@@ -323,9 +328,6 @@ namespace Damselfly.Web
 
                 Logging.StartupCompleted();
                 Logging.Log("Starting Damselfly webserver...");
-
-                // WASM: Todo
-                // app.UseSerilog();
 
                 app.Urls.Add($"http://+:{cmdLineOptions.Port}");
 
