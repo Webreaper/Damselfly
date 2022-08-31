@@ -35,7 +35,7 @@
 
     async Task Move()
     {
-        await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
+        await basketService.SetBasketState(basketService.BasketImages.Select( x => x.ImageId ).ToList(), true, selectedBasket.BasketId);
         await basketService.Clear(selectedBasket.BasketId);
 
         MudDialog.Close(DialogResult.Ok(true));
@@ -43,7 +43,7 @@
 
     async Task Copy()
     {
-        await basketService.SetBasketState(basketService.BasketImages, true, selectedBasket);
+        await basketService.SetBasketState(basketService.BasketImages.Select(x => x.ImageId).ToList(), true, selectedBasket.BasketId);
         MudDialog.Close(DialogResult.Ok(true));
     }
 

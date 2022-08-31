@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Text.Json;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.DbModels.Models.APIModels;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -30,6 +31,13 @@ public class ClientBasketService : IBasketService
     // WASM TODO
     public event Action OnBasketChanged;
 
+    public Basket CurrentBasket { get; }
+
+    public bool IsSelected(Image image)
+    {
+        return BasketImages.Any(x => x.ImageId == image.ImageId);
+    }
+
     public async Task Clear( int basketId )
     {
         await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/clear/{basketId}");
@@ -42,7 +50,13 @@ public class ClientBasketService : IBasketService
 
     public async Task<Basket> SwitchBasketById(int basketId)
     {
-        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
+        var basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
+
+        BasketImages.Clear();
+        BasketImages.AddRange(basket.BasketEntries.Select(x => x.Image) );
+
+        Console.WriteLine($"Loaded {BasketImages.Count()} images in basket.");
+        return basket;
     }
 
     public async Task<Basket> SwitchToDefaultBasket(int? userId)
@@ -53,20 +67,21 @@ public class ClientBasketService : IBasketService
         return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/default/{userId}");
     }
 
-    public async Task SetBasketState( ICollection<Image> images, bool newState, Basket basket = null)
+    public async Task SetBasketState( ICollection<int> images, bool newState, int? basketId = null)
 	{
-        if (basket == null)
-            basket = CurrentBasket;
+        if (basketId == null)
+            basketId = CurrentBasket?.BasketId;
 
-        await httpClient.CustomGetFromJsonAsync<ServiceStatus>($"/api/basket/state/{newState}");
+        if (basketId is null)
+            throw new ArgumentException("A basket ID must be specified");
+
+        var payload = new BasketStateRequest {
+                    BasketId = basketId.Value,
+                    ImageIds = images,
+                    NewState = newState
+                };
+        await httpClient.CustomPostAsJsonAsync($"/api/basket/state",  payload );
     }
-
-    public Basket CurrentBasket { get; }
-
-	public bool IsSelected( Image image )
-	{
-		return false;
-	}
 
     public async Task<Basket> Create(string name, int? userId)
     {

@@ -93,7 +93,7 @@ else
     async Task AddSelectedToBasket()
     {
         var selected = selectionService.Selection.ToList();
-        await basketService.SetBasketState(selected, true);
+        await basketService.SetBasketState(selected.Select( x => x.ImageId ).ToList(), true);
 
         statusService.UpdateStatus( $"{selected.Count()} images added to the basket" );
     }

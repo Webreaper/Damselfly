@@ -36,7 +36,7 @@
         else
         {
              <div class="damselfly-exportlist">
-                @if (People != null && People.Any() )
+                @if (People.Any() )
                 {
                     @foreach (var person in People)
                     {
@@ -45,7 +45,7 @@
                 }
                 else
                 {
-                    <p>Loading...</p>
+                    <p>There are no people currently listed in Damselfly.</p>
                 }
             </div>
         }

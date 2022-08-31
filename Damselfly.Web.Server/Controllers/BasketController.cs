@@ -1,4 +1,5 @@
 ﻿using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -53,6 +54,12 @@ public class BasketController : ControllerBase
     public async Task<ICollection<Basket>> GetUserBaskets()
     {
         return await _service.GetUserBaskets(null);
+    }
+
+    [HttpPost("/api/basket/state")]
+    public async Task SetBasketState( BasketStateRequest req )
+    {
+        await _service.SetBasketState(req.ImageIds, req.NewState, req.BasketId );
     }
 }
 

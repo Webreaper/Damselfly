@@ -197,9 +197,9 @@ public class BasketService : IBasketService
     /// <param name="image"></param>
     /// <param name="newState"></param>
     /// <param name="basket"></param>
-    public async Task SetBasketState(ICollection<Image> images, bool newState )
+    public async Task SetBasketState(ICollection<int> images, bool newState )
     {
-        await SetBasketState(images, newState, CurrentBasket);
+        await SetBasketState(images, newState, CurrentBasket.BasketId);
     }
 
     /// <summary>
@@ -208,7 +208,7 @@ public class BasketService : IBasketService
     /// <param name="image"></param>
     /// <param name="newState"></param>
     /// <param name="basket"></param>
-    public async Task SetBasketState( ICollection<Image> images, bool newState, Basket basket )
+    public async Task SetBasketState( ICollection<int> images, bool newState, int? basketId )
     {
         try
         {
@@ -218,21 +218,21 @@ public class BasketService : IBasketService
             bool changed = false;
             var watch = new Stopwatch("SetSelection");
 
-            if (basket == null)
-                basket = CurrentBasket;
+            if (basketId == null)
+                basketId = CurrentBasket.BasketId;
 
-            var existingEntries = db.BasketEntries.Where(x => x.BasketId == basket.BasketId &&
-                        images.Select(img => img.ImageId).Contains(x.ImageId)).ToList();
+            var existingEntries = db.BasketEntries.Where(x => x.BasketId == basketId &&
+                        images.Contains(x.ImageId)).ToList();
 
             if (newState)
             {
                 // TODO: skip existing. Do we need this?!
-                var imagesToAdd = images.Where(img => !existingEntries.Select(x => x.ImageId).Contains( img.ImageId ) ).ToList();
+                var imagesToAdd = images.Where(imageId => !existingEntries.Select(x => x.ImageId).Contains( imageId ) ).ToList();
 
                 var basketEntries = imagesToAdd.Select(img => new BasketEntry
                             {
-                                ImageId = img.ImageId,
-                                BasketId = basket.BasketId,
+                                ImageId = img,
+                                BasketId = basketId.Value,
                                 DateAdded = DateTime.UtcNow
                             }).ToList();
 
@@ -240,18 +240,19 @@ public class BasketService : IBasketService
                 {
                     await db.BulkInsert(db.BasketEntries, basketEntries);
 
-                    if (CurrentBasket.BasketId == basket.BasketId)
+                    if (CurrentBasket.BasketId == basketId)
                     {
-                        imagesToAdd.ForEach(img =>
+                        foreach (var img in imagesToAdd)
+                        {
+                            var actualImage = await _imageCache.GetCachedImage(img);
+                            if (actualImage.BasketEntries.Any(x => x.BasketId == basketId))
                             {
-                                if (img.BasketEntries.Any(x => x.BasketId == basket.BasketId))
-                                {
-                                    // Associate the basket entry with the image
-                                    img.BasketEntries.Add( basketEntries.First( x => x.ImageId == img.ImageId ) );
-                                }
+                                // Associate the basket entry with the image
+                                actualImage.BasketEntries.Add(basketEntries.First(x => x.ImageId == img));
+                            }
 
-                                BasketImages.Add(img);
-                            });
+                            BasketImages.Add(actualImage);
+                        }
 
                         changed = true;
                         _statusService.UpdateStatus( $"Added {imagesToAdd.Count} image to the basket {CurrentBasket.Name}." );
@@ -262,14 +263,15 @@ public class BasketService : IBasketService
             {
                 if( await db.BulkDelete( db.BasketEntries, existingEntries ) )
                 {
-                    foreach( var image in images )
+                    foreach( var imageId in images )
                     {
-                        image.BasketEntries.RemoveAll(x => x.BasketId == basket.BasketId);
+                        var actualImage = await _imageCache.GetCachedImage(imageId);
+                        actualImage.BasketEntries.RemoveAll(x => x.BasketId == basketId);
                     }
 
-                    if (CurrentBasket.BasketId == basket.BasketId)
+                    if (CurrentBasket.BasketId == basketId)
                     {
-                        BasketImages.RemoveAll(x => images.Select(x => x.ImageId).Contains(x.ImageId));
+                        BasketImages.RemoveAll(x => images.Contains(x.ImageId));
                         changed = true;
 
                         _statusService.UpdateStatus( $"Removed {existingEntries.Count} images from the basket {CurrentBasket.Name}." );

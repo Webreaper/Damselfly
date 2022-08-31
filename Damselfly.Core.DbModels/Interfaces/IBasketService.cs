@@ -13,7 +13,7 @@ public interface IBasketService
     event Action OnBasketChanged;
     Task<Basket> Create(string name, int? userId);
     Task Save(Basket basket);
-    Task SetBasketState(ICollection<Image> images, bool newState, Basket basket = null);
+    Task SetBasketState(ICollection<int> imageIds, bool newState, int? basketId = null);
     Task<Basket> SwitchBasketById(int basketId);
     Task<Basket> SwitchToDefaultBasket(int? userId);
     Task<ICollection<Basket>> GetUserBaskets(int? userId);
