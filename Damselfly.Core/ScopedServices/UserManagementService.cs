@@ -130,13 +130,13 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="newRoleSet"></param>
     /// <returns></returns>
-    public async Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, string newRole)
+    public async Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
     {
         var result = await _userManager.UpdateAsync(user);
 
         if (result.Succeeded)
         {
-            var syncResult = await SyncUserRoles(user, new List<string> { newRole });
+            var syncResult = await SyncUserRoles(user, newRoles, true);
 
             if( syncResult != null )
             {
@@ -223,7 +223,7 @@ public class UserManagementService : IUserMgmtService
             if (roles == null || !roles.Any())
                 await AddUserToDefaultRoles(newUser);
             else
-                await SyncUserRoles(newUser, roles);
+                await SyncUserRoles(newUser, roles, true);
         }
 
         return result;
@@ -240,13 +240,18 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="newRoles"></param>
     /// <returns></returns>
-    public async Task<IdentityResult> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles )
+    public async Task<IdentityResult> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles, bool addOnly )
     {
         IdentityResult result = null;
         var roles = await _userManager.GetRolesAsync( user );
 
-        var rolesToRemove = roles.Except( newRoles );
-        var rolesToAdd = newRoles.Except( roles );
+        var rolesToAdd = newRoles.Except(roles);
+
+        // Is this a full sync? Or just adding new roles?
+        var rolesToRemove = Enumerable.Empty<string>();
+        if( ! addOnly )
+            rolesToRemove = roles.Except( newRoles );
+
         var errorMsg = string.Empty;
 
         if (rolesToRemove.Contains(RoleDefinitions.s_AdminRole))

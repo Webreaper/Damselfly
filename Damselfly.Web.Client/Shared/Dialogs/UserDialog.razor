@@ -135,7 +135,7 @@
                 }
                 else
                 {
-                    result = await userService.UpdateUserAsync(User, selectedRole);
+                    result = await userService.UpdateUserAsync(User, new[] { selectedRole } );
                 }
 
                 success = result != null && result.Succeeded;

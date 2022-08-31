@@ -12,6 +12,7 @@ using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.DbModels.Models.APIModels;
+using System.Data;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -30,27 +31,30 @@ public class ClientUserMgmtService : IUserMgmtService
     // WASM: should this be here?
     public bool AllowPublicRegistration => true;
 
-    // WASM: TODO:
     public async Task<ICollection<AppIdentityUser>> GetUsers()
     {
-        return new List<AppIdentityUser>();
+        return await httpClient.CustomGetFromJsonAsync<ICollection<AppIdentityUser>>("/api/users");
     }
 
-    public Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, string newRole)
+    public async Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
     {
-        throw new NotImplementedException();
+        var req = new UserRequest { User = user, Roles = newRoles };
+        var result = await httpClient.CustomPostAsJsonAsync<UserRequest, IdentityResult>("/api/users", req);
+        return result;
     }
 
-    public Task<IdentityResult> SetUserPasswordAsync(AppIdentityUser user, string password)
+    public async Task<IdentityResult> SetUserPasswordAsync(AppIdentityUser user, string password)
     {
-        throw new NotImplementedException();
+        var req = new UserRequest { User = user, Password = password };
+        var result = await httpClient.CustomPostAsJsonAsync<UserRequest, IdentityResult>("/api/users", req);
+        return result;
     }
 
     public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null)
     {
         // /api/users
-        var req = new NewUserRequest { User = newUser, Password = password, Roles = roles };
-        var result = await httpClient.CustomPutAsJsonAsync<NewUserRequest, IdentityResult>("/api/users", req);
+        var req = new UserRequest { User = newUser, Password = password, Roles = roles };
+        var result = await httpClient.CustomPutAsJsonAsync<UserRequest, IdentityResult>("/api/users", req);
 
         return result;
     }
