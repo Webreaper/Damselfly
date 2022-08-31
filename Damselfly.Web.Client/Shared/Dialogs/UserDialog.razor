@@ -67,7 +67,7 @@
 
     private string selectedRole, errorMsg;
 
-    private ICollection<ApplicationRole> allRoles;
+    private List<ApplicationRole> allRoles = new List<ApplicationRole>();
 
     private void DisplayError( string errorText )
     {
@@ -163,7 +163,7 @@
             // Default
             selectedRole = RoleDefinitions.s_UserRole;
 
-            allRoles = await userService.GetRoles();
+            allRoles.AddRange( await userService.GetRoles() );
 
             if (User.UserRoles != null && User.UserRoles.Any())
             {
@@ -179,9 +179,9 @@
                     var role = User.UserRoles.First();
                     selectedRole = role.Role.Name;
                 }
-
-                StateHasChanged();
             }
+
+            StateHasChanged();
         }
     }
 

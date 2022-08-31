@@ -8,34 +8,43 @@
     <h1>Damselfly Information</h1>
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
         <MudTabPanel Text="Credits">
-            <About />
+            <ErrorBoundary>
+                <About />
+            </ErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Damselfly Desktop">
-            @if (FileExporter != null && FileExporter.IsDesktopHosted)
-            {
-                <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
-            }
-            else
-            {
-                <p>
-                    The Damselfly Desktop app is a special container app which gives you closer integration between
-                    Damselfly and your desktop computer. When you run Damselfly in the app, you can copy photos directly
-                    from the server to a local folder of your choice, instantly, without needing to download or extract
-                    them, and preserving the folder structure from the server.
-                </p>
-            }
-            <DesktopAppDownload />
-
+            <ErrorBoundary>
+                @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                {
+                    <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
+                }
+                else
+                {
+                    <p>
+                        The Damselfly Desktop app is a special container app which gives you closer integration between
+                        Damselfly and your desktop computer. When you run Damselfly in the app, you can copy photos directly
+                        from the server to a local folder of your choice, instantly, without needing to download or extract
+                        them, and preserving the folder structure from the server.
+                    </p>
+                }
+                <DesktopAppDownload />
+            </ErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Status">
-            <Stats />
+            <ErrorBoundary>
+                <Stats />
+            </ErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Tasks">
-            <h4>Task Statuses:</h4>
-            <TaskList />
+            <ErrorBoundary>
+                <h4>Task Statuses:</h4>
+                <TaskList />
+            </ErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Logs">
-            <LogView />
+            <ErrorBoundary>
+                <LogView />
+            </ErrorBoundary>
         </MudTabPanel>
     </MudTabs>
 </div>

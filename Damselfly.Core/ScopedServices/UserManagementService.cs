@@ -136,7 +136,7 @@ public class UserManagementService : IUserMgmtService
 
         if (result.Succeeded)
         {
-            var syncResult = await SyncUserRoles(user, newRoles, true);
+            var syncResult = await SyncUserRoles(user, newRoles, false);
 
             if( syncResult != null )
             {
@@ -223,7 +223,7 @@ public class UserManagementService : IUserMgmtService
             if (roles == null || !roles.Any())
                 await AddUserToDefaultRoles(newUser);
             else
-                await SyncUserRoles(newUser, roles, true);
+                await SyncUserRoles(newUser, roles, false);
         }
 
         return result;
@@ -242,7 +242,8 @@ public class UserManagementService : IUserMgmtService
     /// <returns></returns>
     public async Task<IdentityResult> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles, bool addOnly )
     {
-        IdentityResult result = null;
+        IdentityResult result = new IdentityResult();
+
         var roles = await _userManager.GetRolesAsync( user );
 
         var rolesToAdd = newRoles.Except(roles);
@@ -283,7 +284,7 @@ public class UserManagementService : IUserMgmtService
             }
         }
 
-        if( (result == null || result.Succeeded) && rolesToAdd.Any())
+        if( result.Succeeded && rolesToAdd.Any() )
         {
             prefix = $"User {user.UserName} ";
             result = await _userManager.AddToRolesAsync(user, rolesToAdd);

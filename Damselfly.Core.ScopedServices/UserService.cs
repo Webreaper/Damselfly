@@ -50,7 +50,7 @@ public class UserService : IUserService, IDisposable
         _userId = GetUserIdFromPrincipal( authState );
     }
 
-    private int GetUserIdFromPrincipal( AuthenticationState authState  )
+    private int? GetUserIdFromPrincipal( AuthenticationState authState  )
     {
         try
         {
@@ -65,7 +65,7 @@ public class UserService : IUserService, IDisposable
             }
         }
         catch { }
-        return -1;
+        return null;
     }
 
     /// <summary>

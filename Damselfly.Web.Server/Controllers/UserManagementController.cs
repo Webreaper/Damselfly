@@ -52,6 +52,6 @@ public class UserManagementController : ControllerBase
             return await _service.UpdateUserAsync(request.User, request.Roles);
         else
             return await _service.SetUserPasswordAsync(request.User, request.Password);
-    }
+        }
 }
 

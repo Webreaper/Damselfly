@@ -10,7 +10,7 @@
 @inject IDialogService DialogService
 @inject WebAssemblyStatusService wasmStatus
 @inject ILogger<Config> logger
- 
+
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
     <AuthorizeView Policy="@PolicyDefinitions.s_IsLoggedIn">
@@ -20,14 +20,14 @@
                     <ErrorBoundary>
                         <EditForm Model="settingsModel.similarityThreshold" OnValidSubmit="@HandleValidSubmit">
                             <div>
-                                <h2>Settings for @auth.User.Identity.Name</h2>
+                                <h2>Settings for @UserName(auth)</h2>
                                 <div class="damselfly-configsetting">
                                     <div class="damselfly-configfield">
-                                        <MudSelect T="ThemeConfig" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
+                                        <MudSelect T="string" Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
                                             @foreach (var choice in allThemes)
                                             {
-                                                <MudSelectItem T="ThemeConfig" Value="@choice">
-                                                    @choice.Name.Transform(To.SentenceCase)
+                                                <MudSelectItem T="string" Value="@choice">
+                                                    @choice.Transform(To.SentenceCase)
                                                 </MudSelectItem>
                                             }
                                         </MudSelect>
@@ -324,22 +324,25 @@
 </div>
 
 @code {
-    private ICollection<ThemeConfig> allThemes;
+    private List<string> allThemes = new List<string>();
+    private string UserName(AuthenticationState auth) => auth.User.Identity.Name;
 
-    private SystemConfigSettings settingsModel;
-    private ThemeConfig selectedTheme;
+    private SystemConfigSettings settingsModel = new SystemConfigSettings();
+    private string selectedTheme;
 
     protected override async Task OnInitializedAsync()
     {
-        settingsModel = await settingsService.GetSystemSettings();
+        var existingSettings = await settingsService.GetSystemSettings();
 
-        if (settingsModel is null)
-            settingsModel = new SystemConfigSettings();
+        if (existingSettings is not null)
+            settingsModel = existingSettings;
 
-        allThemes = await themeService.GetAllThemes();
+        var themes = await themeService.GetAllThemes();
+        allThemes.AddRange( themes.Select(x => x.Name) );
 
-        var currentTheme = configService.Get(ConfigSettings.Theme, "Green");
-        selectedTheme = await themeService.GetThemeConfig(currentTheme);
+        selectedTheme = configService.Get(ConfigSettings.Theme, "Green");
+
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -348,7 +351,7 @@
         {
             var allUsers = await userService.GetUsers();
 
-            if (!allUsers.Any() )
+            if (!allUsers.Any())
             {
                 logger.LogWarning("Config Page: no users, checking if a new admin user needs to be created.");
                 // WASM TODO
@@ -362,7 +365,7 @@
     }
 
     private Dictionary<int, string> CPULevels = new Dictionary<int, string>
-    {
+{
         { 0, "0% (Disabled)" },
         { 25, "25%" },
         { 50, "50%" },
@@ -372,17 +375,17 @@
 
     private async void HandleValidSubmit()
     {
-        statusService.UpdateStatus( "Settings saved." );
+        statusService.UpdateStatus("Settings saved.");
 
         try
         {
             await settingsService.SaveSystemSettings(settingsModel);
-
-            await themeService.SetNewTheme(selectedTheme);
+            var themeConfig = await themeService.GetThemeConfig(selectedTheme);
+            await themeService.SetNewTheme(themeConfig);
         }
         catch (Exception ex)
         {
-            statusService.UpdateStatus( $"Error saving settings: {ex.Message}" );
+            statusService.UpdateStatus($"Error saving settings: {ex.Message}");
             Logging.LogError($"Error saving settings: {ex}");
         }
     }
