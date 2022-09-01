@@ -236,6 +236,9 @@ public class Program
             app.UseExceptionHandler("/Error");
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
+
+            // Adding this breaks WASM debugging
+            app.Urls.Add($"http://+:{cmdLineOptions.Port}");
         }
 
         app.UseHttpsRedirection();
@@ -274,8 +277,6 @@ public class Program
 
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);
-
-        app.Urls.Add($"http://+:{cmdLineOptions.Port}");
 
         Logging.StartupCompleted();
         Logging.Log("Starting Damselfly webserver...");
