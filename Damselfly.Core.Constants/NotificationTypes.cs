@@ -10,5 +10,6 @@ public enum NotificationType
     FoldersChanged = 2,
     WorkStatusChanged = 3,
     CacheEvict = 4,
-    FavouritesChanged = 5
+    FavouritesChanged = 5,
+    BasketChanged = 6
 }

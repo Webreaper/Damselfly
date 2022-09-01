@@ -16,11 +16,20 @@ public class ClientBasketService : IBasketService
 {
     protected ILogger<ClientBasketService> _logger;
     private readonly RestClient httpClient;
+    private readonly NotificationsService _notifications;
 
-    public ClientBasketService(RestClient client, ILogger<ClientBasketService> logger) 
+    public ClientBasketService(RestClient client, NotificationsService notifications, ILogger<ClientBasketService> logger) 
     {
         httpClient = client;
+        _notifications = notifications;
         _logger = logger;
+
+        _notifications.SubscribeToNotification(NotificationType.BasketChanged, HandleServerBasketChange);
+    }
+
+    private void HandleServerBasketChange()
+    {
+        OnBasketChanged?.Invoke();
     }
 
     /// <summary>
@@ -39,7 +48,7 @@ public class ClientBasketService : IBasketService
         CurrentBasket = newBasket;
 
         BasketImages.Clear();
-        if( newBasket.BasketEntries is not null )
+        if( newBasket.BasketEntries is not null && newBasket.BasketEntries.Any() )
         {
             BasketImages.AddRange(newBasket.BasketEntries.Select(x => x.Image));
             _logger.LogInformation($"Added {BasketImages.Count()} basket images.");
@@ -107,6 +116,8 @@ public class ClientBasketService : IBasketService
                     NewState = newState
                 };
         await httpClient.CustomPostAsJsonAsync($"/api/basketimage/state",  payload );
+
+        OnBasketChanged?.Invoke();
     }
 
     public async Task<Basket> Create(string name, int? userId)

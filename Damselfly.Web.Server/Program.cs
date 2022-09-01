@@ -237,7 +237,7 @@ public class Program
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
 
-            // Adding this breaks WASM debugging
+            // Adding this breaks WASM debugging - so only enable it if not in development
             app.Urls.Add($"http://+:{cmdLineOptions.Port}");
         }
 

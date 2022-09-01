@@ -25,6 +25,7 @@ public class BasketService : IBasketService
     private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ServerNotifierService _notifier;
 
     private const string s_MyBasket = "My Basket";
     private const string s_DefaultBasket = "default";
@@ -42,40 +43,44 @@ public class BasketService : IBasketService
     public BasketService(IServiceScopeFactory scopeFactory,
                          IStatusService statusService,
                             DownloadService downloadService,
-                            ImageCache imageCache)
+                            ImageCache imageCache, ServerNotifierService notifier)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageCache = imageCache;
         _downloadService = downloadService;
+        _notifier = notifier;
     }
 
     private void NotifyStateChanged()
     {
         OnBasketChanged?.Invoke();
+
+        _ = _notifier.NotifyClients(Constants.NotificationType.BasketChanged);
     }
 
     /// <summary>
     /// Loads the selected images in the basket, and adds them to the in-memory
     /// SelectedImages collection. 
     /// </summary>
-    public async Task LoadSelectedImages()
+    public async Task LoadSelectedImages( Basket basket )
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var watch = new Stopwatch("GetSelectedImages");
 
-        // TODO Assign current basket?
-        var images = await db.Baskets.Where(x => x.BasketId == CurrentBasket.BasketId)
-                        .Include(x => x.BasketEntries)
-                        .ThenInclude(b => b.Image)
-                        .SelectMany(x => x.BasketEntries)
-                        .Select(x => x.ImageId)
-                        .ToListAsync();
+        // Get the list of image IDs
+        var imageIds = basket.BasketEntries
+                           .Select(x => x.ImageId)
+                           .ToList();
 
         // Cache and enrich the entries
-        var enrichedImages = await _imageCache.GetCachedImages(images); 
+        var enrichedImages = await _imageCache.GetCachedImages(imageIds);
+
+        // Replace the images with the enriched ones
+        foreach (var be in basket.BasketEntries)
+            be.Image = enrichedImages.First(x => x.ImageId == be.ImageId);
 
         watch.Stop();
 
@@ -221,41 +226,43 @@ public class BasketService : IBasketService
             if (basketId == null)
                 basketId = CurrentBasket.BasketId;
 
+            var basket = await db.Baskets.Where(x => x.BasketId == basketId)
+                                .Include( x => x.BasketEntries )
+                                .FirstOrDefaultAsync();
+
             var existingEntries = db.BasketEntries.Where(x => x.BasketId == basketId &&
                         images.Contains(x.ImageId)).ToList();
 
             if (newState)
             {
                 // TODO: skip existing. Do we need this?!
-                var imagesToAdd = images.Where(imageId => !existingEntries.Select(x => x.ImageId).Contains( imageId ) ).ToList();
+                var newBasketEntries = images.Except(basket.BasketEntries.Select(x => x.ImageId) )
+                                          .Select(img => new BasketEntry
+                                            {
+                                                ImageId = img,
+                                                BasketId = basketId.Value,
+                                                DateAdded = DateTime.UtcNow
+                                            }).ToList();
 
-                var basketEntries = imagesToAdd.Select(img => new BasketEntry
-                            {
-                                ImageId = img,
-                                BasketId = basketId.Value,
-                                DateAdded = DateTime.UtcNow
-                            }).ToList();
-
-                if (basketEntries.Any())
+                if (newBasketEntries.Any())
                 {
-                    await db.BulkInsert(db.BasketEntries, basketEntries);
+                    await db.BulkInsert(db.BasketEntries, newBasketEntries);
 
-                    if (CurrentBasket.BasketId == basketId)
+                    changed = true;
+                    _statusService.UpdateStatus($"Added {newBasketEntries.Count} image to the basket {basket.Name}.");
+
+                    foreach (var img in newBasketEntries)
                     {
-                        foreach (var img in imagesToAdd)
-                        {
-                            var actualImage = await _imageCache.GetCachedImage(img);
-                            if (actualImage.BasketEntries.Any(x => x.BasketId == basketId))
-                            {
-                                // Associate the basket entry with the image
-                                actualImage.BasketEntries.Add(basketEntries.First(x => x.ImageId == img));
-                            }
+                        var actualImage = await _imageCache.GetCachedImage(img.ImageId);
 
-                            BasketImages.Add(actualImage);
+                        if (actualImage.BasketEntries.Any(x => x.BasketId == basketId))
+                        {
+                            // Associate the basket entry with the image in the cache
+                            actualImage.BasketEntries.Add( newBasketEntries.First(x => x.ImageId == img.ImageId));
                         }
 
-                        changed = true;
-                        _statusService.UpdateStatus( $"Added {imagesToAdd.Count} image to the basket {CurrentBasket.Name}." );
+                        if( CurrentBasket != null && CurrentBasket.BasketId == basket.BasketId )
+                            BasketImages.Add( actualImage );
                     }
                 }
             }
@@ -269,13 +276,11 @@ public class BasketService : IBasketService
                         actualImage.BasketEntries.RemoveAll(x => x.BasketId == basketId);
                     }
 
-                    if (CurrentBasket.BasketId == basketId)
-                    {
-                        BasketImages.RemoveAll(x => images.Contains(x.ImageId));
-                        changed = true;
+                    changed = true;
+                    _statusService.UpdateStatus($"Removed {existingEntries.Count} images from the basket {basket.Name}.");
 
-                        _statusService.UpdateStatus( $"Removed {existingEntries.Count} images from the basket {CurrentBasket.Name}." );
-                    }
+                    if(CurrentBasket != null && CurrentBasket.BasketId == basketId)
+                        BasketImages.RemoveAll(x => images.Contains(x.ImageId));
                 }
             }
 
@@ -333,18 +338,17 @@ public class BasketService : IBasketService
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        var newBasket = await db.Baskets.Where(x => x.BasketId.Equals(basketId)).FirstOrDefaultAsync();
+        var newBasket = await db.Baskets.Where(x => x.BasketId.Equals(basketId))
+                                        .Include(x => x.BasketEntries)
+                                        .FirstOrDefaultAsync();
 
         if (newBasket != null)
         {
-            // Only do something if anything's changed
-            if (CurrentBasket == null || newBasket.BasketId != CurrentBasket.BasketId)
-            {
-                // Switch the actual basket
-                CurrentBasket = newBasket;
+            // Load and enrich the images
+            await LoadSelectedImages(newBasket);
 
-                await LoadSelectedImages();
-            }
+            // Switch the actual basket
+            CurrentBasket = newBasket;
         }
 
         return newBasket;
@@ -371,6 +375,7 @@ public class BasketService : IBasketService
             // the list
             defaultBasket = userBaskets.First();
         }
+
         await SwitchBasketById(defaultBasket.BasketId);
 
         return defaultBasket;
