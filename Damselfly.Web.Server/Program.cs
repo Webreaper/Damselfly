@@ -238,8 +238,7 @@ public class Program
             app.UseHsts();
         }
 
-        // Disable this for now
-        // app.UseHttpsRedirection();
+        app.UseHttpsRedirection();
 
         // TODO: Do we need this if we serve all the images via the controller?
         app.UseStaticFiles();

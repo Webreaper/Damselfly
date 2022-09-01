@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
@@ -48,10 +49,10 @@ public class ConfigController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPut("/api/config/{name}")]
-    public void Set( string name, ConfigSetting setting )
+    [HttpPut("/api/config")]
+    public void Set( ConfigSetRequest req )
     {
-        _configService.Set(setting.Name, setting.Value);
+        _configService.Set( req.Name, req.NewValue );
     }
 
     [HttpGet("/api/config")]

@@ -57,7 +57,7 @@ public abstract class BaseConfigService
         return true;
     }
 
-    protected virtual ConfigSetting GetSetting(string name)
+    public virtual ConfigSetting GetSetting(string name)
     {
         if (_cache.TryGetValue(name, out var value))
             return value;

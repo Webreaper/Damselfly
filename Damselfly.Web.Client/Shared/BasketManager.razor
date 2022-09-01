@@ -7,17 +7,19 @@
 @inject NavigationManager NavigationManager
 @inject IUserService userService
 @inject IConfigService userConfigService
+@inject ILogger<BasketManager> logger
 
-<div class="SearchBox">
-    <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
-    <select @bind="SelectedBasketId" class="SearchField">
-        @foreach (var basket in baskets)
-        {
-            <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
-        }
-    </select>
-</div>
-
+<ErrorBoundary>
+    <div class="SearchBox">
+        <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
+        <select @bind="SelectedBasketId" class="SearchField">
+            @foreach (var basket in baskets)
+            {
+                <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
+            }
+        </select>
+    </div>
+</ErrorBoundary>
 @code {
     readonly List<Basket> baskets = new List<Basket>();
     string NewBasketName { get; set; }
@@ -28,12 +30,12 @@
         set { _ = NewBasketSelected(value); }
     }
 
-    
-
     private async Task NewBasketSelected(int selectedBasketId)
     {
+        logger.LogInformation($"Switching to basket: {selectedBasketId}");
         var newBasket = await basketService.SwitchBasketById(selectedBasketId);
         userConfigService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+        StateHasChanged();
     }
 
     private string PrivateIndicator(Basket basket)

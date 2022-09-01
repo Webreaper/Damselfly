@@ -3,6 +3,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -15,7 +16,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
-// TODO: Write values to the back-end service
 public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService, IDisposable
 {
     private RestClient httpClient;
@@ -53,22 +53,25 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
         }
     }
 
-    public override bool SetSetting(string name, ConfigSetting value)
+    public override bool SetSetting(string name, ConfigSetting setting)
     {
-        if (!base.SetSetting(name, value))
+        if (!base.SetSetting(name, setting))
             return false;
 
-        _ = httpClient.CustomPutAsJsonAsync($"/api/config/{name}", value);
+        var payload = new ConfigSetRequest { Name = name, NewValue = setting.Value };
+        _ = httpClient.CustomPutAsJsonAsync($"/api/config", payload);
         return true;
     }
 
-    public virtual ConfigSetting GetSetting(string name)
+    public override ConfigSetting GetSetting(string name)
     {
         var existing = base.GetSetting(name);
 
         if( existing == null )
         {
-            existing = httpClient.CustomGetFromJsonAsync<ConfigSetting>($"/api/config/{name}").Result;
+            // TODO: WASM
+            // Can we just rely on the cache here? Or should we fix this?
+            // existing = httpClient.CustomGetFromJsonAsync<ConfigSetting>($"/api/config/{name}");
         }
 
         return existing;

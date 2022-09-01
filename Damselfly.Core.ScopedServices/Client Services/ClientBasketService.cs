@@ -31,7 +31,22 @@ public class ClientBasketService : IBasketService
     // WASM TODO
     public event Action OnBasketChanged;
 
-    public Basket CurrentBasket { get; }
+    public Basket CurrentBasket { get; private set;  }
+
+    public void ChangeBasket( Basket newBasket )
+    {
+        _logger.LogInformation($"Loaded basket {newBasket.Name}...");
+        CurrentBasket = newBasket;
+
+        BasketImages.Clear();
+        if( newBasket.BasketEntries is not null )
+        {
+            BasketImages.AddRange(newBasket.BasketEntries.Select(x => x.Image));
+            _logger.LogInformation($"Added {BasketImages.Count()} basket images.");
+        }
+
+        OnBasketChanged?.Invoke();
+    }
 
     public bool IsSelected(Image image)
     {
@@ -50,21 +65,32 @@ public class ClientBasketService : IBasketService
 
     public async Task<Basket> SwitchBasketById(int basketId)
     {
-        var basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
-
-        BasketImages.Clear();
-        BasketImages.AddRange(basket.BasketEntries.Select(x => x.Image) );
-
-        Console.WriteLine($"Loaded {BasketImages.Count()} images in basket.");
-        return basket;
+        Console.WriteLine($"Calling SwitchBasketById: {basketId}");
+        try
+        {
+            var basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
+            ChangeBasket(basket);
+            return basket;
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError($"Exception: {ex}");
+            throw;
+        }
     }
 
     public async Task<Basket> SwitchToDefaultBasket(int? userId)
     {
-        if( userId is null )
-            return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/default");
+        Basket basket;
 
-        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/default/{userId}");
+        if( userId is null )
+            basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault");
+        else
+            basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault/{userId}");
+
+        ChangeBasket(basket);
+
+        return basket;
     }
 
     public async Task SetBasketState( ICollection<int> images, bool newState, int? basketId = null)
@@ -80,13 +106,13 @@ public class ClientBasketService : IBasketService
                     ImageIds = images,
                     NewState = newState
                 };
-        await httpClient.CustomPostAsJsonAsync($"/api/basket/state",  payload );
+        await httpClient.CustomPostAsJsonAsync($"/api/basketimage/state",  payload );
     }
 
     public async Task<Basket> Create(string name, int? userId)
     {
-        var basket = new Basket { Name = name, UserId = userId };
-        return await httpClient.CustomPostAsJsonAsync<Basket, Basket>($"/api/basket", basket);
+        var payload = new BasketCreateRequest { Name = name, UserId = userId };
+        return await httpClient.CustomPostAsJsonAsync<BasketCreateRequest, Basket>($"/api/basket", payload);
     }
 
     public async Task Save(Basket basket)

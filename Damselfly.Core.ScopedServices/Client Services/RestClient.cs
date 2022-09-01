@@ -63,7 +63,7 @@ public class RestClient
         {
             // WASM:
             if (ex.Message.Contains("'<' is an invalid start of a value"))
-                throw new ArgumentException($"Possible 404 exception for {requestUri}");
+                throw new ArgumentException($"Possible 404 / Page Not Found exception for {requestUri}");
             else
                 throw;
         }
