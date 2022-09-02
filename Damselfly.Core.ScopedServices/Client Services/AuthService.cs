@@ -38,13 +38,16 @@ public class AuthService : IAuthService
     public async Task<LoginResult> Login(LoginModel loginModel)
     {
         var loginResult = await _httpClient.CustomPostAsJsonAsync<LoginModel, LoginResult>("api/Login", loginModel);
+        var provider = _authenticationStateProvider as ApiAuthenticationStateProvider;
 
         if (loginResult.Successful)
         {
             await _localStorage.SetItemAsync("authToken", loginResult.Token);
-            ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(loginModel.Email);
+            provider.MarkUserAsAuthenticated(loginModel.Email);
             _httpClient.AuthHeader = new AuthenticationHeaderValue("bearer", loginResult.Token);
         }
+
+        provider.RefreshAuthState();
 
         return loginResult;
     }

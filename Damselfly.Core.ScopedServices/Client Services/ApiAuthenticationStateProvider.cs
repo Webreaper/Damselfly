@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices.ClientServices;
 
@@ -18,12 +19,15 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
 {
     private readonly RestClient _httpClient;
     private readonly ILocalStorageService _localStorage;
+    private readonly ILogger<ApiAuthenticationStateProvider> _logger;
 
-    public ApiAuthenticationStateProvider(RestClient httpClient, ILocalStorageService localStorage)
+    public ApiAuthenticationStateProvider(RestClient httpClient, ILocalStorageService localStorage, ILogger<ApiAuthenticationStateProvider> logger )
     {
+        _logger = logger;
         _httpClient = httpClient;
         _localStorage = localStorage;
     }
+
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var savedToken = await _localStorage.GetItemAsync<string>("authToken");
@@ -67,20 +71,25 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
             {
                 var parsedRoles = JsonSerializer.Deserialize<string[]>(roles.ToString());
 
+                _logger.LogInformation($"Parsed roles from JWT:");
                 foreach (var parsedRole in parsedRoles)
                 {
                     claims.Add(new Claim(ClaimTypes.Role, parsedRole));
+                    _logger.LogTrace($"  [{roles.ToString()}]");
                 }
             }
             else
             {
                 claims.Add(new Claim(ClaimTypes.Role, roles.ToString()));
+                _logger.LogTrace($"Parsed role from JWT: [{roles.ToString()}]");
             }
 
             keyValuePairs.Remove(ClaimTypes.Role);
         }
 
         claims.AddRange(keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString())));
+
+        _logger.LogTrace($"Parsed Claims from JWT: {string.Join(", ", keyValuePairs.Select(x => $"{x.Key} = {x.Value}"))}");
 
         return claims;
     }
@@ -94,4 +103,6 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
         }
         return Convert.FromBase64String(base64);
     }
+
+   
 }
