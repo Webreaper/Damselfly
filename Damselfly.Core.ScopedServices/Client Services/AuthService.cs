@@ -47,6 +47,8 @@ public class AuthService : IAuthService
             _httpClient.AuthHeader = new AuthenticationHeaderValue("bearer", loginResult.Token);
         }
 
+        provider.RefreshAuthState();
+
         return loginResult;
     }
 

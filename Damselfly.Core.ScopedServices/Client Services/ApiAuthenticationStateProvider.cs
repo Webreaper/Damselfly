@@ -103,4 +103,11 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
         }
         return Convert.FromBase64String(base64);
     }
+
+    public void RefreshAuthState()
+    {
+        var state = GetAuthenticationStateAsync();
+
+        NotifyAuthenticationStateChanged(state);
+    }
 }
