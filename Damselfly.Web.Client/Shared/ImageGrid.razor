@@ -1,13 +1,14 @@
 ﻿
 @inject ISearchService searchService
 @inject IConfigService configService
-@inject IBasketService basketService
+@inject IUserBasketService basketService
 @inject IImageCacheService imageCache
 @inject ILogger<ImageGrid> logger
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 @inherits ImageGridBase
 
+@using Damselfly.Core.DbModels.Models.APIModels
 @using System.Collections.Concurrent
 
 <LocalFileExporter @ref="FileExporter" />
@@ -239,7 +240,7 @@
         }
     }
 
-    protected void BasketChanged()
+    protected void BasketChanged(BasketChanged changeType)
     {
         InvokeAsync(StateHasChanged);
     }
@@ -278,7 +279,7 @@
 
             ChangeThumbSize(CurrentThumbSize);
 
-            if( gridImages.Count < searchService.SearchResults.Count() )
+            if (gridImages.Count < searchService.SearchResults.Count())
             {
                 // First add the ones we've already got in the search service
                 var existingSearchResults = await imageCache.GetCachedImages(searchService.SearchResults);

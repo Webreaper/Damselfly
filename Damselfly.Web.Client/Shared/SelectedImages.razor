@@ -1,5 +1,5 @@
 ﻿
-@inject IBasketService basketService
+@inject IUserBasketService basketService
 @inject NavigationManager NavigationManager
 @inject IWordpressService wpService
 @inject IUserStatusService statusService
@@ -64,7 +64,8 @@ else
 
     private void UploadToWordPress()
     {
-        _ = wpService.UploadImagesToWordpress(basketService.BasketImages);
+        var images = basketService.CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
+        _ = wpService.UploadImagesToWordpress(images);
     }
 
     private async Task BasketCopy()
@@ -93,7 +94,7 @@ else
     async Task AddSelectedToBasket()
     {
         var selected = selectionService.Selection.ToList();
-        await basketService.SetBasketState(selected.Select( x => x.ImageId ).ToList(), true);
+        await basketService.SetImageBasketState(true, selected.Select( x => x.ImageId ).ToList() );
 
         statusService.UpdateStatus( $"{selected.Count()} images added to the basket" );
     }
@@ -131,7 +132,7 @@ else
         InvokeAsync(StateHasChanged);
     }
 
-    protected void BasketImagesChanged()
+    protected void BasketImagesChanged( BasketChanged change )
     {
         // Marshall onto the dispatcher thread
         _ = LoadData();

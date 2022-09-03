@@ -12,7 +12,7 @@ using Damselfly.Core.DbModels.Models.APIModels;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientBasketService : IBasketService
+public class ClientBasketService : IUserBasketService, IBasketService
 {
     protected ILogger<ClientBasketService> _logger;
     private readonly RestClient httpClient;
@@ -24,40 +24,38 @@ public class ClientBasketService : IBasketService
         _notifications = notifications;
         _logger = logger;
 
-        _notifications.SubscribeToNotification(NotificationType.BasketChanged, HandleServerBasketChange);
+        _notifications.SubscribeToNotification<BasketChanged>(NotificationType.BasketChanged, HandleServerBasketChange);
     }
 
-    private void HandleServerBasketChange()
+    public event Action<BasketChanged> OnBasketChanged;
+
+    private void HandleServerBasketChange(BasketChanged change)
     {
-        OnBasketChanged?.Invoke();
+        if (CurrentBasket == null || CurrentBasket.BasketId == change.BasketId)
+        {
+            // It's one we care about
+            var changedBasket = GetBasketById(change.BasketId);
+
+            OnBasketChanged?.Invoke(change);
+        }
     }
 
     /// <summary>
     /// The list of selected images in the basket
     /// </summary>
-    public List<Image> BasketImages { get; private set; } = new List<Image>();
-
-    // WASM TODO
-    public event Action OnBasketChanged;
+    public List<Image> BasketImages => CurrentBasket == null ? new List<Image>() : CurrentBasket.BasketEntries.Select( x => x.Image ).ToList();
 
     public Basket CurrentBasket { get; private set;  }
 
-    public void ChangeBasket( Basket newBasket )
+    ICollection<Image> IUserBasketService.BasketImages => throw new NotImplementedException();
+
+    public void SetCurrentBasket( Basket newBasket )
     {
-        _logger.LogInformation($"Loaded basket {newBasket.Name}...");
-        CurrentBasket = newBasket;
-
-        BasketImages.Clear();
-        if( newBasket.BasketEntries is not null && newBasket.BasketEntries.Any() )
-        {
-            BasketImages.AddRange(newBasket.BasketEntries.Select(x => x.Image));
-            _logger.LogInformation($"Added {BasketImages.Count()} basket images.");
-        }
-
-        OnBasketChanged?.Invoke();
+        var change = new BasketChanged { ChangeType = BasketChangeType.BasketChanged, BasketId = newBasket.BasketId };
+        OnBasketChanged?.Invoke(change);
     }
 
-    public bool IsSelected(Image image)
+    public bool IsSelected(int basketId, Image image)
     {
         return BasketImages.Any(x => x.ImageId == image.ImageId);
     }
@@ -67,25 +65,21 @@ public class ClientBasketService : IBasketService
         await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/clear/{basketId}");
     }
 
-    public async Task DeleteBasket(int basketId)
+    public async Task Delete(int basketId)
     {
         await httpClient.CustomDeleteAsync($"/api/basket/{basketId}");
     }
 
-    public async Task<Basket> SwitchBasketById(int basketId)
+    public async Task<Basket> GetBasketById(int basketId)
     {
-        Console.WriteLine($"Calling SwitchBasketById: {basketId}");
-        try
-        {
-            var basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
-            ChangeBasket(basket);
-            return basket;
-        }
-        catch ( Exception ex )
-        {
-            _logger.LogError($"Exception: {ex}");
-            throw;
-        }
+        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
+    }
+
+    public async Task<Basket> SwitchToBasket(int basketId)
+    {
+        var newBasket = await GetBasketById(basketId);
+        SetCurrentBasket(newBasket);
+        return newBasket;
     }
 
     public async Task<Basket> SwitchToDefaultBasket(int? userId)
@@ -97,27 +91,21 @@ public class ClientBasketService : IBasketService
         else
             basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault/{userId}");
 
-        ChangeBasket(basket);
+        SetCurrentBasket(basket);
 
         return basket;
     }
 
-    public async Task SetBasketState( ICollection<int> images, bool newState, int? basketId = null)
+    public async Task SetImageBasketState( int basketId, bool newState, ICollection<int> images)
 	{
-        if (basketId == null)
-            basketId = CurrentBasket?.BasketId;
-
-        if (basketId is null)
-            throw new ArgumentException("A basket ID must be specified");
-
         var payload = new BasketStateRequest {
-                    BasketId = basketId.Value,
-                    ImageIds = images,
-                    NewState = newState
-                };
+                    BasketId = basketId,
+                    NewState = newState,
+                    ImageIds = images
+        };
         await httpClient.CustomPostAsJsonAsync($"/api/basketimage/state",  payload );
 
-        OnBasketChanged?.Invoke();
+        // We don't notify the state changed here - it'll be notified from the server
     }
 
     public async Task<Basket> Create(string name, int? userId)
@@ -131,18 +119,39 @@ public class ClientBasketService : IBasketService
         var response = await httpClient.CustomPutAsJsonAsync<Basket>($"/api/basket", basket);
     }
 
+    public async Task<Basket> GetDefaultBasket(int? userId)
+    {
+        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/baskets/{userId}");
+    }
+
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
-        try
-        {
-            return await httpClient.CustomGetFromJsonAsync<ICollection<Basket>>("/api/baskets/");
-        }
-        catch( Exception ex )
-        {
-            _logger.LogError($"Error Retrieving Baskets: {ex}");
-        }
+        return await httpClient.CustomGetFromJsonAsync<ICollection<Basket>>($"/api/baskets/{userId}");
+    }
 
-        return new List<Basket>();
+    public async Task<int> CopyImages(int sourceBasketId, int destBasketId)
+    {
+        return await httpClient.CustomGetFromJsonAsync<int>($"/api/basket/copy/{sourceBasketId}/{destBasketId}");
+    }
+
+    public async Task<int> CopyImages(int destBasketId)
+    {
+        return await CopyImages(CurrentBasket.BasketId, destBasketId);
+    }
+
+    public async Task Clear()
+    {
+        await Clear(CurrentBasket.BasketId);
+    }
+
+    public async Task SetImageBasketState(bool newState, ICollection<int> imageIds)
+    {
+        await SetImageBasketState(CurrentBasket.BasketId, newState, imageIds);
+    }
+
+    public bool IsSelected(Image image)
+    {
+        return IsSelected(CurrentBasket.BasketId, image);
     }
 }
 

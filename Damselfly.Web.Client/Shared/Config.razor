@@ -216,7 +216,7 @@
                         </ErrorBoundary>
                     </MudTabPanel>
 
-                    @if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+                    @if ( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles ))
                     {
                         <MudTabPanel Text="User Management">
                             <ErrorBoundary>

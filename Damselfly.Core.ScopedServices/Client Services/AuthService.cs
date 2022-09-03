@@ -43,7 +43,11 @@ public class AuthService : IAuthService
         if (loginResult.Successful)
         {
             await _localStorage.SetItemAsync("authToken", loginResult.Token);
-            provider.MarkUserAsAuthenticated(loginModel.Email);
+
+            // This will read the token from local storage and auth the user
+            provider.MarkUserAsAuthenticated();
+
+            // Set the token so the API controllers get it too
             _httpClient.AuthHeader = new AuthenticationHeaderValue("bearer", loginResult.Token);
         }
 

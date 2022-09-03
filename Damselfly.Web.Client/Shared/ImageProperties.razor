@@ -1,5 +1,5 @@
 ﻿
-@inject IBasketService basketService
+@inject IUserBasketService basketService
 @inject ISearchService searchService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
@@ -157,7 +157,7 @@ else
 
     private async Task SetBasketState(bool newState)
     {
-        await basketService.SetBasketState(new[] { CurrentImage.ImageId }, newState);
+        await basketService.SetImageBasketState(newState, new[] { CurrentImage.ImageId });
         searchService.NotifyStateChanged();
         // Notify the image list that the selection has changed
         StateHasChanged();
@@ -224,7 +224,7 @@ else
         basketService.OnBasketChanged -= BasketStateChanged;
     }
 
-    protected void BasketStateChanged()
+    protected void BasketStateChanged( BasketChanged change )
     {
         InvokeAsync(StateHasChanged);
     }

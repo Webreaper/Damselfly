@@ -4,7 +4,7 @@
 @inject SelectionService selectionService
 @inject ISearchService searchService
 @inject NavigationService navContext
-@inject IBasketService basketService
+@inject IUserBasketService basketService
 @inject IDownloadService downloadService
 @inject ILogger<GridImage> logger  
 @inject IDialogService DialogService
@@ -51,8 +51,8 @@ else
 
     public bool InBasket
     {
-        get { return basketService.IsSelected(CurrentImage); }
-        set { _ = SetBasketState(value); }
+        get { return basketService.IsSelected(basketService.CurrentBasket.BasketId, CurrentImage); }
+        set { _ = SetImageBasketState(value); }
     }
 
     private LocalFileExporter FileExporter;
@@ -65,9 +65,9 @@ else
     private string FadeClass = string.Empty;
     private int imageId = 0;
 
-    private async Task SetBasketState(bool newState)
+    private async Task SetImageBasketState(bool newState)
     {
-        await basketService.SetBasketState(new[] { CurrentImage.ImageId }, newState);
+        await basketService.SetImageBasketState(basketService.CurrentBasket.BasketId, newState, new[] { CurrentImage.ImageId });
 
         // Notify the image list that the selection has changed
         StateHasChanged();
@@ -148,8 +148,8 @@ else
             {
                 case 0: NavigateToImage(); break;
                 case 1: await DownloadImage(); break;
-                case 2: await basketService.SetBasketState(ContextSelection.Select( x => x.ImageId ).ToList(), false); break;
-                case 3: await basketService.SetBasketState(ContextSelection.Select( x => x.ImageId ).ToList(), true); break;
+                case 2: await SetImageBasketState( false ); break;
+                case 3: await SetImageBasketState( true); break;
                 case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
                 case 5: await ShowRescanDialog(); break;
                 case 6: FindImageSimilarTo(); break;

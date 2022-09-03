@@ -22,10 +22,10 @@ public class NavigationService
 
     public NavigationContexts Context { get; set; } = NavigationContexts.Search;
     public Image CurrentImage { get { return theImage; } set { theImage = value; NotifyStateChanged( theImage ); } }
-    private readonly IBasketService _basketService;
+    private readonly IUserBasketService _basketService;
     private readonly ISearchService _searchService;
 
-    public NavigationService( IBasketService basketService, ISearchService searchService)
+    public NavigationService(IUserBasketService basketService, ISearchService searchService)
     {
         _basketService = basketService;
         _searchService = searchService;

@@ -3,7 +3,7 @@
 @implements IDisposable
 
 @inject IDialogService DialogService
-@inject IBasketService basketService
+@inject IUserBasketService basketService
 @inject NavigationManager NavigationManager
 @inject IUserService userService
 @inject IConfigService userConfigService
@@ -21,74 +21,77 @@
     </div>
 </ErrorBoundary>
 @code {
-    readonly List<Basket> baskets = new List<Basket>();
-    string NewBasketName { get; set; }
+            readonly List<Basket> baskets = new List<Basket>();
+            string NewBasketName { get; set; }
 
     private int SelectedBasketId
-    {
-        get { return basketService.CurrentBasket == null ? -1 : basketService.CurrentBasket.BasketId; }
-        set { _ = NewBasketSelected(value); }
-    }
-
-    private async Task NewBasketSelected(int selectedBasketId)
-    {
-        logger.LogInformation($"Switching to basket: {selectedBasketId}");
-        var newBasket = await basketService.SwitchBasketById(selectedBasketId);
-        userConfigService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
-        StateHasChanged();
-    }
-
-    private string PrivateIndicator(Basket basket)
-    {
-        if (userService.RolesEnabled)
         {
-            // Shared baskets don't make sense if users and roles are disabled.
-            if (basket != null && ! basket.UserId.HasValue)
+            get { return basketService.CurrentBasket == null ? -1 : basketService.CurrentBasket.BasketId; }
+            set { _ = NewBasketSelected(value); }
+        }
+
+        private async Task NewBasketSelected(int selectedBasketId)
+        {
+            logger.LogInformation($"Switching to basket: {selectedBasketId}");
+            var newBasket = await basketService.SwitchToBasket(selectedBasketId);
+            // WASM TODO - can this go in the user basket service now?
+            userConfigService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+            StateHasChanged();
+        }
+
+        private string PrivateIndicator(Basket basket)
+        {
+            if (userService.RolesEnabled)
             {
-                return "(shared)";
+                // Shared baskets don't make sense if users and roles are disabled.
+                if (basket != null && ! basket.UserId.HasValue)
+                {
+                    return "(shared)";
+                }
+            }
+
+            return string.Empty;
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                basketService.OnBasketChanged += BasketsChanged;
+
+                await LoadBasketList();
+
+                var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId );
+                if (selectedBasketId > 0)
+                    await basketService.SwitchToBasket(selectedBasketId);
+                else
+                    await basketService.SwitchToDefaultBasket(userService.UserId);
+
+                StateHasChanged();
             }
         }
 
-        return string.Empty;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        public void Dispose()
         {
-            basketService.OnBasketChanged += BasketsChanged;
+            basketService.OnBasketChanged -= BasketsChanged;
+        }
 
-            await LoadBasketList();
+        private void BasketsChanged( BasketChanged change )
+        {
+            _ = LoadBasketList();
 
-            var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId, -1);
-            if (selectedBasketId > 0)
-                await basketService.SwitchBasketById(selectedBasketId);
-            else
-                await basketService.SwitchToDefaultBasket(userService.UserId);
             StateHasChanged();
         }
+
+        public async Task LoadBasketList()
+        {
+            var watch = new Stopwatch("LoadBaskets");
+
+            var myBaskets = await basketService.GetUserBaskets(userService.UserId);
+
+            this.baskets.Clear();
+            this.baskets.AddRange(myBaskets);
+            watch.Stop();
+        }
     }
-
-    public void Dispose()
-    {
-        basketService.OnBasketChanged -= BasketsChanged;
-    }
-
-    private void BasketsChanged()
-    {
-        _ = LoadBasketList();
-        StateHasChanged();
-    }
-
-    public async Task LoadBasketList()
-    {
-        var watch = new Stopwatch("LoadBaskets");
-
-        var myBaskets = await basketService.GetUserBaskets(userService.UserId);
-
-        this.baskets.Clear();
-        this.baskets.AddRange(myBaskets);
-        watch.Stop();
-    }
-}
 

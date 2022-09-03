@@ -9,11 +9,6 @@
 
 @if (userService.RolesEnabled)
 {
-    <div>
-        <AuthorizeView Roles="User">User</AuthorizeView>
-        <AuthorizeView Roles="Admin">Admin</AuthorizeView>
-        <AuthorizeView Roles="ReadOnly">Read-only</AuthorizeView>
-    </div>
     <AuthorizeView>
         <Authorized>
             <div class="damselfly-statusbarpanel" title="Logged in as @context.User.Identity?.Name">

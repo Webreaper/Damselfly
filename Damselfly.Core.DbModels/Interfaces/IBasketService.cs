@@ -1,24 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IBasketService
 {
-    List<Image> BasketImages { get; }
-    Basket CurrentBasket { get; }
-    event Action OnBasketChanged;
     Task<Basket> Create(string name, int? userId);
+    Task Delete(int basketId);
+    Task Clear(int basketId);
     Task Save(Basket basket);
-    Task SetBasketState(ICollection<int> imageIds, bool newState, int? basketId = null);
-    Task<Basket> SwitchBasketById(int basketId);
-    Task<Basket> SwitchToDefaultBasket(int? userId);
+
+    Task SetImageBasketState(int basketId, bool newState, ICollection<int> imageIds);
+
     Task<ICollection<Basket>> GetUserBaskets(int? userId);
-    bool IsSelected(Image image);
-    Task Clear( int basketId );
-    Task DeleteBasket(int basketId);
+
+    Task<Basket> GetBasketById(int basketId);
+    Task<Basket> GetDefaultBasket(int? userId);
+
+    Task<int> CopyImages(int sourceBasketId, int destBasketId);
+
+    bool IsSelected(int basketId, Image image);
 }
 
+public interface IUserBasketService : IBasketService
+{
+    event Action<BasketChanged> OnBasketChanged;
+    Basket CurrentBasket { get; }
+    ICollection<Image> BasketImages { get; }
+    Task<Basket> SwitchToBasket(int basketId);
+    Task<Basket> SwitchToDefaultBasket(int? userId);
+    Task SetImageBasketState(bool newState, ICollection<int> imageIds);
+    Task<int> CopyImages(int destBasketId);
+    bool IsSelected(Image image);
+    Task Clear();
+}

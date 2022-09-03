@@ -29,7 +29,7 @@ public class BasketController : ControllerBase
     [HttpDelete("/api/basket/{basketId}")]
     public async Task DeleteBasket( int basketId)
     {
-        _service.DeleteBasket(basketId);
+        _service.Delete(basketId);
     }
 
     [HttpPost("/api/basket")]
@@ -39,9 +39,9 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet("/api/basket/{basketId}")]
-    public async Task<Basket> SwitchBasketById(int basketId)
+    public async Task<Basket> GetBasketById(int basketId)
     {
-        return await _service.SwitchBasketById(basketId);
+        return await _service.GetBasketById(basketId);
     }
 
     [HttpGet("/api/baskets/{userId}")]
@@ -50,16 +50,10 @@ public class BasketController : ControllerBase
         return await _service.GetUserBaskets(userId);
     }
 
-    [HttpGet("/api/basketdefault")]
-    public async Task<Basket> SwitchToDefaultBasket()
-    {
-        return await _service.SwitchToDefaultBasket(-1);
-    }
-
     [HttpGet("/api/basketdefault/{userId}")]
-    public async Task<Basket> SwitchToDefaultUserBasket(int userId)
+    public async Task<Basket> GetDefaultUserBasket(int userId)
     {
-        return await _service.SwitchToDefaultBasket(userId);
+        return await _service.GetDefaultBasket(userId);
     }
 
     [HttpGet("/api/baskets")]
@@ -71,7 +65,7 @@ public class BasketController : ControllerBase
     [HttpPost("/api/basketimage/state")]
     public async Task SetBasketState( BasketStateRequest req )
     {
-        await _service.SetBasketState(req.ImageIds, req.NewState, req.BasketId );
+        await _service.SetImageBasketState(req.BasketId, req.NewState, req.ImageIds );
     }
 }
 
