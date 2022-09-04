@@ -23,8 +23,6 @@ public interface IBasketService
     Task<Basket> GetDefaultBasket(int? userId);
 
     Task<int> CopyImages(int sourceBasketId, int destBasketId);
-
-    bool IsSelected(int basketId, Image image);
 }
 
 public interface IUserBasketService : IBasketService

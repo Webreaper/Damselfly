@@ -56,8 +56,7 @@ public class BasketService : IBasketService
         var payload = new BasketChanged
         {
             ChangeType = changeType,
-            BasketId = basketId,
-            BasketEntries = updatedImageIds
+            BasketId = basketId
         };
 
         _ = _notifier.NotifyClients(Constants.NotificationType.BasketChanged, payload );
@@ -422,7 +421,9 @@ public class BasketService : IBasketService
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             // Get the first default basket
-            defaultBasket = db.Baskets.FirstOrDefault(x => x.Name == s_DefaultBasket );
+            defaultBasket = db.Baskets
+                                .Include( x => x.BasketEntries )
+                                .FirstOrDefault(x => x.Name == s_DefaultBasket );
 
             if (defaultBasket == null)
             {

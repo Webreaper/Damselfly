@@ -38,6 +38,22 @@ public class BasketController : ControllerBase
         return await _service.Create(req.Name, req.UserId);
     }
 
+    [HttpGet("/api/basket/entries/{basketId}")]
+    public async Task<ICollection<BasketEntry>> GetBasketEntries(int basketId)
+    {
+        var basket = await _service.GetBasketById(basketId);
+
+        var entries = basket.BasketEntries.ToList();
+
+        return entries;
+    }
+
+    [HttpPost("/api/basket/clear/{basketId}")]
+    public async Task ClearBasket(int basketId)
+    {
+        await _service.Clear(basketId);
+    }
+
     [HttpGet("/api/basket/{basketId}")]
     public async Task<Basket> GetBasketById(int basketId)
     {

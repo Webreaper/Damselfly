@@ -74,14 +74,9 @@ public class ClientBasketService : IUserBasketService, IBasketService
         OnBasketChanged?.Invoke(change);
     }
 
-    public bool IsSelected(int basketId, Image image)
-    {
-        return BasketImages.Any(x => x.ImageId == image.ImageId);
-    }
-
     public async Task Clear( int basketId )
     {
-        await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/clear/{basketId}");
+        await httpClient.CustomPostAsync($"/api/basket/clear/{basketId}");
     }
 
     public async Task Delete(int basketId)
@@ -171,10 +166,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public bool IsSelected(Image image)
     {
-        if (CurrentBasket is null)
-            return false;
-
-        return IsSelected(CurrentBasket.BasketId, image);
+        return BasketImages.Any(x => x.ImageId == image.ImageId);
     }
 }
 

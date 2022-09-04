@@ -8,6 +8,5 @@ public class BasketChanged
 {
     public int BasketId { get; set; }
     public BasketChangeType ChangeType { get; set; }
-    public ICollection<int> BasketEntries { get; set; }
 }
 

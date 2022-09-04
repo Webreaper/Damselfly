@@ -68,10 +68,9 @@
             await LoadBasketList();
 
             var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId );
-            if (selectedBasketId > 0)
+
+            if (selectedBasketId > 0 && basketService.CurrentBasket.BasketId != selectedBasketId )
                 await basketService.SwitchToBasket(selectedBasketId);
-            else
-                await basketService.SwitchToDefaultBasket(userService.UserId);
 
             StateHasChanged();
         }
@@ -85,8 +84,6 @@
     private void BasketsChanged( BasketChanged change )
     {
         _ = LoadBasketList();
-
-        StateHasChanged();
     }
 
     public async Task LoadBasketList()
@@ -98,6 +95,8 @@
         this.baskets.Clear();
         this.baskets.AddRange(myBaskets);
         watch.Stop();
+
+        await InvokeAsync(StateHasChanged);
     }
     }
 

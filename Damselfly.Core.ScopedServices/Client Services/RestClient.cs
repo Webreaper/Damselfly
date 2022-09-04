@@ -76,6 +76,19 @@ public class RestClient
         }
     }
 
+    public async Task<HttpResponseMessage> CustomPostAsync(string? requestUri)
+    {
+        try
+        {
+            var msg = await _restClient.PostAsync(requestUri, null);
+            return msg;
+        }
+        catch (Exception ex)
+        {
+            throw GetRestException(ex, requestUri);
+        }
+    }
+
     public async Task<HttpResponseMessage> CustomPostAsJsonAsync<PostObj>(string? requestUri, PostObj obj)
     {
         try

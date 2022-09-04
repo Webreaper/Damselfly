@@ -3,7 +3,7 @@
 @using Damselfly.Core.Interfaces
 @using Damselfly.Core.ScopedServices.Interfaces
 
-@inject ClientBasketService basketService
+@inject IUserBasketService basketService
 @inject IUserService userService
 @inject ClientStatusService statusService
 @inject IConfigService configService
@@ -102,7 +102,7 @@
                 var newBasket = await basketService.Create(model.BasketName, userId);
 
                 // Force it to reload
-                basketService.SetCurrentBasket(newBasket);
+                await basketService.SwitchToBasket(newBasket.BasketId);
 
                 if (model.IsPublic)
                     statusService.UpdateGlobalStatus($"Basket '{model.BasketName}' created.");

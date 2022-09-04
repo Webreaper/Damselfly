@@ -124,74 +124,74 @@ else
                 </AuthorizeView>
             </RadzenMenu>
         </CascadingAuthenticationState>);
-}
+    }
 
-        private ICollection<Image> ContextSelection
+    private ICollection<Image> ContextSelection
+    {
+        get
         {
-            get
+            if (selectionService.Selection.Any())
             {
-                if (selectionService.Selection.Any())
-                {
-                    return selectionService.Selection;
-                }
-                else
-                {
-                    return new List<Image> { CurrentImage };
-                }
+                return selectionService.Selection;
+            }
+            else
+            {
+                return new List<Image> { CurrentImage };
             }
         }
+    }
 
-        async Task OnMenuItemClick(MenuItemEventArgs args)
+    async Task OnMenuItemClick(MenuItemEventArgs args)
+    {
+        contextMenuService.Close();
+        switch (args.Value)
         {
-            contextMenuService.Close();
-            switch (args.Value)
+            case 0: NavigateToImage(); break;
+            case 1: await DownloadImage(); break;
+            case 2: await basketService.SetImageBasketState(false, ContextSelection.Select(x => x.ImageId).ToList()); break;
+            case 3: await basketService.SetImageBasketState(true, ContextSelection.Select(x => x.ImageId).ToList()); break;
+            case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
+            case 5: await ShowRescanDialog(); break;
+            case 6: FindImageSimilarTo(); break;
+        }
+    }
+
+    private async Task ShowRescanDialog()
+    {
+        var parameters = new DialogParameters { { "images", ContextSelection } };
+        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
+    }
+
+    private void FindImageSimilarTo()
+    {
+        searchService.SimilarTo = CurrentImage;
+    }
+
+    public async Task DownloadImage()
+    {
+        try
+        {
+            string downloadFile = CurrentImage.DownloadImageUrl;
+
+            if (selectionService.Selection.Count() > 1)
             {
-                case 0: NavigateToImage(); break;
-                case 1: await DownloadImage(); break;
-                case 2: await SetImageBasketState( false ); break;
-                case 3: await SetImageBasketState( true); break;
-                case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
-                case 5: await ShowRescanDialog(); break;
-                case 6: FindImageSimilarTo(); break;
+                var config = new ExportConfig { KeepFolders = true };
+                downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection, config);
             }
-        }
 
-        private async Task ShowRescanDialog()
+            await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
+        }
+        catch (Exception ex)
         {
-            var parameters = new DialogParameters { { "images", ContextSelection } };
-            var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
-            var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
-            var result = await dialog.Result;
+            logger.LogError("Exception: " + ex.Message);
         }
+    }
 
-        private void FindImageSimilarTo()
-        {
-            searchService.SimilarTo = CurrentImage;
-        }
-
-        public async Task DownloadImage()
-        {
-            try
-            {
-                string downloadFile = CurrentImage.DownloadImageUrl;
-
-                if (selectionService.Selection.Count() > 1)
-                {
-                    var config = new ExportConfig { KeepFolders = true };
-                    downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection, config);
-                }
-
-                await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Exception: " + ex.Message);
-            }
-        }
-
-        void NavigateToImage()
-        {
-            navContext.Context = NavContext;
-            NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
-        }
+    void NavigateToImage()
+    {
+        navContext.Context = NavContext;
+        NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
+    }
 }
