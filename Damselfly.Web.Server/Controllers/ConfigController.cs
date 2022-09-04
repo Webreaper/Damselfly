@@ -66,6 +66,19 @@ public class ConfigController : ControllerBase
 
         return settings;
     }
+
+    [HttpGet("/api/config/user/{userId}")]
+    public async Task<ICollection<ConfigSetting>> GetAllUserSettings(int userId)
+    {
+        var settings = new List<ConfigSetting>();
+
+        var allValues = await _configService.GetAllUserSettings( userId );
+        if (allValues != null)
+            settings.AddRange(allValues);
+
+        return settings;
+    }
+
     [HttpGet("/api/config/{name}")]
     public ConfigSetting Get( string name )
     {

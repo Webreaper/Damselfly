@@ -18,10 +18,15 @@ public class ClientBasketService : IUserBasketService, IBasketService
     private readonly RestClient httpClient;
     private readonly IImageCacheService _imageCache;
     private readonly NotificationsService _notifications;
+    private readonly IUserService _userService;
 
-    public ClientBasketService(RestClient client, NotificationsService notifications, IImageCacheService imageCache, ILogger<ClientBasketService> logger) 
+    public ClientBasketService(RestClient client, NotificationsService notifications,
+                                IImageCacheService imageCache,
+                                IUserService userService,
+                                ILogger<ClientBasketService> logger) 
     {
         httpClient = client;
+        _userService = userService;
         _imageCache = imageCache;
         _notifications = notifications;
         _logger = logger;
@@ -35,9 +40,18 @@ public class ClientBasketService : IUserBasketService, IBasketService
     {
         if( CurrentBasket.BasketId == change.BasketId )
         {
-            var basket = await GetBasketById(change.BasketId);
+            Basket newBasket;
 
-            await SetCurrentBasket(basket);
+            if (change.ChangeType == BasketChangeType.BasketDeleted)
+            {
+                newBasket = await GetDefaultBasket( _userService.UserId );
+            }
+            else
+            {
+                newBasket = await GetBasketById(change.BasketId);
+            }
+
+            await SetCurrentBasket(newBasket);
         }
     }
 
@@ -92,9 +106,19 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public async Task<Basket> SwitchToBasket(int basketId)
     {
-        var newBasket = await GetBasketById(basketId);
-        await SetCurrentBasket(newBasket);
-        return newBasket;
+        try
+        {
+            var newBasket = await GetBasketById(basketId);
+
+            await SetCurrentBasket(newBasket);
+
+            return newBasket;
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError($"Attempted to switch to unknown basket ID {basketId}");
+            throw;
+        }
     }
 
     public async Task<Basket> SwitchToDefaultBasket(int? userId)
@@ -123,6 +147,11 @@ public class ClientBasketService : IUserBasketService, IBasketService
         // We don't notify the state changed here - it'll be notified from the server
     }
 
+    public async Task<Basket> Create(string name )
+    {
+        return await Create(name, _userService.UserId);
+    }
+
     public async Task<Basket> Create(string name, int? userId)
     {
         var payload = new BasketCreateRequest { Name = name, UserId = userId };
@@ -134,9 +163,19 @@ public class ClientBasketService : IUserBasketService, IBasketService
         var response = await httpClient.CustomPutAsJsonAsync<Basket>($"/api/basket", basket);
     }
 
+    public async Task<Basket> GetDefaultBasket()
+    {
+        return await GetDefaultBasket(_userService.UserId);
+    }
+
     public async Task<Basket> GetDefaultBasket(int? userId)
     {
-        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/baskets/{userId}");
+        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/baskets/{_userService.UserId}");
+    }
+
+    public async Task<ICollection<Basket>> GetUserBaskets()
+    {
+        return await GetUserBaskets(_userService.UserId);
     }
 
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
@@ -167,6 +206,11 @@ public class ClientBasketService : IUserBasketService, IBasketService
     public bool IsSelected(Image image)
     {
         return BasketImages.Any(x => x.ImageId == image.ImageId);
+    }
+
+    public async Task<Basket> SwitchToDefaultBasket()
+    {
+        return await SwitchToDefaultBasket(_userService.UserId);
     }
 }
 

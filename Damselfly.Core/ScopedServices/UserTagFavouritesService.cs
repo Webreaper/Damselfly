@@ -6,6 +6,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -29,7 +30,7 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
 
         _exifService.OnUserTagsAdded += AddRecentTags;
 
-        string recents = configService.Get("RecentTags");
+        string recents = configService.Get(ConfigSettings.RecentTags);
 
         if( ! string.IsNullOrEmpty( recents ) )
         {
@@ -59,7 +60,7 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
         recentTags.Clear();
         recentTags.AddRange(newRecent);
 
-        _configService.Set("RecentTags", string.Join(",", recentTags));
+        _configService.Set(ConfigSettings.RecentTags, string.Join(",", recentTags));
         NotifyRecentsChanged();
     }
 

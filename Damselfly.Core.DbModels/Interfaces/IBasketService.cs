@@ -36,4 +36,7 @@ public interface IUserBasketService : IBasketService
     Task<int> CopyImages(int destBasketId);
     bool IsSelected(Image image);
     Task Clear();
+    Task<Basket> Create(string name);
+    Task<ICollection<Basket>> GetUserBaskets();
+    Task<Basket> SwitchToDefaultBasket();
 }

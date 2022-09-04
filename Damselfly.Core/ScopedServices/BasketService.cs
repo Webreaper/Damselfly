@@ -420,10 +420,18 @@ public class BasketService : IBasketService
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            // Get the first default basket
-            defaultBasket = db.Baskets
-                                .Include( x => x.BasketEntries )
-                                .FirstOrDefault(x => x.Name == s_DefaultBasket );
+            // Get the first shared
+            defaultBasket = await db.Baskets
+                                .Include(x => x.BasketEntries)
+                                .FirstOrDefaultAsync(x => x.UserId == null);
+
+            if (defaultBasket == null)
+            {
+                // Get the first default basket
+                defaultBasket = await db.Baskets
+                                    .Include(x => x.BasketEntries)
+                                    .FirstOrDefaultAsync(x => x.Name == s_DefaultBasket);
+            }
 
             if (defaultBasket == null)
             {

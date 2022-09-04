@@ -59,6 +59,9 @@ public class BasketController : ControllerBase
     {
         var basket = await _service.GetBasketById(basketId);
 
+        if (basket == null)
+            throw new ArgumentException("No such basket!");
+
         foreach (var be in basket.BasketEntries)
             be.Image = null;
 

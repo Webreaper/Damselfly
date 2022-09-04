@@ -1,8 +1,10 @@
 ﻿@using Damselfly.Core.DbModels
 @using Microsoft.AspNetCore.Identity
+@using Damselfly.Core.ScopedServices
 
 @inject IConfigService configService 
 @inject IJSRuntime JsRuntime
+@inject ILogger<ScrollMonitor> logger
 
 @code{
     [Parameter]
@@ -19,8 +21,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        // WASM: Fix logging
-        // Logging.LogVerbose($"Saving scroll position to {scrollTop}");
+        logger.LogTrace($"Saving scroll position to {scrollTop}");
         configService.Set(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);
