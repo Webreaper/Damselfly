@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
 using Microsoft.JSInterop;
 using System.Text.Json;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -47,6 +48,42 @@ public class NotificationsService : IAsyncDisposable
     /// </summary>
     /// <param name="type"></param>
     /// <param name="action"></param>
+    public void SubscribeToNotificationAsync<T>(NotificationType type, Func<T, Task> action)
+    {
+        if (action is null)
+            throw new ArgumentException("Action cannot be null");
+
+        if (!_wasmState.IsWebAssembly)
+        {
+            _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
+            return;
+        }
+
+        var methodName = type.ToString();
+
+        hubConnection.On<string>(methodName, async (payload) =>
+        {
+            try
+            {
+                T theObj = JsonSerializer.Deserialize<T>(payload, RestClient.JsonOptions);
+
+                var payloadLog = string.IsNullOrEmpty(payload) ? "(no payload)" : $"(payload: {payload})";
+                _logger.LogInformation($"Received {methodName.ToString()} - calling async action {payloadLog}");
+                await action(theObj);
+            }
+            catch( Exception ex )
+            {
+                _logger.LogError( $"Error processing serialized object for {methodName}: {payload}.");
+            }
+        });
+
+        _logger.LogInformation($"Subscribed to {methodName}");
+    }
+
+    /// <summary>
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="action"></param>
     public void SubscribeToNotification<T>(NotificationType type, Action<T> action)
     {
         if (action is null)
@@ -64,15 +101,15 @@ public class NotificationsService : IAsyncDisposable
         {
             try
             {
-                T theObj = JsonSerializer.Deserialize<T>(payload);
+                T theObj = JsonSerializer.Deserialize<T>(payload, RestClient.JsonOptions);
 
                 var payloadLog = string.IsNullOrEmpty(payload) ? "(no payload)" : $"(payload: {payload})";
                 _logger.LogInformation($"Received {methodName.ToString()} - calling action {payloadLog}");
                 action.Invoke(theObj);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                _logger.LogError( $"Error processing serialized object for {methodName}: {payload}.");
+                _logger.LogError($"Error processing serialized object for {methodName}: {payload}.");
             }
         });
 

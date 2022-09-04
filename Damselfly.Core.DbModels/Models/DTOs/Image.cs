@@ -39,6 +39,7 @@ public class Image
     public virtual Hash Hash { get; set; }
 
     // An image can appear in many baskets
+    [JsonIgnore]
     public virtual List<BasketEntry> BasketEntries { get; init;  } = new List<BasketEntry>();
     // An image can have many tags
     public virtual List<ImageTag> ImageTags { get; init; } = new List<ImageTag>();

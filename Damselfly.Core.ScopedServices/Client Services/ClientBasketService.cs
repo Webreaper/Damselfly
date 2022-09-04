@@ -16,41 +16,60 @@ public class ClientBasketService : IUserBasketService, IBasketService
 {
     protected ILogger<ClientBasketService> _logger;
     private readonly RestClient httpClient;
+    private readonly IImageCacheService _imageCache;
     private readonly NotificationsService _notifications;
 
-    public ClientBasketService(RestClient client, NotificationsService notifications, ILogger<ClientBasketService> logger) 
+    public ClientBasketService(RestClient client, NotificationsService notifications, IImageCacheService imageCache, ILogger<ClientBasketService> logger) 
     {
         httpClient = client;
+        _imageCache = imageCache;
         _notifications = notifications;
         _logger = logger;
 
-        _notifications.SubscribeToNotification<BasketChanged>(NotificationType.BasketChanged, HandleServerBasketChange);
+        _notifications.SubscribeToNotificationAsync<BasketChanged>(NotificationType.BasketChanged, HandleServerBasketChange);
     }
 
     public event Action<BasketChanged> OnBasketChanged;
 
-    private void HandleServerBasketChange(BasketChanged change)
+    private async Task HandleServerBasketChange(BasketChanged change)
     {
-        if (CurrentBasket == null || CurrentBasket.BasketId == change.BasketId)
+        if( CurrentBasket.BasketId == change.BasketId )
         {
-            // It's one we care about
-            var changedBasket = GetBasketById(change.BasketId);
+            var basket = await GetBasketById(change.BasketId);
 
-            OnBasketChanged?.Invoke(change);
+            await SetCurrentBasket(basket);
         }
     }
 
     /// <summary>
     /// The list of selected images in the basket
     /// </summary>
-    public List<Image> BasketImages => CurrentBasket == null ? new List<Image>() : CurrentBasket.BasketEntries.Select( x => x.Image ).ToList();
+    public ICollection<Image>   BasketImages => CurrentBasket == null ? new List<Image>() : CurrentBasket.BasketEntries.Select( x => x.Image ).ToList();
 
     public Basket CurrentBasket { get; private set;  }
 
-    ICollection<Image> IUserBasketService.BasketImages => throw new NotImplementedException();
-
-    public void SetCurrentBasket( Basket newBasket )
+    public async Task SetCurrentBasket( Basket newBasket )
     {
+        CurrentBasket = newBasket;
+
+        // See if there's any images that need loading
+        var imagesToLoad = CurrentBasket.BasketEntries
+                                        .Where(x => x.Image == null)
+                                        .Select(x => x.ImageId)
+                                        .ToList();
+
+        if (imagesToLoad.Any())
+        {
+            // Load the basket images into the cache...
+            var images = _imageCache.GetCachedImages(imagesToLoad);
+
+            // ...and Attach them to the basket entries
+            foreach (var be in CurrentBasket.BasketEntries)
+            {
+                be.Image = await _imageCache.GetCachedImage(be.ImageId);
+            }
+        }
+
         var change = new BasketChanged { ChangeType = BasketChangeType.BasketChanged, BasketId = newBasket.BasketId };
         OnBasketChanged?.Invoke(change);
     }
@@ -72,13 +91,14 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public async Task<Basket> GetBasketById(int basketId)
     {
-        return await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
+        var basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
+        return basket;
     }
 
     public async Task<Basket> SwitchToBasket(int basketId)
     {
         var newBasket = await GetBasketById(basketId);
-        SetCurrentBasket(newBasket);
+        await SetCurrentBasket(newBasket);
         return newBasket;
     }
 
@@ -91,7 +111,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
         else
             basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault/{userId}");
 
-        SetCurrentBasket(basket);
+        await SetCurrentBasket(basket);
 
         return basket;
     }
@@ -151,6 +171,9 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public bool IsSelected(Image image)
     {
+        if (CurrentBasket is null)
+            return false;
+
         return IsSelected(CurrentBasket.BasketId, image);
     }
 }

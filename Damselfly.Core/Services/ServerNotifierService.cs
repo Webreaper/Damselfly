@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.SignalR;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Core.Services;
 
@@ -39,7 +40,7 @@ public class ServerNotifierService
 
         try
         {
-            string json = JsonSerializer.Serialize(payloadObject);
+            string json = JsonSerializer.Serialize(payloadObject, RestClient.JsonOptions);
 
             await _hubContext.Clients.All.SendAsync(methodName, json);
         }

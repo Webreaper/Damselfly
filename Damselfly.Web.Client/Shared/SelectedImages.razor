@@ -134,18 +134,21 @@ else
 
     protected void BasketImagesChanged( BasketChanged change )
     {
-        // Marshall onto the dispatcher thread
         _ = LoadData();
     }
 
-    public async Task LoadData()
+    private async Task LoadData()
     {
+        // Marshall onto the dispatcher thread
         var watch = new Stopwatch("SelectedLoadData");
+
         gridImages.Clear();
         gridImages.AddRange(basketService.BasketImages);
         watch.Stop();
 
         await InvokeAsync(StateHasChanged);
+
     }
+
 }
 

@@ -161,7 +161,7 @@ public class BasketService : IBasketService
 
             result = newBasketEntries.Count();
 
-            NotifyStateChanged(destBasketId, BasketChangeType.ImagesAdded, new List<int>());
+            NotifyStateChanged(destBasketId, BasketChangeType.ImagesAdded, newBasketEntries.Select( x => x.ImageId).ToList());
         }
         catch (Exception ex)
         {
@@ -395,6 +395,9 @@ public class BasketService : IBasketService
     /// <returns></returns>
     public async Task<Basket> GetDefaultBasket( int? userId )
     {
+        // TODO: WASM: - load basket entries here. Also, maybe make this more efficient, with a single query?
+        // Maybe return ID here, and then caller can load?
+
         Basket defaultBasket = null;
 
         if (userId.HasValue)

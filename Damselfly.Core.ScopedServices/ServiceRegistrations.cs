@@ -57,6 +57,7 @@ public static class ServiceRegistrations
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
         services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ClientStatusService>());
+        services.AddScoped<IUserBasketService>(x => x.GetRequiredService<ClientBasketService>());
         services.AddScoped<IBasketService>(x => x.GetRequiredService<ClientBasketService>());
         services.AddScoped<IDownloadService>(x => x.GetRequiredService<ClientDownloadService>());
         services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<ClientUserMgmtService>());

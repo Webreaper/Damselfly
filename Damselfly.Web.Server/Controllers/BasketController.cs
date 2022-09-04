@@ -41,7 +41,12 @@ public class BasketController : ControllerBase
     [HttpGet("/api/basket/{basketId}")]
     public async Task<Basket> GetBasketById(int basketId)
     {
-        return await _service.GetBasketById(basketId);
+        var basket = await _service.GetBasketById(basketId);
+
+        foreach (var be in basket.BasketEntries)
+            be.Image = null;
+
+        return basket;
     }
 
     [HttpGet("/api/baskets/{userId}")]
@@ -55,6 +60,13 @@ public class BasketController : ControllerBase
     {
         return await _service.GetDefaultBasket(userId);
     }
+
+    [HttpGet("/api/basketdefault")]
+    public async Task<Basket> GetDefaultUserBasket()
+    {
+        return await _service.GetDefaultBasket(null);
+    }
+
 
     [HttpGet("/api/baskets")]
     public async Task<ICollection<Basket>> GetUserBaskets()

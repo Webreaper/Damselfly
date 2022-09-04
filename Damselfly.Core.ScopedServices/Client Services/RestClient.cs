@@ -26,13 +26,14 @@ public class RestClient
     ///      .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
     /// </summary>
     /// <param name="opts"></param>
-    public static void SetJsonOptions(JsonSerializerOptions opts)
+    public static JsonSerializerOptions SetJsonOptions(JsonSerializerOptions opts)
     {
         opts.ReferenceHandler = ReferenceHandler.Preserve;
         opts.PropertyNameCaseInsensitive = true;
+        return opts;
     }
 
-    public JsonSerializerOptions JsonOptions { get { return jsonOptions; } }
+    public static readonly JsonSerializerOptions JsonOptions = SetJsonOptions(new JsonSerializerOptions());
 
     public AuthenticationHeaderValue AuthHeader
     {
@@ -40,7 +41,6 @@ public class RestClient
         set { _restClient.DefaultRequestHeaders.Authorization = value; }
     }
 
-    private readonly JsonSerializerOptions jsonOptions;
     private readonly HttpClient _restClient;
     private readonly ILogger<RestClient> _logger;
 
@@ -48,57 +48,105 @@ public class RestClient
     {
         _logger = logger;
         _restClient = client;
-        jsonOptions = new JsonSerializerOptions();
+    }
 
-        SetJsonOptions(jsonOptions);
+    private Exception GetRestException( Exception ex, string requestUrl )
+    {
+        if( ex is JsonException )
+        {
+            // WASM:
+            if (ex.Message.Contains("'<' is an invalid start of a value"))
+                return new ArgumentException($"Possible 404 / Page Not Found exception for {requestUrl}", ex);
+            else if (ex.Message.Contains("A possible object cycle"))
+                return new ArgumentException($"Object cycle exception for {requestUrl}", ex);
+        }
+
+        return ex;
     }
 
     public async Task<T?> CustomGetFromJsonAsync<T>(string? requestUri)
     {
-        try {
-            return await _restClient.GetFromJsonAsync<T>(requestUri, jsonOptions);
-
-        }
-        catch( JsonException ex )
+        try
         {
-            // WASM:
-            if (ex.Message.Contains("'<' is an invalid start of a value"))
-                throw new ArgumentException($"Possible 404 / Page Not Found exception for {requestUri}");
-            else
-                throw;
+            return await _restClient.GetFromJsonAsync<T>(requestUri, JsonOptions);
+        }
+        catch( Exception ex )
+        {
+            throw GetRestException(ex, requestUri);
         }
     }
 
     public async Task<HttpResponseMessage> CustomPostAsJsonAsync<PostObj>(string? requestUri, PostObj obj)
     {
-        return await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, jsonOptions);
+        try
+        {
+            var msg = await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
+            return msg;
+        }
+        catch (Exception ex)
+        {
+            throw GetRestException(ex, requestUri);
+        }
     }
 
     public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj)
     {
-        var response = await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, jsonOptions);
-        return await response.Content.ReadFromJsonAsync<RetObj>(jsonOptions);
+        try
+        { 
+            var response = await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
+            return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
+        }
+        catch (Exception ex)
+        {
+            throw GetRestException(ex, requestUri);
+        }
     }
 
     public async Task<RetObj?> CustomPutAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj)
     {
-        var response = await _restClient.PutAsJsonAsync<PostObj>(requestUri, obj, jsonOptions);
-        return await response.Content.ReadFromJsonAsync<RetObj>(jsonOptions);
+        try
+        {
+            var response = await _restClient.PutAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
+            return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
+        }
+        catch (Exception ex)
+        {
+            throw GetRestException(ex, requestUri);
+        }
     }
 
     public async Task<HttpResponseMessage> CustomPutAsJsonAsync<T>(string? requestUri, T obj)
     {
-        return await _restClient.PutAsJsonAsync<T>(requestUri, obj, jsonOptions);
+        try
+        { 
+            return await _restClient.PutAsJsonAsync<T>(requestUri, obj, JsonOptions);
+        }
+        catch(Exception ex )
+        {
+            throw GetRestException(ex, requestUri);
+        }
     }
 
     public async Task<HttpResponseMessage> CustomDeleteAsync(string? requestUri)
     {
-        return await _restClient.DeleteAsync(requestUri);
+        try { 
+            return await _restClient.DeleteAsync(requestUri);
+        }
+        catch (Exception ex)
+        {
+            throw GetRestException(ex, requestUri);
+        }
     }
 
     public async Task<HttpResponseMessage> CustomPatchAsJsonAsync<T>(string? requestUri, T obj)
     {
-        return await _restClient.PatchAsJsonAsync<T>(requestUri, obj, jsonOptions);
+        try { 
+            return await _restClient.PatchAsJsonAsync<T>(requestUri, obj, JsonOptions);
+        }
+        catch (Exception ex)
+        {
+            throw GetRestException(ex, requestUri);
+        }
     }
 }
 

@@ -51,7 +51,7 @@ else
 
     public bool InBasket
     {
-        get { return basketService.IsSelected(basketService.CurrentBasket.BasketId, CurrentImage); }
+        get { return basketService.IsSelected(CurrentImage); }
         set { _ = SetImageBasketState(value); }
     }
 
@@ -67,7 +67,7 @@ else
 
     private async Task SetImageBasketState(bool newState)
     {
-        await basketService.SetImageBasketState(basketService.CurrentBasket.BasketId, newState, new[] { CurrentImage.ImageId });
+        await basketService.SetImageBasketState(newState, new[] { CurrentImage.ImageId });
 
         // Notify the image list that the selection has changed
         StateHasChanged();
