@@ -58,8 +58,8 @@ jobs:
             os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-          - target: mac
-            os: macos-latest
+#          - target: mac
+#            os: macos-latest
 
     steps:
       - name: Clone Repository (latest)
