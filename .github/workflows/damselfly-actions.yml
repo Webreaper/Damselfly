@@ -18,11 +18,8 @@ jobs:
             os: windows-latest
           - target: linux
             os: ubuntu-latest
-          - target: universal
-            os: macos-latest
-#          - target: mac
-#            os: macos-latest
-#          - target: m1
+# TODO: Fix mac build at some point
+#          - target: universal
 #            os: macos-latest
 
     steps:
