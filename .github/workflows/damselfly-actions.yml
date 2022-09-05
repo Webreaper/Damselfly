@@ -51,15 +51,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [mac, windows, linux]
+# FIX Package restore for MacOS
+        target: [windows, linux]
         include: 
           - target: windows
             os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-# FIX Package restore for MacOS
-#          - target: mac
-#            os: macos-latest
+          - target: mac
+            os: macos-latest
 
     steps:
       - name: Clone Repository (latest)
