@@ -37,6 +37,8 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
         _dataService = dataService;
 
         OnSearchChanged += ClearSearchResults;
+
+        _logger.LogInformation("Initialised ClientImageCacheService");
     }
 
     private void ClearSearchResults()

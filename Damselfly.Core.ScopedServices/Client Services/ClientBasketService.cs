@@ -32,6 +32,8 @@ public class ClientBasketService : IUserBasketService, IBasketService
         _logger = logger;
 
         _notifications.SubscribeToNotificationAsync<BasketChanged>(NotificationType.BasketChanged, HandleServerBasketChange);
+
+        _logger.LogInformation("Initialised ClientImageCacheService");
     }
 
     public event Action<BasketChanged> OnBasketChanged;

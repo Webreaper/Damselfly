@@ -36,6 +36,8 @@ public class ClientImageCacheService : IImageCacheService
                         .SetSlidingExpiration(TimeSpan.FromHours(4));
 
         _notifications.SubscribeToNotification<string>(Constants.NotificationType.CacheEvict, Evict);
+
+        _logger.LogInformation("Initialised ClientImageCacheService");
     }
 
     public async Task<Image> GetCachedImage(int imgId)
