@@ -41,7 +41,7 @@ public class ClientImageCacheService : IImageCacheService
     public async Task<Image> GetCachedImage(int imgId)
     {
         var list = new int[] { imgId };
-        var result = await GetCachedImages( list );
+        var result = await GetCachedImages(list);
         return result.FirstOrDefault();
     }
 
@@ -50,11 +50,11 @@ public class ClientImageCacheService : IImageCacheService
     /// evict an image from the cache. 
     /// </summary>
     /// <param name="imageId"></param>
-    private void Evict( string imageId )
+    private void Evict(string imageId)
     {
         _logger.LogTrace($"Evicting image {imageId} from client-side cache");
 
-        if( int.TryParse( imageId, out var id ))
+        if (int.TryParse(imageId, out var id))
         {
             _memoryCache.Remove(id);
         }
@@ -133,34 +133,40 @@ public class ClientImageCacheService : IImageCacheService
     /// <returns></returns>
     private async Task LoadAndCacheImages(ICollection<int> imageIds)
     {
-        int batchSize = 1;
-
-        var tasks = new List<Task>();
-
-        var batches = imageIds.Chunk(batchSize);
-
-        foreach (var batch in batches)
+        try
         {
-            async Task func()
+            int batchSize = 1;
+
+            var tasks = new List<Task>();
+
+            var batches = imageIds.Chunk(batchSize);
+
+            foreach (var batch in batches)
             {
-                _logger.LogInformation($"Loading images {string.Join(", ", batch)}...");
-                if (batch.Count() == 1)
+                async Task func()
                 {
-                    var i = await GetImage(batch.First());
-                    _memoryCache.Set(i.ImageId, i, _cacheOptions);
-                }
-                else
-                {
-                    var imgs = await GetImages(batch);
-                    foreach (var i in imgs)
+                    _logger.LogInformation($"Loading images {string.Join(", ", batch)}...");
+                    if (batch.Count() == 1)
+                    {
+                        var i = await GetImage(batch.First());
                         _memoryCache.Set(i.ImageId, i, _cacheOptions);
+                    }
+                    else
+                    {
+                        var imgs = await GetImages(batch);
+                        foreach (var i in imgs)
+                            _memoryCache.Set(i.ImageId, i, _cacheOptions);
+                    }
                 }
+
+                tasks.Add(func());
             }
 
-            tasks.Add(func());
+            await Task.WhenAll(tasks);
         }
-
-        await Task.WhenAll(tasks);
+        catch (Exception ex)
+        {
+            _logger.LogError($"Exception during LoadCacheImages: {ex}");
+        }
     }
 }
-
