@@ -97,8 +97,16 @@ public class ClientImageCacheService : IImageCacheService
                 {
                     // Somehow an item which we just supposedly cached, is no
                     // longer in the cache. This is very bad indeed.
-                    _logger.LogError($"Cached image {imgId} was not found in cache.");
-                    continue;
+                    _logger.LogWarning($"Cached image {imgId} was not found in client cache. Loading it from server...");
+
+                    // Load it
+                    image = await GetImage(imgId);
+
+                    if( image == null )
+                    {
+                        _logger.LogError($"Unable to load image {imgId} from server.");
+                        continue;
+                    }
                 }
 
                 result.Add(image);

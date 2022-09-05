@@ -236,6 +236,12 @@ public class Program
         {
             app.UseMigrationsEndPoint();
             app.UseWebAssemblyDebugging();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Damselfly API V1");
+            });
         }
         else
         {
@@ -263,12 +269,6 @@ public class Program
         app.UseEndpoints(ep =>
         {
             ep.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}");
-        });
-
-        app.UseSwagger();
-        app.UseSwaggerUI(c =>
-        {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Damselfly API V1");
         });
 
         app.UseAuthentication();
