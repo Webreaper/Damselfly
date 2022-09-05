@@ -29,6 +29,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ILogger = Serilog.ILogger;
+using static MudBlazor.Colors;
 
 namespace Damselfly.Web;
 
@@ -213,6 +214,11 @@ public class Program
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
 
+        // Use Kestrel options to set the port. Using .Urls.Add breaks WASM debugging.
+        builder.WebHost.UseKestrel(serverOptions =>  {
+            serverOptions.ListenAnyIP(cmdLineOptions.Port);
+        });
+
         var app = builder.Build();
 
         Logging.Logger = app.Services.GetRequiredService<ILogger>();
@@ -236,9 +242,6 @@ public class Program
             app.UseExceptionHandler("/Error");
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
-
-            // Adding this breaks WASM debugging - so only enable it if not in development
-            app.Urls.Add($"http://+:{cmdLineOptions.Port}");
         }
 
         app.UseHttpsRedirection();
