@@ -18,9 +18,8 @@ jobs:
             os: windows-latest
           - target: linux
             os: ubuntu-latest
-# TODO: Fix mac build at some point
-#          - target: universal
-#            os: macos-latest
+          - target: universal
+            os: macos-latest
 
     steps:
       - name: Clone Repository (latest)
@@ -58,8 +57,9 @@ jobs:
             os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-          - target: mac
-            os: macos-latest
+# FIX Package restore for MacOS
+#          - target: mac
+#            os: macos-latest
 
     steps:
       - name: Clone Repository (latest)
