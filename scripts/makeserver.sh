@@ -27,21 +27,21 @@ esac
 
 serverdist="${PWD}/server"
 zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
+project='Damselfly.Web.Server'
+outputdir="$project/bin/Release/net${dotnetversion}/${runtime}/publish"
 
 #  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
 echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
-dotnet publish Damselfly.Web.Server -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."
   exit 1
 fi
 
-echo "*** Damselfly build succeeded. Packaging..."
-
-outputdir="Damselfly.Web.Server/bin/Release/net${dotnetversion}/${runtime}/publish"
+echo "*** ${project} build succeeded. Packaging..."
 
 if [ -d "$outputdir" ]; then
   # Hack to get the libcvextern.so into the linux build. 
@@ -55,6 +55,10 @@ if [ -d "$outputdir" ]; then
       ls "$outputdir"
       ;;
   esac
+
+  echo "*** Contents of ${outputdir}:"
+
+  ls -l $outputdir
 
   echo "*** Zipping build to ${zipname}..."
   mkdir $serverdist
