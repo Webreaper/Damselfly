@@ -193,10 +193,12 @@ public class Program
         // Cache up to 10,000 images. Should be enough given cache expiry.
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
+        builder.Services.AddControllers()
+                .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
         builder.Services.AddControllersWithViews()
                 .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
-
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages()
+                .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
 
         // Server to client notifications
         builder.Services.AddSignalR();

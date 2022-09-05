@@ -32,21 +32,38 @@ public class ImageAPIController : ControllerBase
         imageCache = cache;
         _logger = logger;
     }
-
+    
     [HttpGet("/api/image/{imageId}")]
     public async Task<Image> Get(int imageId)
     {
-        var image = await imageCache.GetCachedImage( imageId );
-
-        return image;
+        try
+        {
+            return await imageCache.GetCachedImage(imageId);
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError($"Unable to load/enrich image ID {imageId}: {ex}");
+            return null;
+        }
     }
 
     [HttpPost("/api/images")]
     public async Task<ImageResponse> GetImages(ImageRequest req)
     {
-        _logger.LogInformation($"Loading {req.ImageIds.Count} images from server cache.");
-        var images = await imageCache.GetCachedImages(req.ImageIds);
+        try
+        {
+            var images = await imageCache.GetCachedImages(req.ImageIds);
+            if (images != null && images.Any())
+            {
+                _logger.LogInformation($"Loaded {req.ImageIds.Count} images from server cache.");
+                return new ImageResponse { Images = images };
+            }
+        }
+        catch ( Exception ex )
+        {
+            _logger.LogError($"Unable to load/enrich images: {string.Join( ", ", req.ImageIds)}: {ex}");
+        }
 
-        return new ImageResponse { Images = images };
+        return null;
     }
 }

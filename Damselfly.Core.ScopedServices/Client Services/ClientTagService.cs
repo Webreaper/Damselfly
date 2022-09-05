@@ -24,21 +24,30 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         httpClient = client;
         _notifications = notifications;
 
-        _notifications.SubscribeToNotification(NotificationType.FavouritesChanged, OnFavouritesChanged);
+        _notifications.SubscribeToNotification(NotificationType.FavouritesChanged, FavouritesChanged);
+    }
+
+    private void FavouritesChanged()
+    {
+        // Clear the cache
+        _favouriteTags = null;
+        _recentTags = null;
+
+        OnFavouritesChanged?.Invoke();
     }
 
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
-        // WASM: Cache here?
-        _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
+        if (_favouriteTags == null)
+            _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
 
         return _favouriteTags;
     }
 
     public async Task<ICollection<string>> GetRecentTags()
     {
-        // WASM: Cache here?
-        _recentTags = await httpClient.CustomGetFromJsonAsync<List<string>>("/api/tags/recents");
+        if (_recentTags == null)
+            _recentTags = await httpClient.CustomGetFromJsonAsync<List<string>>("/api/tags/recents");
 
         return _recentTags;
     }

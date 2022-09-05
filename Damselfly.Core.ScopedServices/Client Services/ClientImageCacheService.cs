@@ -36,8 +36,6 @@ public class ClientImageCacheService : IImageCacheService
                         .SetSlidingExpiration(TimeSpan.FromHours(4));
 
         _notifications.SubscribeToNotification<string>(Constants.NotificationType.CacheEvict, Evict);
-
-        _logger.LogInformation("Initialised ClientImageCacheService");
     }
 
     public async Task<Image> GetCachedImage(int imgId)
@@ -77,41 +75,14 @@ public class ClientImageCacheService : IImageCacheService
 
         try
         {
-            // First, get the list that aren't in the cache
-            var needLoad = imgIds.Where(x => !_memoryCache.TryGetValue(x, out var _))
-                                    .ToList();
-
-            // Now load and cache them
-            if (needLoad.Any())
-            {
-                _logger.LogTrace("Some images were not in the client side cache");
-                await LoadAndCacheImages(needLoad);
-            }
-            else
-                _logger.LogTrace("All images were in the client side cache");
-
             // Now, re-enumerate the list, but in-order. Note that everything
             // should be in the cache this time
             foreach (var imgId in imgIds)
             {
-                Image image;
-                if (!_memoryCache.TryGetValue(imgId, out image))
-                {
-                    // Somehow an item which we just supposedly cached, is no
-                    // longer in the cache. This is very bad indeed.
-                    _logger.LogWarning($"Cached image {imgId} was not found in client cache. Loading it from server...");
+                Image image = await LoadAndCacheImage(imgId);
 
-                    // Load it
-                    image = await GetImage(imgId);
-
-                    if( image == null )
-                    {
-                        _logger.LogError($"Unable to load image {imgId} from server.");
-                        continue;
-                    }
-                }
-
-                result.Add(image);
+                if( image != null )
+                    result.Add(image);
             }
         }
         catch (Exception ex)
@@ -134,9 +105,10 @@ public class ClientImageCacheService : IImageCacheService
         return response.Images;
     }
 
-    private async Task AddImageToCache( int imageId )
+    private async Task<Image> LoadAndCacheImage( int imageId )
     {
-        Image image = null;
+        if (_memoryCache.TryGetValue<Image>(imageId, out var image))
+            return image;
 
         try
         {
@@ -151,54 +123,7 @@ public class ClientImageCacheService : IImageCacheService
             _memoryCache.Set(image.ImageId, image, _cacheOptions);
         else
             _logger.LogWarning($"No image loaded for ID: {imageId}.");
-    }
 
-    /// <summary>
-    /// Submit the image load requests in parallel so we wait as little a time as possible.
-    /// TODO: Still need to understand why GetImages doesn't work (so we could submit them
-    /// in batches.
-    /// </summary>
-    /// <param name="imageIds"></param>
-    /// <returns></returns>
-    private async Task LoadAndCacheImages(ICollection<int> imageIds)
-    {
-        try
-        {
-            int batchSize = 1;
-
-            if (batchSize == 1)
-            {
-                var tasks = imageIds.Select(x => AddImageToCache(x));
-                await Task.WhenAll(tasks);
-            }
-            else
-            {
-                // Wish I understood why this doesn't work.
-                var tasks = new List<Task>();
-
-                var batches = imageIds.Chunk(batchSize);
-
-                foreach (var batch in batches)
-                {
-                    async Task func()
-                    {
-                        _logger.LogInformation($"Loading images {string.Join(", ", batch)}...");
-
-                        var imgs = await GetImages(batch);
-                        foreach (var i in imgs)
-                            _memoryCache.Set(i.ImageId, i, _cacheOptions);
-                    }
-
-                    tasks.Add(func());
-                }
-
-                await Task.WhenAll(tasks);
-            }
-
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Exception during LoadAndCacheImages: {ex}");
-        }
+        return image;
     }
 }

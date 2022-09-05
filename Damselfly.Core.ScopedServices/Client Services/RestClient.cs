@@ -30,6 +30,7 @@ public class RestClient
     {
         opts.ReferenceHandler = ReferenceHandler.Preserve;
         opts.PropertyNameCaseInsensitive = true;
+        opts.PropertyNamingPolicy = null;
         return opts;
     }
 
