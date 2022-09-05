@@ -38,6 +38,11 @@ yarn install
 yarn version --new-version $version 
 yarn $yarncommand
 
+if [ $? -ne 0 ]; then
+  echo "*** ERROR: Yarn command ($yarncommand) failed. Exiting."
+  exit 1
+fi
+
 echo "Desktop build complete. Copying output to ${destfolder}..."
 
 mkdir -p $destfolder

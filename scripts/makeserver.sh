@@ -34,28 +34,36 @@ echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
 dotnet publish Damselfly.Web.Server -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 
+if [ $? -ne 0 ]; then
+  echo "*** ERROR: Dotnet Build failed. Exiting."
+  exit 1
+fi
+
+echo "*** Damselfly build succeeded. Packaging..."
+
 outputdir="Damselfly.Web.Server/bin/Release/net${dotnetversion}/${runtime}/publish"
 
-# Hack to get the libcvextern.so into the linux build. 
-case $PLATFORM in
-  linux)
-    runtime='linux-x64'
-    emguVer='4.5.1.4349'
-    wget https://www.nuget.org/api/v2/package/Emgu.CV.runtime.ubuntu.20.04-x64/$emguVer
-    unzip -j "$emguVer" "runtimes/ubuntu.20.04-x64/native/libcvextern.so" -d "$outputdir"
-    chmod 777 "$outputdir/libcvextern.so"
-    ls "$outputdir"
-    ;;
-esac
-
 if [ -d "$outputdir" ]; then
-  echo "Zipping build to ${zipname}..."
+  # Hack to get the libcvextern.so into the linux build. 
+  case $PLATFORM in
+    linux)
+      runtime='linux-x64'
+      emguVer='4.5.1.4349'
+      wget https://www.nuget.org/api/v2/package/Emgu.CV.runtime.ubuntu.20.04-x64/$emguVer
+      unzip -j "$emguVer" "runtimes/ubuntu.20.04-x64/native/libcvextern.so" -d "$outputdir"
+      chmod 777 "$outputdir/libcvextern.so"
+      ls "$outputdir"
+      ;;
+  esac
+
+  echo "*** Zipping build to ${zipname}..."
   mkdir $serverdist
 
   cd $outputdir
   zip $zipname . -rx "*.pdb" 
-  echo "Build complete."
+  echo "*** Build complete."
 else
-  echo "ERROR: Output folder ${outputdir} did not exist."
+  echo "*** ERROR: Output folder ${outputdir} did not exist."
+  exit 1
 fi
 
