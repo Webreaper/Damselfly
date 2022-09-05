@@ -10,7 +10,6 @@ fi;
 #echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
 echo "Preparing to start Damselfly...."
-echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
 
 # Let's turn this on for extra performance.
 # https://devblogs.microsoft.com/dotnet/announcing-net-6/#dynamic-pgo
@@ -22,8 +21,10 @@ cd /app
 
 if ! [ -z "$DAMSELFLY_WASM" ];
 then
+   echo "  ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
    ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 else
+   echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
    ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 fi;
 
