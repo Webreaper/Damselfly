@@ -198,10 +198,6 @@ public class Program
 
         builder.Services.AddRazorPages();
 
-#if DEBUG
-        builder.Services.AddSwaggerGen();
-#endif
-
         // Server to client notifications
         builder.Services.AddSignalR();
         builder.Services.AddResponseCompression(opts =>
@@ -236,12 +232,6 @@ public class Program
         {
             app.UseMigrationsEndPoint();
             app.UseWebAssemblyDebugging();
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Damselfly API V1");
-            });
         }
         else
         {
