@@ -2,7 +2,29 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 
-<h1>Login</h1>
+<div class="damselfly-login-form">
+    <h2>Log in to Damselfly</h2>
+
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="email">Email address</label>
+            <MudTextField @bind-Value="@loginModel.Email" InputType="InputType.Email" For="@(() => loginModel.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <ValidationMessage For="@(() => loginModel.Email)" />
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <MudTextField @bind-Value="@loginModel.Password" InputType="InputType.Password" For="@(() => loginModel.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <ValidationMessage For="@(() => loginModel.Password)" />
+        </div>
+        <div>
+            <MudCheckBox @bind-Checked="@loginModel.RememberMe" Label="Remember Me" />
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </EditForm>
+</div>
 
 @if (ShowErrors)
 {
@@ -10,31 +32,6 @@
         <p>@Error</p>
     </div>
 }
-
-<div class="card">
-    <div class="card-body">
-        <h5 class="card-title">Please enter your details</h5>
-        <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="form-group">
-                <label for="email">Email address</label>
-                <MudTextField @bind-Value="@loginModel.Email" InputType="InputType.Email" For="@(() => loginModel.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-                <ValidationMessage For="@(() => loginModel.Email)" />
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <MudTextField @bind-Value="@loginModel.Password" InputType="InputType.Password" For="@(() => loginModel.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-                <ValidationMessage For="@(() => loginModel.Password)" />
-            </div>
-            <div>
-                <MudCheckBox @bind-Checked="@loginModel.RememberMe" Label="Stay Logged In" />
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </EditForm>
-    </div>
-</div>
 
 @code {
 

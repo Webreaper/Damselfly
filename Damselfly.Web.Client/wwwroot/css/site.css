@@ -37,6 +37,11 @@ html, body {
     animation: sk-scaleout 1.0s infinite ease-in-out;
 }
 
+.damselfly-login-form {
+    margin: 40px;
+    padding: 30px;
+}
+
 .components-reconnect-hide > div {
     display: none;
 }
