@@ -46,6 +46,7 @@ public class ImageAPIController : ControllerBase
     {
         _logger.LogInformation($"Loading {req.ImageIds.Count} images from server cache.");
         var images = await imageCache.GetCachedImages(req.ImageIds);
+
         return new ImageResponse { Images = images };
     }
 }
