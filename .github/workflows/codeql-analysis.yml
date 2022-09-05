@@ -47,15 +47,14 @@ jobs:
 
     - name: Install WASM-Tools
       run: dotnet workload install wasm-tools
-      
+
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
     
-    - -name: Compile the Code
-      shell: bash
+    - name: Compile the Code
       run: sh scripts/makeserver.sh 'linux'
     
     - name: Perform CodeQL Analysis
