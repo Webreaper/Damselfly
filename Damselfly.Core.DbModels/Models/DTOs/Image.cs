@@ -35,26 +35,20 @@ public class Image
     // Damselfy state metadata
     public DateTime LastUpdated { get; set; }
 
-    [JsonIgnore]
     public virtual ImageMetaData MetaData { get; set; }
-    [JsonIgnore]
     public virtual Hash Hash { get; set; }
 
     // An image can appear in many baskets
-    [JsonIgnore]
     public virtual List<BasketEntry> BasketEntries { get; init;  } = new List<BasketEntry>();
     // An image can have many tags
-    [JsonIgnore]
     public virtual List<ImageTag> ImageTags { get; init; } = new List<ImageTag>();
 
     // Machine learning fields
     public int? ClassificationId { get; set; }
-    [JsonIgnore]
     public virtual ImageClassification Classification { get; set; }
     public double ClassificationScore { get; set; }
 
     // NOTE: setter needed for serialization only
-    [JsonIgnore]
     public virtual List<ImageObject> ImageObjects { get; init; } = new List<ImageObject>();
 
     public override string ToString()

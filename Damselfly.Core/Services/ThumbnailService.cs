@@ -396,7 +396,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             }
 
             hash.MD5ImageHash = processResult.ImageHash;
-            hash.PerceptualHash = processResult.PerceptualHash;
+            hash.SetFromHexString( processResult.PerceptualHash );
 
             await db.SaveChangesAsync("SaveHash");
         }

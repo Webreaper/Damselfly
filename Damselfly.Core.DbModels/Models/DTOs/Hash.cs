@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Damselfly.Core.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace Damselfly.Core.Models;
 
@@ -31,6 +32,7 @@ public class Hash
     public string PerceptualHex4 { get; set; }
 
     [NotMapped]
+    [JsonIgnore]
     public ulong PerceptualHashValue
     {
         get { return (ulong)Convert.ToInt64(PerceptualHash, 16); }
@@ -54,12 +56,23 @@ public class Hash
     {
         get
         {
-            return PerceptualHex1 + PerceptualHex2 + PerceptualHex3 + PerceptualHex4;
-        }
+            try
+            {
+                return $"{PerceptualHex1}{PerceptualHex2}{PerceptualHex3}{PerceptualHex4}";
 
-        set
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }      
+    }
+
+    public void SetFromHexString( string hexHash )
+    {
+        try
         {
-            var fullHex = value.PadLeft(16, '0');
+            var fullHex = hexHash.PadLeft(16, '0');
 
             var chunks = fullHex.Chunk(4).Select(x => new string(x)).ToArray();
 
@@ -70,6 +83,13 @@ public class Hash
                 PerceptualHex3 = chunks[2];
                 PerceptualHex4 = chunks[3];
             }
+        }
+        catch
+        {
+            PerceptualHex1 = string.Empty;
+            PerceptualHex2 = string.Empty;
+            PerceptualHex3 = string.Empty;
+            PerceptualHex4 = string.Empty;
         }
     }
 }
