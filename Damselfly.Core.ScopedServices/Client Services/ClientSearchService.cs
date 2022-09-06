@@ -55,7 +55,7 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
         }
 
         // Calculate how many results we have already
-        if (SearchResults.Count > first)
+        if (SearchResults.Count >= first)
         {
             int firstOffset = SearchResults.Count - first;
             first = SearchResults.Count;

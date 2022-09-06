@@ -209,7 +209,7 @@
             basketService.OnBasketChanged += BasketChanged;
             ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
 
-            int initialLoadCount = Math.Max(configService.GetInt("LoadedImages", imagesPerPage), imagesPerPage);
+            int initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
             //Logging.Log($"Loading {initialLoadCount} images into grid.");
             await LoadData(initialLoadCount);
@@ -259,7 +259,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        configService.Set("LoadedImages", gridImages.Count.ToString());
+        configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
     [JSInvokable]
@@ -279,12 +279,17 @@
 
             ChangeThumbSize(CurrentThumbSize);
 
-            if (gridImages.Count < searchService.SearchResults.Count())
+            // We already have a bunch of search results in the service
+            int existingResultCount = searchService.SearchResults.Count(); 
+
+            // If they're not all in the grid, add them.
+            if (gridImages.Count < existingResultCount) 
             {
                 // First add the ones we've already got in the search service
                 var existingSearchResults = await imageCache.GetCachedImages(searchService.SearchResults);
                 gridImages.Clear();
                 gridImages.AddRange(existingSearchResults);
+                imagesToLoad -= gridImages.Count();
             }
 
             // Now, see if we need to load any more

@@ -7,6 +7,7 @@ public class ConfigSettings
 
     public const string ThumbSize = "ThumbSize";
     public const string RecentTags = "RecentTags";
+    public const string LoadedImages = "LoadedImages";
     public const string Theme = "Theme";
     public const string SimilarityThreshold = "SimilarityThreshold";
     public const string ZoomLevel = "ZoomLevel";
