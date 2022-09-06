@@ -30,26 +30,29 @@ public class Hash
     public string PerceptualHex3 { get; set; }
     public string PerceptualHex4 { get; set; }
 
-    [NotMapped]
-    public ulong PerceptualHashValue
-    {
-        get { return (ulong)Convert.ToInt64(PerceptualHash, 16); }
-    }
-
     public double SimilarityTo(Hash other)
     {
         double similarity = HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
 
-        Logging.LogVerbose($"Hash similarity {PerceptualHash} vs {other.PerceptualHash} = {similarity:P1} ({PerceptualHashValue} v {other.PerceptualHashValue})");
+        Logging.LogVerbose($"Hash similarity {HexPerceptualHash} vs {other.HexPerceptualHash} = {similarity:P1} ({PerceptualHashValue} v {other.PerceptualHashValue})");
 
         return similarity;
     }
 
-    /// <summary>
-    /// Property accessor to set and get the sliced perceptual hash via a single Hex has string.
-    /// </summary>
-    [NotMapped]
-    public string PerceptualHash
+    public bool HasPerceptualHash()
+    {
+        return (!string.IsNullOrEmpty(PerceptualHex1) &&
+                !string.IsNullOrEmpty(PerceptualHex1) &&
+                !string.IsNullOrEmpty(PerceptualHex1) &&
+                !string.IsNullOrEmpty(PerceptualHex1) );
+    }
+
+    private ulong PerceptualHashValue
+    {
+        get { return (ulong)Convert.ToInt64(HexPerceptualHash, 16); }
+    }
+
+    private string HexPerceptualHash
     {
         get
         {
@@ -62,7 +65,7 @@ public class Hash
             {
                 return string.Empty;
             }
-        }      
+        }
     }
 
     public void SetFromHexString( string hexHash )

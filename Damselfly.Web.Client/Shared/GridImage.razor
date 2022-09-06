@@ -100,7 +100,7 @@ else
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
                     <RadzenMenuItem Text="Download" Value="1" />
                 </AuthorizeView>
-                @if (CurrentImage.Hash != null && !string.IsNullOrEmpty(CurrentImage.Hash.PerceptualHash))
+                @if (CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash())
                 {
                     <RadzenMenuItem Text="Find Similar Images (Experimental)" Value="6" />
                 }
