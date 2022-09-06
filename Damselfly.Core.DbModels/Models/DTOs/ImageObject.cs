@@ -19,7 +19,7 @@ public class ImageObject
     {
         Manual = 0,
         Emgu = 1,
-        Accord = 2,
+        Accord = 2, // Deprecated
         Azure = 3,
         MLNetObject = 4,
         ExternalApp = 5

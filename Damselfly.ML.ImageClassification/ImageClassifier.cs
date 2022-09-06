@@ -29,7 +29,7 @@ namespace Damselfly.ML.ImageClassification
             return average;
         }
 
-        public ImageDetectResult DetectObjects(Bitmap image)
+        public ImageDetectResult DetectObjects()
         {
             var modelDir = MLUtils.ModelFolder;
             if (modelDir == null)

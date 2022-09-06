@@ -9,7 +9,6 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils.ML;
-using Damselfly.ML.Face.Accord;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.ObjectDetection;
@@ -27,7 +26,6 @@ namespace Damselfly.Core.Services;
 public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 {
     private readonly ObjectDetector _objectDetector;
-    private readonly AccordFaceService _accordFaceService;
     private readonly AzureFaceService _azureFaceService;
     private readonly EmguFaceService _emguFaceService;
     private readonly IStatusService _statusService;
@@ -49,7 +47,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     public ImageRecognitionService(IServiceScopeFactory scopeFactory,
                     IStatusService statusService, ObjectDetector objectDetector,
                     MetaDataService metadataService, AzureFaceService azureFace,
-                    AccordFaceService accordFace, EmguFaceService emguService,
+                    EmguFaceService emguService,
                     ThumbnailService thumbs, ConfigService configService,
                     ImageClassifier imageClassifier, ImageCache imageCache,
                     WorkService workService, ExifService exifService,
@@ -57,7 +55,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     {
         _scopeFactory = scopeFactory;
         _thumbService = thumbs;
-        _accordFaceService = accordFace;
         _azureFaceService = azureFace;
         _statusService = statusService;
         _objectDetector = objectDetector;
@@ -440,46 +437,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
                         ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                         foundFaces.AddRange(newObjects);
-                    }
-                }
-                else
-                {
-                    var accordwatch = new Stopwatch("AccordFaceDetect");
-
-                    // Emgu isn't available, so use Accord.Net instead
-                    var rects = _accordFaceService.DetectFaces(bitmap);
-
-                    accordwatch.Stop();
-
-                    if (rects.Any())
-                    {
-                        if (UseAzureForRecogition(rects))
-                        {
-                            useAzureDetection = true;
-                        }
-                        else
-                        {
-                            // Azure is disabled, so just use what we've got.
-                            Logging.Log($" Accord.Net found {rects.Count} faces in {fileName}...");
-
-                            var newTags = await CreateNewTags(rects);
-
-                            var newObjects = rects.Select(x => new ImageObject
-                            {
-                                ImageId = image.ImageId,
-                                RectX = x.Rect.Left,
-                                RectY = x.Rect.Top,
-                                RectHeight = x.Rect.Height,
-                                RectWidth = x.Rect.Width,
-                                Type = ImageObject.ObjectTypes.Face.ToString(), // Accord only does faces.
-                                TagId = newTags[x.Tag],
-                                RecogntionSource = ImageObject.RecognitionType.Accord,
-                                Score = 0
-                            }).ToList();
-
-                            ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
-                            foundFaces.AddRange(newObjects);
-                        }
                     }
                 }
             }
