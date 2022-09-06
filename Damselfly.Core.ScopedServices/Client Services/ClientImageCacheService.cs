@@ -2,11 +2,13 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Serilog.Core;
@@ -38,6 +40,11 @@ public class ClientImageCacheService : IImageCacheService
         _notifications.SubscribeToNotification<string>(Constants.NotificationType.CacheEvict, Evict);
     }
 
+    private void CacheImage( Image image )
+    {
+        _memoryCache.Set(image.ImageId, image, _cacheOptions);
+    }
+
     public async Task<Image> GetCachedImage(int imgId)
     {
         var list = new int[] { imgId };
@@ -60,6 +67,33 @@ public class ClientImageCacheService : IImageCacheService
         }
     }
 
+    private const int chunkSize = 10;
+
+    private async Task PreCacheImageList(ICollection<int> imgIds)
+    {
+        if (imgIds.Count() <= chunkSize)
+        {
+            var watch = new Stopwatch("ClientGetImages");
+            var images = await GetImages(imgIds);
+            watch.Stop();
+
+            _logger.LogInformation($"Retreived {imgIds.Count} images from server in {watch.ElapsedTime}ms.");
+
+            images.ForEach(x => CacheImage( x ));
+        }
+        else
+        {
+            List<Task> tasks = imgIds.Chunk(chunkSize)
+                                     .Select(x => PreCacheImageList(x))
+                                     .ToList();
+            var watch = new Stopwatch("ClientCacheImage");
+            await Task.WhenAll(tasks);
+            watch.Stop();
+
+            _logger.LogInformation($"Cached {tasks.Count} batches of images (total {imgIds.Count}) in {watch.ElapsedTime}ms.");
+        }
+    }
+
     /// <summary>
     /// For a given list of IDs, load them into the cache, and then return.
     /// Note, it's critical that the results are returned in the same order
@@ -75,11 +109,12 @@ public class ClientImageCacheService : IImageCacheService
 
         try
         {
-            // Now, re-enumerate the list, but in-order. Note that everything
-            // should be in the cache this time
+            // First pre-cache them in batch
+            // await PreCacheImageList(imgIds);
+
             foreach (var imgId in imgIds)
             {
-                Image image = await LoadAndCacheImage(imgId);
+                var image = await LoadAndCacheImage(imgId);
 
                 if( image != null )
                     result.Add(image);
@@ -120,7 +155,7 @@ public class ClientImageCacheService : IImageCacheService
         }
 
         if (image != null)
-            _memoryCache.Set(image.ImageId, image, _cacheOptions);
+            CacheImage(image);
         else
             _logger.LogWarning($"No image loaded for ID: {imageId}.");
 

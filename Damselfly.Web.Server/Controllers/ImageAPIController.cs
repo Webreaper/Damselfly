@@ -13,6 +13,9 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Interfaces;
 using Damselfly.Shared.Utils;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Damselfly.Core.ScopedServices.ClientServices;
 
 namespace Damselfly.Web.Controllers;
 
@@ -53,11 +56,8 @@ public class ImageAPIController : ControllerBase
         try
         {
             var images = await imageCache.GetCachedImages(req.ImageIds);
-            if (images != null && images.Any())
-            {
-                _logger.LogInformation($"Loaded {req.ImageIds.Count} images from server cache.");
-                return new ImageResponse { Images = images };
-            }
+            var response = new ImageResponse { Images = images };
+            return response;
         }
         catch ( Exception ex )
         {

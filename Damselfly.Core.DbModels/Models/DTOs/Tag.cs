@@ -28,7 +28,10 @@ public class Tag
 
     public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
 
+    [JsonIgnore]
     public virtual List<ImageTag> ImageTags { get; init; } = new List<ImageTag>();
+
+    [JsonIgnore]
     public virtual List<ImageObject> ImageObjects { get; init; } = new List<ImageObject>();
 
     public override string ToString()

@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Damselfly.Core.Utils;
-using Newtonsoft.Json.Linq;
 
 namespace Damselfly.Core.Models;
 
@@ -32,7 +31,6 @@ public class Hash
     public string PerceptualHex4 { get; set; }
 
     [NotMapped]
-    [JsonIgnore]
     public ulong PerceptualHashValue
     {
         get { return (ulong)Convert.ToInt64(PerceptualHash, 16); }
@@ -51,7 +49,6 @@ public class Hash
     /// Property accessor to set and get the sliced perceptual hash via a single Hex has string.
     /// </summary>
     [NotMapped]
-    [JsonIgnore]
     public string PerceptualHash
     {
         get
