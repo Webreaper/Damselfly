@@ -48,6 +48,7 @@ public class Hash
     /// Property accessor to set and get the sliced perceptual hash via a single Hex has string.
     /// </summary>
     [NotMapped]
+    [JsonIgnore]
     public string PerceptualHash
     {
         get
