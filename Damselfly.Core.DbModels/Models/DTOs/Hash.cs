@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Models;
@@ -62,10 +63,13 @@ public class Hash
 
             var chunks = fullHex.Chunk(4).Select(x => new string(x)).ToArray();
 
-            PerceptualHex1 = chunks[0];
-            PerceptualHex2 = chunks[1];
-            PerceptualHex3 = chunks[2];
-            PerceptualHex4 = chunks[3];
+            if (chunks.Length == 4)
+            {
+                PerceptualHex1 = chunks[0];
+                PerceptualHex2 = chunks[1];
+                PerceptualHex3 = chunks[2];
+                PerceptualHex4 = chunks[3];
+            }
         }
     }
 }
