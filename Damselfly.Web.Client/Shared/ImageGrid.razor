@@ -280,10 +280,10 @@
             ChangeThumbSize(CurrentThumbSize);
 
             // We already have a bunch of search results in the service
-            int existingResultCount = searchService.SearchResults.Count(); 
+            int existingResultCount = searchService.SearchResults.Count();
 
             // If they're not all in the grid, add them.
-            if (gridImages.Count < existingResultCount) 
+            if (gridImages.Count < existingResultCount)
             {
                 // First add the ones we've already got in the search service
                 var existingSearchResults = await imageCache.GetCachedImages(searchService.SearchResults);
@@ -292,18 +292,32 @@
                 imagesToLoad -= gridImages.Count();
             }
 
-            // Now, see if we need to load any more
-            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), imagesToLoad);
+            // Do the query in pages
+            int pageSize = 100;
 
-            if (response.SearchResults.Any())
+            while( imagesToLoad > 0 )
             {
-                var images = await imageCache.GetCachedImages(response.SearchResults);
-                logger.LogInformation($"Loading {images.Count()} more images into image grid.");
-                gridImages.AddRange(images);
-            }
+                // Now, see if we need to load any more
+                var response = await searchService.GetQueryImagesAsync(gridImages.Count(), pageSize);
 
-            // Flag the 'more' div if we loaded at least as many as we requested.
-            endOfImages = !response.MoreDataAvailable;
+                if (response.SearchResults.Any())
+                {
+                    var images = await imageCache.GetCachedImages(response.SearchResults);
+                    logger.LogInformation($"Loading {images.Count()} more images into image grid.");
+                    gridImages.AddRange(images);
+
+                    imagesToLoad = Math.Max(0, imagesToLoad - pageSize);
+                }
+
+                // Flag the 'more' div if we loaded at least as many as we requested.
+                endOfImages = !response.MoreDataAvailable;
+
+                if( imagesToLoad <= 0 || !response.MoreDataAvailable)
+                    break;
+
+                // Update the UI and go around again
+                _ = InvokeAsync(StateHasChanged);
+            }
 
             // If we've tried to load data and there isn't any more, show the toast.
             toastClass = endOfImages ? "show" : string.Empty;

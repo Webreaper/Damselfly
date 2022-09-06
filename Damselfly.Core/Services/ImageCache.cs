@@ -131,7 +131,7 @@ public class ImageCache : IImageCacheService
                 {
                     // Somehow an item which we just supposedly cached, is no
                     // longer in the cache. This is very bad indeed.
-                    Logging.LogError($"Cached image {imgId} was not found in cache.");
+                    Logging.LogWarning($"Cached image {imgId} was not found in cache. Attempting reload");
                     continue;
                 }
 
