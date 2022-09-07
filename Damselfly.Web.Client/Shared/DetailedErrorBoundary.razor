@@ -1,0 +1,59 @@
+﻿@inject NavigationManager navManager
+@inherits ErrorBoundary
+
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else if (ErrorContent is not null)
+{
+    @ErrorContent(CurrentException)
+}
+else
+{
+    <div class="error-panel">
+        <p>An error has occurred.</p>
+        <button class="btn btn-error" @onclick="@Reload">Reload Page.</button>
+        <button class="btn btn-error" @onclick="@ToggleDisplay">@ShowText Details.</button>
+
+        @if (Open)
+        {
+            <div class="error-stacktrace">
+                @foreach (var exception in receivedExceptions)
+                {
+                    <div class="received-exception" style="font-size: 10pt; color: darkorange; margin: 0.5rem; padding: 0.2rem;">
+                        @exception
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<Exception> receivedExceptions = new();
+    bool Open { get; set; } = false;
+    string ShowText => Open ? "Hide" : "Show";
+
+    private void Reload()
+    {
+        navManager.NavigateTo(navManager.Uri, forceLoad: true);
+    }
+
+    private void ToggleDisplay()
+    {
+        Open = !Open;
+    }
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        receivedExceptions.Add(exception);
+        return base.OnErrorAsync(exception);
+    }
+
+    public new void Recover()
+    {
+        receivedExceptions.Clear();
+        base.Recover();
+    }
+}

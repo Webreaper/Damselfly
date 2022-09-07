@@ -8,12 +8,12 @@
     <h1>Damselfly Information</h1>
     <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
         <MudTabPanel Text="Credits">
-            <ErrorBoundary>
+            <DetailedErrorBoundary>
                 <About />
-            </ErrorBoundary>
+            </DetailedErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Damselfly Desktop">
-            <ErrorBoundary>
+            <DetailedErrorBoundary>
                 @if (FileExporter != null && FileExporter.IsDesktopHosted)
                 {
                     <p>Running in the Damselfly Desktop container, v<span />@FileExporter.DesktopVersion</p>
@@ -28,23 +28,23 @@
                     </p>
                 }
                 <DesktopAppDownload />
-            </ErrorBoundary>
+            </DetailedErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Status">
-            <ErrorBoundary>
+            <DetailedErrorBoundary>
                 <Stats />
-            </ErrorBoundary>
+            </DetailedErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Tasks">
-            <ErrorBoundary>
+            <DetailedErrorBoundary>
                 <h4>Task Statuses:</h4>
                 <TaskList />
-            </ErrorBoundary>
+            </DetailedErrorBoundary>
         </MudTabPanel>
         <MudTabPanel Text="Logs">
-            <ErrorBoundary>
+            <DetailedErrorBoundary>
                 <LogView />
-            </ErrorBoundary>
+            </DetailedErrorBoundary>
         </MudTabPanel>
     </MudTabs>
 </div>

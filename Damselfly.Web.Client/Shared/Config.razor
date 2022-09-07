@@ -17,7 +17,7 @@
         <Authorized Context="auth">
             <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
                 <MudTabPanel Text="User Settings">
-                    <ErrorBoundary>
+                    <DetailedErrorBoundary>
                         <EditForm Model="settingsModel.similarityThreshold" OnValidSubmit="@HandleValidSubmit">
                             <div>
                                 <h2>Settings for @UserName(auth)</h2>
@@ -49,12 +49,12 @@
                                 <button class="btn btn-primary" type="submit">Save Settings</button>
                             </div>
                         </EditForm>
-                    </ErrorBoundary>
+                    </DetailedErrorBoundary>
                 </MudTabPanel>
 
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin" Context="authPolicy">
                     <MudTabPanel Text="System Settings">
-                        <ErrorBoundary>
+                        <DetailedErrorBoundary>
                             <EditForm Model="@settingsModel.cpuSettings" OnValidSubmit="@HandleValidSubmit">
                                 <FluentValidationValidator />
                                 <ValidationSummary />                            <h2>SideCar Processing</h2>
@@ -140,11 +140,11 @@
 
                                 <button class="btn btn-primary" type="submit">Save Settings</button>
                             </EditForm>
-                        </ErrorBoundary>
+                        </DetailedErrorBoundary>
                     </MudTabPanel>
 
                     <MudTabPanel Text="Image Recognition">
-                        <ErrorBoundary>
+                        <DetailedErrorBoundary>
                             <EditForm Model="@settingsModel.azureSettings" OnValidSubmit="@HandleValidSubmit">
                                 <FluentValidationValidator />
                                 <ValidationSummary />
@@ -213,21 +213,21 @@
 
                                 <button class="btn btn-primary" type="submit">Save Settings</button>
                             </EditForm>
-                        </ErrorBoundary>
+                        </DetailedErrorBoundary>
                     </MudTabPanel>
 
                     @if ( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles ))
                     {
                         <MudTabPanel Text="User Management">
-                            <ErrorBoundary>
+                            <DetailedErrorBoundary>
                                 <div>
                                     <UserManagement />
                                 </div>
-                            </ErrorBoundary>
+                            </DetailedErrorBoundary>
                         </MudTabPanel>
                     }
                     <MudTabPanel Text="Email Notifications">
-                        <ErrorBoundary>
+                        <DetailedErrorBoundary>
                             <EditForm Model="@(settingsModel.useSmtp ? settingsModel.smtpSettings : settingsModel.sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
                                 <FluentValidationValidator />
                                 <ValidationSummary />
@@ -287,11 +287,11 @@
                                 }
                                 <button class="btn btn-primary" type="submit">Save Settings</button>
                             </EditForm>
-                        </ErrorBoundary>
+                        </DetailedErrorBoundary>
                     </MudTabPanel>
 
                     <MudTabPanel Text="Wordpress">
-                        <ErrorBoundary>
+                        <DetailedErrorBoundary>
                             <EditForm Model="@settingsModel.wpSettings" OnValidSubmit="@HandleValidSubmit">
                                 <FluentValidationValidator />
                                 <ValidationSummary />
@@ -312,7 +312,7 @@
                                 </div>
                                 <button class="btn btn-primary" type="submit">Save Settings</button>
                             </EditForm>
-                        </ErrorBoundary>
+                        </DetailedErrorBoundary>
                     </MudTabPanel>
                 </AuthorizeView>
             </MudTabs>

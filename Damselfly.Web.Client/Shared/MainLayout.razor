@@ -5,13 +5,13 @@
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <RadzenContextMenu />
 
-<ErrorBoundary>
+<DetailedErrorBoundary>
     <ChildContent>
         <CascadingAuthenticationState>
-        <ErrorBoundary>
+        <DetailedErrorBoundary>
             <LoginForcer />
             <ThemeSwitcher />
-        </ErrorBoundary>
+        </DetailedErrorBoundary>
         <div class="damselfly-container">
             <div class="damselfly-application">
                 <SplitView>
@@ -23,16 +23,16 @@
                     </RightPane>
                 </SplitView>
             </div>
-            <ErrorBoundary>
+            <DetailedErrorBoundary>
                 <Statusbar />
-            </ErrorBoundary>
+            </DetailedErrorBoundary>
         </div>
         </CascadingAuthenticationState>
     </ChildContent>
     <ErrorContent>
         <p>An error occurred. Please check the Damselfly logs and reload the page.</p>
     </ErrorContent>
-</ErrorBoundary>
+</DetailedErrorBoundary>
 @code{
 }
 
