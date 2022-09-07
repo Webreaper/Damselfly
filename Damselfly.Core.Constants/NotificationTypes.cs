@@ -11,5 +11,6 @@ public enum NotificationType
     WorkStatusChanged = 3,
     CacheEvict = 4,
     FavouritesChanged = 5,
-    BasketChanged = 6
+    BasketChanged = 6,
+    SystemSettingsChanged = 7
 }
