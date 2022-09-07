@@ -56,9 +56,6 @@
     <ProjectReference Include="..\Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
-    <ProjectReference Include="..\Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\" />

@@ -30,7 +30,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ILogger = Serilog.ILogger;
-using static MudBlazor.Colors;
 
 namespace Damselfly.Web;
 
