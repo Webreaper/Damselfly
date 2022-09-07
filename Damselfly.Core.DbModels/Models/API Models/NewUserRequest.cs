@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Core.DbModels.Models.APIModels;
 

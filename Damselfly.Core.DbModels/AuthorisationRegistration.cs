@@ -3,6 +3,7 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Core.DbModels.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

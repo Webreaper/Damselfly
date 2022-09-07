@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Core.Models;
 

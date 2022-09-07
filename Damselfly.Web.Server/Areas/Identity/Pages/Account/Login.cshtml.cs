@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {

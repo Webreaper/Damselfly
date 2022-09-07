@@ -12,6 +12,7 @@ using Damselfly.Core.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.DbModels.Models.APIModels;
+using Damselfly.Core.DbModels.Authentication;
 using System.Data;
 
 namespace Damselfly.Core.ScopedServices;

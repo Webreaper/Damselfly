@@ -37,7 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
-    <Folder Include="Models\" />
     <Folder Include="Utils\" />
     <Folder Include="ScopedServices\" />
     <Folder Include="DbAbstractions\" />
@@ -52,15 +51,4 @@
     <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
     <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
 </ItemGroup>
-  <ItemGroup>
-    <None Remove="Microsoft.AspNetCore.Components.Authorization" />
-    <None Remove="SendGrid" />
-    <None Remove="MailKit" />
-    <None Remove="ScopedServices\" />
-    <None Remove="CoenM.ImageSharp.ImageHash" />
-    <None Remove="MudBlazor" />
-    <None Remove="Models\DTOs\" />
-    <None Remove="DbAbstractions\" />
-    <None Remove="EFCore.BulkExtensions" />
-  </ItemGroup>
 </Project>

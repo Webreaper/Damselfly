@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MudBlazor.Services;
 using Tewr.Blazor.FileReader;
 using Syncfusion.Blazor;
+using Damselfly.Core.DbModels.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity.UI.Services;

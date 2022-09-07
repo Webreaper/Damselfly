@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Authentication;
 using Microsoft.AspNetCore.Identity;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;

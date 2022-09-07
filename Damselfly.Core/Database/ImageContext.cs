@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Damselfly.Core.DBAbstractions;
 using Humanizer;
-using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Authentication;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;

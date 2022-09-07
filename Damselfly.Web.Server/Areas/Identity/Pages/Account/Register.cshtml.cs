@@ -16,6 +16,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Services;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {

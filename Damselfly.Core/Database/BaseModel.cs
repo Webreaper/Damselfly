@@ -10,7 +10,7 @@ using Damselfly.Shared.Utils;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Authentication;
 using EFCore.BulkExtensions;
 
 namespace Damselfly.Core.DBAbstractions

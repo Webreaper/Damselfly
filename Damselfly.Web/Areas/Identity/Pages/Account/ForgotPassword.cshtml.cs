@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Areas.Identity.Pages.Account
 {
