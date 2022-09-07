@@ -31,8 +31,10 @@ public class SystemSettingsService : ISystemSettingsService
                                     WorkService workService,
                                     AzureFaceService azureService,
                                     WordpressService wpService,
-                                    IConfigService configService)
+                                    IConfigService configService,
+                                    ServerNotifierService notifier)
     {
+        _notifier = notifier;
         _workService = workService;
         _azureService = azureService;
         _wpService = wpService;
@@ -59,5 +61,7 @@ public class SystemSettingsService : ISystemSettingsService
 
         // WP Settings have changed, so reset the client and token
         _wpService.ResetClient();
+
+        _ = _notifier.NotifyClients( Constants.NotificationType.SystemSettingsChanged );
     }
 }
