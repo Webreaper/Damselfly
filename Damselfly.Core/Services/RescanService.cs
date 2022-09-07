@@ -12,7 +12,7 @@ public class RescanService : IRescanService
 {
     private readonly ThumbnailService _thumbService;
 
-    public RescanService( ThumbnailService thumbService )
+    public RescanService(ThumbnailService thumbService)
     {
         _thumbService = thumbService;
     }
@@ -22,7 +22,7 @@ public class RescanService : IRescanService
         return type switch
         {
             RescanTypes.Thumbnails => _thumbService,
-            _ => throw new ArgumentException( $"Unknown rescan service {type}")
+            _ => throw new ArgumentException($"Unknown rescan service {type}")
         };
     }
 
@@ -37,7 +37,7 @@ public class RescanService : IRescanService
     {
         var provider = GetService(rescanType);
 
-        await provider.MarkFolderForScan( folder );
+        await provider.MarkFolderForScan(folder);
     }
 
     public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Image> images)
@@ -49,7 +49,7 @@ public class RescanService : IRescanService
 
     public async Task ClearFaceThumbs()
     {
-        await Task.Run( () => _thumbService.ClearFaceThumbs() );
+        await Task.Run(() => _thumbService.ClearFaceThumbs());
     }
 }
 

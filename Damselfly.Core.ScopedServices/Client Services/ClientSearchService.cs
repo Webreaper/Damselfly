@@ -29,9 +29,9 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
     private readonly ICachedDataService _dataService;
     private readonly List<int> _searchResults = new List<int>();
 
-    public ICollection<int> SearchResults { get { return _searchResults;  } }
+    public ICollection<int> SearchResults { get { return _searchResults; } }
 
-    public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) : base( dataService, logger )
+    public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) : base(dataService, logger)
     {
         httpClient = client;
         _dataService = dataService;
@@ -44,7 +44,7 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
         _searchResults.Clear();
     }
 
-    public override async Task<SearchResponse> GetQueryImagesAsync( int first, int count )
+    public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
     {
         _logger.LogTrace($"Running search query for {first}...{first + count}");
 
@@ -76,7 +76,7 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
             Count = count
         };
 
-        var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request );
+        var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 
         // WASM: should this just get added into the navigation manager directly?
         _searchResults.AddRange(response.SearchResults);

@@ -15,7 +15,7 @@ public interface ISearchService
 
     string SearchText { get; set; }
     Folder Folder { get; set; }
-    Person Person { get; set;  }
+    Person Person { get; set; }
     Tag Tag { get; set; }
     Image SimilarTo { get; set; }
     DateTime? MaxDate { get; set; }

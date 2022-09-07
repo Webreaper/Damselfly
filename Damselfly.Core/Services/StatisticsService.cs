@@ -15,7 +15,7 @@ public class StatisticsService
     private readonly ILogger<StatisticsService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public StatisticsService(IServiceScopeFactory scopeFactory, ILogger<StatisticsService> logger )
+    public StatisticsService(IServiceScopeFactory scopeFactory, ILogger<StatisticsService> logger)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;

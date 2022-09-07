@@ -54,7 +54,7 @@ namespace Yolov5Net.Scorer
 
             var result = new Bitmap(_model.Width, _model.Height, format);
 
-            if( image.HorizontalResolution == 0 || image.VerticalResolution == 0 )
+            if (image.HorizontalResolution == 0 || image.VerticalResolution == 0)
                 result.SetResolution(300, 300);
             else
                 result.SetResolution(image.HorizontalResolution, image.VerticalResolution);

@@ -7,18 +7,18 @@ namespace ImageClassification.ModelScorer
 {
     public static class ModelHelpers
     {
-        public static (string,float) GetBestLabel(string[] labels, float[] probs)
+        public static (string, float) GetBestLabel(string[] labels, float[] probs)
         {
             var max = probs.Max();
             var index = probs.AsSpan().IndexOf(max);
-            return (labels[index],max);
+            return (labels[index], max);
         }
 
         public static string[] ReadLabels(string labelsLocation)
         {
             return File.ReadAllLines(labelsLocation);
         }
-     
+
         public static IEnumerable<string> Columns<T>() where T : class
         {
             return typeof(T).GetProperties().Select(p => p.Name);

@@ -20,7 +20,7 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class ThemeService : IThemeService
 {
-    private readonly IDictionary<string, ThemeConfig> _themeConfigs = new Dictionary<string, ThemeConfig>( StringComparer.OrdinalIgnoreCase );
+    private readonly IDictionary<string, ThemeConfig> _themeConfigs = new Dictionary<string, ThemeConfig>(StringComparer.OrdinalIgnoreCase);
 
     public ThemeService(IWebHostEnvironment env)
     {
@@ -29,7 +29,7 @@ public class ThemeService : IThemeService
 
     public event Action<ThemeConfig> OnChangeTheme;
 
-    public Task SetNewTheme( ThemeConfig newTheme )
+    public Task SetNewTheme(ThemeConfig newTheme)
     {
         OnChangeTheme?.Invoke(newTheme);
         return Task.CompletedTask;
@@ -70,9 +70,9 @@ public class ThemeService : IThemeService
 
     public async Task<List<ThemeConfig>> GetAllThemes()
     {
-        return await Task.FromResult( _themeConfigs.Values
-                            .OrderBy( x => x.Name )
-                            .ToList() );
+        return await Task.FromResult(_themeConfigs.Values
+                            .OrderBy(x => x.Name)
+                            .ToList());
     }
 
     public async Task<ThemeConfig> GetDefaultTheme()
@@ -80,7 +80,7 @@ public class ThemeService : IThemeService
         return await GetThemeConfig("Green");
     }
 
-    public async Task<ThemeConfig> GetThemeConfig( string name )
+    public async Task<ThemeConfig> GetThemeConfig(string name)
     {
         if (_themeConfigs.TryGetValue(name, out var config))
             return config;
@@ -88,7 +88,7 @@ public class ThemeService : IThemeService
         return null;
     }
 
-    private string Color( IDictionary<string, string> pairs, string ID )
+    private string Color(IDictionary<string, string> pairs, string ID)
     {
         var value = string.Empty;
         try
@@ -96,7 +96,7 @@ public class ThemeService : IThemeService
             if (pairs.TryGetValue(ID, out value))
                 return value;
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.Log($"Invalid colour value {value} for {ID}: {ex.Message}");
         }

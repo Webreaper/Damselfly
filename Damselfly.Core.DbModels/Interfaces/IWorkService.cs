@@ -8,7 +8,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 public interface IWorkService
 {
     Task<ServiceStatus> GetWorkStatus();
-    Task Pause( bool paused );
+    Task Pause(bool paused);
     event Action<ServiceStatus> OnStatusChanged;
 
     Task<CPULevelSettings> GetCPUSchedule();

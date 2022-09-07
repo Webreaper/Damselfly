@@ -44,7 +44,7 @@ public class Hash
         return (!string.IsNullOrEmpty(PerceptualHex1) &&
                 !string.IsNullOrEmpty(PerceptualHex1) &&
                 !string.IsNullOrEmpty(PerceptualHex1) &&
-                !string.IsNullOrEmpty(PerceptualHex1) );
+                !string.IsNullOrEmpty(PerceptualHex1));
     }
 
     private ulong PerceptualHashValue
@@ -68,7 +68,7 @@ public class Hash
         }
     }
 
-    public void SetFromHexString( string hexHash )
+    public void SetFromHexString(string hexHash)
     {
         try
         {

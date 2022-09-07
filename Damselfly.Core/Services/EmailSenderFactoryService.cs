@@ -18,13 +18,13 @@ public class EmailSenderFactoryService : IEmailSender
 {
     private IEmailSender _senderInstance;
 
-    public EmailSenderFactoryService( IConfigService configService )
+    public EmailSenderFactoryService(IConfigService configService)
     {
         _senderInstance = null;
 
         var useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
 
-        if( useSmtp )
+        if (useSmtp)
         {
             var smtp = new EmailSmtpService(configService);
 
@@ -50,7 +50,7 @@ public class EmailSenderFactoryService : IEmailSender
 
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
-        if( _senderInstance != null )
+        if (_senderInstance != null)
             await _senderInstance.SendEmailAsync(email, subject, htmlMessage);
     }
 }

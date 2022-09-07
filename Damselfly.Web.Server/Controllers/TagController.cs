@@ -45,7 +45,7 @@ public class TagController : ControllerBase
     [HttpGet("/api/tags/search/{filterText}")]
     public async Task<ICollection<Tag>> SearchTags(string filterText)
     {
-        return await _tagSearch.SearchTags( filterText );
+        return await _tagSearch.SearchTags(filterText);
     }
 
     [HttpGet("/api/tags")]
@@ -55,9 +55,9 @@ public class TagController : ControllerBase
     }
 
     [HttpPost("/api/tags")]
-    public async Task UpdateTags( TagUpdateRequest req )
+    public async Task UpdateTags(TagUpdateRequest req)
     {
-        await _tagService.UpdateTagsAsync( req.ImageIDs, req.TagsToAdd, req.TagsToDelete, req.UserId);
+        await _tagService.UpdateTagsAsync(req.ImageIDs, req.TagsToAdd, req.TagsToDelete, req.UserId);
     }
 
     [HttpPost("/api/tags/exif")]
@@ -67,9 +67,9 @@ public class TagController : ControllerBase
     }
 
     [HttpPost("/api/tags/togglefave")]
-    public async Task<bool> ToggleFavourite( Tag tag )
+    public async Task<bool> ToggleFavourite(Tag tag)
     {
-        return await _tagService.ToggleFavourite( tag );
+        return await _tagService.ToggleFavourite(tag);
     }
 
 }

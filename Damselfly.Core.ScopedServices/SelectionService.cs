@@ -16,7 +16,7 @@ public class SelectionService
 
     // TODO: Remember last selected image and use it for range selections etc?
 
-    public SelectionService( IUserStatusService statusService, IUserService userService )
+    public SelectionService(IUserStatusService statusService, IUserService userService)
     {
         _statusService = statusService;
         _userService = userService;
@@ -32,12 +32,12 @@ public class SelectionService
     /// </summary>
     public void ClearSelection()
     {
-        if (selectedImages.Count > 0 )
+        if (selectedImages.Count > 0)
         {
             selectedImages.Clear();
             NotifyStateChanged();
 
-            _statusService.UpdateStatus( "Selection cleared." );
+            _statusService.UpdateStatus("Selection cleared.");
         }
     }
 
@@ -58,8 +58,8 @@ public class SelectionService
         if (added)
         {
             NotifyStateChanged();
-            if( images.Count > 1 && _statusService != null )
-                _statusService.UpdateStatus( $"{images.Count} images selected." );
+            if (images.Count > 1 && _statusService != null)
+                _statusService.UpdateStatus($"{images.Count} images selected.");
         }
     }
 
@@ -87,11 +87,11 @@ public class SelectionService
     /// <param name="images"></param>
     public void ToggleSelection(List<Image> images)
     {
-        foreach( var img in images )
+        foreach (var img in images)
         {
             // Try and add it. If it wasn't there, it'll succeed.
             // If it fails, we need to remove it.
-            if( ! selectedImages.TryAdd(img.ImageId, img) )
+            if (!selectedImages.TryAdd(img.ImageId, img))
                 selectedImages.Remove(img.ImageId);
         }
 
@@ -111,7 +111,7 @@ public class SelectionService
     /// <returns></returns>
     public void DeselectImage(Image img) => DeselectImages(new List<Image> { img });
 
-    public int SelectionCount {  get { return selectedImages.Count;  } }
+    public int SelectionCount { get { return selectedImages.Count; } }
 
     /// <summary>
     /// Unordered set of selected images.
@@ -121,7 +121,7 @@ public class SelectionService
         get { return selectedImages.Values; }
     }
 
-    public bool IsSelected( Image image )
+    public bool IsSelected(Image image)
     {
         return selectedImages.ContainsKey(image.ImageId);
     }

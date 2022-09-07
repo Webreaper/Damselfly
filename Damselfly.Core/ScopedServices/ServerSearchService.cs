@@ -30,17 +30,17 @@ public class ServerSearchService : BaseSearchService, ISearchService
 {
     private SearchQueryService _queryService;
 
-    public ServerSearchService(ICachedDataService dataService, SearchQueryService queryService, ILogger<BaseSearchService> logger ) : base(dataService, logger)
+    public ServerSearchService(ICachedDataService dataService, SearchQueryService queryService, ILogger<BaseSearchService> logger) : base(dataService, logger)
     {
         _queryService = queryService;
     }
 
-    public override async Task<SearchResponse> GetQueryImagesAsync( int first, int count )
+    public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
     {
         if (first < SearchResults.Count() && first + count < SearchResults.Count())
         {
             // Data already loaded. Nothing to do.
-            return new SearchResponse {  MoreDataAvailable = false, SearchResults = new int[0] };
+            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
         }
 
         // Calculate how many results we have already

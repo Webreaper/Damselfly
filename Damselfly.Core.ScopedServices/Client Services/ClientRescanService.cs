@@ -10,9 +10,9 @@ public class ClientRescanService : IRescanService
 {
     private readonly RestClient httpClient;
 
-    public ClientRescanService( RestClient client) 
+    public ClientRescanService(RestClient client)
     {
-        httpClient = client;       
+        httpClient = client;
     }
 
     public async Task ClearFaceThumbs()
@@ -20,7 +20,7 @@ public class ClientRescanService : IRescanService
         throw new NotImplementedException("To be done");
     }
 
-    public async Task MarkFolderForRescan( RescanTypes rescanType, Folder folder )
+    public async Task MarkFolderForRescan(RescanTypes rescanType, Folder folder)
     {
         throw new NotImplementedException("To be done");
     }

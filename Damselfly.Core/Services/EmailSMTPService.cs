@@ -23,7 +23,7 @@ public class EmailSmtpService : IEmailSender
 
     private readonly SmtpSettings _emailSettings = new SmtpSettings();
 
-    public EmailSmtpService(IConfigService configService )
+    public EmailSmtpService(IConfigService configService)
     {
         _emailSettings.Load(configService);
     }

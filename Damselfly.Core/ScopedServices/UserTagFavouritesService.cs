@@ -32,7 +32,7 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
 
         string recents = configService.Get(ConfigSettings.RecentTags);
 
-        if( ! string.IsNullOrEmpty( recents ) )
+        if (!string.IsNullOrEmpty(recents))
         {
             recentTags.AddRange(recents.Split(",").Select(x => x.Trim()).ToList());
         }

@@ -117,7 +117,7 @@ namespace Damselfly.ML.Face.Azure
         public async Task ClearAllFaceData()
         {
             // TEMP WHILE DEBUGGING
-            await _transThrottle.Run( "Delete", _faceClient.PersonDirectory.DeleteDynamicPersonGroupAsync(GroupId) );
+            await _transThrottle.Run("Delete", _faceClient.PersonDirectory.DeleteDynamicPersonGroupAsync(GroupId));
         }
 
         /// <summary>
@@ -153,9 +153,9 @@ namespace Damselfly.ML.Face.Azure
             bool exists = false;
             try
             {
-                var groups = await _transThrottle.Call("List", _faceClient.PersonDirectory.ListDynamicPersonGroupsAsync() );
+                var groups = await _transThrottle.Call("List", _faceClient.PersonDirectory.ListDynamicPersonGroupsAsync());
 
-                if (groups.Any(x => x.DynamicPersonGroupId == GroupId ))
+                if (groups.Any(x => x.DynamicPersonGroupId == GroupId))
                 {
                     var faces = await _transThrottle.Call("List", _faceClient.PersonDirectory.GetPersonsAsync());
 
@@ -179,7 +179,7 @@ namespace Damselfly.ML.Face.Azure
                     {
                         Name = GroupId
                     };
-                    var response = await _transThrottle.Call( "CreateGroup", _faceClient.PersonDirectory.CreateDynamicPersonGroupAsync(GroupId, body));
+                    var response = await _transThrottle.Call("CreateGroup", _faceClient.PersonDirectory.CreateDynamicPersonGroupAsync(GroupId, body));
 
                     // TODO: Use response.OperationLocation to wait for it to complete
 
@@ -205,9 +205,9 @@ namespace Damselfly.ML.Face.Azure
         /// </summary>
         /// <param name="image"></param>
         /// <returns></returns>
-        private async Task<IList<DetectedFace>> AzureDetect(string imagePath )
+        private async Task<IList<DetectedFace>> AzureDetect(string imagePath)
         {
-            using var fileStream = File.OpenRead( imagePath );
+            using var fileStream = File.OpenRead(imagePath);
 
             Logging.LogVerbose($"Calling Azure Face service...");
 
@@ -223,17 +223,17 @@ namespace Damselfly.ML.Face.Azure
         /// </summary>
         /// <param name="imageFilePath"></param>
         /// <returns></returns>
-        public async Task<List<Face>> DetectFaces( string imagePath, IImageProcessor imageProcessor )
+        public async Task<List<Face>> DetectFaces(string imagePath, IImageProcessor imageProcessor)
         {
             var faces = new List<Face>();
 
-            if( _transThrottle.Disabled )
+            if (_transThrottle.Disabled)
             {
                 Logging.LogWarning("Azure has reached maximum monthly transactions, so is disabled.");
                 return faces;
             }
 
-            if (_faceClient != null && _detectionType != AzureDetection.Disabled )
+            if (_faceClient != null && _detectionType != AzureDetection.Disabled)
             {
                 var watch = new Stopwatch("AzureFace");
 
@@ -251,7 +251,7 @@ namespace Damselfly.ML.Face.Azure
                             // https://docs.microsoft.com/en-us/answers/questions/494886/azure-faceclient-persondirectory-api-usage.html
 
                             using MemoryStream stream = new MemoryStream();
-                            await imageProcessor.CropImage(new FileInfo( imagePath ), face.Left, face.Top, face.Width, face.Height, stream);
+                            await imageProcessor.CropImage(new FileInfo(imagePath), face.Left, face.Top, face.Width, face.Height, stream);
 
                             if (stream != null)
                             {
@@ -270,14 +270,14 @@ namespace Damselfly.ML.Face.Azure
                 {
                     Logging.LogError($"Azure face error: {ex.Response.Content}");
                 }
-                catch ( Exception ex )
+                catch (Exception ex)
                 {
                     Logging.LogError($"Exception during Azure face detection: {ex}");
                 }
 
                 watch.Stop();
 
-                if( faces.Any() )
+                if (faces.Any())
                     Logging.Log($"  Azure Detected {faces.Count()} faces in {watch.ElapsedTime}ms");
 
                 _transThrottle.ProcessNewTransactions();
@@ -295,25 +295,25 @@ namespace Damselfly.ML.Face.Azure
         /// </summary>
         /// <param name="detectedFaces"></param>
         /// <returns></returns>
-        private async Task<List<Face>> IdentifyOrCreateFaces( IList<DetectedFace> detectedFaces )
+        private async Task<List<Face>> IdentifyOrCreateFaces(IList<DetectedFace> detectedFaces)
         {
             List<Face> faces = detectedFaces.Select(x => new Face
-                {
-                    FaceId = x.FaceId,
-                    Left = x.FaceRectangle.Left,
-                    Top = x.FaceRectangle.Top,
-                    Width = x.FaceRectangle.Width,
-                    Height = x.FaceRectangle.Height,
-                    Emotion = GetTopEmotion(x.FaceAttributes)
-                }).ToList();
+            {
+                FaceId = x.FaceId,
+                Left = x.FaceRectangle.Left,
+                Top = x.FaceRectangle.Top,
+                Width = x.FaceRectangle.Width,
+                Height = x.FaceRectangle.Height,
+                Emotion = GetTopEmotion(x.FaceAttributes)
+            }).ToList();
 
             // If we have any trained faces yet, try and identify
-            if (_persistedFaces > 0 )
+            if (_persistedFaces > 0)
             {
                 var faceIdsToMatch = detectedFaces.Where(x => x.FaceId.HasValue).Select(x => x.FaceId.Value).ToList();
 
-                var matches = await _transThrottle.Call( "Identify", _faceClient.Face.IdentifyAsync(faceIdsToMatch,
-                                                personIds: new List<string> { "*" }, maxNumOfCandidatesReturned: 3) );
+                var matches = await _transThrottle.Call("Identify", _faceClient.Face.IdentifyAsync(faceIdsToMatch,
+                                                personIds: new List<string> { "*" }, maxNumOfCandidatesReturned: 3));
 
                 if (matches != null)
                 {
@@ -360,7 +360,7 @@ namespace Damselfly.ML.Face.Azure
             return faces;
         }
 
-        private static string GetTopEmotion( FaceAttributes attributes )
+        private static string GetTopEmotion(FaceAttributes attributes)
         {
             var emotionValues = new Dictionary<string, double> {
                 {"Anger", attributes.Emotion.Anger},

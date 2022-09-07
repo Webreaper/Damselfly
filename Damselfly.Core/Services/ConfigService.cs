@@ -23,7 +23,7 @@ public class ConfigService : BaseConfigService, IConfigService
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base (logger)
+    public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base(logger)
     {
         _scopeFactory = scopeFactory;
 
@@ -41,14 +41,14 @@ public class ConfigService : BaseConfigService, IConfigService
         return settings;
     }
 
-    public void Set(string name, string value )
+    public void Set(string name, string value)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var existing = GetSetting(name);
 
-        if ( existing != null )
+        if (existing != null)
         {
             if (String.IsNullOrEmpty(value))
             {

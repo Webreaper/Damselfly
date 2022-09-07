@@ -14,7 +14,7 @@ namespace Damselfly.Core.Models
         public TimeSpan? AltTimeStart { get; set; }
         public TimeSpan? AltTimeEnd { get; set; }
 
-        public void Save( IConfigService configService )
+        public void Save(IConfigService configService)
         {
             // CPU Usage settings
             configService.Set(ConfigSettings.AltCPULimitEnabled, EnableAltCPULevel.ToString());
@@ -24,7 +24,7 @@ namespace Damselfly.Core.Models
             string cpuTimeRangeSettings = null;
 
             if (EnableAltCPULevel)
-                cpuTimeRangeSettings = $"{AltTimeStart.LocalTimeSpanToUTC()}-{AltTimeEnd.LocalTimeSpanToUTC()}"; 
+                cpuTimeRangeSettings = $"{AltTimeStart.LocalTimeSpanToUTC()}-{AltTimeEnd.LocalTimeSpanToUTC()}";
 
             configService.Set(ConfigSettings.AltCPULimitTimes, cpuTimeRangeSettings);
         }
@@ -64,13 +64,13 @@ namespace Damselfly.Core.Models
             {
                 bool useAlternateLevel = true;
 
-                if( EnableAltCPULevel && AltTimeStart.HasValue && AltTimeEnd.HasValue )
+                if (EnableAltCPULevel && AltTimeStart.HasValue && AltTimeEnd.HasValue)
                 {
                     var now = DateTime.UtcNow.TimeOfDay;
 
-                    if( AltTimeStart < AltTimeEnd )
+                    if (AltTimeStart < AltTimeEnd)
                     {
-                        useAlternateLevel = AltTimeStart < now && now < AltTimeEnd; 
+                        useAlternateLevel = AltTimeStart < now && now < AltTimeEnd;
                     }
                     else
                     {
@@ -86,7 +86,7 @@ namespace Damselfly.Core.Models
         {
             string result = $"CPULevel={CPULevel}%";
 
-            if( EnableAltCPULevel )
+            if (EnableAltCPULevel)
             {
                 result += $", AltLevel={CPULevelAlt}% [{AltTimeStart} - {AltTimeEnd}]";
             }

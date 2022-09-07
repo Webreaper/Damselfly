@@ -6,7 +6,7 @@ namespace Damselfly.Core.ScopedServices;
 /// Service to maintain state around the toolbars - such as whether
 /// we show the folder list or not.
 /// </summary>
-public class ViewDataService 
+public class ViewDataService
 {
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class SideBarState
@@ -22,7 +22,7 @@ public class ViewDataService
         public override bool Equals(object obj)
         {
             var other = obj as SideBarState;
-            if( other != null )
+            if (other != null)
             {
                 return ShowBasket == other.ShowBasket &&
                        ShowFolderList == other.ShowFolderList &&

@@ -14,7 +14,7 @@ public class UserThemeService
     private ThemeConfig _currentTheme;
     public event Action<ThemeConfig> OnChangeTheme;
 
-    public UserThemeService( UserConfigService configService, IThemeService themeService)
+    public UserThemeService(UserConfigService configService, IThemeService themeService)
     {
         _configService = configService;
         _themeService = themeService;

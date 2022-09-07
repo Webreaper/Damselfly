@@ -21,7 +21,7 @@ public class ClientStatusService : IUserStatusService
 
     private int? CurrentUserId => _userService.UserId;
 
-    public ClientStatusService( NotificationsService notifications, RestClient restClient, IUserService userService, ILogger<ClientStatusService> logger )
+    public ClientStatusService(NotificationsService notifications, RestClient restClient, IUserService userService, ILogger<ClientStatusService> logger)
     {
         _restClient = restClient;
         _notifications = notifications;
@@ -42,7 +42,7 @@ public class ClientStatusService : IUserStatusService
         }
     }
 
-    public string StatusText {  get { return statusText;  } }
+    public string StatusText { get { return statusText; } }
 
     public void UpdateStatus(string newStatus)
     {
@@ -58,7 +58,7 @@ public class ClientStatusService : IUserStatusService
     private void ShowServerStatus(StatusUpdate newStatus)
     {
         // If it's -1, or it's meant for us, use it.
-        if (! _userService.RolesEnabled || newStatus.UserID is null || newStatus.UserID == CurrentUserId )
+        if (!_userService.RolesEnabled || newStatus.UserID is null || newStatus.UserID == CurrentUserId)
         {
             NotifyStatusChanged(newStatus.NewStatus);
         }

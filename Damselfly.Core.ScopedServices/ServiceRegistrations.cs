@@ -12,7 +12,7 @@ public static class ServiceRegistrations
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>
-    public static IServiceCollection AddDamselflyUIServices( this IServiceCollection services )
+    public static IServiceCollection AddDamselflyUIServices(this IServiceCollection services)
     {
         services.AddScoped<NotificationsService>();
 

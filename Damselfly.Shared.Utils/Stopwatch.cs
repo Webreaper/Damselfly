@@ -20,12 +20,12 @@ public struct Stopwatch
         public long maxTime;
         public string name;
 
-        public long AverageTime { get { return (long)(((double)totalTime) / count);  } }
+        public long AverageTime { get { return (long)(((double)totalTime) / count); } }
     }
 
     private static IDictionary<string, Totals> stats = new ConcurrentDictionary<string, Totals>(StringComparer.OrdinalIgnoreCase);
 
-    private void UpdateStats( string statName, long time )
+    private void UpdateStats(string statName, long time)
     {
         lock (stats)
         {
@@ -57,7 +57,7 @@ public struct Stopwatch
     /// <param name="name">Name of the work being timed</param>
     /// <param name="thresholdMS">Threshold, in milliseconds, ovr which we should
     /// log a message stating that the work took an unexpectedly long time to complete.</param>
-    public Stopwatch( string name, int thresholdMS = 1000 )
+    public Stopwatch(string name, int thresholdMS = 1000)
     {
         this.taskThresholdMS = thresholdMS;
 

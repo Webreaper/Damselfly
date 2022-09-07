@@ -32,7 +32,7 @@ public class WorkController : ControllerBase
     }
 
     [HttpPost("/api/work/pause")]
-    public async Task PauseWork( bool paused )
+    public async Task PauseWork(bool paused)
     {
         _service.Paused = paused;
     }

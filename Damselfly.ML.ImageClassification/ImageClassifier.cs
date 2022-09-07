@@ -11,7 +11,7 @@ namespace Damselfly.ML.ImageClassification
 {
     public class ImageClassifier
     {
-        public Color DetectDominantColour( Bitmap image )
+        public Color DetectDominantColour(Bitmap image)
         {
             var calculator = new DominantHueColorCalculator();
 

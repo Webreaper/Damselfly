@@ -23,7 +23,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     private ICollection<Folder> folderItems;
     private IDictionary<int, bool> expandedSate;
 
-    public UserFolderService( IFolderService folderService, ISearchService searchService, IConfigService configService, NotificationsService notifications)
+    public UserFolderService(IFolderService folderService, ISearchService searchService, IConfigService configService, NotificationsService notifications)
     {
         _folderService = folderService;
         _searchService = searchService;
@@ -62,7 +62,7 @@ public class UserFolderService : IDisposable, IUserFolderService
         return new[] { f }.Concat(sortedChildren.SelectMany(x => SortedChildren(x, sortFunc, descending)));
     }
 
-    public bool IsExpanded( Folder folder )
+    public bool IsExpanded(Folder folder)
     {
         if (expandedSate.TryGetValue(folder.FolderId, out var expanded))
             return expanded;
@@ -76,9 +76,9 @@ public class UserFolderService : IDisposable, IUserFolderService
     /// </summary>
     /// <param name="filterTerm"></param>
     /// <returns></returns>
-    public async Task<List<Folder>> GetFilteredFolders( string filterTerm )
+    public async Task<List<Folder>> GetFilteredFolders(string filterTerm)
     {
-        if( folderItems == null )
+        if (folderItems == null)
         {
             // Load the folders if we haven't already.
             folderItems = await _folderService.GetFolders();
@@ -96,7 +96,7 @@ public class UserFolderService : IDisposable, IUserFolderService
 
         IEnumerable<Folder> items;
 
-        if ( sortMode == "Date" )
+        if (sortMode == "Date")
             items = SortedChildren(rootFolderItem, x => x.MetaData.MaxImageDate, sortAscending).ToList();
         else
             items = SortedChildren(rootFolderItem, x => x.Name, sortAscending).ToList();
@@ -107,10 +107,10 @@ public class UserFolderService : IDisposable, IUserFolderService
             items = items.Where(x => x.MetaData.DisplayName.ContainsNoCase(filterTerm)
                                         // Always include the currently selected folder so it remains highlighted
                                         || _searchService.Folder?.FolderId == x.FolderId)
-                            .Where(x => x.Parent is null || IsExpanded( x.Parent ));
+                            .Where(x => x.Parent is null || IsExpanded(x.Parent));
         }
 
-        bool flat = _configService.GetBool( ConfigSettings.FlatView, true );
+        bool flat = _configService.GetBool(ConfigSettings.FlatView, true);
 
         if (flat)
         {
@@ -133,7 +133,7 @@ public class UserFolderService : IDisposable, IUserFolderService
             }
         }
         else
-            return items.Where(x => x.ParentFolders.All(x => IsExpanded( x ) )).ToList();
+            return items.Where(x => x.ParentFolders.All(x => IsExpanded(x))).ToList();
     }
 
     /// <summary>
@@ -142,7 +142,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     /// <param name="item"></param>
     public void ToggleExpand(Folder item)
     {
-        expandedSate[item.FolderId] = ! IsExpanded(item);
+        expandedSate[item.FolderId] = !IsExpanded(item);
     }
 
 }

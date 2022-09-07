@@ -32,7 +32,7 @@ public class PeopleController : ControllerBase
     }
 
     [HttpGet("/api/people/{searchText}")]
-    public async Task<List<string>> Search( string searchText )
+    public async Task<List<string>> Search(string searchText)
     {
         var names = await _aiService.GetPeopleNames(searchText);
         return names;

@@ -45,7 +45,7 @@ namespace Damselfly.Areas.Identity.Pages.Account
 
         public string ReturnUrl { get; set; }
 
-        public bool CanRegister { get { return _userService.AllowPublicRegistration;  } }
+        public bool CanRegister { get { return _userService.AllowPublicRegistration; } }
 
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
@@ -81,7 +81,7 @@ namespace Damselfly.Areas.Identity.Pages.Account
         /// <returns></returns>
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            if( ! _userService.AllowPublicRegistration )
+            if (!_userService.AllowPublicRegistration)
             {
                 ModelState.AddModelError(string.Empty, "Public Registration is disabled. Please contact the owner of this Damselfly instance to have an account created");
                 return Page();
@@ -95,13 +95,13 @@ namespace Damselfly.Areas.Identity.Pages.Account
 
                 var result = await _userService.CreateNewUser(user, Input.Password);
 
-                if( result.Succeeded )
+                if (result.Succeeded)
                 {
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync( user );
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                    var callbackUrl = Url.Page( "/Account/ConfirmEmail",
+                    var callbackUrl = Url.Page("/Account/ConfirmEmail",
                         pageHandler: null,
                         values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);

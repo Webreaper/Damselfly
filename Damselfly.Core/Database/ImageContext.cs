@@ -65,7 +65,7 @@ namespace Damselfly.Core.Models
             // Many to many via ImageTags
             var it = modelBuilder.Entity<ImageTag>();
             it.HasKey(x => new { x.ImageId, x.TagId });
- 
+
             it.HasOne(p => p.Image)
                 .WithMany(p => p.ImageTags)
                 .HasForeignKey(p => p.ImageId)
@@ -126,7 +126,7 @@ namespace Damselfly.Core.Models
             modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
             modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
             modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
-            modelBuilder.Entity<Hash>().HasIndex(x => new { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 } );
+            modelBuilder.Entity<Hash>().HasIndex(x => new { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });
             modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
             RoleDefinitions.OnModelCreating(modelBuilder);
@@ -157,5 +157,5 @@ namespace Damselfly.Core.Models
                 return 0;
             }
         }
-    }  
+    }
 }

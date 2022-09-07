@@ -51,12 +51,12 @@ public class EmailSendGridService : IEmailSender
 
             var response = await client.SendEmailAsync(msg);
 
-            if( response.IsSuccessStatusCode )
+            if (response.IsSuccessStatusCode)
                 Logging.Log($"Email send to {email} completed.");
             else
                 Logging.Log($"Email send to {email} failed with status {response.StatusCode}.");
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"SendGrid error: {ex}");
         }

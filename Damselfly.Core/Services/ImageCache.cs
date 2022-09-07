@@ -76,7 +76,7 @@ public class ImageCache : IImageCacheService
 
             Logging.Log($"Image Cache primed with {warmupIds.Count} images.");
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Unexpected error warming up cache: {ex.Message}");
         }
@@ -92,7 +92,7 @@ public class ImageCache : IImageCacheService
         Image cachedImage;
 
         var ids = new List<int>() { imgId };
-        var cachedImages = await EnrichAndCache( ids );
+        var cachedImages = await EnrichAndCache(ids);
 
         cachedImage = cachedImages.FirstOrDefault();
 
@@ -138,7 +138,7 @@ public class ImageCache : IImageCacheService
                 result.Add(image);
             }
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Exception during caching/enrichment: {ex}");
         }
@@ -146,12 +146,12 @@ public class ImageCache : IImageCacheService
         return result;
     }
 
-    public async Task<Image> GetCachedImage( Image img )
+    public async Task<Image> GetCachedImage(Image img)
     {
         Image cachedImage;
 
 
-        if( ! _memoryCache.TryGetValue(img.ImageId, out cachedImage) )
+        if (!_memoryCache.TryGetValue(img.ImageId, out cachedImage))
         {
             Logging.LogVerbose($"Cache miss for image {img.ImageId}");
             cachedImage = await EnrichAndCache(img);
@@ -160,7 +160,7 @@ public class ImageCache : IImageCacheService
         return cachedImage;
     }
 
-    private async Task<List<Image>> EnrichAndCache( List<int> imageIds )
+    private async Task<List<Image>> EnrichAndCache(List<int> imageIds)
     {
         if (!imageIds.Any())
             return new List<Image>();
@@ -178,18 +178,18 @@ public class ImageCache : IImageCacheService
         // to do something clever, such as setting the object modified?
         // https://stackoverflow.com/questions/6969760/entity-framework-update-problem
         var images = await db.Images
-                        .Where(x => imageIds.Contains( x.ImageId) )
+                        .Where(x => imageIds.Contains(x.ImageId))
                         .Include(x => x.Folder)
                         .Include(x => x.MetaData)
                         .Include(x => x.Hash)
                         .Include(x => x.MetaData.Camera)
                         .Include(x => x.MetaData.Lens)
                         .Include(x => x.BasketEntries)
-                        .Include(x => x.ImageTags.Where(y => imageIds.Contains(y.ImageId) ) )
-                        .ThenInclude( x => x.Tag )
-                        .Include( x => x.ImageObjects.Where( y => imageIds.Contains( y.ImageId ) ) )
+                        .Include(x => x.ImageTags.Where(y => imageIds.Contains(y.ImageId)))
                         .ThenInclude(x => x.Tag)
-                        .Include( x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId) ) )
+                        .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
+                        .ThenInclude(x => x.Tag)
+                        .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
                         .ThenInclude(x => x.Person)
                         .ToListAsync();
 
@@ -200,13 +200,13 @@ public class ImageCache : IImageCacheService
 
         tagwatch.Stop();
 
-        if( images.Count() > 1 )
+        if (images.Count() > 1)
             Logging.Log($"Enriched and cached {images.Count()} in {tagwatch.ElapsedTime}ms");
 
         return images;
     }
 
-    private async Task<Image> EnrichAndCache( Image image )
+    private async Task<Image> EnrichAndCache(Image image)
     {
         var enrichedImage = await GetImage(image);
 

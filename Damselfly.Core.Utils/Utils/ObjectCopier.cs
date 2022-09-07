@@ -19,7 +19,7 @@ namespace Damselfly.Core.Utils
             {
                 var destProp = destProps.FirstOrDefault(x => x.Name == sourceProp.Name);
 
-                if (destProp != null )
+                if (destProp != null)
                 {
                     if (nameFilter != null && !nameFilter.Contains(destProp.Name))
                         continue;
@@ -30,7 +30,7 @@ namespace Damselfly.Core.Utils
                     if (newVal == null && prevVal == null)
                         continue;
 
-                    if( newVal == null )
+                    if (newVal == null)
                     {
                         destProp.SetValue(dest, null);
                         Logging.LogVerbose($"Setting property {destProp.Name} to NULL");
@@ -38,7 +38,7 @@ namespace Damselfly.Core.Utils
                         continue;
                     }
 
-                    if( ! newVal.Equals( prevVal ) )
+                    if (!newVal.Equals(prevVal))
                     {
                         Logging.LogVerbose($"Setting property {destProp.Name} to {newVal}");
                         // check if the property can be set or no.

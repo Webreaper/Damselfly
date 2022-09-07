@@ -27,7 +27,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpDelete("/api/basket/{basketId}")]
-    public async Task DeleteBasket( int basketId)
+    public async Task DeleteBasket(int basketId)
     {
         _service.Delete(basketId);
     }
@@ -94,9 +94,9 @@ public class BasketController : ControllerBase
     }
 
     [HttpPost("/api/basketimage/state")]
-    public async Task SetBasketState( BasketStateRequest req )
+    public async Task SetBasketState(BasketStateRequest req)
     {
-        await _service.SetImageBasketState(req.BasketId, req.NewState, req.ImageIds );
+        await _service.SetImageBasketState(req.BasketId, req.NewState, req.ImageIds);
     }
 }
 

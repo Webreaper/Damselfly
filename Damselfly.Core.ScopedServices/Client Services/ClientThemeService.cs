@@ -11,7 +11,7 @@ namespace Damselfly.Core.ScopedServices;
 
 public class ClientThemeService : IThemeService
 {
-    public ClientThemeService( RestClient client, IConfigService configService, ILogger<ClientThemeService> logger )
+    public ClientThemeService(RestClient client, IConfigService configService, ILogger<ClientThemeService> logger)
     {
         _configService = configService;
         httpClient = client;
@@ -30,14 +30,14 @@ public class ClientThemeService : IThemeService
     {
         var uri = $"/api/theme";
 
-        if( !string.IsNullOrEmpty( name ))
+        if (!string.IsNullOrEmpty(name))
             uri = $"/api/theme/{name}";
 
         try
         {
             return await httpClient.CustomGetFromJsonAsync<ThemeConfig>(uri);
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError($"Error in GetTheme: {ex}");
             return await GetDefaultTheme();
@@ -74,7 +74,7 @@ public class ClientThemeService : IThemeService
     {
         _configService.Set(ConfigSettings.Theme, newTheme.Name);
 
-        OnChangeTheme?.Invoke( newTheme );
+        OnChangeTheme?.Invoke(newTheme);
     }
 }
 

@@ -16,9 +16,9 @@ namespace Damselfly.Core.Models
     {
         public WordpressSettingsValidator()
         {
-            RuleFor(p => p.URL).Must(x => IsValidUrl( x ) )
+            RuleFor(p => p.URL).Must(x => IsValidUrl(x))
                                .WithMessage("URL must be a full URL")
-                               .When( wp => ! string.IsNullOrEmpty( wp.URL ) );
+                               .When(wp => !string.IsNullOrEmpty(wp.URL));
             RuleFor(p => p.UserName).NotEmpty()
                                     .WithMessage("You must enter a Email address")
                                     .When(wp => !string.IsNullOrEmpty(wp.URL));
@@ -29,7 +29,7 @@ namespace Damselfly.Core.Models
             // RuleFor(p => p.Address).SetValidator(new AddressValidator());
         }
 
-        private bool IsValidUrl( string url )
+        private bool IsValidUrl(string url)
         {
             return Uri.IsWellFormedUriString(url, UriKind.Absolute);
         }

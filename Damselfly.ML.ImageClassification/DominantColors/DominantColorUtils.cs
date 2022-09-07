@@ -20,7 +20,7 @@ namespace Damselfly.ML.ImageClassification.DominantColors
         internal static unsafe Dictionary<int, uint> GetColorHueHistogram(Bitmap bmp, float saturationThreshold, float brightnessThreshold)
         {
             Dictionary<int, uint> colorHueHistorgram = new Dictionary<int, uint>();
-            for(int i = 0; i <= 360; i++)
+            for (int i = 0; i <= 360; i++)
             {
                 colorHueHistorgram.Add(i, 0);
             }
@@ -72,10 +72,10 @@ namespace Damselfly.ML.ImageClassification.DominantColors
             }
             bmp.UnlockBits(bData);
 
-            int totalPixels = bData.Width*bData.Height;
-            byte avgRed = (byte)(totalRed/totalPixels);
-            byte avgGreen = (byte)(totalGreen /totalPixels);
-            byte avgBlue = (byte)(totalBlue /totalPixels);
+            int totalPixels = bData.Width * bData.Height;
+            byte avgRed = (byte)(totalRed / totalPixels);
+            byte avgGreen = (byte)(totalGreen / totalPixels);
+            byte avgBlue = (byte)(totalBlue / totalPixels);
             return Color.FromArgb(avgRed, avgGreen, avgBlue);
         }
 
@@ -137,18 +137,18 @@ namespace Damselfly.ML.ImageClassification.DominantColors
         /// <returns>Smoothed hue color histogram</returns>
         internal static Dictionary<int, uint> SmoothHistogram(Dictionary<int, uint> colorHueHistogram, int smoothFactor)
         {
-            if(smoothFactor < 0 || smoothFactor > 360)
+            if (smoothFactor < 0 || smoothFactor > 360)
                 throw new ArgumentException("smoothFactor may not be negative or bigger then 360", nameof(smoothFactor));
             if (smoothFactor == 0)
                 return new Dictionary<int, uint>(colorHueHistogram);
-            
+
             Dictionary<int, uint> newHistogram = new Dictionary<int, uint>();
             int totalNrColumns = (smoothFactor * 2) + 1;
             for (int i = 0; i <= 360; i++)
             {
                 uint sum = 0;
                 uint average = 0;
-                for(int x = i - smoothFactor;  x <= i + smoothFactor; x++)
+                for (int x = i - smoothFactor; x <= i + smoothFactor; x++)
                 {
                     int hueIndex = CorrectHueIndex(x);
                     sum += colorHueHistogram[hueIndex];

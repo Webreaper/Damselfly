@@ -21,7 +21,7 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
     private readonly ILocalStorageService _localStorage;
     private readonly ILogger<ApiAuthenticationStateProvider> _logger;
 
-    public ApiAuthenticationStateProvider(RestClient httpClient, ILocalStorageService localStorage, ILogger<ApiAuthenticationStateProvider> logger )
+    public ApiAuthenticationStateProvider(RestClient httpClient, ILocalStorageService localStorage, ILogger<ApiAuthenticationStateProvider> logger)
     {
         _logger = logger;
         _httpClient = httpClient;
@@ -46,7 +46,7 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
     {
         var authState = GetAuthenticationStateAsync();
 
-        NotifyAuthenticationStateChanged( authState );
+        NotifyAuthenticationStateChanged(authState);
     }
 
     public void MarkUserAsLoggedOut()

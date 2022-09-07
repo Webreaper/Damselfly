@@ -40,7 +40,7 @@ public class ClientImageCacheService : IImageCacheService
         _notifications.SubscribeToNotification<string>(Constants.NotificationType.CacheEvict, Evict);
     }
 
-    private void CacheImage( Image image )
+    private void CacheImage(Image image)
     {
         _memoryCache.Set(image.ImageId, image, _cacheOptions);
     }
@@ -79,7 +79,7 @@ public class ClientImageCacheService : IImageCacheService
 
             _logger.LogInformation($"Retreived {imgIds.Count} images from server in {watch.ElapsedTime}ms.");
 
-            images.ForEach(x => CacheImage( x ));
+            images.ForEach(x => CacheImage(x));
         }
         else
         {
@@ -116,7 +116,7 @@ public class ClientImageCacheService : IImageCacheService
             {
                 var image = await LoadAndCacheImage(imgId);
 
-                if( image != null )
+                if (image != null)
                     result.Add(image);
             }
         }
@@ -140,7 +140,7 @@ public class ClientImageCacheService : IImageCacheService
         return response.Images;
     }
 
-    private async Task<Image> LoadAndCacheImage( int imageId )
+    private async Task<Image> LoadAndCacheImage(int imageId)
     {
         if (_memoryCache.TryGetValue<Image>(imageId, out var image))
             return image;
@@ -149,7 +149,7 @@ public class ClientImageCacheService : IImageCacheService
         {
             image = await GetImage(imageId);
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogWarning($"Exception loading image {imageId}: {ex}");
         }

@@ -34,7 +34,7 @@ public class TransThrottle : ITransactionThrottle
     private readonly MonthTransCount _monthTransCount;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public TransThrottle( IServiceScopeFactory factory )
+    public TransThrottle(IServiceScopeFactory factory)
     {
         SetLimits(20, 30000);
 
@@ -62,7 +62,7 @@ public class TransThrottle : ITransactionThrottle
         Logging.Log($"Transaction limits set to {_maxTransPerMinute}/min, and {_maxTransPerMonth}/month");
     }
 
-    public bool Disabled { get { return _monthTransCount.TransCount >= _maxTransPerMonth;  } }
+    public bool Disabled { get { return _monthTransCount.TransCount >= _maxTransPerMonth; } }
 
     private async Task WaitAfterTransaction(string desc)
     {
@@ -73,18 +73,18 @@ public class TransThrottle : ITransactionThrottle
 
         var windowSecs = (int)(now - _windowStart).TotalSeconds;
 
-        if ( windowSecs > 60 )
+        if (windowSecs > 60)
         {
             // Completed a minute - so clean slate.
             _windowStart = now;
-            _windowTransactions = 0;                
+            _windowTransactions = 0;
         }
 
         // Increment our transaction count
         _windowTransactions++;
         _totalTransactions++;
 
-        if ( _windowTransactions >= _maxTransPerMinute )
+        if (_windowTransactions >= _maxTransPerMinute)
         {
             // Too many transactions in this 1-min window. So sleep.
             var sleepTime = (60 - windowSecs) + 5;
@@ -159,7 +159,7 @@ public class TransThrottle : ITransactionThrottle
     /// <param name="ex"></param>
     /// <param name="retriesRemaining"></param>
     /// <returns>Number of retries (depending on this error this may be altered)</returns>
-    private async Task<int> HandleThrottleException( Exception ex, int retriesRemaining )
+    private async Task<int> HandleThrottleException(Exception ex, int retriesRemaining)
     {
         int retriesToReturn = retriesRemaining;
 
@@ -174,7 +174,7 @@ public class TransThrottle : ITransactionThrottle
                 await Task.Delay(requestsDelay * 1000);
             }
         }
-        else if( ex is APIErrorException )
+        else if (ex is APIErrorException)
         {
             var errorEx = ex as APIErrorException;
             if (errorEx.Response.StatusCode == System.Net.HttpStatusCode.TooManyRequests && retriesRemaining > 0)
@@ -187,7 +187,7 @@ public class TransThrottle : ITransactionThrottle
         {
             var errorEx = ex as ValidationException;
 
-            if( errorEx.Message.Contains("'faceIds' exceeds maximum item count of '10'") )
+            if (errorEx.Message.Contains("'faceIds' exceeds maximum item count of '10'"))
             {
                 Logging.LogWarning("Photo had more than 10 faces. This is not supported in the free Azure API.");
                 // No point retrying. All bets are off for this pic.

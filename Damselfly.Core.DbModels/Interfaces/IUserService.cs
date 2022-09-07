@@ -12,6 +12,6 @@ public interface IUserService
 
     int? UserId { get; }
     Task<bool> PolicyApplies(string policy);
-    bool RolesEnabled { get;  }
+    bool RolesEnabled { get; }
 }
 

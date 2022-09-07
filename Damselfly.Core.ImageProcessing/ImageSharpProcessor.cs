@@ -23,7 +23,7 @@ namespace Damselfly.Core.ImageProcessing
         private static FontCollection? fontCollection;
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".tga", ".gif", ".bmp" };
 
-        public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions;  } }
+        public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
         public ImageSharpProcessor()
         {
@@ -109,7 +109,7 @@ namespace Damselfly.Core.ImageProcessing
                 hashWatch.Stop();
                 Logging.LogVerbose($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogError($"Exception while calculating hash: {ex.Message}");
             }
@@ -122,7 +122,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="path"></param>
         /// <param name="rects"></param>
         /// <param name="output"></param>
-        public static void DrawRects( string path, List<Rectangle> rects, string output )
+        public static void DrawRects(string path, List<Rectangle> rects, string output)
         {
             using var image = Image.Load<Rgba32>(path);
 
@@ -180,8 +180,12 @@ namespace Damselfly.Core.ImageProcessing
                     mode = ResizeMode.Crop;
                 }
 
-                var opts = new ResizeOptions { Mode = mode, Size = size,
-                                Sampler = KnownResamplers.Lanczos8 };
+                var opts = new ResizeOptions
+                {
+                    Mode = mode,
+                    Size = size,
+                    Sampler = KnownResamplers.Lanczos8
+                };
 
                 // Note, we don't clone and resize from the original image, because that's expensive.
                 // So we always resize the previous image, which will be faster for each iteration
@@ -197,7 +201,7 @@ namespace Damselfly.Core.ImageProcessing
             return result;
         }
 
-        public async Task GetCroppedFile( FileInfo source, int x, int y, int width, int height, FileInfo destFile )
+        public async Task GetCroppedFile(FileInfo source, int x, int y, int width, int height, FileInfo destFile)
         {
             Stopwatch watch = new Stopwatch("ImageSharpCrop");
 
@@ -207,7 +211,7 @@ namespace Damselfly.Core.ImageProcessing
 
             var rect = new Rectangle(x, y, width, height);
             image.Mutate(x => x.AutoOrient());
-            image.Mutate(x => x.Crop( rect ));
+            image.Mutate(x => x.Crop(rect));
             await image.SaveAsync(destFile.FullName);
 
             watch.Stop();
@@ -246,11 +250,12 @@ namespace Damselfly.Core.ImageProcessing
             {
                 int maxSize = config.MaxImageSize;
 
-                var opts = new ResizeOptions {
-                                    Mode = ResizeMode.Max,
-                                    Size = new Size { Height = maxSize, Width = maxSize },
-                                    Sampler = KnownResamplers.Lanczos3
-                            };
+                var opts = new ResizeOptions
+                {
+                    Mode = ResizeMode.Max,
+                    Size = new Size { Height = maxSize, Width = maxSize },
+                    Sampler = KnownResamplers.Lanczos3
+                };
 
                 // Rotate and resize.
                 img.Mutate(x => x.AutoOrient().Resize(opts));
@@ -313,7 +318,7 @@ namespace Damselfly.Core.ImageProcessing
             // 5% from the bottom right.
             var position = new PointF(imgSize.Width - fivePercent, imgSize.Height - fivePercent);
 
-            TextOptions textOptions = new TextOptions( scaledFont )
+            TextOptions textOptions = new TextOptions(scaledFont)
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Right,

@@ -47,7 +47,7 @@ public class BasketService : IBasketService
         _notifier = notifier;
     }
 
-    private void NotifyStateChanged( int basketId, BasketChangeType changeType, ICollection<int> updatedImageIds = null )
+    private void NotifyStateChanged(int basketId, BasketChangeType changeType, ICollection<int> updatedImageIds = null)
     {
         OnBasketChanged?.Invoke();
 
@@ -59,14 +59,14 @@ public class BasketService : IBasketService
             BasketId = basketId
         };
 
-        _ = _notifier.NotifyClients(Constants.NotificationType.BasketChanged, payload );
+        _ = _notifier.NotifyClients(Constants.NotificationType.BasketChanged, payload);
     }
 
     /// <summary>
     /// Loads the selected images in the basket, and adds them to the
     /// cache
     /// </summary>
-    private async Task<ICollection<Image>> LoadBasketImages( Basket basket )
+    private async Task<ICollection<Image>> LoadBasketImages(Basket basket)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -94,7 +94,7 @@ public class BasketService : IBasketService
     /// Deletes a basket
     /// </summary>
     /// <returns></returns>
-    public async Task Delete( int basketId )
+    public async Task Delete(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -103,7 +103,7 @@ public class BasketService : IBasketService
 
         if (existingBasket != null)
         {
-            db.Baskets.Remove( existingBasket );
+            db.Baskets.Remove(existingBasket);
             await db.SaveChangesAsync("DeleteBasket");
 
             NotifyStateChanged(basketId, BasketChangeType.BasketDeleted);
@@ -114,16 +114,16 @@ public class BasketService : IBasketService
     /// Clears the selection from the basket
     /// </summary>
     /// <returns></returns>
-    public async Task Clear( int basketId )
+    public async Task Clear(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         try
         {
-            await db.BatchDelete( db.BasketEntries.Where( x => x.BasketId.Equals( basketId ) ) );
+            await db.BatchDelete(db.BasketEntries.Where(x => x.BasketId.Equals(basketId)));
 
-            NotifyStateChanged( basketId, BasketChangeType.ImagesRemoved, new List<int>() );
+            NotifyStateChanged(basketId, BasketChangeType.ImagesRemoved, new List<int>());
         }
         catch (Exception ex)
         {
@@ -149,7 +149,7 @@ public class BasketService : IBasketService
 
             var newBasketEntries = await db.BasketEntries
                                      .Where(x => x.BasketId == sourceBasketId &&
-                                                 ! existingDestEntries.Contains( x.BasketId ) )
+                                                 !existingDestEntries.Contains(x.BasketId))
                                 .Select(x => new BasketEntry
                                 {
                                     BasketId = destBasketId,
@@ -160,7 +160,7 @@ public class BasketService : IBasketService
 
             result = newBasketEntries.Count();
 
-            NotifyStateChanged(destBasketId, BasketChangeType.ImagesAdded, newBasketEntries.Select( x => x.ImageId).ToList());
+            NotifyStateChanged(destBasketId, BasketChangeType.ImagesAdded, newBasketEntries.Select(x => x.ImageId).ToList());
         }
         catch (Exception ex)
         {
@@ -175,23 +175,23 @@ public class BasketService : IBasketService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<ICollection<Basket>> GetUserBaskets( int? userId )
+    public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var myBaskets = await db.Baskets.Where(x => x.UserId == null || x.UserId == userId)
-                                        .OrderBy( x => x.UserId == null ? 1 : 0 )
-                                        .ThenBy( x => x.Name.ToLower() )
-                                        .Include( x => x.BasketEntries )
+                                        .OrderBy(x => x.UserId == null ? 1 : 0)
+                                        .ThenBy(x => x.Name.ToLower())
+                                        .Include(x => x.BasketEntries)
                                         .ToListAsync();
 
-        if( ! myBaskets.Any( x => x.UserId == userId ))
+        if (!myBaskets.Any(x => x.UserId == userId))
         {
 
             var newBasketName = (userId.HasValue) ? s_MyBasket : s_DefaultBasket;
 
-            if( userId.HasValue && myBaskets.Any( x => x.Name.Equals(s_DefaultBasket)))
+            if (userId.HasValue && myBaskets.Any(x => x.Name.Equals(s_DefaultBasket)))
             {
                 // Don't create another default basket if one already exists.
                 return myBaskets;
@@ -219,17 +219,17 @@ public class BasketService : IBasketService
     /// <param name="OnProgress">Callback to give progress information to the UI</param>
     /// <returns>String path to the generated file, which is passed back to the doanload request</returns>
     /// TODO: Maybe move this elsewhere. 
-    public async Task<string> DownloadSelection( int basketId, ExportConfig config )
+    public async Task<string> DownloadSelection(int basketId, ExportConfig config)
     {
         var basket = await GetBasketById(basketId);
 
         var images = await LoadBasketImages(basket);
 
-        var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images, config );
+        var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images, config);
 
         if (!string.IsNullOrEmpty(virtualZipPath))
         {
-            _statusService.UpdateStatus( $"Basket selection downloaded to {virtualZipPath}." );
+            _statusService.UpdateStatus($"Basket selection downloaded to {virtualZipPath}.");
             Logging.Log($"Basket selection downloaded to {virtualZipPath}.");
 
             return virtualZipPath;
@@ -244,7 +244,7 @@ public class BasketService : IBasketService
     /// <param name="image"></param>
     /// <param name="newState"></param>
     /// <param name="basket"></param>
-    public async Task SetImageBasketState( int basketId, bool newState, ICollection<int> images )
+    public async Task SetImageBasketState(int basketId, bool newState, ICollection<int> images)
     {
         try
         {
@@ -256,7 +256,7 @@ public class BasketService : IBasketService
             var watch = new Stopwatch("SetSelection");
 
             var basket = await db.Baskets.Where(x => x.BasketId == basketId)
-                                .Include( x => x.BasketEntries )
+                                .Include(x => x.BasketEntries)
                                 .FirstOrDefaultAsync();
 
             var existingEntries = await db.BasketEntries.Where(x => x.BasketId == basketId &&
@@ -268,13 +268,13 @@ public class BasketService : IBasketService
             if (change == BasketChangeType.ImagesAdded)
             {
                 // TODO: skip existing. Do we need this?!
-                var newBasketEntries = images.Except(basket.BasketEntries.Select(x => x.ImageId) )
+                var newBasketEntries = images.Except(basket.BasketEntries.Select(x => x.ImageId))
                                           .Select(img => new BasketEntry
-                                            {
-                                                ImageId = img,
-                                                BasketId = basketId,
-                                                DateAdded = DateTime.UtcNow
-                                            }).ToList();
+                                          {
+                                              ImageId = img,
+                                              BasketId = basketId,
+                                              DateAdded = DateTime.UtcNow
+                                          }).ToList();
 
                 if (newBasketEntries.Any())
                 {
@@ -289,7 +289,7 @@ public class BasketService : IBasketService
                         if (cachedImage.BasketEntries.Any(x => x.BasketId == basketId))
                         {
                             // Associate the basket entry with the image in the cache
-                            cachedImage.BasketEntries.Add( newBasketEntries.First(x => x.ImageId == img.ImageId));
+                            cachedImage.BasketEntries.Add(newBasketEntries.First(x => x.ImageId == img.ImageId));
                         }
                     }
 
@@ -301,9 +301,9 @@ public class BasketService : IBasketService
             {
                 basketImageIds = basketImageIds.Except(existingEntries.Select(x => x.ImageId)).ToList();
 
-                if ( await db.BulkDelete( db.BasketEntries, existingEntries ) )
+                if (await db.BulkDelete(db.BasketEntries, existingEntries))
                 {
-                    foreach( var imageId in images )
+                    foreach (var imageId in images)
                     {
                         var cachedImage = await _imageCache.GetCachedImage(imageId);
                         cachedImage.BasketEntries.RemoveAll(x => x.BasketId == basketId);
@@ -322,19 +322,19 @@ public class BasketService : IBasketService
                 NotifyStateChanged(basket.BasketId, change, basketImageIds);
             }
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Unable to update the basket: {ex.Message}");
         }
     }
 
-    public bool IsSelected( int basketId, Image image)
+    public bool IsSelected(int basketId, Image image)
     {
         var basket = GetBasketById(basketId).Result;
         return basket.BasketEntries.Any(x => x.ImageId == image.ImageId);
     }
 
-    public async Task<Basket> Create( string name, int? userId )
+    public async Task<Basket> Create(string name, int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -365,7 +365,7 @@ public class BasketService : IBasketService
         await db.SaveChangesAsync("EditBasket");
 
         // Tell listeners so they can reload
-        NotifyStateChanged( basket.BasketId, BasketChangeType.BasketChanged );
+        NotifyStateChanged(basket.BasketId, BasketChangeType.BasketChanged);
     }
 
     public async Task<Basket> GetBasketById(int basketId)
@@ -392,7 +392,7 @@ public class BasketService : IBasketService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<Basket> GetDefaultBasket( int? userId )
+    public async Task<Basket> GetDefaultBasket(int? userId)
     {
         // TODO: WASM: - load basket entries here. Also, maybe make this more efficient, with a single query?
         // Maybe return ID here, and then caller can load?

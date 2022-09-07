@@ -40,8 +40,8 @@ public class Folder
         {
             var thisId = new[] { this };
 
-            if ( Children != null )
-                return Children.SelectMany(x => x.Subfolders).Concat( thisId);
+            if (Children != null)
+                return Children.SelectMany(x => x.Subfolders).Concat(thisId);
 
             return thisId;
         }
@@ -52,7 +52,7 @@ public class Folder
     {
         get
         {
-            if ( Parent != null )
+            if (Parent != null)
                 return Parent.ParentFolders.Concat(new[] { Parent });
 
             return Enumerable.Empty<Folder>();
@@ -60,6 +60,6 @@ public class Folder
     }
 
     [NotMapped]
-    public bool HasSubFolders {  get { return Children != null && Children.Any(); } }
+    public bool HasSubFolders { get { return Children != null && Children.Any(); } }
 }
 

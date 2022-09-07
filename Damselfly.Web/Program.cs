@@ -94,7 +94,7 @@ namespace Damselfly.Web
                                Startup(o, args);
                            });
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Console.WriteLine($"Startup exception: {ex}");
             }
@@ -211,7 +211,7 @@ namespace Damselfly.Web
         /// </summary>
         /// <param name="listeningPort"></param>
         /// <param name="args"></param>
-        private static void StartWebServer(DamselflyOptions cmdLineOptions, string[] args )
+        private static void StartWebServer(DamselflyOptions cmdLineOptions, string[] args)
         {
             try
             {
@@ -223,8 +223,9 @@ namespace Damselfly.Web
 
                 var logFolder = Path.Combine(cmdLineOptions.ConfigPath, "logs");
 
-                builder.Host.UseSerilog((hostContext, services, configuration) => {
-                    Logging.InitLogConfiguration( configuration, logFolder );
+                builder.Host.UseSerilog((hostContext, services, configuration) =>
+                {
+                    Logging.InitLogConfiguration(configuration, logFolder);
                 });
 
                 builder.Services.AddLogging();
@@ -338,7 +339,7 @@ namespace Damselfly.Web
 
                 Logging.LogWarning("Damselfly Webserver stopped. Exiting");
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 Logging.Log("Damselfly Webserver terminated with exception: {0}", ex.Message);
             }
@@ -346,4 +347,3 @@ namespace Damselfly.Web
         }
     }
 }
-        

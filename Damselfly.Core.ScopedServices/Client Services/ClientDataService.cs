@@ -32,8 +32,8 @@ public class ClientDataService : ICachedDataService
         _cameras.Clear();
         _lenses.Clear();
         // WASM: AwaitALL
-        _cameras.AddRange( await httpClient.CustomGetFromJsonAsync<List<Camera>>("/api/data/cameras") );
-        _lenses.AddRange( await httpClient.CustomGetFromJsonAsync<List<Lens>>("/api/data/lenses") );
+        _cameras.AddRange(await httpClient.CustomGetFromJsonAsync<List<Camera>>("/api/data/cameras"));
+        _lenses.AddRange(await httpClient.CustomGetFromJsonAsync<List<Lens>>("/api/data/lenses"));
 
         _logger.LogInformation($"Loaded {_cameras.Count()} cameras, {_lenses.Count} lenses.");
     }

@@ -10,9 +10,11 @@ namespace Damselfly.Core.ImageProcessing
         // SkiaSharp doesn't handle .heic files... yet
         private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp" };
 
-        public static ICollection<string> SupportedFileExtensions {
-            get {
-                if( imAvailable )
+        public static ICollection<string> SupportedFileExtensions
+        {
+            get
+            {
+                if (imAvailable)
                     return s_imageExtensions;
 
                 return new string[0];
@@ -74,7 +76,7 @@ namespace Damselfly.Core.ImageProcessing
         /// </summary>
         /// <param name="source">Source.</param>
         /// <param name="sizes">Sizes.</param>
-        public async Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles )
+        public async Task<IImageProcessResult> CreateThumbs(FileInfo source, IDictionary<FileInfo, IThumbConfig> destFiles)
         {
             // This processor doesn't support hash creation
             IImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false, ImageHash = string.Empty };
@@ -86,7 +88,7 @@ namespace Damselfly.Core.ImageProcessing
             int maxHeight = destFiles.Max(x => x.Value.height);
             int maxWidth = destFiles.Max(x => x.Value.width);
 
-            if ( s_useGraphicsMagick )
+            if (s_useGraphicsMagick)
                 args = string.Format(" convert -size {0}x{1} \"{2}\" -quality 90  -unsharp 0.5x0.5+1.25+0.0 ", maxHeight, maxWidth, source.FullName);
             else
                 args = string.Format(" -define jpeg:size={0}x{1} \"{2}\" -quality 90 -unsharp 0.5x0.5+1.25+0.0 ", maxHeight, maxWidth, source.FullName);
@@ -102,13 +104,13 @@ namespace Damselfly.Core.ImageProcessing
                 var config = pair.Value;
 
                 // File didn't exist, so add it to the command-line. 
-                if( s_useGraphicsMagick )
-                    argsList.Add( string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height, config.width, dest.FullName) );
+                if (s_useGraphicsMagick)
+                    argsList.Add(string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height, config.width, dest.FullName));
                 else
-                    argsList.Add( string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height, config.width, dest.FullName) );
+                    argsList.Add(string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height, config.width, dest.FullName));
             }
 
-            if( argsList.Any() )
+            if (argsList.Any())
             {
                 var lastArg = argsList.Last();
                 lastArg = lastArg.Replace(" -write ", " ");

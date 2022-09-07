@@ -66,7 +66,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         _imageCache = imageCache;
         _workService = workService;
         _exifService = exifService;
-     }
+    }
 
     public ImageRecognitionService()
     {
@@ -79,7 +79,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         return _peopleCache.Values.OrderBy(x => x?.Name).ToList();
     }
 
-    public async Task<List<string>> GetPeopleNames( string searchText )
+    public async Task<List<string>> GetPeopleNames(string searchText)
     {
         await LoadPersonCache();
 
@@ -95,7 +95,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         return names;
     }
 
-    private int GetPersonIDFromCache( Guid? azurePersonId )
+    private int GetPersonIDFromCache(Guid? azurePersonId)
     {
         if (azurePersonId.HasValue)
         {
@@ -147,7 +147,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         }
     }
 
-    public async Task UpdateName( ImageObject faceObject, string name )
+    public async Task UpdateName(ImageObject faceObject, string name)
     {
         if (!faceObject.IsFace)
             throw new ArgumentException("Image object passed to name update.");
@@ -176,7 +176,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     }
 
-    public async Task UpdatePerson( Person person, string name )
+    public async Task UpdatePerson(Person person, string name)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -211,8 +211,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 // Find the people that aren't already in the cache and add new ones
                 // Be careful - filter out empty ones (shouldn't ever happen, but belt
                 // and braces
-                var newNames = personIdsToAdd.Select( x => x.Trim() )
-                                .Where( x => !string.IsNullOrEmpty(x) && !_peopleCache.ContainsKey( x ) )
+                var newNames = personIdsToAdd.Select(x => x.Trim())
+                                .Where(x => !string.IsNullOrEmpty(x) && !_peopleCache.ContainsKey(x))
                                 .ToList();
 
                 if (newNames.Any())
@@ -237,7 +237,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 }
             }
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Exception in CreateMissingPeople: {ex.Message}");
         }
@@ -309,7 +309,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         var image = metadata.Image;
         var fileName = new FileInfo(image.FullPath);
 
-        if (!fileName.Exists )
+        if (!fileName.Exists)
             return;
 
         try
@@ -323,10 +323,10 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
 
-            if( enableAIProcessing || _azureFaceService.DetectionType == AzureDetection.AllImages )
+            if (enableAIProcessing || _azureFaceService.DetectionType == AzureDetection.AllImages)
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
 
-            if (!File.Exists(medThumb.FullName) )
+            if (!File.Exists(medThumb.FullName))
             {
                 // The thumb isn't ready yet. 
                 return;
@@ -334,7 +334,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
             var bitmap = SafeLoadBitmap(medThumb.FullName);
 
-            if( bitmap != null && _imageClassifier != null && enableAIProcessing )
+            if (bitmap != null && _imageClassifier != null && enableAIProcessing)
             {
                 var colorWatch = new Stopwatch("DetectObjects");
 
@@ -398,9 +398,9 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 // Skip local face detection and just go straight to Azure
                 useAzureDetection = true;
             }
-            else if( enableAIProcessing )
+            else if (enableAIProcessing)
             {
-                if (_emguFaceService.ServiceAvailable )
+                if (_emguFaceService.ServiceAvailable)
                 {
                     var emguwatch = new Stopwatch("EmguFaceDetect");
 
@@ -469,18 +469,18 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                     // contain the key, it means we didn't create a person record successfully
                     // for that entry - so we skip it.
                     var newObjects = azureFaces.Select(x => new ImageObject
-                            {
-                                ImageId = image.ImageId,
-                                RectX = x.Left,
-                                RectY = x.Top,
-                                RectHeight = x.Height,
-                                RectWidth = x.Width,
-                                Type = ImageObject.ObjectTypes.Face.ToString(),
-                                TagId = faceTagId,
-                                RecogntionSource = ImageObject.RecognitionType.Azure,
-                                Score = x.Score,
-                                PersonId = GetPersonIDFromCache( x.PersonId )
-                            }).ToList();
+                    {
+                        ImageId = image.ImageId,
+                        RectX = x.Left,
+                        RectY = x.Top,
+                        RectHeight = x.Height,
+                        RectWidth = x.Width,
+                        Type = ImageObject.ObjectTypes.Face.ToString(),
+                        TagId = faceTagId,
+                        RecogntionSource = ImageObject.RecognitionType.Azure,
+                        Score = x.Score,
+                        PersonId = GetPersonIDFromCache(x.PersonId)
+                    }).ToList();
 
                     ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                     foundFaces.AddRange(newObjects);
@@ -520,7 +520,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 // First, clear out the existing faces and objects - we don't want dupes
                 // TODO: Might need to be smarter about this once we add face names and
                 // Object identification details.
-                await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId) && x.RecogntionSource != ImageObject.RecognitionType.ExternalApp ));
+                await db.BatchDelete(db.ImageObjects.Where(x => x.ImageId.Equals(image.ImageId) && x.RecogntionSource != ImageObject.RecognitionType.ExternalApp));
                 // Now add the objects and faces.
                 await db.BulkInsert(db.ImageObjects, allFound);
 
@@ -540,14 +540,14 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
     /// Write the tags to the image
     /// </summary>
     /// <param name="tags"></param>
-    private void WriteAITagsToImages( Image image, List<ImageObject> tags )
+    private void WriteAITagsToImages(Image image, List<ImageObject> tags)
     {
         if (_configService.GetBool(ConfigSettings.WriteAITagsToImages))
         {
             Logging.Log("Writing AI tags to image Metadata...");
 
             // Seleect the tag IDs that aren't faces.
-            var tagIdsToAdd = tags.Where( x => !x.IsFace )
+            var tagIdsToAdd = tags.Where(x => !x.IsFace)
                                 .Select(x => x.TagId)
                                 .Distinct()
                                 .ToList();
@@ -632,7 +632,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
         var image = await _imageCache.GetCachedImage(imageId);
 
-        db.Attach( image );
+        db.Attach(image);
 
         // First, update the timestamp. We do this first, so that even if something
         // fails, it'll be set, avoiding infinite loops of failed processing.
@@ -664,8 +664,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
         int updated = await ImageContext.UpdateMetadataFields(db, folder, "AILastUpdated", "null");
 
-        if( updated != 0 )
-            _statusService.UpdateStatus( $"{updated} images in folder {folder.Name} flagged for AI reprocessing." );
+        if (updated != 0)
+            _statusService.UpdateStatus($"{updated} images in folder {folder.Name} flagged for AI reprocessing.");
 
         _workService.FlagNewJobs(this);
     }
@@ -677,7 +677,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
         int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { AILastUpdated = null });
 
-        _statusService.UpdateStatus( $"All {updated} images flagged for AI reprocessing." );
+        _statusService.UpdateStatus($"All {updated} images flagged for AI reprocessing.");
 
         _workService.FlagNewJobs(this);
     }
@@ -693,7 +693,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
         var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
-        _statusService.UpdateStatus( $"{msgText} flagged for AI reprocessing." );
+        _statusService.UpdateStatus($"{msgText} flagged for AI reprocessing.");
     }
 
     public class AIProcess : IProcessJob
@@ -715,7 +715,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
 
     public JobPriorities Priority => JobPriorities.ImageRecognition;
 
-    public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs )
+    public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();

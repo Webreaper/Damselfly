@@ -43,7 +43,7 @@ public class ConfigController : ControllerBase
         return user;
     }
 
-    public ConfigController( IConfigService configService, SystemSettingsService settingsService, ILogger<ConfigController> logger)
+    public ConfigController(IConfigService configService, SystemSettingsService settingsService, ILogger<ConfigController> logger)
     {
         _configService = configService;
         _settingsService = settingsService;
@@ -51,9 +51,9 @@ public class ConfigController : ControllerBase
     }
 
     [HttpPut("/api/config")]
-    public void Set( ConfigSetRequest req )
+    public void Set(ConfigSetRequest req)
     {
-        _configService.Set( req.Name, req.NewValue );
+        _configService.Set(req.Name, req.NewValue);
     }
 
     [HttpGet("/api/config")]
@@ -69,7 +69,7 @@ public class ConfigController : ControllerBase
     }
 
     [HttpGet("/api/config/{name}")]
-    public ConfigSetting Get( string name )
+    public ConfigSetting Get(string name)
     {
         var value = _configService.Get(name);
         return new ConfigSetting { Name = name, Value = value };

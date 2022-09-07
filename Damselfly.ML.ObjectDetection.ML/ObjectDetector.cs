@@ -39,7 +39,7 @@ namespace Damselfly.ML.ObjectDetection
         /// </summary>
         /// <param name="imageFile"></param>
         /// <returns></returns>
-        public async Task<IList<ImageDetectResult>> DetectObjects( Bitmap image )
+        public async Task<IList<ImageDetectResult>> DetectObjects(Bitmap image)
         {
             try
             {
@@ -55,14 +55,14 @@ namespace Damselfly.ML.ObjectDetection
 
                     watch.Stop();
 
-                    return predictions.Where( x => x.Score > predictionThreshold)
+                    return predictions.Where(x => x.Score > predictionThreshold)
                                       .Select(x => MakeResult(x))
                                       .ToList();
                 });
 
                 return result;
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogError($"Error during object detection: {ex.Message}");
             }
@@ -70,7 +70,7 @@ namespace Damselfly.ML.ObjectDetection
             return new List<ImageDetectResult>();
         }
 
-        private ImageDetectResult MakeResult( YoloPrediction prediction )
+        private ImageDetectResult MakeResult(YoloPrediction prediction)
         {
             return new ImageDetectResult
             {
@@ -87,7 +87,7 @@ namespace Damselfly.ML.ObjectDetection
             };
         }
 
-        private void DrawRectangles( Image img, List<YoloPrediction> predictions )
+        private void DrawRectangles(Image img, List<YoloPrediction> predictions)
         {
             using var graphics = Graphics.FromImage(img);
 

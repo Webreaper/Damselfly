@@ -12,7 +12,7 @@ public class ServerStatusService : IStatusService
     public event Action<string> OnStatusChanged;
     private readonly ServerNotifierService _notifier;
 
-    public ServerStatusService( ServerNotifierService notifier)
+    public ServerStatusService(ServerNotifierService notifier)
     {
         _notifier = notifier;
     }
@@ -31,8 +31,8 @@ public class ServerStatusService : IStatusService
     /// </summary>
     /// <param name="newText"></param>
     /// <param name="user"></param>
-    public void UpdateStatus(string newText, int? userId = null )
+    public void UpdateStatus(string newText, int? userId = null)
     {
-        NotifyStateChanged( new StatusUpdate {  NewStatus = newText, UserID = userId });
+        NotifyStateChanged(new StatusUpdate { NewStatus = newText, UserID = userId });
     }
 }

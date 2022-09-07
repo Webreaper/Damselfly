@@ -43,7 +43,7 @@ public abstract class BaseConfigService
 
     public virtual bool SetSetting(string name, ConfigSetting value)
     {
-        if( _cache.TryGetValue( name, out var existingValue ))
+        if (_cache.TryGetValue(name, out var existingValue))
         {
             if (existingValue.Equals(value))
                 return false;
@@ -67,7 +67,7 @@ public abstract class BaseConfigService
 
     public void Set(string name, string value)
     {
-        SetSetting(name, new ConfigSetting { Name = name, Value = value } );
+        SetSetting(name, new ConfigSetting { Name = name, Value = value });
     }
 
     public string Get(string name, string defaultIfNotExists = null)
@@ -76,7 +76,7 @@ public abstract class BaseConfigService
 
         if (existing != null)
             return existing.Value;
-        
+
         return defaultIfNotExists;
     }
 

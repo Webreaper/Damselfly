@@ -25,7 +25,7 @@ namespace Damselfly.Core.Interfaces
 
     public interface IProcessJobFactory
     {
-        Task<ICollection<IProcessJob>> GetPendingJobs( int maxJobs );
+        Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs);
         JobPriorities Priority { get; }
     }
 }

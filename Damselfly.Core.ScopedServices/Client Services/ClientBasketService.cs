@@ -23,7 +23,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
     public ClientBasketService(RestClient client, NotificationsService notifications,
                                 IImageCacheService imageCache,
                                 IUserService userService,
-                                ILogger<ClientBasketService> logger) 
+                                ILogger<ClientBasketService> logger)
     {
         httpClient = client;
         _userService = userService;
@@ -38,13 +38,13 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     private async Task HandleServerBasketChange(BasketChanged change)
     {
-        if( CurrentBasket.BasketId == change.BasketId )
+        if (CurrentBasket.BasketId == change.BasketId)
         {
             Basket newBasket;
 
             if (change.ChangeType == BasketChangeType.BasketDeleted)
             {
-                newBasket = await GetDefaultBasket( _userService.UserId );
+                newBasket = await GetDefaultBasket(_userService.UserId);
             }
             else
             {
@@ -58,11 +58,11 @@ public class ClientBasketService : IUserBasketService, IBasketService
     /// <summary>
     /// The list of selected images in the basket
     /// </summary>
-    public ICollection<Image>   BasketImages => CurrentBasket == null ? new List<Image>() : CurrentBasket.BasketEntries.Select( x => x.Image ).ToList();
+    public ICollection<Image> BasketImages => CurrentBasket == null ? new List<Image>() : CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
 
-    public Basket CurrentBasket { get; private set;  }
+    public Basket CurrentBasket { get; private set; }
 
-    public async Task SetCurrentBasket( Basket newBasket )
+    public async Task SetCurrentBasket(Basket newBasket)
     {
         CurrentBasket = newBasket;
 
@@ -88,7 +88,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
         OnBasketChanged?.Invoke(change);
     }
 
-    public async Task Clear( int basketId )
+    public async Task Clear(int basketId)
     {
         await httpClient.CustomPostAsync($"/api/basket/clear/{basketId}");
     }
@@ -114,7 +114,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
             return newBasket;
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError($"Attempted to switch to unknown basket ID {basketId}");
             throw;
@@ -125,7 +125,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
     {
         Basket basket;
 
-        if( userId is null )
+        if (userId is null)
             basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault");
         else
             basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault/{userId}");
@@ -135,19 +135,20 @@ public class ClientBasketService : IUserBasketService, IBasketService
         return basket;
     }
 
-    public async Task SetImageBasketState( int basketId, bool newState, ICollection<int> images)
-	{
-        var payload = new BasketStateRequest {
-                    BasketId = basketId,
-                    NewState = newState,
-                    ImageIds = images
+    public async Task SetImageBasketState(int basketId, bool newState, ICollection<int> images)
+    {
+        var payload = new BasketStateRequest
+        {
+            BasketId = basketId,
+            NewState = newState,
+            ImageIds = images
         };
-        await httpClient.CustomPostAsJsonAsync($"/api/basketimage/state",  payload );
+        await httpClient.CustomPostAsJsonAsync($"/api/basketimage/state", payload);
 
         // We don't notify the state changed here - it'll be notified from the server
     }
 
-    public async Task<Basket> Create(string name )
+    public async Task<Basket> Create(string name)
     {
         return await Create(name, _userService.UserId);
     }

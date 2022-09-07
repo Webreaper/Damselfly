@@ -18,7 +18,7 @@ namespace Damselfly.Core.ImageProcessing
     public class SkiaSharpProcessor : IImageProcessor
     {
         // SkiaSharp doesn't handle .heic files... yet
-        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng", ".cr2", ".orf", ".nef"};
+        private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng", ".cr2", ".orf", ".nef" };
 
         public static ICollection<string> SupportedFileExtensions { get { return s_imageExtensions; } }
 
@@ -237,7 +237,7 @@ namespace Damselfly.Core.ImageProcessing
         /// <param name="original"></param>
         /// <param name="cropRect"></param>
         /// <returns></returns>
-        private SKBitmap Crop( SKBitmap original, SKRectI cropRect)
+        private SKBitmap Crop(SKBitmap original, SKRectI cropRect)
         {
             // crop
             SKBitmap bitmap = new SKBitmap(cropRect.Width, cropRect.Height);
@@ -310,7 +310,7 @@ namespace Damselfly.Core.ImageProcessing
         private static SKBitmap AutoOrient(SKBitmap original, SKEncodedOrigin origin)
         {
             Stopwatch orient = new Stopwatch("SkiaSharpOrient");
-                
+
             var useWidth = original.Width;
             var useHeight = original.Height;
             Action<SKCanvas> transform = canvas => { };

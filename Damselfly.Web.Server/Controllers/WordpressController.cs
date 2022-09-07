@@ -27,7 +27,7 @@ public class WordpressController : ControllerBase
     }
 
     [HttpPost("/api/wordpress/")]
-    public async Task Put( List<Image> images )
+    public async Task Put(List<Image> images)
     {
         await _service.UploadImagesToWordpress(images);
     }

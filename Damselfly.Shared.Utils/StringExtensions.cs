@@ -12,7 +12,7 @@ namespace Damselfly.Shared.Utils
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static string SafeTrim( this string source )
+        public static string SafeTrim(this string source)
         {
             if (source == null)
                 return null;
@@ -34,7 +34,7 @@ namespace Damselfly.Shared.Utils
             return passes;
         }
 
-      
+
         /// <summary>
         /// Strip smart-quotes and replace with single or double-quotes
         /// </summary>
@@ -69,7 +69,7 @@ namespace Damselfly.Shared.Utils
 
         public static string ToHumanReadableString(this int timeMilliSecs)
         {
-            return new TimeSpan(0,0,0,0,timeMilliSecs).Humanize();
+            return new TimeSpan(0, 0, 0, 0, timeMilliSecs).Humanize();
         }
 
         public static string ToHumanReadableString(this DateTime start)

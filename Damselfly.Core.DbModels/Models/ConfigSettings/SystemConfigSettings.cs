@@ -26,7 +26,7 @@ public class SystemConfigSettings
     public bool enableAuthAndRoles { get; set; } = true;
     public int similarityThreshold { get; set; } = 75;
 
-    public void Save( IConfigService configService )
+    public void Save(IConfigService configService)
     {
         configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
         configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
@@ -60,7 +60,7 @@ public class SystemConfigSettings
         configService.Set(ConfigSettings.AllowExternalRegistration, extRegistrationProxy.ToString());
     }
 
-    public void Load( IConfigService configService )
+    public void Load(IConfigService configService)
     {
         wpSettings.URL = configService.Get(ConfigSettings.WordpressURL);
         wpSettings.UserName = configService.Get(ConfigSettings.WordpressUser);

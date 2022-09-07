@@ -44,7 +44,7 @@ public class DownloadService : IDownloadService
 
     public async Task<DesktopAppPaths> GetDesktopAppInfo()
     {
-        return await Task.FromResult( _desktopAppInfo );
+        return await Task.FromResult(_desktopAppInfo);
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public class DownloadService : IDownloadService
     /// <param name="OnProgress">Callback to report progress.</param>
     /// <returns></returns>
     // TODO: If only one file selected, download directly instead of zipping
-    public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config )
+    public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config)
     {
         Logging.Log($"Preparing zip file from {filesToZip.Length} files.");
 
@@ -165,7 +165,7 @@ public class DownloadService : IDownloadService
                 File.Delete(serverZipPath);
 
             Logging.Log($" Opening zip archive: {serverZipPath}");
-            _statusService.UpdateStatus( $"Preparing to zip {filesToZip.Count()} images..." );
+            _statusService.UpdateStatus($"Preparing to zip {filesToZip.Count()} images...");
 
             using (ZipArchive zip = ZipFile.Open(serverZipPath, ZipArchiveMode.Create))
             {
@@ -187,7 +187,7 @@ public class DownloadService : IDownloadService
                             exportUnchanged = false;
                         }
 
-                        if( config.KeepFolders )
+                        if (config.KeepFolders)
                             internalZipPath = Path.Combine(imagePath.Directory.Name, internalZipPath);
 
                         if (exportUnchanged)
@@ -216,10 +216,10 @@ public class DownloadService : IDownloadService
                     // Yield a bit, otherwise 
                     await Task.Delay(50);
 
-                    _statusService.UpdateStatus( $"Zipping image {imagePath.Name}... ({percentComplete}% complete)" );
+                    _statusService.UpdateStatus($"Zipping image {imagePath.Name}... ({percentComplete}% complete)");
                 }
 
-                _statusService.UpdateStatus( s_completionMsg );
+                _statusService.UpdateStatus(s_completionMsg);
             }
 
             return virtualZipPath;

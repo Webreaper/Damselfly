@@ -10,7 +10,7 @@ namespace Damselfly.Core.ScopedServices;
 
 public class CachedDataService : ICachedDataService
 {
-    public CachedDataService( MetaDataService metaDataService, StatisticsService stats )
+    public CachedDataService(MetaDataService metaDataService, StatisticsService stats)
     {
         _stats = stats;
         _metaDataService = metaDataService;

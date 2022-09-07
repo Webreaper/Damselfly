@@ -28,7 +28,7 @@ public class ExportController : ControllerBase
     [HttpDelete("/api/export/config/{configId}")]
     public async Task DeleteConfig(int configId, [FromServices] ImageContext db)
     {
-        var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == configId );
+        var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == configId);
 
         await db.BatchDelete(existingConfig);
     }

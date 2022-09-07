@@ -8,7 +8,7 @@ namespace Damselfly.Core.Interfaces
         Task<T> Call<T>(string desc, Task<T> method);
         Task Run(string desc, Task method);
         void ProcessNewTransactions();
-        bool Disabled { get;  }
+        bool Disabled { get; }
         void SetLimits(int maxTransPerMin, int maxTransPerMonth);
     }
 }

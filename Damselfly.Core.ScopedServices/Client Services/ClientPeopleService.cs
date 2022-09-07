@@ -11,7 +11,7 @@ public class ClientPeopleService : IPeopleService
 {
     private readonly RestClient httpClient;
 
-    public ClientPeopleService( RestClient client ) 
+    public ClientPeopleService(RestClient client)
     {
         httpClient = client;
     }

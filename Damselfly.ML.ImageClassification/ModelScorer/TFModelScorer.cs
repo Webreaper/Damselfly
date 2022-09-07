@@ -44,7 +44,7 @@ namespace ImageClassification.ModelScorer
             public const string outputTensorName = "softmax2";
         }
 
-        public void Score( List<ImageNetData> images )
+        public void Score(List<ImageNetData> images)
         {
             var model = LoadModel(imagesFolder, modelLocation);
 
@@ -70,7 +70,7 @@ namespace ImageClassification.ModelScorer
                             .Append(mlContext.Transforms.ExtractPixels(outputColumnName: "input", interleavePixelColors: ImageNetSettings.channelsLast, offsetImage: ImageNetSettings.mean))
                             .Append(mlContext.Model.LoadTensorFlowModel(modelLocation).
                             ScoreTensorFlowModel(outputColumnNames: new[] { "softmax2" },
-                                                 inputColumnNames: new[] { "input" }, addBatchDimensionInput:true));
+                                                 inputColumnNames: new[] { "input" }, addBatchDimensionInput: true));
 
             ConsoleWriteHeader("Pipeline Fit");
             ITransformer model = pipeline.Fit(data);
@@ -81,8 +81,8 @@ namespace ImageClassification.ModelScorer
             return predictionEngine;
         }
 
-        protected IEnumerable<ImageNetData> PredictDataUsingModel(List<ImageNetData> imageData, 
-                                                                  string labelsLocation, 
+        protected IEnumerable<ImageNetData> PredictDataUsingModel(List<ImageNetData> imageData,
+                                                                  string labelsLocation,
                                                                   PredictionEngine<ImageNetData, ImageNetPrediction> model)
         {
             ConsoleWriteHeader("Classify images");

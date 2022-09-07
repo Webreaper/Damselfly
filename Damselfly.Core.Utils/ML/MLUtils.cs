@@ -39,7 +39,7 @@ namespace Damselfly.Core.Utils.ML
                         return new DirectoryInfo(modelFolder);
                     }
                 }
-                catch( Exception ex )
+                catch (Exception ex)
                 {
                     Logging.LogError($"Exception evaluating models folder: {ex.Message}");
 

@@ -68,7 +68,7 @@ public static class ServiceRegistrations
         return services;
     }
 
-    public static IServiceCollection AddHostedBlazorBackEndServices( this IServiceCollection services )
+    public static IServiceCollection AddHostedBlazorBackEndServices(this IServiceCollection services)
     {
         services.AddSingletonBackEndServices();
 
@@ -97,8 +97,8 @@ public static class ServiceRegistrations
         return services;
     }
 
-    public static IServiceCollection AddBlazorServerScopedServices( this IServiceCollection services )
-	{
+    public static IServiceCollection AddBlazorServerScopedServices(this IServiceCollection services)
+    {
         services.AddScoped<ServerSearchService>();
         services.AddScoped<SearchQueryService>();
         services.AddScoped<NavigationService>();

@@ -11,6 +11,6 @@ namespace Damselfly.Core.Utils.ML
         public string ServiceModel { get; set; }
         public float Score { get; set; }
 
-        public bool IsFace { get { return string.Compare(Tag, "Face", true ) == 0; } }
+        public bool IsFace { get { return string.Compare(Tag, "Face", true) == 0; } }
     }
 }

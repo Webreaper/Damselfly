@@ -51,7 +51,7 @@ public abstract class BaseSearchService
 
     public event Action OnSearchChanged;
 
-    public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim() ) { query.SearchText = value.Trim(); QueryChanged(); } } }
+    public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim()) { query.SearchText = value.Trim(); QueryChanged(); } } }
     public DateTime? MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
     public DateTime? MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
     public int? MaxSizeKB { get { return query.MaxSizeKB; } set { if (query.MaxSizeKB != value) { query.MaxSizeKB = value; QueryChanged(); } } }
@@ -74,7 +74,7 @@ public abstract class BaseSearchService
 
     public void Reset() { ApplyQuery(new SearchQuery()); }
     public void Refresh() { QueryChanged(); }
-    public SearchQuery Query {  get { return query; } }
+    public SearchQuery Query { get { return query; } }
 
     public void ApplyQuery(SearchQuery newQuery)
     {
@@ -84,7 +84,7 @@ public abstract class BaseSearchService
         }
     }
 
-    public void SetDateRange( DateTime? min, DateTime? max )
+    public void SetDateRange(DateTime? min, DateTime? max)
     {
         if (query.MinDate != min || query.MaxDate != max)
         {
@@ -132,7 +132,7 @@ public abstract class BaseSearchService
                 dateRange = $"{MinDate:dd-MMM-yyyy}";
 
             if (MaxDate.HasValue &&
-               (! MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date))
+               (!MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date))
             {
                 if (!string.IsNullOrEmpty(dateRange))
                     dateRange += " - ";
@@ -151,7 +151,7 @@ public abstract class BaseSearchService
             if (Orientation.HasValue)
                 hints.Add($"{Orientation.Humanize()}");
 
-            if ( CameraId > 0 )
+            if (CameraId > 0)
             {
                 var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
                 if (cam != null)
@@ -165,7 +165,7 @@ public abstract class BaseSearchService
                     hints.Add($"Lens: {lens.Model}");
             }
 
-            if( hints.Any() )
+            if (hints.Any())
                 return string.Join(", ", hints);
 
             return "No Filter";

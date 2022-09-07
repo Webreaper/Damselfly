@@ -45,15 +45,15 @@ public class RestClient
     private readonly HttpClient _restClient;
     private readonly ILogger<RestClient> _logger;
 
-    public RestClient( HttpClient client, ILogger<RestClient> logger )
+    public RestClient(HttpClient client, ILogger<RestClient> logger)
     {
         _logger = logger;
         _restClient = client;
     }
 
-    private Exception GetRestException( Exception ex, string requestUrl )
+    private Exception GetRestException(Exception ex, string requestUrl)
     {
-        if( ex is JsonException )
+        if (ex is JsonException)
         {
             // WASM:
             if (ex.Message.Contains("'<' is an invalid start of a value"))
@@ -71,7 +71,7 @@ public class RestClient
         {
             return await _restClient.GetFromJsonAsync<T>(requestUri, JsonOptions);
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             throw GetRestException(ex, requestUri);
         }
@@ -106,7 +106,7 @@ public class RestClient
     public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj)
     {
         try
-        { 
+        {
             var response = await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
             return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
         }
@@ -132,10 +132,10 @@ public class RestClient
     public async Task<HttpResponseMessage> CustomPutAsJsonAsync<T>(string? requestUri, T obj)
     {
         try
-        { 
+        {
             return await _restClient.PutAsJsonAsync<T>(requestUri, obj, JsonOptions);
         }
-        catch(Exception ex )
+        catch (Exception ex)
         {
             throw GetRestException(ex, requestUri);
         }
@@ -143,7 +143,8 @@ public class RestClient
 
     public async Task<HttpResponseMessage> CustomDeleteAsync(string? requestUri)
     {
-        try { 
+        try
+        {
             return await _restClient.DeleteAsync(requestUri);
         }
         catch (Exception ex)
@@ -154,7 +155,8 @@ public class RestClient
 
     public async Task<HttpResponseMessage> CustomPatchAsJsonAsync<T>(string? requestUri, T obj)
     {
-        try { 
+        try
+        {
             return await _restClient.PatchAsJsonAsync<T>(requestUri, obj, JsonOptions);
         }
         catch (Exception ex)

@@ -19,16 +19,16 @@ public class ImageSearchController : ControllerBase
 
     private readonly ILogger<ImageSearchController> _logger;
 
-    public ImageSearchController( SearchQueryService searchService, ILogger<ImageSearchController> logger)
+    public ImageSearchController(SearchQueryService searchService, ILogger<ImageSearchController> logger)
     {
         _searchService = searchService;
         _logger = logger;
     }
 
     [HttpPost("/api/search")]
-    public async Task<SearchResponse> SubmitSearch( SearchRequest request )
+    public async Task<SearchResponse> SubmitSearch(SearchRequest request)
     {
-        return await _searchService.GetQueryImagesAsync( request );
+        return await _searchService.GetQueryImagesAsync(request);
     }
 }
 

@@ -62,7 +62,7 @@ namespace ImageClassification.ModelScorer
             Console.ForegroundColor = defaultForeground;
             Console.Write(" with probability ");
             Console.ForegroundColor = probColor;
-            Console.Write(self.Probability);           
+            Console.Write(self.Probability);
             Console.ForegroundColor = defaultForeground;
             Console.WriteLine("");
         }

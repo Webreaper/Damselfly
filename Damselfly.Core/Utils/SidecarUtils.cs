@@ -45,7 +45,7 @@ public static class SidecarUtils
     /// </summary>
     /// <param name="sidecar"></param>
     /// <returns></returns>
-    public static IList<string> GetKeywords( this ImageSideCar sidecar )
+    public static IList<string> GetKeywords(this ImageSideCar sidecar)
     {
         var sideCarTags = new List<string>();
 
@@ -59,7 +59,7 @@ public static class SidecarUtils
                 if (on1MetaData != null && on1MetaData.Keywords != null && on1MetaData.Keywords.Any())
                 {
                     sideCarTags = on1MetaData.Keywords
-                                            .Select( x => x.Trim() )
+                                            .Select(x => x.Trim())
                                             .ToList();
                 }
             }

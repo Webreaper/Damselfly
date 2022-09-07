@@ -22,7 +22,7 @@ public class WordpressService : IWordpressService
     private readonly ConfigService _configService;
     private readonly ImageProcessService _imageProcessService;
 
-    public WordpressService( ImageProcessService imageService,
+    public WordpressService(ImageProcessService imageService,
                              ConfigService configService,
                              IStatusService statusService)
     {
@@ -38,17 +38,17 @@ public class WordpressService : IWordpressService
     /// TODO: Add option to watermark and resize images when uploading
     /// </summary>
     /// <returns></returns>
-    public async Task UploadImagesToWordpress( List<Image> images)
+    public async Task UploadImagesToWordpress(List<Image> images)
     {
         try
         {
-            _statusService.UpdateStatus( $"Uploading {images.Count()} to Wordpress..." );
+            _statusService.UpdateStatus($"Uploading {images.Count()} to Wordpress...");
 
             Logging.LogVerbose($"Checking token validity...");
 
             bool validToken = await CheckTokenValidity();
 
-            if( validToken )
+            if (validToken)
             {
                 foreach (var image in images)
                 {
@@ -62,27 +62,27 @@ public class WordpressService : IWordpressService
                     await _imageProcessService.TransformDownloadImage(image.FullPath, memoryStream, wpConfig);
 
                     // The position needs to be reset, before we push it to Wordpress
-                    memoryStream.Position = 0; 
+                    memoryStream.Position = 0;
 
-                    _statusService.UpdateStatus( $"Uploading {image.FileName} to Wordpress." );
+                    _statusService.UpdateStatus($"Uploading {image.FileName} to Wordpress.");
 
                     await _client.Media.CreateAsync(memoryStream, image.FileName);
 
                     Logging.LogVerbose($"Image uploaded: {image.FullPath} successfully.");
                 }
 
-                _statusService.UpdateStatus( $"{images.Count()} images uploaded to Wordpress." );
+                _statusService.UpdateStatus($"{images.Count()} images uploaded to Wordpress.");
             }
             else
             {
                 Logging.LogError($"Token was invalid.");
-                _statusService.UpdateStatus(  $"Authentication error uploading to Wordpress." );
+                _statusService.UpdateStatus($"Authentication error uploading to Wordpress.");
             }
         }
         catch (Exception e)
         {
             Logging.LogError($"Error uploading to Wordpress: {e.Message}");
-            _statusService.UpdateStatus( $"Error uploading images to Wordpress. Please check the logs." );
+            _statusService.UpdateStatus($"Error uploading images to Wordpress. Please check the logs.");
         }
     }
 
@@ -110,14 +110,14 @@ public class WordpressService : IWordpressService
         // 24 hours) and if not, obtain one
         gotToken = await _client.Auth.IsValidJWTokenAsync();
 
-        if (! gotToken )
+        if (!gotToken)
         {
             var user = _configService.Get(ConfigSettings.WordpressUser);
             var pass = _configService.Get(ConfigSettings.WordpressPassword);
 
             Logging.LogVerbose($"No valid JWT token. Requesting a new one.");
 
-            await _client.Auth.RequestJWTokenAsync( user, pass );
+            await _client.Auth.RequestJWTokenAsync(user, pass);
 
             gotToken = await _client.Auth.IsValidJWTokenAsync();
         }
@@ -135,7 +135,7 @@ public class WordpressService : IWordpressService
     {
         _client = GetClient();
 
-        if( _client != null )
+        if (_client != null)
             Logging.Log("Wordpress API client reset.");
     }
 

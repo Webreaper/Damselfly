@@ -25,7 +25,7 @@ public class ImageController : Controller
 {
     private ILogger<ImageController> _logger;
 
-    public ImageController( ILogger<ImageController> logger )
+    public ImageController(ILogger<ImageController> logger)
     {
         _logger = logger;
     }
@@ -39,7 +39,7 @@ public class ImageController : Controller
 
     [Produces("image/jpeg")]
     [HttpGet("/rawimage/{imageId}")]
-    public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache, bool isDownload = false )
+    public async Task<IActionResult> Image(string imageId, CancellationToken cancel, [FromServices] ImageCache imageCache, bool isDownload = false)
     {
         Stopwatch watch = new Stopwatch("ControllerGetImage");
 
@@ -67,7 +67,7 @@ public class ImageController : Controller
                     result = PhysicalFile(image.FullPath, "image/jpeg", downloadFilename);
                 }
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogError($"No thumb available for /rawmage/{imageId}: ", ex.Message);
             }
@@ -87,7 +87,7 @@ public class ImageController : Controller
 
         IActionResult result = Redirect("/no-image.png");
 
-        if (Enum.TryParse<ThumbSize>( thumbSize, true, out var size) && int.TryParse(imageId, out var id))
+        if (Enum.TryParse<ThumbSize>(thumbSize, true, out var size) && int.TryParse(imageId, out var id))
         {
             try
             {
@@ -110,7 +110,7 @@ public class ImageController : Controller
                     bool gotThumb = true;
 
 
-                    if (! System.IO.File.Exists(imagePath))
+                    if (!System.IO.File.Exists(imagePath))
                     {
                         gotThumb = false;
                         Logging.LogTrace($" - Generating thumbnail on-demand for {image.FileName}...");
@@ -120,7 +120,7 @@ public class ImageController : Controller
 
                         var conversionResult = await thumbService.ConvertFile(image, false, size);
 
-                        if ( conversionResult.ThumbsGenerated )
+                        if (conversionResult.ThumbsGenerated)
                         {
                             gotThumb = true;
 
@@ -133,7 +133,7 @@ public class ImageController : Controller
                     if (cancel.IsCancellationRequested)
                         return result;
 
-                    if ( gotThumb )
+                    if (gotThumb)
                     {
                         Logging.LogTrace($" - Loading file for {imageId}");
 
@@ -228,7 +228,7 @@ public class ImageController : Controller
                 }
             }
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Unable to load face thumbnail for {faceId}: {ex.Message}");
         }

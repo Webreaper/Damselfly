@@ -27,7 +27,7 @@ public class SystemSettingsService : ISystemSettingsService
     private readonly WordpressService _wpService;
     private readonly ServerNotifierService _notifier;
 
-    public SystemSettingsService( ILogger<SystemSettingsService> logger,
+    public SystemSettingsService(ILogger<SystemSettingsService> logger,
                                     WorkService workService,
                                     AzureFaceService azureService,
                                     WordpressService wpService,

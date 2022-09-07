@@ -183,7 +183,8 @@ public class Program
 
         var logFolder = Path.Combine(cmdLineOptions.ConfigPath, "logs");
 
-        builder.Host.UseSerilog((hostContext, services, configuration) => {
+        builder.Host.UseSerilog((hostContext, services, configuration) =>
+        {
             Logging.InitLogConfiguration(configuration, logFolder);
         });
 
@@ -214,7 +215,8 @@ public class Program
         builder.Services.AddHostedBlazorBackEndServices();
 
         // Use Kestrel options to set the port. Using .Urls.Add breaks WASM debugging.
-        builder.WebHost.UseKestrel(serverOptions =>  {
+        builder.WebHost.UseKestrel(serverOptions =>
+        {
             serverOptions.ListenAnyIP(cmdLineOptions.Port);
         });
 
@@ -280,7 +282,7 @@ public class Program
         app.Run();
     }
 
-    private static void InitialiseDB( WebApplication app, DamselflyOptions options)
+    private static void InitialiseDB(WebApplication app, DamselflyOptions options)
     {
         using var scope = app.Services.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();

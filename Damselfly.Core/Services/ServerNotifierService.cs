@@ -21,7 +21,7 @@ public class ServerNotifierService
         _logger = logger;
     }
 
-    public async Task NotifyClients( NotificationType type, string payloadMsg = null )
+    public async Task NotifyClients(NotificationType type, string payloadMsg = null)
     {
         string methodName = type.ToString();
 
@@ -44,7 +44,7 @@ public class ServerNotifierService
 
             await _hubContext.Clients.All.SendAsync(methodName, json);
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             _logger.LogError($"Exception notifiying clients with method {methodName}: {ex}");
         }

@@ -63,7 +63,7 @@ public class IndexingService : IProcessJobFactory
     /// </summary>
     /// <param name="folder"></param>
     /// <param name="parent"></param>
-    public async Task IndexFolder(DirectoryInfo folder, Folder parent )
+    public async Task IndexFolder(DirectoryInfo folder, Folder parent)
     {
         Folder folderToScan = null;
         bool foldersChanged = false;
@@ -73,7 +73,7 @@ public class IndexingService : IProcessJobFactory
         // Get all the sub-folders on the disk, but filter out
         // ones we're not interested in.
         var subFolders = folder.SafeGetSubDirectories()
-                                .Where( x => x.IsMonitoredFolder() )
+                                .Where(x => x.IsMonitoredFolder())
                                 .ToList();
 
         try
@@ -115,19 +115,19 @@ public class IndexingService : IProcessJobFactory
 
             // Now scan the images. If there's changes it could mean the folder
             // should now be included in the folderlist, so flag it.
-            await ScanFolderImages( folderToScan.FolderId );
+            await ScanFolderImages(folderToScan.FolderId);
         }
         catch (Exception ex)
         {
             Logging.LogError($"Unexpected exception scanning folder {folderToScan.Name}: {ex.Message}");
-            if( ex.InnerException != null )
+            if (ex.InnerException != null)
                 Logging.LogError($" Inner exception: {ex.InnerException.Message}");
         }
 
         // Scan subdirs recursively.
         foreach (var sub in subFolders)
         {
-            await IndexFolder( sub, folderToScan );
+            await IndexFolder(sub, folderToScan);
         }
     }
 
@@ -155,7 +155,7 @@ public class IndexingService : IProcessJobFactory
 
             // ...and then look for any DB folders that aren't included in the list of sub-folders.
             // That means they've been removed from the disk, and should be removed from the DB.
-            var missingDirs = dbChildDirs.Where(f => !new DirectoryInfo( f.Path ).IsMonitoredFolder() ).ToList();
+            var missingDirs = dbChildDirs.Where(f => !new DirectoryInfo(f.Path).IsMonitoredFolder()).ToList();
 
             if (missingDirs.Any())
             {
@@ -174,7 +174,7 @@ public class IndexingService : IProcessJobFactory
             }
 
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Unexpected exception scanning for removed folders {folderToScan.Name}: {ex.Message}");
             if (ex.InnerException != null)
@@ -207,7 +207,7 @@ public class IndexingService : IProcessJobFactory
 
         // Get the list of files from disk
         var folder = new DirectoryInfo(dbFolder.Path);
-        var allImageFiles = SafeGetImageFiles( folder );
+        var allImageFiles = SafeGetImageFiles(folder);
 
         if (allImageFiles == null)
         {
@@ -222,7 +222,7 @@ public class IndexingService : IProcessJobFactory
         // force the update. 
         bool fileListIsEqual = allImageFiles.Select(x => x.Name).ArePermutations(dbFolder.Images.Select(y => y.FileName));
 
-        if( fileListIsEqual && dbFolder.FolderScanDate != null )
+        if (fileListIsEqual && dbFolder.FolderScanDate != null)
         {
             // Number of images is the same, and the folder has a scan date
             // which implies it's been scanned previously, so nothing to do.
@@ -369,9 +369,9 @@ public class IndexingService : IProcessJobFactory
             await db.BatchUpdate(queryable, x => new Folder { FolderScanDate = null });
 
             if (folders.Count == 1)
-                _statusService.UpdateStatus( $"Folder {folders.First().Name} flagged for re-indexing." );
+                _statusService.UpdateStatus($"Folder {folders.First().Name} flagged for re-indexing.");
             else
-                _statusService.UpdateStatus( $"{folders.Count} folders flagged for re-indexing." );
+                _statusService.UpdateStatus($"{folders.Count} folders flagged for re-indexing.");
 
             _workService.FlagNewJobs(this);
         }
@@ -390,7 +390,7 @@ public class IndexingService : IProcessJobFactory
 
             int updated = await db.BatchUpdate(db.Folders, x => new Folder { FolderScanDate = null });
 
-            _statusService.UpdateStatus( $"All {updated} folders flagged for re-indexing." );
+            _statusService.UpdateStatus($"All {updated} folders flagged for re-indexing.");
 
             _workService.FlagNewJobs(this);
         }
@@ -483,7 +483,7 @@ public class IndexingService : IProcessJobFactory
 
     public JobPriorities Priority => JobPriorities.Indexing;
 
-    public async Task<ICollection<IProcessJob>> GetPendingJobs( int maxCount )
+    public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
     {
         if (_fullIndexComplete)
         {
@@ -492,14 +492,16 @@ public class IndexingService : IProcessJobFactory
 
             // Now, see if there's any folders that have a null scan date.
             var folders = await db.Folders.Where(x => x.FolderScanDate == null)
-                                           .OrderBy( x => x.Path )
-                                           .Take( maxCount )
+                                           .OrderBy(x => x.Path)
+                                           .Take(maxCount)
                                            .ToArrayAsync();
 
-            var jobs = folders.Select(x => new IndexProcess {
-                                        Path = new DirectoryInfo(x.Path),
-                                        Service = this,
-                                        Name = "Indexing" })
+            var jobs = folders.Select(x => new IndexProcess
+            {
+                Path = new DirectoryInfo(x.Path),
+                Service = this,
+                Name = "Indexing"
+            })
                               .ToArray();
 
             return jobs;

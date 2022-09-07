@@ -21,7 +21,7 @@ public class NavigationService
     private Image theImage;
 
     public NavigationContexts Context { get; set; } = NavigationContexts.Search;
-    public Image CurrentImage { get { return theImage; } set { theImage = value; NotifyStateChanged( theImage ); } }
+    public Image CurrentImage { get { return theImage; } set { theImage = value; NotifyStateChanged(theImage); } }
     private readonly IUserBasketService _basketService;
     private readonly ISearchService _searchService;
 
@@ -31,9 +31,9 @@ public class NavigationService
         _searchService = searchService;
     }
 
-    private void NotifyStateChanged( Image newImage )
+    private void NotifyStateChanged(Image newImage)
     {
-        OnChange?.Invoke( newImage );
+        OnChange?.Invoke(newImage);
     }
 
     public event Action<Image> OnChange;
@@ -51,18 +51,18 @@ public class NavigationService
     /// <param name="image"></param>
     /// <param name="next"></param>
     /// <returns></returns>
-    public async Task<int> GetNextImage( bool next )
-    { 
+    public async Task<int> GetNextImage(bool next)
+    {
         List<int> navigationItems = new List<int>();
 
         if (Context == NavigationContexts.Basket)
-            navigationItems.AddRange( _basketService.BasketImages.Select( x => x.ImageId ) );
+            navigationItems.AddRange(_basketService.BasketImages.Select(x => x.ImageId));
         else if (Context == NavigationContexts.Search)
-            navigationItems.AddRange( _searchService.SearchResults );
+            navigationItems.AddRange(_searchService.SearchResults);
 
-        if ( this.CurrentImage != null && navigationItems != null )
+        if (this.CurrentImage != null && navigationItems != null)
         {
-            int currentIndex = navigationItems.FindIndex( x => x == CurrentImage.ImageId );
+            int currentIndex = navigationItems.FindIndex(x => x == CurrentImage.ImageId);
 
             if (currentIndex != -1)
             {

@@ -91,7 +91,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
                                 .ThenBy(x => x.Keyword) // Then order alphabetically
                                 .Take(30); // Don't go mad with the number we return
 
-            results.AddRange( tags );
+            results.AddRange(tags);
         }
 
         results.Insert(0, new Tag { Keyword = text });
@@ -173,14 +173,14 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
                 double w = Convert.ToDouble(wStr);
                 double h = Convert.ToDouble(hStr);
 
-                if( switchOrient )
+                if (switchOrient)
                 {
                     var xTemp = y;
                     y = x;
                     x = xTemp;
                 }
 
-                if( flipH )
+                if (flipH)
                     x = 1 - x;
 
                 if (flipV)
@@ -215,7 +215,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
             return newFaces;
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError($"Exception while parsing XMP face/region data: {ex}");
         }
@@ -303,7 +303,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
                 if (jpegDirectory != null)
                 {
-                    if( imgMetaData.Width == 0 )
+                    if (imgMetaData.Width == 0)
                         imgMetaData.Width = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageWidth);
                     if (imgMetaData.Height == 0)
                         imgMetaData.Height = jpegDirectory.SafeGetExifInt(JpegDirectory.TagImageHeight);
@@ -329,7 +329,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
                 {
 
                     var exifDesc = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription).SafeTrim();
-                    imgMetaData.Description = FilteredDescription( exifDesc );
+                    imgMetaData.Description = FilteredDescription(exifDesc);
 
                     imgMetaData.Copyright = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagCopyright).SafeTrim();
 
@@ -362,7 +362,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
                     var source = IPTCdir.SafeExifGetString(IptcDirectory.TagSource).SafeTrim();
 
                     imgMetaData.Caption = FilteredDescription(caption);
-                    if( ! string.IsNullOrEmpty(imgMetaData.Copyright ) )
+                    if (!string.IsNullOrEmpty(imgMetaData.Copyright))
                         imgMetaData.Copyright = IPTCdir.SafeExifGetString(IptcDirectory.TagCopyrightNotice).SafeTrim();
                     imgMetaData.Credit = IPTCdir.SafeExifGetString(IptcDirectory.TagCredit).SafeTrim();
 
@@ -385,13 +385,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
                 var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
 
-                if( xmpDirectory != null )
+                if (xmpDirectory != null)
                 {
                     newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
                 }
             }
 
-            if( imgMetaData.Width != 0 && imgMetaData.Height != 0 )
+            if (imgMetaData.Width != 0 && imgMetaData.Height != 0)
             {
                 imgMetaData.AspectRatio = (double)imgMetaData.Width / (double)imgMetaData.Height;
             }
@@ -429,7 +429,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
     /// </summary>
     /// <param name="imageId"></param>
     /// <returns></returns>
-    public async Task ScanMetaData( int imageId )
+    public async Task ScanMetaData(int imageId)
     {
         Stopwatch watch = new Stopwatch("ScanMetadata");
 
@@ -442,7 +442,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         var imageKeywords = new List<string>();
         List<string> sideCarTags = new List<string>();
         List<ImageObject> xmpFaces = null;
-         
+
         var img = await _imageCache.GetCachedImage(imageId);
 
         db.Attach(img);
@@ -526,7 +526,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         watch.Stop();
 
-        if (sideCarTags.Any() && writeSideCarTagsToImages )
+        if (sideCarTags.Any() && writeSideCarTagsToImages)
         {
             // If we've enabled the option to write any sidecar keywords to IPTC
             // keywords if they're missing in the EXIF data of the image submit
@@ -583,7 +583,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
                 // TODO - check for existing rects/faces and replace
                 await db.SaveChangesAsync("SaveFacesMetaData");
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogError($"Exception while processing XMP faces: {ex}");
             }
@@ -660,7 +660,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         {
             Logging.LogError("Exception adding ImageTags: {0}", ex);
         }
- 
+
         watch.Stop();
 
         return tagsAdded;
@@ -791,7 +791,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
                 foreach (var property in xmpDirectory.XmpMeta.Properties)
                 {
-                    if (!string.IsNullOrEmpty(property.Value ) )
+                    if (!string.IsNullOrEmpty(property.Value))
                         Logging.Log($"  Tag: {property.Path} = {property.Value}");
                 }
             }
@@ -1011,8 +1011,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         int updated = await ImageContext.UpdateMetadataFields(db, folder, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
 
-        if( updated != 0)
-            _statusService.UpdateStatus( $"{updated} images in folder {folder.Name} flagged for Metadata scanning." );
+        if (updated != 0)
+            _statusService.UpdateStatus($"{updated} images in folder {folder.Name} flagged for Metadata scanning.");
 
         _workService.FlagNewJobs(this);
     }
@@ -1024,7 +1024,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
         int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-        _statusService.UpdateStatus( $"All {updated} images flagged for Metadata scanning." );
+        _statusService.UpdateStatus($"All {updated} images flagged for Metadata scanning.");
 
         _workService.FlagNewJobs(this);
     }
@@ -1040,7 +1040,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
         var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
-        _statusService.UpdateStatus( $"{msgText} flagged for Metadata scanning." );
+        _statusService.UpdateStatus($"{msgText} flagged for Metadata scanning.");
     }
 
     public class MetadataProcess : IProcessJob

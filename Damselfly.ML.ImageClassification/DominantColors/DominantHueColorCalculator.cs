@@ -13,7 +13,7 @@ namespace Damselfly.ML.ImageClassification.DominantColors
     /// Dominant Colour calculator by Jelle Vergeer
     /// https://github.com/jellever/DominantColor
     /// </summary>
-    public class DominantHueColorCalculator 
+    public class DominantHueColorCalculator
     {
         private float saturationThreshold;
         private float brightnessThreshold;
@@ -58,7 +58,7 @@ namespace Damselfly.ML.ImageClassification.DominantColors
             this.smoothedHueHistogram = new Dictionary<int, uint>();
         }
 
-        public DominantHueColorCalculator() : 
+        public DominantHueColorCalculator() :
             this(0.3f, 0.0f, 4)
         {
         }

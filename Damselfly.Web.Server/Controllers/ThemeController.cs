@@ -38,9 +38,9 @@ public class ThemeController : ControllerBase
     }
 
     [HttpGet("/api/theme/{name}")]
-    public async Task<ThemeConfig?> Get( string name)
+    public async Task<ThemeConfig?> Get(string name)
     {
-        return await _service.GetThemeConfig( name );
+        return await _service.GetThemeConfig(name);
     }
 }
 

@@ -9,7 +9,7 @@ namespace Damselfly.Core.Interfaces
 
         bool KeepFolders { get; set; }
         string WatermarkText { get; set; }
-        int MaxImageSize { get;  }
+        int MaxImageSize { get; }
     }
 }
 

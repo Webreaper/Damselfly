@@ -45,7 +45,7 @@ namespace Damselfly.Areas.Identity.Pages.Account
         [TempData]
         public string ErrorMessage { get; set; }
 
-        public bool CanRegister {  get { return _userService.AllowPublicRegistration;  } }
+        public bool CanRegister { get { return _userService.AllowPublicRegistration; } }
 
         public class InputModel
         {

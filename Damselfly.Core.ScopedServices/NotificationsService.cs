@@ -20,7 +20,7 @@ public class NotificationsService : IAsyncDisposable
     private readonly HubConnection hubConnection;
     private readonly WebAssemblyStatusService _wasmState;
 
-    public NotificationsService( NavigationManager navManager, WebAssemblyStatusService wasmState, ILogger<NotificationsService> logger )
+    public NotificationsService(NavigationManager navManager, WebAssemblyStatusService wasmState, ILogger<NotificationsService> logger)
     {
         _logger = logger;
         _wasmState = wasmState;
@@ -71,9 +71,9 @@ public class NotificationsService : IAsyncDisposable
                 _logger.LogInformation($"Received {methodName.ToString()} - calling async action {payloadLog}");
                 await action(theObj);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                _logger.LogError( $"Error processing serialized object for {methodName}: {payload}.");
+                _logger.LogError($"Error processing serialized object for {methodName}: {payload}.");
             }
         });
 

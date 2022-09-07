@@ -26,7 +26,7 @@ public class FolderService : IFolderService
     private readonly ServerNotifierService _notifier;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public FolderService( IndexingService _indexingService, IServiceScopeFactory scopeFactory, ServerNotifierService notifier)
+    public FolderService(IndexingService _indexingService, IServiceScopeFactory scopeFactory, ServerNotifierService notifier)
     {
         _scopeFactory = scopeFactory;
         _notifier = notifier;
@@ -101,12 +101,12 @@ public class FolderService : IFolderService
     /// <param name="imageCount"></param>
     /// <param name="maxDate"></param>
     /// <returns></returns>
-    private static Folder CreateFolderWrapper( Folder folder, int imageCount, DateTime? maxDate )
+    private static Folder CreateFolderWrapper(Folder folder, int imageCount, DateTime? maxDate)
     {
 
         var item = folder.MetaData;
 
-        if( item == null )
+        if (item == null)
         {
             item = new FolderMetadata
             {
@@ -120,7 +120,7 @@ public class FolderService : IFolderService
 
         var parent = folder.Parent;
 
-        while ( parent != null )
+        while (parent != null)
         {
             if (parent.MetaData == null)
                 parent.MetaData = new FolderMetadata { DisplayName = GetFolderDisplayName(parent) };
@@ -142,7 +142,7 @@ public class FolderService : IFolderService
     /// </summary>
     /// <param name="folder"></param>
     /// <returns></returns>
-    private static string GetFolderDisplayName( Folder folder )
+    private static string GetFolderDisplayName(Folder folder)
     {
         var display = folder.Name;
 

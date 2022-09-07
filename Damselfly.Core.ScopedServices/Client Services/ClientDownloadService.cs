@@ -21,7 +21,7 @@ public class ClientDownloadService : IDownloadService
         return await httpClient.CustomGetFromJsonAsync<DesktopAppPaths>("/api/download/desktopapppaths");
     }
 
-    public async Task<string> CreateDownloadZipAsync( ICollection<Image> images, ExportConfig config)
+    public async Task<string> CreateDownloadZipAsync(ICollection<Image> images, ExportConfig config)
     {
         return string.Empty;
     }

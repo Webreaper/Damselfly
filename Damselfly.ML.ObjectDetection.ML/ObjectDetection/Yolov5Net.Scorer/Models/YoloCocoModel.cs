@@ -27,7 +27,7 @@ namespace Yolov5Net.Scorer.Models
         public override float MulConfidence { get; } = 0.25f;
         public override float Overlap { get; } = 0.45f;
 
-        
+
         //public override string Weights { get; } = "assets/weights/yolov2-coco-9.onnx";
         public override string ModelPath { get; } = "./Models/yolov5s.onnx";
 

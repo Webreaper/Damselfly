@@ -44,10 +44,10 @@ public class UserManagementService : IUserMgmtService
         _configService = configService;
     }
 
-    public /*async*/ Task<string> GetUserPasswordResetLink( AppIdentityUser user )
+    public /*async*/ Task<string> GetUserPasswordResetLink(AppIdentityUser user)
     {
         // http://localhost:6363/Identity/Account/ResetPassword?user=12345&code=2134234
-       throw new NotImplementedException();
+        throw new NotImplementedException();
         /* Something like.... 
         var user = await UserManager.FindByNameAsync(model.Email);
         if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
@@ -75,7 +75,8 @@ public class UserManagementService : IUserMgmtService
 
     public bool AllowPublicRegistration
     {
-        get {
+        get
+        {
             return _configService.GetBool(ConfigSettings.AllowExternalRegistration, false);
         }
     }
@@ -87,8 +88,8 @@ public class UserManagementService : IUserMgmtService
     public async Task<ICollection<AppIdentityUser>> GetUsers()
     {
         var users = await _userManager.Users
-                                .Include( x => x.UserRoles )
-                                .ThenInclude( y => y.Role )
+                                .Include(x => x.UserRoles)
+                                .ThenInclude(y => y.Role)
                                 .ToListAsync();
         return users;
     }
@@ -138,7 +139,7 @@ public class UserManagementService : IUserMgmtService
         {
             var syncResult = await SyncUserRoles(user, newRoles, false);
 
-            if( syncResult != null )
+            if (syncResult != null)
             {
                 // Non-null result means we did something and it succeeded or failed.
                 result = syncResult;
@@ -206,7 +207,7 @@ public class UserManagementService : IUserMgmtService
                 }
             }
         }
-        catch( Exception ex)
+        catch (Exception ex)
         {
             Logging.LogError($"Unexpected exception while checking Admin role members: {ex}");
         }
@@ -240,18 +241,18 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="newRoles"></param>
     /// <returns></returns>
-    public async Task<IdentityResult> SyncUserRoles( AppIdentityUser user, ICollection<string> newRoles, bool addOnly )
+    public async Task<IdentityResult> SyncUserRoles(AppIdentityUser user, ICollection<string> newRoles, bool addOnly)
     {
         IdentityResult result = new IdentityResult();
 
-        var roles = await _userManager.GetRolesAsync( user );
+        var roles = await _userManager.GetRolesAsync(user);
 
         var rolesToAdd = newRoles.Except(roles);
 
         // Is this a full sync? Or just adding new roles?
         var rolesToRemove = Enumerable.Empty<string>();
-        if( ! addOnly )
-            rolesToRemove = roles.Except( newRoles );
+        if (!addOnly)
+            rolesToRemove = roles.Except(newRoles);
 
         var errorMsg = string.Empty;
 
@@ -284,7 +285,7 @@ public class UserManagementService : IUserMgmtService
             }
         }
 
-        if( result.Succeeded && rolesToAdd.Any() )
+        if (result.Succeeded && rolesToAdd.Any())
         {
             prefix = $"User {user.UserName} ";
             result = await _userManager.AddToRolesAsync(user, rolesToAdd);
@@ -296,7 +297,7 @@ public class UserManagementService : IUserMgmtService
 
             if (result.Succeeded)
             {
-                changes += $"added to {string.Join(", ", rolesToAdd.Select( x => $"'x'"))} roles";
+                changes += $"added to {string.Join(", ", rolesToAdd.Select(x => $"'x'"))} roles";
             }
             else
             {
@@ -307,8 +308,8 @@ public class UserManagementService : IUserMgmtService
         if (!string.IsNullOrEmpty(changes))
             changes += ". ";
 
-        _statusService.UpdateStatus( $"{prefix}{changes}{errorMsg}" );
-        Logging.Log( $"SyncUserRoles: {prefix}{changes}{errorMsg}");
+        _statusService.UpdateStatus($"{prefix}{changes}{errorMsg}");
+        Logging.Log($"SyncUserRoles: {prefix}{changes}{errorMsg}");
 
         return result;
     }

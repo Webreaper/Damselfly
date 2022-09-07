@@ -9,7 +9,7 @@ public class NotificationHub : Hub
     private ILogger<NotificationHub> _logger;
     public static string NotificationRoot => "notifications";
 
-    public NotificationHub(ILogger<NotificationHub> logger )
+    public NotificationHub(ILogger<NotificationHub> logger)
     {
         _logger = logger;
     }

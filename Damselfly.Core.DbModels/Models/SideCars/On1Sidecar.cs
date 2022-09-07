@@ -38,21 +38,21 @@ public class On1Sidecar
 
         try
         {
-            string json = File.ReadAllText( sidecarPath.FullName );
+            string json = File.ReadAllText(sidecarPath.FullName);
 
             // Deserialize.
             var sideCar = JsonSerializer.Deserialize<On1Sidecar>(json);
 
-            if( sideCar != null )
-            { 
+            if (sideCar != null)
+            {
                 Logging.LogVerbose($"Successfully loaded on1 sidecar for {sidecarPath.FullName}");
                 var photo = sideCar.photos.Values.FirstOrDefault();
 
-                if( photo != null )
+                if (photo != null)
                     result = photo.metadata;
             }
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogWarning($"Unable to load On1 Sidecar data from {sidecarPath.FullName}: {ex.Message}");
         }

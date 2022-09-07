@@ -23,7 +23,7 @@ namespace Damselfly.ML.Face.Emgu
             public string ClassifierFile { get; private set; }
             public string ClassifierTag { get; private set; }
 
-            public ClassifierModel( string file, string tag, CascadeClassifier classifier )
+            public ClassifierModel(string file, string tag, CascadeClassifier classifier)
             {
                 Classifier = classifier;
                 ClassifierFile = file;
@@ -38,14 +38,14 @@ namespace Damselfly.ML.Face.Emgu
         {
             InitialiseClassifiers();
         }
-        
+
 
         /// <summary>
         /// Created a perceptual hash for an image
         /// </summary>
         /// <param name="path"></param>
         /// <returns>Binary string of the hash</returns>
-        public string GetPerceptualHash( string path )
+        public string GetPerceptualHash(string path)
         {
             using var img = CvInvoke.Imread(path);
             var hashAlgorithm = new MarrHildrethHash();
@@ -61,7 +61,7 @@ namespace Damselfly.ML.Face.Emgu
 
             Logging.LogVerbose($"EMGU created a hash: {hexString}");
 
-            return hexString.Replace( "-", "");
+            return hexString.Replace("-", "");
         }
 
         private bool IsSupported
@@ -74,7 +74,7 @@ namespace Damselfly.ML.Face.Emgu
 
         private void InitialiseClassifiers()
         {
-            if (! IsSupported)
+            if (!IsSupported)
                 return;
 
             var modelDir = MLUtils.ModelFolder;
@@ -96,7 +96,7 @@ namespace Damselfly.ML.Face.Emgu
                         var model = new ClassifierModel(modelFile.Name, tag, classifier);
 
                         Logging.Log($"Initialised EMGU classifier with {model.ClassifierFile} for tag '{tag}'");
-                        classifiers.Add( model );
+                        classifiers.Add(model);
                     }
                     catch (Exception ex)
                     {
@@ -108,7 +108,7 @@ namespace Damselfly.ML.Face.Emgu
                 Logging.LogError($"EMGU Classifiers not found modelDir was null.");
         }
 
-        public List<ImageDetectResult> DetectFaces( string path )
+        public List<ImageDetectResult> DetectFaces(string path)
         {
             var result = new List<ImageDetectResult>();
 
@@ -132,24 +132,24 @@ namespace Damselfly.ML.Face.Emgu
                 CvInvoke.CvtColor(img, imgGray, ColorConversion.Bgr2Gray);
                 CvInvoke.EqualizeHist(imgGray, imgGray);
 
-                foreach ( var model in classifiers )
+                foreach (var model in classifiers)
                 {
                     var faces = model.Classifier.DetectMultiScale(imgGray, 1.1, 10, new Size(20, 20), Size.Empty).ToList();
 
-                    if ( faces.Any() )
+                    if (faces.Any())
                     {
-                        result.AddRange( faces.Distinct()
+                        result.AddRange(faces.Distinct()
                                               .Select(x => new ImageDetectResult
-                        {
-                            Rect = x,
-                            Tag = model.ClassifierTag.Transform(To.SentenceCase),
-                            Service = "Emgu",
-                            ServiceModel = model.ClassifierFile
-                        }));
+                                              {
+                                                  Rect = x,
+                                                  Tag = model.ClassifierTag.Transform(To.SentenceCase),
+                                                  Service = "Emgu",
+                                                  ServiceModel = model.ClassifierFile
+                                              }));
                     }
                 }
 
-                return DetectDupeRects( result );
+                return DetectDupeRects(result);
             }
             catch (Exception ex)
             {
@@ -159,13 +159,13 @@ namespace Damselfly.ML.Face.Emgu
             return result;
         }
 
-        public List<ImageDetectResult> DetectDupeRects( List<ImageDetectResult> results )
+        public List<ImageDetectResult> DetectDupeRects(List<ImageDetectResult> results)
         {
             var toDelete = new HashSet<int>();
 
-            for( int i = 0; i < results.Count; i++ )
+            for (int i = 0; i < results.Count; i++)
             {
-                for( int j = 0; j < results.Count; j++ )
+                for (int j = 0; j < results.Count; j++)
                 {
                     if (i == j || toDelete.Contains(i))
                     {
@@ -182,7 +182,7 @@ namespace Damselfly.ML.Face.Emgu
 
                     // If the second of the pair overlaps the first by 90% and the first isn't
                     // already scheduled to be deleted, add it to the to-delete list.
-                    if ( percentage > 90 )
+                    if (percentage > 90)
                     {
                         Logging.LogVerbose($"Removing dupe face rect with 90% intersect: [{firstRect} / {secondRect}]");
                         toDelete.Add(j);
@@ -192,10 +192,10 @@ namespace Damselfly.ML.Face.Emgu
 
             var newResults = new List<ImageDetectResult>();
 
-            for( int i = 0; i < results.Count; i++ )
+            for (int i = 0; i < results.Count; i++)
             {
                 if (!toDelete.Contains(i))
-                    newResults.Add( results[i] );
+                    newResults.Add(results[i]);
             }
 
             return newResults;

@@ -21,7 +21,7 @@ namespace Damselfly.Core.Interfaces
         Task<bool> BulkUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class;
         Task<bool> BulkInsert<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave) where T : class;
         Task<bool> BulkDelete<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToDelete) where T : class;
-        Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew ) where T : class;
+        Task<bool> BulkInsertOrUpdate<T>(BaseDBModel db, DbSet<T> collection, List<T> itemsToSave, Func<T, bool> isNew) where T : class;
         Task<int> BatchDelete<T>(BaseDBModel db, IQueryable<T> query) where T : class;
         Task<int> BatchUpdate<T>(BaseDBModel db, IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class;
 

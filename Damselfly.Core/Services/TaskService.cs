@@ -50,7 +50,7 @@ public class TaskService : ITaskService
     /// <returns></returns>
     public Task<List<ScheduledTask>> GetTasksAsync()
     {
-        lock( runningTaskLock )
+        lock (runningTaskLock)
         {
             return Task.FromResult(taskDefinitions);
         }
@@ -96,7 +96,7 @@ public class TaskService : ITaskService
         }
 
         if (task.ImmediateStart)
-            task.NextRun = DateTime.UtcNow; 
+            task.NextRun = DateTime.UtcNow;
         else
             task.NextRun = DateTime.UtcNow + task.ExecutionFrequency;
 
@@ -115,7 +115,7 @@ public class TaskService : ITaskService
         // Now process the tasks
         ProcessTaskQueue();
 
-        foreach( var job in runningTasks )
+        foreach (var job in runningTasks)
         {
             if (job.Value.IsAlive)
                 Logging.LogTrace("Status: Task {0} is still running.", job.Key);
@@ -133,7 +133,7 @@ public class TaskService : ITaskService
             Logging.LogTrace($"Checking NextRun for task: {task}");
 
             // Have we passed the due time? Do it! 
-            if ( task.NextRun <= DateTime.UtcNow )
+            if (task.NextRun <= DateTime.UtcNow)
             {
                 EnqueueTask(task);
             }
@@ -174,7 +174,7 @@ public class TaskService : ITaskService
         while (taskQueue.Any())
         {
             var task = taskQueue.Dequeue();
-            var thread = new Thread(new ThreadStart( () => { ExecuteMethod(task); } ) );
+            var thread = new Thread(new ThreadStart(() => { ExecuteMethod(task); }));
             thread.Name = $"{task.Type}Thread";
             thread.IsBackground = true;
             thread.Priority = ThreadPriority.Lowest;
@@ -206,7 +206,7 @@ public class TaskService : ITaskService
     /// When a task completes, this callback is executed.
     /// </summary>
     /// <param name="task"></param>
-    private void TaskCompleted( ScheduledTask task )
+    private void TaskCompleted(ScheduledTask task)
     {
         lock (runningTaskLock)
         {
@@ -222,7 +222,7 @@ public class TaskService : ITaskService
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    private bool TaskIsRunning( ScheduledTask.TaskType type )
+    private bool TaskIsRunning(ScheduledTask.TaskType type)
     {
         lock (runningTaskLock)
         {
@@ -261,7 +261,7 @@ public class TaskService : ITaskService
 
             TaskCompleted(task);
             Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
-            Stopwatch.WriteTotals( logFunc );
+            Stopwatch.WriteTotals(logFunc);
         }
     }
 
@@ -272,9 +272,9 @@ public class TaskService : ITaskService
     {
         timer.Dispose();
 
-        lock( runningTaskLock )
+        lock (runningTaskLock)
         {
-            foreach( var task in runningTasks )
+            foreach (var task in runningTasks)
             {
                 Logging.Log($"Terminating thread for {task.Key}...");
                 // TODO - use cancellation token to end the thread.

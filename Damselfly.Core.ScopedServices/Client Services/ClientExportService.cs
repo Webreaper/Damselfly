@@ -17,9 +17,9 @@ public class ClientExportService
         httpClient = client;
     }
 
-    public async Task Delete( ExportConfig config )
+    public async Task Delete(ExportConfig config)
     {
-        await httpClient.CustomDeleteAsync($"/api/export/config/{config.ExportConfigId}" );
+        await httpClient.CustomDeleteAsync($"/api/export/config/{config.ExportConfigId}");
     }
 
     public async Task Save(ExportConfig config)

@@ -15,7 +15,7 @@ namespace Damselfly.Core.Migrations
                     DROP TRIGGER IF EXISTS ftsimagemetadata_before_update;
                     DROP TRIGGER IF EXISTS ftsimagemetadata_after_update;
                 ";
-        
+
         const string s_TriggerCreation = @"
                     CREATE TRIGGER ftskeywords_before_update BEFORE UPDATE OF keyword ON tags BEGIN
                         DELETE FROM FTSKeywords WHERE tagid = old.tagid;

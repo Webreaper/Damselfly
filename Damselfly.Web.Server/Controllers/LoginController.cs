@@ -32,7 +32,7 @@ public class LoginController : ControllerBase
     {
         var user = await _signInManager.UserManager.FindByEmailAsync(login.Email);
 
-        if ( user == null )
+        if (user == null)
             return BadRequest(new LoginResult { Successful = false, Error = "Username or password was invalid." });
 
         var result = await _signInManager.PasswordSignInAsync(user.UserName, login.Password, login.RememberMe, false);

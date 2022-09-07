@@ -44,7 +44,7 @@ namespace Damselfly.Core.Utils
         /// Initialise logging and add the thread enricher.
         /// </summary>
         /// <returns></returns>
-        public static void InitLogConfiguration( LoggerConfiguration config, string logFolder )
+        public static void InitLogConfiguration(LoggerConfiguration config, string logFolder)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace Damselfly.Core.Utils
                     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
                     .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
                 Console.WriteLine($"Unable to initialise logs: {ex}");
             }

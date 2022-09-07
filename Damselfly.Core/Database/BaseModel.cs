@@ -23,7 +23,7 @@ namespace Damselfly.Core.DBAbstractions
     /// 
     /// </summary>
 
-    
+
     public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, ApplicationRole, int,
                                         IdentityUserClaim<int>, ApplicationUserRole, IdentityUserLogin<int>,
                                         IdentityRoleClaim<int>, IdentityUserToken<int>>
@@ -208,10 +208,10 @@ namespace Damselfly.Core.DBAbstractions
             {
                 // Broken with .Net 7 preview 6...
                 // return await query.BatchUpdateAsync(updateExpression);
-                
+
                 return await this.BulkUpdateWithSaveChanges(query, updateExpression);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 Logging.LogError($"Exception during batch update: {ex.Message}");
                 return 0;
@@ -294,7 +294,7 @@ namespace Damselfly.Core.DBAbstractions
         public async Task<int> SaveChangesAsync(string contextDesc,
                 [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "",
                 [System.Runtime.CompilerServices.CallerMemberNameAttribute] string sourceMethod = "",
-                [System.Runtime.CompilerServices.CallerLineNumber] int lineNumber = 0 )
+                [System.Runtime.CompilerServices.CallerLineNumber] int lineNumber = 0)
         {
             if (ReadOnly)
             {
@@ -306,7 +306,7 @@ namespace Damselfly.Core.DBAbstractions
             int retriesRemaining = 3;
             int recordsWritten = 0;
 
-            while ( retriesRemaining > 0 )
+            while (retriesRemaining > 0)
             {
                 try
                 {
@@ -325,7 +325,7 @@ namespace Damselfly.Core.DBAbstractions
                 }
                 catch (Exception ex)
                 {
-                    if (ex.Message.Contains("database is locked") && retriesRemaining > 0 )
+                    if (ex.Message.Contains("database is locked") && retriesRemaining > 0)
                     {
                         Logging.LogWarning($"Database locked for {contextDesc} - sleeping for 5s and retying {retriesRemaining}...");
                         retriesRemaining--;
@@ -333,7 +333,7 @@ namespace Damselfly.Core.DBAbstractions
                     }
                     else
                     {
-                        Logging.LogError($"Exception - DB WRITE FAILED for {contextDesc}: {ex.Message}" );
+                        Logging.LogError($"Exception - DB WRITE FAILED for {contextDesc}: {ex.Message}");
                         Logging.LogError($"  Called from {sourceMethod} line {lineNumber} in {sourceFilePath}.");
                         if (ex.InnerException != null)
                             Logging.LogError("  Exception - DB WRITE FAILED. InnerException: {0}", ex.InnerException.Message);
@@ -428,7 +428,7 @@ namespace Damselfly.Core.DBAbstractions
         {
             ExecutePragma(this, "PRAGMA schema.wal_checkpoint;");
         }
-        
+
         public async Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
         {
             // Convert the string from a set of terms to quote and add * so they're all exact partial matches

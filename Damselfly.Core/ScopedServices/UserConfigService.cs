@@ -21,7 +21,7 @@ public class UserConfigService : BaseConfigService, IDisposable
     private readonly IUserService _userService;
     private int? _userId;
 
-    public UserConfigService(IUserService userService, ILogger<IConfigService> logger) : base( logger )
+    public UserConfigService(IUserService userService, ILogger<IConfigService> logger) : base(logger)
     {
         _userService = userService;
         _userService.OnUserIdChanged += UserChanged;
@@ -30,7 +30,7 @@ public class UserConfigService : BaseConfigService, IDisposable
         _ = InitialiseCache();
     }
 
-    private void UserChanged( int? userId )
+    private void UserChanged(int? userId)
     {
         _userId = userId;
         _ = InitialiseCache();
@@ -73,13 +73,13 @@ public class UserConfigService : BaseConfigService, IDisposable
 
         var existing = GetSetting(name);
 
-        if (existing != null )
+        if (existing != null)
         {
             if (String.IsNullOrEmpty(value))
             {
                 Set(name, null);
 
-                if( _userId != -1 )
+                if (_userId != -1)
                 {
                     // Setting set to null - delete from the DB and cache
                     db.ConfigSettings.Remove(existing);
@@ -91,7 +91,7 @@ public class UserConfigService : BaseConfigService, IDisposable
                 existing.Value = value;
                 existing.UserId = _userId;
 
-                SetSetting(name, existing );
+                SetSetting(name, existing);
 
                 if (_userId != -1)
                     db.ConfigSettings.Update(existing);
@@ -103,7 +103,7 @@ public class UserConfigService : BaseConfigService, IDisposable
             {
                 // Existing setting set to non-null - create in the DB and cache.
                 existing = new ConfigSetting { Name = name, Value = value, UserId = _userId };
-                SetSetting( name, existing );
+                SetSetting(name, existing);
 
                 if (_userId != -1)
                     db.ConfigSettings.Add(existing);

@@ -19,7 +19,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     private ICollection<string> _recentTags;
     public event Action OnFavouritesChanged;
 
-    public ClientTagService(RestClient client, NotificationsService notifications )
+    public ClientTagService(RestClient client, NotificationsService notifications)
     {
         httpClient = client;
         _notifications = notifications;
@@ -59,12 +59,13 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
     public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete, int? userId)
     {
-        var payload = new TagUpdateRequest{
-                ImageIDs = imageIds,
-                TagsToAdd = tagsToAdd,
-                TagsToDelete = tagsToDelete,
-                UserId = userId
-            };
+        var payload = new TagUpdateRequest
+        {
+            ImageIDs = imageIds,
+            TagsToAdd = tagsToAdd,
+            TagsToDelete = tagsToDelete,
+            UserId = userId
+        };
 
         await httpClient.CustomPostAsJsonAsync($"/api/tags", payload);
     }
@@ -82,7 +83,8 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
     public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = null)
     {
-        var payload = new ExifUpdateRequest {
+        var payload = new ExifUpdateRequest
+        {
             ImageIDs = imageIds,
             ExifType = exifType,
             NewValue = newValue,

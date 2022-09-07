@@ -21,7 +21,7 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
     private RestClient httpClient;
     private readonly AuthenticationStateProvider _authProvider;
 
-    public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider, ILogger<IConfigService> logger ) : base(logger)
+    public ClientConfigService(RestClient restClient, AuthenticationStateProvider authProvider, ILogger<IConfigService> logger) : base(logger)
     {
         httpClient = restClient;
         _authProvider = authProvider;
@@ -67,7 +67,7 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
     {
         var existing = base.GetSetting(name);
 
-        if( existing == null )
+        if (existing == null)
         {
             // TODO: WASM
             // Can we just rely on the cache here? Or should we fix this?

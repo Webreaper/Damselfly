@@ -27,7 +27,7 @@ public class UserService : IUserService, IDisposable
     public event Action<int?> OnUserIdChanged;
 
     public UserService(AuthenticationStateProvider authenticationStateProvider,
-                         IAuthorizationService authService )
+                         IAuthorizationService authService)
     {
         _authenticationStateProvider = authenticationStateProvider;
 
@@ -47,10 +47,10 @@ public class UserService : IUserService, IDisposable
     private async Task GetCurrentUserId()
     {
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-        _userId = GetUserIdFromPrincipal( authState );
+        _userId = GetUserIdFromPrincipal(authState);
     }
 
-    private int? GetUserIdFromPrincipal( AuthenticationState authState  )
+    private int? GetUserIdFromPrincipal(AuthenticationState authState)
     {
         try
         {
@@ -83,7 +83,7 @@ public class UserService : IUserService, IDisposable
         else
             Logging.Log($"User state changed to logged out");
 
-        OnUserIdChanged?.Invoke( _userId );
+        OnUserIdChanged?.Invoke(_userId);
     }
 
 

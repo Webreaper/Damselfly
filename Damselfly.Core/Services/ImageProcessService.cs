@@ -23,14 +23,14 @@ public class ImageProcessService : IImageProcessor, IHashProvider
 {
     private readonly IImageProcessorFactory _factory;
 
-    public ImageProcessService( IImageProcessorFactory factory, IWebHostEnvironment env )
+    public ImageProcessService(IImageProcessorFactory factory, IWebHostEnvironment env)
     {
         _factory = factory;
 
         _factory.SetContentPath(env.WebRootPath);
     }
 
-    public string GetPerceptualHash( string path )
+    public string GetPerceptualHash(string path)
     {
         var provider = _factory.GetHashProvider();
 

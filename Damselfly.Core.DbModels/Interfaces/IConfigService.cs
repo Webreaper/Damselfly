@@ -15,5 +15,5 @@ namespace Damselfly.Core.ScopedServices.Interfaces
         bool GetBool(string name, bool defaultIfNotExists = default);
         int GetInt(string name, int defaultIfNotExists = default);
         Task<List<ConfigSetting>> GetAllSettings();
-        }
+    }
 }

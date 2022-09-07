@@ -22,7 +22,7 @@ public class ClientWorkService : IWorkService
         _notifications.SubscribeToNotification<ServiceStatus>(NotificationType.WorkStatusChanged, NotifyStatusChanged);
     }
 
-    private void NotifyStatusChanged( ServiceStatus newStatus )
+    private void NotifyStatusChanged(ServiceStatus newStatus)
     {
         OnStatusChanged?.Invoke(newStatus);
     }
