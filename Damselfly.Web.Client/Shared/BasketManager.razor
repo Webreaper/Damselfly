@@ -9,7 +9,7 @@
 @inject IConfigService userConfigService
 @inject ILogger<BasketManager> logger
 
-<ErrorBoundary>
+<DetailedErrorBoundary>
     <div class="SearchBox">
         <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
         <select @bind="SelectedBasketId" class="SearchField">
@@ -19,7 +19,7 @@
             }
         </select>
     </div>
-</ErrorBoundary>
+</DetailedErrorBoundary>
 @code {
     readonly List<Basket> baskets = new List<Basket>();
     string NewBasketName { get; set; }
