@@ -19,12 +19,15 @@ public class LoginController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly SignInManager<AppIdentityUser> _signInManager;
+    private readonly UserManager<AppIdentityUser> _userManager;
 
     public LoginController(IConfiguration configuration,
-                           SignInManager<AppIdentityUser> signInManager)
+                           SignInManager<AppIdentityUser> signInManager,
+                            UserManager<AppIdentityUser> userManager )
     {
         _configuration = configuration;
         _signInManager = signInManager;
+        _userManager = userManager;
     }
 
     [HttpPost]
@@ -44,8 +47,9 @@ public class LoginController : ControllerBase
         var claims = new List<Claim>();
 
         claims.Add(new Claim(ClaimTypes.Name, login.Email));
+        claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ) );
 
-        foreach (var role in roles)
+        foreach ( var role in roles)
         {
             claims.Add(new Claim(ClaimTypes.Role, role));
         }

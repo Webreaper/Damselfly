@@ -17,12 +17,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService, IDisposable
+public class ClientConfigService : BaseConfigService, IUserConfigService, ISystemSettingsService, IDisposable
 {
     private readonly NotificationsService _notifications;
     private readonly RestClient httpClient;
     private readonly AuthenticationStateProvider _authProvider;
-    private int? UserId;
+    private int? _userId;
 
     public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider, NotificationsService notifications, ILogger<IConfigService> logger ) : base( logger )
     {
@@ -40,13 +40,19 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
     private async void AuthStateChanged( Task<AuthenticationState> authStateTask )
     {
         AuthenticationState authState = await authStateTask;
-        this.UserId = authState.GetUserIdFromPrincipal();
+        _userId = authState.GetUserIdFromPrincipal();
         await InitialiseCache();
     }
 
     public void Dispose()
     {
         _authProvider.AuthenticationStateChanged -= AuthStateChanged;
+    }
+
+    public void SetForUser( string name, string value )
+    {
+        var newSetting = new ConfigSetting { Name = name, Value = value, UserId = _userId };
+        base.SetSetting( name, newSetting );
     }
 
     private void SystemSettingsChanged()
@@ -72,8 +78,8 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
         List<ConfigSetting> allSettings;
         try
         {
-            if ( UserId.HasValue )
-                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config/user/{UserId}" );
+            if ( _userId.HasValue )
+                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config/user/{_userId}" );
             else
                 allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config" );
         }

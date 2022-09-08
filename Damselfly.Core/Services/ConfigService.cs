@@ -44,6 +44,12 @@ public class ConfigService : BaseConfigService, IConfigService
         return settings;
     }
 
+    // Used By the Controller
+    public async Task SetSetting( ConfigSetRequest setRequest )
+    {
+        await PersistSetting( setRequest );
+    }
+
     // Used by the controller
     public async Task<List<ConfigSetting>> GetAllSettingsForUser( int? userId )
     {

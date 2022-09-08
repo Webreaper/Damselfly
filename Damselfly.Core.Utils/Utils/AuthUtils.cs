@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Damselfly.Core.Utils;
@@ -9,13 +10,18 @@ public static class AuthUtils
     {
         try
         {
-            if ( authState.User.Identity.IsAuthenticated )
-            {
-                var userId = authState.User.FindFirst( c => c.Type == "sub" )?.Value;
+            var user = authState.User;
 
-                if ( int.TryParse( userId, out var id ) )
+            if ( user.Identity.IsAuthenticated )
+            {
+                var userId = user.Claims.Where( x => x.Type.Contains( "NameIdentifier", StringComparison.OrdinalIgnoreCase) ).FirstOrDefault();
+
+                if ( userId != null )
                 {
-                    return id;
+                    if ( int.TryParse( userId.Value, out var id ) )
+                    {
+                        return id;
+                    }
                 }
             }
         }

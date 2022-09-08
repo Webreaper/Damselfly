@@ -60,7 +60,7 @@ public class UserService : IUserService, IDisposable
         var authState = await authStateTask;
         _userId = authState.GetUserIdFromPrincipal();
 
-        if (_userId != -1)
+        if (_userId is not null && _userId > 0 )
             Logging.Log($"User changed to {_userId}");
         else
             Logging.Log($"User state changed to logged out");

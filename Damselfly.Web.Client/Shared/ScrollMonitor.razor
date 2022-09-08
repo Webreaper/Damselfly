@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Damselfly.Core.ScopedServices
 
-@inject IConfigService configService 
+@inject IUserConfigService configService 
 @inject IJSRuntime JsRuntime
 @inject ILogger<ScrollMonitor> logger
 
@@ -22,7 +22,7 @@
     private void SaveScrollState(int scrollTop)
     {
         logger.LogTrace($"Saving scroll position to {scrollTop}");
-        configService.Set(ScrollConfigName, scrollTop.ToString());
+        configService.SetForUser(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);
     }

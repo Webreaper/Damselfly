@@ -53,6 +53,7 @@ public static class ServiceRegistrations
         services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());
         services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
         services.AddScoped<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
+        services.AddScoped<IUserConfigService>( x => x.GetRequiredService<ClientConfigService>() );
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<ClientConfigService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());

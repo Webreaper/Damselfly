@@ -46,7 +46,7 @@ public abstract class BaseConfigService
         _cache.Clear();
     }
 
-    private bool SetSetting( string name, ConfigSetting setting )
+    protected bool SetSetting( string name, ConfigSetting setting )
     {
         if ( _cache.TryGetValue( name, out var existingValue ) )
         {
@@ -78,11 +78,6 @@ public abstract class BaseConfigService
     public void Set( string name, string value )
     {
         SetSetting( name, new ConfigSetting { Name = name, Value = value } );
-    }
-
-    public void SetForUser( string name, string value, int? userId )
-    {
-        SetSetting( name, new ConfigSetting { Name = name, Value = value, UserId = userId } );
     }
 
     public string Get( string name, string defaultIfNotExists = null )

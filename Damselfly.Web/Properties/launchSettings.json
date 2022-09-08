@@ -17,9 +17,8 @@
     },
     "Damselfly.Web": {
       "commandName": "Project",
-      "commandLineArgs": "/Users/markotway/Pictures",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:58920",
+      "applicationUrl": "http://localhost:2534",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

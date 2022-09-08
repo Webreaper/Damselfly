@@ -36,9 +36,9 @@ public class ConfigController : ControllerBase
     }
 
     [HttpPut("/api/config")]
-    public void Set(ConfigSetRequest req)
+    public async Task Set(ConfigSetRequest req)
     {
-        _configService.Set(req.Name, req.NewValue);
+        await _configService.SetSetting( req );
     }
 
     [HttpGet( "/api/config/user/{userId}" )]
