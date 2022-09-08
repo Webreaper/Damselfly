@@ -1,5 +1,5 @@
 ﻿
-@inject IConfigService configService
+@inject IUserConfigService configService
 
 <div class="toolwindow">
     <div class="toolwindow-titlebar">
@@ -56,6 +56,6 @@
     {
         Collapsed = true;
         DisplayClass = "toolbar-hidden";
-        configService.Set(ConfigName, "False");
+        configService.SetForUser(ConfigName, "False");
     }
 }

@@ -6,7 +6,7 @@
 -->
 
 @inject IJSRuntime JsRuntime
-@inject IConfigService userConfigService
+@inject IUserConfigService userConfigService
 @inject IDialogService DialogService
 @inject IUserStatusService statusService
 @inject ContextMenuService contextMenuService
@@ -179,7 +179,7 @@
             return;
 
         showObjects = newState;
-        userConfigService.Set(ConfigSettings.ShowObjects, showObjects.ToString());
+        userConfigService.SetForUser(ConfigSettings.ShowObjects, showObjects.ToString());
         StateHasChanged();
 
         if (showObjects)
@@ -205,7 +205,7 @@
         if (newState != zoomEnabled)
         {
             zoomEnabled = newState;
-            userConfigService.Set(ConfigSettings.ShowZoom, zoomEnabled.ToString());
+            userConfigService.SetForUser(ConfigSettings.ShowZoom, zoomEnabled.ToString());
             StateHasChanged();
 
             if (zoomEnabled)
@@ -279,7 +279,7 @@
 
             if (zoomChanged)
             {
-                userConfigService.Set(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
+                userConfigService.SetForUser(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
                 _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
                 StateHasChanged();

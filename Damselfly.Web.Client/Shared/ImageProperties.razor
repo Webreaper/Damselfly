@@ -3,7 +3,7 @@
 @inject ISearchService searchService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
-@inject IConfigService configService
+@inject IUserConfigService configService
 @inject IImageCacheService imageCache
 @inject IUserService userService
 @inject IRescanService rescanService
@@ -124,13 +124,13 @@ else
     private void ExpandDisplay()
     {
         Expanded = true;
-        configService.Set("ShowExtendedProps", Expanded.ToString());
+        configService.SetForUser( "ShowExtendedProps", Expanded.ToString());
     }
 
     private void CollapseDisplay()
     {
         Expanded = false;
-        configService.Set("ShowExtendedProps", Expanded.ToString());
+        configService.SetForUser("ShowExtendedProps", Expanded.ToString());
     }
     // WASM: TODO: This needs to move to a server-side service, which will
     // be called by SetExifProperty and will update the named property with

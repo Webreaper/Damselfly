@@ -3,7 +3,7 @@
 @inject ISearchService searchService
 @inject IUserFolderService folderService
 @inject ContextMenuService contextMenuService
-@inject IConfigService configService
+@inject IUserConfigService configService
 @inject IDialogService DialogService
 @inject ILogger<FolderList> logger
 
@@ -105,7 +105,7 @@ else
     {
         var newState = !FlatView;
 
-        configService.Set(ConfigSettings.FlatView, newState.ToString());
+        configService.SetForUser(ConfigSettings.FlatView, newState.ToString());
 
         await ProcessUpdatedFilter();
     }
@@ -117,7 +117,7 @@ else
         if (SortMode == "Date")
             newMode = "Name";
 
-        configService.Set(ConfigSettings.FolderSortMode, newMode);
+        configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
 
         await ProcessUpdatedFilter();
     }
@@ -126,7 +126,7 @@ else
     {
         var newState = !Ascending;
 
-        configService.Set(ConfigSettings.FolderSortAscending, newState.ToString());
+        configService.SetForUser(ConfigSettings.FolderSortAscending, newState.ToString());
 
         await ProcessUpdatedFilter();
     }

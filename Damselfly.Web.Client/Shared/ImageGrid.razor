@@ -1,6 +1,6 @@
 ﻿
 @inject ISearchService searchService
-@inject IConfigService configService
+@inject IUserConfigService configService
 @inject IUserBasketService basketService
 @inject IImageCacheService imageCache
 @inject ILogger<ImageGrid> logger
@@ -256,10 +256,9 @@
         _ = LoadData(imagesPerPage);
     }
 
-
     private void SaveScrollState(int scrollTop)
     {
-        configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
+        configService.SetForUser(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
     [JSInvokable]

@@ -6,7 +6,7 @@
 @inject IUserBasketService basketService
 @inject NavigationManager NavigationManager
 @inject IUserService userService
-@inject IConfigService userConfigService
+@inject IUserConfigService userConfigService
 @inject ILogger<BasketManager> logger
 
 <DetailedErrorBoundary>
@@ -40,8 +40,7 @@
     {
         logger.LogInformation($"Switching to basket: {selectedBasketId}");
         var newBasket = await basketService.SwitchToBasket(selectedBasketId);
-        // WASM TODO - can this go in the user basket service now?
-        userConfigService.Set(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+        userConfigService.SetForUser(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
         StateHasChanged();
     }
 
