@@ -39,7 +39,7 @@ public class UserConfigService : BaseConfigService, IDisposable
         _userService.OnUserIdChanged -= UserChanged;
     }
 
-    protected override async Task<List<ConfigSetting>> GetAllSettings()
+    protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();

@@ -31,13 +31,15 @@ public class ConfigService : BaseConfigService, IConfigService
         _ = InitialiseCache();
     }
 
-    protected override async Task<List<ConfigSetting>> GetAllSettings()
+    protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Get all the settings that are either global, or match our user.
-        var settings = await db.ConfigSettings.Where( x => x.UserId == null || x.UserId == 0 ).ToListAsync();
+        var settings = await db.ConfigSettings
+                                    .Where( x => x.UserId == null || x.UserId == 0 )
+                                    .ToListAsync();
 
         return settings;
     }

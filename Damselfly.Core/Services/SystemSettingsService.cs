@@ -62,6 +62,6 @@ public class SystemSettingsService : ISystemSettingsService
         // WP Settings have changed, so reset the client and token
         _wpService.ResetClient();
 
-        await _notifier.NotifyClients( Constants.NotificationType.SystemSettingsChanged );
+        _ = _notifier.NotifyClients( Constants.NotificationType.SystemSettingsChanged );
     }
 }

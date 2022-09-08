@@ -59,7 +59,7 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
         await httpClient.CustomPutAsJsonAsync( $"/api/config", saveRequest );
     }
 
-    protected override async Task<List<ConfigSetting>> GetAllSettings()
+    protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         List<ConfigSetting> allSettings;
         try
