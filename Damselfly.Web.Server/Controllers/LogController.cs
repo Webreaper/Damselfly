@@ -1,0 +1,95 @@
+﻿using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models.APIModels;
+using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Services;
+using Damselfly.Core.Utils;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
+using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
+
+namespace Damselfly.Web.Server.Controllers;
+
+// TODO: WASM: [Authorize]
+[ApiController]
+[Route("/api/logs")]
+public class LogController : ControllerBase
+{
+    private readonly ILogger<LogController> _logger;
+
+    public LogController(ILogger<LogController> logger)
+    {
+        _logger = logger;
+    }
+
+    [HttpGet("/api/logs/{page}")]
+    public async Task<LogEntryResponse> Get(int page)
+    {
+        return await GetLogLines( page );
+    }
+
+    private Task<LogEntryResponse> GetLogLines(int page)
+    {
+        const int pageSize = 500;
+        var response = new LogEntryResponse();
+        
+        var logDir = new DirectoryInfo( Logging.LogFolder );
+        var file = logDir.GetFiles( "*.log" )
+                         .OrderByDescending( x => x.LastWriteTimeUtc )
+                         .FirstOrDefault();
+
+        if ( file != null )
+        {
+            response.LogEntries = new List<LogEntry>();
+            response.LogFileName = file.Name;
+
+            try
+            {
+                var reader = new ReverseLineReader( file.FullName );
+
+                response.LogEntries = reader.Skip( page * pageSize )
+                                .Take( pageSize )
+                                .Select( x => CreateLogEntry( x ) )
+                                .ToList();
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( $"Exception reading logs: {ex}" );
+            }
+        }
+
+        return Task.FromResult( response );
+    }
+
+    // TODO: Use a regex here
+    private LogEntry CreateLogEntry( string s )
+    {
+        var e = new LogEntry();
+        if ( !string.IsNullOrWhiteSpace( s ) && s.StartsWith( '[' ) )
+        {
+            try
+            {
+                string[] parts = s.Split( ']' );
+                if ( parts.Length > 1 )
+                {
+                    e.Entry = parts[1];
+
+                    string[] parts2 = parts[0].Substring( 1 ).Split( '-' );
+                    e.Date = parts2[0];
+                    e.Thread = parts2[1];
+                    e.Level = parts2[2];
+                }
+            }
+            catch ( Exception )
+            {
+                // Don't log - we'll get an infinite loop!
+            }
+        }
+
+        return e;
+    }
+}
+
