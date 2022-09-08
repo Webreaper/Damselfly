@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Xml.Linq;
 using Damselfly.Core.DbModels;
@@ -19,72 +18,77 @@ namespace Damselfly.Core.ScopedServices;
 
 public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService, IDisposable
 {
-    private readonly IUserService _userService;
-    private readonly NotificationsService _notifications;
-    private readonly RestClient httpClient;
+    private RestClient httpClient;
+    private readonly AuthenticationStateProvider _authProvider;
 
-    public ClientConfigService( RestClient restClient, NotificationsService notifications, IUserService userService, ILogger<IConfigService> logger ) : base( logger )
+    public ClientConfigService(RestClient restClient, AuthenticationStateProvider authProvider, ILogger<IConfigService> logger) : base(logger)
     {
-        _notifications = notifications;
-        _userService = userService;
         httpClient = restClient;
+        _authProvider = authProvider;
 
-        _notifications.SubscribeToNotification( Constants.NotificationType.SystemSettingsChanged, SystemSettingsChanged );
-
-        _userService.OnUserIdChanged += UserIdChanged;
+        _authProvider.AuthenticationStateChanged += AuthStateChanged;
 
         _ = InitialiseCache();
     }
 
-    public void Dispose()
-    {
-        _userService.OnUserIdChanged -= UserIdChanged;
-    }
-
-    private void SystemSettingsChanged()
-    {
-        // Another user changed the system settings - so refresh
-        _ = InitialiseCache();
-    }
-
-    private void UserIdChanged( int? newUserId )
+    private async void AuthStateChanged(Task<AuthenticationState> task)
     {
         // User has changed. Clear the cache
         _ = InitialiseCache();
     }
 
-    protected override async Task PersistSetting( ConfigSetRequest saveRequest )
+    public override async Task<List<ConfigSetting>> GetAllSettings()
     {
-        // Save remotely
-        await httpClient.CustomPutAsJsonAsync( $"/api/config", saveRequest );
-    }
-
-    protected override async Task<List<ConfigSetting>> LoadAllSettings()
-    {
-        List<ConfigSetting> allSettings;
         try
         {
-            if ( _userService.UserId.HasValue )
-                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config/user/{_userService.UserId}" );
-            else
-                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config" );
+            if (httpClient is null)
+                throw new ArgumentException("Rest client is NULL!");
+
+            return await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>($"/api/config");
         }
-        catch ( Exception ex )
+        catch (Exception ex)
         {
-            _logger.LogError( $"Exception loading all settings: {ex.Message}" );
-            allSettings = new List<ConfigSetting>();
+            _logger.LogError($"Exception loading all settings: {ex.Message}");
+            return new List<ConfigSetting>();
+        }
+    }
+
+    public override bool SetSetting(string name, ConfigSetting setting)
+    {
+        if (!base.SetSetting(name, setting))
+            return false;
+
+        var payload = new ConfigSetRequest { Name = name, NewValue = setting.Value };
+        _ = httpClient.CustomPutAsJsonAsync($"/api/config", payload);
+        return true;
+    }
+
+    public override ConfigSetting GetSetting(string name)
+    {
+        var existing = base.GetSetting(name);
+
+        if (existing == null)
+        {
+            // TODO: WASM
+            // Can we just rely on the cache here? Or should we fix this?
+            // existing = httpClient.CustomGetFromJsonAsync<ConfigSetting>($"/api/config/{name}");
         }
 
-        return allSettings;
+        return existing;
     }
 
-    public async Task<SystemConfigSettings> GetSystemSettings ()
+    public virtual async Task<SystemConfigSettings> GetSystemSettings()
     {
-        return await httpClient.CustomGetFromJsonAsync<SystemConfigSettings>( $"/api/config/settings" );
+        return await httpClient.CustomGetFromJsonAsync<SystemConfigSettings>($"/api/config/settings");
     }
 
-    public async Task SaveSystemSettings ( SystemConfigSettings settings )
+    public virtual async Task SaveSystemSettings(SystemConfigSettings settings)
     {
-        await httpClient.CustomPostAsJsonAsync<SystemConfigSettings>( $"/api/config/settings", settings );
+        await httpClient.CustomPostAsJsonAsync<SystemConfigSettings>($"/api/config/settings", settings);
+    }
+
+    public void Dispose()
+    {
+        _authProvider.AuthenticationStateChanged -= AuthStateChanged;
     }
 }
