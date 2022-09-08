@@ -47,36 +47,18 @@ public class UserService : IUserService, IDisposable
     private async Task GetCurrentUserId()
     {
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-        _userId = GetUserIdFromPrincipal(authState);
+        _userId = authState.GetUserIdFromPrincipal();
     }
 
-    private int? GetUserIdFromPrincipal(AuthenticationState authState)
-    {
-        try
-        {
-            if (authState.User.Identity.IsAuthenticated)
-            {
-                var userId = authState.User.FindFirst(c => c.Type == "sub")?.Value;
-
-                if (int.TryParse(userId, out var id))
-                {
-                    return id;
-                }
-            }
-        }
-        catch { }
-        return null;
-    }
 
     /// <summary>
     /// Handler for when the authentication state changes. 
     /// </summary>
     /// <param name="newState"></param>
-    private async void AuthStateChanged(Task<AuthenticationState> task)
+    private async void AuthStateChanged(Task<AuthenticationState> authStateTask)
     {
-        var authState = await task;
-
-        _userId = GetUserIdFromPrincipal(authState);
+        var authState = await authStateTask;
+        _userId = authState.GetUserIdFromPrincipal();
 
         if (_userId != -1)
             Logging.Log($"User changed to {_userId}");

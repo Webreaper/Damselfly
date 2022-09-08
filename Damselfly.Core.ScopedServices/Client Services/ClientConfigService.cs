@@ -19,26 +19,34 @@ namespace Damselfly.Core.ScopedServices;
 
 public class ClientConfigService : BaseConfigService, IConfigService, ISystemSettingsService, IDisposable
 {
-    private readonly IUserService _userService;
     private readonly NotificationsService _notifications;
     private readonly RestClient httpClient;
+    private readonly AuthenticationStateProvider _authProvider;
+    private int? UserId;
 
-    public ClientConfigService( RestClient restClient, NotificationsService notifications, IUserService userService, ILogger<IConfigService> logger ) : base( logger )
+    public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider, NotificationsService notifications, ILogger<IConfigService> logger ) : base( logger )
     {
+        _authProvider = authProvider;
         _notifications = notifications;
-        _userService = userService;
         httpClient = restClient;
 
         _notifications.SubscribeToNotification( Constants.NotificationType.SystemSettingsChanged, SystemSettingsChanged );
 
-        _userService.OnUserIdChanged += UserIdChanged;
+        _authProvider.AuthenticationStateChanged += AuthStateChanged;
 
         _ = InitialiseCache();
     }
 
+    private async void AuthStateChanged( Task<AuthenticationState> authStateTask )
+    {
+        AuthenticationState authState = await authStateTask;
+        this.UserId = authState.GetUserIdFromPrincipal();
+        await InitialiseCache();
+    }
+
     public void Dispose()
     {
-        _userService.OnUserIdChanged -= UserIdChanged;
+        _authProvider.AuthenticationStateChanged -= AuthStateChanged;
     }
 
     private void SystemSettingsChanged()
@@ -64,8 +72,8 @@ public class ClientConfigService : BaseConfigService, IConfigService, ISystemSet
         List<ConfigSetting> allSettings;
         try
         {
-            if ( _userService.UserId.HasValue )
-                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config/user/{_userService.UserId}" );
+            if ( UserId.HasValue )
+                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config/user/{UserId}" );
             else
                 allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>( $"/api/config" );
         }

@@ -8,6 +8,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.8" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="System.Drawing.Common" />
     <None Remove="Classes\" />
+    <None Remove="Microsoft.AspNetCore.Components.Authorization" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
