@@ -13,7 +13,6 @@ using Damselfly.Core.DbModels.Models;
 using Damselfly.ML.Face.Azure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Damselfly.Core.DbModels.Models.APIModels;
 
 namespace Damselfly.Core.Services;
 
@@ -24,67 +23,54 @@ public class ConfigService : BaseConfigService, IConfigService
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ConfigService( IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger ) : base( logger )
+    public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base(logger)
     {
         _scopeFactory = scopeFactory;
 
         _ = InitialiseCache();
+
     }
 
-    protected override async Task<List<ConfigSetting>> LoadAllSettings()
+    public override async Task<List<ConfigSetting>> GetAllSettings()
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // Get all the settings that are either global, or match our user.
-        var settings = await db.ConfigSettings
-                                    .Where( x => x.UserId == null || x.UserId == 0 )
-                                    .ToListAsync();
+        var settings = await db.ConfigSettings.Where(x => x.UserId == null || x.UserId == 0).ToListAsync();
 
         return settings;
     }
 
-    // Used by the controller
-    public async Task<List<ConfigSetting>> GetAllSettingsForUser( int? userId )
+    public void Set(string name, string value)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // Get all the settings that are either global, or match our user.
-        var settings = await db.ConfigSettings.Where( x => x.UserId == null || x.UserId == 0 || x.UserId == userId ).ToListAsync();
+        var existing = GetSetting(name);
 
-        return settings;
-    }
-
-    protected override async Task PersistSetting( ConfigSetRequest setRequest )
-    {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-        var existing = await db.ConfigSettings
-                               .Where( x => x.Name == setRequest.Name && x.UserId == setRequest.UserId )
-                               .FirstOrDefaultAsync();
-
-        if ( String.IsNullOrEmpty( setRequest.NewValue ) )
+        if (existing != null)
         {
-            // Setting set to null - delete from the DB and cache
-            if ( existing != null )
-                db.ConfigSettings.Remove( existing );
-        }
-        else
-        {
-            // Set the value - either update the existing or create a new one
-            if ( existing != null )
+            if (String.IsNullOrEmpty(value))
             {
-                // Setting set to non-null - save in the DB and cache
-                existing.Value = setRequest.NewValue;
-                db.ConfigSettings.Update( existing );
+                // Setting set to null - delete from the DB and cache
+                db.ConfigSettings.Remove(existing);
+                Set(name, null);
             }
             else
             {
+                // Setting set to non-null - save in the DB and cache
+                existing.Value = value;
+                db.ConfigSettings.Update(existing);
+            }
+        }
+        else
+        {
+            if (!String.IsNullOrEmpty(value))
+            {
                 // Existing setting set to non-null - create in the DB and cache.
-                var newEntry = new ConfigSetting { Name = setRequest.Name, Value = setRequest.NewValue, UserId = setRequest.UserId };
-                db.ConfigSettings.Add( newEntry );
+                existing = new ConfigSetting { Name = name, Value = value };
+                base.SetSetting(name, existing);
+                db.ConfigSettings.Add(existing);
             }
         }
 

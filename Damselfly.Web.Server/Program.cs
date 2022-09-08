@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Serilog;
+using CommandLine;
 using static Tensorflow.ApiDef.Types;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -29,7 +30,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ILogger = Serilog.ILogger;
-using CommandLine;
 
 namespace Damselfly.Web;
 

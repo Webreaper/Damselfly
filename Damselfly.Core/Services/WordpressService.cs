@@ -19,7 +19,7 @@ public class WordpressService : IWordpressService
 {
     private WordPressClient _client;
     private readonly IStatusService _statusService;
-    private readonly IConfigService _configService;
+    private readonly ConfigService _configService;
     private readonly ImageProcessService _imageProcessService;
 
     public WordpressService(ImageProcessService imageService,

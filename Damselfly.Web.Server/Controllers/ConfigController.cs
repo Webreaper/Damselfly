@@ -24,11 +24,26 @@ namespace Damselfly.Web.Server.Controllers;
 [Route("/api/config")]
 public class ConfigController : ControllerBase
 {
-    private readonly ConfigService _configService;
+    private readonly IConfigService _configService;
     private readonly ISystemSettingsService _settingsService;
+    private readonly UserManager<AppIdentityUser> userManager;
     private readonly ILogger<ConfigController> _logger;
 
-    public ConfigController(ConfigService configService, SystemSettingsService settingsService, ILogger<ConfigController> logger)
+    private async Task<AppIdentityUser> GetUser()
+    {
+        AppIdentityUser user = default;
+
+        if (User.Identity.IsAuthenticated)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            user = await userManager.FindByIdAsync(userId);
+        }
+
+        return user;
+    }
+
+    public ConfigController(IConfigService configService, SystemSettingsService settingsService, ILogger<ConfigController> logger)
     {
         _configService = configService;
         _settingsService = settingsService;
@@ -41,26 +56,12 @@ public class ConfigController : ControllerBase
         _configService.Set(req.Name, req.NewValue);
     }
 
-    [HttpGet( "/api/config/user/{userId}" )]
-    public async Task<List<ConfigSetting>> GetAllSettingsForUser( int userId )
+    [HttpGet("/api/config")]
+    public async Task<List<ConfigSetting>> GetAll()
     {
-        _logger.LogInformation( $"Loading all config value for user {userId}..." );
         var settings = new List<ConfigSetting>();
 
-        var allValues = await _configService.GetAllSettingsForUser( userId );
-        if ( allValues != null )
-            settings.AddRange( allValues );
-
-        return settings;
-    }
-
-    [HttpGet( "/api/config" )]
-    public async Task<List<ConfigSetting>> GetAllSettings()
-    {
-        _logger.LogInformation( $"Loading all config values..." );
-        var settings = new List<ConfigSetting>();
-
-        var allValues = await _configService.GetAllSettingsForUser( null );
+        var allValues = await _configService.GetAllSettings();
         if (allValues != null)
             settings.AddRange(allValues);
 
