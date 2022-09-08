@@ -22,15 +22,11 @@
 
 <body>
     <div id="app">
-        <img src="damselfly-logo.png" title="Damselfly" style="display: block; margin-left: auto; margin-right: auto; width: 50%; animation: fadeIn ease 1s;" />
-        <p style="font-size: 14pt; text-align:center">Damselfly is loading.... please wait.</p>
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text" style="font-size: 12pt;"></div>
-
-
+        <img src="damselfly-logo.png" title="Damselfly" class="damselfly-loading-logo" />
+        <p style="font-size: 14pt; text-align:center">Please Wait - Damselfly is loading: <span class="loading-progress-text"></span>.... </p>
+        <div class="loading-bar">
+            <div class="loading-bar-progress"></div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

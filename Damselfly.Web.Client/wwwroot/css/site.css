@@ -1960,42 +1960,65 @@ hr.separator {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
+
+.damselfly-loading-logo {
+    display: block;
+    margin-top: 20vh;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    opacity: var(--blazor-load-percentage, 0.0);
+    /*animation: fadeIn ease 1s;*/
+}
 
 .loading-progress {
     position: relative;
     display: block;
     width: 8rem;
     height: 8rem;
-    margin: 20vh auto 1rem auto;
+    margin: 50px auto 1rem auto;
 }
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+.loading-progress circle {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
 
-        .loading-progress circle:last-child {
-            stroke: var(--statusbar-gradstart);
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+.loading-progress circle:last-child {
+    stroke: var(--statusbar-gradstart);
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
 
 .loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    font-weight: normal;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Damselfly is Loading...");
-    }
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text);
+}
+
+.loading-bar {
+    background-color: var(--statusbar-gradend);
+    border-radius: 13px;
+    padding: 3px;
+    margin-left: 35vw;
+    margin-right: 35vw;
+}
+
+.loading-bar-progress {
+    background-color: var(--statusbar-gradstart);
+    width: var(--blazor-load-percentage, 0.0);
+    height: 18px;
+    border-radius: 9px;
+}
+
 
 #blazor-error-ui {
     background-color: darkred;
