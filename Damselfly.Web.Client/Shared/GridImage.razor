@@ -125,74 +125,74 @@ else
                 </AuthorizeView>
             </RadzenMenu>
         </CascadingAuthenticationState>);
-}
+    }
 
-private ICollection<Image> ContextSelection
-{
-get
-{
-if (selectionService.Selection.Any())
-{
-return selectionService.Selection;
-}
-else
-{
-return new List<Image> { CurrentImage };
-}
-}
-}
+    private ICollection<Image> ContextSelection
+    {
+        get
+        {
+            if (selectionService.Selection.Any())
+            {
+                return selectionService.Selection;
+            }
+            else
+            {
+                return new List<Image> { CurrentImage };
+            }
+        }
+    }
 
-async Task OnMenuItemClick(MenuItemEventArgs args)
-{
-contextMenuService.Close();
-switch (args.Value)
-{
-case 0: NavigateToImage(); break;
-case 1: await DownloadImage(); break;
-case 2: await basketService.SetImageBasketState(false, ContextSelection.Select(x => x.ImageId).ToList()); break;
-case 3: await basketService.SetImageBasketState(true, ContextSelection.Select(x => x.ImageId).ToList()); break;
-case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
-case 5: await ShowRescanDialog(); break;
-case 6: FindImageSimilarTo(); break;
-}
-}
+    async Task OnMenuItemClick(MenuItemEventArgs args)
+    {
+        contextMenuService.Close();
+        switch (args.Value)
+        {
+            case 0: NavigateToImage(); break;
+            case 1: await DownloadImage(); break;
+            case 2: await basketService.SetImageBasketState(false, ContextSelection.Select(x => x.ImageId).ToList()); break;
+            case 3: await basketService.SetImageBasketState(true, ContextSelection.Select(x => x.ImageId).ToList()); break;
+            case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
+            case 5: await ShowRescanDialog(); break;
+            case 6: FindImageSimilarTo(); break;
+        }
+    }
 
-private async Task ShowRescanDialog()
-{
-var parameters = new DialogParameters { { "images", ContextSelection } };
-var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
-var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
-var result = await dialog.Result;
-}
+    private async Task ShowRescanDialog()
+    {
+        var parameters = new DialogParameters { { "images", ContextSelection } };
+        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
+    }
 
-private void FindImageSimilarTo()
-{
-searchService.SimilarTo = CurrentImage;
-}
+    private void FindImageSimilarTo()
+    {
+        searchService.SimilarTo = CurrentImage;
+    }
 
-public async Task DownloadImage()
-{
-try
-{
-string downloadFile = CurrentImage.DownloadImageUrl;
+    public async Task DownloadImage()
+    {
+        try
+        {
+            string downloadFile = CurrentImage.DownloadImageUrl;
 
-if (selectionService.Selection.Count() > 1)
-{
-var config = new ExportConfig { KeepFolders = true };
-downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection, config);
-}
+            if (selectionService.Selection.Count() > 1)
+            {
+                var config = new ExportConfig { KeepFolders = true };
+                downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection.Select( x => x.ImageId ).ToList(), config);
+            }
 
-await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
-}
-catch (Exception ex)
-{
-logger.LogError("Exception: " + ex.Message);
-}
-}
+            await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Exception: " + ex.Message);
+        }
+    }
 
-void NavigateToImage()
-{
-navContext.Context = NavContext;
-NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
-}
+    void NavigateToImage()
+    {
+        navContext.Context = NavContext;
+        NavigationManager.NavigateTo("/image/" + CurrentImage.ImageId);
+    }
 }

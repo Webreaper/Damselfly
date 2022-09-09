@@ -8,7 +8,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IDownloadService
 {
-    Task<string> CreateDownloadZipAsync(ICollection<Image> images, ExportConfig config);
+    Task<string> CreateDownloadZipAsync(ICollection<int> images, ExportConfig config);
     Task<DesktopAppPaths> GetDesktopAppInfo();
 }
 

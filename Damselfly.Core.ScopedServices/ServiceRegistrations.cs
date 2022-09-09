@@ -38,6 +38,7 @@ public static class ServiceRegistrations
         services.AddScoped<ClientPeopleService>();
         services.AddScoped<WebAssemblyStatusService>();
         services.AddScoped<ClientUserMgmtService>();
+        services.AddScoped<ClientExportService>();
 
         services.AddScoped<IPeopleService>(x => x.GetRequiredService<ClientPeopleService>());
         services.AddScoped<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());

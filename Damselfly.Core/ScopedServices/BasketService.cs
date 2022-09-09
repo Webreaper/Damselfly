@@ -225,7 +225,7 @@ public class BasketService : IBasketService
 
         var images = await LoadBasketImages(basket);
 
-        var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images, config);
+        var virtualZipPath = await _downloadService.CreateDownloadZipAsync(images.Select( x => x.ImageId).ToList(), config);
 
         if (!string.IsNullOrEmpty(virtualZipPath))
         {

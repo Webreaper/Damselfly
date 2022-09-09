@@ -25,6 +25,7 @@ public class DownloadService : IDownloadService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
+    private readonly IImageCacheService _cacheService;
     private readonly ImageProcessService _imageProcessingService;
     private DesktopAppPaths _desktopAppInfo = new DesktopAppPaths();
     private static DirectoryInfo desktopPath;
@@ -33,11 +34,12 @@ public class DownloadService : IDownloadService
     private const string s_downloadVPath = "downloads";
     private const string s_completionMsg = "Zip created.";
 
-    public DownloadService(IStatusService statusService, ImageProcessService imageService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory)
+    public DownloadService(IStatusService statusService, ImageProcessService imageService, IImageCacheService cacheService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageProcessingService = imageService;
+        _cacheService = cacheService;
 
         SetDownloadPath(env.WebRootPath);
     }
@@ -125,11 +127,13 @@ public class DownloadService : IDownloadService
     /// <param name="imagesToZip"></param>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task<string> CreateDownloadZipAsync(ICollection<Image> imagesToZip, ExportConfig config)
+    public async Task<string> CreateDownloadZipAsync(ICollection<int> imagesIdsToZip, ExportConfig config)
     {
-        var images = imagesToZip.Select(x => new FileInfo(x.FullPath)).ToArray();
+        var images = await _cacheService.GetCachedImages( imagesIdsToZip );
 
-        return await CreateDownloadZipAsync(images, config);
+        var imagePaths = images.Select(x => new FileInfo(x.FullPath)).ToArray();
+
+        return await CreateDownloadZipAsync( imagePaths, config);
     }
 
     /// <summary>
@@ -190,31 +194,34 @@ public class DownloadService : IDownloadService
                         if (config.KeepFolders)
                             internalZipPath = Path.Combine(imagePath.Directory.Name, internalZipPath);
 
+                        ZipArchiveEntry entry;
+
                         if (exportUnchanged)
                         {
                             // Export the original file, as-is
-                            zip.CreateEntryFromFile(imagePath.FullName, internalZipPath);
+                            entry = zip.CreateEntryFromFile(imagePath.FullName, internalZipPath);
                         }
                         else
                         {
                             // Transform the input file with rotation, watermark, etc.
-                            var file = zip.CreateEntry(internalZipPath);
+                            entry = zip.CreateEntry(internalZipPath);
 
-                            using (var zipStream = file.Open())
+                            using (var zipStream = entry.Open())
                             {
                                 // Run the transform - note we do this in-memory and directly on the stream so the
                                 // transformed file is never actually written to disk other than in the zip.
                                 await _imageProcessingService.TransformDownloadImage(imagePath.FullName, zipStream, config);
                             }
                         }
+
+                        // Linux memory stream zip entries don't get good permissions, so fix that here:
+                        // https://github.com/dotnet/runtime/issues/17912
+                        //entry.ExternalAttributes = entry.ExternalAttributes | ( Convert.ToInt32( "664", 8 ) << 16 );
                     }
                     else
                         Logging.LogWarning($"Zipped Image not found on disk: {imagePath}");
 
                     int percentComplete = (count++ * 100) / total;
-
-                    // Yield a bit, otherwise 
-                    await Task.Delay(50);
 
                     _statusService.UpdateStatus($"Zipping image {imagePath.Name}... ({percentComplete}% complete)");
                 }
@@ -222,7 +229,7 @@ public class DownloadService : IDownloadService
                 _statusService.UpdateStatus(s_completionMsg);
             }
 
-            return virtualZipPath;
+            return Path.DirectorySeparatorChar + virtualZipPath;
         }
         catch (Exception ex)
         {
