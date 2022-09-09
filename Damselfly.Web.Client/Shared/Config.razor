@@ -380,8 +380,7 @@
         try
         {
             await settingsService.SaveSystemSettings(settingsModel);
-            var themeConfig = await themeService.GetThemeConfig(selectedTheme);
-            await themeService.SetNewTheme(themeConfig);
+            await themeService.SetNewTheme( selectedTheme );
         }
         catch (Exception ex)
         {

@@ -8,6 +8,8 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -161,6 +163,13 @@ public class ThemeService : IThemeService
             Logging.LogWarning($"Unable to parse theme CSS: {ex.Message}");
             return null;
         }
+    }
+
+    public async Task SetNewTheme( string themeName )
+    {
+        var themeConfig = await GetThemeConfig( themeName );
+        if ( themeConfig != null )
+            await SetNewTheme( themeConfig );
     }
 
     public ThemeConfig LightTheme = new ThemeConfig

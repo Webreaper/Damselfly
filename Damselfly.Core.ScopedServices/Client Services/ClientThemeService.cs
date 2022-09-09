@@ -6,25 +6,38 @@ using System.Xml.Linq;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.Constants;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class ClientThemeService : IThemeService
+public class ClientThemeService : IThemeService, IDisposable
 {
-    public ClientThemeService(RestClient client, IConfigService configService, ILogger<ClientThemeService> logger)
+    public ClientThemeService(RestClient client, IUserConfigService configService, ILogger<ClientThemeService> logger)
     {
         _configService = configService;
         httpClient = client;
         _logger = logger;
+
+        _configService.OnSettingsLoaded += SettingsLoaded;
     }
 
-    private readonly IConfigService _configService;
+    public void Dispose()
+    {
+        _configService.OnSettingsLoaded -= SettingsLoaded;
+    }
+
+    private readonly IUserConfigService _configService;
     private readonly RestClient httpClient;
-    private ILogger<ClientThemeService> _logger;
+    private readonly ILogger<ClientThemeService> _logger;
+    private readonly AuthenticationStateProvider _authProvider;
 
     public event Action<ThemeConfig> OnChangeTheme;
 
-    // WASM: Need to load user's theme here
+    private void SettingsLoaded()
+    {
+        var themeName = _configService.Get( ConfigSettings.Theme, "Green" );
+        _ = SetNewTheme( themeName );
+    }
 
     public async Task<ThemeConfig> GetThemeConfig(string name)
     {
@@ -70,9 +83,17 @@ public class ClientThemeService : IThemeService
         }
     }
 
+    public async Task SetNewTheme( string themeName )
+    {
+        var themeConfig = await GetThemeConfig( themeName );
+
+        if( themeConfig != null )
+            await SetNewTheme( themeConfig );
+    }
+
     public async Task SetNewTheme(ThemeConfig newTheme)
     {
-        _configService.Set(ConfigSettings.Theme, newTheme.Name);
+        _configService.SetForUser(ConfigSettings.Theme, newTheme.Name);
 
         OnChangeTheme?.Invoke(newTheme);
     }

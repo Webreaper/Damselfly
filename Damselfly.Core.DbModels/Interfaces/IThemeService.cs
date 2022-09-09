@@ -14,5 +14,6 @@ public interface IThemeService
     Task<ThemeConfig> GetThemeConfig(string name);
     Task<List<ThemeConfig>> GetAllThemes();
     Task SetNewTheme(ThemeConfig newTheme);
+    Task SetNewTheme( string themeName );
 }
 

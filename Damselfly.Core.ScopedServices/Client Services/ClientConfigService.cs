@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Xml.Linq;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
@@ -22,9 +23,12 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
     private readonly NotificationsService _notifications;
     private readonly RestClient httpClient;
     private readonly AuthenticationStateProvider _authProvider;
+    private readonly IThemeService _themeService;
     private int? _userId;
 
-    public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider, NotificationsService notifications, ILogger<IConfigService> logger ) : base( logger )
+    public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider,
+                            NotificationsService notifications,
+                            ILogger<IConfigService> logger ) : base( logger )
     {
         _authProvider = authProvider;
         _notifications = notifications;
