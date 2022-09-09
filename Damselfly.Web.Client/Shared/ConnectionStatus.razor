@@ -27,9 +27,9 @@
         Status = state.ToString();
         TextStyle = state switch
         {
-            HubConnectionState.Connected => "color:green",
-            HubConnectionState.Reconnecting => "color:amber",
-            HubConnectionState.Connecting => "color:amber",
+            HubConnectionState.Connected => "color:darkgreen",
+            HubConnectionState.Reconnecting => "color:darkorange",
+            HubConnectionState.Connecting => "color:darkorange",
             HubConnectionState.Disconnected => "color:darkred",
         };
 
