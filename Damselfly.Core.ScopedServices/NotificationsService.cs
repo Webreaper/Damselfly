@@ -16,9 +16,19 @@ namespace Damselfly.Core.ScopedServices;
 
 public class NotificationsService : IAsyncDisposable
 {
+    private class RetryPolicy : IRetryPolicy
+    {
+        public TimeSpan? NextRetryDelay( RetryContext retryContext )
+        {
+            return TimeSpan.FromSeconds( 30 );
+        }
+    }
+
     private ILogger<NotificationsService> _logger;
     private readonly HubConnection hubConnection;
     private readonly WebAssemblyStatusService _wasmState;
+
+    public event Action OnConnectionChanged;
 
     public NotificationsService(NavigationManager navManager, WebAssemblyStatusService wasmState, ILogger<NotificationsService> logger)
     {
@@ -32,16 +42,33 @@ public class NotificationsService : IAsyncDisposable
 
             hubConnection = new HubConnectionBuilder()
                             .WithUrl(hubUrl)
-                            .WithAutomaticReconnect()
+                            .WithAutomaticReconnect( new RetryPolicy() )
                             .Build();
+
+            hubConnection.Closed += ConnectionClosed;
+            hubConnection.Reconnected += ConnectionOpened;
+            hubConnection.Reconnecting += ConnectionClosed;
 
             _ = Task.Run(async () =>
             {
                 await hubConnection.StartAsync();
-            });
+                OnConnectionChanged?.Invoke();
+            } );
         }
         else
             _logger.LogInformation("Skipping notification service setup in Blazor Server mode.");
+    }
+
+    public HubConnectionState ConnectionState => hubConnection.State;
+
+    private async Task ConnectionOpened( string? arg )
+    {
+        OnConnectionChanged?.Invoke();
+    }
+
+    private async Task ConnectionClosed( Exception? arg )
+    {
+        OnConnectionChanged?.Invoke();
     }
 
     /// <summary>
@@ -142,8 +169,13 @@ public class NotificationsService : IAsyncDisposable
 
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        if (hubConnection is not null)
+        if ( hubConnection is not null )
+        {
+            hubConnection.Closed -= ConnectionClosed;
+            hubConnection.Reconnected -= ConnectionOpened;
+            hubConnection.Reconnecting -= ConnectionClosed;
             await hubConnection.DisposeAsync();
+        }
     }
 }
 

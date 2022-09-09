@@ -21,7 +21,7 @@ public class NotificationHub : Hub
 
     public override async Task OnConnectedAsync()
     {
-        _logger.LogInformation("Notifiy Service connected.");
+        _logger.LogTrace("Notify Hub connected.");
         await base.OnConnectedAsync();
     }
 }

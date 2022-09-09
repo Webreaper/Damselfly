@@ -1,0 +1,58 @@
+﻿@using Damselfly.Core.DbModels
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.SignalR.Client
+
+@inject NavigationManager Navigation
+@inject NotificationsService notifications
+@inject WebAssemblyStatusService wasmState
+
+@implements IDisposable
+
+@if( wasmState.IsWebAssembly )
+{
+    <div class="damselfly-statusbarpanel" title="@Status"
+        <label style="@TextStyle">@Status</label>
+    </div>
+}
+
+@code
+{
+    private string Status { get; set; }
+    private string TextStyle { get; set; }
+
+    private void ConnectedStateChanged()
+    {
+        var state = notifications.ConnectionState;
+
+        Status = state.ToString();
+        TextStyle = state switch
+        {
+            HubConnectionState.Connected => "color:green",
+            HubConnectionState.Reconnecting => "color:amber",
+            HubConnectionState.Connecting => "color:amber",
+            HubConnectionState.Disconnected => "color:darkred",
+        };
+
+        InvokeAsync( StateHasChanged );
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        notifications.OnConnectionChanged += ConnectedStateChanged;
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync( bool firstRender )
+    {
+        if ( firstRender )
+        {
+            ConnectedStateChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        notifications.OnConnectionChanged -= ConnectedStateChanged;
+    }
+    }

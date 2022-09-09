@@ -28,7 +28,7 @@ public class ClientStatusService : IUserStatusService
         _userService = userService;
         _logger = logger;
 
-        notifications.SubscribeToNotification<StatusUpdate>(Constants.NotificationType.StatusChanged, ShowServerStatus);
+        _notifications.SubscribeToNotification<StatusUpdate>(Constants.NotificationType.StatusChanged, ShowServerStatus);
     }
 
     private void NotifyStatusChanged(string newStatus)

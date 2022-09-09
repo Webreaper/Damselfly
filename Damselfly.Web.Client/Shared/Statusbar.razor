@@ -8,6 +8,7 @@
 
 <div class="damselfly-statusbar">
     <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
+    <ConnectionStatus />
     <WorkStatus />
     @if (wasmState.IsWebAssembly)
     {
