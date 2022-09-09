@@ -1,6 +1,8 @@
-﻿
+﻿@using Damselfly.Core.ScopedServices.ClientServices;
+
 @inject NavigationManager NavigationManager
 @inject IWordpressService wpService
+@inject RestClient httpClient 
 @inject IDialogService DialogService
 
 <div class="SearchBox">
@@ -68,21 +70,17 @@
 
     public async Task LoadData()
     {
-        /*
+        var configs = await httpClient.CustomGetFromJsonAsync<ICollection<ExportConfig>>( "/api/export/configs" );
 
-            WASM: TODO:
-        var watch = new Stopwatch("LoadConfigs");
-        using var db = new ImageContext();
         this.configs.Clear();
-        this.configs.AddRange(db.DownloadConfigs);
-        watch.Stop();
+        this.configs.AddRange( configs );
 
         if (CurrentConfig == null)
         {
             CurrentConfig = configs.FirstOrDefault();
             await OnValueChanged.InvokeAsync(new ChangeEventArgs { Value = CurrentConfig });
         }
-        */
+        
         await InvokeAsync(StateHasChanged);
     }
 }

@@ -6,6 +6,7 @@ using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
@@ -31,6 +32,13 @@ public class ExportController : ControllerBase
         var existingConfig = db.DownloadConfigs.Where(x => x.ExportConfigId == configId);
 
         await db.BatchDelete(existingConfig);
+    }
+
+    [HttpGet( "/api/export/configs" )]
+    public async Task<ICollection<ExportConfig>> GetExportConfigs( [FromServices] ImageContext db )
+    {
+        // WASM - per user?
+        return await db.DownloadConfigs.ToListAsync();
     }
 
     [HttpPatch("/api/export/config")]
