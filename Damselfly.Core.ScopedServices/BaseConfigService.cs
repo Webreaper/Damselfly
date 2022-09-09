@@ -18,7 +18,7 @@ public abstract class BaseConfigService
     private readonly IDictionary<string, ConfigSetting> _cache = new ConcurrentDictionary<string, ConfigSetting>( StringComparer.OrdinalIgnoreCase );
     protected readonly ILogger<IConfigService> _logger;
 
-    public event Action OnSettingsLoaded;
+    public event Action<ICollection<ConfigSetting>> OnSettingsLoaded;
 
     public BaseConfigService( ILogger<IConfigService> logger )
     {
@@ -42,7 +42,7 @@ public abstract class BaseConfigService
             _logger.LogInformation( $"Loaded {allSettings.Count()} settings into config cache." );
         }
 
-        OnSettingsLoaded?.Invoke();
+        OnSettingsLoaded?.Invoke( allSettings );
     }
 
     private void ClearCache()

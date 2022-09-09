@@ -7,6 +7,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.Constants;
 using Microsoft.AspNetCore.Components.Authorization;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -33,10 +34,12 @@ public class ClientThemeService : IThemeService, IDisposable
 
     public event Action<ThemeConfig> OnChangeTheme;
 
-    private void SettingsLoaded()
+    private void SettingsLoaded( ICollection<ConfigSetting> newSettings )
     {
-        var themeName = _configService.Get( ConfigSettings.Theme, "Green" );
-        _ = SetNewTheme( themeName );
+        var themeSetting = newSettings.FirstOrDefault( x => x.Name == ConfigSettings.Theme );
+
+        if( themeSetting != null )
+            _ = ApplyTheme( themeSetting.Value );
     }
 
     public async Task<ThemeConfig> GetThemeConfig(string name)
@@ -83,19 +86,24 @@ public class ClientThemeService : IThemeService, IDisposable
         }
     }
 
-    public async Task SetNewTheme( string themeName )
+    public async Task ApplyTheme( string themeName )
     {
         var themeConfig = await GetThemeConfig( themeName );
 
         if( themeConfig != null )
-            await SetNewTheme( themeConfig );
+            await ApplyTheme( themeConfig );
     }
 
-    public async Task SetNewTheme(ThemeConfig newTheme)
+    public async Task ApplyTheme( ThemeConfig newTheme)
     {
-        _configService.SetForUser(ConfigSettings.Theme, newTheme.Name);
-
         OnChangeTheme?.Invoke(newTheme);
+    }
+
+    public async Task SetTheme( string themeName )
+    {
+        _configService.SetForUser( ConfigSettings.Theme, themeName );
+
+        await ApplyTheme( themeName );
     }
 }
 

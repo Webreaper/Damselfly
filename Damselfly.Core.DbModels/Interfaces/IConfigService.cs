@@ -19,6 +19,6 @@ public interface IConfigService
 public interface IUserConfigService : IConfigService
 {
     void SetForUser( string name, string value );
-    event Action OnSettingsLoaded;
+    event Action<ICollection<ConfigSetting>> OnSettingsLoaded;
 }
 

@@ -56,10 +56,24 @@ public class ConfigService : BaseConfigService, IConfigService
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // Get all the settings that are either global, or match our user.
-        var settings = await db.ConfigSettings.Where( x => x.UserId == null || x.UserId == 0 || x.UserId == userId ).ToListAsync();
+        if ( userId != null && userId > 0 )
+        {
+            // Get all the settings that are either global, or match our user.
+            var userSettings = db.ConfigSettings.Where( x => x.UserId == userId );
+            var globalSettings = db.ConfigSettings.Where( x => x.UserId == 0 || x.UserId == null &&
+                                                    !userSettings.Select( x => x.Name ).Contains( x.Name ) );
 
-        return settings;
+            // Combine them together.
+            return await userSettings.Concat( globalSettings )
+                                                .ToListAsync();
+        }
+        else
+        {
+            // No user, so just return the global settings.
+            return await db.ConfigSettings
+                                   .Where( x => x.UserId == 0 || x.UserId == null )
+                                   .ToListAsync();
+        }
     }
 
     protected override async Task PersistSetting( ConfigSetRequest setRequest )

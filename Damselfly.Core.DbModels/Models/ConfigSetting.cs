@@ -18,6 +18,7 @@ public class ConfigSetting
 
     public override string ToString()
     {
-        return $"Setting: {Name} = {Value}";
+        var scope = UserId == null ? "Global" : "User";
+        return $"Setting: {Name} = {Value} ({scope})";
     }
 }

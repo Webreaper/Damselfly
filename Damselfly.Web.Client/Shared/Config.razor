@@ -2,7 +2,7 @@
 @inject IJSRuntime JsRuntime
 @inject IConfigService configService
 @inject ISystemSettingsService settingsService
-@inject IThemeService themeService
+@inject ClientThemeService themeService
 @inject IUserStatusService statusService
 @inject IUserMgmtService userService
 @inject IWordpressService wpService
@@ -10,7 +10,7 @@
 @inject IDialogService DialogService
 @inject WebAssemblyStatusService wasmStatus
 @inject ILogger<Config> logger
-
+                                                                                                                
 <div class="damselfly-config">
     <h1>Configuration Settings</h1>
     <AuthorizeView Policy="@PolicyDefinitions.s_IsLoggedIn">
@@ -380,7 +380,7 @@
         try
         {
             await settingsService.SaveSystemSettings(settingsModel);
-            await themeService.SetNewTheme( selectedTheme );
+            await themeService.SetTheme( selectedTheme );
         }
         catch (Exception ex)
         {

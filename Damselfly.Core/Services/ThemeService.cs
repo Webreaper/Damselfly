@@ -31,7 +31,7 @@ public class ThemeService : IThemeService
 
     public event Action<ThemeConfig> OnChangeTheme;
 
-    public Task SetNewTheme(ThemeConfig newTheme)
+    public Task ApplyTheme(ThemeConfig newTheme)
     {
         OnChangeTheme?.Invoke(newTheme);
         return Task.CompletedTask;
@@ -165,11 +165,11 @@ public class ThemeService : IThemeService
         }
     }
 
-    public async Task SetNewTheme( string themeName )
+    public async Task ApplyTheme( string themeName )
     {
         var themeConfig = await GetThemeConfig( themeName );
         if ( themeConfig != null )
-            await SetNewTheme( themeConfig );
+            await ApplyTheme( themeConfig );
     }
 
     public ThemeConfig LightTheme = new ThemeConfig
