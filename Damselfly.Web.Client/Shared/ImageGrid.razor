@@ -1,6 +1,7 @@
 ﻿
 @inject ISearchService searchService
 @inject IUserConfigService configService
+@inject IUserStatusService statusService
 @inject IUserBasketService basketService
 @inject IImageCacheService imageCache
 @inject ILogger<ImageGrid> logger
@@ -109,14 +110,16 @@
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
-        // await basketService.SetBasketState(grouping.Images, true);
-        // statusService.StatusText = $"{grouping.Images.Count()} images added to the basket";
+        var imageIds = grouping.Images.Select( x => x.ImageId ).ToList();
+        await basketService.SetImageBasketState( true, imageIds );
+        statusService.UpdateStatus( $"{imageIds.Count()} images added to the basket" );
     }
 
     async Task RemoveGroupFromBasket(ImageGrouping grouping)
     {
-        // await basketService.SetBasketState(grouping.Images, false);
-        // statusService.StatusText = $"{grouping.Images.Count()} images removed from the basket";
+        var imageIds = grouping.Images.Select( x => x.ImageId ).ToList();
+        await basketService.SetImageBasketState( false, imageIds );
+        statusService.UpdateStatus( $"{imageIds.Count()} images removed from the basket" );
     }
 
     void SelectGroup(ImageGrouping grouping)
