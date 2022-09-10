@@ -226,6 +226,9 @@ public class Program
 
         InitialiseDB(app, cmdLineOptions);
 
+        // Log ingestion from the client
+        app.UseSerilogIngestion();
+
         var configService = app.Services.GetRequiredService<ConfigService>();
         var logLevel = configService.Get(ConfigSettings.LogLevel, Serilog.Events.LogEventLevel.Information);
 

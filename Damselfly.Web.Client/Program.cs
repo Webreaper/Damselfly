@@ -15,6 +15,9 @@ using Microsoft.Extensions.Options;
 using Syncfusion.Licensing;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Serilog;
+using Serilog.Core;
+using Serilog.Extensions.Logging;
 
 namespace Damselfly.Web.Client;
 
@@ -22,16 +25,23 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        SyncfusionLicence.RegisterSyncfusionLicence();
-
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+        var levelSwitch = new LoggingLevelSwitch();
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.ControlledBy( levelSwitch )
+            .Enrich.WithProperty( "InstanceId", Guid.NewGuid().ToString( "n" ) )
+            .WriteTo.BrowserHttp(
+                        endpointUrl: $"{builder.HostEnvironment.BaseAddress}ingest",
+                        controlLevelSwitch: levelSwitch )
+            .CreateLogger();
+
+        builder.Logging.AddProvider( new SerilogLoggerProvider() );
+
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         var httpClientBuilder = builder.Services.AddHttpClient("DamselflyAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
-
-        // WASM: TODO: 
-        //httpClientBuilder.AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
         // Supply HttpClient instances that include access tokens when making requests to the server project
         builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DamselflyAPI"));
@@ -50,6 +60,10 @@ public class Program
         builder.Services.AddScoped<IAuthService, AuthService>();
 
         builder.Services.AddDamselflyUIServices();
+
+        SyncfusionLicence.RegisterSyncfusionLicence();
+
+        levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Warning;
 
         await builder.Build().RunAsync();
     }
