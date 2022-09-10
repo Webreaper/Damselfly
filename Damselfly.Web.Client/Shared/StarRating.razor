@@ -2,14 +2,17 @@
 <div>
     @foreach (var star in Enumerable.Range(1, 5))
     {
-        @if (Editable)
-        {
+    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+        <Authorized>
             <i class="@StarStyle(star)" @onclick="() => ValueChanged(star)" title="@star stars" />
-        }
-        else if( star <= Rating )
-        {
-            <i class="fas fa-star damselfly-ratingstar" title="@Rating stars" />
-        }
+        </Authorized>
+        <NotAuthorized>
+            @if( star <= Rating )
+            {
+                <i class="fas fa-star damselfly-ratingstar" title="@Rating stars" />
+            }
+        </NotAuthorized>
+        </AuthorizeView>
     }
 </div>
 

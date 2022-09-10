@@ -80,7 +80,6 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>($"/api/tags");
     }
 
-
     public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue, int? userId = null)
     {
         var payload = new ExifUpdateRequest

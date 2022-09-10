@@ -6,29 +6,27 @@
 
 <DetailedErrorBoundary>
     <ChildContent>
-    <!--
         <CascadingAuthenticationState>
-        <DetailedErrorBoundary>
+            <DetailedErrorBoundary>
                 <LoginForcer />
                 <ThemeSwitcher />
-        </DetailedErrorBoundary>
-        <div class="damselfly-container">
-            <div class="damselfly-application">
-                <SplitView>
-                    <LeftPane>
-                        <SideBar />
-                    </LeftPane>
-                    <RightPane>
-                        @Body
-                    </RightPane>
-                </SplitView>
-            </div>
-            <DetailedErrorBoundary>
-                <Statusbar />
             </DetailedErrorBoundary>
-        </div>
+            <div class="damselfly-container">
+                <div class="damselfly-application">
+                    <SplitView>
+                        <LeftPane>
+                            <SideBar />
+                        </LeftPane>
+                        <RightPane>
+                            @Body
+                        </RightPane>
+                    </SplitView>
+                </div>
+                <DetailedErrorBoundary>
+                    <Statusbar />
+                </DetailedErrorBoundary>
+            </div>
         </CascadingAuthenticationState>
-    -->
     </ChildContent>
     <ErrorContent>
         <p>An error occurred. Please check the Damselfly logs and reload the page.</p>
