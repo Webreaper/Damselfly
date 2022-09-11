@@ -29,7 +29,7 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
     private readonly ICachedDataService _dataService;
     private readonly List<int> _searchResults = new List<int>();
 
-    public ICollection<int> SearchResults { get { return _searchResults; } }
+    public IEnumerable<int> SearchResults { get { return _searchResults; } }
 
     public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) : base(dataService, logger)
     {
@@ -55,10 +55,10 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
         }
 
         // Calculate how many results we have already
-        if (SearchResults.Count >= first)
+        if (SearchResults.Count() >= first)
         {
-            int firstOffset = SearchResults.Count - first;
-            first = SearchResults.Count;
+            int firstOffset = SearchResults.Count() - first;
+            first = SearchResults.Count();
             count -= firstOffset;
         }
 
