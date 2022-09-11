@@ -5,7 +5,6 @@ using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
 
-// WASM: TODO: Do we even need this?
 public interface IUserFolderService
 {
     event Action OnFoldersChanged;

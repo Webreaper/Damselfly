@@ -150,11 +150,6 @@
             searchService.SetDateRange(null, null);
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await cachedData.InitialiseData();
-    }
-
     protected override void OnInitialized()
     {
         CreateShortcuts();

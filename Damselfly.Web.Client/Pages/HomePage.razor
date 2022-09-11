@@ -114,10 +114,6 @@
     {
         base.OnInitialized();
 
-        // WASM: TODO:
-        // navContext.CurrentImage = null;
-
-        // WASM: TODO:
         viewdataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
 
         navigationManager.LocationChanged += HandleLocationChanged;

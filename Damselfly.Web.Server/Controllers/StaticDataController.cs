@@ -1,5 +1,6 @@
 ﻿using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -27,6 +28,16 @@ public class StaticDataController : ControllerBase
         _metaDataService = metaDataService;
         _stats = stats;
         _logger = logger;
+    }
+
+    [HttpGet( "/api/data/static" )]
+    public Task<StaticData> GetStaticData()
+    {
+        return Task.FromResult( new StaticData
+        {
+            ExifToolVer = ExifService.ExifToolVer,
+            ImagesRootFolder = IndexingService.RootFolder
+        } );
     }
 
     [HttpGet("/api/data/cameras")]

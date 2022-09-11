@@ -67,7 +67,6 @@ public class ServerSearchService : BaseSearchService, ISearchService
 
         var response = await _queryService.GetQueryImagesAsync(request);
 
-        // WASM: should this just get added into the navigation manager directly?
         _searchResults.AddRange(response.SearchResults);
 
         return response;

@@ -35,8 +35,7 @@
 
             try
             {
-                // WASM
-                // Logging.LogVerbose($"Data loaded - initialising scroll position to {scrollPos}");
+                logger.LogTrace($"Data loaded - initialising scroll position to {scrollPos}");
                 await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
             }
             catch (TaskCanceledException)
@@ -44,8 +43,7 @@
             }
             catch (Exception ex)
             {
-                // WASM
-                // Logging.LogError($"Exception restoring scroll position: {ex.Message}");
+                logger.LogError($"Exception restoring scroll position: {ex.Message}");
             }
         }
     }

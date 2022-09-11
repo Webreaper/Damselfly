@@ -37,7 +37,6 @@ public class ExportController : ControllerBase
     [HttpGet( "/api/export/configs" )]
     public async Task<ICollection<ExportConfig>> GetExportConfigs( [FromServices] ImageContext db )
     {
-        // WASM - per user?
         return await db.DownloadConfigs.ToListAsync();
     }
 

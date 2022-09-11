@@ -65,7 +65,12 @@ public class Program
 
         levelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Warning;
 
-        await builder.Build().RunAsync();
+        var app = builder.Build();
+
+        var cachedData = app.Services.GetRequiredService<ICachedDataService>();
+        await cachedData.InitialiseData();
+
+        await app.RunAsync();
     }
 }
 

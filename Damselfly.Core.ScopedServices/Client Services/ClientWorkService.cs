@@ -27,7 +27,6 @@ public class ClientWorkService : IWorkService
         OnStatusChanged?.Invoke(newStatus);
     }
 
-    // WASM: TODO: 
     public event Action<ServiceStatus> OnStatusChanged;
 
     public async Task Pause(bool paused)

@@ -18,7 +18,6 @@ public class UserFolderService : IDisposable, IUserFolderService
     private readonly IConfigService _configService;
     private readonly NotificationsService _notifications;
 
-    // WASM: TODO:
     public event Action OnFoldersChanged;
     private ICollection<Folder> folderItems;
     private IDictionary<int, bool> expandedSate;

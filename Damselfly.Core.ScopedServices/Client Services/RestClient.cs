@@ -55,7 +55,6 @@ public class RestClient
     {
         if (ex is JsonException)
         {
-            // WASM:
             if (ex.Message.Contains("'<' is an invalid start of a value"))
                 return new ArgumentException($"Possible 404 / Page Not Found exception for {requestUrl}", ex);
             else if (ex.Message.Contains("A possible object cycle"))

@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -19,6 +20,12 @@ public class ClientDataService : ICachedDataService
     private readonly List<Lens> _lenses = new List<Lens>();
     private readonly ILogger<ClientDataService> _logger;
 
+    public string ImagesRootFolder => _staticData.ImagesRootFolder;
+    public string ExifToolVer => _staticData.ExifToolVer;
+    public ICollection<Camera> Cameras => _cameras;
+    public ICollection<Lens> Lenses => _lenses;
+    private StaticData _staticData;
+
     public ClientDataService(RestClient client, ILogger<ClientDataService> logger)
     {
         httpClient = client;
@@ -31,18 +38,15 @@ public class ClientDataService : ICachedDataService
 
         _cameras.Clear();
         _lenses.Clear();
-        // WASM: AwaitALL
+
+        // Could do an await WhenAll
         _cameras.AddRange(await httpClient.CustomGetFromJsonAsync<List<Camera>>("/api/data/cameras"));
         _lenses.AddRange(await httpClient.CustomGetFromJsonAsync<List<Lens>>("/api/data/lenses"));
 
         _logger.LogInformation($"Loaded {_cameras.Count()} cameras, {_lenses.Count} lenses.");
-    }
 
-    // WASM: TODO:
-    public string ImagesRootFolder { get; }
-    public string ExifToolVer { get; set; }
-    public ICollection<Camera> Cameras => _cameras;
-    public ICollection<Lens> Lenses => _lenses;
+        _staticData = await httpClient.CustomGetFromJsonAsync<StaticData>( "/api/data/static" );
+    }
 
     public async Task<Statistics> GetStatistics()
     {
