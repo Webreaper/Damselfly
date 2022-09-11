@@ -67,19 +67,27 @@ public class ClientImageCacheService : IImageCacheService
         }
     }
 
-    private const int chunkSize = 10;
-
     private async Task PreCacheImageList(ICollection<int> imgIds)
     {
+        const int chunkSize = 10;
+
         if (imgIds.Count() <= chunkSize)
         {
             var watch = new Stopwatch("ClientGetImages");
-            var images = await GetImages(imgIds);
-            watch.Stop();
-
-            _logger.LogInformation($"Retreived {imgIds.Count} images from server in {watch.ElapsedTime}ms.");
-
-            images.ForEach(x => CacheImage(x));
+            try
+            {
+                var images = await GetImages( imgIds );
+                _logger.LogInformation( $"Retreived {imgIds.Count} images from server in {watch.ElapsedTime}ms." );
+                images.ForEach( x => CacheImage( x ) );
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( $"PreCacheImageList failed: {ex.Message}" );
+            }
+            finally
+            {
+                watch.Stop();
+            }
         }
         else
         {

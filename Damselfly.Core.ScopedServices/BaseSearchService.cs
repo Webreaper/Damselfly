@@ -42,6 +42,11 @@ public abstract class BaseSearchService
 
     public abstract Task<SearchResponse> GetQueryImagesAsync(int start, int count);
 
+    protected void ClearSearchResults()
+    {
+        _searchResults.Clear();
+    }
+
     public void NotifyStateChanged()
     {
         _logger.LogTrace($"Filter changed: {query}");

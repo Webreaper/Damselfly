@@ -74,7 +74,6 @@
                     <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
                 </div>
             }
-
         }
 
         if (!endOfImages)
@@ -103,10 +102,7 @@
     public ThumbSize CurrentThumbSize { get { return _currentThumbSize; } set { ChangeThumbSize(value); } }
     private ThumbSize _currentThumbSize;
 
-    private void StoreImage(Image image)
-    {
-        // Todo - save an image to local storage
-    }
+    public string NoResultsMessage => $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
@@ -202,6 +198,12 @@
         }
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        bool moreDataAvailable = searchService.SearchResults.Count() == imagesPerPage;
+        await AddImagesToGrid( searchService.SearchResults, moreDataAvailable );
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -233,14 +235,6 @@
         FileExporter.OnChange -= StateHasChanged;
         basketService.OnBasketChanged -= BasketChanged;
         ScrollMonitor.OnScrollPositionChanged -= SaveScrollState;
-    }
-
-    public string NoResultsMessage
-    {
-        get
-        {
-            return $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
-        }
     }
 
     protected void BasketChanged(BasketChanged changeType)
@@ -284,18 +278,7 @@
             // Now, see if we need to load any more
             var response = await searchService.GetQueryImagesAsync( gridImages.Count(), newImagesToLoad );
 
-            if( response.SearchResults.Any() )
-            {
-                var images = await imageCache.GetCachedImages(response.SearchResults);
-                logger.LogInformation($"Loading {images.Count()} more images into image grid.");
-                gridImages.AddRange(images);
-            }
-
-            // Flag the 'more' div if we loaded at least as many as we requested.
-            endOfImages = !response.MoreDataAvailable;
-
-            // Update the UI and go around again
-            _ = InvokeAsync(StateHasChanged);
+            await AddImagesToGrid( response.SearchResults, response.MoreDataAvailable );
 
             // If we've tried to load data and there isn't any more, show the toast.
             toastClass = endOfImages ? "show" : string.Empty;
@@ -304,5 +287,18 @@
 
             _ = InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task AddImagesToGrid( ICollection<int> imageIdsToAdd, bool moreDataAvaiable )
+    {
+        if( imageIdsToAdd.Any() )
+        {
+            var images = await imageCache.GetCachedImages( imageIdsToAdd );
+            logger.LogInformation( $"Loading {images.Count()} more images into image grid." );
+            gridImages.AddRange( images );
+        }
+
+        // Flag the 'more' div if we loaded at least as many as we requested.
+        endOfImages = !moreDataAvaiable;
     }
 }

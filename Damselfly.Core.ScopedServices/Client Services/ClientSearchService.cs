@@ -27,9 +27,6 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
 {
     private readonly RestClient httpClient;
     private readonly ICachedDataService _dataService;
-    private readonly List<int> _searchResults = new List<int>();
-
-    public IEnumerable<int> SearchResults { get { return _searchResults; } }
 
     public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) : base(dataService, logger)
     {
@@ -37,11 +34,6 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
         _dataService = dataService;
 
         OnSearchChanged += ClearSearchResults;
-    }
-
-    private void ClearSearchResults()
-    {
-        _searchResults.Clear();
     }
 
     public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
