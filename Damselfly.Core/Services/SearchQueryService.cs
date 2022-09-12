@@ -297,7 +297,12 @@ public class SearchQueryService
         {
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+            // WASM TODO Should make this better
             query.Folder = await db.Folders.FirstOrDefaultAsync(x => x.FolderId == request.Query.FolderId.Value );
+            query.Tag = await db.Tags.FirstOrDefaultAsync( x => x.TagId == request.Query.TagId.Value );
+            query.Person = await db.People.FirstOrDefaultAsync( x => x.PersonId == request.Query.PersonId.Value );
+            query.SimilarTo = await db.Images.FirstOrDefaultAsync( x => x.ImageId == request.Query.SimilarToImageId.Value );
         }
 
         // Load more data if we need it.
