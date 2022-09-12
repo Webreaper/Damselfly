@@ -155,6 +155,9 @@
         CreateShortcuts();
         filterRange = new DateRange(searchService.MinDate, searchService.MaxDate);
 
+        // TODO: Can we do better than do this every time the advanced Search panel opens?
+        cachedData.InitialiseData();
+
         base.OnInitialized();
     }
 
