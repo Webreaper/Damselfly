@@ -20,8 +20,6 @@ public class ClientSearchService : BaseSearchService, ISearchService
 
     public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
     {
-        _logger.LogInformation($"ImageSearch: Running search query for {first}...{first + count}");
-
         if (first < SearchResults.Count() && first + count < SearchResults.Count())
         {
             _logger.LogInformation( $"ImageSearch: => No results found." );
@@ -53,12 +51,22 @@ public class ClientSearchService : BaseSearchService, ISearchService
             Count = count
         };
 
+        _logger.LogInformation( $"ImageSearch: Calling search API query for {first}...{first + count}" );
+
         var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 
-        // WASM: should this just get added into the navigation manager directly?
-        _searchResults.AddRange(response.SearchResults);
-
-        _logger.LogInformation( $"ImageSearch: => Found {response.SearchResults.Count()} results." );
+        if ( response != null )
+        {
+            if ( response.SearchResults != null && response.SearchResults.Any() )
+            {
+                _searchResults.AddRange( response.SearchResults );
+                _logger.LogInformation( $"ImageSearch: => Found {response.SearchResults.Count()} results." );
+            }
+            else
+                _logger.LogWarning( "ImageSearch: NULL or empty search results returned from search API" );
+        }
+        else
+            _logger.LogError( "ImageSearch: NULL response returned from search API" );
 
         return response;
     }
