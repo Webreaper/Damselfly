@@ -241,9 +241,8 @@
         gridImages.Clear();
         endOfImages = false;
 
-        _ = InvokeAsync(StateHasChanged);
-
-        _ = LoadData(imagesPerPage);
+        _ = InvokeAsync( StateHasChanged );
+        _ = LoadData( imagesPerPage );
     }
 
     private void SaveScrollState(int scrollTop)
@@ -280,7 +279,7 @@
 
             IsLoading = false;
 
-            _ = InvokeAsync(StateHasChanged);
+            await InvokeAsync( StateHasChanged );
         }
     }
 
