@@ -31,6 +31,7 @@ public class UserService : IUserService, IDisposable
         _authenticationStateProvider.AuthenticationStateChanged -= AuthStateChanged;
     }
 
+    // WASM TODO: get this from the user config service, without cyclic deps?!
     public bool RolesEnabled => true;
     public int? UserId => _userId;
 

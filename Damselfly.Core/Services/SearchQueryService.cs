@@ -10,6 +10,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Core.Services;
 
@@ -19,10 +20,12 @@ public class SearchQueryService
     private readonly ImageCache _imageCache;
     private readonly IConfigService _configService;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IFolderService _folderService;
 
     public SearchQueryService(IStatusService statusService, IServiceScopeFactory scopeFactory, ImageCache cache,
-                             IConfigService configService)
+                             IConfigService configService, IFolderService folderService )
     {
+        _folderService = folderService;
         _scopeFactory = scopeFactory;
         _configService = configService;
         _statusService = statusService;
@@ -281,10 +284,24 @@ public class SearchQueryService
         return response;
     }
 
-    public async Task<SearchResponse> GetQueryImagesAsync(SearchRequest request)
+    public async Task<SearchResponse> GetQueryImagesAsync(SearchRequest request )
     {
+
+        var query = new SearchQuery();
+        ObjectUtils.CopyPropertiesTo( request.Query, query );
+
+        if ( request.Query.SimilarToImageId.HasValue )
+            query.SimilarTo = await _imageCache.GetCachedImage( request.Query.SimilarToImageId.Value );
+
+        if ( request.Query.FolderId.HasValue )
+        {
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+            query.Folder = await db.Folders.FirstOrDefaultAsync(x => x.FolderId == request.Query.FolderId.Value );
+        }
+
         // Load more data if we need it.
-        return await LoadMoreData(request.Query, request.First, request.Count);
+        return await LoadMoreData( query, request.First, request.Count);
     }
 }
 

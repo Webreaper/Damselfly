@@ -8,6 +8,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 public interface IFolderService
 {
     Task<ICollection<Folder>> GetFolders();
+
     event Action OnChange;
 }
 

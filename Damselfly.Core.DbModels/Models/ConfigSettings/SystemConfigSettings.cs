@@ -1,10 +1,6 @@
-﻿using System;
-using Damselfly.Core.Constants;
+﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Utils;
-using Microsoft.Extensions.Logging;
-using Serilog.Events;
 
 namespace Damselfly.Core.DbModels.Models;
 

@@ -58,12 +58,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
             return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
         }
 
-        var request = new SearchRequest
-        {
-            Query = this.Query,
-            First = first,
-            Count = count
-        };
+        var request = new SearchRequest( Query, first, count );
 
         Logging.Log( $"Executing search query for {request}" );
 

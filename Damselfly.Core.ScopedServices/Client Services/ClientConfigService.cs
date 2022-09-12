@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Xml.Linq;
-using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels;
-using Damselfly.Core.DbModels.Models;
+﻿using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
@@ -23,7 +14,6 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
     private readonly NotificationsService _notifications;
     private readonly RestClient httpClient;
     private readonly AuthenticationStateProvider _authProvider;
-    private readonly IThemeService _themeService;
     private int? _userId;
 
     public ClientConfigService( RestClient restClient, AuthenticationStateProvider authProvider,
@@ -96,13 +86,13 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         return allSettings;
     }
 
-    public async Task<SystemConfigSettings> GetSystemSettings ()
+    public async Task<SystemConfigSettings> GetSystemSettings()
     {
         return await httpClient.CustomGetFromJsonAsync<SystemConfigSettings>( $"/api/config/settings" );
     }
 
     public async Task SaveSystemSettings ( SystemConfigSettings settings )
     {
-        await httpClient.CustomPostAsJsonAsync<SystemConfigSettings>( $"/api/config/settings", settings );
+        await httpClient.CustomPostAsJsonAsync( $"/api/config/settings", settings );
     }
 }

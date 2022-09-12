@@ -46,12 +46,7 @@ public class ClientSearchService : BaseSearchService, ISearchService
                 return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
             }
 
-            var request = new SearchRequest
-            {
-                Query = this.Query,
-                First = first,
-                Count = count
-            };
+            var request = new SearchRequest( Query, first, count );
 
             _logger.LogInformation( $"ImageSearch: Calling search API query for {request}" );
 

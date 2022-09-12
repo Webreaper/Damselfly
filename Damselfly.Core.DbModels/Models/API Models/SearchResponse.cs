@@ -12,7 +12,16 @@ public class SearchResponse
 
 public class SearchRequest
 {
-    public SearchQuery Query { get; set; }
+    public SearchRequest() { }
+
+    public SearchRequest( SearchQuery query, int first, int count )
+    {
+        Query = SearchQueryDTO.CreateFrom( query );
+        First = first;
+        Count = count;
+    }
+
+    public SearchQueryDTO Query { get; set; }
     public int First { get; set; }
     public int Count { get; set; }
 
