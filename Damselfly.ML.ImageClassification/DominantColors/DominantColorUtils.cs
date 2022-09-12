@@ -46,40 +46,6 @@ namespace Damselfly.ML.ImageClassification.DominantColors
         }
 
         /// <summary>
-        /// Calculate average RGB color for given bitmap
-        /// </summary>
-        /// <param name="bmp">The bitmap to calculate the average color for.</param>
-        /// <returns>Average color</returns>
-        internal static unsafe Color GetAverageRGBColor(Bitmap bmp)
-        {
-            int totalRed = 0;
-            int totalGreen = 0;
-            int totalBlue = 0;
-
-            BitmapData bData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadWrite, bmp.PixelFormat);
-            byte bitsPerPixel = GetBitsPerPixel(bData.PixelFormat);
-            byte* scan0 = (byte*)bData.Scan0.ToPointer();
-            for (int i = 0; i < bData.Height; ++i)
-            {
-                for (int j = 0; j < bData.Width; ++j)
-                {
-                    byte* data = scan0 + i * bData.Stride + j * bitsPerPixel / 8;
-                    Color clr = Color.FromArgb(data[3], data[2], data[1], data[0]);
-                    totalRed += clr.R;
-                    totalGreen += clr.G;
-                    totalBlue += clr.B;
-                }
-            }
-            bmp.UnlockBits(bData);
-
-            int totalPixels = bData.Width * bData.Height;
-            byte avgRed = (byte)(totalRed / totalPixels);
-            byte avgGreen = (byte)(totalGreen / totalPixels);
-            byte avgBlue = (byte)(totalBlue / totalPixels);
-            return Color.FromArgb(avgRed, avgGreen, avgBlue);
-        }
-
-        /// <summary>
         /// Correct out of bound hue index
         /// </summary>
         /// <param name="hue">hue index</param>

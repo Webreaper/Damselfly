@@ -1,32 +1,70 @@
 ﻿using System;
-using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
 using Damselfly.ML.ImageClassification.DominantColors;
+using SixLabors.ImageSharp;
+using Humanizer;
 using ImageClassification.ModelScorer;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Processors.Quantization;
+using Tensorflow.Keras.Layers;
+using System.Drawing.Imaging;
 
 namespace Damselfly.ML.ImageClassification
 {
     public class ImageClassifier
     {
-        public Color DetectDominantColour(Bitmap image)
+        public System.Drawing.Color DetectDominantColour(string inPath)
         {
-            var calculator = new DominantHueColorCalculator();
+            using var image = Image.Load<Rgb24>( inPath );
 
-            var color = calculator.CalculateDominantColor(image);
+            image.Mutate(
+                x => x
+                // Scale the image down preserving the aspect ratio. This will speed up quantization.
+                // We use nearest neighbor as it will be the fastest approach.
+                .Resize( new ResizeOptions() { Sampler = KnownResamplers.NearestNeighbor, Size = new Size( 100, 0 ) } )
 
-            return color;
+                // Reduce the color palette to 1 color without dithering.
+                .Quantize( new OctreeQuantizer( new QuantizerOptions { Dither = null, MaxColors = 1 } ) ) );
+
+            Rgb24 dominant = image[0, 0];
+
+            return System.Drawing.Color.FromArgb( dominant.R, dominant.G, dominant.B );
         }
 
-        public Color DetectAverageColor(Bitmap image)
+        public System.Drawing.Color DetectAverageColor( string inPath )
         {
-            var calculator = new DominantHueColorCalculator();
+            int totalRed = 0;
+            int totalGreen = 0;
+            int totalBlue = 0;
 
-            var average = DominantColorUtils.GetAverageRGBColor(image);
+            using var image = Image.Load<Rgb24>( inPath );
 
-            return average;
+            image.Mutate( x => x.Resize( new ResizeOptions { Sampler = KnownResamplers.NearestNeighbor, Size = new Size( 100, 0 ) } ) );
+
+            image.ProcessPixelRows( pixelAccessor =>
+            {
+                for( var y = 0; y < pixelAccessor.Height; y++ )
+                {
+                    var row = pixelAccessor.GetRowSpan( y );
+
+                    for( var x = 0; x < row.Length; x++ )
+                    {
+                        totalRed += row[x].R;
+                        totalGreen += row[x].G;
+                        totalBlue += row[x].B;
+                    }
+                }
+            } );
+
+            int totalPixels = image.Width * image.Height;
+            byte avgRed = (byte)( totalRed / totalPixels );
+            byte avgGreen = (byte)( totalGreen / totalPixels );
+            byte avgBlue = (byte)( totalBlue / totalPixels );
+            return System.Drawing.Color.FromArgb( avgRed, avgGreen, avgBlue );
         }
 
         public ImageDetectResult DetectObjects()

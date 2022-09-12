@@ -277,28 +277,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         return false;
     }
 
-#pragma warning disable 1416
-    private System.Drawing.Bitmap SafeLoadBitmap(string fileName)
-    {
-        System.Drawing.Bitmap bmp = null;
-        // Bitmap loading required libgdiplus which isn't supported on OSX
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            try
-            {
-                // Load the bitmap once
-                bmp = new System.Drawing.Bitmap(fileName);
-            }
-            catch (Exception ex)
-            {
-                Logging.LogWarning($"Error loading bitmap for {fileName}: {ex}");
-            }
-        }
-
-        return bmp;
-    }
-#pragma warning restore 1416
-
     /// <summary>
     /// Detect objects in the image.
     /// </summary>
@@ -332,14 +310,12 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
                 return;
             }
 
-            var bitmap = SafeLoadBitmap(medThumb.FullName);
-
-            if (bitmap != null && _imageClassifier != null && enableAIProcessing)
+            if (_imageClassifier != null && enableAIProcessing)
             {
                 var colorWatch = new Stopwatch("DetectObjects");
 
-                var dominant = _imageClassifier.DetectDominantColour(bitmap);
-                var average = _imageClassifier.DetectAverageColor(bitmap);
+                var dominant = _imageClassifier.DetectDominantColour(medThumb.FullName);
+                var average = _imageClassifier.DetectAverageColor(medThumb.FullName);
 
                 colorWatch.Stop();
 
@@ -350,19 +326,19 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
             }
 
             // Next, look for faces. We need to determine if we:
-            //  a) Use only local (Accord.Net) detection
+            //  a) Use only local (EMGU) detection
             //  b) Use local detection, and then if we find a face, or a person object, submit to Azure
             //  c) Always submit every image to Azure.
             // This is a user config.
             bool useAzureDetection = false;
 
             // For the object detector, we need a successfully loaded bitmap
-            if (bitmap != null && enableAIProcessing)
+            if (enableAIProcessing)
             {
                 var objwatch = new Stopwatch("DetectObjects");
 
                 // First, look for Objects
-                var objects = await _objectDetector.DetectObjects(bitmap);
+                var objects = await _objectDetector.DetectObjects( medThumb.FullName );
 
                 objwatch.Stop();
 

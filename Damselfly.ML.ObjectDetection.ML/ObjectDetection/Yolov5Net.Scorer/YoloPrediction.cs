@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿
+using SixLabors.ImageSharp;
 
 namespace Yolov5Net.Scorer
 {

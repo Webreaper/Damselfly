@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
@@ -8,6 +7,8 @@ using Damselfly.Shared.Utils;
 using Damselfly.Core.Utils.ML;
 using Yolov5Net.Scorer;
 using Yolov5Net.Scorer.Models;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
 
 namespace Damselfly.ML.ObjectDetection
 {
@@ -39,7 +40,7 @@ namespace Damselfly.ML.ObjectDetection
         /// </summary>
         /// <param name="imageFile"></param>
         /// <returns></returns>
-        public async Task<IList<ImageDetectResult>> DetectObjects(Bitmap image)
+        public async Task<IList<ImageDetectResult>> DetectObjects(string fullPath)
         {
             try
             {
@@ -47,20 +48,19 @@ namespace Damselfly.ML.ObjectDetection
                 if (scorer == null)
                     return new List<ImageDetectResult>();
 
-                var result = await Task.Run(() =>
-                {
-                    Stopwatch watch = new Stopwatch("DetectObjects");
+                Stopwatch watch = new Stopwatch("DetectObjects");
 
-                    var predictions = scorer.Predict(image);
+                using var image = Image.Load<Rgb24>( fullPath );
 
-                    watch.Stop();
+                var predictions = scorer.Predict(image );
 
-                    return predictions.Where(x => x.Score > predictionThreshold)
-                                      .Select(x => MakeResult(x))
-                                      .ToList();
-                });
+                watch.Stop();
 
-                return result;
+                var objectsFound = predictions.Where(x => x.Score > predictionThreshold)
+                                    .Select(x => MakeResult(x))
+                                    .ToList();
+
+                return objectsFound;
             }
             catch (Exception ex)
             {
@@ -74,7 +74,7 @@ namespace Damselfly.ML.ObjectDetection
         {
             return new ImageDetectResult
             {
-                Rect = new Rectangle
+                Rect = new System.Drawing.Rectangle
                 {
                     X = (int)prediction.Rectangle.X,
                     Y = (int)prediction.Rectangle.Y,
@@ -89,6 +89,7 @@ namespace Damselfly.ML.ObjectDetection
 
         private void DrawRectangles(Image img, List<YoloPrediction> predictions)
         {
+            /*
             using var graphics = Graphics.FromImage(img);
 
             foreach (var prediction in predictions) // iterate each prediction to draw results
@@ -107,6 +108,7 @@ namespace Damselfly.ML.ObjectDetection
                     new Font("Consolas", 16, GraphicsUnit.Pixel), new SolidBrush(prediction.Label.Color),
                     new PointF(x, y));
             }
+            */
         }
     }
 }
