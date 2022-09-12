@@ -6,6 +6,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Web.Components;
 
@@ -16,10 +17,13 @@ namespace Damselfly.Web.Components;
 public class ImageGridBase : ComponentBase
 {
     [Inject]
-    protected SelectionService selectionService { get; set; }
+    protected SelectionService selectionService { get; init; }
 
     [Inject]
-    private ILogger<ImageGridBase> _logger { get; set; }
+    protected IImageCacheService cacheService { get; init; }
+
+    [Inject]
+    private ILogger<ImageGridBase> _logger { get; init; }
 
     public class SelectionInfo
     {
@@ -43,7 +47,7 @@ public class ImageGridBase : ComponentBase
     /// </summary>
     /// <param name="e"></param>
     /// <param name="image"></param>
-    protected void ToggleSelected(MouseEventArgs e, SelectionInfo selectionInfo)
+    protected async Task ToggleSelected(MouseEventArgs e, SelectionInfo selectionInfo)
     {
         var watch = new Stopwatch("ToggleSelection");
         if (e.ShiftKey && prevSelection != null)
@@ -61,8 +65,9 @@ public class ImageGridBase : ComponentBase
 
             _logger.LogTrace($"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");
 
-            var selectedImages = gridImages.Skip(first).Take(last - (first - 1)).ToList();
-            selectionService.SelectImages(selectedImages);
+            var selectedImages = gridImages.Skip(first).Take(last - (first - 1)).Select( x => x.ImageId ).ToList();
+            var images = await cacheService.GetCachedImages( selectedImages );
+            selectionService.SelectImages( images );
         }
         else
         {

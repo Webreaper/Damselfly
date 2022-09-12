@@ -19,14 +19,7 @@
     @if (!gridImages.Any())
     {
         <div class="damselfly-searchmsg">
-            @if (endOfImages)
-            {
-                <span>@NoResultsMessage</span>
-            }
-            else
-            {
-                <span> Loading images...</span>
-            }
+            <span>@ResultsMessage</span>
         </div>
     }
     else
@@ -102,7 +95,7 @@
     public ThumbSize CurrentThumbSize { get { return _currentThumbSize; } set { ChangeThumbSize(value); } }
     private ThumbSize _currentThumbSize;
 
-    public string NoResultsMessage => $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
+    public string ResultsMessage { get; set; }
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
@@ -293,9 +286,17 @@
     {
         if( imageIdsToAdd.Any() )
         {
+            ResultsMessage = $"Loading {imageIdsToAdd.Count()} images...";
+            await InvokeAsync( StateHasChanged );
+
             var images = await imageCache.GetCachedImages( imageIdsToAdd );
             logger.LogInformation( $"Loading {images.Count()} more images into image grid." );
             gridImages.AddRange( images );
+        }
+        else
+        {
+            ResultsMessage = $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
+            await InvokeAsync( StateHasChanged );
         }
 
         // Flag the 'more' div if we loaded at least as many as we requested.

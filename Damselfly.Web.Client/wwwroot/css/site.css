@@ -767,6 +767,7 @@ f
     justify-content: center;
     align-content: center;
     align-items: center;
+    margin-top: 25vh; 
 }
 
 .processing-icon {

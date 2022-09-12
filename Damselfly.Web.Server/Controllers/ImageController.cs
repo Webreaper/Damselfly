@@ -121,13 +121,7 @@ public class ImageController : Controller
                         var conversionResult = await thumbService.ConvertFile(image, false, size);
 
                         if (conversionResult.ThumbsGenerated)
-                        {
                             gotThumb = true;
-
-                            // TODO: Do we do this here? If we don't gen all the thumbs, it'll end up
-                            // with stuff like AI not working later.
-                            // await UpdateThumbStatus( image, conversionResult, db );
-                        }
                     }
 
                     if (cancel.IsCancellationRequested)

@@ -1,17 +1,11 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Serilog.Core;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -120,6 +114,7 @@ public class ClientImageCacheService : IImageCacheService
             // First pre-cache them in batch
             // await PreCacheImageList(imgIds);
 
+            // This must be done in-order, otherwise we'll end up with a mess
             foreach (var imgId in imgIds)
             {
                 var image = await LoadAndCacheImage(imgId);
