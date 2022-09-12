@@ -49,7 +49,7 @@ public abstract class BaseSearchService
 
     public void NotifyStateChanged()
     {
-        _logger.LogTrace($"Filter changed: {query}");
+        _logger.LogInformation($"ImageSearch: Filter changed: {query}");
 
         OnSearchChanged?.Invoke();
     }
@@ -103,7 +103,8 @@ public abstract class BaseSearchService
     {
         Task.Run(() =>
         {
-            SearchResults.Clear();
+            _logger.LogInformation( $"ImageSearch: Search query changed: {this.SearchBreadcrumbs}" );
+            ClearSearchResults();
             NotifyStateChanged();
         });
     }

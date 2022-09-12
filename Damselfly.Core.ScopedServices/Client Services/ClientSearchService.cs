@@ -1,19 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Damselfly.Core.Models;
-using Damselfly.Core.Utils;
-using Microsoft.EntityFrameworkCore;
-using Humanizer;
-using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels;
-using static System.Net.WebRequestMethods;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Net.Http.Json;
-using System.Net.Http;
+﻿using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
-using System.Text.Json;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Microsoft.Extensions.Logging;
 
@@ -23,26 +9,22 @@ namespace Damselfly.Core.ScopedServices;
 /// The client search service is used in WASM. It calls the server-side API to query
 /// search service there. 
 /// </summary>
-public class ClientSearchService : BaseSearchService, ISearchService, IDisposable
+public class ClientSearchService : BaseSearchService, ISearchService
 {
     private readonly RestClient httpClient;
-    private readonly ICachedDataService _dataService;
 
     public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) : base(dataService, logger)
     {
         httpClient = client;
-        _dataService = dataService;
-
-        OnSearchChanged += ClearSearchResults;
     }
 
     public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
     {
-        _logger.LogInformation($"Running search query for {first}...{first + count}");
+        _logger.LogInformation($"ImageSearch: Running search query for {first}...{first + count}");
 
         if (first < SearchResults.Count() && first + count < SearchResults.Count())
         {
-            _logger.LogInformation( $" - No results found." );
+            _logger.LogInformation( $"ImageSearch: => No results found." );
             // Data already loaded. Nothing to do.
             return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
         }
@@ -57,7 +39,7 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
 
         if (count == 0)
         {
-            _logger.LogInformation( $" - No more images needed." );
+            _logger.LogInformation( $"ImageSearch: => No more images needed." );
 
             // If we have exactly the right number of results,
             // assume there's more to come
@@ -76,13 +58,8 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
         // WASM: should this just get added into the navigation manager directly?
         _searchResults.AddRange(response.SearchResults);
 
-        _logger.LogInformation( $" - Found {response.SearchResults.Count()} results." );
+        _logger.LogInformation( $"ImageSearch: => Found {response.SearchResults.Count()} results." );
 
         return response;
-    }
-
-    public void Dispose()
-    {
-        OnSearchChanged -= ClearSearchResults;
     }
 }

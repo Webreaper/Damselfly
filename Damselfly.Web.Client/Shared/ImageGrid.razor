@@ -268,6 +268,8 @@
 
             ChangeThumbSize(CurrentThumbSize);
 
+            logger.LogInformation( "ImageSearch: Calling LoadData..." );
+
             // Now, see if we need to load any more
             var response = await searchService.GetQueryImagesAsync( gridImages.Count(), newImagesToLoad );
 
@@ -290,12 +292,12 @@
             await InvokeAsync( StateHasChanged );
 
             var images = await imageCache.GetCachedImages( imageIdsToAdd );
-            logger.LogInformation( $"Loading {images.Count()} more images into image grid." );
+            logger.LogInformation( $"ImageSearch: Loading {images.Count()} more images into image grid." );
             gridImages.AddRange( images );
         }
         else
         {
-            logger.LogInformation( $"No images to load into the grid." );
+            logger.LogInformation( $"ImageSearch: No images to load into the grid." );
             ResultsMessage = $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
             await InvokeAsync( StateHasChanged );
         }
