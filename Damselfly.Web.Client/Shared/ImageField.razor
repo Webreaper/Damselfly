@@ -1,73 +1,36 @@
 ﻿
-@if ( Editable )
+@inject IUserService userService
+
+@if( ! string.IsNullOrEmpty( FieldValue ) || (Editable && allowedToEdit) )
 {
-    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-        <Authorized>
-            <div class="imagefield">
-                <label class="imagefield-label" title="@Tooltip">
-                    @FieldName:
-                    @if (string.IsNullOrEmpty(Href))
-                    {
-                        @if (editing)
-                        {
-
-                            <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
-                        }
-                        else
-                        {
-                            <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
-                            <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField" />
-                        }
-                    }
-                    else
-                    {
-                        <NavLink href="@Href">@FieldValue</NavLink>
-                    }
-
-                    @ChildContent
-
-                </label>
-            </div>
-        </Authorized>
-        <NotAuthorized>
-            @if (!string.IsNullOrEmpty(FieldValue))
+    <div class="imagefield">
+        <label class="imagefield-label" title="@Tooltip">
+            @FieldName:
+            @if (string.IsNullOrEmpty(Href))
             {
-                <div class="imagefield">
-                    <label class="imagefield-label" title="@Tooltip">
-                        @FieldName:
-                        @if (string.IsNullOrEmpty(Href))
-                        {
-                            <span class="imagefield-val">@FieldValue</span>
-                        }
-                        else
-                        {
-                            <NavLink href="@Href">@FieldValue</NavLink>
-                        }
-                    </label>
-                </div>
-            }
-        </NotAuthorized>
-    </AuthorizeView>
-}
-else
-{
-    @if (!string.IsNullOrEmpty(FieldValue))
-    {
-        <div class="imagefield">
-            <label class="imagefield-label" title="@Tooltip">
-                @FieldName:
-                @if (string.IsNullOrEmpty(Href))
+                @if (editing)
                 {
-                    <span class="imagefield-val">@FieldValue</span>
+
+                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
                 }
                 else
                 {
-                    <NavLink href="@Href">@FieldValue</NavLink>
+                    <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
+                    @if (allowedToEdit)
+                    { 
+                        <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField" />
+                    }
                 }
-            </label>
-        </div>
-    }
+            }
+            else
+            {
+                <NavLink href="@Href">@FieldValue</NavLink>
+            }
 
+            @ChildContent
+
+        </label>
+    </div>
 }
 
 @code {
@@ -92,6 +55,7 @@ else
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 
+    private bool allowedToEdit = false;
     private bool editing = false;
     private ElementReference inputField;
     private string Tooltip => Title?.Trim();
@@ -116,10 +80,12 @@ else
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrEmpty(Title))
             Title = FieldValue;
+
+        allowedToEdit = await userService.PolicyApplies( PolicyDefinitions.s_IsEditor );
 
         base.OnInitialized();
     }

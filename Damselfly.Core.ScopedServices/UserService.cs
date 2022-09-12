@@ -1,17 +1,7 @@
-﻿using System;
-using Damselfly.Core.DbModels;
-using System.Net.Http;
-using Damselfly.Core.Models;
-using System.Net.Http.Json;
-using Damselfly.Core.Constants;
-using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.ScopedServices.ClientServices;
-using Microsoft.AspNetCore.Identity;
+﻿using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
 using Damselfly.Core.Utils;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -22,13 +12,13 @@ public class UserService : IUserService, IDisposable
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly IAuthorizationService _authService;
-    private bool _initialised = false;
     private int? _userId = null;
     public event Action<int?> OnUserIdChanged;
 
     public UserService(AuthenticationStateProvider authenticationStateProvider,
                          IAuthorizationService authService)
     {
+        _authService = authService;
         _authenticationStateProvider = authenticationStateProvider;
 
         _authenticationStateProvider.AuthenticationStateChanged += AuthStateChanged;
@@ -82,9 +72,9 @@ public class UserService : IUserService, IDisposable
 
         var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
 
-        if (_authService != null)
+        if ( _authService != null )
         {
-            var result = await _authService.AuthorizeAsync(authState.User, policy);
+            var result = await _authService.AuthorizeAsync( authState.User, policy );
 
             return result.Succeeded;
         }
