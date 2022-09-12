@@ -144,7 +144,7 @@ public class ClientImageCacheService : IImageCacheService
     private async Task<List<Image>> GetImages(ICollection<int> imgIds)
     {
         var req = new ImageRequest { ImageIds = imgIds.ToList() };
-        ImageResponse response = await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images", req);
+        ImageResponse response = await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
         return response.Images;
     }
 

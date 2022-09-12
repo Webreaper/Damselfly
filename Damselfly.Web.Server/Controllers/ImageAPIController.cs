@@ -50,7 +50,7 @@ public class ImageAPIController : ControllerBase
         }
     }
 
-    [HttpPost("/api/images")]
+    [HttpPost("/api/images/batch")]
     public async Task<ImageResponse> GetImages(ImageRequest req)
     {
         try
