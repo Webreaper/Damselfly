@@ -25,10 +25,18 @@ public class ImageSearchController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("/api/search")]
-    public async Task<SearchResponse> SubmitSearch(SearchRequest request)
+    [HttpPost( "/api/search" )]
+    public async Task<SearchResponse> SubmitSearch( SearchRequest request )
     {
-        return await _searchService.GetQueryImagesAsync(request);
+        try
+        {
+            return await _searchService.GetQueryImagesAsync( request );
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError( $"Exception during search query: {ex}" );
+            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0]  };
+        }
     }
 }
 

@@ -20,54 +20,63 @@ public class ClientSearchService : BaseSearchService, ISearchService
 
     public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
     {
-        if (first < SearchResults.Count() && first + count < SearchResults.Count())
+        try
         {
-            _logger.LogInformation( $"ImageSearch: => No results found." );
-            // Data already loaded. Nothing to do.
-            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
-        }
-
-        // Calculate how many results we have already
-        if (SearchResults.Count() >= first)
-        {
-            int firstOffset = SearchResults.Count() - first;
-            first = SearchResults.Count();
-            count -= firstOffset;
-        }
-
-        if (count == 0)
-        {
-            _logger.LogInformation( $"ImageSearch: => No more images needed." );
-
-            // If we have exactly the right number of results,
-            // assume there's more to come
-            return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
-        }
-
-        var request = new SearchRequest
-        {
-            Query = this.Query,
-            First = first,
-            Count = count
-        };
-
-        _logger.LogInformation( $"ImageSearch: Calling search API query for {request}" );
-
-        var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
-
-        if ( response != null )
-        {
-            if ( response.SearchResults != null && response.SearchResults.Any() )
+            if ( first < SearchResults.Count() && first + count < SearchResults.Count() )
             {
-                _searchResults.AddRange( response.SearchResults );
-                _logger.LogInformation( $"ImageSearch: => Found {response.SearchResults.Count()} results." );
+                _logger.LogInformation( $"ImageSearch: => No results found." );
+                // Data already loaded. Nothing to do.
+                return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
+            }
+
+            // Calculate how many results we have already
+            if ( SearchResults.Count() >= first )
+            {
+                int firstOffset = SearchResults.Count() - first;
+                first = SearchResults.Count();
+                count -= firstOffset;
+            }
+
+            if ( count == 0 )
+            {
+                _logger.LogInformation( $"ImageSearch: => No more images needed." );
+
+                // If we have exactly the right number of results,
+                // assume there's more to come
+                return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
+            }
+
+            var request = new SearchRequest
+            {
+                Query = this.Query,
+                First = first,
+                Count = count
+            };
+
+            _logger.LogInformation( $"ImageSearch: Calling search API query for {request}" );
+
+            var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>( "/api/search", request );
+
+            if ( response != null )
+            {
+                if ( response.SearchResults != null && response.SearchResults.Any() )
+                {
+                    _searchResults.AddRange( response.SearchResults );
+                    _logger.LogInformation( $"ImageSearch: => Found {response.SearchResults.Count()} results." );
+                }
+                else
+                    _logger.LogWarning( "ImageSearch: NULL or empty search results returned from search API" );
+
+                return response;
             }
             else
-                _logger.LogWarning( "ImageSearch: NULL or empty search results returned from search API" );
+                _logger.LogError( "ImageSearch: NULL response returned from search API" );
         }
-        else
-            _logger.LogError( "ImageSearch: NULL response returned from search API" );
+        catch ( Exception ex )
+        {
+            _logger.LogError( $"Exception during search query API call: {ex}" );
+        }
 
-        return response;
+        return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
     }
 }

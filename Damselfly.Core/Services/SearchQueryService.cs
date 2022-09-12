@@ -1,15 +1,11 @@
 ﻿using System;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Constants;
-using static Damselfly.Core.Models.SearchQuery;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.DbModels;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -22,17 +18,15 @@ public class SearchQueryService
     private readonly IStatusService _statusService;
     private readonly ImageCache _imageCache;
     private readonly IConfigService _configService;
-    private readonly MetaDataService _metadataService;
     private readonly IServiceScopeFactory _scopeFactory;
 
     public SearchQueryService(IStatusService statusService, IServiceScopeFactory scopeFactory, ImageCache cache,
-                            MetaDataService metadataService, IConfigService configService)
+                             IConfigService configService)
     {
         _scopeFactory = scopeFactory;
         _configService = configService;
         _statusService = statusService;
         _imageCache = cache;
-        _metadataService = metadataService;
     }
 
     /// <summary>

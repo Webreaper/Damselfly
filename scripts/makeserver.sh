@@ -30,11 +30,11 @@ zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
 project='Damselfly.Web.Server'
 outputdir="$project/bin/Release/net${dotnetversion}/${runtime}/publish"
 
-#  --self-contained true /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+#  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
 echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
-dotnet publish $project -r $runtime -f net${dotnetversion} -c Release /p:Version=$version 
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."
