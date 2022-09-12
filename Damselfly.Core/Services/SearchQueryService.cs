@@ -293,17 +293,18 @@ public class SearchQueryService
         if ( request.Query.SimilarToImageId.HasValue )
             query.SimilarTo = await _imageCache.GetCachedImage( request.Query.SimilarToImageId.Value );
 
-        if ( request.Query.FolderId.HasValue )
-        {
-            using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            // WASM TODO Should make this better
+        // WASM TODO Should make this better
+        if ( request.Query.FolderId.HasValue )
             query.Folder = await db.Folders.FirstOrDefaultAsync(x => x.FolderId == request.Query.FolderId.Value );
+        if ( request.Query.TagId.HasValue )
             query.Tag = await db.Tags.FirstOrDefaultAsync( x => x.TagId == request.Query.TagId.Value );
+        if ( request.Query.PersonId.HasValue )
             query.Person = await db.People.FirstOrDefaultAsync( x => x.PersonId == request.Query.PersonId.Value );
+        if ( request.Query.SimilarToImageId.HasValue )
             query.SimilarTo = await db.Images.FirstOrDefaultAsync( x => x.ImageId == request.Query.SimilarToImageId.Value );
-        }
 
         // Load more data if we need it.
         return await LoadMoreData( query, request.First, request.Count);
