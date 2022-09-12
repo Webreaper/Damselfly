@@ -46,8 +46,9 @@ public class LoginController : ControllerBase
         var roles = await _signInManager.UserManager.GetRolesAsync(user);
         var claims = new List<Claim>();
 
-        claims.Add(new Claim(ClaimTypes.Name, login.Email));
-        claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ) );
+        claims.Add( new Claim( ClaimTypes.NameIdentifier, user.Id.ToString() ) );
+        claims.Add(new Claim(ClaimTypes.Email, login.Email));
+        claims.Add( new Claim( ClaimTypes.Name, user.UserName ) );
 
         foreach ( var role in roles)
         {
