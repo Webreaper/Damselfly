@@ -38,10 +38,11 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
 
     public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
     {
-        _logger.LogTrace($"Running search query for {first}...{first + count}");
+        _logger.LogInformation($"Running search query for {first}...{first + count}");
 
         if (first < SearchResults.Count() && first + count < SearchResults.Count())
         {
+            _logger.LogInformation( $" - No results found." );
             // Data already loaded. Nothing to do.
             return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
         }
@@ -56,6 +57,8 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
 
         if (count == 0)
         {
+            _logger.LogInformation( $" - No more images needed." );
+
             // If we have exactly the right number of results,
             // assume there's more to come
             return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
@@ -72,6 +75,8 @@ public class ClientSearchService : BaseSearchService, ISearchService, IDisposabl
 
         // WASM: should this just get added into the navigation manager directly?
         _searchResults.AddRange(response.SearchResults);
+
+        _logger.LogInformation( $" - Found {response.SearchResults.Count()} results." );
 
         return response;
     }

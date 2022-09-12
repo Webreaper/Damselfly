@@ -295,6 +295,7 @@
         }
         else
         {
+            logger.LogInformation( $"No images to load into the grid." );
             ResultsMessage = $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
             await InvokeAsync( StateHasChanged );
         }
