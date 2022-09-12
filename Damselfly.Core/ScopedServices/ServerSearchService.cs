@@ -65,6 +65,8 @@ public class ServerSearchService : BaseSearchService, ISearchService
             Count = count
         };
 
+        Logging.Log( $"Executing search query for {request}" );
+
         var response = await _queryService.GetQueryImagesAsync(request);
 
         _searchResults.AddRange(response.SearchResults);

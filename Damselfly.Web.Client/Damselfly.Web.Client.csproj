@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-    <RunAOTCompilation>true</RunAOTCompilation>
+    <RunAOTCompilation>false</RunAOTCompilation>
     <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 

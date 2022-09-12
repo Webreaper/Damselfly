@@ -51,7 +51,7 @@ public class ClientSearchService : BaseSearchService, ISearchService
             Count = count
         };
 
-        _logger.LogInformation( $"ImageSearch: Calling search API query for {first}...{first + count}" );
+        _logger.LogInformation( $"ImageSearch: Calling search API query for {request}" );
 
         var response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 

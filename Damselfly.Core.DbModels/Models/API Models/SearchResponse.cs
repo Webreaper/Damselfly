@@ -15,6 +15,11 @@ public class SearchRequest
     public SearchQuery Query { get; set; }
     public int First { get; set; }
     public int Count { get; set; }
+
+    public override string ToString()
+    {
+        return $"Query: [{First}..{First+Count}] => {Query}";
+    }
 }
 
 public class ImageRequest
