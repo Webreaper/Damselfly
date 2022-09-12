@@ -13,6 +13,12 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class UserFolderService : IDisposable, IUserFolderService
 {
+    private class FolderState
+    {
+        public Folder Folder { get; set; }
+        public bool Expanded { get; set; }
+    }
+
     private readonly IFolderService _folderService;
     private readonly ISearchService _searchService;
     private readonly IConfigService _configService;
@@ -20,9 +26,9 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public event Action OnFoldersChanged;
     private ICollection<Folder> folderItems;
-    private IDictionary<int, bool> expandedSate;
+    private IDictionary<int, FolderState> folderStates;
 
-    public UserFolderService(IFolderService folderService, ISearchService searchService, IConfigService configService, NotificationsService notifications)
+    public UserFolderService( IFolderService folderService, ISearchService searchService, IConfigService configService, NotificationsService notifications )
     {
         _folderService = folderService;
         _searchService = searchService;
@@ -31,7 +37,7 @@ public class UserFolderService : IDisposable, IUserFolderService
 
         _folderService.OnChange += OnFolderChanged;
 
-        _notifications.SubscribeToNotification(NotificationType.FoldersChanged, OnFolderChanged);
+        _notifications.SubscribeToNotification( NotificationType.FoldersChanged, OnFolderChanged );
     }
 
     public void Dispose()
@@ -54,17 +60,17 @@ public class UserFolderService : IDisposable, IUserFolderService
     /// <param name="folder"></param>
     /// <param name="sortFunc"></param>
     /// <returns></returns>
-    public IEnumerable<Folder> SortedChildren<T>(Folder f, Func<Folder, T> sortFunc, bool descending = true)
+    public IEnumerable<Folder> SortedChildren<T>( Folder f, Func<Folder, T> sortFunc, bool descending = true )
     {
-        IEnumerable<Folder> sortedChildren = descending ? f.Children.OrderBy(sortFunc) : f.Children.OrderByDescending(sortFunc);
+        IEnumerable<Folder> sortedChildren = descending ? f.Children.OrderBy( sortFunc ) : f.Children.OrderByDescending( sortFunc );
 
-        return new[] { f }.Concat(sortedChildren.SelectMany(x => SortedChildren(x, sortFunc, descending)));
+        return new[] { f }.Concat( sortedChildren.SelectMany( x => SortedChildren( x, sortFunc, descending ) ) );
     }
 
-    public bool IsExpanded(Folder folder)
+    public bool IsExpanded( Folder folder )
     {
-        if (expandedSate.TryGetValue(folder.FolderId, out var expanded))
-            return expanded;
+        if( folderStates.TryGetValue( folder.FolderId, out var folderState ) )
+            return folderState.Expanded;
 
         return false;
     }
@@ -75,64 +81,72 @@ public class UserFolderService : IDisposable, IUserFolderService
     /// </summary>
     /// <param name="filterTerm"></param>
     /// <returns></returns>
-    public async Task<List<Folder>> GetFilteredFolders(string filterTerm)
+    public async Task<List<Folder>> GetFilteredFolders( string filterTerm )
     {
-        if (folderItems == null)
+        if( folderItems == null )
         {
             // Load the folders if we haven't already.
             folderItems = await _folderService.GetFolders();
             // Default expanded state is true if there are subfolders
-            expandedSate = folderItems.ToDictionary(x => x.FolderId, y => y.HasSubFolders);
+            folderStates = folderItems.ToDictionary( x => x.FolderId, y => new FolderState { Expanded = y.HasSubFolders, Folder = y } );
         }
 
         var rootFolderItem = folderItems.FirstOrDefault();
 
-        if (rootFolderItem == null)
+        if( rootFolderItem == null )
             return new List<Folder>();
 
-        var sortAscending = _configService.GetBool(ConfigSettings.FolderSortAscending, true);
-        var sortMode = _configService.Get(ConfigSettings.FolderSortMode, "Date");
+        var sortAscending = _configService.GetBool( ConfigSettings.FolderSortAscending, true );
+        var sortMode = _configService.Get( ConfigSettings.FolderSortMode, "Date" );
 
         IEnumerable<Folder> items;
 
-        if (sortMode == "Date")
-            items = SortedChildren(rootFolderItem, x => x.MetaData.MaxImageDate, sortAscending).ToList();
+        if( sortMode == "Date" )
+            items = SortedChildren( rootFolderItem, x => x.MetaData.MaxImageDate, sortAscending ).ToList();
         else
-            items = SortedChildren(rootFolderItem, x => x.Name, sortAscending).ToList();
+            items = SortedChildren( rootFolderItem, x => x.Name, sortAscending ).ToList();
 
 
-        if (items != null && items.Any() && !string.IsNullOrEmpty(filterTerm))
+        if( items != null && items.Any() && !string.IsNullOrEmpty( filterTerm ) )
         {
-            items = items.Where(x => x.MetaData.DisplayName.ContainsNoCase(filterTerm)
+            items = items.Where( x => x.MetaData.DisplayName.ContainsNoCase( filterTerm )
                                         // Always include the currently selected folder so it remains highlighted
-                                        || _searchService.Folder?.FolderId == x.FolderId)
-                            .Where(x => x.Parent is null || IsExpanded(x.Parent));
+                                        || _searchService.Folder?.FolderId == x.FolderId )
+                            .Where( x => x.Parent is null || IsExpanded( x.Parent ) );
         }
 
-        bool flat = _configService.GetBool(ConfigSettings.FlatView, true);
+        bool flat = _configService.GetBool( ConfigSettings.FlatView, true );
 
-        if (flat)
+        if( flat )
         {
-            var foldersWithImages = items.Where(x => x.MetaData.ImageCount > 0);
+            var foldersWithImages = items.Where( x => x.MetaData.ImageCount > 0 );
 
             // TODO: Refactor to make this more generic
-            if (sortMode == "Date")
+            if( sortMode == "Date" )
             {
-                if (sortAscending)
-                    return foldersWithImages.OrderBy(x => x.MetaData.MaxImageDate).ToList();
+                if( sortAscending )
+                    return foldersWithImages.OrderBy( x => x.MetaData.MaxImageDate ).ToList();
                 else
-                    return foldersWithImages.OrderByDescending(x => x.MetaData.MaxImageDate).ToList();
+                    return foldersWithImages.OrderByDescending( x => x.MetaData.MaxImageDate ).ToList();
             }
             else
             {
-                if (sortAscending)
-                    return foldersWithImages.OrderBy(x => x.Name).ToList();
+                if( sortAscending )
+                    return foldersWithImages.OrderBy( x => x.Name ).ToList();
                 else
-                    return foldersWithImages.OrderByDescending(x => x.Name).ToList();
+                    return foldersWithImages.OrderByDescending( x => x.Name ).ToList();
             }
         }
         else
-            return items.Where(x => x.ParentFolders.All(x => IsExpanded(x))).ToList();
+            return items.Where( x => x.ParentFolders.All( x => IsExpanded( x ) ) ).ToList();
+    }
+
+    public async Task<Folder?> GetFolder( int folderId )
+    {
+        if( folderStates.TryGetValue( folderId, out var folderState ) )
+            return folderState.Folder;
+
+        return null;
     }
 
     /// <summary>
@@ -141,7 +155,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     /// <param name="item"></param>
     public void ToggleExpand(Folder item)
     {
-        expandedSate[item.FolderId] = !IsExpanded(item);
+        if( folderStates.TryGetValue( item.FolderId, out var folderState ) )
+            folderState.Expanded = ! folderState.Expanded;
     }
-
 }

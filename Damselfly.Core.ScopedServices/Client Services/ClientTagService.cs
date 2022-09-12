@@ -1,8 +1,4 @@
-﻿using System;
-using Damselfly.Core.DbModels;
-using System.Net.Http;
-using Damselfly.Core.Models;
-using System.Net.Http.Json;
+﻿using Damselfly.Core.Models;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;

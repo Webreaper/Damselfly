@@ -1,8 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
-using Damselfly.Core.Models;
+﻿using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.Logging;

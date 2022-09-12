@@ -4,6 +4,11 @@
 
 @inject NavigationManager navigationManager
 @inject ViewDataService viewdataService
+@inject IUserStatusService statusService
+@inject ISearchService searchService
+@inject IUserFolderService folderService
+@inject IPeopleService peopleService
+@inject ITagSearchService tagService
 
 <div class="damselfly-imagebrowser">
 
@@ -45,63 +50,62 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        //await ApplyQueryParams();
+        await ApplyQueryParams();
     }
 
-    /*
-    // WASM
     private async Task ApplyQueryParams()
     {
-        if( ! string.IsNullOrEmpty( S ) )
+        if (!string.IsNullOrEmpty(S))
         {
             searchService.SearchText = S;
         }
 
         if (FolderId != 0)
         {
-            using var db = new ImageContext();
-
-            var folder = await db.Folders.FindAsync(FolderId);
+            var folder = await folderService.GetFolder( FolderId );
 
             if (folder != null)
             {
-                statusService.StatusText = $"Selected folder {folder.Name}";
+                statusService.UpdateStatus($"Selected folder {folder.Name}");
                 searchService.Folder = folder;
             }
         }
 
         if (PersonId != 0)
         {
-            using var db = new ImageContext();
-
-            var person = await db.People.FindAsync(PersonId);
+            // WASM: TODO - we can do this better
+            var people = await peopleService.GetAllPeople();
+            var person = people.FirstOrDefault( x => x.PersonId == PersonId );
 
             if (person != null)
             {
-                statusService.StatusText = $"Selected person {person.Name}";
+                statusService.UpdateStatus($"Selected person {person.Name}");
                 searchService.Person = person;
             }
         }
 
         if (TagId != 0)
         {
-            var tag = metadataService.GetTag(TagId);
+            // WASM: TODO - we can do this better
+            var tags = await tagService.GetAllTags();
+            var tag = tags.FirstOrDefault( x => x.TagId == TagId );
 
             if (tag != null)
                 searchService.Tag = tag;
         }
-        else if( ! string.IsNullOrEmpty( Tag ))
+        else if (!string.IsNullOrEmpty(Tag))
         {
-            var tag = metadataService.GetTag(Tag);
+            // WASM: TODO - we can do this better
+            var tags = await tagService.GetAllTags();
+            var tag = tags.FirstOrDefault( x => x.Keyword.Equals( Tag, StringComparison.OrdinalIgnoreCase ) );
 
-            if (tag != null)
+            if( tag != null)
                 searchService.Tag = tag;
         }
 
         // Don't need this yet
         //this.UpdateQueryString(navigationManager);
     }
-    */
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
