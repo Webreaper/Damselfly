@@ -19,13 +19,13 @@ export COMPlus_EnableWriteXorExecute=0
 
 cd /app
 
-if ! [ -z "$DAMSELFLY_WASM" ];
+if ! [ -z "$DAMSELFLY_BLAZORSERVER" ];
 then
-   echo "  ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
-   ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
-else
    echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
    ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+else
+   echo "  ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
+   ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
 fi;
 
 exec "$@"
