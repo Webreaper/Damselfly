@@ -43,11 +43,9 @@ public class RestClient
     }
 
     private readonly HttpClient _restClient;
-    private readonly ILogger<RestClient> _logger;
 
-    public RestClient(HttpClient client, ILogger<RestClient> logger)
+    public RestClient(HttpClient client)
     {
-        _logger = logger;
         _restClient = client;
     }
 
@@ -93,7 +91,7 @@ public class RestClient
     {
         try
         {
-            var msg = await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
+            var msg = await _restClient.PostAsJsonAsync(requestUri, obj, JsonOptions);
             return msg;
         }
         catch (Exception ex)
@@ -102,11 +100,11 @@ public class RestClient
         }
     }
 
-    public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj)
+    public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj )
     {
         try
         {
-            var response = await _restClient.PostAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
+            var response = await _restClient.PostAsJsonAsync(requestUri, obj, JsonOptions);
             return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
         }
         catch (Exception ex)
@@ -119,7 +117,7 @@ public class RestClient
     {
         try
         {
-            var response = await _restClient.PutAsJsonAsync<PostObj>(requestUri, obj, JsonOptions);
+            var response = await _restClient.PutAsJsonAsync(requestUri, obj, JsonOptions);
             return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
         }
         catch (Exception ex)
@@ -132,7 +130,7 @@ public class RestClient
     {
         try
         {
-            return await _restClient.PutAsJsonAsync<T>(requestUri, obj, JsonOptions);
+            return await _restClient.PutAsJsonAsync(requestUri, obj, JsonOptions);
         }
         catch (Exception ex)
         {
@@ -156,7 +154,7 @@ public class RestClient
     {
         try
         {
-            return await _restClient.PatchAsJsonAsync<T>(requestUri, obj, JsonOptions);
+            return await _restClient.PatchAsJsonAsync(requestUri, obj, JsonOptions);
         }
         catch (Exception ex)
         {
