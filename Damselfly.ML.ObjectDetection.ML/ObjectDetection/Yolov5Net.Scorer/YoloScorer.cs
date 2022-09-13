@@ -117,23 +117,25 @@ namespace Yolov5Net.Scorer
             var hOffset = 0.0f;
             var vOffset = 0.0f;
 
+            // Need to take account of the padding, if the source image isn't square.
             if( height == width )
             {
                 longestSide = height;
             }
             else if( height > width )
             {
-                // Portrait
+                // Portrait - padding is a negative horizontal offset
                 hOffset = ( ( height - width ) / 2.0f );
                 longestSide = height;
             }
             else
             {
-                // Landscape
+                // Landscape - padding is a negative vertical offset
                 vOffset = ( ( width - height ) / 2.0f );
                 longestSide = width;
             }
 
+            // Now calculate the scale as if the source image and model are both square.
             var scale = (float)longestSide / _model.Width;
 
             for (int i = 0; i < output.Length / _model.Dimensions; i++) // iterate tensor
@@ -158,6 +160,7 @@ namespace Yolov5Net.Scorer
 
                     YoloLabel label = _model.Labels[k - 5];
 
+                    // Now scale and offset if necessary.
                     var rectX = (xMin * scale) - hOffset;
                     var rectY = (yMin * scale) - vOffset;
                     var rectHeight = ( xMax - xMin ) * scale;
