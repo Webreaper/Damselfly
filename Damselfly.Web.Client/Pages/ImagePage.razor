@@ -170,7 +170,7 @@ else
 
     public void RefreshImage()
     {
-        _ = rescanService.MarkImagesForRescan(RescanTypes.Indexing, new List<Image>() { CurrentImage });
+        _ = rescanService.MarkImagesForRescan(RescanTypes.Indexing, new List<int>() { CurrentImage.ImageId });
     }
 
     public async Task DownloadImage()

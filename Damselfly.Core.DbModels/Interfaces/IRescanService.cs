@@ -9,8 +9,8 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IRescanService
 {
-    Task MarkFolderForRescan(RescanTypes rescanType, Folder folder);
-    Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Image> images);
+    Task MarkFolderForRescan(RescanTypes rescanType, int folderId);
+    Task MarkImagesForRescan(RescanTypes rescanType, ICollection<int> imageIds);
     Task MarkAllForRescan(RescanTypes rescanType);
 
     Task ClearFaceThumbs();
@@ -18,8 +18,8 @@ public interface IRescanService
 
 public interface IRescanProvider
 {
-    Task MarkFolderForScan(Folder folder);
-    Task MarkImagesForScan(ICollection<Image> images);
+    Task MarkFolderForScan(int folderId);
+    Task MarkImagesForScan(ICollection<int> imageIds);
     Task MarkAllForScan();
 
 }

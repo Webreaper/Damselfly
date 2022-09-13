@@ -630,7 +630,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         _imageCache.Evict(imageId);
     }
 
-    public async Task MarkFolderForScan(Folder folder)
+    public async Task MarkFolderForScan(int folderId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -638,10 +638,10 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory
         //var queryable = db.Set<ImageMetaData>().Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
 
-        int updated = await ImageContext.UpdateMetadataFields(db, folder, "AILastUpdated", "null");
+        int updated = await ImageContext.UpdateMetadataFields(db, folderId, "AILastUpdated", "null");
 
         if (updated != 0)
-            _statusService.UpdateStatus($"{updated} images in folder {folder.Name} flagged for AI reprocessing.");
+            _statusService.UpdateStatus($"{updated} images in folder flagged for AI reprocessing.");
 
         _workService.FlagNewJobs(this);
     }

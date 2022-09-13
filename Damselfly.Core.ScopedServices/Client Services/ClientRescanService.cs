@@ -1,5 +1,6 @@
 ﻿using System;
 using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -17,22 +18,25 @@ public class ClientRescanService : IRescanService
 
     public async Task ClearFaceThumbs()
     {
-        throw new NotImplementedException("To be done");
+        await httpClient.CustomPostAsJsonAsync( "/api/rescan/clearfaces", true );
     }
 
-    public async Task MarkFolderForRescan(RescanTypes rescanType, Folder folder)
+    public async Task MarkFolderForRescan(RescanTypes rescanType, int folderId)
     {
-        throw new NotImplementedException("To be done");
+        var req = new RescanRequest { ScanType = rescanType, FolderId = folderId };
+        await httpClient.CustomPostAsJsonAsync( "/api/rescan", req );
     }
 
-    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Image> images)
+    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<int> imageIds)
     {
-        throw new NotImplementedException("To be done");
+        var req = new RescanRequest { ScanType = rescanType, ImageIds = imageIds };
+        await httpClient.CustomPostAsJsonAsync( "/api/rescan", req );
     }
 
     public async Task MarkAllForRescan(RescanTypes rescanType)
     {
-        throw new NotImplementedException("To be done");
+        var req = new RescanRequest { ScanType = rescanType, RescanAll = true };
+        await httpClient.CustomPostAsJsonAsync( "/api/rescan", req );
     }
 }
 

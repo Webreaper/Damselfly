@@ -628,29 +628,29 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         _statusService.UpdateStatus($"All {updated} images flagged for thumbnail re-generation.");
     }
 
-    public async Task MarkFolderForScan(Folder folder)
+    public async Task MarkFolderForScan(int folderId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        int updated = await ImageContext.UpdateMetadataFields(db, folder, "ThumbLastUpdated", "null");
+        int updated = await ImageContext.UpdateMetadataFields(db, folderId, "ThumbLastUpdated", "null");
 
         if (updated != 0)
-            _statusService.UpdateStatus($"{updated} images in folder {folder.Name} flagged for thumbnail re-generation.");
+            _statusService.UpdateStatus($"{updated} images in folder flagged for thumbnail re-generation.");
     }
 
-    public async Task MarkImagesForScan(ICollection<Image> images)
+    public async Task MarkImagesForScan(ICollection<int> imageIds)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        string imageIds = string.Join(",", images.Select(x => x.ImageId));
-        string sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIds})";
+        string imageIdList = string.Join(",", imageIds );
+        string sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIdList})";
 
         // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
         await db.Database.ExecuteSqlRawAsync(sql);
 
-        var msgText = images.Count == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{images.Count} images";
+        var msgText = imageIds.Count == 1 ? $"Image" : $"{imageIds.Count} images";
         _statusService.UpdateStatus($"{msgText} flagged for thumbnail re-generation.");
 
         _workService.FlagNewJobs(this);

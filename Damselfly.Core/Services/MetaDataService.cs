@@ -1001,18 +1001,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
 
     private static readonly DateTime NoMetadataDate = DateTime.MinValue;
 
-    public async Task MarkFolderForScan(Folder folder)
-    {
+    public async Task MarkFolderForScan(int folderId)
+    { 
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-        int updated = await ImageContext.UpdateMetadataFields(db, folder, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
+        int updated = await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
 
         if (updated != 0)
-            _statusService.UpdateStatus($"{updated} images in folder {folder.Name} flagged for Metadata scanning.");
+            _statusService.UpdateStatus($"{updated} images in folder flagged for Metadata scanning.");
 
         _workService.FlagNewJobs(this);
     }

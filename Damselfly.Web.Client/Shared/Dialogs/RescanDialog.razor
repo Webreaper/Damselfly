@@ -86,11 +86,11 @@
         }
         else if (Folder == null)
         {
-            await rescanService.MarkImagesForRescan( scanType, Images);
+            await rescanService.MarkImagesForRescan( scanType, Images.Select( x => x.ImageId ).ToList() );
         }
         else
         {
-            await rescanService.MarkFolderForRescan( scanType, Folder);
+            await rescanService.MarkFolderForRescan( scanType, Folder.FolderId);
         }
     }
 

@@ -143,9 +143,9 @@ namespace Damselfly.Core.Models
         /// <param name="updateField"></param>
         /// <param name="newValue"></param>
         /// <returns></returns>
-        public static async Task<int> UpdateMetadataFields(ImageContext db, Folder folder, string updateField, string newValue)
+        public static async Task<int> UpdateMetadataFields(ImageContext db, int folderId, string updateField, string newValue)
         {
-            string sql = $@"UPDATE ImageMetaData SET {updateField} = {newValue} FROM (SELECT i.ImageId, i.FolderId FROM Images i where i.FolderId = {folder.FolderId}) AS imgs WHERE imgs.ImageID = ImageMetaData.ImageID";
+            string sql = $@"UPDATE ImageMetaData SET {updateField} = {newValue} FROM (SELECT i.ImageId, i.FolderId FROM Images i where i.FolderId = {folderId}) AS imgs WHERE imgs.ImageID = ImageMetaData.ImageID";
 
             try
             {

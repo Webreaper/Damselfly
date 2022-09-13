@@ -271,11 +271,11 @@ else
 
     public async Task RefreshThumb()
     {
-        await rescanService.MarkImagesForRescan( RescanTypes.Thumbnails, new List<Image> { CurrentImage });
+        await rescanService.MarkImagesForRescan( RescanTypes.Thumbnails, new List<int> { CurrentImage.ImageId });
     }
 
     public async Task RefreshAI()
     {
-        await rescanService.MarkImagesForRescan( RescanTypes.AI, new List<Image> { CurrentImage });
+        await rescanService.MarkImagesForRescan( RescanTypes.AI, new List<int> { CurrentImage.ImageId });
     }
 }

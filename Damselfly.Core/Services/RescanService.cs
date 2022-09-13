@@ -33,18 +33,18 @@ public class RescanService : IRescanService
         await provider.MarkAllForScan();
     }
 
-    public async Task MarkFolderForRescan(RescanTypes rescanType, Folder folder)
+    public async Task MarkFolderForRescan(RescanTypes rescanType, int folderId)
     {
         var provider = GetService(rescanType);
 
-        await provider.MarkFolderForScan(folder);
+        await provider.MarkFolderForScan( folderId );
     }
 
-    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Image> images)
+    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<int> imageIds)
     {
         var provider = GetService(rescanType);
 
-        await provider.MarkImagesForScan(images);
+        await provider.MarkImagesForScan( imageIds );
     }
 
     public async Task ClearFaceThumbs()
