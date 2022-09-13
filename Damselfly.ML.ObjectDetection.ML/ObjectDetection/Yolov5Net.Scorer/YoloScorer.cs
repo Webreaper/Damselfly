@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using Yolov5Net.Scorer.Extensions;
 using Yolov5Net.Scorer.Models.Abstract;
 
@@ -109,7 +110,31 @@ namespace Yolov5Net.Scorer
         {
             var result = new List<YoloPrediction>();
 
-            var (xGain, yGain) = (_model.Width / (float)width, _model.Height / (float)height);
+            if( _model.Height != _model.Width )
+                throw new ArgumentException( "Scale calculation will not work if model is not square" );
+
+            var longestSide = 0;
+            var hOffset = 0.0f;
+            var vOffset = 0.0f;
+
+            if( height == width )
+            {
+                longestSide = height;
+            }
+            else if( height > width )
+            {
+                // Portrait
+                hOffset = ( ( height - width ) / 2.0f );
+                longestSide = height;
+            }
+            else
+            {
+                // Landscape
+                vOffset = ( ( width - height ) / 2.0f );
+                longestSide = width;
+            }
+
+            var scale = (float)longestSide / _model.Width;
 
             for (int i = 0; i < output.Length / _model.Dimensions; i++) // iterate tensor
             {
@@ -126,16 +151,21 @@ namespace Yolov5Net.Scorer
                     if (output[0, i, k] <= _model.MulConfidence)
                         continue;
 
-                    var xMin = (output[0, i, 0] - output[0, i, 2] / 2) / xGain; // top left x
-                    var yMin = (output[0, i, 1] - output[0, i, 3] / 2) / yGain; // top left y
-                    var xMax = (output[0, i, 0] + output[0, i, 2] / 2) / xGain; // bottom right x
-                    var yMax = (output[0, i, 1] + output[0, i, 3] / 2) / yGain; // bottom right y
+                    var xMin = (output[0, i, 0] - output[0, i, 2] / 2); // top left x
+                    var yMin = (output[0, i, 1] - output[0, i, 3] / 2); // top left y
+                    var xMax = (output[0, i, 0] + output[0, i, 2] / 2); // bottom right x
+                    var yMax = (output[0, i, 1] + output[0, i, 3] / 2); // bottom right y
 
                     YoloLabel label = _model.Labels[k - 5];
 
+                    var rectX = (xMin * scale) - hOffset;
+                    var rectY = (yMin * scale) - vOffset;
+                    var rectHeight = ( xMax - xMin ) * scale;
+                    var rectWidth = ( yMax - yMin ) * scale;
+
                     var prediction = new YoloPrediction(label, output[0, i, k])
                     {
-                        Rectangle = new RectangleF(xMin, yMin, xMax - xMin, yMax - yMin)
+                        Rectangle = new RectangleF(rectX, rectY, rectHeight, rectWidth)
                     };
 
                     result.Add(prediction);
