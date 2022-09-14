@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using Color = System.Drawing.Color;
 
 namespace Damselfly.ML.ImageClassification.DominantColors
 {
@@ -17,7 +20,7 @@ namespace Damselfly.ML.ImageClassification.DominantColors
         /// <param name="saturationThreshold">The saturation threshold to take into account getting the histogram</param>
         /// <param name="brightnessThreshold">The brightness threshold to take into account getting the histogram</param>
         /// <returns>A dictionary representing the hue histogram. Key: Hue index (0-360). Value: Occurence of the hue.</returns>
-        internal static unsafe Dictionary<int, uint> GetColorHueHistogram(Bitmap bmp, float saturationThreshold, float brightnessThreshold)
+        internal static unsafe Dictionary<int, uint> GetColorHueHistogram(Image<Rgb24> image, float saturationThreshold, float brightnessThreshold)
         {
             Dictionary<int, uint> colorHueHistorgram = new Dictionary<int, uint>();
             for (int i = 0; i <= 360; i++)
@@ -25,23 +28,25 @@ namespace Damselfly.ML.ImageClassification.DominantColors
                 colorHueHistorgram.Add(i, 0);
             }
 
-            BitmapData bData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadWrite, bmp.PixelFormat);
-            byte bitsPerPixel = GetBitsPerPixel(bData.PixelFormat);
-            byte* scan0 = (byte*)bData.Scan0.ToPointer();
-            for (int i = 0; i < bData.Height; ++i)
+            image.ProcessPixelRows( pixelAccessor =>
             {
-                for (int j = 0; j < bData.Width; ++j)
+                for( var y = 0; y < pixelAccessor.Height; y++ )
                 {
-                    byte* data = scan0 + i * bData.Stride + j * bitsPerPixel / 8;
-                    Color clr = Color.FromArgb(data[3], data[2], data[1], data[0]);
-                    if (clr.GetSaturation() > saturationThreshold && clr.GetBrightness() > brightnessThreshold)
+                    var row = pixelAccessor.GetRowSpan( y );
+
+                    for( var x = 0; x < row.Length; x++ )
                     {
-                        int hue = (int)Math.Round(clr.GetHue(), 0);
-                        colorHueHistorgram[hue]++;
+                        var clr = System.Drawing.Color.FromArgb( row[x].R, row[x].G, row[x].B );
+
+                        if( clr.GetSaturation() > saturationThreshold && clr.GetBrightness() > brightnessThreshold )
+                        {
+                            int hue = (int)Math.Round( clr.GetHue(), 0 );
+                            colorHueHistorgram[hue]++;
+                        }
                     }
                 }
-            }
-            bmp.UnlockBits(bData);
+            } );
+
             return colorHueHistorgram;
         }
 
@@ -67,7 +72,7 @@ namespace Damselfly.ML.ImageClassification.DominantColors
         /// <param name="saturation"></param>
         /// <param name="value"></param>
         /// <returns>The color</returns>
-        public static Color ColorFromHSV(double hue, double saturation, double value)
+        public static System.Drawing.Color ColorFromHSV(double hue, double saturation, double value)
         {
             int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
             double f = hue / 60 - Math.Floor(hue / 60);
@@ -123,27 +128,6 @@ namespace Damselfly.ML.ImageClassification.DominantColors
                 newHistogram[i] = average;
             }
             return newHistogram;
-        }
-
-        /// <summary>
-        /// Get bits for given pixelformat
-        /// </summary>
-        /// <param name="pixelFormat"></param>
-        /// <returns></returns>
-        internal static byte GetBitsPerPixel(PixelFormat pixelFormat)
-        {
-            switch (pixelFormat)
-            {
-                case PixelFormat.Format24bppRgb:
-                    return 24;
-                case PixelFormat.Format32bppArgb:
-                case PixelFormat.Format32bppPArgb:
-                case PixelFormat.Format32bppRgb:
-                    return 32;
-                default:
-                    throw new ArgumentException("Only 24 and 32 bit images are supported");
-
-            }
         }
     }
 }

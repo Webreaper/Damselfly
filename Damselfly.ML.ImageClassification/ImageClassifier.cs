@@ -21,18 +21,11 @@ namespace Damselfly.ML.ImageClassification
         {
             using var image = Image.Load<Rgb24>( inPath );
 
-            image.Mutate(
-                x => x
-                // Scale the image down preserving the aspect ratio. This will speed up quantization.
-                // We use nearest neighbor as it will be the fastest approach.
-                .Resize( new ResizeOptions() { Sampler = KnownResamplers.NearestNeighbor, Size = new Size( 100, 0 ) } )
+            var calculator = new DominantHueColorCalculator();
 
-                // Reduce the color palette to 1 color without dithering.
-                .Quantize( new OctreeQuantizer( new QuantizerOptions { Dither = null, MaxColors = 1 } ) ) );
+            var color = calculator.CalculateDominantColor( image );
 
-            Rgb24 dominant = image[0, 0];
-
-            return System.Drawing.Color.FromArgb( dominant.R, dominant.G, dominant.B );
+            return color;
         }
 
         public System.Drawing.Color DetectAverageColor( string inPath )

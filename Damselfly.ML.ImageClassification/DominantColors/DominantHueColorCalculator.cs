@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -79,9 +79,9 @@ namespace Damselfly.ML.ImageClassification.DominantColors
         /// </summary>
         /// <param name="bitmap"></param>
         /// <returns></returns>
-        public Color CalculateDominantColor(Bitmap bitmap)
+        public System.Drawing.Color CalculateDominantColor(Image<Rgb24> image)
         {
-            this.hueHistogram = DominantColorUtils.GetColorHueHistogram(bitmap, this.saturationThreshold,
+            this.hueHistogram = DominantColorUtils.GetColorHueHistogram(image, this.saturationThreshold,
                 this.brightnessThreshold);
             this.smoothedHueHistogram = DominantColorUtils.SmoothHistogram(this.hueHistogram, this.hueSmoothFactor);
             int dominantHue = GetDominantHue(this.smoothedHueHistogram);
