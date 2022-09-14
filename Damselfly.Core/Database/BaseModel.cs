@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using System.Threading.Tasks;
@@ -182,16 +181,7 @@ namespace Damselfly.Core.DBAbstractions
             if (ReadOnly)
                 return 1;
 
-            // TODO Try/Catch here?
-            var entities = await query.ToListAsync();
-            var dbSet = this.Set<T>();
-
-            foreach (var e in entities)
-            {
-                dbSet.Remove(e);
-            }
-
-            return await SaveChangesAsync();
+            return await query.ExecuteDeleteAsync();
         }
 
         /// <summary>
