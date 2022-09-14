@@ -157,7 +157,7 @@ namespace Damselfly.Core.DBAbstractions
                 await SaveChangesAsync();
 
                 // TODO: Replace when EFCore 7 has this
-                //await db.BulkDeleteAsync(itemsToDelete);
+                // await db.BulkDeleteAsync(itemsToDelete);
 
                 success = true;
             }
@@ -208,7 +208,6 @@ namespace Damselfly.Core.DBAbstractions
             {
                 // Broken with .Net 7 preview 6...
                 // return await query.BatchUpdateAsync(updateExpression);
-
                 return await this.BulkUpdateWithSaveChanges(query, updateExpression);
             }
             catch (Exception ex)
