@@ -17,10 +17,8 @@ namespace Damselfly.ML.ImageClassification
 {
     public class ImageClassifier
     {
-        public System.Drawing.Color DetectDominantColour(string inPath)
+        public System.Drawing.Color DetectDominantColour(Image<Rgb24> image)
         {
-            using var image = Image.Load<Rgb24>( inPath );
-
             var calculator = new DominantHueColorCalculator();
 
             var color = calculator.CalculateDominantColor( image );
@@ -28,15 +26,13 @@ namespace Damselfly.ML.ImageClassification
             return color;
         }
 
-        public System.Drawing.Color DetectAverageColor( string inPath )
+        public System.Drawing.Color DetectAverageColor( Image<Rgb24> srcImage )
         {
             int totalRed = 0;
             int totalGreen = 0;
             int totalBlue = 0;
 
-            using var image = Image.Load<Rgb24>( inPath );
-
-            image.Mutate( x => x.Resize( new ResizeOptions { Sampler = KnownResamplers.NearestNeighbor, Size = new Size( 100, 0 ) } ) );
+            var image = srcImage.Clone( x => x.Resize( new ResizeOptions { Sampler = KnownResamplers.NearestNeighbor, Size = new Size( 100, 0 ) } ) );
 
             image.ProcessPixelRows( pixelAccessor =>
             {

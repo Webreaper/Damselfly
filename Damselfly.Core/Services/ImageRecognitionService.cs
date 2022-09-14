@@ -18,8 +18,9 @@ using Damselfly.Core.Interfaces;
 using System.Runtime.InteropServices;
 using Damselfly.Shared.Utils;
 using Damselfly.Core.ScopedServices.Interfaces;
-using MailKit;
 using Microsoft.Extensions.DependencyInjection;
+using SixLabors.ImageSharp.PixelFormats;
+using Image = Damselfly.Core.Models.Image;
 
 namespace Damselfly.Core.Services;
 
@@ -310,12 +311,14 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 return;
             }
 
-            if (_imageClassifier != null && enableAIProcessing)
+            using var theImage = SixLabors.ImageSharp.Image.Load<Rgb24>( medThumb.FullName );
+
+            if( _imageClassifier != null && enableAIProcessing)
             {
                 var colorWatch = new Stopwatch("DetectObjects");
 
-                var dominant = _imageClassifier.DetectDominantColour(medThumb.FullName);
-                var average = _imageClassifier.DetectAverageColor(medThumb.FullName);
+                var dominant = _imageClassifier.DetectDominantColour( theImage );
+                var average = _imageClassifier.DetectAverageColor( theImage );
 
                 colorWatch.Stop();
 
@@ -338,7 +341,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 var objwatch = new Stopwatch("DetectObjects");
 
                 // First, look for Objects
-                var objects = await _objectDetector.DetectObjects( medThumb.FullName );
+                var objects = await _objectDetector.DetectObjects( theImage );
 
                 objwatch.Stop();
 

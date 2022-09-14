@@ -40,7 +40,7 @@ namespace Damselfly.ML.ObjectDetection
         /// </summary>
         /// <param name="imageFile"></param>
         /// <returns></returns>
-        public async Task<IList<ImageDetectResult>> DetectObjects(string fullPath)
+        public async Task<IList<ImageDetectResult>> DetectObjects( Image<Rgb24> image )
         {
             try
             {
@@ -49,8 +49,6 @@ namespace Damselfly.ML.ObjectDetection
                     return new List<ImageDetectResult>();
 
                 Stopwatch watch = new Stopwatch("DetectObjects");
-
-                using var image = Image.Load<Rgb24>( fullPath );
 
                 var predictions = scorer.Predict(image );
 

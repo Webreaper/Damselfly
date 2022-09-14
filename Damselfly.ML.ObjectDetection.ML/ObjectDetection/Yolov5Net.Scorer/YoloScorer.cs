@@ -70,11 +70,13 @@ namespace Yolov5Net.Scorer
         /// <summary>
         /// Runs inference session.
         /// </summary>
-        private DenseTensor<float>[] Inference( Image<Rgb24> image )
+        private DenseTensor<float>[] Inference( Image<Rgb24> srcImage )
         {
+            var image = srcImage;
+
             if( image.Height > _model.Height || image.Width > _model.Width )
             {
-                image.Mutate( x =>
+                image = srcImage.Clone( x =>
                 {
                     x.Resize( new ResizeOptions
                     {
