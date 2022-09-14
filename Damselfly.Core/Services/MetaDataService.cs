@@ -1022,8 +1022,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { LastUpdated = NoMetadataDate });
-
+        int updated = await db.BatchUpdate(db.ImageMetaData, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
+        
         _statusService.UpdateStatus($"All {updated} images flagged for Metadata scanning.");
 
         _workService.FlagNewJobs(this);
@@ -1036,7 +1036,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
         var queryable = db.ImageMetaData.Where(i => images.Contains(i.ImageId));
 
-        int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
+        int rows = await db.BatchUpdate(queryable, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
 
         var msgText = rows == 1 ? $"Image" : $"{rows} images";
         _statusService.UpdateStatus($"{msgText} flagged for Metadata scanning.");

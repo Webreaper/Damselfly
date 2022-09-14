@@ -369,7 +369,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var queryable = db.Folders.Where(f => folderIds.Contains( f.FolderId ));
-            await db.BatchUpdate(queryable, x => new Folder { FolderScanDate = null });
+            await db.BatchUpdate(queryable, p => p.SetProperty( x => x.FolderScanDate, x => null ) );
 
             if( folderIds.Count() == 1 )
                 _statusService.UpdateStatus( $"Folder flagged for re-indexing." );
@@ -391,7 +391,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            int updated = await db.BatchUpdate(db.Folders, x => new Folder { FolderScanDate = null });
+            int updated = await db.BatchUpdate(db.Folders, p => p.SetProperty(x => x.FolderScanDate, x => null));
 
             _statusService.UpdateStatus($"All {updated} folders flagged for re-indexing.");
 

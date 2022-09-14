@@ -654,8 +654,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        int updated = await db.BatchUpdate(db.ImageMetaData, x => new ImageMetaData { AILastUpdated = null });
-
+        int updated = await db.BatchUpdate(db.ImageMetaData, i => i.SetProperty( x => x.AILastUpdated, x => null ));
+        
         _statusService.UpdateStatus($"All {updated} images flagged for AI reprocessing.");
 
         _workService.FlagNewJobs(this);
@@ -668,7 +668,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
         var queryable = db.ImageMetaData.Where(i => images.Contains(i.ImageId));
 
-        int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { AILastUpdated = null });
+        int rows = await db.BatchUpdate(queryable, i => i.SetProperty(x => x.AILastUpdated, x => null));
 
         var msgText = rows == 1 ? $"Image" : $"{rows} images";
         _statusService.UpdateStatus($"{msgText} flagged for AI reprocessing.");

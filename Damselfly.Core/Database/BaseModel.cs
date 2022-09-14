@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Damselfly.Core.DbModels.Authentication;
 using EFCore.BulkExtensions;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Damselfly.Core.DBAbstractions
 {
@@ -199,16 +200,14 @@ namespace Damselfly.Core.DBAbstractions
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<T, T>> updateExpression) where T : class
+        public async Task<int> BatchUpdate<T>(IQueryable<T> query, Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> updateExpression) where T : class
         {
             if (ReadOnly)
                 return 1;
 
             try
             {
-                // Broken with .Net 7 preview 6...
-                // return await query.BatchUpdateAsync(updateExpression);
-                return await this.BulkUpdateWithSaveChanges(query, updateExpression);
+                return await query.ExecuteUpdateAsync(updateExpression);
             }
             catch (Exception ex)
             {
