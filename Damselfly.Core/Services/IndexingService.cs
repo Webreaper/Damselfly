@@ -18,7 +18,7 @@ namespace Damselfly.Core.Services;
 /// disk for images, and to ingest them into the DB with all their extracted
 /// metadata, such as size, last modified date, etc., etc.
 /// </summary>
-public class IndexingService : IProcessJobFactory
+public class IndexingService : IProcessJobFactory, IRescanProvider
 {
     public static string RootFolder { get; set; }
     public static bool EnableIndexing { get; set; } = true;
@@ -350,28 +350,31 @@ public class IndexingService : IProcessJobFactory
         return imagesWereAddedOrRemoved;
     }
 
+    public async Task MarkFolderForScan( int folderId )
+    {
+        await MarkFoldersForScan( new List<int> { folderId } );
+    }
+
     /// <summary>
     /// Marks the FolderScanDate as null, which will cause the 
     /// indexing service to pick it up and scan it for any changes. 
     /// </summary>
     /// <param name="folders"></param>
     /// <returns></returns>
-    public async Task MarkFoldersForScan(List<Folder> folders)
+    public async Task MarkFoldersForScan(List<int> folderIds)
     {
         try
         {
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            var ids = folders.Select(x => x.FolderId).Distinct();
-
-            var queryable = db.Folders.Where(f => ids.Contains(f.FolderId));
+            var queryable = db.Folders.Where(f => folderIds.Contains( f.FolderId ));
             await db.BatchUpdate(queryable, x => new Folder { FolderScanDate = null });
 
-            if (folders.Count == 1)
-                _statusService.UpdateStatus($"Folder {folders.First().Name} flagged for re-indexing.");
-            else
-                _statusService.UpdateStatus($"{folders.Count} folders flagged for re-indexing.");
+            if( folderIds.Count() == 1 )
+                _statusService.UpdateStatus( $"Folder flagged for re-indexing." );
+            else 
+                _statusService.UpdateStatus($"{folderIds.Count()} folders flagged for re-indexing.");
 
             _workService.FlagNewJobs(this);
         }
@@ -381,7 +384,7 @@ public class IndexingService : IProcessJobFactory
         }
     }
 
-    public async Task MarkAllFoldersForScan()
+    public async Task MarkAllForScan()
     {
         try
         {
@@ -406,11 +409,16 @@ public class IndexingService : IProcessJobFactory
     /// </summary>
     /// <param name="images"></param>
     /// <returns></returns>
-    public async Task MarkImagesForScan(ICollection<Image> images)
+    public async Task MarkImagesForScan(ICollection<int> images)
     {
         try
         {
-            var folders = images.Select(x => x.Folder).ToList();
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+            var folders = await db.Images.Where( x => images.Contains( x.ImageId ) )
+                                         .Select( x => x.Folder.FolderId )
+                                         .ToListAsync();
 
             await MarkFoldersForScan(folders);
         }

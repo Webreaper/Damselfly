@@ -22,7 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
-public class MetaDataService : IProcessJobFactory, ITagSearchService
+public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanProvider
 {
     // Some caching to avoid repeatedly reading tags, cameras and lenses
     // from the DB.
@@ -1017,7 +1017,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         _workService.FlagNewJobs(this);
     }
 
-    public async Task MarkAllImagesForScan()
+    public async Task MarkAllForScan()
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -1029,17 +1029,16 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService
         _workService.FlagNewJobs(this);
     }
 
-    public async Task MarkImagesForScan(ICollection<Image> images)
+    public async Task MarkImagesForScan(ICollection<int> images)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        var ids = images.Select(x => x.ImageId).ToList();
-        var queryable = db.ImageMetaData.Where(i => ids.Contains(i.ImageId));
+        var queryable = db.ImageMetaData.Where(i => images.Contains(i.ImageId));
 
         int rows = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
-        var msgText = rows == 1 ? $"Image {images.ElementAt(0).FileName}" : $"{rows} images";
+        var msgText = rows == 1 ? $"Image" : $"{rows} images";
         _statusService.UpdateStatus($"{msgText} flagged for Metadata scanning.");
     }
 

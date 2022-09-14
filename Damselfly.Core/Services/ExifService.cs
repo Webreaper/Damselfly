@@ -443,7 +443,7 @@ public class ExifService : IProcessJobFactory, ITagService
 
                 // Updating the timestamp on the image to newer than its metadata will
                 // trigger its metadata and tags to be refreshed during the next scan
-                await _indexingService.MarkImagesForScan(new List<Image> { image });
+                await _indexingService.MarkImagesForScan(new List<int> { image.ImageId });
             }
             else
             {

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Core.Services;
 
@@ -72,7 +73,9 @@ public class FolderWatcherService
                 using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 var uniqueFolders = folders.Distinct(StringComparer.OrdinalIgnoreCase);
-                var pendingFolders = db.Folders.Where(f => uniqueFolders.Contains(f.Path)).ToList();
+                var pendingFolders = await db.Folders.Where(f => uniqueFolders.Contains(f.Path))
+                                                     .Select( x => x.FolderId )
+                                                     .ToListAsync();
 
                 // Call this method synchronously, we don't want to continue otherwise
                 // we'll end up with race conditions as the timer triggers while
