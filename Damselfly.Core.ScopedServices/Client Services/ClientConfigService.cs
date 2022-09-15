@@ -28,8 +28,6 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         _notifications.SubscribeToNotification(NotificationType.SystemSettingsChanged, SystemSettingsChanged);
 
         _authProvider.AuthenticationStateChanged += AuthStateChanged;
-
-        _ = InitialiseCache();
     }
 
     public void Dispose()

@@ -1,7 +1,5 @@
-﻿@page "/login"
-@inject IAuthService AuthService
+﻿@inject IAuthService AuthService
 @inject NavigationManager NavigationManager
-@inject ViewDataService viewdataService
 
 <div class="damselfly-login-form">
     <img src="damselfly-logo.png" title="Damselfly" class="damselfly-login-logo" />
@@ -28,7 +26,7 @@
     </EditForm>
 </div>
 
-@if( ShowErrors )
+@if (ShowErrors)
 {
     <div class="alert alert-danger" role="alert">
         <p>@Error</p>
@@ -41,22 +39,13 @@
     private bool ShowErrors;
     private string Error = "";
 
-    protected override void OnAfterRender( bool firstRender)
-    {
-        if( firstRender )
-        {
-            viewdataService.SetSideBarState(new ViewDataService.SideBarState { HideSideBar = true });
-            StateHasChanged();
-        }
-    }
-
     private async Task HandleLogin()
     {
         ShowErrors = false;
 
         var result = await AuthService.Login(loginModel);
 
-        if( result.Successful )
+        if (result.Successful)
         {
             NavigationManager.NavigateTo("/");
         }

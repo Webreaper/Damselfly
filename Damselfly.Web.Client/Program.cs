@@ -67,6 +67,9 @@ public class Program
         var cachedData = app.Services.GetRequiredService<ICachedDataService>();
         await cachedData.InitialiseData();
 
+        var configService = app.Services.GetRequiredService<ClientConfigService>();
+        await configService.InitialiseCache();
+
         await app.RunAsync();
     }
 }

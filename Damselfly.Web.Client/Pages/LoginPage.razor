@@ -1,0 +1,14 @@
+﻿@page "/login"
+@inject ViewDataService viewService
+
+<Login/>
+
+@code {
+    protected override void OnInitialized()
+    {
+        viewService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowFolderList = true });
+        StateHasChanged();
+
+        base.OnInitialized();
+    }
+}

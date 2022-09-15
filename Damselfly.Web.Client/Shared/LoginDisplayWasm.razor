@@ -29,12 +29,7 @@
     {
         await AuthService.Logout();
 
-        var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
-
-        if( forceLogin )
-            Navigation.NavigateTo("Login");
-        else
-            Navigation.NavigateTo("/");
+        Navigation.NavigateTo(Navigation.Uri, true);
     }
 
     void Login()

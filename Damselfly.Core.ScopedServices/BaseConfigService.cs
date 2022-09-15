@@ -23,7 +23,7 @@ public abstract class BaseConfigService
     protected abstract Task<List<ConfigSetting>> LoadAllSettings();
     protected abstract Task PersistSetting(ConfigSetRequest setRequest);
 
-    protected async Task InitialiseCache()
+    public async Task InitialiseCache()
     {
         _logger.LogInformation("Preloading config cache with all settings...");
 
