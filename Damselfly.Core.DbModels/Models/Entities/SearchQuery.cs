@@ -34,7 +34,7 @@ public class SearchQuery
 
     public override string ToString()
     {
-        return $"Filter: T={SearchText}, F={Folder?.FolderId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarTo?.ImageId}";
+        return $"Filter: T={SearchText}, F={Folder?.FolderId}, Tag={Tag?.TagId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarTo?.ImageId}";
     }
 }
 

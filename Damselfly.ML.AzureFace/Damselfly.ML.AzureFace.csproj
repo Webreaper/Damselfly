@@ -12,6 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.Face" Version="2.8.0-preview.2" />
-    <PackageReference Include="FluentValidation" Version="11.2.1" />
+    <PackageReference Include="FluentValidation" Version="11.2.2" />
   </ItemGroup>
 </Project>
