@@ -28,7 +28,7 @@ else
             @for (int i = 0; i < gridImages.Count; i++)
             {
                 var info = new SelectionInfo { image = gridImages[i], index = i };
-                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(e => { ToggleSelected( e, info ); })">
+                <div class="damselfly-gridimage wrapping-table-mini" @onclick="@(async e => { await ToggleSelected( e, info ); })">
                     <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Basket DisplayFileName=@false ThumbnailSize=ThumbSize.Small />
                 </div>
             }
