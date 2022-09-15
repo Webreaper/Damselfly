@@ -18,6 +18,7 @@ public class ViewDataService
         public bool ShowBasket { get; set; } = false;
         public bool ShowExport { get; set; } = false;
         public bool ShowImageProps { get; set; } = false;
+        public bool HideSideBar { get; set; } = false;
 
         public override bool Equals(object obj)
         {
@@ -29,7 +30,8 @@ public class ViewDataService
                        ShowExport == other.ShowExport &&
                        ShowMap == other.ShowMap &&
                        ShowTags == other.ShowTags &&
-                       ShowImageProps == other.ShowImageProps;
+                       ShowImageProps == other.ShowImageProps &&
+                       HideSideBar == other.HideSideBar;
             }
 
             return false;
@@ -58,4 +60,5 @@ public class ViewDataService
     public bool ShowBasket { get => sidebarState.ShowBasket; }
     public bool ShowExport { get => sidebarState.ShowExport; }
     public bool ShowImageProps { get => sidebarState.ShowImageProps; }
+    public bool ShowSideBar { get => !sidebarState.HideSideBar; }
 }

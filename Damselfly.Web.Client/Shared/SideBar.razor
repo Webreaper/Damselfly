@@ -12,7 +12,7 @@
                 <ImageProperties />
             </ChildContent>
         </ToolWindow>
-    }
+        }
     @if (ViewDataService.ShowBasket)
     {
         <ToolWindow Title="Basket">
@@ -20,7 +20,7 @@
                 <SelectedImages />
             </ChildContent>
         </ToolWindow>
-    }
+        }
     @if (ViewDataService.ShowTags)
     {
         <ToolWindow Title="Image Keywords">
@@ -35,15 +35,15 @@
                 </ChildContent>
             </ToolWindow>
         </AuthorizeView>
-    }
+        }
     @if (ViewDataService.ShowMap)
     {
-    <ToolWindow Title="Map">
-        <ChildContent>
-            <MapView />
-        </ChildContent>
-    </ToolWindow>
-    }
+        <ToolWindow Title="Map">
+            <ChildContent>
+                <MapView />
+            </ChildContent>
+        </ToolWindow>
+        }
     @if (ViewDataService.ShowFolderList)
     {
         <ToolWindow Title="Folders">
@@ -51,7 +51,7 @@
                 <FolderList />
             </ChildContent>
         </ToolWindow>
-    }
+        }
     @if (ViewDataService.ShowExport)
     {
         <ToolWindow Title="Export">
@@ -59,7 +59,7 @@
                 <ExportSettings />
             </ChildContent>
         </ToolWindow>
-     }
+    }
 </div>
 
 @code { protected override void OnInitialized()

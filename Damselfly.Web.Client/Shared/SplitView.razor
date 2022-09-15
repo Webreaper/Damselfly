@@ -1,5 +1,6 @@
 ﻿
 @inject IUserConfigService configService
+
 @inherits LayoutComponentBase
 
 <RadzenSplitter Collapse=@OnCollapse Expand="@OnExpand" Resize="@OnResize">
@@ -31,10 +32,10 @@
 
     void OnResize(RadzenSplitterResizeEventArgs args)
     {
-        if( args.PaneIndex == 0 )
+        if (args.PaneIndex == 0)
         {
             var newSize = $"{(int)args.NewSize}%";
-            configService.SetForUser( ConfigSettings.SideBarWidth, newSize);
+            configService.SetForUser(ConfigSettings.SideBarWidth, newSize);
             configService.SetForUser(ConfigSettings.SideBarCollapsed, "false");
         }
     }

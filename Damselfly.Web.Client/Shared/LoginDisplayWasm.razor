@@ -6,6 +6,7 @@
 @inject NavigationManager Navigation
 @inject IUserService userService
 @inject IAuthService AuthService
+@inject IConfigService configService
 
 @if (userService.RolesEnabled)
 {
@@ -31,7 +32,13 @@
     async Task LogOut()
     {
         await AuthService.Logout();
-        Navigation.NavigateTo("/");
+
+        var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
+
+        if (forceLogin)
+            Navigation.NavigateTo("Login");
+        else
+            Navigation.NavigateTo("/");
     }
 
     void Login()

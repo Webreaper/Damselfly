@@ -1,5 +1,5 @@
 ﻿
-@inject NavigationManager navigationManager
+@inject NavigationManager Navigation
 @inject IConfigService configService
 @inject IUserMgmtService userService
 
@@ -23,8 +23,7 @@
 
             if (!user.Identity.IsAuthenticated)
             {
-                var localRedirect = "/" + navigationManager.ToBaseRelativePath(navigationManager.Uri);
-                navigationManager.NavigateTo($"/Identity/Account/Login?returnUrl={Uri.EscapeDataString(localRedirect)}");
+                Navigation.NavigateTo("Login");
             }
         }
     }

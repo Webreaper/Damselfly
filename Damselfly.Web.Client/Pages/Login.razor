@@ -1,6 +1,9 @@
 ﻿@page "/login"
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
+@inject ViewDataService viewdataService
+
+<img src="damselfly-logo.png" title="Damselfly" style="margin-top: 10vh;" />
 
 <div class="damselfly-login-form">
     <h2>Log in to Damselfly</h2>
@@ -38,6 +41,14 @@
     private LoginModel loginModel = new LoginModel();
     private bool ShowErrors;
     private string Error = "";
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            viewdataService.SetSideBarState(new ViewDataService.SideBarState { HideSideBar = false });
+            StateHasChanged();
+        }
+    }
 
     private async Task HandleLogin()
     {

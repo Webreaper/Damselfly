@@ -1,5 +1,6 @@
 ﻿
 @inherits LayoutComponentBase
+@inject ViewDataService ViewDataService
 
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <RadzenContextMenu />
@@ -12,19 +13,26 @@
                 <ThemeSwitcher />
             </DetailedErrorBoundary>
             <div class="damselfly-container">
-                <div class="damselfly-application">
-                    <SplitView>
-                        <LeftPane>
-                            <SideBar />
-                        </LeftPane>
-                        <RightPane>
-                            @Body
-                        </RightPane>
-                    </SplitView>
-                </div>
-                <DetailedErrorBoundary>
-                    <Statusbar />
-                </DetailedErrorBoundary>
+                @if (ViewDataService.ShowSideBar)
+                {
+                    <div class="damselfly-application">
+                        <SplitView>
+                            <LeftPane>
+                                <SideBar />
+                            </LeftPane>
+                            <RightPane>
+                                @Body
+                            </RightPane>
+                        </SplitView>
+                    </div>
+                    <DetailedErrorBoundary>
+                        <Statusbar />
+                    </DetailedErrorBoundary>
+                }
+                else
+                {
+                    @Body
+                }
             </div>
         </CascadingAuthenticationState>
     </ChildContent>
