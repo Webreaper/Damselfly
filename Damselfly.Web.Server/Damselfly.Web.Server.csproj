@@ -8,34 +8,34 @@
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' "/>
+    <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Serilog" Version="2.12.0"/>
-        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1"/>
-        <PackageReference Include="Serilog.AspNetCore.Ingestion" Version="1.0.0-dev-00032"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+        <PackageReference Include="Serilog.AspNetCore.Ingestion" Version="1.0.0-dev-00032" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="AspNetCore.RouteAnalyzer"/>
-        <None Remove="Swashbuckle.AspNetCore"/>
-        <None Remove="Areas\"/>
-        <None Remove="Models\"/>
-        <None Remove="Serilog"/>
-        <None Remove="Serilog.AspNetCore"/>
-        <None Remove="Serilog.AspNetCore.Ingestion"/>
+        <None Remove="AspNetCore.RouteAnalyzer" />
+        <None Remove="Swashbuckle.AspNetCore" />
+        <None Remove="Areas\" />
+        <None Remove="Models\" />
+        <None Remove="Serilog" />
+        <None Remove="Serilog.AspNetCore" />
+        <None Remove="Serilog.AspNetCore.Ingestion" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0-rc.1.22426.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0-rc.1.22426.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0-rc.1.22426.7">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56"/>
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56" />
     </ItemGroup>
 
     <ItemGroup>
@@ -62,15 +62,15 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <Content Remove="wwwroot\"/>
-        <Content Remove="wwwroot\themes\"/>
-        <Content Remove="wwwroot\fonts\"/>
+        <Content Remove="wwwroot\" />
+        <Content Remove="wwwroot\themes\" />
+        <Content Remove="wwwroot\fonts\" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="wwwroot\"/>
-        <Folder Include="wwwroot\themes\"/>
-        <Folder Include="wwwroot\fonts\"/>
-        <Folder Include="Areas\"/>
-        <Folder Include="Models\"/>
+        <Folder Include="wwwroot\" />
+        <Folder Include="wwwroot\themes\" />
+        <Folder Include="wwwroot\fonts\" />
+        <Folder Include="Areas\" />
+        <Folder Include="Models\" />
     </ItemGroup>
 </Project>

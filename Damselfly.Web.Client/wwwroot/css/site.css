@@ -37,9 +37,16 @@ html, body {
     animation: sk-scaleout 1.0s infinite ease-in-out;
 }
 
+.damselfly-login-logo {
+    margin-top: 10vh;
+    max-width: 600px;
+}
+
 .damselfly-login-form {
-    margin: 40px;
+    margin-left: 30vw;
+    margin-right: 30vw;
     padding: 30px;
+    max-width: 500px;
 }
 
 .components-reconnect-hide > div {

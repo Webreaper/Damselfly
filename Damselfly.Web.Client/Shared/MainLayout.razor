@@ -1,44 +1,62 @@
-﻿@inherits LayoutComponentBase
+﻿@using Damselfly.Core.ScopedServices
+@inherits LayoutComponentBase
+@implements IDisposable
 @inject ViewDataService ViewDataService
 
-<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small"/>
-<RadzenContextMenu/>
+    <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
+    <RadzenContextMenu />
 
-<DetailedErrorBoundary>
-    <ChildContent>
-        <CascadingAuthenticationState>
-            <DetailedErrorBoundary>
-                <LoginForcer/>
-                <ThemeSwitcher/>
-            </DetailedErrorBoundary>
-            <div class="damselfly-container">
-                @if( ViewDataService.ShowSideBar )
+    <DetailedErrorBoundary>
+        <ChildContent>
+            <CascadingAuthenticationState>
+                <DetailedErrorBoundary>
+                    <LoginForcer />
+                    <ThemeSwitcher />
+                </DetailedErrorBoundary>
+                @if (ViewDataService.ShowSideBar)
                 {
-                    <div class="damselfly-application">
-                        <SplitView>
-                            <LeftPane>
-                                <SideBar/>
-                            </LeftPane>
-                            <RightPane>
-                                @Body
-                            </RightPane>
-                        </SplitView>
+                    <div class="damselfly-container">
+                        <div class="damselfly-application">
+                            <SplitView>
+                                <LeftPane>
+                                    <SideBar />
+                                </LeftPane>
+                                <RightPane>
+                                    @Body
+                                </RightPane>
+                            </SplitView>
+                        </div>
+                        <DetailedErrorBoundary>
+                            <Statusbar />
+                        </DetailedErrorBoundary>
                     </div>
-                    <DetailedErrorBoundary>
-                        <Statusbar/>
-                    </DetailedErrorBoundary>
                 }
                 else
                 {
-                    @Body
+                    <div>
+                        @Body
+                    </div>
                 }
-            </div>
-        </CascadingAuthenticationState>
-    </ChildContent>
-    <ErrorContent>
-        <p>An error occurred. Please check the Damselfly logs and reload the page.</p>
-    </ErrorContent>
-</DetailedErrorBoundary>
+            </CascadingAuthenticationState>
+        </ChildContent>
+        <ErrorContent>
+            <p>An error occurred. Please check the Damselfly logs and reload the page.</p>
+        </ErrorContent>
+    </DetailedErrorBoundary>
 
-@code{
-}
+    @code{ protected override void OnInitialized()
+        {
+            ViewDataService.SideBarStateChanged += SideBarChanged;
+            base.OnInitialized();
+        }
+
+        private void SideBarChanged(ViewDataService.SideBarState state)
+        {
+            StateHasChanged();
+        }
+
+        public void Dispose()
+        {
+            ViewDataService.SideBarStateChanged -= SideBarChanged;
+        }
+    }

@@ -42,31 +42,31 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Controllers\"/>
-        <Folder Include="Pages\Shared\"/>
-        <Folder Include="Shared\Dialogs\"/>
-        <Folder Include="Components\"/>
-        <Folder Include="wwwroot\"/>
-        <Folder Include="wwwroot\fonts\"/>
-        <Folder Include="wwwroot\themes\"/>
+        <Folder Include="Controllers\" />
+        <Folder Include="Pages\Shared\" />
+        <Folder Include="Shared\Dialogs\" />
+        <Folder Include="Components\" />
+        <Folder Include="wwwroot\" />
+        <Folder Include="wwwroot\fonts\" />
+        <Folder Include="wwwroot\themes\" />
     </ItemGroup>
     <ItemGroup>
-        <Content Remove="Shared\Images\ImagePropertyField.razor"/>
-        <Content Remove="wwwroot\"/>
-        <Content Remove="wwwroot\fonts\"/>
-        <Content Remove="wwwroot\themes\"/>
+        <Content Remove="Shared\Images\ImagePropertyField.razor" />
+        <Content Remove="wwwroot\" />
+        <Content Remove="wwwroot\fonts\" />
+        <Content Remove="wwwroot\themes\" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0-rc.1.22426.10"/>
-        <PackageReference Include="MudBlazor" Version="6.0.15"/>
-        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1"/>
-        <PackageReference Include="Blazored.Typeahead" Version="4.6.0"/>
-        <PackageReference Include="font-awesome" Version="4.7.0"/>
-        <PackageReference Include="Tewr.Blazor.FileReader" Version="3.3.1.21360"/>
-        <PackageReference Include="Radzen.Blazor" Version="3.20.12"/>
-        <PackageReference Include="Blazored.FluentValidation" Version="2.0.3"/>
-        <PackageReference Include="FluentValidation" Version="11.2.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web.Extensions" Version="5.0.0-preview9.20513.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0-rc.1.22426.10" />
+        <PackageReference Include="MudBlazor" Version="6.0.15" />
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+        <PackageReference Include="Blazored.Typeahead" Version="4.6.0" />
+        <PackageReference Include="font-awesome" Version="4.7.0" />
+        <PackageReference Include="Tewr.Blazor.FileReader" Version="3.3.1.21360" />
+        <PackageReference Include="Radzen.Blazor" Version="3.20.12" />
+        <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
+        <PackageReference Include="FluentValidation" Version="11.2.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0-rc.1.22426.7">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -75,13 +75,13 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="0.1.0-alpha.22351.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.0-rc.1.22427.2" />
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="0.1.0-alpha.22351.1" />
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Components\"/>
+        <None Remove="Components\" />
     </ItemGroup>
 </Project>

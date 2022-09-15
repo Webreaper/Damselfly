@@ -7,25 +7,27 @@
     [CascadingParameter]
     protected Task<AuthenticationState> AuthStat { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        base.OnInitialized();
-
         var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
 
-    // Check if any users have been created. If there aren't any, then we need to allow
-    // the user to create the first one, so disable the login redirect.
+        // Check if any users have been created. If there aren't any, then we need to allow
+        // the user to create the first one, so disable the login redirect.
         var users = await userService.GetUsers();
 
         if( users.Any() && forceLogin )
         {
+            Console.WriteLine("LoginForcer: Checking...");
+
             var user = (await AuthStat).User;
 
             if( !user.Identity.IsAuthenticated )
             {
-                Navigation.NavigateTo("Login");
+                Console.WriteLine("LoginForcer: Redirecting...");
+
+                if( ! Navigation.Uri.EndsWith( "/Login"))
+                    Navigation.NavigateTo("Login");
             }
         }
     }
-
 }

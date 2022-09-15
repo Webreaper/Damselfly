@@ -3,27 +3,26 @@
 @inject NavigationManager NavigationManager
 @inject ViewDataService viewdataService
 
-<img src="damselfly-logo.png" title="Damselfly" style="margin-top: 10vh;"/>
-
 <div class="damselfly-login-form">
+    <img src="damselfly-logo.png" title="Damselfly" class="damselfly-login-logo" />
     <h2>Log in to Damselfly</h2>
 
     <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-        <DataAnnotationsValidator/>
-        <ValidationSummary/>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
         <div class="form-group">
             <label for="email">Email address</label>
-            <MudTextField @bind-Value="@loginModel.Email" InputType="InputType.Email" For="@(() => loginModel.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
-            <ValidationMessage For="@(() => loginModel.Email)"/>
+            <MudTextField @bind-Value="@loginModel.Email" InputType="InputType.Email" For="@(() => loginModel.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <ValidationMessage For="@(() => loginModel.Email)" />
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <MudTextField @bind-Value="@loginModel.Password" InputType="InputType.Password" For="@(() => loginModel.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
-            <ValidationMessage For="@(() => loginModel.Password)"/>
+            <MudTextField @bind-Value="@loginModel.Password" InputType="InputType.Password" For="@(() => loginModel.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <ValidationMessage For="@(() => loginModel.Password)" />
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@loginModel.RememberMe" Label="Remember Me"/>
+            <MudCheckBox @bind-Checked="@loginModel.RememberMe" Label="Remember Me" />
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
     </EditForm>
@@ -42,11 +41,11 @@
     private bool ShowErrors;
     private string Error = "";
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnAfterRender( bool firstRender)
     {
         if( firstRender )
         {
-            viewdataService.SetSideBarState(new ViewDataService.SideBarState { HideSideBar = false });
+            viewdataService.SetSideBarState(new ViewDataService.SideBarState { HideSideBar = true });
             StateHasChanged();
         }
     }
