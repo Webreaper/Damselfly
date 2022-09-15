@@ -1,41 +1,38 @@
 ﻿window.InfiniteScroll =
-{
-    Init: function (scrollAreaID, endMarkerId, DotNetRef) {
-        var scrollArea = document.getElementById(scrollAreaID);
+    {
+        Init: function (scrollAreaID, endMarkerId, DotNetRef) {
+            var scrollArea = document.getElementById(scrollAreaID);
 
-        if (scrollArea === null) {
-            return false;
-        }
-        var markerIsVisible = function ()
-        {
-            var endMarker = document.getElementById(endMarkerId);
-
-            if (endMarker === null)
+            if (scrollArea === null) {
                 return false;
+            }
+            var markerIsVisible = function () {
+                var endMarker = document.getElementById(endMarkerId);
 
-            var bounding = endMarker.getBoundingClientRect();
+                if (endMarker === null)
+                    return false;
 
-            return (bounding.top >= 0 && bounding.left >= 0 &&
-                bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
-                bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
-        }
+                var bounding = endMarker.getBoundingClientRect();
 
-        var markerVisibleState = null;
+                return (bounding.top >= 0 && bounding.left >= 0 &&
+                    bounding.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+                    bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
+            }
 
-        function loadIfMoreVisible() {
-            var visible = markerIsVisible();
+            var markerVisibleState = null;
 
-            if (markerVisibleState != visible)
-            {
-                markerVisibleState = visible;
-                if (visible)
-                {
-                    DotNetRef.invokeMethodAsync("LoadMoreData");
+            function loadIfMoreVisible() {
+                var visible = markerIsVisible();
+
+                if (markerVisibleState != visible) {
+                    markerVisibleState = visible;
+                    if (visible) {
+                        DotNetRef.invokeMethodAsync("LoadMoreData");
+                    }
                 }
             }
-        }
 
-        window.addEventListener('resize', loadIfMoreVisible);
-        scrollArea.addEventListener('scroll', loadIfMoreVisible);
+            window.addEventListener('resize', loadIfMoreVisible);
+            scrollArea.addEventListener('scroll', loadIfMoreVisible);
+        }
     }
-}

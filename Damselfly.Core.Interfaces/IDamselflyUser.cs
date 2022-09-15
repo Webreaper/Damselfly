@@ -1,8 +1,7 @@
-﻿namespace Damselfly.Core.Interfaces
+﻿namespace Damselfly.Core.Interfaces;
+
+public interface IDamselflyUser
 {
-    public interface IDamselflyUser
-    {
-        public int Id { get; set; }
-        public string UserName { get; set; }
-    }
+    public int Id { get; set; }
+    public string UserName { get; set; }
 }

@@ -9,8 +9,6 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface ISearchService
 {
-    event Action OnSearchChanged;
-
     ICollection<int> SearchResults { get; }
 
     string SearchText { get; set; }
@@ -33,9 +31,10 @@ public interface ISearchService
     GroupingType Grouping { get; set; }
     SortOrderType SortOrder { get; set; }
     OrientationType? Orientation { get; set; }
-    void SetDateRange(DateTime? min, DateTime? max);
 
     string SearchBreadcrumbs { get; }
+    event Action OnSearchChanged;
+    void SetDateRange(DateTime? min, DateTime? max);
 
     void Refresh();
     void Reset();
@@ -43,4 +42,3 @@ public interface ISearchService
 
     Task<SearchResponse> GetQueryImagesAsync(int start, int count);
 }
-

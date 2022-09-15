@@ -1,5 +1,4 @@
-﻿using System;
-namespace Damselfly.Core.Constants;
+﻿namespace Damselfly.Core.Constants;
 
 [Flags]
 public enum RescanTypes

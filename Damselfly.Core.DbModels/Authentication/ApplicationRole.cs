@@ -1,17 +1,12 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
-using System.Xml.Linq;
-using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Core.DbModels.Authentication;
 
-
-public partial class ApplicationRole : IdentityRole<int>
+public class ApplicationRole : IdentityRole<int>
 {
-    public ApplicationRole() : base()
+    public ApplicationRole()
     {
-
     }
 
     public ApplicationRole(string roleName)

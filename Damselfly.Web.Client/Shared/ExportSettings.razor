@@ -1,5 +1,4 @@
-﻿
-@inject IUserBasketService basketService
+﻿@inject IUserBasketService basketService
 @inject ViewDataService ViewDataService
 @inject ClientExportService exportService
 @inject IDownloadService downloadService
@@ -8,27 +7,27 @@
 
 @implements IDisposable
 
-<LocalFileExporter @ref="FileExporter" />
+<LocalFileExporter @ref="FileExporter"/>
 
 <div class="damselfly-exportpanel">
-    <ExportConfigManager CurrentConfig="@selectedConfig" OnValueChanged="ConfigChanged" />
-    @if (selectedConfig != null)
+    <ExportConfigManager CurrentConfig="@selectedConfig" OnValueChanged="ConfigChanged"/>
+    @if( selectedConfig != null )
     {
         <div class="damselfly-exportsettings">
             <div>
                 <h4>Export Settings</h4>
             </div>
             <div>
-                <ImageField FieldName="Export Type" FieldValue="@selectedConfig.Type.ToString()" />
+                <ImageField FieldName="Export Type" FieldValue="@selectedConfig.Type.ToString()"/>
             </div>
             <div>
-                <ImageField FieldName="Export Size" FieldValue="@selectedConfig.SizeDesc()" />
+                <ImageField FieldName="Export Size" FieldValue="@selectedConfig.SizeDesc()"/>
             </div>
             <div>
-                <ImageField FieldName="Watermark" FieldValue="@selectedConfig.WatermarkText" />
+                <ImageField FieldName="Watermark" FieldValue="@selectedConfig.WatermarkText"/>
             </div>
             <div>
-                @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                @if( FileExporter != null && FileExporter.IsDesktopHosted )
                 {
                     <button @onclick="@ExportBasketToLocalFileSystem" class="btn btn-primary">Save Locally</button>
                 }
@@ -54,7 +53,7 @@
     {
         selectedConfig = args.Value as ExportConfig;
 
-        if (selectedConfig != null)
+        if( selectedConfig != null )
             StatusMessage = $"Loaded Config for '{selectedConfig.Name}'";
 
         StateHasChanged();
@@ -83,21 +82,21 @@
     {
         var images = basketService.CurrentBasket.BasketEntries.Select(x => x.ImageId).ToList();
 
-        // TODO: How to handle long zip times. Progress meter etc?
-        string zipPath = await downloadService.CreateDownloadZipAsync(images, selectedConfig);
+    // TODO: How to handle long zip times. Progress meter etc?
+        var zipPath = await downloadService.CreateDownloadZipAsync(images, selectedConfig);
         await JsRuntime.InvokeAsync<string>("downloadFile", zipPath);
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             FileExporter.OnChange += StateHasChanged;
 
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 
-            exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
-            exportSizes = (ExportSize[])Enum.GetValues(typeof(ExportSize));
+            exportTypes = (ExportType[])Enum.GetValues(typeof( ExportType ));
+            exportSizes = (ExportSize[])Enum.GetValues(typeof( ExportSize ));
 
             StateHasChanged();
         }
@@ -107,4 +106,5 @@
     {
         FileExporter.OnChange -= StateHasChanged;
     }
+
 }

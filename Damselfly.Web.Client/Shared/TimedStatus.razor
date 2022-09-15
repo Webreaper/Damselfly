@@ -1,50 +1,54 @@
-﻿
-@using System.Threading
-
-<div class="status">
+﻿<div class="status">
     <label>@StatusText</label>
 </div>
 
 @code {
+
     [Parameter]
     public int DisplayIntervalSecs { get; set; } = 5;
+
     [Parameter]
-    public string StatusText { get { return _text; } set { SetStatusText(value); } }
+    public string StatusText
+    {
+        get => _text;
+        set => SetStatusText(value);
+    }
 
     private string _text;
     private Timer searchTimer;
 
     private void SetStatusText(string value)
     {
-        if (_text != value)
+        if( _text != value )
         {
             KillTimer();
             searchTimer = new Timer(TimerCallback, null, DisplayIntervalSecs * 1000, Timeout.Infinite);
 
             InvokeAsync(() =>
-                        {
-                            _text = value;
-                            StateHasChanged();
-                        });
+            {
+                _text = value;
+                StateHasChanged();
+            });
         }
     }
 
-        private void KillTimer()
-        {
-            var oldTimer = searchTimer;
-            searchTimer = null;
-            if (oldTimer != null)
-                oldTimer.Dispose();
-        }
+    private void KillTimer()
+    {
+        var oldTimer = searchTimer;
+        searchTimer = null;
+        if( oldTimer != null )
+            oldTimer.Dispose();
+    }
 
-        private void TimerCallback(object state)
-        {
-            KillTimer();
+    private void TimerCallback(object state)
+    {
+        KillTimer();
 
-            if (!string.IsNullOrEmpty(_text))
-            {
-                _text = string.Empty;
-                InvokeAsync( StateHasChanged );
-            }
+        if( !string.IsNullOrEmpty(_text) )
+        {
+            _text = string.Empty;
+            InvokeAsync(StateHasChanged);
         }
+    }
+
 }

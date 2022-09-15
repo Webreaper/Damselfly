@@ -1,9 +1,4 @@
-﻿
-@using System.ComponentModel.DataAnnotations
-@using Damselfly.Web.Components
-@using Damselfly.Core.Interfaces
-
-@inject IBasketService basketService
+﻿@inject IBasketService basketService
 @inject IUserService userService
 @inject IUserStatusService statusService
 @inject ClientExportService exportService
@@ -16,34 +11,34 @@
     </TitleContent>
     <DialogContent>
         <EditForm Model="@Config" OnValidSubmit="OnValidSubmit">
-            <DataAnnotationsValidator />
-            <MudTextField @bind-Value="@Config.Name" For="@(() => Config.Name)" Label="Config Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            @if (!string.IsNullOrEmpty(errorMsg))
+            <DataAnnotationsValidator/>
+            <MudTextField @bind-Value="@Config.Name" For="@(() => Config.Name)" Label="Config Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            @if( !string.IsNullOrEmpty(errorMsg) )
             {
                 <p>@errorMsg</p>
             }
-            <MudSelect T="ExportSize" Label="Size" @bind-Value="Config.Size" Variant="UIConstants.MudVariant">
-                @foreach (var choice in exportSizes)
+            <MudSelect T=" ExportSize " Label="Size" @bind-Value="Config.Size" Variant="UIConstants.MudVariant">
+                @foreach( var choice in exportSizes )
                 {
                     <MudSelectItem Value="@choice">
-                        @ExportConfig.SizeDesc( choice )
+                        @ExportConfig.SizeDesc(choice)
                     </MudSelectItem>
                 }
             </MudSelect>
-            <MudSelect T="ExportType" Label="Type" @bind-Value="Config.Type" Variant="UIConstants.MudVariant">
-                @foreach (var choice in exportTypes)
+            <MudSelect T=" ExportType " Label="Type" @bind-Value="Config.Type" Variant="UIConstants.MudVariant">
+                @foreach( var choice in exportTypes )
                 {
                     <MudSelectItem Value="@choice">
                         @choice.ToString()
                     </MudSelectItem>
                 }
             </MudSelect>
-            <MudCheckBox @bind-Checked="@Config.KeepFolders" Label="Export with folder structure" />
-            <MudTextField @bind-Value="@Config.WatermarkText" For="@(() => Config.WatermarkText)" Label="Watermark Text" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
+            <MudCheckBox @bind-Checked="@Config.KeepFolders" Label="Export with folder structure"/>
+            <MudTextField @bind-Value="@Config.WatermarkText" For="@(() => Config.WatermarkText)" Label="Watermark Text" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
         </EditForm>
     </DialogContent>
     <DialogActions>
-        @if (Mode == "Edit")
+        @if( Mode == "Edit" )
         {
             <MudItem xs="12" md="12">
                 <MudPaper Elevation="0" Class="d-flex py-2 px-1">
@@ -62,11 +57,12 @@
 </MudDialog>
 
 @code {
+
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public ExportConfig Config { get; set; } = new ExportConfig();
+    public ExportConfig Config { get; set; } = new();
 
     [Parameter]
     public string Mode { get; set; }
@@ -81,7 +77,7 @@
 
     async Task DeleteConfig()
     {
-        await exportService.Delete( Config );
+        await exportService.Delete(Config);
 
         MudDialog.Close(DialogResult.Ok(true));
     }
@@ -90,22 +86,22 @@
     {
         try
         {
-            if (Mode == "Add")
+            if( Mode == "Add" )
             {
                 await exportService.Create(Config);
 
-                statusService.UpdateStatus( $"New download config '{Config.Name}' was created." );
+                statusService.UpdateStatus($"New download config '{Config.Name}' was created.");
             }
-            else if (Mode == "Edit")
+            else if( Mode == "Edit" )
             {
                 await exportService.Save(Config);
 
-                statusService.UpdateStatus( $"Config '{Config.Name}' saved." );
+                statusService.UpdateStatus($"Config '{Config.Name}' saved.");
             }
 
             MudDialog.Close(DialogResult.Ok(true));
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError($"Unexpected error saving export config: {ex}");
             DisplayError($"Unexpected error saving export config {ex.Message}");
@@ -120,11 +116,15 @@
         StateHasChanged();
     }
 
-    void Cancel() => MudDialog.Cancel();
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
 
     protected override void OnInitialized()
     {
-        exportTypes = (ExportType[])Enum.GetValues(typeof(ExportType));
-        exportSizes = (ExportSize[])Enum.GetValues(typeof(ExportSize));
+        exportTypes = (ExportType[])Enum.GetValues(typeof( ExportType ));
+        exportSizes = (ExportSize[])Enum.GetValues(typeof( ExportSize ));
     }
+
 }

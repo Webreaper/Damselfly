@@ -1,35 +1,53 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using Damselfly.Core.Utils;
-using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using Damselfly.Core.Models;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Images;
-using Damselfly.Shared.Utils;
+using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Stopwatch = Damselfly.Shared.Utils.Stopwatch;
 
 namespace Damselfly.Core.Services;
 
 public class ThumbnailService : IProcessJobFactory, IRescanProvider
 {
-    private static string _thumbnailRootFolder;
     private const string _requestRoot = "/images";
-    private static int s_maxThreads = GetMaxThreads();
-    private readonly IStatusService _statusService;
+    private static string _thumbnailRootFolder;
+    private static readonly int s_maxThreads = GetMaxThreads();
+
+
+    /// <summary>
+    ///     This is the set of thumb resolutions that Syno PhotoStation and moments expects
+    /// </summary>
+    private static readonly IThumbConfig[] thumbConfigs =
+    {
+        new ThumbConfig
+            { width = 2000, height = 2000, size = ThumbSize.ExtraLarge, useAsSource = true, batchGenerate = false },
+        new ThumbConfig { width = 800, height = 800, size = ThumbSize.Large, useAsSource = true },
+        new ThumbConfig { width = 640, height = 640, size = ThumbSize.Big, batchGenerate = false },
+        new ThumbConfig { width = 320, height = 320, size = ThumbSize.Medium },
+        new ThumbConfig
+            { width = 160, height = 120, size = ThumbSize.Preview, cropToRatio = true, batchGenerate = false },
+        new ThumbConfig { width = 120, height = 120, size = ThumbSize.Small, cropToRatio = true }
+    };
+
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessingService;
-    private readonly WorkService _workService;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IStatusService _statusService;
+    private readonly WorkService _workService;
 
     public ThumbnailService(IServiceScopeFactory scopeFactory,
-                    IStatusService statusService,
-                    ImageProcessService imageService,
-                    ImageCache imageCache, WorkService workService)
+        IStatusService statusService,
+        ImageProcessService imageService,
+        ImageCache imageCache, WorkService workService)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -40,27 +58,89 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         _workService.AddJobSource(this);
     }
 
+    public static string PicturesRoot { get; set; }
+    public static bool UseGraphicsMagick { get; set; }
+    public static bool Synology { get; set; }
+    public static string RequestRoot => _requestRoot;
+    public static bool EnableThumbnailGeneration { get; set; } = true;
+
+    public JobPriorities Priority => JobPriorities.Thumbnails;
+
+    public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
+    {
+        if ( !EnableThumbnailGeneration )
+            return new ThumbProcess[0];
+
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
+            .OrderByDescending(x => x.LastUpdated)
+            .Take(maxJobs)
+            .Select(x => x.ImageId)
+            .ToListAsync();
+
+        var jobs = images.Select(x => new ThumbProcess { ImageId = x, Service = this })
+            .ToArray();
+
+        return jobs;
+    }
+
+    public async Task MarkAllForScan()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+        var updated =
+            await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null");
+
+        _statusService.UpdateStatus($"All {updated} images flagged for thumbnail re-generation.");
+    }
+
+    public async Task MarkFolderForScan(int folderId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var updated = await ImageContext.UpdateMetadataFields(db, folderId, "ThumbLastUpdated", "null");
+
+        if ( updated != 0 )
+            _statusService.UpdateStatus($"{updated} images in folder flagged for thumbnail re-generation.");
+    }
+
+    public async Task MarkImagesForScan(ICollection<int> imageIds)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var imageIdList = string.Join(",", imageIds);
+        var sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIdList})";
+
+        // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
+        await db.Database.ExecuteSqlRawAsync(sql);
+
+        var msgText = imageIds.Count == 1 ? "Image" : $"{imageIds.Count} images";
+        _statusService.UpdateStatus($"{msgText} flagged for thumbnail re-generation.");
+
+        _workService.FlagNewJobs(this);
+    }
+
     /// <summary>
-    /// TODO - move this somewhere better
+    ///     TODO - move this somewhere better
     /// </summary>
     /// <returns></returns>
     public static int GetMaxThreads()
     {
-        if (System.Diagnostics.Debugger.IsAttached)
+        if ( Debugger.IsAttached )
             return 1;
 
         return Math.Max(Environment.ProcessorCount / 2, 2);
     }
 
-    public static string PicturesRoot { get; set; }
-    public static bool UseGraphicsMagick { get; set; }
-    public static bool Synology { get; set; }
-    public static string RequestRoot { get { return _requestRoot; } }
-    public static bool EnableThumbnailGeneration { get; set; } = true;
-
     /// <summary>
-    /// Set the http thumbnail request root - this will be wwwroot or equivalent
-    /// and will be determined by the webserver we're being called from.
+    ///     Set the http thumbnail request root - this will be wwwroot or equivalent
+    ///     and will be determined by the webserver we're being called from.
     /// </summary>
     /// <param name="rootFolder"></param>
     public static void SetThumbnailRoot(string rootFolder)
@@ -68,22 +148,24 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         // Get the full absolute path.
         _thumbnailRootFolder = Path.GetFullPath(rootFolder);
 
-        if (!Synology)
+        if ( !Synology )
         {
-            if (!System.IO.Directory.Exists(_thumbnailRootFolder))
+            if ( !Directory.Exists(_thumbnailRootFolder) )
             {
-                System.IO.Directory.CreateDirectory(_thumbnailRootFolder);
+                Directory.CreateDirectory(_thumbnailRootFolder);
                 Logging.Log("Created folder for thumbnails storage at {0}", _thumbnailRootFolder);
             }
             else
+            {
                 Logging.Log("Initialised thumbnails storage at {0}", _thumbnailRootFolder);
+            }
         }
     }
 
     /// <summary>
-    /// Given a particular image, calculates the path and filename of the associated
-    /// thumbnail for that image and size.
-    /// TODO: Use the Thumbnail Last gen date here to avoid passing back images with no thumbs?
+    ///     Given a particular image, calculates the path and filename of the associated
+    ///     thumbnail for that image and size.
+    ///     TODO: Use the Thumbnail Last gen date here to avoid passing back images with no thumbs?
     /// </summary>
     /// <param name="imageFile"></param>
     /// <param name="size"></param>
@@ -92,23 +174,23 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     {
         string thumbPath;
 
-        if (Synology)
+        if ( Synology )
         {
             // Syno thumbs go in a subdir of the location of the image
-            string thumbFileName = $"SYNOPHOTO_THUMB_{GetSizePostFix(size).ToUpper()}.jpg";
+            var thumbFileName = $"SYNOPHOTO_THUMB_{GetSizePostFix(size).ToUpper()}.jpg";
             thumbPath = Path.Combine(imageFile.DirectoryName, "@eaDir", imageFile.Name, thumbFileName);
         }
         else
         {
-            string extension = imageFile.Extension;
+            var extension = imageFile.Extension;
 
             // Keep the extension if it's JPG, but otherwise change it to JPG (for HEIC etc).
-            if (!extension.Equals(".JPG", StringComparison.OrdinalIgnoreCase))
+            if ( !extension.Equals(".JPG", StringComparison.OrdinalIgnoreCase) )
                 extension = ".JPG";
 
-            string baseName = Path.GetFileNameWithoutExtension(imageFile.Name);
-            string relativePath = imageFile.DirectoryName.MakePathRelativeTo(PicturesRoot);
-            string thumbFileName = $"{baseName}_{GetSizePostFix(size)}{extension}";
+            var baseName = Path.GetFileNameWithoutExtension(imageFile.Name);
+            var relativePath = imageFile.DirectoryName.MakePathRelativeTo(PicturesRoot);
+            var thumbFileName = $"{baseName}_{GetSizePostFix(size)}{extension}";
             thumbPath = Path.Combine(_thumbnailRootFolder, relativePath, thumbFileName);
         }
 
@@ -124,64 +206,50 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             ThumbSize.Big => "b",
             ThumbSize.Medium => "m",
             ThumbSize.Small => "s",
-            _ => "PREVIEW",
+            _ => "PREVIEW"
         };
     }
 
-
     /// <summary>
-    /// This is the set of thumb resolutions that Syno PhotoStation and moments expects
-    /// </summary>
-    private static IThumbConfig[] thumbConfigs = {
-        new ThumbConfig{ width = 2000, height = 2000, size = ThumbSize.ExtraLarge, useAsSource = true, batchGenerate = false},
-        new ThumbConfig{ width = 800, height = 800, size = ThumbSize.Large, useAsSource = true },
-        new ThumbConfig{ width = 640, height = 640, size = ThumbSize.Big, batchGenerate = false},
-        new ThumbConfig{ width = 320, height = 320, size = ThumbSize.Medium },
-        new ThumbConfig{ width = 160, height = 120, size = ThumbSize.Preview, cropToRatio = true, batchGenerate = false },
-        new ThumbConfig{ width = 120, height = 120, size = ThumbSize.Small, cropToRatio = true }
-    };
-
-    /// <summary>
-    /// Gets the list of thumbnails sizes/specs to generate
+    ///     Gets the list of thumbnails sizes/specs to generate
     /// </summary>
     /// <param name="source"></param>
     /// <param name="ignoreExisting">Force the creation even if there's an existing file with the correct timestamp</param>
     /// <param name="altSource">If an existing thumbnail can be used as a source image, returns it</param>
     /// <returns></returns>
-    private Dictionary<FileInfo, IThumbConfig> GetThumbConfigs(FileInfo source, bool forceRegeneration, out FileInfo altSource)
+    private Dictionary<FileInfo, IThumbConfig> GetThumbConfigs(FileInfo source, bool forceRegeneration,
+        out FileInfo altSource)
     {
         altSource = null;
 
         var thumbFileAndConfig = new Dictionary<FileInfo, IThumbConfig>();
 
         // First pre-check whether the thumbs exist
-        foreach (var thumbConfig in thumbConfigs.Where(x => x.batchGenerate))
+        foreach ( var thumbConfig in thumbConfigs.Where(x => x.batchGenerate) )
         {
             var destFile = new FileInfo(GetThumbPath(source, thumbConfig.size));
 
-            if (!destFile.Directory.Exists)
+            if ( !destFile.Directory.Exists )
             {
                 Logging.LogTrace("Creating directory: {0}", destFile.Directory.FullName);
-                var newDir = System.IO.Directory.CreateDirectory(destFile.Directory.FullName);
+                var newDir = Directory.CreateDirectory(destFile.Directory.FullName);
             }
 
-            bool needToGenerate = true;
+            var needToGenerate = true;
 
-            if (destFile.Exists)
-            {
+            if ( destFile.Exists )
                 // We have a thumbnail on disk. See if it's suitable,
                 // or if it needs to be regenerated.
-                if (!forceRegeneration)
-                {
+                if ( !forceRegeneration )
                     // First, check if the source is older than the thumbnail
-                    if (source.LastWriteTimeUtc < destFile.LastWriteTimeUtc)
+                    if ( source.LastWriteTimeUtc < destFile.LastWriteTimeUtc )
                     {
                         // The source is older, so we might be able to use it. Check the res:
                         int actualHeight, actualWidth;
                         MetaDataService.GetImageSize(destFile.FullName, out actualWidth, out actualHeight);
 
                         // Note that the size may be smaller - thumbconfigs are 'max' size, not actual.
-                        if (actualHeight <= thumbConfig.height && actualWidth <= thumbConfig.width)
+                        if ( actualHeight <= thumbConfig.height && actualWidth <= thumbConfig.width )
                         {
                             // Size matches - so no need to generate.
                             needToGenerate = false;
@@ -193,31 +261,26 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                             // performance enhancement - it means that if we're scaling a 7MB image, but a 1MB
                             // thumbnail already exists, use that as the source instead, as it'll be faster
                             // to process.
-                            if (altSource == null && thumbConfig.useAsSource)
+                            if ( altSource == null && thumbConfig.useAsSource )
                                 altSource = destFile;
                         }
                     }
-                }
-            }
 
-            if (needToGenerate)
-            {
-                thumbFileAndConfig.Add(destFile, thumbConfig);
-            }
+            if ( needToGenerate ) thumbFileAndConfig.Add(destFile, thumbConfig);
         }
 
         return thumbFileAndConfig;
     }
 
     /// <summary>
-    /// Go through all of the thumbnails and delete any thumbs that
-    /// don't apply to a legit iamage.
+    ///     Go through all of the thumbnails and delete any thumbs that
+    ///     don't apply to a legit iamage.
     /// </summary>
     /// <param name="thumbCleanupFreq"></param>
     public void CleanUpThumbnails(TimeSpan thumbCleanupFreq)
     {
-        DirectoryInfo root = new DirectoryInfo(PicturesRoot);
-        DirectoryInfo thumbRoot = new DirectoryInfo(_thumbnailRootFolder);
+        var root = new DirectoryInfo(PicturesRoot);
+        var thumbRoot = new DirectoryInfo(_thumbnailRootFolder);
 
         CleanUpThumbDir(root, thumbRoot);
     }
@@ -232,15 +295,13 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         var foldersToDelete = thumbSubDirs.Except(picsSubDirs);
         var foldersToCheck = thumbSubDirs.Intersect(picsSubDirs);
 
-        foreach (var deleteDir in foldersToDelete)
-        {
-            Logging.Log($"Deleting folder {deleteDir} [Dry run]");
-        }
+        foreach ( var deleteDir in foldersToDelete ) Logging.Log($"Deleting folder {deleteDir} [Dry run]");
 
-        foreach (var folderToCheck in foldersToCheck.Select(x => new DirectoryInfo(x)))
+        foreach ( var folderToCheck in foldersToCheck.Select(x => new DirectoryInfo(x)) )
         {
             var allFiles = folderToCheck.GetFiles("*.*");
-            var allThumbFiles = allFiles.SelectMany(file => thumbsToKeep.Select(thumb => GetThumbPath(file, thumb.size)));
+            var allThumbFiles =
+                allFiles.SelectMany(file => thumbsToKeep.Select(thumb => GetThumbPath(file, thumb.size)));
 
             //var filesToDelete = allFiles;
 
@@ -250,8 +311,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     }
 
     /// <summary>
-    /// Queries the database to find any images that haven't had a thumbnail
-    /// generated, and queues them up to process the thumb generation.
+    ///     Queries the database to find any images that haven't had a thumbnail
+    ///     generated, and queues them up to process the thumb generation.
     /// </summary>
     private async Task ProcessThumbnailScan()
     {
@@ -260,9 +321,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
         Logging.LogVerbose("Starting thumbnail scan...");
 
-        bool complete = false;
+        var complete = false;
 
-        while (!complete)
+        while ( !complete )
         {
             Logging.LogVerbose("Querying DB for pending thumbs...");
 
@@ -270,20 +331,21 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
             // TODO: Change this to a consumer/producer thread model
             var imagesToScan = db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
-                                    .OrderByDescending(x => x.LastUpdated)
-                                    .Take(100)
-                                    .Include(x => x.Image)
-                                    .Include(x => x.Image.Hash)
-                                    .Include(x => x.Image.Folder)
-                                    .ToArray();
+                .OrderByDescending(x => x.LastUpdated)
+                .Take(100)
+                .Include(x => x.Image)
+                .Include(x => x.Image.Hash)
+                .Include(x => x.Image.Folder)
+                .ToArray();
 
             watch.Stop();
 
             complete = !imagesToScan.Any();
 
-            if (!complete)
+            if ( !complete )
             {
-                Logging.LogVerbose($"Found {imagesToScan.Count()} images requiring thumb gen. First image is {imagesToScan[0].Image.FullPath}.");
+                Logging.LogVerbose(
+                    $"Found {imagesToScan.Count()} images requiring thumb gen. First image is {imagesToScan[0].Image.FullPath}.");
 
                 watch = new Stopwatch("ThumbnailBatch", 100000);
 
@@ -295,9 +357,10 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
                 try
                 {
-                    await imagesToScan.ExecuteInParallel(async img => await CreateThumbs(img, forceRegeneration), s_maxThreads);
+                    await imagesToScan.ExecuteInParallel(async img => await CreateThumbs(img, forceRegeneration),
+                        s_maxThreads);
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     Logging.LogError($"Exception during parallelised thumbnail generation: {ex}");
                 }
@@ -311,19 +374,22 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
                 watch.Stop();
 
-                if (imagesToScan.Length > 1)
-                    _statusService.UpdateStatus($"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).");
+                if ( imagesToScan.Length > 1 )
+                    _statusService.UpdateStatus(
+                        $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).");
 
-                Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
+                Action<string> logFunc = Logging.Verbose ? s => Logging.LogVerbose(s) : s => Logging.Log(s);
                 Stopwatch.WriteTotals(logFunc);
             }
             else
+            {
                 Logging.LogVerbose("No images found to scan.");
+            }
         }
     }
 
     /// <summary>
-    /// Generates thumbnails for an image.
+    ///     Generates thumbnails for an image.
     /// </summary>
     /// <param name="sourceImage"></param>
     /// <param name="forceRegeneration"></param>
@@ -341,7 +407,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     }
 
     /// <summary>
-    /// Generates thumbnails for an image.
+    ///     Generates thumbnails for an image.
     /// </summary>
     /// <param name="sourceImage"></param>
     /// <param name="forceRegeneration"></param>
@@ -369,7 +435,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     }
 
     /// <summary>
-    /// Saves an MD5 Image hash against an image. 
+    ///     Saves an MD5 Image hash against an image.
     /// </summary>
     /// <param name="image"></param>
     /// <param name="processResult"></param>
@@ -381,9 +447,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            Hash hash = image.Hash;
+            var hash = image.Hash;
 
-            if (hash == null)
+            if ( hash == null )
             {
                 hash = new Hash { ImageId = image.ImageId };
                 image.Hash = hash;
@@ -400,28 +466,28 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
             await db.SaveChangesAsync("SaveHash");
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError($"Exception during perceptual hash calc: {ex}");
         }
     }
 
     /// <summary>
-    /// Clears the cache of face thumbs from the disk
+    ///     Clears the cache of face thumbs from the disk
     /// </summary>
     public Task ClearFaceThumbs()
     {
-        DirectoryInfo dir = new DirectoryInfo(Path.Combine(_thumbnailRootFolder, "_FaceThumbs"));
+        var dir = new DirectoryInfo(Path.Combine(_thumbnailRootFolder, "_FaceThumbs"));
 
         dir.GetFiles().ToList()
-                 .ForEach(x => FileUtils.SafeDelete(x));
+            .ForEach(x => x.SafeDelete());
 
         return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Given an image ID and a face object, returns the path of a generated
-    /// thumbnail for that croppped face.
+    ///     Given an image ID and a face object, returns the path of a generated
+    ///     thumbnail for that croppped face.
     /// </summary>
     /// <param name="imageId"></param>
     /// <param name="face"></param>
@@ -429,26 +495,26 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     public async Task<FileInfo> GenerateFaceThumb(ImageObject face)
     {
         FileInfo destFile = null;
-        Stopwatch watch = new Stopwatch("GenerateFaceThumb");
+        var watch = new Stopwatch("GenerateFaceThumb");
 
         try
         {
-            string faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs");
+            var faceDir = Path.Combine(_thumbnailRootFolder, "_FaceThumbs");
             var image = await _imageCache.GetCachedImage(face.ImageId);
             var file = new FileInfo(image.FullPath);
             var thumbPath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
 
-            if (thumbPath.Exists)
+            if ( thumbPath.Exists )
             {
                 destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");
 
-                if (!System.IO.Directory.Exists(faceDir))
+                if ( !Directory.Exists(faceDir) )
                 {
                     Logging.Log($"Created folder for face thumbnails: {faceDir}");
-                    System.IO.Directory.CreateDirectory(faceDir);
+                    Directory.CreateDirectory(faceDir);
                 }
 
-                if (!destFile.Exists)
+                if ( !destFile.Exists )
                 {
                     Logging.Log($"Generating face thumb for {face.PersonId} from file {thumbPath}...");
 
@@ -456,9 +522,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
                     Logging.LogTrace($"Loaded {thumbPath.FullName} - {thumbWidth} x {thumbHeight}");
 
-                    (var x, var y, var width, var height) = ScaleDownRect(image.MetaData.Width, image.MetaData.Height,
-                                                                          thumbWidth, thumbHeight,
-                                                                          face.RectX, face.RectY, face.RectWidth, face.RectHeight);
+                    var (x, y, width, height) = ScaleDownRect(image.MetaData.Width, image.MetaData.Height,
+                        thumbWidth, thumbHeight,
+                        face.RectX, face.RectY, face.RectWidth, face.RectHeight);
 
                     Logging.LogTrace($"Cropping face at {x}, {y}, w:{width}, h:{height}");
 
@@ -468,14 +534,16 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
                     destFile.Refresh();
 
-                    if (!destFile.Exists)
+                    if ( !destFile.Exists )
                         destFile = null;
                 }
             }
             else
+            {
                 Logging.LogWarning($"Unable to generate face thumb from {thumbPath} - file does not exist.");
+            }
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError($"Exception generating face thumb for image ID {face.ImageId}: {ex.Message}");
         }
@@ -486,65 +554,67 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     }
 
     /// <summary>
-    /// Scales the detected face/object rectangles based on the full-sized image,
-    /// since the object detection was done on a smaller thumbnail.
+    ///     Scales the detected face/object rectangles based on the full-sized image,
+    ///     since the object detection was done on a smaller thumbnail.
     /// </summary>
     /// <param name="image"></param>
     /// <param name="imgObjects">Collection of objects to scale</param>
     /// <param name="thumbSize"></param>
-    public static (int x, int y, int width, int height) ScaleDownRect(int imageWidth, int imageHeight, int sourceWidth, int sourceHeight, int x, int y, int width, int height)
+    public static (int x, int y, int width, int height) ScaleDownRect(int imageWidth, int imageHeight, int sourceWidth,
+        int sourceHeight, int x, int y, int width, int height)
     {
-        if (sourceHeight == 0 || sourceWidth == 0)
+        if ( sourceHeight == 0 || sourceWidth == 0 )
             return (x, y, width, height);
 
         float longestBmpSide = sourceWidth > sourceHeight ? sourceWidth : sourceHeight;
         float longestImgSide = imageWidth > imageHeight ? imageWidth : imageHeight;
 
-        var ratio = (longestBmpSide / longestImgSide);
+        var ratio = longestBmpSide / longestImgSide;
 
-        int outX = (int)(x * ratio);
-        int outY = (int)(y * ratio);
-        int outWidth = (int)(width * ratio);
-        int outHeight = (int)(height * ratio);
+        var outX = (int)(x * ratio);
+        var outY = (int)(y * ratio);
+        var outWidth = (int)(width * ratio);
+        var outHeight = (int)(height * ratio);
 
-        double percentExpand = 0.3;
-        double expandX = outWidth * percentExpand;
-        double expandY = outHeight * percentExpand;
+        var percentExpand = 0.3;
+        var expandX = outWidth * percentExpand;
+        var expandY = outHeight * percentExpand;
 
         outX = (int)Math.Max(outX - expandX, 0);
         outY = (int)Math.Max(outY - expandY, 0);
 
-        outWidth = (int)(outWidth + (expandX * 2));
-        outHeight = (int)(outHeight + (expandY * 2));
+        outWidth = (int)(outWidth + expandX * 2);
+        outHeight = (int)(outHeight + expandY * 2);
 
-        if (outX + outWidth > sourceWidth)
+        if ( outX + outWidth > sourceWidth )
             outWidth = sourceWidth - outX;
 
-        if (outY + outHeight > sourceHeight)
+        if ( outY + outHeight > sourceHeight )
             outHeight = outHeight - outY;
 
         return (outX, outY, outWidth, outHeight);
     }
 
     /// <summary>
-    /// Process the file on disk to create a set of thumbnails.
+    ///     Process the file on disk to create a set of thumbnails.
     /// </summary>
     /// <param name="image"></param>
     /// <param name="forceRegeneration"></param>
     /// <returns></returns>
-    public async Task<IImageProcessResult> ConvertFile(Models.Image image, bool forceRegeneration, ThumbSize size = ThumbSize.Unknown)
+    public async Task<IImageProcessResult> ConvertFile(Image image, bool forceRegeneration,
+        ThumbSize size = ThumbSize.Unknown)
     {
         var imagePath = new FileInfo(image.FullPath);
         IImageProcessResult result = null;
 
         try
         {
-            if (imagePath.Exists)
+            if ( imagePath.Exists )
             {
                 Dictionary<FileInfo, IThumbConfig> destFiles;
                 FileInfo altSource = null;
 
-                if (size == ThumbSize.Unknown)
+                if ( size == ThumbSize.Unknown )
                 {
                     // No explicit size passed, so we'll generate any that are flagged as batch-generate.
                     destFiles = GetThumbConfigs(imagePath, forceRegeneration, out altSource);
@@ -553,22 +623,22 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                 {
                     var destFile = new FileInfo(GetThumbPath(imagePath, size));
                     var config = thumbConfigs.Where(x => x.size == size).FirstOrDefault();
-                    destFiles = new Dictionary<FileInfo, IThumbConfig>() { { destFile, config } };
+                    destFiles = new Dictionary<FileInfo, IThumbConfig> { { destFile, config } };
                 }
 
-                if (altSource != null)
+                if ( altSource != null )
                 {
                     Logging.LogTrace("File {0} exists - using it as source for smaller thumbs.", altSource.Name);
                     imagePath = altSource;
                 }
 
                 // See if there's any conversions to do
-                if (destFiles.Any())
+                if ( destFiles.Any() )
                 {
                     // First, pre-create the folders for any thumbs we'll be creating
                     destFiles.Select(x => x.Key.DirectoryName)
-                            .Distinct().ToList()
-                            .ForEach(dir => System.IO.Directory.CreateDirectory(dir));
+                        .Distinct().ToList()
+                        .ForEach(dir => Directory.CreateDirectory(dir));
 
                     Logging.LogVerbose("Generating thumbnails for {0}", imagePath);
 
@@ -577,22 +647,23 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                     {
                         result = await _imageProcessingService.CreateThumbs(imagePath, destFiles);
                     }
-                    catch (Exception ex)
+                    catch ( Exception ex )
                     {
                         Logging.LogError("Thumbnail conversion failed for {0}: {1}", imagePath, ex.Message);
                     }
                     finally
                     {
                         watch.Stop();
-                        Logging.LogVerbose($"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
+                        Logging.LogVerbose(
+                            $"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
                     }
 
-                    if (result.ThumbsGenerated)
+                    if ( result.ThumbsGenerated )
                     {
                         // Generate the perceptual hash from the large thumbnail.
                         var largeThumbPath = GetThumbPath(imagePath, ThumbSize.Large);
 
-                        if (File.Exists(largeThumbPath))
+                        if ( File.Exists(largeThumbPath) )
                         {
                             result.PerceptualHash = _imageProcessingService.GetPerceptualHash(largeThumbPath);
 
@@ -608,54 +679,16 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                 }
             }
             else
+            {
                 Logging.LogWarning("Skipping thumb generation for missing file...");
-
+            }
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogTrace("Exception converting thumbnails for {0}: {1}...", imagePath, ex.Message);
         }
 
         return result;
-    }
-
-    public async Task MarkAllForScan()
-    {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-        // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-        int updated = await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null");
-
-        _statusService.UpdateStatus($"All {updated} images flagged for thumbnail re-generation.");
-    }
-
-    public async Task MarkFolderForScan(int folderId)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-        int updated = await ImageContext.UpdateMetadataFields(db, folderId, "ThumbLastUpdated", "null");
-
-        if (updated != 0)
-            _statusService.UpdateStatus($"{updated} images in folder flagged for thumbnail re-generation.");
-    }
-
-    public async Task MarkImagesForScan(ICollection<int> imageIds)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-        string imageIdList = string.Join(",", imageIds );
-        string sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIdList})";
-
-        // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-        await db.Database.ExecuteSqlRawAsync(sql);
-
-        var msgText = imageIds.Count == 1 ? $"Image" : $"{imageIds.Count} images";
-        _statusService.UpdateStatus($"{msgText} flagged for thumbnail re-generation.");
-
-        _workService.FlagNewJobs(this);
     }
 
     public class ThumbProcess : IProcessJob
@@ -666,33 +699,15 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         public string Name => "Thumbnail Generation";
         public string Description => $"Thumbnail gen for ID:{ImageId}";
         public JobPriorities Priority => JobPriorities.Thumbnails;
-        public override string ToString() => Description;
 
         public async Task Process()
         {
             await Service.CreateThumb(ImageId);
         }
-    }
 
-    public JobPriorities Priority => JobPriorities.Thumbnails;
-
-    public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
-    {
-        if (!EnableThumbnailGeneration)
-            return new ThumbProcess[0];
-
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-        var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
-                                .OrderByDescending(x => x.LastUpdated)
-                                .Take(maxJobs)
-                                .Select(x => x.ImageId)
-                                .ToListAsync();
-
-        var jobs = images.Select(x => new ThumbProcess { ImageId = x, Service = this })
-                        .ToArray();
-
-        return jobs;
+        public override string ToString()
+        {
+            return Description;
+        }
     }
 }

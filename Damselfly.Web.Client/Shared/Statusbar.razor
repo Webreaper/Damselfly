@@ -1,24 +1,22 @@
-﻿@using Damselfly
-
-@implements IDisposable
+﻿@implements IDisposable
 
 @inject IUserStatusService userStatusService
 @inject WebAssemblyStatusService wasmState
 
 
 <div class="damselfly-statusbar">
-    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
-    <WorkStatus />
-    <ConnectionStatus />
-    @if (wasmState.IsWebAssembly)
+    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText"/>
+    <WorkStatus/>
+    <ConnectionStatus/>
+    @if( wasmState.IsWebAssembly )
     {
-        <LoginDisplayWasm />
+        <LoginDisplayWasm/>
     }
     else
     {
-        <LoginDisplay />
+        <LoginDisplay/>
     }
-    <Toolbar />
+    <Toolbar/>
 </div>
 
 @code
@@ -29,7 +27,7 @@
     {
         InvokeAsync(() =>
         {
-            if (StatusText != newText)
+            if( StatusText != newText )
             {
                 StatusText = newText;
                 StateHasChanged();
@@ -39,7 +37,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             userStatusService.OnStatusChanged += UpdateStatus;
         }

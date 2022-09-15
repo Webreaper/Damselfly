@@ -1,5 +1,4 @@
-﻿
-function DoCropSelection(imgId) {
+﻿function DoCropSelection(imgId) {
     var image = document.getElementById(imgId);
 
     if (image != undefined) {

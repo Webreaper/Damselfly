@@ -1,13 +1,6 @@
-﻿using Damselfly.Core.DbModels;
-using System.Collections.Generic;
+﻿using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.APIModels;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Services;
-using Damselfly.Core.DbModels.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
@@ -16,11 +9,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/users")]
+[Microsoft.AspNetCore.Mvc.Route("/api/users")]
 public class UserManagementController : ControllerBase
 {
-    private readonly IUserMgmtService _service;
     private readonly ILogger<UserManagementController> _logger;
+    private readonly IUserMgmtService _service;
 
     public UserManagementController(IUserMgmtService service, ILogger<UserManagementController> logger)
     {
@@ -49,10 +42,8 @@ public class UserManagementController : ControllerBase
     [HttpPost("/api/users")]
     public async Task<IdentityResult> UpdateUser(UserRequest request)
     {
-        if (request.Roles != null && request.Roles.Any())
+        if ( request.Roles != null && request.Roles.Any() )
             return await _service.UpdateUserAsync(request.User, request.Roles);
-        else
-            return await _service.SetUserPasswordAsync(request.User, request.Password);
+        return await _service.SetUserPasswordAsync(request.User, request.Password);
     }
 }
-

@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Microsoft.Azure.CognitiveServices.Vision.Face" />
-    <None Remove="FluentValidation" />
-    <None Remove="System.Drawing.Common" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.Face" Version="2.8.0-preview.2" />
-    <PackageReference Include="FluentValidation" Version="11.2.2" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Microsoft.Azure.CognitiveServices.Vision.Face"/>
+        <None Remove="FluentValidation"/>
+        <None Remove="System.Drawing.Common"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.Face" Version="2.8.0-preview.2"/>
+        <PackageReference Include="FluentValidation" Version="11.2.2"/>
+    </ItemGroup>
 </Project>

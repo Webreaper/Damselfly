@@ -15,7 +15,7 @@ public class ClientPeopleService : IPeopleService
 
     public async Task<List<Person>> GetAllPeople()
     {
-        return await httpClient.CustomGetFromJsonAsync<List<Person>>($"/api/people");
+        return await httpClient.CustomGetFromJsonAsync<List<Person>>("/api/people");
     }
 
     public async Task<List<string>> GetPeopleNames(string searchText)
@@ -25,12 +25,11 @@ public class ClientPeopleService : IPeopleService
 
     public async Task UpdateName(ImageObject theObject, string newName)
     {
-        await httpClient.CustomPutAsJsonAsync<string>($"/api/people/name/{theObject.ImageObjectId}", newName);
+        await httpClient.CustomPutAsJsonAsync($"/api/people/name/{theObject.ImageObjectId}", newName);
     }
 
     public async Task UpdatePerson(Person thePerson, string newName)
     {
-        await httpClient.CustomPutAsJsonAsync<string>($"/api/people/name/{thePerson.PersonId}", newName);
+        await httpClient.CustomPutAsJsonAsync($"/api/people/name/{thePerson.PersonId}", newName);
     }
 }
-

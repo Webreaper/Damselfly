@@ -1,32 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
-using Damselfly.Core.Models;
-using Damselfly.Core.Utils;
-using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Shared.Utils;
-using Damselfly.Core.ScopedServices;
-using Microsoft.AspNetCore.SignalR;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
 /// <summary>
-/// Service to load all of the folders monitored by Damselfly, and present
-/// them as a single collection to the UI.
+///     Service to load all of the folders monitored by Damselfly, and present
+///     them as a single collection to the UI.
 /// </summary>
 public class FolderService : IFolderService
 {
-    private List<Folder> allFolders = new List<Folder>();
-    public event Action OnChange;
-    private EventConflator conflator = new EventConflator(10 * 1000);
     private readonly ServerNotifierService _notifier;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly EventConflator conflator = new( 10 * 1000 );
+    private List<Folder> allFolders = new();
 
-    public FolderService(IndexingService _indexingService, IServiceScopeFactory scopeFactory, ServerNotifierService notifier)
+    public FolderService(IndexingService _indexingService, IServiceScopeFactory scopeFactory,
+        ServerNotifierService notifier)
     {
         _scopeFactory = scopeFactory;
         _notifier = notifier;
@@ -36,6 +34,14 @@ public class FolderService : IFolderService
 
         // Initiate pre-loading the folders.
         _ = LoadFolders();
+    }
+
+    public event Action OnChange;
+
+    public Task<ICollection<Folder>> GetFolders()
+    {
+        ICollection<Folder> result = allFolders;
+        return Task.FromResult(result);
     }
 
     private void OnFoldersChanged()
@@ -48,12 +54,6 @@ public class FolderService : IFolderService
         _ = LoadFolders();
     }
 
-    public Task<ICollection<Folder>> GetFolders()
-    {
-        ICollection<Folder> result = allFolders;
-        return Task.FromResult(result);
-    }
-
     private void NotifyStateChanged()
     {
         Logging.Log($"Folders changed: {allFolders.Count}");
@@ -64,9 +64,9 @@ public class FolderService : IFolderService
     }
 
     /// <summary>
-    /// Load the folders from the DB, and create a FolderListItem
-    /// which has a summary of the number of images in each folder
-    /// and the most recent modified date of any image in the folder.
+    ///     Load the folders from the DB, and create a FolderListItem
+    ///     which has a summary of the number of images in each folder
+    ///     and the most recent modified date of any image in the folder.
     /// </summary>
     public async Task LoadFolders()
     {
@@ -80,11 +80,11 @@ public class FolderService : IFolderService
         try
         {
             allFolders = await db.Folders
-                            .Include(x => x.Children)
-                            .Select(x => CreateFolderWrapper(x, x.Images.Count, x.Images.Max(i => i.SortDate)))
-                            .ToListAsync();
+                .Include(x => x.Children)
+                .Select(x => CreateFolderWrapper(x, x.Images.Count, x.Images.Max(i => i.SortDate)))
+                .ToListAsync();
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError($"Error loading folders: {ex.Message}");
         }
@@ -96,7 +96,7 @@ public class FolderService : IFolderService
     }
 
     /// <summary>
-    /// Bolt some metadata onto the folder object so it can be used by the UI.
+    ///     Bolt some metadata onto the folder object so it can be used by the UI.
     /// </summary>
     /// <param name="folder"></param>
     /// <param name="imageCount"></param>
@@ -104,10 +104,9 @@ public class FolderService : IFolderService
     /// <returns></returns>
     private static Folder CreateFolderWrapper(Folder folder, int imageCount, DateTime? maxDate)
     {
-
         var item = folder.MetaData;
 
-        if (item == null)
+        if ( item == null )
         {
             item = new FolderMetadata
             {
@@ -117,16 +116,18 @@ public class FolderService : IFolderService
             };
 
             folder.MetaData = item;
-        };
+        }
+
+        ;
 
         var parent = folder.Parent;
 
-        while (parent != null)
+        while ( parent != null )
         {
-            if (parent.MetaData == null)
+            if ( parent.MetaData == null )
                 parent.MetaData = new FolderMetadata { DisplayName = GetFolderDisplayName(parent) };
 
-            if (parent.MetaData.MaxImageDate == null || parent.MetaData.MaxImageDate < maxDate)
+            if ( parent.MetaData.MaxImageDate == null || parent.MetaData.MaxImageDate < maxDate )
                 parent.MetaData.MaxImageDate = maxDate;
 
             parent.MetaData.ChildImageCount += imageCount;
@@ -139,7 +140,7 @@ public class FolderService : IFolderService
     }
 
     /// <summary>
-    /// Clean up the display name
+    ///     Clean up the display name
     /// </summary>
     /// <param name="folder"></param>
     /// <returns></returns>
@@ -147,7 +148,7 @@ public class FolderService : IFolderService
     {
         var display = folder.Name;
 
-        while (display.StartsWith('/') || display.StartsWith('\\'))
+        while ( display.StartsWith('/') || display.StartsWith('\\') )
             display = display.Substring(1);
 
         return display;

@@ -1,11 +1,11 @@
 ﻿@page
-@using Microsoft.AspNetCore.Identity
 @using Damselfly.Core.DbModels.Authentication
 
 @attribute [IgnoreAntiforgeryToken]
 @inject SignInManager<AppIdentityUser> SignInManager
 
 @functions {
+
     public async Task<IActionResult> OnPost()
     {
         return await OnGet();
@@ -13,11 +13,12 @@
 
     public async Task<IActionResult> OnGet()
     {
-        if (SignInManager.IsSignedIn(User))
+        if( SignInManager.IsSignedIn(User) )
         {
             await SignInManager.SignOutAsync();
         }
 
         return Redirect("~/Identity/Account/Login");
     }
+
 }

@@ -1,12 +1,9 @@
-﻿@using Damselfly.Core.DbModels
-@using Microsoft.AspNetCore.Identity
-@using Damselfly.Core.ScopedServices
-
-@inject IUserConfigService configService 
+﻿@inject IUserConfigService configService 
 @inject IJSRuntime JsRuntime
 @inject ILogger<ScrollMonitor> logger
 
 @code{
+
     [Parameter]
     [EditorRequired]
     public string ScrollElementId { get; set; }
@@ -15,7 +12,7 @@
     [EditorRequired]
     public string ScrollConfigName { get; set; }
 
-    private EventConflator conflator = new EventConflator(1000);
+    private EventConflator conflator = new();
 
     public event Action<int> OnScrollPositionChanged;
 
@@ -29,19 +26,19 @@
 
     protected override async void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
-            int scrollPos = configService.GetInt(ScrollConfigName, 0);
+            var scrollPos = configService.GetInt(ScrollConfigName);
 
             try
             {
                 logger.LogTrace($"Data loaded - initialising scroll position to {scrollPos}");
                 await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
             }
-            catch (TaskCanceledException)
+            catch( TaskCanceledException )
             {
             }
-            catch (Exception ex)
+            catch( Exception ex )
             {
                 logger.LogError($"Exception restoring scroll position: {ex.Message}");
             }
@@ -52,6 +49,7 @@
     // Debugging method to help us differentiate between JS calls and other data loads
     public void HandleScroll(int scrollTop)
     {
-        conflator.HandleEvent((x) => { SaveScrollState(scrollTop); });
+        conflator.HandleEvent(x => { SaveScrollState(scrollTop); });
     }
+
 }

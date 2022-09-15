@@ -1,5 +1,4 @@
-﻿
-@inject IDialogService DialogService
+﻿@inject IDialogService DialogService
 @inject ISearchService searchService
 @inject IUserStatusService statusService
 @inject IUserConfigService configService
@@ -10,23 +9,31 @@
 
 <div class="damselfly-searchbar">
     <div class="damselfly-searchfilter">
-        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnValueChanged="@DoSearch" TextValue="@searchService.SearchText" />
+        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnValueChanged="@DoSearch" TextValue="@searchService.SearchText"/>
     </div>
     <div class="damselfly-searchhint">
-        <button class="btn btn-primary damselfly-searchtools" title="Refresh Search" @onclick="@(() => searchService.Refresh())"><i class="fas fa-redo-alt" /></button>
-        <button class="btn btn-primary damselfly-searchtools" title="Reset Search" @onclick="@(() => searchService.Reset())"><i class="fas fa-times" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="Refresh Search" @onclick="@(() => searchService.Refresh())">
+            <i class="fas fa-redo-alt"/>
+        </button>
+        <button class="btn btn-primary damselfly-searchtools" title="Reset Search" @onclick="@(() => searchService.Reset())">
+            <i class="fas fa-times"/>
+        </button>
         <button class="btn btn-primary damselfly-searchtools" title="Advanced Search" @onclick="@(() => ToggleAdvancedSearch())">
-            @if (ShowAdvancedSearch)
+            @if( ShowAdvancedSearch )
             {
-                <i class="fas fa-chevron-up" />
+                <i class="fas fa-chevron-up"/>
             }
             else
             {
-                <i class="fas fa-chevron-down" />
+                <i class="fas fa-chevron-down"/>
             }
         </button>
-        <button class="btn btn-primary damselfly-searchtools" title="People Management" @onclick="@PeopleManagement"><i class="fas fa-users" /></button>
-        <button class="btn btn-primary damselfly-searchtools" title="Tag Management" @onclick="@TagManagement"><i class="fas fa-tags" /></button>
+        <button class="btn btn-primary damselfly-searchtools" title="People Management" @onclick="@PeopleManagement">
+            <i class="fas fa-users"/>
+        </button>
+        <button class="btn btn-primary damselfly-searchtools" title="Tag Management" @onclick="@TagManagement">
+            <i class="fas fa-tags"/>
+        </button>
         <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
     </div>
 
@@ -36,21 +43,31 @@
             <option value="@GroupingType.Date">Date</option>
             <option value="@GroupingType.Folder">Folder</option>
         </select>
-        <div class="damselfly-browsetool @SelectedStyle( ThumbSize.Small )"><i title="Small Thumbnails" class="fas fa-image" style="font-size:smaller;" @onclick="() => ChangeThumbSize(ThumbSize.Small)" /></div>
-        <div class="damselfly-browsetool @SelectedStyle( ThumbSize.Medium )"><i title="Medium Thumbnails" class="fas fa-image" @onclick="() => ChangeThumbSize(ThumbSize.Medium)" /></div>
-        <div class="damselfly-browsetool @SelectedStyle( ThumbSize.Large )"><i title="Large Thumbnails" class="fas fa-image" style="font-size:larger;" @onclick="() => ChangeThumbSize(ThumbSize.Large)" /></div>
-        @if (searchService.SortOrder == SortOrderType.Descending)
+        <div class="damselfly-browsetool @SelectedStyle(ThumbSize.Small)">
+            <i title="Small Thumbnails" class="fas fa-image" style="font-size:smaller;" @onclick="() => ChangeThumbSize(ThumbSize.Small)"/>
+        </div>
+        <div class="damselfly-browsetool @SelectedStyle(ThumbSize.Medium)">
+            <i title="Medium Thumbnails" class="fas fa-image" @onclick="() => ChangeThumbSize(ThumbSize.Medium)"/>
+        </div>
+        <div class="damselfly-browsetool @SelectedStyle(ThumbSize.Large)">
+            <i title="Large Thumbnails" class="fas fa-image" style="font-size:larger;" @onclick="() => ChangeThumbSize(ThumbSize.Large)"/>
+        </div>
+        @if( searchService.SortOrder == SortOrderType.Descending )
         {
-            <div class="damselfly-browsetool"><i title="Sort Ascending" class="fas fa-sort-amount-up" @onclick="() => ChangeSortOrder(SortOrderType.Ascending)" /></div>
+            <div class="damselfly-browsetool">
+                <i title="Sort Ascending" class="fas fa-sort-amount-up" @onclick="() => ChangeSortOrder(SortOrderType.Ascending)"/>
+            </div>
         }
         else
         {
-            <div class="damselfly-browsetool"><i title="Sort Descending" class="fas fa-sort-amount-down" @onclick="() => ChangeSortOrder(SortOrderType.Descending)" /></div>
+            <div class="damselfly-browsetool">
+                <i title="Sort Descending" class="fas fa-sort-amount-down" @onclick="() => ChangeSortOrder(SortOrderType.Descending)"/>
+            </div>
         }
     </div>
-    @if (ShowAdvancedSearch)
+    @if( ShowAdvancedSearch )
     {
-        <AdvancedSearchPanel />
+        <AdvancedSearchPanel/>
     }
 </div>
 
@@ -62,7 +79,11 @@
     ThumbSize CurrentThumbSize = ThumbSize.Small;
     bool ShowAdvancedSearch { get; set; } = false;
 
-    private GroupingType SelectedGrouping { get { return searchService.Grouping; } set { ChangeGroupType(value); } }
+    private GroupingType SelectedGrouping
+    {
+        get => searchService.Grouping;
+        set => ChangeGroupType(value);
+    }
 
     private void ChangeThumbSize(ThumbSize newSize)
     {
@@ -73,12 +94,12 @@
 
     private string SelectedStyle(ThumbSize size)
     {
-        return CurrentThumbSize != size ? "damselfly-browsetool-deselected" : String.Empty;
+        return CurrentThumbSize != size ? "damselfly-browsetool-deselected" : string.Empty;
     }
 
     protected override void OnInitialized()
     {
-        CurrentThumbSize = configService.Get<ThumbSize>(ConfigSettings.ThumbSize, ThumbSize.Small);
+        CurrentThumbSize = configService.Get(ConfigSettings.ThumbSize, ThumbSize.Small);
         OnThumbSizeChanged?.Invoke(CurrentThumbSize);
     }
 
@@ -94,7 +115,7 @@
         {
             NavigationManager.NavigateTo("/people");
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError("Exception: " + ex.Message);
         }
@@ -106,7 +127,7 @@
         {
             NavigationManager.NavigateTo("/tags");
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError("Exception: " + ex.Message);
         }
@@ -114,7 +135,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             searchService.OnSearchChanged += SearchQueryChanged;
         }
@@ -132,8 +153,8 @@
 
     private void DoSearch(string searchTerm)
     {
-        if (!string.IsNullOrEmpty(searchTerm))
-            statusService.UpdateStatus( $"Searching for keyword: {searchTerm}..." );
+        if( !string.IsNullOrEmpty(searchTerm) )
+            statusService.UpdateStatus($"Searching for keyword: {searchTerm}...");
         searchService.SearchText = searchTerm;
     }
 
@@ -150,4 +171,5 @@
         logger.LogInformation($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
+
 }

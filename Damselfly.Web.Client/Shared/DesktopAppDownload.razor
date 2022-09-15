@@ -1,50 +1,56 @@
-﻿
+﻿@using System.Reflection
 @inject IDownloadService DownloadService
 
-@if (appInfo == null)
-    {
+@if( appInfo == null )
+{
     <p>Checking for Desktop Apps...</p>
 }
 else
 {
-    @if (appInfo.AppsAvailable)
+    @if( appInfo.AppsAvailable )
     {
         <div>
-            <p>Download v<span />@Version of the Desktop App here:</p>
+            <p>Download v<span/>@Version of the Desktop App here:</p>
             <div class="desktop-download-icons">
-                @if (appInfo.MacOSApp != null)
-                    {
+                @if( appInfo.MacOSApp != null )
+                {
                     <div class="InputAddOn">
-                        <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-apple" /></div>
+                        <div class="InputAddOn-item" title="Download for MacOS">
+                            <i class="fab fa-apple"/>
+                        </div>
                         <NavLink href="@appInfo.MacOSApp">
                             <div class="InputAddOn-field">MacOS</div>
                         </NavLink>
-                        @if (appInfo.MacOSArmApp != null)
+                        @if( appInfo.MacOSArmApp != null )
                         {
                             <NavLink href="@appInfo.MacOSArmApp">
                                 <div class="InputAddOn-field">(M1)</div>
                             </NavLink>
-                            }
+                        }
                     </div>
-                    }
-                @if (appInfo.WindowsApp != null)
-                    {
+                }
+                @if( appInfo.WindowsApp != null )
+                {
                     <div class="InputAddOn">
-                        <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-windows" /></div>
+                        <div class="InputAddOn-item" title="Download for MacOS">
+                            <i class="fab fa-windows"/>
+                        </div>
                         <NavLink href="@appInfo.WindowsApp">
                             <div class="InputAddOn-field">Windows</div>
                         </NavLink>
                     </div>
-                    }
-                @if (appInfo.LinuxApp != null)
-                    {
+                }
+                @if( appInfo.LinuxApp != null )
+                {
                     <div class="InputAddOn">
-                        <div class="InputAddOn-item" title="Download for MacOS"><i class="fab fa-linux" /></div>
+                        <div class="InputAddOn-item" title="Download for MacOS">
+                            <i class="fab fa-linux"/>
+                        </div>
                         <NavLink href="@appInfo.LinuxApp">
                             <div class="InputAddOn-field">Linux</div>
                         </NavLink>
                     </div>
-                    }
+                }
             </div>
         </div>
     }
@@ -58,11 +64,5 @@ else
         appInfo = await DownloadService.GetDesktopAppInfo();
     }
 
-    public string Version
-    {
-        get
-        {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        }
-    }
+    public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 }

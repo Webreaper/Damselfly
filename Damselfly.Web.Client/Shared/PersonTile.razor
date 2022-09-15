@@ -1,5 +1,4 @@
-﻿
-@inject IPeopleService peopleService
+﻿@inject IPeopleService peopleService
 @inject IUserStatusService statusService
 @inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
@@ -11,31 +10,37 @@
         </NavLink>
     </div>
     <div class="damselfly-personfield">
-        <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
+        <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
     </div>
 </div>
 
 @code {
+
     [Parameter]
     public Person Person { get; set; }
 
-    public string Name { get { return Person.Name; } set { UpdateName(value); } }
+    public string Name
+    {
+        get => Person.Name;
+        set => UpdateName(value);
+    }
+
     public string FaceLink => $"/face/{Person.PersonId}?nocache={Person.LastUpdated:yyyyMMddHHmmss}";
     public string PersonLink => $"/?personid={Person.PersonId}";
 
     private void UpdateName(string newName)
     {
-        if (!string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name))
+        if( !string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name) )
         {
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
             _ = peopleService.UpdatePerson(Person, newName);
-            statusService.UpdateStatus(  $"Name set to '{newName}'" );
+            statusService.UpdateStatus($"Name set to '{newName}'");
         }
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowFolderList = true });
         }

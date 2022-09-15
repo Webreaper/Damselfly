@@ -1,18 +1,17 @@
-﻿using System;
-namespace Damselfly.Core.Constants;
+﻿namespace Damselfly.Core.Constants;
 
 public enum SortOrderType
 {
     Ascending,
     Descending
-};
+}
 
 public enum GroupingType
 {
     None,
     Folder,
     Date
-};
+}
 
 public enum FaceSearchType
 {
@@ -29,6 +28,3 @@ public enum OrientationType
     Panorama,
     Square
 }
-
-
-

@@ -1,6 +1,4 @@
-﻿using System;
-using Damselfly.Core.Interfaces;
-using Damselfly.Core.Models;
+﻿using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -8,7 +6,6 @@ using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Utils;
@@ -128,4 +125,3 @@ public static class ServiceRegistrations
         return services;
     }
 }
-

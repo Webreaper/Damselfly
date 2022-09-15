@@ -1,13 +1,35 @@
-﻿using System;
-
-namespace Damselfly.Core.ScopedServices;
+﻿namespace Damselfly.Core.ScopedServices;
 
 /// <summary>
-/// Service to maintain state around the toolbars - such as whether
-/// we show the folder list or not.
+///     Service to maintain state around the toolbars - such as whether
+///     we show the folder list or not.
 /// </summary>
 public class ViewDataService
 {
+    private SideBarState sidebarState = new();
+
+    public bool ShowFolderList => sidebarState.ShowFolderList;
+    public bool ShowTags => sidebarState.ShowTags;
+    public bool ShowMap => sidebarState.ShowMap;
+    public bool ShowBasket => sidebarState.ShowBasket;
+    public bool ShowExport => sidebarState.ShowExport;
+    public bool ShowImageProps => sidebarState.ShowImageProps;
+    public bool ShowSideBar => !sidebarState.HideSideBar;
+    public event Action<SideBarState> SideBarStateChanged;
+
+    protected void OnStateChanged(SideBarState state)
+    {
+        SideBarStateChanged?.Invoke(state);
+    }
+
+    public void SetSideBarState(SideBarState state)
+    {
+        if ( !state.Equals(sidebarState) )
+        {
+            sidebarState = state;
+            OnStateChanged(state);
+        }
+    }
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     public class SideBarState
 #pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
@@ -23,8 +45,7 @@ public class ViewDataService
         public override bool Equals(object obj)
         {
             var other = obj as SideBarState;
-            if (other != null)
-            {
+            if ( other != null )
                 return ShowBasket == other.ShowBasket &&
                        ShowFolderList == other.ShowFolderList &&
                        ShowExport == other.ShowExport &&
@@ -32,33 +53,8 @@ public class ViewDataService
                        ShowTags == other.ShowTags &&
                        ShowImageProps == other.ShowImageProps &&
                        HideSideBar == other.HideSideBar;
-            }
 
             return false;
         }
     }
-    private SideBarState sidebarState = new SideBarState();
-    public event Action<SideBarState> SideBarStateChanged;
-
-    protected void OnStateChanged(SideBarState state)
-    {
-        SideBarStateChanged?.Invoke(state);
-    }
-
-    public void SetSideBarState(SideBarState state)
-    {
-        if (!state.Equals(sidebarState))
-        {
-            sidebarState = state;
-            OnStateChanged(state);
-        }
-    }
-
-    public bool ShowFolderList { get => sidebarState.ShowFolderList; }
-    public bool ShowTags { get => sidebarState.ShowTags; }
-    public bool ShowMap { get => sidebarState.ShowMap; }
-    public bool ShowBasket { get => sidebarState.ShowBasket; }
-    public bool ShowExport { get => sidebarState.ShowExport; }
-    public bool ShowImageProps { get => sidebarState.ShowImageProps; }
-    public bool ShowSideBar { get => !sidebarState.HideSideBar; }
 }

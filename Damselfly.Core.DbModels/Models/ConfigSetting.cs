@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Damselfly.Core.DbModels.Authentication;
+﻿using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Core.Models;
 
 /// <summary>
-/// Config associated with an export or download
+///     Config associated with an export or download
 /// </summary>
 public class ConfigSetting
 {

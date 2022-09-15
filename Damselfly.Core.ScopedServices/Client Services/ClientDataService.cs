@@ -8,19 +8,14 @@ using Microsoft.Extensions.Logging;
 namespace Damselfly.Core.ScopedServices;
 
 /// <summary>
-/// Cached static data that the server knows, but the client needs to know
+///     Cached static data that the server knows, but the client needs to know
 /// </summary>
 public class ClientDataService : ICachedDataService
 {
-    private readonly RestClient httpClient;
-    private readonly List<Camera> _cameras = new List<Camera>();
-    private readonly List<Lens> _lenses = new List<Lens>();
+    private readonly List<Camera> _cameras = new();
+    private readonly List<Lens> _lenses = new();
     private readonly ILogger<ClientDataService> _logger;
-
-    public string ImagesRootFolder => _staticData.ImagesRootFolder;
-    public string ExifToolVer => _staticData.ExifToolVer;
-    public ICollection<Camera> Cameras => _cameras;
-    public ICollection<Lens> Lenses => _lenses;
+    private readonly RestClient httpClient;
     private StaticData _staticData;
 
     public ClientDataService(RestClient client, ILogger<ClientDataService> logger)
@@ -28,6 +23,11 @@ public class ClientDataService : ICachedDataService
         httpClient = client;
         _logger = logger;
     }
+
+    public string ImagesRootFolder => _staticData.ImagesRootFolder;
+    public string ExifToolVer => _staticData.ExifToolVer;
+    public ICollection<Camera> Cameras => _cameras;
+    public ICollection<Lens> Lenses => _lenses;
 
     public async Task InitialiseData()
     {
@@ -42,7 +42,7 @@ public class ClientDataService : ICachedDataService
 
         _logger.LogInformation($"Loaded {_cameras.Count()} cameras, {_lenses.Count} lenses.");
 
-        _staticData = await httpClient.CustomGetFromJsonAsync<StaticData>( "/api/data/static" );
+        _staticData = await httpClient.CustomGetFromJsonAsync<StaticData>("/api/data/static");
     }
 
     public async Task<Statistics> GetStatistics()
@@ -50,4 +50,3 @@ public class ClientDataService : ICachedDataService
         return await httpClient.CustomGetFromJsonAsync<Statistics>("/api/data/stats");
     }
 }
-

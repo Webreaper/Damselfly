@@ -1,21 +1,16 @@
-﻿using System;
-using Damselfly.Core.DbModels;
-using System.Net.Http;
-using Damselfly.Core.Models;
-using System.Net.Http.Json;
-using Damselfly.Core.Constants;
-using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.ScopedServices.ClientServices;
-using Microsoft.AspNetCore.Identity;
-using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models.APIModels;
+using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientUserMgmtService : IUserMgmtService
 {
-    private readonly RestClient httpClient;
     private readonly IConfigService _configService;
+    private readonly RestClient httpClient;
 
     public ClientUserMgmtService(RestClient client, IConfigService configService)
     {
@@ -23,7 +18,8 @@ public class ClientUserMgmtService : IUserMgmtService
         _configService = configService;
     }
 
-    public bool RolesEnabled { get { return _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, ConfigSettings.DefaultEnableRolesAndAuth); } }
+    public bool RolesEnabled =>
+        _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, ConfigSettings.DefaultEnableRolesAndAuth);
 
     // WASM: should this be here?
     public bool AllowPublicRegistration => true;
@@ -47,7 +43,8 @@ public class ClientUserMgmtService : IUserMgmtService
         return result;
     }
 
-    public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null)
+    public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password,
+        ICollection<string> roles = null)
     {
         // /api/users
         var req = new UserRequest { User = newUser, Password = password, Roles = roles };
@@ -66,4 +63,3 @@ public class ClientUserMgmtService : IUserMgmtService
         throw new NotImplementedException();
     }
 }
-

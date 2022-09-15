@@ -1,11 +1,5 @@
-﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
+﻿using Damselfly.Core.Models;
 using Damselfly.Core.Services;
-using MailKit;
-using MailKit.Search;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -13,12 +7,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/wordpress")]
+[Microsoft.AspNetCore.Mvc.Route("/api/wordpress")]
 public class WordpressController : ControllerBase
 {
-    private readonly WordpressService _service;
-
     private readonly ILogger<WordpressController> _logger;
+    private readonly WordpressService _service;
 
     public WordpressController(WordpressService service, ILogger<WordpressController> logger)
     {
@@ -32,4 +25,3 @@ public class WordpressController : ControllerBase
         await _service.UploadImagesToWordpress(images);
     }
 }
-

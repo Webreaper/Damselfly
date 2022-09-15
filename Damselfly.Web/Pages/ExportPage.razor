@@ -7,15 +7,15 @@
 
 <div class="damselfly-exportview">
     <div class="damselfly-pagetitlebar">
-        <NavBack />
+        <NavBack/>
         <h4 class="damselfly-imagetitle">
             Export Images
         </h4>
     </div>
     <div class="damselfly-exportlist">
-        @if (images != null)
+        @if( images != null )
         {
-            @foreach (var img in images)
+            @foreach( var img in images )
             {
                 <div class="damselfly-exportitem">
                     <div>
@@ -28,7 +28,6 @@
                         @img.Image.Folder.Name
                     </div>
                 </div>
-
             }
         }
         else
@@ -39,7 +38,7 @@
 </div>
 
 @code {
-    readonly List<ListableImage> images = new List<ListableImage>();
+    readonly List<ListableImage> images = new();
 
 
     public Task<List<ListableImage>> LoadData()
@@ -55,7 +54,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 

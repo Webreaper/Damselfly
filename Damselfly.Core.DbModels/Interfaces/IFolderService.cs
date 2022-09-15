@@ -11,4 +11,3 @@ public interface IFolderService
 
     event Action OnChange;
 }
-

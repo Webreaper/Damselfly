@@ -1,6 +1,4 @@
 ﻿@page "/image/duplicates/{ImageID}"
-
-@using System.Linq;
 @using Microsoft.EntityFrameworkCore
 
 @inject NavigationService navContext
@@ -9,7 +7,7 @@
 @inject ImageContext db
 
 <div class="damselfly-pagetitlebar">
-    <NavBack />
+    <NavBack/>
     <div class="damselfly-imagetitle">
         <h4>
             Duplicate Images for @CurrentImage.FileName
@@ -18,9 +16,9 @@
 </div>
 <div class="damselfly-export">
 
-    @if (images != null)
+    @if( images != null )
     {
-        @foreach (var img in images)
+        @foreach( var img in images )
         {
             <div class="damselfly-exportitem">
                 <div>
@@ -33,7 +31,6 @@
                     @img.Image.Folder.Name
                 </div>
             </div>
-
         }
     }
     else
@@ -43,16 +40,17 @@
 </div>
 
 @code {
+
     [Parameter]
     public string ImageID { get; set; }
 
     public Image CurrentImage { get; set; }
 
-    readonly List<ListableImage> images = new List<ListableImage>();
+    readonly List<ListableImage> images = new();
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Int32.TryParse(ImageID, out var imageId))
+        if( int.TryParse(ImageID, out var imageId) )
         {
             CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
@@ -64,9 +62,9 @@
         var watch = new Stopwatch("GetImageDupes");
 
         var dupes = await db.Hashes
-                        .Where(x => x.MD5ImageHash.Equals(image.Hash.MD5ImageHash) && x.ImageId != image.ImageId)
-                        .Select(x => x.ImageId)
-                        .ToListAsync();
+            .Where(x => x.MD5ImageHash.Equals(image.Hash.MD5ImageHash) && x.ImageId != image.ImageId)
+            .Select(x => x.ImageId)
+            .ToListAsync();
 
         var cachedImages = await imageCache.GetCachedImages(dupes);
 
@@ -91,7 +89,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Damselfly.Core.Models;
 
 /// <summary>
-/// A person
+///     A person
 /// </summary>
 public class Person
 {
@@ -12,13 +12,11 @@ public class Person
     {
         Unknown = 0,
         Identified = 1
-    };
+    }
 
-    [Key]
-    public int PersonId { get; set; }
+    [Key] public int PersonId { get; set; }
 
-    [Required]
-    public string Name { get; set; } = "Unknown";
+    [Required] public string Name { get; set; } = "Unknown";
 
     public PersonState State { get; set; } = PersonState.Unknown;
     public string AzurePersonId { get; set; }
@@ -29,4 +27,3 @@ public class Person
         return $"{PersonId}=>{Name} [{State}, AzureID: {AzurePersonId}]";
     }
 }
-

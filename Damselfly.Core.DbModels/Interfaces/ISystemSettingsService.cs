@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Damselfly.Core.Constants;
+﻿using System.Threading.Tasks;
 using Damselfly.Core.DbModels.Models;
-using Damselfly.Core.Models;
 
-namespace Damselfly.Core.ScopedServices.Interfaces
+namespace Damselfly.Core.ScopedServices.Interfaces;
+
+public interface ISystemSettingsService
 {
-    public interface ISystemSettingsService
-    {
-        Task<SystemConfigSettings> GetSystemSettings();
-        Task SaveSystemSettings(SystemConfigSettings systemSettings);
-    }
+    Task<SystemConfigSettings> GetSystemSettings();
+    Task SaveSystemSettings(SystemConfigSettings systemSettings);
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using Damselfly.Core.Interfaces;
-using Damselfly.Core.ScopedServices.Interfaces;
+﻿using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.ScopedServices;
@@ -8,7 +6,7 @@ namespace Damselfly.Core.ScopedServices;
 public static class ServiceRegistrations
 {
     /// <summary>
-    /// Set up UI Services for Blazor WASM
+    ///     Set up UI Services for Blazor WASM
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>
@@ -54,7 +52,7 @@ public static class ServiceRegistrations
         services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());
         services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
         services.AddScoped<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
-        services.AddScoped<IUserConfigService>( x => x.GetRequiredService<ClientConfigService>() );
+        services.AddScoped<IUserConfigService>(x => x.GetRequiredService<ClientConfigService>());
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<ClientConfigService>());
         services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
         services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
@@ -69,4 +67,3 @@ public static class ServiceRegistrations
         return services;
     }
 }
-

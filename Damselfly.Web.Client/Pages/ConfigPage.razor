@@ -4,15 +4,17 @@
 
 <div class="damselfly-config">
 
-    <Config />
+    <Config/>
 </div>
 
-    @code {
-        protected override void OnAfterRender(bool firstRender)
+@code {
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if( firstRender )
         {
-            if (firstRender)
-            {
-                ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true });
-            }
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true });
         }
     }
+
+}

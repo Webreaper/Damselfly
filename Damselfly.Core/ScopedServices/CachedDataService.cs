@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
@@ -10,14 +9,14 @@ namespace Damselfly.Core.ScopedServices;
 
 public class CachedDataService : ICachedDataService
 {
+    private readonly MetaDataService _metaDataService;
+    private readonly StatisticsService _stats;
+
     public CachedDataService(MetaDataService metaDataService, StatisticsService stats)
     {
         _stats = stats;
         _metaDataService = metaDataService;
     }
-
-    private readonly StatisticsService _stats;
-    private MetaDataService _metaDataService;
 
     public string ImagesRootFolder => IndexingService.RootFolder;
 
@@ -38,4 +37,3 @@ public class CachedDataService : ICachedDataService
         return await _stats.GetStatistics();
     }
 }
-

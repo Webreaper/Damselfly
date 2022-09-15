@@ -19,12 +19,11 @@ public class ClientExportService
 
     public async Task Save(ExportConfig config)
     {
-        await httpClient.CustomPatchAsJsonAsync<ExportConfig>($"/api/export/config", config);
+        await httpClient.CustomPatchAsJsonAsync("/api/export/config", config);
     }
 
     public async Task Create(ExportConfig config)
     {
-        await httpClient.CustomPutAsJsonAsync<ExportConfig>($"/api/export/config", config);
+        await httpClient.CustomPutAsJsonAsync("/api/export/config", config);
     }
 }
-

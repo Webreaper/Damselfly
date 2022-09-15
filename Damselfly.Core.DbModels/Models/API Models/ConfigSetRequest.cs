@@ -1,5 +1,4 @@
-﻿using System;
-namespace Damselfly.Core.DbModels.Models.APIModels;
+﻿namespace Damselfly.Core.DbModels.Models.APIModels;
 
 public class ConfigSetRequest
 {
@@ -7,4 +6,3 @@ public class ConfigSetRequest
     public string NewValue { get; set; }
     public int? UserId { get; set; }
 }
-

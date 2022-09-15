@@ -1,20 +1,20 @@
-﻿using Blazored.LocalStorage;
+﻿using System.Net.Http.Headers;
+using Blazored.LocalStorage;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Net.Http.Headers;
 
 namespace Damselfly.Core.ScopedServices.ClientServices;
 
 public class AuthService : IAuthService
 {
-    private readonly RestClient _httpClient;
     private readonly AuthenticationStateProvider _authenticationStateProvider;
+    private readonly RestClient _httpClient;
     private readonly ILocalStorageService _localStorage;
 
     public AuthService(RestClient httpClient,
-                       AuthenticationStateProvider authenticationStateProvider,
-                       ILocalStorageService localStorage)
+        AuthenticationStateProvider authenticationStateProvider,
+        ILocalStorageService localStorage)
     {
         _httpClient = httpClient;
         _authenticationStateProvider = authenticationStateProvider;
@@ -23,7 +23,8 @@ public class AuthService : IAuthService
 
     public async Task<RegisterResult> Register(RegisterModel registerModel)
     {
-        var result = await _httpClient.CustomPostAsJsonAsync<RegisterModel, RegisterResult>("api/accounts", registerModel);
+        var result =
+            await _httpClient.CustomPostAsJsonAsync<RegisterModel, RegisterResult>("api/accounts", registerModel);
         return result;
     }
 
@@ -32,7 +33,7 @@ public class AuthService : IAuthService
         var loginResult = await _httpClient.CustomPostAsJsonAsync<LoginModel, LoginResult>("api/Login", loginModel);
         var provider = _authenticationStateProvider as ApiAuthenticationStateProvider;
 
-        if (loginResult.Successful)
+        if ( loginResult.Successful )
         {
             await _localStorage.SetItemAsync("authToken", loginResult.Token);
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.DbModels;
@@ -12,11 +11,13 @@ public class SearchResponse
 
 public class SearchRequest
 {
-    public SearchRequest() { }
-
-    public SearchRequest( SearchQuery query, int first, int count )
+    public SearchRequest()
     {
-        Query = SearchQueryDTO.CreateFrom( query );
+    }
+
+    public SearchRequest(SearchQuery query, int first, int count)
+    {
+        Query = SearchQueryDTO.CreateFrom(query);
         First = first;
         Count = count;
     }
@@ -27,7 +28,7 @@ public class SearchRequest
 
     public override string ToString()
     {
-        return $"Query: [{First}..{First+Count}] => {Query}";
+        return $"Query: [{First}..{First + Count}] => {Query}";
     }
 }
 

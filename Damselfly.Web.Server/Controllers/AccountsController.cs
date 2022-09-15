@@ -2,8 +2,6 @@
 using Damselfly.Core.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AuthenticationWithClientSideBlazor.Server.Controllers;
 
@@ -25,7 +23,7 @@ public class AccountsController : ControllerBase
 
         var result = await _userManager.CreateAsync(newUser, model.Password);
 
-        if (!result.Succeeded)
+        if ( !result.Succeeded )
         {
             var errors = result.Errors.Select(x => x.Description);
 

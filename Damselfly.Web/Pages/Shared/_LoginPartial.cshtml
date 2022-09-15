@@ -3,10 +3,10 @@
 @inject UserManager<IdentityUser> UserManager
 
 <div>
-    <img src="damselfly-logo.png" height="200" title="Damselfly" />
+    <img src="damselfly-logo.png" height="200" title="Damselfly"/>
 </div>
 <ul class="navbar-nav">
-    @if (SignInManager.IsSignedIn(User))
+    @if( SignInManager.IsSignedIn(User) )
     {
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity.Name!</a>

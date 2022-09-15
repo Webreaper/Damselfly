@@ -9,8 +9,7 @@ public static class ServiceRegistration
     public static IServiceCollection AddImageServices(this IServiceCollection services)
     {
         return services.AddSingleton<ImageProcessorFactory>()
-                       .AddSingleton<IImageProcessorFactory>(x => x.GetRequiredService<ImageProcessorFactory>())
-                       .AddSingleton<ImageProcessService>();
+            .AddSingleton<IImageProcessorFactory>(x => x.GetRequiredService<ImageProcessorFactory>())
+            .AddSingleton<ImageProcessService>();
     }
 }
-

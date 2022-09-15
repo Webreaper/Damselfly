@@ -1,7 +1,6 @@
 ﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -9,12 +8,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/work")]
+[Microsoft.AspNetCore.Mvc.Route("/api/work")]
 public class WorkController : ControllerBase
 {
-    private readonly WorkService _service;
-
     private readonly ILogger<WorkController> _logger;
+    private readonly WorkService _service;
 
     public WorkController(WorkService service, ILogger<WorkController> logger)
     {
@@ -47,4 +45,3 @@ public class WorkController : ControllerBase
         await _service.SetCPUSchedule(newSettings);
     }
 }
-

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -17,4 +16,3 @@ public interface IUserMgmtService
     Task<ICollection<ApplicationRole>> GetRoles();
     Task AddUserToDefaultRoles(AppIdentityUser user);
 }
-

@@ -1,18 +1,14 @@
-﻿using System;
-using Damselfly.Core.DbModels;
-using System.Net.Http;
+﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
-using System.Net.Http.Json;
-using Damselfly.Core.Constants;
-using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientWorkService : IWorkService
 {
-    private readonly RestClient httpClient;
     private readonly NotificationsService _notifications;
+    private readonly RestClient httpClient;
 
     public ClientWorkService(RestClient client, NotificationsService notifications)
     {
@@ -22,16 +18,11 @@ public class ClientWorkService : IWorkService
         _notifications.SubscribeToNotification<ServiceStatus>(NotificationType.WorkStatusChanged, NotifyStatusChanged);
     }
 
-    private void NotifyStatusChanged(ServiceStatus newStatus)
-    {
-        OnStatusChanged?.Invoke(newStatus);
-    }
-
     public event Action<ServiceStatus> OnStatusChanged;
 
     public async Task Pause(bool paused)
     {
-        await httpClient.CustomPostAsJsonAsync($"/api/work/pause", paused);
+        await httpClient.CustomPostAsJsonAsync("/api/work/pause", paused);
     }
 
     public async Task<ServiceStatus> GetWorkStatus()
@@ -41,12 +32,16 @@ public class ClientWorkService : IWorkService
 
     public async Task<CPULevelSettings> GetCPUSchedule()
     {
-        return await httpClient.CustomGetFromJsonAsync<CPULevelSettings>($"/api/work/settings");
+        return await httpClient.CustomGetFromJsonAsync<CPULevelSettings>("/api/work/settings");
     }
 
     public async Task SetCPUSchedule(CPULevelSettings settings)
     {
-        await httpClient.CustomPostAsJsonAsync($"/api/work/settings", settings);
+        await httpClient.CustomPostAsJsonAsync("/api/work/settings", settings);
+    }
+
+    private void NotifyStatusChanged(ServiceStatus newStatus)
+    {
+        OnStatusChanged?.Invoke(newStatus);
     }
 }
-

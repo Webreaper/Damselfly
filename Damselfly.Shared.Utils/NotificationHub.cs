@@ -1,18 +1,18 @@
-﻿using System;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Shared.Utils;
 
 public class NotificationHub : Hub
 {
-    private ILogger<NotificationHub> _logger;
-    public static string NotificationRoot => "notifications";
+    private readonly ILogger<NotificationHub> _logger;
 
     public NotificationHub(ILogger<NotificationHub> logger)
     {
         _logger = logger;
     }
+
+    public static string NotificationRoot => "notifications";
 
     public async Task SendMessage(string type, string payload)
     {
@@ -25,4 +25,3 @@ public class NotificationHub : Hub
         await base.OnConnectedAsync();
     }
 }
-

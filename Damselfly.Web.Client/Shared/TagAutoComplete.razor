@@ -1,13 +1,12 @@
-﻿@using System.Linq
-@using Blazored.Typeahead
-
-@inject ITagSearchService tagSearchService
+﻿@inject ITagSearchService tagSearchService
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
 <div class="SearchBox">
-    <div class="SearchFieldIcon" title="Add Tags/Keywords"><i class="fa fa-tag" /></div>
+    <div class="SearchFieldIcon" title="Add Tags/Keywords">
+        <i class="fa fa-tag"/>
+    </div>
     <BlazoredTypeahead disabled="@IsDisabled" class="SearchField" SearchMethod="SearchTags" EnableDropDown="false"
                        placeholder="Add a keyword" Debounce="100"
                        @bind-Value="@TypeAheadTag" @ref="_typeaheadCtrl">
@@ -39,8 +38,8 @@
 
     protected override void OnParametersSet()
     {
-        // TODO https://github.com/dotnet/aspnetcore/issues/11815
-        if (OnAddNewtag == null)
+    // TODO https://github.com/dotnet/aspnetcore/issues/11815
+        if( OnAddNewtag == null )
             throw new ArgumentException("No callback specified for OnAddNewTag!");
 
         base.OnParametersSet();
@@ -48,18 +47,18 @@
 
     private void CreateNewTags(string tag)
     {
-        if (!string.IsNullOrEmpty(tag))
+        if( !string.IsNullOrEmpty(tag) )
         {
             Logging.Log("Saving new tag: " + tag);
 
-            // Reset the tag
+    // Reset the tag
             TypeAheadTag = null;
             StateHasChanged();
 
-            // Call the callback
+    // Call the callback
             OnAddNewtag(tag);
 
-            if (_typeaheadCtrl != null)
+            if( _typeaheadCtrl != null )
                 _ = _typeaheadCtrl.Focus();
         }
     }
@@ -69,4 +68,5 @@
         var results = await tagSearchService.SearchTags(text);
         return results.Select(x => x.Keyword);
     }
+
 }

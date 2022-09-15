@@ -1,12 +1,6 @@
-﻿
-@using System.ComponentModel.DataAnnotations
-@using Damselfly.Core.Interfaces
-@using System.Globalization  
-@using Humanizer
-
-@inject ISearchService searchService
+﻿@inject ISearchService searchService
 @inject ICachedDataService cachedData
-
+@using System.Globalization
 @implements IDisposable
 
 <div class="damselfly-dialogrow">
@@ -18,7 +12,7 @@
                 <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.Clear())">Clear</MudButton>
                 <select class="mr-auto align-self-start" @onchange="ShortCutChanged">
                     <option>Quick Dates</option>
-                    @foreach (var choice in DateRanges)
+                    @foreach( var choice in DateRanges )
                     {
                         <option value="@choice.Key">@choice.Key</option>
                     }
@@ -29,104 +23,109 @@
         </MudDateRangePicker>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Month" @bind-Value="searchService.Month" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var choice in monthChoices)
+        <MudSelect T=" int? " Label="Month" @bind-Value="searchService.Month" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var choice in monthChoices )
             {
-                <MudSelectItem T="int?" Value="@choice.Value">
+                <MudSelectItem T=" int? " Value="@choice.Value">
                     @choice.Key
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Variant="UIConstants.MudVariant">
             @foreach( var choice in Enumerable.Range(1, 5).Reverse() )
             {
-                <MudSelectItem T="int?" Value="@choice">
+                <MudSelectItem T=" int? " Value="@choice">
                     <StarRating Rating="@choice" Editable="false"/>
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="FaceSearchType?" Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var choice in faceTypes)
+        <MudSelect T=" FaceSearchType? " Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var choice in faceTypes )
             {
-                <MudSelectItem T="FaceSearchType?" Value="@choice">
+                <MudSelectItem T=" FaceSearchType? " Value="@choice">
                     @choice.ToString().Humanize()
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="OrientationType?" Label="Orientation" @bind-Value="searchService.Orientation" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var choice in orientationTypes)
+        <MudSelect T=" OrientationType? " Label="Orientation" @bind-Value="searchService.Orientation" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var choice in orientationTypes )
             {
-                <MudSelectItem T="OrientationType?" Value="@choice">
+                <MudSelectItem T=" OrientationType? " Value="@choice">
                     @choice.ToString().Humanize()
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Camera Make/Model" @bind-Value="searchService.CameraId" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var cam in cachedData.Cameras)
+        <MudSelect T=" int? " Label="Camera Make/Model" @bind-Value="searchService.CameraId" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var cam in cachedData.Cameras )
             {
-                <MudSelectItem T="int?" Value="@cam.CameraId">
+                <MudSelectItem T=" int? " Value="@cam.CameraId">
                     @cam.Make @cam.Model
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Lens Make/Model" @bind-Value="searchService.LensId" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var lens in cachedData.Lenses)
+        <MudSelect T=" int? " Label="Lens Make/Model" @bind-Value="searchService.LensId" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var lens in cachedData.Lenses )
             {
-                <MudSelectItem T="int?" Value="@lens.LensId">
+                <MudSelectItem T=" int? " Value="@lens.LensId">
                     @lens.Make @lens.Model
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Max File Size" @bind-Value="searchService.MaxSizeKB" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var choice in fileSizeChoices)
+        <MudSelect T=" int? " Label="Max File Size" @bind-Value="searchService.MaxSizeKB" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var choice in fileSizeChoices )
             {
-                <MudSelectItem T="int?" Value="@choice.Value">
+                <MudSelectItem T=" int? " Value="@choice.Value">
                     @choice.Key
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Min File Size" @bind-Value="searchService.MinSizeKB" Clearable="true" Variant="UIConstants.MudVariant">
-            @foreach (var choice in fileSizeChoices)
+        <MudSelect T=" int? " Label="Min File Size" @bind-Value="searchService.MinSizeKB" Clearable="true" Variant="UIConstants.MudVariant">
+            @foreach( var choice in fileSizeChoices )
             {
-                <MudSelectItem T="int?" Value="@choice.Value">
+                <MudSelectItem T=" int? " Value="@choice.Value">
                     @choice.Key
                 </MudSelectItem>
             }
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.TagsOnly" Label="Exclude filenames/folders" />
+        <MudCheckBox @bind-Checked="@searchService.TagsOnly" Label="Exclude filenames/folders"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.IncludeAITags" Label="Include AI tags" />
+        <MudCheckBox @bind-Checked="@searchService.IncludeAITags" Label="Include AI tags"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.UntaggedImages" Label="Images without keywords" />
+        <MudCheckBox @bind-Checked="@searchService.UntaggedImages" Label="Images without keywords"/>
     </div>
 </div>
 
 @code {
     MudDateRangePicker _picker;
-    List<KeyValuePair<string, DateRange>> DateRanges = new List<KeyValuePair<string, DateRange>>();
-    DateRange filterRange = new DateRange();
+    List<KeyValuePair<string, DateRange>> DateRanges = new();
+    DateRange filterRange = new();
+
     DateRange DateRange
     {
-        get { return filterRange; }
-        set { filterRange = value; DateRangeChanged(value); }
+        get => filterRange;
+        set
+        {
+            filterRange = value;
+            DateRangeChanged(value);
+        }
     }
 
     private void ShortCutChanged(ChangeEventArgs e)
@@ -135,14 +134,14 @@
 
         if( shortCut != null )
         {
-            var range = DateRanges.Where(x => x.Key == shortCut).Select( x => x.Value ).FirstOrDefault();
+            var range = DateRanges.Where(x => x.Key == shortCut).Select(x => x.Value).FirstOrDefault();
 
-            if (range != null)
+            if( range != null )
                 DateRange = range;
         }
     }
 
-    private void DateRangeChanged( DateRange value )
+    private void DateRangeChanged(DateRange value)
     {
         if( value != null )
             searchService.SetDateRange(value.Start, value.End);
@@ -155,7 +154,7 @@
         CreateShortcuts();
         filterRange = new DateRange(searchService.MinDate, searchService.MaxDate);
 
-        // TODO: Can we do better than do this every time the advanced Search panel opens?
+    // TODO: Can we do better than do this every time the advanced Search panel opens?
         cachedData.InitialiseData();
 
         base.OnInitialized();
@@ -164,20 +163,21 @@
     private List<FaceSearchType> faceTypes = EnumerableExtensions.GetEnumList<FaceSearchType>();
     private List<OrientationType> orientationTypes = EnumerableExtensions.GetEnumList<OrientationType>();
 
-    private List<KeyValuePair<string, int>> fileSizeChoices = new List<KeyValuePair<string, int>> {
-        new KeyValuePair<string, int>( "1KB", 1 ),
-        new KeyValuePair<string, int>( "50KB", 50 ),
-        new KeyValuePair<string, int>( "500KB", 500 ),
-        new KeyValuePair<string, int>( "1MB", 1024 ),
-        new KeyValuePair<string, int>( "5MB", 5 * 1024 ),
-        new KeyValuePair<string, int>( "10MB", 10 * 1024 ),
-        new KeyValuePair<string, int>( "50MB", 50 * 1024 ),
+    private List<KeyValuePair<string, int>> fileSizeChoices = new()
+    {
+        new KeyValuePair<string, int>("1KB", 1),
+        new KeyValuePair<string, int>("50KB", 50),
+        new KeyValuePair<string, int>("500KB", 500),
+        new KeyValuePair<string, int>("1MB", 1024),
+        new KeyValuePair<string, int>("5MB", 5 * 1024),
+        new KeyValuePair<string, int>("10MB", 10 * 1024),
+        new KeyValuePair<string, int>("50MB", 50 * 1024)
     };
 
-    private List<KeyValuePair<string, int>> monthChoices => Enumerable.Range( 1, 12 )
-                         .Select( x => new KeyValuePair<string,int>(
-                             CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x), x ) )
-                         .ToList();
+    private List<KeyValuePair<string, int>> monthChoices => Enumerable.Range(1, 12)
+        .Select(x => new KeyValuePair<string, int>(
+            CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x), x))
+        .ToList();
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -200,14 +200,14 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private void AddRangeShortcut( string name, DateRange range )
+    private void AddRangeShortcut(string name, DateRange range)
     {
         DateRanges.Add(new KeyValuePair<string, DateRange>(name, range));
     }
 
     private void CreateShortcuts()
     {
-        // TODO: Add more here
+    // TODO: Add more here
         var Jan1ThisYear = new DateTime(DateTime.UtcNow.Year, 1, 1);
 
         AddRangeShortcut("This year", new DateRange { Start = Jan1ThisYear, End = DateTime.UtcNow });
@@ -217,6 +217,6 @@
         AddRangeShortcut($"{Jan1ThisYear.AddYears(-4).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-4), End = Jan1ThisYear.AddYears(-3).AddSeconds(-1) });
         AddRangeShortcut($"{Jan1ThisYear.AddYears(-5).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-5), End = Jan1ThisYear.AddYears(-4).AddSeconds(-1) });
         AddRangeShortcut($"{Jan1ThisYear.AddYears(-10).Year}", new DateRange { Start = Jan1ThisYear.AddYears(-10), End = Jan1ThisYear.AddYears(-9).AddSeconds(-1) });
-
     }
+
 }

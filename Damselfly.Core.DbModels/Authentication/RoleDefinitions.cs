@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Core.DbModels.Authentication;
 
-
 public static class RoleDefinitions
 {
     // Role names
@@ -13,7 +12,7 @@ public static class RoleDefinitions
     public const string s_ReadOnlyRole = "ReadOnly";
 
     /// <summary>
-    /// https://github.com/aspnet/Identity/issues/1361#issuecomment-348863959
+    ///     https://github.com/aspnet/Identity/issues/1361#issuecomment-348863959
     /// </summary>
     /// <param name="builder"></param>
     public static void OnModelCreating(ModelBuilder builder)
@@ -22,9 +21,9 @@ public static class RoleDefinitions
         {
             b.ToTable("Users");
             b.HasMany(u => u.UserRoles)
-             .WithOne(ur => ur.User)
-             .HasForeignKey(ur => ur.UserId)
-             .IsRequired();
+                .WithOne(ur => ur.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
         });
 
         builder.Entity<ApplicationRole>(role =>
@@ -67,13 +66,25 @@ public static class RoleDefinitions
     }
 
     /// <summary>
-    /// Seed the roles for the application.
+    ///     Seed the roles for the application.
     /// </summary>
     /// <param name="modelBuilder"></param>
     private static void SeedRoles(this ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole { Name = s_UserRole, NormalizedName = s_UserRole.ToUpper(), Id = 1, ConcurrencyStamp = Guid.NewGuid().ToString() });
-        modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole { Name = s_AdminRole, NormalizedName = s_AdminRole.ToUpper(), Id = 2, ConcurrencyStamp = Guid.NewGuid().ToString() });
-        modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole { Name = s_ReadOnlyRole, NormalizedName = s_ReadOnlyRole.ToUpper(), Id = 3, ConcurrencyStamp = Guid.NewGuid().ToString() });
+        modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
+        {
+            Name = s_UserRole, NormalizedName = s_UserRole.ToUpper(), Id = 1,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        });
+        modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
+        {
+            Name = s_AdminRole, NormalizedName = s_AdminRole.ToUpper(), Id = 2,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        });
+        modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
+        {
+            Name = s_ReadOnlyRole, NormalizedName = s_ReadOnlyRole.ToUpper(), Id = 3,
+            ConcurrencyStamp = Guid.NewGuid().ToString()
+        });
     }
 }

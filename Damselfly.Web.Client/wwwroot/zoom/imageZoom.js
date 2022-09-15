@@ -17,6 +17,7 @@
     result.addEventListener("mousemove", moveLens);
     result.addEventListener("touchmove", moveLens);
     result.addEventListener("mouseleave", moveLens);
+
     function moveLens(e) {
         var pos, x, y;
         /* Prevent any other actions that may occur when moving over the image */
@@ -65,6 +66,6 @@
         /* Consider any page scrolling: */
         x = x - window.pageXOffset;
         y = y - window.pageYOffset;
-        return { x: x, y: y };
+        return {x: x, y: y};
     }
 }

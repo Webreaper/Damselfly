@@ -13,10 +13,10 @@
 <div class="damselfly-imagebrowser">
 
     <DetailedErrorBoundary>
-        <SearchBar OnThumbSizeChanged="ThumbSizeChanged" />
+        <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
     </DetailedErrorBoundary>
     <DetailedErrorBoundary>
-        <ImageGrid CurrentThumbSize="@thumbSize" />
+        <ImageGrid CurrentThumbSize="@thumbSize"/>
     </DetailedErrorBoundary>
 </div>
 
@@ -55,56 +55,56 @@
 
     private async Task ApplyQueryParams()
     {
-        if (!string.IsNullOrEmpty(S))
+        if( !string.IsNullOrEmpty(S) )
         {
             searchService.SearchText = S;
         }
 
-        if (FolderId != 0)
+        if( FolderId != 0 )
         {
-            var folder = await folderService.GetFolder( FolderId );
+            var folder = await folderService.GetFolder(FolderId);
 
-            if (folder != null)
+            if( folder != null )
             {
                 statusService.UpdateStatus($"Selected folder {folder.Name}");
                 searchService.Folder = folder;
             }
         }
 
-        if (PersonId != 0)
+        if( PersonId != 0 )
         {
-            // WASM: TODO - we can do this better
+    // WASM: TODO - we can do this better
             var people = await peopleService.GetAllPeople();
-            var person = people.FirstOrDefault( x => x.PersonId == PersonId );
+            var person = people.FirstOrDefault(x => x.PersonId == PersonId);
 
-            if (person != null)
+            if( person != null )
             {
                 statusService.UpdateStatus($"Selected person {person.Name}");
                 searchService.Person = person;
             }
         }
 
-        if (TagId != 0)
+        if( TagId != 0 )
         {
-            // WASM: TODO - we can do this better
+    // WASM: TODO - we can do this better
             var tags = await tagService.GetAllTags();
-            var tag = tags.FirstOrDefault( x => x.TagId == TagId );
+            var tag = tags.FirstOrDefault(x => x.TagId == TagId);
 
-            if (tag != null)
+            if( tag != null )
                 searchService.Tag = tag;
         }
-        else if (!string.IsNullOrEmpty(Tag))
+        else if( !string.IsNullOrEmpty(Tag) )
         {
-            // WASM: TODO - we can do this better
+    // WASM: TODO - we can do this better
             var tags = await tagService.GetAllTags();
-            var tag = tags.FirstOrDefault( x => x.Keyword.Equals( Tag, StringComparison.OrdinalIgnoreCase ) );
+            var tag = tags.FirstOrDefault(x => x.Keyword.Equals(Tag, StringComparison.OrdinalIgnoreCase));
 
-            if( tag != null)
+            if( tag != null )
                 searchService.Tag = tag;
         }
 
-        // Don't need this yet
-        //this.UpdateQueryString(navigationManager);
+    // Don't need this yet
+    //this.UpdateQueryString(navigationManager);
     }
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -128,7 +128,7 @@
         this.SetParametersFromQueryString(navigationManager);
         StateHasChanged();
 
-        //_ = ApplyQueryParams();
+    //_ = ApplyQueryParams();
     }
 
     public void Dispose()
@@ -141,7 +141,6 @@
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public void GetUpdateState(string clientVersion)
     {
-        //Logging.Log($"Checking for update: {clientVersion}");
-
+    //Logging.Log($"Checking for update: {clientVersion}");
     }
 }

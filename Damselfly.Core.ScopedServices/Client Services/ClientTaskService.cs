@@ -1,6 +1,6 @@
 ﻿using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -15,7 +15,7 @@ public class ClientTaskService : ITaskService
 
     public async Task<bool> EnqueueTaskAsync(ScheduledTask task)
     {
-        await httpClient.CustomPostAsJsonAsync<ScheduledTask>("/api/tasks/enqueue", task);
+        await httpClient.CustomPostAsJsonAsync("/api/tasks/enqueue", task);
 
         return true;
     }
@@ -25,4 +25,3 @@ public class ClientTaskService : ITaskService
         return await httpClient.CustomGetFromJsonAsync<List<ScheduledTask>>("/api/tasks");
     }
 }
-

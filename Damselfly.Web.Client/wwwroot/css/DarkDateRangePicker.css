@@ -2,7 +2,7 @@
 
 .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
     background-color: black;
-    color: rgba(200,200,200,0.5);
+    color: rgba(200, 200, 200, 0.5);
 }
 
 .daterangepicker {
@@ -24,34 +24,34 @@
 }
 
 .daterangepicker td.in-range {
-    background-color: rgba(37,47,57,0.9);
+    background-color: rgba(37, 47, 57, 0.9);
     color: #ebf4f8;
 }
 
 .btn-success {
     color: #fff;
     background-color: inherit;
-    border-color: rgba(5,150,1,0.8);
+    border-color: rgba(5, 150, 1, 0.8);
 }
 
 .btn-success.disabled, .btn-success[disabled], fieldset[disabled] .btn-success, .btn-success.disabled:hover, .btn-success[disabled]:hover, fieldset[disabled] .btn-success:hover, .btn-success.disabled:focus, .btn-success[disabled]:focus, fieldset[disabled] .btn-success:focus, .btn-success.disabled.focus, .btn-success[disabled].focus, fieldset[disabled] .btn-success.focus, .btn-success.disabled:active, .btn-success[disabled]:active, fieldset[disabled] .btn-success:active, .btn-success.disabled.active, .btn-success[disabled].active, fieldset[disabled] .btn-success.active {
     color: #fff;
     background-color: inherit;
-    border-color: rgba(5,150,1,0.1);
+    border-color: rgba(5, 150, 1, 0.1);
 }
 
 .btn-default {
     color: #fff;
     background-color: inherit;
-    border-color: rgba(255,255,255,0.6);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .daterangepicker select.monthselect {
-    color: rgba(37,47,57,0.9);
+    color: rgba(37, 47, 57, 0.9);
 }
 
 .daterangepicker select.yearselect {
-    color: rgba(37,47,57,0.9);
+    color: rgba(37, 47, 57, 0.9);
 }
 
 .daterangepicker .input-mini {

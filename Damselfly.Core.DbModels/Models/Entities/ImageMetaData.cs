@@ -1,22 +1,17 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Damselfly.Core.Utils;
-using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Core.Models;
 
 /// <summary>
-/// Metadata associated with an image. Also, an optional lens and camera. 
+///     Metadata associated with an image. Also, an optional lens and camera.
 /// </summary>
 public class ImageMetaData
 {
-    [Key]
-    public int MetaDataId { get; set; }
+    [Key] public int MetaDataId { get; set; }
 
-    [Required]
-    public virtual Image Image { get; set; }
+    [Required] public virtual Image Image { get; set; }
+
     public int ImageId { get; set; }
 
     public DateTime DateTaken { get; set; }
@@ -57,4 +52,3 @@ public class ImageMetaData
     // If this is null, AI will be reprocessed
     public DateTime? AILastUpdated { get; set; }
 }
-

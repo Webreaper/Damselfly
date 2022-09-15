@@ -1,7 +1,5 @@
 ﻿@page "/"
 
-@using Damselfly.Core.Services;
-
 @implements IDisposable
 
 @inject ThumbnailService thumbService
@@ -40,7 +38,7 @@
 
     private ThumbSize thumbSize { get; set; }
 
-    private void ThumbSizeChanged( ThumbSize newSize )
+    private void ThumbSizeChanged(ThumbSize newSize)
     {
         thumbSize = newSize;
         StateHasChanged();
@@ -53,50 +51,50 @@
 
     private async Task ApplyQueryParams()
     {
-        if( ! string.IsNullOrEmpty( S ) )
+        if( !string.IsNullOrEmpty(S) )
         {
             searchService.SearchText = S;
         }
 
-        if (FolderId != 0)
+        if( FolderId != 0 )
         {
             var folder = await db.Folders.FindAsync(FolderId);
 
-            if (folder != null)
+            if( folder != null )
             {
-                statusService.UpdateStatus( $"Selected folder {folder.Name}" );
+                statusService.UpdateStatus($"Selected folder {folder.Name}");
                 searchService.Folder = folder;
             }
         }
 
-        if (PersonId != 0)
+        if( PersonId != 0 )
         {
             var person = await db.People.FindAsync(PersonId);
 
-            if (person != null)
+            if( person != null )
             {
-                statusService.UpdateStatus( $"Selected person {person.Name}" );
+                statusService.UpdateStatus($"Selected person {person.Name}");
                 searchService.Person = person;
             }
         }
 
-        if (TagId != 0)
+        if( TagId != 0 )
         {
             var tag = metadataService.GetTag(TagId);
 
-            if (tag != null)
+            if( tag != null )
                 searchService.Tag = tag;
         }
-        else if( ! string.IsNullOrEmpty( Tag ))
+        else if( !string.IsNullOrEmpty(Tag) )
         {
             var tag = metadataService.GetTag(Tag);
 
-            if (tag != null)
+            if( tag != null )
                 searchService.Tag = tag;
         }
 
-        // Don't need this yet
-        //this.UpdateQueryString(navigationManager);
+    // Don't need this yet
+    //this.UpdateQueryString(navigationManager);
     }
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -114,7 +112,6 @@
         ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
 
         navigationManager.LocationChanged += HandleLocationChanged;
-
     }
 
     void HandleLocationChanged(object sender, LocationChangedEventArgs e)
@@ -136,6 +133,5 @@
     public void GetUpdateState(string clientVersion)
     {
         Logging.Log($"Checking for update: {clientVersion}");
-
     }
 }

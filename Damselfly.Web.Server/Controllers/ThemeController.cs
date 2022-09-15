@@ -1,10 +1,5 @@
 ﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -12,12 +7,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/theme")]
+[Microsoft.AspNetCore.Mvc.Route("/api/theme")]
 public class ThemeController : ControllerBase
 {
-    private readonly IThemeService _service;
-
     private readonly ILogger<ThemeController> _logger;
+    private readonly IThemeService _service;
 
     public ThemeController(IThemeService service, ILogger<ThemeController> logger)
     {
@@ -43,4 +37,3 @@ public class ThemeController : ControllerBase
         return await _service.GetThemeConfig(name);
     }
 }
-

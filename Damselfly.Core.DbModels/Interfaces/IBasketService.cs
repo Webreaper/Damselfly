@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 
@@ -27,9 +25,9 @@ public interface IBasketService
 
 public interface IUserBasketService : IBasketService
 {
-    event Action<BasketChanged> OnBasketChanged;
     Basket CurrentBasket { get; }
     ICollection<Image> BasketImages { get; }
+    event Action<BasketChanged> OnBasketChanged;
     Task<Basket> SwitchToBasket(int basketId);
     Task<Basket> SwitchToDefaultBasket(int? userId);
     Task SetImageBasketState(bool newState, ICollection<int> imageIds);

@@ -3,12 +3,11 @@
 namespace Damselfly.Core.Models;
 
 /// <summary>
-/// An image classification detected via ML
+///     An image classification detected via ML
 /// </summary>
 public class ImageClassification
 {
-    [Key]
-    public int ClassificationId { get; set; }
+    [Key] public int ClassificationId { get; set; }
 
     public string Label { get; set; }
 

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Damselfly.Core.Models;
 
 /// <summary>
-/// Transaction Count for Cloud services - to keep approximate track of usage
+///     Transaction Count for Cloud services - to keep approximate track of usage
 /// </summary>
 public class CloudTransaction
 {
@@ -12,10 +12,9 @@ public class CloudTransaction
     {
         Unknown = 0,
         AzureFace = 1
-    };
+    }
 
-    [Key]
-    public int CloudTransactionId { get; set; }
+    [Key] public int CloudTransactionId { get; set; }
 
     public TransactionType TransType { get; set; }
     public DateTime Date { get; set; }

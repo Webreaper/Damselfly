@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,11 +6,10 @@ using System.Threading.Tasks;
 namespace Damselfly.Web.Models;
 
 /// <summary>
-/// Writable test Stream that does nothing other than setting it's Position property
+///     Writable test Stream that does nothing other than setting it's Position property
 /// </summary>
 public class PositionStream : Stream
 {
-
     public override bool CanRead => false;
 
     public override bool CanSeek => false;

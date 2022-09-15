@@ -5,16 +5,10 @@ using Damselfly.Core.DbModels.Authentication;
 namespace Damselfly.Core.Models;
 
 /// <summary>
-/// Represents a pending operation to add or remove a keyword on an image
+///     Represents a pending operation to add or remove a keyword on an image
 /// </summary>
 public class ExifOperation
 {
-    public enum OperationType
-    {
-        Add,
-        Remove
-    };
-
     public enum ExifType
     {
         Keyword = 0,
@@ -23,7 +17,7 @@ public class ExifOperation
         Description = 3,
         Rating = 4,
         Copyright = 5
-    };
+    }
 
     public enum FileWriteState
     {
@@ -31,23 +25,25 @@ public class ExifOperation
         Written = 1,
         Discarded = 9999,
         Failed = -1
-    };
+    }
 
-    [Key]
-    public int ExifOperationId { get; set; }
+    public enum OperationType
+    {
+        Add,
+        Remove
+    }
 
-    [Required]
-    public virtual Image Image { get; set; }
+    [Key] public int ExifOperationId { get; set; }
+
+    [Required] public virtual Image Image { get; set; }
+
     public int ImageId { get; set; }
 
-    [Required]
-    public string Text { get; set; }
+    [Required] public string Text { get; set; }
 
-    [Required]
-    public ExifType Type { get; set; }
+    [Required] public ExifType Type { get; set; }
 
-    [Required]
-    public OperationType Operation { get; set; } = OperationType.Add;
+    [Required] public OperationType Operation { get; set; } = OperationType.Add;
 
     // TODO: Should this setter be required/private?
     public DateTime TimeStamp { get; set; }

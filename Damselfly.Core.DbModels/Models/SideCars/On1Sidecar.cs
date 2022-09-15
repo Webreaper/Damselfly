@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Linq;
+using System.Text.Json;
 using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Models.SideCars;
@@ -20,15 +20,15 @@ public class Photo
 }
 
 /// <summary>
-/// Class to represent, and read, the On1 Sidecar data, which is json
-/// serialised in a .on1 file.
+///     Class to represent, and read, the On1 Sidecar data, which is json
+///     serialised in a .on1 file.
 /// </summary>
 public class On1Sidecar
 {
-    public Dictionary<string, Photo> photos { get; set; } = new Dictionary<string, Photo>();
+    public Dictionary<string, Photo> photos { get; set; } = new();
 
     /// <summary>
-    /// Load the on1 sidecar metadata for the image - if it exists.
+    ///     Load the on1 sidecar metadata for the image - if it exists.
     /// </summary>
     /// <param name="image"></param>
     /// <returns>Metadata, with keywords etc</returns>
@@ -38,24 +38,25 @@ public class On1Sidecar
 
         try
         {
-            string json = File.ReadAllText(sidecarPath.FullName);
+            var json = File.ReadAllText(sidecarPath.FullName);
 
             // Deserialize.
             var sideCar = JsonSerializer.Deserialize<On1Sidecar>(json);
 
-            if (sideCar != null)
+            if ( sideCar != null )
             {
                 Logging.LogVerbose($"Successfully loaded on1 sidecar for {sidecarPath.FullName}");
                 var photo = sideCar.photos.Values.FirstOrDefault();
 
-                if (photo != null)
+                if ( photo != null )
                     result = photo.metadata;
             }
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogWarning($"Unable to load On1 Sidecar data from {sidecarPath.FullName}: {ex.Message}");
         }
+
         return result;
     }
 }

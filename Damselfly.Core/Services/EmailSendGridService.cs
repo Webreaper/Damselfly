@@ -1,32 +1,28 @@
-﻿using SendGrid;
-using SendGrid.Helpers.Mail;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Damselfly.Core.Constants;
-using Damselfly.Core.Utils;
-using Damselfly.Core.Interfaces;
-using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace Damselfly.Core.Services;
 
 /// <summary>
-/// IEmailSender implementation that uses SendGrid
+///     IEmailSender implementation that uses SendGrid
 /// </summary>
 public class EmailSendGridService : IEmailSender
 {
+    private readonly SendGridSettings _options = new();
+
     public EmailSendGridService(IConfigService configService)
     {
         _options.Load(configService);
     }
 
-    public bool IsValid
-    {
-        get { return !string.IsNullOrEmpty(_options.SendGridFromAddress) && !string.IsNullOrEmpty(_options.SendGridKey); }
-    }
-
-    private readonly SendGridSettings _options = new SendGridSettings();
+    public bool IsValid => !string.IsNullOrEmpty(_options.SendGridFromAddress) &&
+                           !string.IsNullOrEmpty(_options.SendGridKey);
 
 
     public async Task SendEmailAsync(string email, string subject, string message)
@@ -36,7 +32,7 @@ public class EmailSendGridService : IEmailSender
         try
         {
             var client = new SendGridClient(_options.SendGridKey);
-            var msg = new SendGridMessage()
+            var msg = new SendGridMessage
             {
                 From = new EmailAddress(_options.SendGridFromAddress, "Damselfly"),
                 Subject = subject,
@@ -51,15 +47,14 @@ public class EmailSendGridService : IEmailSender
 
             var response = await client.SendEmailAsync(msg);
 
-            if (response.IsSuccessStatusCode)
+            if ( response.IsSuccessStatusCode )
                 Logging.Log($"Email send to {email} completed.");
             else
                 Logging.Log($"Email send to {email} failed with status {response.StatusCode}.");
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError($"SendGrid error: {ex}");
         }
     }
 }
-

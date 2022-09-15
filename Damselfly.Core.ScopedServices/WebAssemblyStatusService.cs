@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -10,6 +9,5 @@ public class WebAssemblyStatusService
         IsWebAssembly = jsRuntime is IJSInProcessRuntime;
     }
 
-    public bool IsWebAssembly { get; private init; }
+    public bool IsWebAssembly { get; }
 }
-

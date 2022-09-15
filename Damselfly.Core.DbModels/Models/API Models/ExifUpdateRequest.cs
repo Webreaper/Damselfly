@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.DbModels.Models.APIModels;
@@ -11,4 +10,3 @@ public class ExifUpdateRequest
     public string NewValue { get; set; }
     public int? UserId { get; set; }
 }
-

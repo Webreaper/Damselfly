@@ -1,12 +1,10 @@
-﻿@using Microsoft.AspNetCore.Identity
-@using Damselfly.Core.DbModels.Authentication
-
+﻿@using Damselfly.Core.DbModels.Authentication
 @inject SignInManager<AppIdentityUser> SignInManager
 @inject UserManager<AppIdentityUser> UserManager
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <ul class="navbar-nav">
-    @if (SignInManager.IsSignedIn(User))
+    @if( SignInManager.IsSignedIn(User) )
     {
         <li class="nav-item">
             <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>

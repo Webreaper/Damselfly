@@ -1,5 +1,4 @@
-﻿using System;
-using Damselfly.Core.Constants;
+﻿using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Interfaces;
 
@@ -19,4 +18,3 @@ public interface IThumbConfig
     public bool cropToRatio { get; }
     public bool batchGenerate { get; }
 }
-

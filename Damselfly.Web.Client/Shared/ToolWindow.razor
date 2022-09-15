@@ -1,17 +1,16 @@
-﻿
-@inject IUserConfigService configService
+﻿@inject IUserConfigService configService
 
 <div class="toolwindow">
     <div class="toolwindow-titlebar">
         <div class="toolwindow-title">@Title</div>
         <div class="toolwindow-visibletoggle">
-            @if (Collapsed)
+            @if( Collapsed )
             {
-                <i class="fas fa-chevron-down" @onclick="@(() => ExpandDisplay())" />
+                <i class="fas fa-chevron-down" @onclick="@(() => ExpandDisplay())"/>
             }
             else
             {
-                <i class="fas fa-chevron-up" @onclick="@(() => CollapseDisplay())" />
+                <i class="fas fa-chevron-up" @onclick="@(() => CollapseDisplay())"/>
             }
         </div>
     </div>
@@ -23,6 +22,7 @@
 </div>
 
 @code {
+
     [Parameter]
     public string Title { get; set; }
 
@@ -32,16 +32,13 @@
     public string DisplayClass { get; set; } = string.Empty;
     public bool Collapsed { get; set; } = false;
 
-    private string ConfigName
-    {
-        get { return $"{Title}Visible";  }
-    }
+    private string ConfigName => $"{Title}Visible";
 
     protected override void OnInitialized()
     {
         var visible = configService.Get(ConfigName, "True");
 
-        if (visible == "False")
+        if( visible == "False" )
             CollapseDisplay();
     }
 
@@ -58,4 +55,5 @@
         DisplayClass = "toolbar-hidden";
         configService.SetForUser(ConfigName, "False");
     }
+
 }

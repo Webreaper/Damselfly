@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Damselfly.Core.DbModels;
+﻿namespace Damselfly.Core.DbModels;
 
 public class ThemeConfig
 {

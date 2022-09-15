@@ -1,24 +1,22 @@
-﻿
-@inject IUserService userService
+﻿@inject IUserService userService
 
-@if( ! string.IsNullOrEmpty( FieldValue ) || (Editable && allowedToEdit) )
+@if( !string.IsNullOrEmpty(FieldValue) || (Editable && allowedToEdit) )
 {
     <div class="imagefield">
         <label class="imagefield-label" title="@Tooltip">
             @FieldName:
-            @if (string.IsNullOrEmpty(Href))
+            @if( string.IsNullOrEmpty(Href) )
             {
-                @if (editing)
+                @if( editing )
                 {
-
-                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
+                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus"/>
                 }
                 else
                 {
                     <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
                     @if( Editable && allowedToEdit )
                     {
-                        <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField" />
+                        <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField"/>
                     }
                 }
             }
@@ -34,6 +32,7 @@
 }
 
 @code {
+
     [Parameter]
     public string FieldName { get; set; }
 
@@ -71,9 +70,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if( !firstRender )
         {
-            if (editing)
+            if( editing )
             {
                 await inputField.FocusAsync();
             }
@@ -82,10 +81,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrEmpty(Title))
+        if( string.IsNullOrEmpty(Title) )
             Title = FieldValue;
 
-        allowedToEdit = await userService.PolicyApplies( PolicyDefinitions.s_IsEditor );
+        allowedToEdit = await userService.PolicyApplies(PolicyDefinitions.s_IsEditor);
 
         base.OnInitialized();
     }
@@ -101,4 +100,5 @@
         editing = true;
         StateHasChanged();
     }
+
 }

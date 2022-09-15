@@ -7,53 +7,59 @@
 @inject ViewDataService ViewDataService
 @inject UserConfigService configService
 @inject IndexingService indexService
-@inject ImageCache imageCache         
+@inject ImageCache imageCache 
 @inject IJSRuntime JsRuntime
+@using System.Net
 @implements ICropHelper
 
 <div class="damselfly-imageview" @ref="ImageView" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
-    @if (CurrentImage == null)
+    @if( CurrentImage == null )
     {
-<div class="col">
-    <p><em>Error. Image not found!</em></p>
-</div> }
-else
-{
-<div class="damselfly-imagetools">
-    <div class="damselfly-imagetitlenav">
-        <NavBack />
-    </div>
-    <div class="damselfly-imagebuttons">
-        <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image" />
-        <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@ZoomEnabled" title="Toggle Zoom" />
-        <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces" />
-        <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-            <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
-        </AuthorizeView>
-        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-            <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
-        </AuthorizeView>
-        <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
-        window.open(
-            '@FaceBookShareUrl',
-            'facebook-share-dialog',
-            'width=626,height=436');
-        return false;" />
-    <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
+        <div class="col">
+            <p>
+                <em>Error. Image not found!</em>
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="damselfly-imagetools">
+            <div class="damselfly-imagetitlenav">
+                <NavBack/>
+            </div>
+            <div class="damselfly-imagebuttons">
+                <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image"/>
+                <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@ZoomEnabled" title="Toggle Zoom"/>
+                <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces"/>
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
+                    <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata"/>
+                </AuthorizeView>
+                <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
+                window.open(
+                '@FaceBookShareUrl',
+                'facebook-share-dialog',
+                'width=626,height=436');
+                return false;" />
+                <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
 
-        <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image" />
-    </div>
-    <div class="damselfly-imagetitle" title="@CurrentImage.FullPath">
-        <h4>
-            @CurrentImage.FileName
-        </h4>
-    </div>
-</div>
+                <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image"/>
+            </div>
+            <div class="damselfly-imagetitle" title="@CurrentImage.FullPath">
+                <h4>
+                    @CurrentImage.FileName
+                </h4>
+            </div>
+        </div>
 
-    <ImagePreview @ref="theImagePreview" @key="@ImageID" Image="@CurrentImage" />}
+        <ImagePreview @ref="theImagePreview" @key="@ImageID" Image="@CurrentImage"/>
+    }
 </div>
 
 @code {
+
     [Parameter]
     public string ImageID { get; set; }
 
@@ -90,7 +96,7 @@ else
             var baseUrl = new Uri(NavigationManager.BaseUri);
 
             var url = new Uri(baseUrl, $"/thumb/{ThumbSize.Large}/{ImageID}");
-            var imageUrl = System.Net.WebUtility.UrlEncode(url.ToString());
+            var imageUrl = WebUtility.UrlEncode(url.ToString());
             return $"https://www.facebook.com/sharer/sharer.php?u={imageUrl}";
         }
     }
@@ -102,12 +108,12 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowImageProps = true, ShowTags = true, ShowMap = true });
 
-            //this.JsHelper = new CropJsHelper(this);
-            //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
+    //this.JsHelper = new CropJsHelper(this);
+    //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
 
             await SetUpNavigation();
 
@@ -142,13 +148,14 @@ else
 
     protected async Task SetUpNavigation()
     {
-        if (Int32.TryParse(ImageID, out var imageId))
+        if( int.TryParse(ImageID, out var imageId) )
         {
             CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
 
-            ImageUrl = CurrentImage.ThumbUrl( ThumbSize.Medium );
-            ImageUrlHighRes = CurrentImage.ThumbUrl(ThumbSize.ExtraLarge); ;
+            ImageUrl = CurrentImage.ThumbUrl(ThumbSize.Medium);
+            ImageUrlHighRes = CurrentImage.ThumbUrl(ThumbSize.ExtraLarge);
+            ;
 
             nextImage = await navContext.GetNextImage(true);
             prevImage = await navContext.GetNextImage(false);
@@ -159,20 +166,19 @@ else
 
     private void Next()
     {
-        if (nextImage >= 0 && nextImage != CurrentImage.ImageId)
+        if( nextImage >= 0 && nextImage != CurrentImage.ImageId )
             NavigationManager.NavigateTo("/image/" + nextImage);
-
     }
 
     private void Prev()
     {
-        if (prevImage >= 0 && prevImage != CurrentImage.ImageId)
+        if( prevImage >= 0 && prevImage != CurrentImage.ImageId )
             NavigationManager.NavigateTo("/image/" + prevImage);
     }
 
     public void RefreshImage()
     {
-        _ = indexService.MarkImagesForScan(new List<int>() { CurrentImage.ImageId });
+        _ = indexService.MarkImagesForScan(new List<int> { CurrentImage.ImageId });
     }
 
     public async Task DownloadImage()
@@ -181,7 +187,7 @@ else
         {
             await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.DownloadImageUrl);
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             Logging.LogError("Exception: " + ex.Message);
         }
@@ -190,17 +196,18 @@ else
 
     void OnKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "ArrowRight")
+        if( e.Key == "ArrowRight" )
         {
             Next();
         }
-        else if (e.Key == "ArrowLeft")
+        else if( e.Key == "ArrowLeft" )
         {
             Prev();
         }
-        else if( e.Key == "Escape")
+        else if( e.Key == "Escape" )
         {
             NavigationManager.NavigateTo("/");
         }
     }
+
 }

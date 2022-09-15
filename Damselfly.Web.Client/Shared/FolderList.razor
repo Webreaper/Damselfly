@@ -1,104 +1,114 @@
-﻿@using Damselfly.Core.Interfaces
-
-@inject ISearchService searchService
+﻿@inject ISearchService searchService
 @inject IUserFolderService folderService
 @inject ContextMenuService contextMenuService
 @inject IUserConfigService configService
 @inject IDialogService DialogService
 @inject ILogger<FolderList> logger
-
+@using DialogOptions = MudBlazor.DialogOptions
 @implements IDisposable
 
-<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
+<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos"/>
 
 <div class="damselfly-folderlist">
     <div class="damselfly-browsetools">
         <div class="damselfly-browsetool">
-            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
+            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm"/>
         </div>
         <div class="damselfly-browsetool">
-            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()" />
-            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()" />
-            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()" />
+            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()"/>
+            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()"/>
+            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()"/>
         </div>
     </div>
-@if (folderItems == null)
-{
-    <p>Loading...</p>
-    <Spinner />
-}
-else
-{
-    <div class="folder-entry @FolderStyle( -1 )" @onclick="@(() => ResetFilterFolder())"
-         @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
-        <i class="fa fa-folder-open folder-icon" /> All Folders
-    </div>
-    <div class="folder-scroll-area" id="folderscrollarea">
-        <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
-            <div class="folder-entry @FolderStyle(context.FolderId) expandable"
-                 @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
-                <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))" />
-                <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
-                    @context.MetaData.DisplayName (@context.MetaData.TotalImages)
-                </span>
-            </div>
-        </Virtualize>
-    </div>
-}
+    @if( folderItems == null )
+    {
+        <p>Loading...</p>
+        <Spinner/>
+    }
+    else
+    {
+        <div class="folder-entry @FolderStyle(-1)" @onclick="@(() => ResetFilterFolder())"
+             @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
+            <i class="fa fa-folder-open folder-icon"/> All Folders
+        </div>
+        <div class="folder-scroll-area" id="folderscrollarea">
+            <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
+                <div class="folder-entry @FolderStyle(context.FolderId) expandable"
+                     @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
+                    <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))"/>
+                    <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
+                        @context.MetaData.DisplayName (@context.MetaData.TotalImages)
+                    </span>
+                </div>
+            </Virtualize>
+        </div>
+    }
 </div>
 
 @code {
-    private string filterTerm;
-    public string FilterTerm { get { return filterTerm; } }
+    public string FilterTerm { get; private set; }
+
     private Virtualize<Folder> folderContainer;
     private List<Folder> folderItems;
     Folder SelectedItem { get; set; }
     bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
-    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending, false);
+    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending);
     string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
-    string SortClass => SortMode == "Date" ? (Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up") : (Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z");
+    string SortClass => SortMode == "Date" ? Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up" : Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z";
     string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
     string FlatTreeClass => FlatView ? "fa-list" : "fa-folder-tree";
 
     void ShowContextMenu(MouseEventArgs args, Folder folder)
     {
-        string refreshText = "Refresh Folder";
-        string selectText = "Select Folder";
-        string viewText = FlatView ? "Tree View" : "Flat View";
-        string sortDirection = "Sort Ascending";
-        string sortText = "Sort by Date";
+        var refreshText = "Refresh Folder";
+        var selectText = "Select Folder";
+        var viewText = FlatView ? "Tree View" : "Flat View";
+        var sortDirection = "Sort Ascending";
+        var sortText = "Sort by Date";
 
-        if (SortMode == "Date")
+        if( SortMode == "Date" )
             sortText = "Sort by Name";
 
-        if (Ascending)
+        if( Ascending )
             sortDirection = "Sort Descending";
 
-        if (folder == null)
+        if( folder == null )
         {
             refreshText = "Refresh All Folders";
             selectText = "Clear Folder Selection";
         }
 
         contextMenuService.Open(args,
-        new List<ContextMenuItem>() {
-                new ContextMenuItem(){ Text = selectText, Value = 0 },
-                new ContextMenuItem(){ Text = refreshText, Value = 1 },
-                new ContextMenuItem(){ Text = viewText, Value = 3 },
-                new ContextMenuItem(){ Text = sortText, Value = 4 },
-                new ContextMenuItem(){ Text = sortDirection, Value = 5 },
-                 }, (args) =>
-                 {
-                     contextMenuService.Close();
-                     switch (args.Value)
-                     {
-                         case 0: if (folder == null) ResetFilterFolder(); else SetFilterFolder(folder); break;
-                         case 1: _ = ShowRescanDialog(folder); break;
-                         case 3: _ = ToggleFlatView(); break;
-                         case 4: _ = ToggleSortMode(); break;
-                         case 5: _ = ToggleSortAscendingView(); break;
-                     }
-                 });
+            new List<ContextMenuItem>
+            {
+                new() { Text = selectText, Value = 0 },
+                new() { Text = refreshText, Value = 1 },
+                new() { Text = viewText, Value = 3 },
+                new() { Text = sortText, Value = 4 },
+                new() { Text = sortDirection, Value = 5 }
+            }, args =>
+            {
+                contextMenuService.Close();
+                switch( args.Value )
+                {
+                    case 0:
+                        if( folder == null ) ResetFilterFolder();
+                        else SetFilterFolder(folder);
+                        break;
+                    case 1:
+                        _ = ShowRescanDialog(folder);
+                        break;
+                    case 3:
+                        _ = ToggleFlatView();
+                        break;
+                    case 4:
+                        _ = ToggleSortMode();
+                        break;
+                    case 5:
+                        _ = ToggleSortAscendingView();
+                        break;
+                }
+            });
     }
 
     private async Task ToggleFlatView()
@@ -114,7 +124,7 @@ else
     {
         var newMode = "Date";
 
-        if (SortMode == "Date")
+        if( SortMode == "Date" )
             newMode = "Name";
 
         configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
@@ -135,26 +145,26 @@ else
     {
         var parameters = new DialogParameters { { "allimages", true } };
 
-        if (folder != null)
+        if( folder != null )
             parameters = new DialogParameters { { "folder", folder }, { "count", folder.MetaData.ImageCount } };
 
-        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
 
     protected void SelectionChanged(Folder f)
     {
-        //Logging.Log($"Selected folder {f.FolderId}");
+    //Logging.Log($"Selected folder {f.FolderId}");
     }
 
     string FolderIcon(Folder folder)
     {
-        if (!FlatView)
+        if( !FlatView )
         {
-            if (folderService.IsExpanded( folder) )
+            if( folderService.IsExpanded(folder) )
                 return "fa-folder-open";
-            else if (folder.HasSubFolders)
+            if( folder.HasSubFolders )
                 return "fa-folder-plus";
         }
         return "fa-folder";
@@ -162,7 +172,7 @@ else
 
     string IndentMargin(Folder folder)
     {
-        if (FlatView)
+        if( FlatView )
             return string.Empty;
 
         return $"margin-left:{folder.MetaData.Depth * 10}px;";
@@ -170,10 +180,10 @@ else
 
     string FolderStyle(int folderId)
     {
-        if (folderId == -1 && searchService.Folder == null)
+        if( folderId == -1 && searchService.Folder == null )
             return "folder-entry-selected";
 
-        if (searchService.Folder?.FolderId == folderId)
+        if( searchService.Folder?.FolderId == folderId )
             return "folder-entry-selected";
 
         return string.Empty;
@@ -181,9 +191,9 @@ else
 
     private void DoFilter(string searchTerm)
     {
-        if (filterTerm != searchTerm)
+        if( FilterTerm != searchTerm )
         {
-            filterTerm = searchTerm;
+            FilterTerm = searchTerm;
             OnFoldersChanged();
         }
     }
@@ -202,7 +212,7 @@ else
 
     protected async Task ToggleExpand(Folder item)
     {
-        if (item.HasSubFolders)
+        if( item.HasSubFolders )
         {
             folderService.ToggleExpand(item);
 
@@ -212,22 +222,22 @@ else
 
     protected async Task ProcessUpdatedFilter()
     {
-        var folders = await folderService.GetFilteredFolders(filterTerm);
+        var folders = await folderService.GetFilteredFolders(FilterTerm);
 
         logger.LogInformation($"Retrieved {folders.Count} folders");
         folderItems = folders.ToList();
 
-        await InvokeAsync( StateHasChanged );
+        await InvokeAsync(StateHasChanged);
     }
 
     protected override async void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             folderService.OnFoldersChanged += OnFoldersChanged;
             searchService.OnSearchChanged += OnSearchChanged;
 
-            // Kick off the data load
+    // Kick off the data load
             await ProcessUpdatedFilter();
         }
     }
@@ -240,12 +250,13 @@ else
 
     private void OnFoldersChanged()
     {
-        // Be careful of threading - we may get called from anywhere
-        _ = InvokeAsync( ProcessUpdatedFilter );
+    // Be careful of threading - we may get called from anywhere
+        _ = InvokeAsync(ProcessUpdatedFilter);
     }
 
     private void OnSearchChanged()
     {
         InvokeAsync(StateHasChanged);
     }
+
 }

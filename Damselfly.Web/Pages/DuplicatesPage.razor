@@ -1,7 +1,5 @@
 ﻿@page "/duplicates"
-
 @using Microsoft.EntityFrameworkCore
-@using System.Collections.Generic;
 
 @inject NavigationService navContext
 @inject ViewDataService ViewDataService
@@ -10,23 +8,23 @@
 
 <div class="damselfly-export">
     <div class="damselfly-pagetitlebar">
-        <NavBack />
+        <NavBack/>
         <h4 class="damselfly-imagetitle">
             Images with Duplicates
         </h4>
     </div>
     <div class="damselfly-dupelist">
-        @if (imageLists != null)
+        @if( imageLists != null )
         {
-            @foreach (var list in imageLists)
+            @foreach( var list in imageLists )
             {
                 <div class="damselfly-duplicate">
                     <div class="damselfly-dupeimage">
-                        <img src="@list[0].ThumbUrl( ThumbSize.Small )" />
+                        <img src="@list[0].ThumbUrl(ThumbSize.Small)"/>
                     </div>
 
                     <div class="damselfly-dupe-entries">
-                        @foreach (var img in list)
+                        @foreach( var img in list )
                         {
                             <div class="damselfly-dupe-entry">
                                 @img.FullPath, Date Taken: @img.SortDate.Display()
@@ -46,7 +44,7 @@
 @code {
     public Image CurrentImage { get; set; }
 
-    List<List<Image>> imageLists = new List<List<Image>>();
+    List<List<Image>> imageLists = new();
 
     public async Task<List<List<Image>>> LoadData()
     {
@@ -62,7 +60,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowExport = true });
 
@@ -73,35 +71,36 @@
     }
 
     /// <summary>
-    /// TODO: Move to duplicatesService
+    ///     TODO: Move to duplicatesService
     /// </summary>
     /// <returns></returns>
     public async Task<List<List<Image>>> GetImagesWithDuplicates()
     {
         var watch = new Stopwatch("GetImagesWithDupes");
 
-        // Craft the SQL manually as server-side groupby isn't supported by EF Core.
-        // Select all images that have the same hash as more than one image.
+    // Craft the SQL manually as server-side groupby isn't supported by EF Core.
+    // Select all images that have the same hash as more than one image.
         var subQuery = @"SELECT MD5ImageHash FROM Hashes
                     WHERE MD5ImageHash IS NOT NULL AND MD5ImageHash <> ""
                     GROUP BY MD5ImageHash HAVING COUNT( DISTINCT ImageID ) > 1";
         var sql = $"SELECT h.* FROM hashes h WHERE h.MD5ImageHash IN ({subQuery})";
 
         var dupeImages = await db.Hashes.FromSqlRaw(sql)
-                                .Where(x => x.MD5ImageHash != null)
-                                .Include(x => x.Image)
-                                .Select(x => x.ImageId)
-                                .ToListAsync();
+            .Where(x => x.MD5ImageHash != null)
+            .Include(x => x.Image)
+            .Select(x => x.ImageId)
+            .ToListAsync();
 
         var cachedImages = await imageCache.GetCachedImages(dupeImages);
 
-        // Group by the hash and pick all of the images for each one.
+    // Group by the hash and pick all of the images for each one.
         var listOfLists = cachedImages.GroupBy(x => x.Hash.MD5ImageHash)
-                                  .Select(x => x.OrderBy(x => x.SortDate).ToList())
-                                  .ToList();
+            .Select(x => x.OrderBy(x => x.SortDate).ToList())
+            .ToList();
 
         watch.Stop();
 
         return listOfLists;
     }
+
 }

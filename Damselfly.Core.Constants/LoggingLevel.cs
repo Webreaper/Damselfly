@@ -1,5 +1,4 @@
-﻿using System;
-namespace Damselfly.Core.Constants;
+﻿namespace Damselfly.Core.Constants;
 
 public enum LoggingLevel
 {
@@ -7,4 +6,3 @@ public enum LoggingLevel
     Verbose,
     Debug
 }
-

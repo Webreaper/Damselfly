@@ -2,14 +2,16 @@
 
 @inject ViewDataService ViewDataService
 
-<Info />
+<Info/>
 
 @code {
+
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true });
         }
     }
+
 }

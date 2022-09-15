@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels;
-using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
 
@@ -21,5 +18,4 @@ public interface IRescanProvider
     Task MarkFolderForScan(int folderId);
     Task MarkImagesForScan(ICollection<int> imageIds);
     Task MarkAllForScan();
-
 }

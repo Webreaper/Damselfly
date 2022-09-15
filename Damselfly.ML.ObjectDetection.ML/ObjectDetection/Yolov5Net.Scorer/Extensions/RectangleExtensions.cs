@@ -1,13 +1,11 @@
-﻿
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 
-namespace Yolov5Net.Scorer.Extensions
+namespace Yolov5Net.Scorer.Extensions;
+
+public static class RectangleExtensions
 {
-    public static class RectangleExtensions
+    public static float Area(this RectangleF source)
     {
-        public static float Area(this RectangleF source)
-        {
-            return source.Width * source.Height;
-        }
+        return source.Width * source.Height;
     }
 }

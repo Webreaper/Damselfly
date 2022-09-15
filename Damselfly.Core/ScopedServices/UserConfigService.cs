@@ -13,10 +13,11 @@ namespace Damselfly.Core.ScopedServices;
 
 public class UserConfigService : BaseConfigService, IDisposable
 {
-    private readonly IUserService _userService;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IUserService _userService;
 
-    public UserConfigService(IUserService userService, IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base(logger)
+    public UserConfigService(IUserService userService, IServiceScopeFactory scopeFactory,
+        ILogger<IConfigService> logger) : base(logger)
     {
         _scopeFactory = scopeFactory;
         _userService = userService;
@@ -25,14 +26,14 @@ public class UserConfigService : BaseConfigService, IDisposable
         _ = InitialiseCache();
     }
 
-    private void UserChanged(int? userId)
-    {
-        _ = InitialiseCache();
-    }
-
     public void Dispose()
     {
         _userService.OnUserIdChanged -= UserChanged;
+    }
+
+    private void UserChanged(int? userId)
+    {
+        _ = InitialiseCache();
     }
 
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
@@ -45,20 +46,20 @@ public class UserConfigService : BaseConfigService, IDisposable
         return settings;
     }
 
-    protected override async Task PersistSetting( ConfigSetRequest setRequest )
+    protected override async Task PersistSetting(ConfigSetRequest setRequest)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var existing = await db.ConfigSettings
-                               .Where( x => x.Name == setRequest.Name && x.UserId == setRequest.UserId )
-                               .FirstOrDefaultAsync();
+            .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)
+            .FirstOrDefaultAsync();
 
-        if ( String.IsNullOrEmpty( setRequest.NewValue ) )
+        if ( string.IsNullOrEmpty(setRequest.NewValue) )
         {
             // Setting set to null - delete from the DB and cache
             if ( existing != null )
-                db.ConfigSettings.Remove( existing );
+                db.ConfigSettings.Remove(existing);
         }
         else
         {
@@ -67,16 +68,17 @@ public class UserConfigService : BaseConfigService, IDisposable
             {
                 // Setting set to non-null - save in the DB and cache
                 existing.Value = setRequest.NewValue;
-                db.ConfigSettings.Update( existing );
+                db.ConfigSettings.Update(existing);
             }
             else
             {
                 // Existing setting set to non-null - create in the DB and cache.
-                var newEntry = new ConfigSetting { Name = setRequest.Name, Value = setRequest.NewValue, UserId = setRequest.UserId };
-                db.ConfigSettings.Add( newEntry );
+                var newEntry = new ConfigSetting
+                    { Name = setRequest.Name, Value = setRequest.NewValue, UserId = setRequest.UserId };
+                db.ConfigSettings.Add(newEntry);
             }
         }
 
-        db.SaveChanges( "SaveConfig" );
+        db.SaveChanges("SaveConfig");
     }
 }

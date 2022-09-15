@@ -1,10 +1,5 @@
-﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
-using Damselfly.Core.ScopedServices.Interfaces;
+﻿using Damselfly.Core.Models;
 using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
@@ -13,7 +8,7 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/export")]
+[Microsoft.AspNetCore.Mvc.Route("/api/export")]
 public class ExportController : ControllerBase
 {
     private readonly ImageRecognitionService _aiService;
@@ -34,8 +29,8 @@ public class ExportController : ControllerBase
         await db.BatchDelete(existingConfig);
     }
 
-    [HttpGet( "/api/export/configs" )]
-    public async Task<ICollection<ExportConfig>> GetExportConfigs( [FromServices] ImageContext db )
+    [HttpGet("/api/export/configs")]
+    public async Task<ICollection<ExportConfig>> GetExportConfigs([FromServices] ImageContext db)
     {
         return await db.DownloadConfigs.ToListAsync();
     }
@@ -48,7 +43,7 @@ public class ExportController : ControllerBase
             db.DownloadConfigs.Update(config);
             await db.SaveChangesAsync("SaveExportConfig");
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Unexpected error saving export config: {ex}");
             throw;
@@ -60,17 +55,16 @@ public class ExportController : ControllerBase
     {
         try
         {
-            if (db.DownloadConfigs.Any(x => x.Name.Equals(config.Name)))
+            if ( db.DownloadConfigs.Any(x => x.Name.Equals(config.Name)) )
                 throw new ArgumentException($"Config {config.Name} already exists!");
 
             db.DownloadConfigs.Add(config);
             await db.SaveChangesAsync("SaveExportConfig");
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Unexpected error saving export config: {ex}");
             throw;
         }
     }
 }
-

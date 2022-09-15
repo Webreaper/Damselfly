@@ -1,5 +1,4 @@
-﻿using System;
-namespace Damselfly.Core.DbModels.Models;
+﻿namespace Damselfly.Core.DbModels.Models;
 
 public class Statistics
 {
@@ -18,4 +17,3 @@ public class Statistics
     public int PeopleIdentified { get; set; }
     public string OperatingSystem { get; set; }
 }
-

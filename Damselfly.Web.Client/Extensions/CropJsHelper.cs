@@ -11,7 +11,7 @@ public class CropData
 }
 
 /// <summary>
-/// Callback management for th Crop JS interop
+///     Callback management for th Crop JS interop
 /// </summary>
 public class CropJsHelper
 {
@@ -33,4 +33,3 @@ public interface ICropHelper
 {
     void CompleteCrop(CropData cropData);
 }
-

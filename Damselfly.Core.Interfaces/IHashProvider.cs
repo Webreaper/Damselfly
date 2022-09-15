@@ -1,10 +1,6 @@
-﻿using System.IO;
+﻿namespace Damselfly.Core.Interfaces;
 
-namespace Damselfly.Core.Interfaces
+public interface IHashProvider
 {
-    public interface IHashProvider
-    {
-        string GetPerceptualHash(string path);
-    }
+    string GetPerceptualHash(string path);
 }
-

@@ -1,6 +1,4 @@
-﻿
-
-@implements IDisposable
+﻿@implements IDisposable
 
 @inject IDialogService DialogService
 @inject IUserBasketService basketService
@@ -11,23 +9,26 @@
 
 <DetailedErrorBoundary>
     <div class="SearchBox">
-        <div class="SearchFieldIcon" title="Saved Baskets"><i class="fas fa-shopping-basket" /></div>
+        <div class="SearchFieldIcon" title="Saved Baskets">
+            <i class="fas fa-shopping-basket"/>
+        </div>
         <select @bind="SelectedBasketId" class="SearchField">
-            @foreach (var basket in baskets)
+            @foreach( var basket in baskets )
             {
                 <option value="@basket.BasketId">@basket.Name @PrivateIndicator(basket)</option>
             }
         </select>
     </div>
 </DetailedErrorBoundary>
+
 @code {
-    readonly List<Basket> baskets = new List<Basket>();
+    readonly List<Basket> baskets = new();
     string NewBasketName { get; set; }
 
     private int SelectedBasketId
     {
-        get { return basketService.CurrentBasket == null ? -1 : basketService.CurrentBasket.BasketId; }
-        set { _ = NewBasketSelected(value); }
+        get => basketService.CurrentBasket == null ? -1 : basketService.CurrentBasket.BasketId;
+        set => _ = NewBasketSelected(value);
     }
 
     protected override async Task OnInitializedAsync()
@@ -46,10 +47,10 @@
 
     private string PrivateIndicator(Basket basket)
     {
-        if (userService.RolesEnabled)
+        if( userService.RolesEnabled )
         {
-            // Shared baskets don't make sense if users and roles are disabled.
-            if (basket != null && ! basket.UserId.HasValue)
+    // Shared baskets don't make sense if users and roles are disabled.
+            if( basket != null && !basket.UserId.HasValue )
             {
                 return "(shared)";
             }
@@ -60,18 +61,18 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             basketService.OnBasketChanged += BasketsChanged;
 
             await LoadBasketList();
 
-            // Restore the last-known basket
-            var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId );
+    // Restore the last-known basket
+            var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId);
 
-            if( baskets.Any( x => x.BasketId == selectedBasketId ))
+            if( baskets.Any(x => x.BasketId == selectedBasketId) )
             {
-                if (selectedBasketId > 0 && basketService.CurrentBasket.BasketId != selectedBasketId )
+                if( selectedBasketId > 0 && basketService.CurrentBasket.BasketId != selectedBasketId )
                     await basketService.SwitchToBasket(selectedBasketId);
             }
             else
@@ -87,7 +88,7 @@
         basketService.OnBasketChanged -= BasketsChanged;
     }
 
-    private void BasketsChanged( BasketChanged change )
+    private void BasketsChanged(BasketChanged change)
     {
         _ = LoadBasketList();
     }
@@ -98,8 +99,8 @@
 
         var myBaskets = await basketService.GetUserBaskets(userService.UserId);
 
-        this.baskets.Clear();
-        this.baskets.AddRange(myBaskets);
+        baskets.Clear();
+        baskets.AddRange(myBaskets);
         watch.Stop();
 
         await InvokeAsync(StateHasChanged);

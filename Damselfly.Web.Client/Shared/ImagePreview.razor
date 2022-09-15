@@ -1,8 +1,9 @@
-﻿<!--
-    Image preview panel - displays an image in full res. To keep the UX nice, the initial image
-    is set to the medium thumb (which should load very quickly) and a hidden image loads the
-    full-res version - which may need to be generated on the fly. Once that's loaded, the URL
-    of the visible image is updated which should update it instantly.
+﻿@using DialogOptions = MudBlazor.DialogOptions
+<!--
+Image preview panel - displays an image in full res. To keep the UX nice, the initial image
+is set to the medium thumb (which should load very quickly) and a hidden image loads the
+full-res version - which may need to be generated on the fly. Once that's loaded, the URL
+of the visible image is updated which should update it instantly.
 -->
 
 @inject IJSRuntime JsRuntime
@@ -11,22 +12,22 @@
 @inject IUserStatusService statusService
 @inject ContextMenuService contextMenuService
 
-<LocalFileExporter @ref="FileExporter" />
+<LocalFileExporter @ref="FileExporter"/>
 
 <div class="damselfly-imagepreview">
     <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown"
-         @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
-        @if (ZoomEnabled)
+         @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
+        @if( ZoomEnabled )
         {
-            <div @key="ZoomKey" class="img-zoom-result" id="zoomPane" />
+            <div @key="ZoomKey" class="img-zoom-result" id="zoomPane"/>
         }
-        <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
+        <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill"/>
         <div class="objects-box" id="objectBox">
-            @if (ShowObjects)
+            @if( ShowObjects )
             {
-                @foreach (var obj in Objects)
+                @foreach( var obj in Objects )
                 {
-                    <AIObject theObject="@obj" />
+                    <AIObject theObject="@obj"/>
                 }
             }
         </div>
@@ -40,13 +41,25 @@
 {
     [Parameter]
     [EditorRequired]
-    public Image Image { get { return theImage; } set { ChangeImage(value); } }
+    public Image Image
+    {
+        get => theImage;
+        set => ChangeImage(value);
+    }
 
     [Parameter]
-    public bool ShowObjects { get { return showObjects; } set { SetShowObjects(value); } }
+    public bool ShowObjects
+    {
+        get => showObjects;
+        set => SetShowObjects(value);
+    }
 
     [Parameter]
-    public bool ZoomEnabled { get { return zoomEnabled; } set { SetZoomEnabled(value); } }
+    public bool ZoomEnabled
+    {
+        get => zoomEnabled;
+        set => SetZoomEnabled(value);
+    }
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
@@ -64,7 +77,7 @@
     private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
     private string ImageUrlZoom => GetZoomUrl(theImage);
 
-    private readonly List<string> browserRenderedExtensions = new List<string> { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
+    private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
 
     private IList<ImageObject> Objects
     {
@@ -72,11 +85,11 @@
         {
             var objects = theImage?.ImageObjects ?? new List<ImageObject>();
 
-            // Sort objects first, then faces, and largest first, so that smaller
-            // objects will appear on top, so they can be easily accessed.
+    // Sort objects first, then faces, and largest first, so that smaller
+    // objects will appear on top, so they can be easily accessed.
             return objects.OrderBy(x => x.IsFace ? 2 : 1)
-                            .ThenByDescending(x => x.RectWidth * x.RectHeight)
-                            .ToList();
+                .ThenByDescending(x => x.RectWidth * x.RectHeight)
+                .ToList();
         }
     }
 
@@ -85,9 +98,9 @@
     private string ShowZoomMenuText => ZoomEnabled ? "Hide Zoom" : "Show Zoom";
 
     /// <summary>
-    /// Gets the URL for the zoomed image. If the original image can be rendered in the browser
-    /// we just serve that. But if it's a file format that can't be rendered, we'll serve the
-    /// XL thumbnail.
+    ///     Gets the URL for the zoomed image. If the original image can be rendered in the browser
+    ///     we just serve that. But if it's a file format that can't be rendered, we'll serve the
+    ///     XL thumbnail.
     /// </summary>
     /// <param name="image"></param>
     /// <returns></returns>
@@ -95,40 +108,47 @@
     {
         var ext = Path.GetExtension(image.FileName);
 
-        if (browserRenderedExtensions.Any(x => x.Equals(ext, StringComparison.OrdinalIgnoreCase)))
+        if( browserRenderedExtensions.Any(x => x.Equals(ext, StringComparison.OrdinalIgnoreCase)) )
         {
             return $"/rawimage/{theImage.ImageId}";
         }
-        else
-        {
-            // Browser can't render it, so return the JPG thumbnail
-            return theImage.ThumbUrl(ThumbSize.ExtraLarge);
-        }
+    // Browser can't render it, so return the JPG thumbnail
+        return theImage.ThumbUrl(ThumbSize.ExtraLarge);
     }
 
     void ShowContextMenu(MouseEventArgs args)
     {
-        var menuItems = new List<ContextMenuItem>()
-    {
-                new ContextMenuItem(){ Text = ShowObjectsMenuText, Value = 0 },
-                new ContextMenuItem(){ Text = ShowZoomMenuText, Value = 1 },
-                new ContextMenuItem(){ Text = "Download", Value = 2 },
-                new ContextMenuItem(){ Text = "Refresh", Value = 4 }
-            };
+        var menuItems = new List<ContextMenuItem>
+        {
+            new() { Text = ShowObjectsMenuText, Value = 0 },
+            new() { Text = ShowZoomMenuText, Value = 1 },
+            new() { Text = "Download", Value = 2 },
+            new() { Text = "Refresh", Value = 4 }
+        };
 
-        if (FileExporter.IsDesktopHosted)
-            menuItems.Insert(3, new ContextMenuItem() { Text = "Save Locally", Value = 3 });
+        if( FileExporter.IsDesktopHosted )
+            menuItems.Insert(3, new ContextMenuItem { Text = "Save Locally", Value = 3 });
 
-        contextMenuService.Open(args, menuItems, async (args) =>
+        contextMenuService.Open(args, menuItems, async args =>
         {
             contextMenuService.Close();
-            switch (args.Value)
+            switch( args.Value )
             {
-                case 0: SetShowObjects(!ShowObjects); break;
-                case 1: SetZoomEnabled(!ZoomEnabled); break;
-                case 2: await DownloadImage(); break;
-                case 3: await FileExporter.ExportImagesToLocalFilesystem(new List<Image>() { theImage }); break;
-                case 4: await ShowRescanDialog(); break;
+                case 0:
+                    SetShowObjects(!ShowObjects);
+                    break;
+                case 1:
+                    SetZoomEnabled(!ZoomEnabled);
+                    break;
+                case 2:
+                    await DownloadImage();
+                    break;
+                case 3:
+                    await FileExporter.ExportImagesToLocalFilesystem(new List<Image> { theImage });
+                    break;
+                case 4:
+                    await ShowRescanDialog();
+                    break;
             }
         });
     }
@@ -145,7 +165,7 @@
     private async Task ShowRescanDialog()
     {
         var parameters = new DialogParameters { { "images", new List<Image> { theImage } } };
-        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
@@ -154,10 +174,10 @@
     {
         try
         {
-            string downloadFile = theImage.DownloadImageUrl;
+            var downloadFile = theImage.DownloadImageUrl;
             await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             Logging.LogError("Exception: " + ex.Message);
         }
@@ -175,25 +195,25 @@
 
     private void SetShowObjects(bool newState)
     {
-        if (newState == showObjects)
+        if( newState == showObjects )
             return;
 
         showObjects = newState;
         userConfigService.SetForUser(ConfigSettings.ShowObjects, showObjects.ToString());
         StateHasChanged();
 
-        if (showObjects)
+        if( showObjects )
             DoObjectBox();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
-            if (showObjects)
+            if( showObjects )
                 DoObjectBox();
 
-            if (zoomEnabled && HiResImageLoaded)
+            if( zoomEnabled && HiResImageLoaded )
             {
                 await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
             }
@@ -202,17 +222,17 @@
 
     private void SetZoomEnabled(bool newState)
     {
-        if (newState != zoomEnabled)
+        if( newState != zoomEnabled )
         {
             zoomEnabled = newState;
             userConfigService.SetForUser(ConfigSettings.ShowZoom, zoomEnabled.ToString());
             StateHasChanged();
 
-            if (zoomEnabled)
+            if( zoomEnabled )
             {
                 _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
-                if (showObjects)
+                if( showObjects )
                     DoObjectBox();
             }
         }
@@ -220,15 +240,15 @@
 
     private void ChangeImage(Image newImage)
     {
-        if (newImage == null)
+        if( newImage == null )
             throw new ArgumentException("Image cannot be null");
 
-        if (theImage == null || theImage.ImageId != newImage.ImageId)
+        if( theImage == null || theImage.ImageId != newImage.ImageId )
         {
             theImage = newImage;
             HiResImageLoaded = false;
             ImageUrl = $"/thumb/{ThumbSize.Medium}/{theImage.ImageId}";
-            statusService.UpdateStatus( "Loading hi-res image..." );
+            statusService.UpdateStatus("Loading hi-res image...");
             StateHasChanged();
         }
     }
@@ -237,10 +257,9 @@
     {
         ZoomLevel = userConfigService.GetInt(ConfigSettings.ZoomLevel, 400);
         ZoomEnabled = userConfigService.GetBool(ConfigSettings.ShowZoom, true);
-        ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects, false);
+        ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
 
         base.OnInitialized();
-
     }
 
     protected async Task ReplaceUrl(ProgressEventArgs args)
@@ -249,41 +268,41 @@
 
         HiResImageLoaded = true;
 
-        if (zoomEnabled)
+        if( zoomEnabled )
             await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
-        statusService.UpdateStatus( "Hi-res image loaded." );
+        statusService.UpdateStatus("Hi-res image loaded.");
         StateHasChanged();
 
         DoObjectBox();
 
-        // For when we want to do region selection
-        //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
+    // For when we want to do region selection
+    //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
     }
 
     void OnKeyDown(KeyboardEventArgs e)
     {
-        if (zoomEnabled)
+        if( zoomEnabled )
         {
-            bool zoomChanged = false;
-            if (e.Key == "ArrowUp")
+            var zoomChanged = false;
+            if( e.Key == "ArrowUp" )
             {
                 ZoomLevel = Math.Min(ZoomLevel + 50, 400);
                 zoomChanged = true;
             }
-            else if (e.Key == "ArrowDown")
+            else if( e.Key == "ArrowDown" )
             {
                 ZoomLevel = Math.Max(ZoomLevel - 50, 150);
                 zoomChanged = true;
             }
 
-            if (zoomChanged)
+            if( zoomChanged )
             {
                 userConfigService.SetForUser(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
                 _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
 
                 StateHasChanged();
-                statusService.UpdateStatus( $"Zoom level set to {ZoomLevel}%" );
+                statusService.UpdateStatus($"Zoom level set to {ZoomLevel}%");
             }
         }
     }

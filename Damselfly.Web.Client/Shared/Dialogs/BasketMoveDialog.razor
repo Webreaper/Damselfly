@@ -1,19 +1,16 @@
-﻿
-@using System.Linq
-
-@inject IUserBasketService basketService
+﻿@inject IUserBasketService basketService
 @inject IUserService userService
 @inject IUserStatusService userStatusService
 
 <MudDialog>
     <DialogContent>
-        <MudSelect T="Basket" Label="Destination Basket" HelperText="Select destination basket for the current basket items" @bind-Value="selectedBasket" Variant="Variant.Filled">
-            @foreach (var basket in allBaskets)
+        <MudSelect T=" Basket " Label="Destination Basket" HelperText="Select destination basket for the current basket items" @bind-Value="selectedBasket" Variant="Variant.Filled">
+            @foreach( var basket in allBaskets )
             {
-                <MudSelectItem T="Basket" Value="@basket">@basket.Name</MudSelectItem>
+                <MudSelectItem T=" Basket " Value="@basket">@basket.Name</MudSelectItem>
             }
         </MudSelect>
-        @if (!string.IsNullOrEmpty(errorMsg))
+        @if( !string.IsNullOrEmpty(errorMsg) )
         {
             <p>@errorMsg</p>
         }
@@ -26,10 +23,11 @@
 </MudDialog>
 
 @code {
+
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
-    List<Basket> allBaskets = new List<Basket>();
+    readonly List<Basket> allBaskets = new();
 
     private Basket selectedBasket;
 
@@ -49,13 +47,16 @@
 
     private string errorMsg;
 
-    private void DisplayError( string errorText )
+    private void DisplayError(string errorText)
     {
         errorMsg = errorText;
         StateHasChanged();
     }
 
-    void Cancel() => MudDialog.Cancel();
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,8 +64,9 @@
 
         var baskets = await basketService.GetUserBaskets(userService.UserId);
         var destBaskets = baskets.Where(x => x.BasketId != basketService.CurrentBasket.BasketId)
-                                   .ToList();
+            .ToList();
 
         allBaskets.AddRange(destBaskets);
     }
+
 }

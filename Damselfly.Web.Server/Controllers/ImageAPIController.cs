@@ -1,20 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Damselfly.Core.Services;
-using Damselfly.Core.DbModels;
+﻿using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
+using Damselfly.Core.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Controllers;
 
 /// <summary>
-/// Image Controller used for dynamic as-loaded transforms
-/// TODO: Convert this to use minimal APIs?
+///     Image Controller used for dynamic as-loaded transforms
+///     TODO: Convert this to use minimal APIs?
 /// </summary>
 [Route("/api/images")]
 [ApiController]
 public class ImageAPIController : ControllerBase
 {
-    private ILogger<ImageAPIController> _logger;
-    private ImageCache imageCache;
+    private readonly ILogger<ImageAPIController> _logger;
+    private readonly ImageCache imageCache;
 
     public ImageAPIController(ILogger<ImageAPIController> logger, ImageCache cache)
     {
@@ -29,7 +29,7 @@ public class ImageAPIController : ControllerBase
         {
             return await imageCache.GetCachedImage(imageId);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Unable to load/enrich image ID {imageId}: {ex}");
             return null;
@@ -45,7 +45,7 @@ public class ImageAPIController : ControllerBase
             var response = new ImageResponse { Images = images };
             return response;
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Unable to load/enrich images: {string.Join(", ", req.ImageIds)}: {ex}");
         }

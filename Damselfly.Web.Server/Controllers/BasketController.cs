@@ -1,11 +1,7 @@
-﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -13,12 +9,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // [Authorize]
 [ApiController]
-[Route("/api/basket")]
+[Microsoft.AspNetCore.Mvc.Route("/api/basket")]
 public class BasketController : ControllerBase
 {
-    private readonly IBasketService _service;
-
     private readonly ILogger<BasketController> _logger;
+    private readonly IBasketService _service;
 
     public BasketController(BasketService service, ILogger<BasketController> logger)
     {
@@ -59,10 +54,10 @@ public class BasketController : ControllerBase
     {
         var basket = await _service.GetBasketById(basketId);
 
-        if (basket == null)
+        if ( basket == null )
             throw new ArgumentException("No such basket!");
 
-        foreach (var be in basket.BasketEntries)
+        foreach ( var be in basket.BasketEntries )
             be.Image = null;
 
         return basket;
@@ -99,4 +94,3 @@ public class BasketController : ControllerBase
         await _service.SetImageBasketState(req.BasketId, req.NewState, req.ImageIds);
     }
 }
-

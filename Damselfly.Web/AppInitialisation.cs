@@ -1,43 +1,32 @@
 ﻿using System;
-using Serilog;
 using System.Collections.Generic;
-using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Services;
-using Damselfly.ML.Face.Azure;
-using Damselfly.ML.ObjectDetection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.FileProviders;
-using System.IO;
-using Microsoft.Extensions.DependencyInjection;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Damselfly.Web;
 
 public static class AppInitialiser
 {
     /// <summary>
-    /// Called by the Blazor runtime - this is where we setup the HTTP request pipeline and
-    /// initialise all the bits and pieces we need to run.
+    ///     Called by the Blazor runtime - this is where we setup the HTTP request pipeline and
+    ///     initialise all the bits and pieces we need to run.
     /// </summary>
     /// <param name="env"></param>
     public static void SetupServices(this IWebHostEnvironment env, IServiceProvider services)
     {
-
     }
 
 
     /// <summary>
-    /// Bootstrap the task scheduler - configuring all the background scheduled tasks
-    /// that we'll want to run periodically, such as indexing, thumbnail generation,
-    /// cleanup of temporary download files, etc., etc.
+    ///     Bootstrap the task scheduler - configuring all the background scheduled tasks
+    ///     that we'll want to run periodically, such as indexing, thumbnail generation,
+    ///     cleanup of temporary download files, etc., etc.
     /// </summary>
     private static void StartTaskScheduler(TaskService taskScheduler, DownloadService download,
-                                        ThumbnailService thumbService, ExifService exifService)
+        ThumbnailService thumbService, ExifService exifService)
     {
         var tasks = new List<ScheduledTask>();
 
@@ -79,7 +68,7 @@ public static class AppInitialiser
             ExecutionFrequency = new TimeSpan(24, 0, 0),
             WorkMethod = () =>
             {
-                Action<string> logFunc = Logging.Verbose ? (s) => Logging.LogVerbose(s) : (s) => Logging.Log(s);
+                Action<string> logFunc = Logging.Verbose ? s => Logging.LogVerbose(s) : s => Logging.Log(s);
                 Stopwatch.WriteTotals(logFunc);
             },
             ImmediateStart = false
@@ -102,13 +91,9 @@ public static class AppInitialiser
 #endif
 
         // Add the jobs
-        foreach (var task in tasks)
-        {
-            taskScheduler.AddTaskDefinition(task);
-        }
+        foreach ( var task in tasks ) taskScheduler.AddTaskDefinition(task);
 
         // Start the scheduler
         taskScheduler.Start();
     }
 }
-

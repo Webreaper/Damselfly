@@ -1,33 +1,32 @@
 ﻿using System;
 
-namespace Damselfly.Core.Utils
+namespace Damselfly.Core.Utils;
+
+public static class DateTimeExtensions
 {
-    public static class DateTimeExtensions
+    public static TimeSpan? LocalTimeSpanToUTC(this TimeSpan? ts)
     {
-        public static TimeSpan? LocalTimeSpanToUTC(this TimeSpan? ts)
+        if ( ts.HasValue )
         {
-            if (ts.HasValue)
-            {
-                DateTime dt = DateTime.Now.Date.Add(ts.Value);
-                DateTime dtUtc = dt.ToUniversalTime();
-                TimeSpan tsUtc = dtUtc.TimeOfDay;
-                return tsUtc;
-            }
-
-            return null;
+            var dt = DateTime.Now.Date.Add(ts.Value);
+            var dtUtc = dt.ToUniversalTime();
+            var tsUtc = dtUtc.TimeOfDay;
+            return tsUtc;
         }
 
-        public static TimeSpan? UTCTimeSpanToLocal(this TimeSpan? tsUtc)
-        {
-            if (tsUtc.HasValue)
-            {
-                DateTime dtUtc = DateTime.UtcNow.Date.Add(tsUtc.Value);
-                DateTime dt = dtUtc.ToLocalTime();
-                TimeSpan ts = dt.TimeOfDay;
-                return ts;
-            }
+        return null;
+    }
 
-            return null;
+    public static TimeSpan? UTCTimeSpanToLocal(this TimeSpan? tsUtc)
+    {
+        if ( tsUtc.HasValue )
+        {
+            var dtUtc = DateTime.UtcNow.Date.Add(tsUtc.Value);
+            var dt = dtUtc.ToLocalTime();
+            var ts = dt.TimeOfDay;
+            return ts;
         }
+
+        return null;
     }
 }

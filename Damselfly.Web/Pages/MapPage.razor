@@ -1,13 +1,12 @@
 ﻿@page "/map"
 
-@using Syncfusion.Blazor.Maps
-@using Syncfusion.Blazor
-@using MarkerType = Syncfusion.Blazor.Maps.MarkerType
-
 @inject SelectionService selectionService
 @inject NavigationService navContext
 @inject IUserBasketService basketService
 @inject ViewDataService viewDataService
+@using Orientation = Syncfusion.Blazor.Maps.Orientation
+@using Syncfusion.Blazor.Maps
+@using MarkerType = Syncfusion.Blazor.Maps.MarkerType
 @implements IDisposable
 
 
@@ -18,37 +17,38 @@
             <MapsMargin Bottom="0" Left="0" Right="0" Top="0"></MapsMargin>
         </MapsAreaSettings>
         <MapsZoomSettings MaxZoom="20" MinZoom="2" Enable="true" ShouldZoomInitially="true" MouseWheelZoom="true" DoubleClickZoom="true" PinchZooming="true">
-            <MapsZoomToolbarSettings Orientation="Syncfusion.Blazor.Maps.Orientation.Vertical"
-                                     HorizontalAlignment="Syncfusion.Blazor.Maps.Alignment.Near"
-                                     VerticalAlignment="Syncfusion.Blazor.Maps.Alignment.Near">
+            <MapsZoomToolbarSettings Orientation="Orientation.Vertical"
+                                     HorizontalAlignment="Alignment.Near"
+                                     VerticalAlignment="Alignment.Near">
                 <MapsZoomToolbarButton BorderColor="white" BorderOpacity="0.5" BorderWidth="2" Color="yellow" Fill="darkgreen" HighlightColor="white" Opacity="1"
                                        Padding="5" Radius="30" SelectionColor="green"
-                                       ToolbarItems="new List<ToolbarItem>() { ToolbarItem.ZoomIn, ToolbarItem.ZoomOut, ToolbarItem.Reset }">
+                                       ToolbarItems="new List<ToolbarItem> { ToolbarItem.ZoomIn, ToolbarItem.ZoomOut, ToolbarItem.Reset }">
                 </MapsZoomToolbarButton>
             </MapsZoomToolbarSettings>
         </MapsZoomSettings>
-        @if (centrePoint != null)
+        @if( centrePoint != null )
         {
-            <MapsCenterPosition Latitude="@centrePoint.Latitude" Longitude="@centrePoint.Longitude" />
+            <MapsCenterPosition Latitude="@centrePoint.Latitude" Longitude="@centrePoint.Longitude"/>
         }
         <MapsLayers>
-            <MapsLayer AnimationDuration="500" UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
-                @if (HasMarkers)
+            <MapsLayer AnimationDuration="500" UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue=" string ">
+                @if( HasMarkers )
                 {
                     <MapsMarkerClusterSettings AllowClustering="true" AllowClusterExpand="true" Shape="MarkerType.Circle" Fill="#008CFF" Height="25" Width="25">
                         <MapsLayerMarkerClusterLabelStyle Color="white"></MapsLayerMarkerClusterLabelStyle>
                     </MapsMarkerClusterSettings>
                 }
                 <MapsMarkerSettings>
-                    <MapsMarker Visible="true" Height="20" Width="20" Fill="red" DataSource="@Markers" AnimationDuration="0" TValue="MarkerData" />
+                    <MapsMarker Visible="true" Height="20" Width="20" Fill="red" DataSource="@Markers" AnimationDuration="0" TValue=" MarkerData "/>
                 </MapsMarkerSettings>
             </MapsLayer>
         </MapsLayers>
-</SfMaps>
+    </SfMaps>
 </div>
+
 @code {
 
-    public List<MarkerData> Markers = new List<MarkerData>();
+    public List<MarkerData> Markers = new();
     bool HasMarkers => Markers != null && Markers.Any();
     MarkerData centrePoint;
 
@@ -89,7 +89,7 @@
 
         var images = selectionService.Selection;
 
-        if (!images.Any())
+        if( !images.Any() )
         {
             if( basketService.CurrentBasket != null )
                 images = basketService.CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
@@ -97,10 +97,10 @@
 
         if( images != null && images.Any() )
         {
-                var newMarkers = images
-                    .Where(x => x.MetaData != null && x.MetaData.Latitude.HasValue && x.MetaData.Longitude.HasValue)
-                    .Select(x => new MarkerData { Name = x.FileName, Latitude = x.MetaData.Latitude.Value, Longitude = x.MetaData.Longitude.Value })
-                    .ToList();
+            var newMarkers = images
+                .Where(x => x.MetaData != null && x.MetaData.Latitude.HasValue && x.MetaData.Longitude.HasValue)
+                .Select(x => new MarkerData { Name = x.FileName, Latitude = x.MetaData.Latitude.Value, Longitude = x.MetaData.Longitude.Value })
+                .ToList();
 
             centrePoint = GetCentralGeoCoordinate(newMarkers);
 
@@ -112,16 +112,16 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             await UpdateMarkers();
         }
     }
 
     public static MarkerData GetCentralGeoCoordinate(
-       IList<MarkerData> geoCoordinates)
+        IList<MarkerData> geoCoordinates)
     {
-        if (geoCoordinates.Count == 1)
+        if( geoCoordinates.Count == 1 )
         {
             return geoCoordinates.Single();
         }
@@ -130,7 +130,7 @@
         double y = 0;
         double z = 0;
 
-        foreach (var geoCoordinate in geoCoordinates)
+        foreach( var geoCoordinate in geoCoordinates )
         {
             var latitude = geoCoordinate.Latitude * Math.PI / 180;
             var longitude = geoCoordinate.Longitude * Math.PI / 180;
@@ -152,4 +152,5 @@
 
         return new MarkerData { Name = "Centre", Latitude = centralLatitude * 180 / Math.PI, Longitude = centralLongitude * 180 / Math.PI };
     }
+
 }

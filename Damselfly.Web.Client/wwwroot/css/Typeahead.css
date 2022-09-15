@@ -97,10 +97,10 @@
     outline: none;
 }
 
-    .typeahead-multi-value-clear:hover {
-        background-color: rgb(212, 212, 212);
-        color: rgb(222, 53, 11);
-    }
+.typeahead-multi-value-clear:hover {
+    background-color: rgb(212, 212, 212);
+    color: rgb(222, 53, 11);
+}
 
 .typeahead-indicators {
     -webkit-box-align: center;

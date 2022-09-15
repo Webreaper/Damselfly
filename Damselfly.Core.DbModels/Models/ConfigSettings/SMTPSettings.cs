@@ -1,5 +1,4 @@
-﻿using System;
-using Damselfly.Core.Constants;
+﻿using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.DbModels.Models;
@@ -30,4 +29,3 @@ public class SmtpSettings
         configService.Set(ConfigSettings.SmtpSenderName, SenderName);
     }
 }
-

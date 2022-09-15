@@ -1,18 +1,21 @@
-﻿using System;
+﻿using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
-using System.Net.Http.Json;
-using Microsoft.Extensions.Logging;
-using System.Xml.Linq;
-using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.ScopedServices.ClientServices;
-using Damselfly.Core.Constants;
-using Microsoft.AspNetCore.Components.Authorization;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.ClientServices;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientThemeService : IThemeService, IDisposable
 {
+    private readonly AuthenticationStateProvider _authProvider;
+
+    private readonly IUserConfigService _configService;
+    private readonly ILogger<ClientThemeService> _logger;
+    private readonly RestClient httpClient;
+
     public ClientThemeService(RestClient client, IUserConfigService configService, ILogger<ClientThemeService> logger)
     {
         _configService = configService;
@@ -27,33 +30,20 @@ public class ClientThemeService : IThemeService, IDisposable
         _configService.OnSettingsLoaded -= SettingsLoaded;
     }
 
-    private readonly IUserConfigService _configService;
-    private readonly RestClient httpClient;
-    private readonly ILogger<ClientThemeService> _logger;
-    private readonly AuthenticationStateProvider _authProvider;
-
     public event Action<ThemeConfig> OnChangeTheme;
-
-    private void SettingsLoaded( ICollection<ConfigSetting> newSettings )
-    {
-        var themeSetting = newSettings.FirstOrDefault( x => x.Name == ConfigSettings.Theme );
-
-        if( themeSetting != null )
-            _ = ApplyTheme( themeSetting.Value );
-    }
 
     public async Task<ThemeConfig> GetThemeConfig(string name)
     {
-        var uri = $"/api/theme";
+        var uri = "/api/theme";
 
-        if (!string.IsNullOrEmpty(name))
+        if ( !string.IsNullOrEmpty(name) )
             uri = $"/api/theme/{name}";
 
         try
         {
             return await httpClient.CustomGetFromJsonAsync<ThemeConfig>(uri);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Error in GetTheme: {ex}");
             return await GetDefaultTheme();
@@ -64,9 +54,9 @@ public class ClientThemeService : IThemeService, IDisposable
     {
         try
         {
-            return await httpClient.CustomGetFromJsonAsync<ThemeConfig>($"/api/theme");
+            return await httpClient.CustomGetFromJsonAsync<ThemeConfig>("/api/theme");
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Error in GetTheme: {ex.Message}");
             return null;
@@ -77,33 +67,40 @@ public class ClientThemeService : IThemeService, IDisposable
     {
         try
         {
-            return await httpClient.CustomGetFromJsonAsync<List<ThemeConfig>>($"/api/themes");
+            return await httpClient.CustomGetFromJsonAsync<List<ThemeConfig>>("/api/themes");
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             _logger.LogError($"Error in GetThemes: {ex.Message}");
             return null;
         }
     }
 
-    public async Task ApplyTheme( string themeName )
+    public async Task ApplyTheme(string themeName)
     {
-        var themeConfig = await GetThemeConfig( themeName );
+        var themeConfig = await GetThemeConfig(themeName);
 
-        if( themeConfig != null )
-            await ApplyTheme( themeConfig );
+        if ( themeConfig != null )
+            await ApplyTheme(themeConfig);
     }
 
-    public async Task ApplyTheme( ThemeConfig newTheme)
+    public async Task ApplyTheme(ThemeConfig newTheme)
     {
         OnChangeTheme?.Invoke(newTheme);
     }
 
-    public async Task SetTheme( string themeName )
+    private void SettingsLoaded(ICollection<ConfigSetting> newSettings)
     {
-        _configService.SetForUser( ConfigSettings.Theme, themeName );
+        var themeSetting = newSettings.FirstOrDefault(x => x.Name == ConfigSettings.Theme);
 
-        await ApplyTheme( themeName );
+        if ( themeSetting != null )
+            _ = ApplyTheme(themeSetting.Value);
+    }
+
+    public async Task SetTheme(string themeName)
+    {
+        _configService.SetForUser(ConfigSettings.Theme, themeName);
+
+        await ApplyTheme(themeName);
     }
 }
-

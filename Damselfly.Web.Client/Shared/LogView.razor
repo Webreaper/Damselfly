@@ -1,12 +1,10 @@
 ﻿@using Damselfly.Core.ScopedServices.ClientServices
-
-
 @inject ViewDataService ViewDataService
 @inject IUserStatusService statusService
 @inject RestClient httpClient
 
 <div class="damselfly-logview">
-    @if (logLines == null || !logLines.Any())
+    @if( logLines == null || !logLines.Any() )
     {
         <p>Loading log entries....</p>
     }
@@ -29,20 +27,20 @@
                 <div class="log-table">
                     <table class="loglist-table">
                         <thead>
-                            <tr>
-                                <th class="timestamp">Timestamp</th>
-                                <th class="level">Log Level</th>
-                                <th class="entry">Entry</th>
-                            </tr>
+                        <tr>
+                            <th class="timestamp">Timestamp</th>
+                            <th class="level">Log Level</th>
+                            <th class="entry">Entry</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            <Virtualize Items="@filteredLogs" Context="line" ItemSize="15">
-                                <tr>
-                                    <td class="timestamp">@line.Date</td>
-                                    <td class="level log-level-@line.Level">@line.Level</td>
-                                    <td class="entry">@line.Entry</td>
-                                </tr>
-                            </Virtualize>
+                        <Virtualize Items="@filteredLogs" Context="line" ItemSize="15">
+                            <tr>
+                                <td class="timestamp">@line.Date</td>
+                                <td class="level log-level-@line.Level">@line.Level</td>
+                                <td class="entry">@line.Entry</td>
+                            </tr>
+                        </Virtualize>
                         </tbody>
                     </table>
                 </div>
@@ -54,30 +52,29 @@
 @code {
 
 
-
-    List<LogEntry> logLines = new List<LogEntry>();
+    List<LogEntry> logLines = new();
     private string LogFileName { get; set; }
     private string SelectedFilter { get; set; } = "ALL";
 
     private List<LogEntry> filteredLogs => logLines.Where(x => SelectedFilter == "ALL" || x.Level == SelectedFilter).ToList();
 
-    protected override async Task OnAfterRenderAsync( bool firstRender )
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnAfterRenderAsync( firstRender );
+        await base.OnAfterRenderAsync(firstRender);
 
         if( firstRender )
         {
-            for( int page = 0; page < 20; page++ )
+            for( var page = 0; page < 20; page++ )
             {
-                var response = await httpClient.CustomGetFromJsonAsync<LogEntryResponse>( $"/api/logs/{page}" );
+                var response = await httpClient.CustomGetFromJsonAsync<LogEntryResponse>($"/api/logs/{page}");
 
                 LogFileName = response.LogFileName;
 
-                if ( response.LogEntries != null )
+                if( response.LogEntries != null )
                 {
-                    logLines.AddRange( response.LogEntries );
-                    await InvokeAsync( StateHasChanged );
-                    statusService.UpdateStatus( $"Loaded {logLines.Count()} log lines..." );
+                    logLines.AddRange(response.LogEntries);
+                    await InvokeAsync(StateHasChanged);
+                    statusService.UpdateStatus($"Loaded {logLines.Count()} log lines...");
                 }
             }
         }
@@ -85,7 +82,8 @@
 
     private async Task DownloadLogFile()
     {
-        // TODO: Download log file here
+    // TODO: Download log file here
         await Task.Delay(500);
     }
+
 }

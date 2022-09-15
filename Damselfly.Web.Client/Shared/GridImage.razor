@@ -1,4 +1,4 @@
-﻿
+﻿@using DialogOptions = MudBlazor.DialogOptions
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 @inject SelectionService selectionService
@@ -11,16 +11,16 @@
 
 @inject IJSRuntime JsRuntime
 
-<LocalFileExporter @ref="FileExporter" />
+<LocalFileExporter @ref="FileExporter"/>
 
-@if (CurrentImage == null)
+@if( CurrentImage == null )
 {
     <div title="Loading image..." class="imagegrid-loader"></div>
 }
 else
 {
     <div class="grid-image" @ondblclick="NavigateToImage">
-        @if (!string.IsNullOrEmpty(ImageUrl))
+        @if( !string.IsNullOrEmpty(ImageUrl) )
         {
             <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
@@ -28,7 +28,7 @@ else
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
         }
     </div>
-    @if (DisplayFileName)
+    @if( DisplayFileName )
     {
         <div class="grid-text">
             @CurrentImage.FileName
@@ -52,8 +52,8 @@ else
 
     public bool InBasket
     {
-        get { return basketService.IsSelected(CurrentImage); }
-        set { _ = SetImageBasketState(value); }
+        get => basketService.IsSelected(CurrentImage);
+        set => _ = SetImageBasketState(value);
     }
 
     private LocalFileExporter FileExporter;
@@ -70,7 +70,7 @@ else
     {
         await basketService.SetImageBasketState(newState, new[] { CurrentImage.ImageId });
 
-        // Notify the image list that the selection has changed
+    // Notify the image list that the selection has changed
         StateHasChanged();
     }
 
@@ -85,7 +85,7 @@ else
     {
         base.OnParametersSet();
 
-        if (CurrentImage == null || CurrentImage.ImageId != imageId)
+        if( CurrentImage == null || CurrentImage.ImageId != imageId )
             FadeClass = string.Empty;
     }
 
@@ -94,73 +94,84 @@ else
         var selectedImages = selectionService.Selection;
 
         contextMenuService.Open(args, ds =>
-        @<CascadingAuthenticationState>
-            <RadzenMenu Click="OnMenuItemClick">
-                <RadzenMenuItem Text="View Image" Value="0" />
-                <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                    <RadzenMenuItem Text="Download" Value="1" />
-                </AuthorizeView>
-                @if (CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash())
-                {
-                    <RadzenMenuItem Text="Find Similar Images (Experimental)" Value="6" />
-                }
-                <hr class="separator">
-                @if (InBasket)
-                {
-                    <RadzenMenuItem Text="Remove from basket" Value="2" />
-                }
-                else
-                {
-                    <RadzenMenuItem Text="Add to basket" Value="3" />
-                }
-                @if (FileExporter != null && FileExporter.IsDesktopHosted)
-                {
+            @<CascadingAuthenticationState>
+                <RadzenMenu Click="OnMenuItemClick">
+                    <RadzenMenuItem Text="View Image" Value="0"/>
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                        <RadzenMenuItem Text="Save Locally" Value="4" />
+                        <RadzenMenuItem Text="Download" Value="1"/>
                     </AuthorizeView>
-                }
+                    @if( CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash() )
+                    {
+                        <RadzenMenuItem Text="Find Similar Images (Experimental)" Value="6"/>
+                    }
+                    <hr class="separator">
+                    @if( InBasket )
+                    {
+                        <RadzenMenuItem Text="Remove from basket" Value="2"/>
+                    }
+                    else
+                    {
+                        <RadzenMenuItem Text="Add to basket" Value="3"/>
+                    }
+                    @if( FileExporter != null && FileExporter.IsDesktopHosted )
+                    {
+                        <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
+                            <RadzenMenuItem Text="Save Locally" Value="4"/>
+                        </AuthorizeView>
+                    }
 
-                <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                    <RadzenMenuItem Text="Refresh" Value="5" />
-                </AuthorizeView>
-            </RadzenMenu>
-        </CascadingAuthenticationState>);
+                    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                        <RadzenMenuItem Text="Refresh" Value="5"/>
+                    </AuthorizeView>
+                </RadzenMenu>
+            </CascadingAuthenticationState>);
     }
 
     private ICollection<Image> ContextSelection
     {
         get
         {
-            if (selectionService.Selection.Any())
+            if( selectionService.Selection.Any() )
             {
                 return selectionService.Selection;
             }
-            else
-            {
-                return new List<Image> { CurrentImage };
-            }
+            return new List<Image> { CurrentImage };
         }
     }
 
     async Task OnMenuItemClick(MenuItemEventArgs args)
     {
         contextMenuService.Close();
-        switch (args.Value)
+        switch( args.Value )
         {
-            case 0: NavigateToImage(); break;
-            case 1: await DownloadImage(); break;
-            case 2: await basketService.SetImageBasketState(false, ContextSelection.Select(x => x.ImageId).ToList()); break;
-            case 3: await basketService.SetImageBasketState(true, ContextSelection.Select(x => x.ImageId).ToList()); break;
-            case 4: await FileExporter.ExportImagesToLocalFilesystem(ContextSelection); break;
-            case 5: await ShowRescanDialog(); break;
-            case 6: FindImageSimilarTo(); break;
+            case 0:
+                NavigateToImage();
+                break;
+            case 1:
+                await DownloadImage();
+                break;
+            case 2:
+                await basketService.SetImageBasketState(false, ContextSelection.Select(x => x.ImageId).ToList());
+                break;
+            case 3:
+                await basketService.SetImageBasketState(true, ContextSelection.Select(x => x.ImageId).ToList());
+                break;
+            case 4:
+                await FileExporter.ExportImagesToLocalFilesystem(ContextSelection);
+                break;
+            case 5:
+                await ShowRescanDialog();
+                break;
+            case 6:
+                FindImageSimilarTo();
+                break;
         }
     }
 
     private async Task ShowRescanDialog()
     {
         var parameters = new DialogParameters { { "images", ContextSelection } };
-        var options = new MudBlazor.DialogOptions() { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
@@ -174,17 +185,17 @@ else
     {
         try
         {
-            string downloadFile = CurrentImage.DownloadImageUrl;
+            var downloadFile = CurrentImage.DownloadImageUrl;
 
-            if (selectionService.Selection.Count() > 1)
+            if( selectionService.Selection.Count() > 1 )
             {
                 var config = new ExportConfig { KeepFolders = true };
-                downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection.Select( x => x.ImageId ).ToList(), config);
+                downloadFile = await downloadService.CreateDownloadZipAsync(selectionService.Selection.Select(x => x.ImageId).ToList(), config);
             }
 
             await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError("Exception: " + ex.Message);
         }

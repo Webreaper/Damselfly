@@ -1,5 +1,4 @@
-﻿using System;
-namespace Damselfly.Core.DbModels.Models;
+﻿namespace Damselfly.Core.DbModels.Models;
 
 public class DesktopAppPaths
 {
@@ -8,15 +7,9 @@ public class DesktopAppPaths
     public string WindowsApp { get; set; }
     public string LinuxApp { get; set; }
 
-    public bool AppsAvailable
-    {
-        get
-        {
-            return MacOSApp != null ||
-                   MacOSArmApp != null ||
-                   WindowsApp != null ||
-                   LinuxApp != null;
-        }
-    }
+    public bool AppsAvailable =>
+        MacOSApp != null ||
+        MacOSArmApp != null ||
+        WindowsApp != null ||
+        LinuxApp != null;
 }
-

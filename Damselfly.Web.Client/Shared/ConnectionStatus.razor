@@ -1,17 +1,15 @@
-﻿@using Damselfly.Core.DbModels
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.SignalR.Client
-
-@inject NavigationManager Navigation
+﻿@inject NavigationManager Navigation
 @inject NotificationsService notifications
 @inject WebAssemblyStatusService wasmState
-
+@using Microsoft.AspNetCore.SignalR.Client
 @implements IDisposable
 
 @if( wasmState.IsWebAssembly )
 {
     <div class="damselfly-statusbarpanel" title="Server link is @Status">
-        <label><i class="fa-solid fa-circle" style="@TextStyle"></i> @Status</label>
+        <label>
+            <i class="fa-solid fa-circle" style="@TextStyle"></i> @Status
+        </label>
     </div>
 }
 
@@ -30,10 +28,10 @@
             HubConnectionState.Connected => "color:green;",
             HubConnectionState.Reconnecting => "color:darkorange;",
             HubConnectionState.Connecting => "color:darkorange;",
-            HubConnectionState.Disconnected => "color:darkred;",
-        } + " text-shadow: 1px 1px 1px #666;";
+            HubConnectionState.Disconnected => "color:darkred;"
+            } + " text-shadow: 1px 1px 1px #666;";
 
-        InvokeAsync( StateHasChanged );
+        InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnInitializedAsync()
@@ -43,9 +41,9 @@
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnAfterRenderAsync( bool firstRender )
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if ( firstRender )
+        if( firstRender )
         {
             ConnectedStateChanged();
         }
@@ -55,4 +53,4 @@
     {
         notifications.OnConnectionChanged -= ConnectedStateChanged;
     }
-    }
+}

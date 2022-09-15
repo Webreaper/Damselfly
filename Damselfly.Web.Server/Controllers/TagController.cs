@@ -1,11 +1,6 @@
-﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -13,16 +8,16 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/tags")]
+[Microsoft.AspNetCore.Mvc.Route("/api/tags")]
 public class TagController : ControllerBase
 {
-    private readonly ITagService _tagService;
-    private readonly ITagSearchService _tagSearch;
-    private readonly IRecentTagService _recentTagService;
-
     private readonly ILogger<TagController> _logger;
+    private readonly IRecentTagService _recentTagService;
+    private readonly ITagSearchService _tagSearch;
+    private readonly ITagService _tagService;
 
-    public TagController(ITagService tagService, IRecentTagService recentTagService, ITagSearchService tagSearchService, ILogger<TagController> logger)
+    public TagController(ITagService tagService, IRecentTagService recentTagService, ITagSearchService tagSearchService,
+        ILogger<TagController> logger)
     {
         _tagService = tagService;
         _tagSearch = tagSearchService;
@@ -71,6 +66,4 @@ public class TagController : ControllerBase
     {
         return await _tagService.ToggleFavourite(tag);
     }
-
 }
-

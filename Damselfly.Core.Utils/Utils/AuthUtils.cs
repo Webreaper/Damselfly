@@ -6,7 +6,7 @@ namespace Damselfly.Core.Utils;
 
 public static class AuthUtils
 {
-    public static int? GetUserIdFromPrincipal( this AuthenticationState authState )
+    public static int? GetUserIdFromPrincipal(this AuthenticationState authState)
     {
         try
         {
@@ -14,19 +14,18 @@ public static class AuthUtils
 
             if ( user.Identity.IsAuthenticated )
             {
-                var userId = user.Claims.Where( x => x.Type.Contains( "NameIdentifier", StringComparison.OrdinalIgnoreCase) ).FirstOrDefault();
+                var userId = user.Claims
+                    .Where(x => x.Type.Contains("NameIdentifier", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
                 if ( userId != null )
-                {
-                    if ( int.TryParse( userId.Value, out var id ) )
-                    {
+                    if ( int.TryParse(userId.Value, out var id) )
                         return id;
-                    }
-                }
             }
         }
-        catch { }
+        catch
+        {
+        }
+
         return null;
     }
 }
-

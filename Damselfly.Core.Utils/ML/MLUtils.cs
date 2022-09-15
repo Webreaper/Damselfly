@@ -2,53 +2,46 @@
 using System.IO;
 using System.Reflection;
 
-namespace Damselfly.Core.Utils.ML
+namespace Damselfly.Core.Utils.ML;
+
+public static class MLUtils
 {
-    public static class MLUtils
+    public static DirectoryInfo? ModelFolder
     {
-        public static DirectoryInfo? ModelFolder
+        get
         {
-            get
+            var modelFolder = Path.Combine(".", "Models");
+
+            try
             {
-                var modelFolder = Path.Combine(".", "Models");
-
-                try
+                if ( !Directory.Exists(modelFolder) )
                 {
-                    if (!Directory.Exists(modelFolder))
+                    var asm = Assembly.GetExecutingAssembly();
+
+                    if ( asm != null )
                     {
-                        var asm = Assembly.GetExecutingAssembly();
+                        Logging.Log($"Looking for ML models in {asm.Location}...");
 
-                        if (asm != null)
+                        if ( File.Exists(asm.Location) )
                         {
-                            Logging.Log($"Looking for ML models in {asm.Location}...");
+                            var thisAsm = new FileInfo(asm.Location);
 
-                            if (File.Exists(asm.Location))
-                            {
-                                var thisAsm = new FileInfo(asm.Location);
-
-                                if (thisAsm != null && thisAsm.Directory != null)
-                                {
-                                    modelFolder = Path.Combine(thisAsm.Directory.FullName, "Models");
-                                }
-                            }
+                            if ( thisAsm != null && thisAsm.Directory != null )
+                                modelFolder = Path.Combine(thisAsm.Directory.FullName, "Models");
                         }
                     }
-
-                    if (Directory.Exists(modelFolder))
-                    {
-                        return new DirectoryInfo(modelFolder);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogError($"Exception evaluating models folder: {ex.Message}");
-
                 }
 
-                Logging.LogError($"Models folder not found: {modelFolder}");
-
-                return null;
+                if ( Directory.Exists(modelFolder) ) return new DirectoryInfo(modelFolder);
             }
+            catch ( Exception ex )
+            {
+                Logging.LogError($"Exception evaluating models folder: {ex.Message}");
+            }
+
+            Logging.LogError($"Models folder not found: {modelFolder}");
+
+            return null;
         }
     }
 }

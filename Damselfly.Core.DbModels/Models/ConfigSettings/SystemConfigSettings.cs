@@ -6,19 +6,19 @@ namespace Damselfly.Core.DbModels.Models;
 
 public class SystemConfigSettings
 {
-    public WordpressSettings wpSettings { get; init; } = new WordpressSettings();
-    public AzureSettings azureSettings { get; init; } = new AzureSettings();
-    public CPULevelSettings cpuSettings { get; init; } = new CPULevelSettings();
-    public SmtpSettings smtpSettings { get; init; } = new SmtpSettings();
-    public SendGridSettings sendGridSettings { get; init; } = new SendGridSettings();
+    public WordpressSettings wpSettings { get; init; } = new();
+    public AzureSettings azureSettings { get; init; } = new();
+    public CPULevelSettings cpuSettings { get; init; } = new();
+    public SmtpSettings smtpSettings { get; init; } = new();
+    public SendGridSettings sendGridSettings { get; init; } = new();
     public LoggingLevel serverLogLevel { get; set; }
-    public bool importSidecarKeywords { get; set; } = false;
+    public bool importSidecarKeywords { get; set; }
     public bool useSmtp { get; set; } = true;
-    public bool forceLogin { get; set; } = false;
+    public bool forceLogin { get; set; }
     public bool enableAIProcessing { get; set; } = ConfigSettings.DefaultEnableRolesAndAuth;
-    public bool disableObjectDetector { get; set; } = false;
-    public bool writeAITagsToImages { get; set; } = false;
-    public bool allowExternalRegistration { get; set; } = false;
+    public bool disableObjectDetector { get; set; }
+    public bool writeAITagsToImages { get; set; }
+    public bool allowExternalRegistration { get; set; }
     public bool enableAuthAndRoles { get; set; } = true;
     public int similarityThreshold { get; set; } = 75;
 
@@ -67,14 +67,15 @@ public class SystemConfigSettings
         azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
 
-        enableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, ConfigSettings.DefaultEnableRolesAndAuth);
+        enableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles,
+            ConfigSettings.DefaultEnableRolesAndAuth);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
         allowExternalRegistration = configService.GetBool(ConfigSettings.AllowExternalRegistration);
         useSmtp = configService.GetBool(ConfigSettings.UseSmtp);
         serverLogLevel = configService.Get<LoggingLevel>(ConfigSettings.LogLevel);
         writeAITagsToImages = configService.GetBool(ConfigSettings.WriteAITagsToImages);
         enableAIProcessing = configService.GetBool(ConfigSettings.EnableAIProcessing, true);
-        disableObjectDetector = configService.GetBool(ConfigSettings.DisableObjectDetector, false);
+        disableObjectDetector = configService.GetBool(ConfigSettings.DisableObjectDetector);
         importSidecarKeywords = configService.GetBool(ConfigSettings.ImportSidecarKeywords);
         similarityThreshold = configService.GetInt(ConfigSettings.SimilarityThreshold, 75);
 
@@ -83,4 +84,3 @@ public class SystemConfigSettings
         cpuSettings.Load(configService);
     }
 }
-

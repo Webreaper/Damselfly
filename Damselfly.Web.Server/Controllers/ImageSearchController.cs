@@ -1,10 +1,5 @@
 ﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Services;
-using Damselfly.Core.Utils;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -12,12 +7,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/search")]
+[Microsoft.AspNetCore.Mvc.Route("/api/search")]
 public class ImageSearchController : ControllerBase
 {
-    private readonly SearchQueryService _searchService;
-
     private readonly ILogger<ImageSearchController> _logger;
+    private readonly SearchQueryService _searchService;
 
     public ImageSearchController(SearchQueryService searchService, ILogger<ImageSearchController> logger)
     {
@@ -25,18 +19,17 @@ public class ImageSearchController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost( "/api/search" )]
-    public async Task<SearchResponse> SubmitSearch( SearchRequest request )
+    [HttpPost("/api/search")]
+    public async Task<SearchResponse> SubmitSearch(SearchRequest request)
     {
         try
         {
-            return await _searchService.GetQueryImagesAsync( request );
+            return await _searchService.GetQueryImagesAsync(request);
         }
-        catch( Exception ex )
+        catch ( Exception ex )
         {
-            _logger.LogError( $"Exception during search query: {ex}" );
-            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0]  };
+            _logger.LogError($"Exception during search query: {ex}");
+            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
         }
     }
 }
-

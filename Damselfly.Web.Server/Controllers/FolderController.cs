@@ -1,9 +1,5 @@
-﻿using Damselfly.Core.DbModels;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
+﻿using Damselfly.Core.Models;
 using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
@@ -11,12 +7,11 @@ namespace Damselfly.Web.Server.Controllers;
 
 // TODO: WASM: [Authorize]
 [ApiController]
-[Route("/api/folders")]
+[Microsoft.AspNetCore.Mvc.Route("/api/folders")]
 public class FolderController : ControllerBase
 {
-    private readonly FolderService _service;
-
     private readonly ILogger<FolderController> _logger;
+    private readonly FolderService _service;
 
     public FolderController(FolderService service, ILogger<FolderController> logger)
     {
@@ -29,10 +24,9 @@ public class FolderController : ControllerBase
     {
         var folders = await _service.GetFolders();
 
-        foreach (var folder in folders)
+        foreach ( var folder in folders )
             folder.Images.Clear();
 
         return folders;
     }
 }
-

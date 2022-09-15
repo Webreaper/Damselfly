@@ -1,5 +1,4 @@
-﻿using System;
-namespace Damselfly.Core.Constants;
+﻿namespace Damselfly.Core.Constants;
 
 public enum BasketChangeType
 {
@@ -9,4 +8,3 @@ public enum BasketChangeType
     BasketDeleted = 4,
     BasketChanged = 5
 }
-

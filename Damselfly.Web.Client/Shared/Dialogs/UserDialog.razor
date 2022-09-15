@@ -1,28 +1,25 @@
-﻿@using Damselfly.Core.DbModels
-@using Microsoft.AspNetCore.Identity
-@using System.ComponentModel.DataAnnotations
-
+﻿@using System.ComponentModel.DataAnnotations
 @inject IUserMgmtService userService
 @inject ILogger<UserDialog> logger
 
 <MudDialog>
     <DialogContent>
         <EditForm autocomplete="off" Model="@model" OnValidSubmit="OnValidSubmit">
-            <DataAnnotationsValidator />
-            <MudTextField @bind-Value="@model.Username" For="@(() => model.Username)" Label="User Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            <MudTextField @bind-Value="@model.Email" InputType="InputType.Email" For="@(() => model.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            <MudTextField @bind-Value="@model.Password" InputType="InputType.Password" For="@(() => model.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            <MudTextField @bind-Value="@model.Password2" InputType="InputType.Password" For="@(() => model.Password2)" Label="Confirm Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            @if (allRoles != null)
+            <DataAnnotationsValidator/>
+            <MudTextField @bind-Value="@model.Username" For="@(() => model.Username)" Label="User Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            <MudTextField @bind-Value="@model.Email" InputType="InputType.Email" For="@(() => model.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            <MudTextField @bind-Value="@model.Password" InputType="InputType.Password" For="@(() => model.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            <MudTextField @bind-Value="@model.Password2" InputType="InputType.Password" For="@(() => model.Password2)" Label="Confirm Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            @if( allRoles != null )
             {
-                <MudSelect T="string" Label="User Roles" HelperText="Select the roles to which this user belongs" @bind-Value="selectedRole" Variant="Variant.Filled">
-                    @foreach (var role in allRoles)
+                <MudSelect T=" string " Label="User Roles" HelperText="Select the roles to which this user belongs" @bind-Value="selectedRole" Variant="Variant.Filled">
+                    @foreach( var role in allRoles )
                     {
-                        <MudSelectItem T="string" Value="@role.Name">@role.Name</MudSelectItem>
+                        <MudSelectItem T=" string " Value="@role.Name">@role.Name</MudSelectItem>
                     }
                 </MudSelect>
             }
-            @if (!string.IsNullOrEmpty(errorMsg))
+            @if( !string.IsNullOrEmpty(errorMsg) )
             {
                 <p>@errorMsg</p>
             }
@@ -35,13 +32,14 @@
 </MudDialog>
 
 @code {
+
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public AppIdentityUser User { get; set; } = null;
+    public AppIdentityUser User { get; set; }
 
-    bool AddingNewUser { get; set; } = false;
+    bool AddingNewUser { get; set; }
     string SaveButtonText => AddingNewUser ? "Create User" : "Save";
 
     public class UserForm
@@ -55,10 +53,9 @@
 
         public string Password { get; set; }
         public string Password2 { get; set; }
-
     }
 
-    private UserForm model = new UserForm();
+    private readonly UserForm model = new();
 
     private async Task OnValidSubmit(EditContext context)
     {
@@ -67,9 +64,9 @@
 
     private string selectedRole, errorMsg;
 
-    private List<ApplicationRole> allRoles = new List<ApplicationRole>();
+    private readonly List<ApplicationRole> allRoles = new();
 
-    private void DisplayError( string errorText )
+    private void DisplayError(string errorText)
     {
         errorMsg = errorText;
         StateHasChanged();
@@ -77,7 +74,7 @@
 
     private void DisplayIdentityResultError(IdentityResult result)
     {
-        if (result != null && result.Errors.Any())
+        if( result != null && result.Errors.Any() )
         {
             var msg = string.Join(", ", result.Errors.Select(x => x.Description));
             DisplayError(msg);
@@ -89,31 +86,31 @@
     {
         try
         {
-            bool success = true;
+            var success = true;
 
-            if (AddingNewUser)
+            if( AddingNewUser )
             {
                 success = !string.IsNullOrEmpty(model.Password) && model.Password.Equals(model.Password2);
 
-                if( ! success )
+                if( !success )
                 {
                     DisplayError("Passwords empty or do not match.");
                 }
             }
             else
             {
-                // For exsiting users, handle password reset.
-                if (!string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith("*****"))
+    // For exsiting users, handle password reset.
+                if( !string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith("*****") )
                 {
                     success = model.Password.Equals(model.Password2);
 
-                    if (success)
+                    if( success )
                     {
                         var result = await userService.SetUserPasswordAsync(User, model.Password);
 
                         success = result.Succeeded;
 
-                        if (!success)
+                        if( !success )
                             DisplayIdentityResultError(result);
                     }
                     else
@@ -129,18 +126,18 @@
                 User.Email = model.Email;
 
                 IdentityResult result;
-                if (AddingNewUser)
+                if( AddingNewUser )
                 {
                     result = await userService.CreateNewUser(User, model.Password);
                 }
                 else
                 {
-                    result = await userService.UpdateUserAsync(User, new[] { selectedRole } );
+                    result = await userService.UpdateUserAsync(User, new[] { selectedRole });
                 }
 
                 success = result != null && result.Succeeded;
 
-                if( ! success )
+                if( !success )
                     DisplayIdentityResultError(result);
             }
 
@@ -154,24 +151,27 @@
         }
     }
 
-    void Cancel() => MudDialog.Cancel();
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
-            // Default
+    // Default
             selectedRole = RoleDefinitions.s_UserRole;
 
-            allRoles.AddRange( await userService.GetRoles() );
+            allRoles.AddRange(await userService.GetRoles());
 
-            if (User.UserRoles != null && User.UserRoles.Any())
+            if( User.UserRoles != null && User.UserRoles.Any() )
             {
                 var allUsers = await userService.GetUsers();
 
-                if( ! allUsers.Any() )
+                if( !allUsers.Any() )
                 {
-                    // If there's no users yet, default to Admin
+    // If there's no users yet, default to Admin
                     selectedRole = "Admin";
                 }
                 else

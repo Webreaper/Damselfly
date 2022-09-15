@@ -1,19 +1,14 @@
-﻿@using Damselfly.Core.DbModels
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-
-@inject NavigationManager Navigation
+﻿@inject NavigationManager Navigation
 @inject IUserService userService
 @inject IAuthService AuthService
 @inject IConfigService configService
 
-@if (userService.RolesEnabled)
+@if( userService.RolesEnabled )
 {
     <AuthorizeView>
         <Authorized>
             <div class="damselfly-statusbarpanel" title="Logged in as @context.User.Identity?.Name">
-                <i class="processing-icon fas fa-user" />
+                <i class="processing-icon fas fa-user"/>
                 <NavLink href="/config">@context.User.Identity?.Name</NavLink>
             </div>
             <div>
@@ -29,13 +24,14 @@
 }
 
 @code{
+
     async Task LogOut()
     {
         await AuthService.Logout();
 
         var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
 
-        if (forceLogin)
+        if( forceLogin )
             Navigation.NavigateTo("Login");
         else
             Navigation.NavigateTo("/");
@@ -45,4 +41,5 @@
     {
         Navigation.NavigateTo("Login");
     }
+
 }

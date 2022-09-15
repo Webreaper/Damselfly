@@ -7,17 +7,19 @@ namespace Damselfly.Core.ScopedServices;
 
 public class ClientFolderService : IFolderService
 {
-    protected ILogger<ClientFolderService> _logger;
-    private readonly RestClient httpClient;
     private readonly NotificationsService _notificationService;
-    public event Action OnChange;
+    private readonly RestClient httpClient;
+    protected ILogger<ClientFolderService> _logger;
 
-    public ClientFolderService(RestClient client, NotificationsService notificationService, ILogger<ClientFolderService> logger)
+    public ClientFolderService(RestClient client, NotificationsService notificationService,
+        ILogger<ClientFolderService> logger)
     {
         httpClient = client;
         _logger = logger;
         _notificationService = notificationService;
     }
+
+    public event Action OnChange;
 
 
     public async Task<ICollection<Folder>> GetFolders()
@@ -26,4 +28,3 @@ public class ClientFolderService : IFolderService
         return folders;
     }
 }
-

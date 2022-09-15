@@ -1,8 +1,4 @@
-﻿
-@using System.ComponentModel.DataAnnotations
-@using Damselfly.Core.Interfaces
-@using Damselfly.Core.ScopedServices.Interfaces
-
+﻿@using System.ComponentModel.DataAnnotations
 @inject IUserBasketService basketService
 @inject IUserService userService
 @inject ClientStatusService statusService
@@ -15,20 +11,20 @@
     </TitleContent>
     <DialogContent>
         <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
-            <DataAnnotationsValidator />
-            <MudTextField @bind-Value="@model.BasketName" For="@(() => model.BasketName)" Label="Basket Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            @if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+            <DataAnnotationsValidator/>
+            <MudTextField @bind-Value="@model.BasketName" For="@(() => model.BasketName)" Label="Basket Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            @if( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles) )
             {
-                <MudCheckBox @bind-Checked="@model.IsPublic" Label="Share this basket with other users" />
+                <MudCheckBox @bind-Checked="@model.IsPublic" Label="Share this basket with other users"/>
             }
-            @if (!string.IsNullOrEmpty(errorMsg))
+            @if( !string.IsNullOrEmpty(errorMsg) )
             {
                 <p>@errorMsg</p>
             }
         </EditForm>
     </DialogContent>
     <DialogActions>
-        @if (Mode == "Edit")
+        @if( Mode == "Edit" )
         {
             <MudItem xs="12" md="12">
                 <MudPaper Elevation="0" Class="d-flex py-2 px-1">
@@ -47,11 +43,12 @@
 </MudDialog>
 
 @code {
+
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public Basket Basket { get; set; } = new Basket();
+    public Basket Basket { get; set; } = new();
 
     [Parameter]
     public string Mode { get; set; }
@@ -64,7 +61,7 @@
         public bool IsPublic { get; set; }
     }
 
-    private BasketForm model = new BasketForm();
+    private readonly BasketForm model = new();
 
     private async Task OnValidSubmit(EditContext context)
     {
@@ -77,12 +74,12 @@
 
         int? userId = null;
 
-        if (model.IsPublic)
+        if( model.IsPublic )
             statusService.UpdateGlobalStatus($"Basket '{model.BasketName}' was deleted.");
         else
             statusService.UpdateStatus($"Basket '{model.BasketName}' was deleted.");
 
-        // Force it to reload a new basket
+    // Force it to reload a new basket
         await basketService.SwitchToDefaultBasket(userService.UserId);
 
         MudDialog.Close(DialogResult.Ok(true));
@@ -94,28 +91,28 @@
         {
             int? userId = null;
 
-            if (!model.IsPublic)
+            if( !model.IsPublic )
                 userId = userService.UserId;
 
-            if (Mode == "Add")
+            if( Mode == "Add" )
             {
                 var newBasket = await basketService.Create(model.BasketName, userId);
 
-                // Force it to reload
+    // Force it to reload
                 await basketService.SwitchToBasket(newBasket.BasketId);
 
-                if (model.IsPublic)
+                if( model.IsPublic )
                     statusService.UpdateGlobalStatus($"Basket '{model.BasketName}' created.");
                 else
                     statusService.UpdateStatus($"Basket '{model.BasketName}' created.");
             }
-            else if (Mode == "Edit")
+            else if( Mode == "Edit" )
             {
                 Basket.Name = model.BasketName;
                 Basket.UserId = userId;
                 await basketService.Save(Basket);
 
-                if (model.IsPublic)
+                if( model.IsPublic )
                     statusService.UpdateGlobalStatus($"Basket '{model.BasketName}' saved.");
                 else
                     statusService.UpdateStatus($"Basket '{model.BasketName}' saved.");
@@ -123,7 +120,7 @@
 
             MudDialog.Close(DialogResult.Ok(true));
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError($"Unexpected error saving basket details: {ex}");
             DisplayError($"Unexpected error saving basket {ex.Message}");
@@ -138,21 +135,25 @@
         StateHasChanged();
     }
 
-    void Cancel() => MudDialog.Cancel();
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         model.BasketName = Basket.Name;
-        if (configService.GetBool(ConfigSettings.EnablePoliciesAndRoles))
+        if( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles) )
         {
             model.IsPublic = Basket.UserId == null;
         }
         else
         {
-            // Always shared/public if roles are disabled
+    // Always shared/public if roles are disabled
             model.IsPublic = true;
         }
     }
+
 }

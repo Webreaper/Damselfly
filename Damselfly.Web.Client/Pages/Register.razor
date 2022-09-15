@@ -4,10 +4,10 @@
 
 <h1>Register</h1>
 
-@if (ShowErrors)
+@if( ShowErrors )
 {
     <div class="alert alert-danger" role="alert">
-        @foreach (var error in Errors)
+        @foreach( var error in Errors )
         {
             <p>@error</p>
         }
@@ -18,23 +18,23 @@
     <div class="card-body">
         <h5 class="card-title">Please enter your details</h5>
         <EditForm Model="RegisterModel" OnValidSubmit="HandleRegistration">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
 
             <div class="form-group">
                 <label for="email">Email address</label>
-                <InputText Id="email" class="form-control" @bind-Value="RegisterModel.Email" />
-                <ValidationMessage For="@(() => RegisterModel.Email)" />
+                <InputText Id="email" class="form-control" @bind-Value="RegisterModel.Email"/>
+                <ValidationMessage For="@(() => RegisterModel.Email)"/>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
-                <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.Password" />
-                <ValidationMessage For="@(() => RegisterModel.Password)" />
+                <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.Password"/>
+                <ValidationMessage For="@(() => RegisterModel.Password)"/>
             </div>
             <div class="form-group">
                 <label for="password">Confirm Password</label>
-                <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.ConfirmPassword" />
-                <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)" />
+                <InputText Id="password" type="password" class="form-control" @bind-Value="RegisterModel.ConfirmPassword"/>
+                <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)"/>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
         </EditForm>
@@ -43,7 +43,7 @@
 
 @code {
 
-    private RegisterModel RegisterModel = new RegisterModel();
+    private readonly RegisterModel RegisterModel = new();
     private bool ShowErrors;
     private IEnumerable<string> Errors;
 
@@ -53,7 +53,7 @@
 
         var result = await AuthService.Register(RegisterModel);
 
-        if (result.Successful)
+        if( result.Successful )
         {
             NavigationManager.NavigateTo("/login");
         }

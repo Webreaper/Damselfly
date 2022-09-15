@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.WebUtilities;
@@ -9,9 +7,9 @@ using Microsoft.Extensions.Primitives;
 namespace Damselfly.Web.Components;
 
 /// <summary>
-/// from https://www.meziantou.net/bind-parameters-from-the-query-string-in-blazor.htm
+///     from https://www.meziantou.net/bind-parameters-from-the-query-string-in-blazor.htm
 /// </summary>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class QueryStringParameterAttribute : Attribute
 {
     public QueryStringParameterAttribute()
@@ -35,21 +33,21 @@ public static class QueryStringParameterExtensions
     public static void SetParametersFromQueryString<T>(this T component, NavigationManager navigationManager)
         where T : ComponentBase
     {
-        if (!Uri.TryCreate(navigationManager.Uri, UriKind.RelativeOrAbsolute, out var uri))
+        if ( !Uri.TryCreate(navigationManager.Uri, UriKind.RelativeOrAbsolute, out var uri) )
             throw new InvalidOperationException("The current url is not a valid URI. Url: " + navigationManager.Uri);
 
         // Parse the query string
         Dictionary<string, StringValues> queryString = QueryHelpers.ParseQuery(uri.Query);
 
         // Enumerate all properties of the component
-        foreach (var property in GetProperties<T>())
+        foreach ( var property in GetProperties<T>() )
         {
             // Get the name of the parameter to read from the query string
             var parameterName = GetQueryStringParameterName(property);
-            if (parameterName == null)
+            if ( parameterName == null )
                 continue; // The property is not decorated by [QueryStringParameterAttribute]
 
-            if (queryString.TryGetValue(parameterName, out var value))
+            if ( queryString.TryGetValue(parameterName, out var value) )
             {
                 // Convert the value from string to the actual property type
                 var convertedValue = ConvertValue(value, property.PropertyType);
@@ -62,19 +60,19 @@ public static class QueryStringParameterExtensions
     public static void UpdateQueryString<T>(this T component, NavigationManager navigationManager)
         where T : ComponentBase
     {
-        if (!Uri.TryCreate(navigationManager.Uri, UriKind.RelativeOrAbsolute, out var uri))
+        if ( !Uri.TryCreate(navigationManager.Uri, UriKind.RelativeOrAbsolute, out var uri) )
             throw new InvalidOperationException("The current url is not a valid URI. Url: " + navigationManager.Uri);
 
         // Fill the dictionary with the parameters of the component
         Dictionary<string, StringValues> parameters = QueryHelpers.ParseQuery(uri.Query);
-        foreach (var property in GetProperties<T>())
+        foreach ( var property in GetProperties<T>() )
         {
             var parameterName = GetQueryStringParameterName(property);
-            if (parameterName == null)
+            if ( parameterName == null )
                 continue;
 
             var value = property.GetValue(component);
-            if (value is null)
+            if ( value is null )
             {
                 parameters.Remove(parameterName);
             }
@@ -86,14 +84,12 @@ public static class QueryStringParameterExtensions
         }
 
         // Compute the new URL
-        var newUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
-        foreach (var parameter in parameters)
-        {
-            foreach (var value in parameter.Value)
-            {
-                newUri = QueryHelpers.AddQueryString(newUri, parameter.Key, value);
-            }
-        }
+        var newUri =
+            uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path,
+                UriFormat.UriEscaped);
+        foreach ( var parameter in parameters )
+        foreach ( var value in parameter.Value )
+            newUri = QueryHelpers.AddQueryString(newUri, parameter.Key, value);
 
         navigationManager.NavigateTo(newUri);
     }
@@ -110,13 +106,13 @@ public static class QueryStringParameterExtensions
 
     private static PropertyInfo[] GetProperties<T>()
     {
-        return typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        return typeof( T ).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
     }
 
     private static string GetQueryStringParameterName(PropertyInfo property)
     {
         var attribute = property.GetCustomAttribute<QueryStringParameterAttribute>();
-        if (attribute == null)
+        if ( attribute == null )
             return null;
 
         return attribute.Name ?? property.Name;

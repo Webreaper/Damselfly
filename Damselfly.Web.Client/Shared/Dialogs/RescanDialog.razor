@@ -1,17 +1,14 @@
-﻿
-@using System.Linq
-
-@inject IUserStatusService userStatusService
+﻿@inject IUserStatusService userStatusService
 @inject IRescanService rescanService
 
 <MudDialog>
     <DialogContent>
-        @if (AllImages)
+        @if( AllImages )
         {
             <MudText>Re-scan ALL folders.</MudText>
             <MudText>WARNING: this may take hours or days, depending on how many images are in your library.</MudText>
         }
-        else if (Folder != null)
+        else if( Folder != null )
         {
             <MudText>Re-scan folder @Folder.Name (@ImageText):</MudText>
         }
@@ -20,16 +17,16 @@
             <MudText>Re-scan @ImageText:</MudText>
         }
         <div>
-            <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files" />
+            <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files"/>
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@RescanMetadata" Label="Re-scan metadata" />
+            <MudCheckBox @bind-Checked="@RescanMetadata" Label="Re-scan metadata"/>
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails" />
+            <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails"/>
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects" />
+            <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects"/>
         </div>
     </DialogContent>
     <DialogActions>
@@ -39,6 +36,7 @@
 </MudDialog>
 
 @code {
+
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
 
@@ -65,42 +63,46 @@
     {
         MudDialog.Close(DialogResult.Ok(true));
 
-        // Fire and forget; we don't need to block/await
+    // Fire and forget; we don't need to block/await
         _ = Rescan();
     }
 
     private async Task Rescan()
     {
-        RescanTypes scanType = RescanTypes.None;
-        if (ReIndex)
+        var scanType = RescanTypes.None;
+        if( ReIndex )
             scanType |= RescanTypes.Indexing;
-        if (RescanMetadata)
+        if( RescanMetadata )
             scanType |= RescanTypes.Metadata;
-        if (RegenThumbs)
+        if( RegenThumbs )
             scanType |= RescanTypes.Thumbnails;
-        if (RescanAI)
+        if( RescanAI )
             scanType |= RescanTypes.AI;
-        if (AllImages)
+        if( AllImages )
         {
-            await rescanService.MarkAllForRescan( scanType );
+            await rescanService.MarkAllForRescan(scanType);
         }
-        else if (Folder == null)
+        else if( Folder == null )
         {
-            await rescanService.MarkImagesForRescan( scanType, Images.Select( x => x.ImageId ).ToList() );
+            await rescanService.MarkImagesForRescan(scanType, Images.Select(x => x.ImageId).ToList());
         }
         else
         {
-            await rescanService.MarkFolderForRescan( scanType, Folder.FolderId);
+            await rescanService.MarkFolderForRescan(scanType, Folder.FolderId);
         }
     }
 
-    void Cancel() => MudDialog.Cancel();
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        if (Images != null)
+        if( Images != null )
             Count = Images.Count;
 
         await base.OnInitializedAsync();
     }
+
 }

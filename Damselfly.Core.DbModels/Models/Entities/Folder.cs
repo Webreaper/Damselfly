@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Damselfly.Core.Models;
 
 public class Folder
 {
-    [Key]
-    public int FolderId { get; set; }
+    [Key] public int FolderId { get; set; }
+
     public string Path { get; set; }
 
     public int? ParentId { get; set; }
@@ -20,18 +20,11 @@ public class Folder
     public ICollection<Folder> Children { get; set; }
 
     [JsonIgnore] // This JsonIgnore prevents circular references when serializing the Image entity
-    public virtual List<Image> Images { get; } = new List<Image>();
+    public virtual List<Image> Images { get; } = new();
 
-    public override string ToString()
-    {
-        return $"{Path} [{FolderId}] {MetaData?.ToString()}";
-    }
+    [NotMapped] public string Name => System.IO.Path.GetFileName(Path);
 
-    [NotMapped]
-    public string Name { get { return System.IO.Path.GetFileName(Path); } }
-
-    [NotMapped]
-    public FolderMetadata MetaData { get; set; }
+    [NotMapped] public FolderMetadata MetaData { get; set; }
 
     [NotMapped]
     public IEnumerable<Folder> Subfolders
@@ -41,7 +34,7 @@ public class Folder
             var thisId = new[] { this };
 
             if ( Children != null )
-                return Children.SelectMany(x => x.Subfolders).Concat( thisId);
+                return Children.SelectMany(x => x.Subfolders).Concat(thisId);
 
             return thisId;
         }
@@ -59,7 +52,10 @@ public class Folder
         }
     }
 
-    [NotMapped]
-    public bool HasSubFolders {  get { return Children != null && Children.Any(); } }
-}
+    [NotMapped] public bool HasSubFolders => Children != null && Children.Any();
 
+    public override string ToString()
+    {
+        return $"{Path} [{FolderId}] {MetaData?.ToString()}";
+    }
+}

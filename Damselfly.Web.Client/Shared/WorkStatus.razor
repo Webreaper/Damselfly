@@ -1,24 +1,22 @@
-﻿@using Damselfly.Core.DbModels
-@using Microsoft.AspNetCore.Identity
-
-@inject NavigationManager Navigation
+﻿@inject NavigationManager Navigation
 @inject IWorkService workService
 @inject IUserService userService
 @inject ContextMenuService contextMenuService
 
 @implements IDisposable
 
-@if (ProcessingStatus != null )
+@if( ProcessingStatus != null )
 {
     <div class="damselfly-statusbarpanel" title="@StatusTitle"
-            @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true"
-            @onclick="@(args => ShowContextMenu(args))">
-        <i class="processing-icon fas @StatusIcon" />
+         @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true"
+         @onclick="@(args => ShowContextMenu(args))">
+        <i class="processing-icon fas @StatusIcon"/>
         <label>@ProcessingStatus.StatusText</label>
     </div>
 }
 
 @code{
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
@@ -32,7 +30,7 @@
         JobStatus.Disabled => "fa-stop-circle",
         JobStatus.Error => "fa-exclamation-circle",
         _ => throw new ArgumentException("StatusIcon: Unexpected Switch option")
-    };
+        };
 
     private string SpinSpeed => ProcessingStatus.CPULevel switch
     {
@@ -41,7 +39,7 @@
         75 => "fa-spin-75",
         100 => "fa-spin-100",
         _ => throw new ArgumentException("SpinSpeed: Unexpected Switch option")
-    };
+        };
 
     private string StatusTitle => ProcessingStatus.Status switch
     {
@@ -51,14 +49,15 @@
         JobStatus.Disabled => "Background processing disabled",
         JobStatus.Error => "Background processing error",
         _ => throw new ArgumentException("StatusTitle: Unexpected Switch option")
-    };
+        };
 
     private void StatusChanged(ServiceStatus status)
     {
-        InvokeAsync( () => {
+        InvokeAsync(() =>
+        {
             ProcessingStatus = status;
             StateHasChanged();
-        } );
+        });
     }
 
     protected override async Task OnInitializedAsync()
@@ -76,29 +75,34 @@
 
     async Task ShowContextMenu(MouseEventArgs args)
     {
-        if(await userService.PolicyApplies(PolicyDefinitions.s_IsEditor))
+        if( await userService.PolicyApplies(PolicyDefinitions.s_IsEditor) )
         {
             var menuList = new List<ContextMenuItem>();
 
-            if (ProcessingStatus.Status == JobStatus.Paused)
+            if( ProcessingStatus.Status == JobStatus.Paused )
             {
-                menuList.Add(new ContextMenuItem() { Text = "Resume Processing", Value = 1 });
+                menuList.Add(new ContextMenuItem { Text = "Resume Processing", Value = 1 });
             }
             else
             {
-                menuList.Add(new ContextMenuItem() { Text = "Pause Processing", Value = 0 });
+                menuList.Add(new ContextMenuItem { Text = "Pause Processing", Value = 0 });
             }
 
-            contextMenuService.Open(args, menuList, async (args) =>
+            contextMenuService.Open(args, menuList, async args =>
             {
                 contextMenuService.Close();
 
-                switch (args.Value)
+                switch( args.Value )
                 {
-                    case 0: await workService.Pause( true ); break;
-                    case 1: await workService.Pause( false ); break;
+                    case 0:
+                        await workService.Pause(true);
+                        break;
+                    case 1:
+                        await workService.Pause(false);
+                        break;
                 }
             });
         }
     }
+
 }

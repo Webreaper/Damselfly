@@ -2,10 +2,14 @@
 @inject ILogger<Toolbar> logger
 
 <div>
-    <button title="Config and Tasks" @onclick="@(() => ShowConfigDialog())" class="btn btn-primary"><i class="fa fa-cogs" /></button>
+    <button title="Config and Tasks" @onclick="@(() => ShowConfigDialog())" class="btn btn-primary">
+        <i class="fa fa-cogs"/>
+    </button>
 </div>
 <div>
-    <button title="About Damselfly..." @onclick="@(() => ShowAboutDialog())" class="btn btn-primary"><i class="fa fa-info-circle" /></button>
+    <button title="About Damselfly..." @onclick="@(() => ShowAboutDialog())" class="btn btn-primary">
+        <i class="fa fa-info-circle"/>
+    </button>
 </div>
 
 @code
@@ -16,7 +20,7 @@
         {
             NavigationManager.NavigateTo("/config");
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError("Exception: " + ex.Message);
         }
@@ -28,7 +32,7 @@
         {
             NavigationManager.NavigateTo("/info");
         }
-        catch (Exception ex)
+        catch( Exception ex )
         {
             logger.LogError("Exception: " + ex.Message);
         }

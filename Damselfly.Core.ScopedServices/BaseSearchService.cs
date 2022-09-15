@@ -1,44 +1,364 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Damselfly.Core.Models;
-using Damselfly.Core.Utils;
-using Microsoft.EntityFrameworkCore;
-using Humanizer;
-using Damselfly.Core.Constants;
+﻿using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
-using static System.Net.WebRequestMethods;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Net.Http.Json;
-using System.Net.Http;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
-using System.Text.Json;
+using Damselfly.Core.Utils;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
 /// <summary>
-/// The search service manages the current set of parameters that make up the search
-/// query, and thus determine the set of results returned to the image browser list.
-/// The results are stored here, and returned as a virtualised set - so we only pass
-/// back (say) 200 images, and then requery for the next 200 when the user scrolls.
-/// This saves us returning thousands of items for a search.
+///     The search service manages the current set of parameters that make up the search
+///     query, and thus determine the set of results returned to the image browser list.
+///     The results are stored here, and returned as a virtualised set - so we only pass
+///     back (say) 200 images, and then requery for the next 200 when the user scrolls.
+///     This saves us returning thousands of items for a search.
 /// </summary>
 public abstract class BaseSearchService
 {
+    protected readonly ILogger<BaseSearchService> _logger;
+    protected readonly List<int> _searchResults = new();
+    private readonly ICachedDataService _service;
+
     public BaseSearchService(ICachedDataService dataService, ILogger<BaseSearchService> logger)
     {
         _service = dataService;
         _logger = logger;
     }
 
-    protected readonly ILogger<BaseSearchService> _logger;
-    private readonly ICachedDataService _service;
-    private readonly SearchQuery query = new SearchQuery();
-    protected readonly List<int> _searchResults = new List<int>();
+    public ICollection<int> SearchResults => _searchResults;
 
-    public ICollection<int> SearchResults { get { return _searchResults; } }
+    public string SearchText
+    {
+        get => Query.SearchText;
+        set
+        {
+            if ( Query.SearchText != value.Trim() )
+            {
+                Query.SearchText = value.Trim();
+                QueryChanged();
+            }
+        }
+    }
+
+    public DateTime? MaxDate
+    {
+        get => Query.MaxDate;
+        set
+        {
+            if ( Query.MaxDate != value )
+            {
+                Query.MaxDate = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public DateTime? MinDate
+    {
+        get => Query.MinDate;
+        set
+        {
+            if ( Query.MinDate != value )
+            {
+                Query.MinDate = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public int? MaxSizeKB
+    {
+        get => Query.MaxSizeKB;
+        set
+        {
+            if ( Query.MaxSizeKB != value )
+            {
+                Query.MaxSizeKB = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public int? MinSizeKB
+    {
+        get => Query.MinSizeKB;
+        set
+        {
+            if ( Query.MinSizeKB != value )
+            {
+                Query.MinSizeKB = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public Folder Folder
+    {
+        get => Query.Folder;
+        set
+        {
+            if ( Query.Folder != value )
+            {
+                Query.Folder = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public bool TagsOnly
+    {
+        get => Query.TagsOnly;
+        set
+        {
+            if ( Query.TagsOnly != value )
+            {
+                Query.TagsOnly = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public bool IncludeAITags
+    {
+        get => Query.IncludeAITags;
+        set
+        {
+            if ( Query.IncludeAITags != value )
+            {
+                Query.IncludeAITags = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public bool UntaggedImages
+    {
+        get => Query.UntaggedImages;
+        set
+        {
+            if ( Query.UntaggedImages != value )
+            {
+                Query.UntaggedImages = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public int? CameraId
+    {
+        get => Query.CameraId;
+        set
+        {
+            if ( Query.CameraId != value )
+            {
+                Query.CameraId = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public int? LensId
+    {
+        get => Query.LensId;
+        set
+        {
+            if ( Query.LensId != value )
+            {
+                Query.LensId = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public int? Month
+    {
+        get => Query.Month;
+        set
+        {
+            if ( Query.Month != value )
+            {
+                Query.Month = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public int? MinRating
+    {
+        get => Query.MinRating;
+        set
+        {
+            if ( Query.MinRating != value )
+            {
+                Query.MinRating = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public Tag Tag
+    {
+        get => Query.Tag;
+        set
+        {
+            if ( Query.Tag != value )
+            {
+                Query.Tag = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public Image SimilarTo
+    {
+        get => Query.SimilarTo;
+        set
+        {
+            if ( Query.SimilarTo != value )
+            {
+                Query.SimilarTo = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public Person Person
+    {
+        get => Query.Person;
+        set
+        {
+            if ( Query.Person != value )
+            {
+                Query.Person = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public GroupingType Grouping
+    {
+        get => Query.Grouping;
+        set
+        {
+            if ( Query.Grouping != value )
+            {
+                Query.Grouping = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public SortOrderType SortOrder
+    {
+        get => Query.SortOrder;
+        set
+        {
+            if ( Query.SortOrder != value )
+            {
+                Query.SortOrder = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public FaceSearchType? FaceSearch
+    {
+        get => Query.FaceSearch;
+        set
+        {
+            if ( Query.FaceSearch != value )
+            {
+                Query.FaceSearch = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public OrientationType? Orientation
+    {
+        get => Query.Orientation;
+        set
+        {
+            if ( Query.Orientation != value )
+            {
+                Query.Orientation = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public SearchQuery Query { get; } = new();
+
+    public string SearchBreadcrumbs
+    {
+        get
+        {
+            var hints = new List<string>();
+
+            if ( !string.IsNullOrEmpty(SearchText) )
+                hints.Add($"Text: {SearchText}");
+
+            if ( Folder != null )
+                hints.Add($"Folder: {Folder.Name}");
+
+            if ( Person != null )
+                hints.Add($"Person: {Person.Name}");
+
+            if ( MinRating != null )
+                hints.Add($"Rating: at least {MinRating} stars");
+
+            if ( SimilarTo != null )
+                hints.Add($"Looks Like: {SimilarTo.FileName}");
+
+            if ( Tag != null )
+                hints.Add($"Tag: {Tag.Keyword}");
+
+            var dateRange = string.Empty;
+            if ( MinDate.HasValue )
+                dateRange = $"{MinDate:dd-MMM-yyyy}";
+
+            if ( MaxDate.HasValue &&
+                 (!MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date) )
+            {
+                if ( !string.IsNullOrEmpty(dateRange) )
+                    dateRange += " - ";
+                dateRange += $"{MaxDate:dd-MMM-yyyy}";
+            }
+
+            if ( !string.IsNullOrEmpty(dateRange) )
+                hints.Add($"Date: {dateRange}");
+
+            if ( UntaggedImages )
+                hints.Add("Untagged images");
+
+            if ( FaceSearch.HasValue )
+                hints.Add($"{FaceSearch.Humanize()}");
+
+            if ( Orientation.HasValue )
+                hints.Add($"{Orientation.Humanize()}");
+
+            if ( CameraId > 0 )
+            {
+                var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
+                if ( cam != null )
+                    hints.Add($"Camera: {cam.Model}");
+            }
+
+            if ( LensId > 0 )
+            {
+                var lens = _service.Lenses.FirstOrDefault(x => x.LensId == LensId);
+                if ( lens != null )
+                    hints.Add($"Lens: {lens.Model}");
+            }
+
+            if ( hints.Any() )
+                return string.Join(", ", hints);
+
+            return "No Filter";
+        }
+    }
 
     public abstract Task<SearchResponse> GetQueryImagesAsync(int start, int count);
 
@@ -49,52 +369,34 @@ public abstract class BaseSearchService
 
     public void NotifyStateChanged()
     {
-        _logger.LogInformation($"ImageSearch: Filter changed: {query}");
+        _logger.LogInformation($"ImageSearch: Filter changed: {Query}");
 
         OnSearchChanged?.Invoke();
     }
 
     public event Action OnSearchChanged;
 
-    public string SearchText { get { return query.SearchText; } set { if (query.SearchText != value.Trim()) { query.SearchText = value.Trim(); QueryChanged(); } } }
-    public DateTime? MaxDate { get { return query.MaxDate; } set { if (query.MaxDate != value) { query.MaxDate = value; QueryChanged(); } } }
-    public DateTime? MinDate { get { return query.MinDate; } set { if (query.MinDate != value) { query.MinDate = value; QueryChanged(); } } }
-    public int? MaxSizeKB { get { return query.MaxSizeKB; } set { if (query.MaxSizeKB != value) { query.MaxSizeKB = value; QueryChanged(); } } }
-    public int? MinSizeKB { get { return query.MinSizeKB; } set { if (query.MinSizeKB != value) { query.MinSizeKB = value; QueryChanged(); } } }
-    public Folder Folder { get { return query.Folder; } set { if (query.Folder != value) { query.Folder = value; QueryChanged(); } } }
-    public bool TagsOnly { get { return query.TagsOnly; } set { if (query.TagsOnly != value) { query.TagsOnly = value; QueryChanged(); } } }
-    public bool IncludeAITags { get { return query.IncludeAITags; } set { if (query.IncludeAITags != value) { query.IncludeAITags = value; QueryChanged(); } } }
-    public bool UntaggedImages { get { return query.UntaggedImages; } set { if (query.UntaggedImages != value) { query.UntaggedImages = value; QueryChanged(); } } }
-    public int? CameraId { get { return query.CameraId; } set { if (query.CameraId != value) { query.CameraId = value; QueryChanged(); } } }
-    public int? LensId { get { return query.LensId; } set { if (query.LensId != value) { query.LensId = value; QueryChanged(); } } }
-    public int? Month { get { return query.Month; } set { if (query.Month != value) { query.Month = value; QueryChanged(); } } }
-    public int? MinRating { get { return query.MinRating; } set { if (query.MinRating != value) { query.MinRating = value; QueryChanged(); } } }
-    public Tag Tag { get { return query.Tag; } set { if (query.Tag != value) { query.Tag = value; QueryChanged(); } } }
-    public Image SimilarTo { get { return query.SimilarTo; } set { if (query.SimilarTo != value) { query.SimilarTo = value; QueryChanged(); } } }
-    public Person Person { get { return query.Person; } set { if (query.Person != value) { query.Person = value; QueryChanged(); } } }
-    public GroupingType Grouping { get { return query.Grouping; } set { if (query.Grouping != value) { query.Grouping = value; QueryChanged(); } } }
-    public SortOrderType SortOrder { get { return query.SortOrder; } set { if (query.SortOrder != value) { query.SortOrder = value; QueryChanged(); } } }
-    public FaceSearchType? FaceSearch { get { return query.FaceSearch; } set { if (query.FaceSearch != value) { query.FaceSearch = value; QueryChanged(); } } }
-    public OrientationType? Orientation { get { return query.Orientation; } set { if (query.Orientation != value) { query.Orientation = value; QueryChanged(); } } }
+    public void Reset()
+    {
+        ApplyQuery(new SearchQuery());
+    }
 
-    public void Reset() { ApplyQuery(new SearchQuery()); }
-    public void Refresh() { QueryChanged(); }
-    public SearchQuery Query { get { return query; } }
+    public void Refresh()
+    {
+        QueryChanged();
+    }
 
     public void ApplyQuery(SearchQuery newQuery)
     {
-        if (newQuery.CopyPropertiesTo(query))
-        {
-            QueryChanged();
-        }
+        if ( newQuery.CopyPropertiesTo(Query) ) QueryChanged();
     }
 
     public void SetDateRange(DateTime? min, DateTime? max)
     {
-        if (query.MinDate != min || query.MaxDate != max)
+        if ( Query.MinDate != min || Query.MaxDate != max )
         {
-            query.MinDate = min;
-            query.MaxDate = max;
+            Query.MinDate = min;
+            Query.MaxDate = max;
             QueryChanged();
         }
     }
@@ -103,78 +405,9 @@ public abstract class BaseSearchService
     {
         Task.Run(() =>
         {
-            _logger.LogInformation( $"ImageSearch: Search query changed: {this.SearchBreadcrumbs}" );
+            _logger.LogInformation($"ImageSearch: Search query changed: {SearchBreadcrumbs}");
             ClearSearchResults();
             NotifyStateChanged();
         });
-    }
-
-    public string SearchBreadcrumbs
-    {
-        get
-        {
-            var hints = new List<string>();
-
-            if (!string.IsNullOrEmpty(SearchText))
-                hints.Add($"Text: {SearchText}");
-
-            if (Folder != null)
-                hints.Add($"Folder: {Folder.Name}");
-
-            if (Person != null)
-                hints.Add($"Person: {Person.Name}");
-
-            if (MinRating != null)
-                hints.Add($"Rating: at least {MinRating} stars");
-
-            if (SimilarTo != null)
-                hints.Add($"Looks Like: {SimilarTo.FileName}");
-
-            if (Tag != null)
-                hints.Add($"Tag: {Tag.Keyword}");
-
-            string dateRange = string.Empty;
-            if (MinDate.HasValue)
-                dateRange = $"{MinDate:dd-MMM-yyyy}";
-
-            if (MaxDate.HasValue &&
-               (!MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date))
-            {
-                if (!string.IsNullOrEmpty(dateRange))
-                    dateRange += " - ";
-                dateRange += $"{MaxDate:dd-MMM-yyyy}";
-            }
-
-            if (!string.IsNullOrEmpty(dateRange))
-                hints.Add($"Date: {dateRange}");
-
-            if (UntaggedImages)
-                hints.Add($"Untagged images");
-
-            if (FaceSearch.HasValue)
-                hints.Add($"{FaceSearch.Humanize()}");
-
-            if (Orientation.HasValue)
-                hints.Add($"{Orientation.Humanize()}");
-
-            if (CameraId > 0)
-            {
-                var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
-                if (cam != null)
-                    hints.Add($"Camera: {cam.Model}");
-            }
-
-            if (LensId > 0)
-            {
-                var lens = _service.Lenses.FirstOrDefault(x => x.LensId == LensId);
-                if (lens != null)
-                    hints.Add($"Lens: {lens.Model}");
-            }
-
-            if (hints.Any())
-                return string.Join(", ", hints);
-
-            return "No Filter";
-        }
     }
 }

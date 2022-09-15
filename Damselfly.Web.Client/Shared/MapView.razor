@@ -1,11 +1,8 @@
-﻿@using Syncfusion.Blazor.Maps
-@using Syncfusion.Blazor
-
-@inject SelectionService selectionService
+﻿@inject SelectionService selectionService
 @inject NavigationService navContext
 @implements IDisposable
 
-@if (showMap)
+@if( showMap )
 {
     <DetailedErrorBoundary>
         <SfMaps Height="200px">
@@ -13,12 +10,12 @@
                 <MapsBorder Color="var(--keyword-border)" Width="0"></MapsBorder>
                 <MapsMargin Bottom="0" Left="0" Right="0" Top="0"></MapsMargin>
             </MapsAreaSettings>
-            <MapsCenterPosition Latitude="@Latitude" Longitude="@Longitude" />
-            <MapsZoomSettings Enable="false" ZoomFactor="13" />
+            <MapsCenterPosition Latitude="@Latitude" Longitude="@Longitude"/>
+            <MapsZoomSettings Enable="false" ZoomFactor="13"/>
             <MapsLayers>
                 <MapsLayer UrlTemplate="https://a.tile.openstreetmap.org/level/tileX/tileY.png" TValue="string">
                     <MapsMarkerSettings>
-                        <MapsMarker Visible="true" Height="20" Width="20" Fill="red" DataSource="@Markers" AnimationDuration="0" TValue="MarkerData" />
+                        <MapsMarker Visible="true" Height="20" Width="20" Fill="red" DataSource="@Markers" AnimationDuration="0" TValue="MarkerData"/>
                     </MapsMarkerSettings>
                 </MapsLayer>
             </MapsLayers>
@@ -43,7 +40,7 @@ else
         public double Longitude { get; set; }
     }
 
-    public List<MarkerData> Markers = new List<MarkerData>();
+    public List<MarkerData> Markers = new();
 
     protected override void OnInitialized()
     {
@@ -65,7 +62,7 @@ else
 
     private void SelectionChanged()
     {
-        if (selectionService.Selection.Count == 1)
+        if( selectionService.Selection.Count == 1 )
         {
             CurrentImage = selectionService.Selection.First();
             _ = SetMapToImage();
@@ -76,14 +73,14 @@ else
     {
         Markers.Clear();
 
-        if (CurrentImage != null && CurrentImage.MetaData != null &&
-            CurrentImage.MetaData.Longitude.HasValue && CurrentImage.MetaData.Latitude.HasValue)
+        if( CurrentImage != null && CurrentImage.MetaData != null &&
+            CurrentImage.MetaData.Longitude.HasValue && CurrentImage.MetaData.Latitude.HasValue )
         {
             Latitude = CurrentImage.MetaData.Latitude.Value;
             Longitude = CurrentImage.MetaData.Longitude.Value;
             showMap = true;
 
-            Markers.Add(new MarkerData { Name = CurrentImage.FileName, Latitude = this.Latitude, Longitude = this.Longitude });
+            Markers.Add(new MarkerData { Name = CurrentImage.FileName, Latitude = Latitude, Longitude = Longitude });
         }
         else
             showMap = false;
@@ -93,9 +90,9 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
             await SetMapToImage();
         }
     }
-}
+    } 

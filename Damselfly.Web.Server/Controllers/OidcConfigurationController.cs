@@ -7,7 +7,8 @@ public class OidcConfigurationController : Controller
 {
     private readonly ILogger<OidcConfigurationController> _logger;
 
-    public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider, ILogger<OidcConfigurationController> logger)
+    public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider,
+        ILogger<OidcConfigurationController> logger)
     {
         ClientRequestParametersProvider = clientRequestParametersProvider;
         _logger = logger;
@@ -22,4 +23,3 @@ public class OidcConfigurationController : Controller
         return Ok(parameters);
     }
 }
-

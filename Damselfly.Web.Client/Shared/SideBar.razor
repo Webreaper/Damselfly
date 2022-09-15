@@ -3,66 +3,68 @@
 @inject NavigationService navContext
 
 <div class="damselfly-sidebar">
-    <DamselflyLogo />
+    <DamselflyLogo/>
 
-    @if (ViewDataService.ShowImageProps && navContext.CurrentImage != null)
+    @if( ViewDataService.ShowImageProps && navContext.CurrentImage != null )
     {
         <ToolWindow Title="Image Properties">
             <ChildContent>
-                <ImageProperties />
+                <ImageProperties/>
             </ChildContent>
         </ToolWindow>
-        }
-    @if (ViewDataService.ShowBasket)
+    }
+    @if( ViewDataService.ShowBasket )
     {
         <ToolWindow Title="Basket">
             <ChildContent>
-                <SelectedImages />
+                <SelectedImages/>
             </ChildContent>
         </ToolWindow>
-        }
-    @if (ViewDataService.ShowTags)
+    }
+    @if( ViewDataService.ShowTags )
     {
         <ToolWindow Title="Image Keywords">
             <ChildContent>
-                <Keywords />
+                <Keywords/>
             </ChildContent>
         </ToolWindow>
         <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
             <ToolWindow Title="Add Keywords">
                 <ChildContent>
-                    <KeywordFavourites />
+                    <KeywordFavourites/>
                 </ChildContent>
             </ToolWindow>
         </AuthorizeView>
-        }
-    @if (ViewDataService.ShowMap)
+    }
+    @if( ViewDataService.ShowMap )
     {
         <ToolWindow Title="Map">
             <ChildContent>
-                <MapView />
+                <MapView/>
             </ChildContent>
         </ToolWindow>
-        }
-    @if (ViewDataService.ShowFolderList)
+    }
+    @if( ViewDataService.ShowFolderList )
     {
         <ToolWindow Title="Folders">
             <ChildContent>
-                <FolderList />
+                <FolderList/>
             </ChildContent>
         </ToolWindow>
-        }
-    @if (ViewDataService.ShowExport)
+    }
+    @if( ViewDataService.ShowExport )
     {
         <ToolWindow Title="Export">
             <ChildContent>
-                <ExportSettings />
+                <ExportSettings/>
             </ChildContent>
         </ToolWindow>
     }
 </div>
 
-@code { protected override void OnInitialized()
+@code {
+
+    protected override void OnInitialized()
     {
         base.OnInitialized();
         ViewDataService.SideBarStateChanged += OnSideBarStateChanged;
@@ -72,4 +74,5 @@
     {
         InvokeAsync(StateHasChanged);
     }
+
 }

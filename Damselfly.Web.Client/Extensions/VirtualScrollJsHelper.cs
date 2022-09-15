@@ -3,7 +3,7 @@
 namespace Damselfly.Web.Components;
 
 /// <summary>
-/// Callback management for th Scrollview JS interop
+///     Callback management for th Scrollview JS interop
 /// </summary>
 public class VirtualScrollJsHelper
 {

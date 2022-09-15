@@ -3,8 +3,8 @@
     visibility: hidden; /* Hidden by default. Visible on click */
     min-width: 250px; /* Set a default minimum width */
     margin-left: -125px; /* Divide value of min-width by 2 */
-    background-color: var( --main-background ); /* Black background color */
-    color: var( --body-text ); /* White text color */
+    background-color: var(--main-background); /* Black background color */
+    color: var(--body-text); /* White text color */
     text-align: center; /* Centered text */
     border-radius: 2px; /* Rounded borders */
     padding: 10px; /* Padding */
@@ -21,8 +21,8 @@
     opacity: 0;
 }
 
-    @keyframes fadeinout {
-        50% {
+@keyframes fadeinout {
+    50% {
         opacity: 1;
     }
 }

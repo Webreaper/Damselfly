@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.DbModels.Models.APIModels;
@@ -11,4 +10,3 @@ public class RescanRequest
     public ICollection<int> ImageIds { get; set; }
     public bool RescanAll { get; set; } = false;
 }
-

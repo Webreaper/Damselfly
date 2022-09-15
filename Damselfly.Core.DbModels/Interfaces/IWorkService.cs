@@ -14,4 +14,3 @@ public interface IWorkService
     Task<CPULevelSettings> GetCPUSchedule();
     Task SetCPUSchedule(CPULevelSettings settings);
 }
-

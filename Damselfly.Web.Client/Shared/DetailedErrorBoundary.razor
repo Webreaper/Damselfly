@@ -1,11 +1,11 @@
 ﻿@inject NavigationManager navManager
 @inherits ErrorBoundary
 
-@if (CurrentException is null)
+@if( CurrentException is null )
 {
     @ChildContent
 }
-else if (ErrorContent is not null)
+else if( ErrorContent is not null )
 {
     @ErrorContent(CurrentException)
 }
@@ -16,10 +16,10 @@ else
         <button class="btn btn-error" @onclick="@Reload">Reload Page.</button>
         <button class="btn btn-error" @onclick="@ToggleDisplay">@ShowText Details.</button>
 
-        @if (Open)
+        @if( Open )
         {
             <div class="error-stacktrace">
-                @foreach (var exception in receivedExceptions)
+                @foreach( var exception in receivedExceptions )
                 {
                     <div class="received-exception" style="font-size: 10pt; color: darkorange; margin: 0.5rem; padding: 0.2rem;">
                         @exception
@@ -37,7 +37,7 @@ else
 
     private void Reload()
     {
-        navManager.NavigateTo(navManager.Uri, forceLoad: true);
+        navManager.NavigateTo(navManager.Uri, true);
     }
 
     private void ToggleDisplay()
@@ -56,4 +56,5 @@ else
         receivedExceptions.Clear();
         base.Recover();
     }
+
 }

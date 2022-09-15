@@ -1,5 +1,4 @@
-﻿
-@inject IUserStatusService statusService
+﻿@inject IUserStatusService statusService
 @inject ICachedDataService staticDataService
 @inject IJSRuntime JsRuntime
 @inject NavigationManager navManager
@@ -16,66 +15,65 @@
 
     public async Task ExportImagesToLocalFilesystem(ICollection<Image> images)
     {
-        await ExportToLocalFS( images );
+        await ExportToLocalFS(images);
     }
 
     /// <summary>
-    /// Do the actual export
+    ///     Do the actual export
     /// </summary>
     /// <param name="images">Collection of images</param>
     /// <param name="rootFolder">The root folder to which they should be relative</param>
     /// <returns></returns>
     private async Task ExportToLocalFS(ICollection<Image> images)
     {
-        if (IsDesktopHosted)
+        if( IsDesktopHosted )
         {
             var baseUrl = new Uri(navManager.BaseUri);
 
-            foreach (var image in images)
+            foreach( var image in images )
             {
                 var imageUrl = new Uri(baseUrl, image.DownloadImageUrl);
 
-                // Image folder is fully qualified, so we need to make it relative to the pictures folder
-                // The electron container will use its local settings to create the full path of where
-                // the image will be written locally on the client-side
-                string localPath = image.FullPath.MakePathRelativeTo(staticDataService.ImagesRootFolder);
+    // Image folder is fully qualified, so we need to make it relative to the pictures folder
+    // The electron container will use its local settings to create the full path of where
+    // the image will be written locally on the client-side
+                var localPath = image.FullPath.MakePathRelativeTo(staticDataService.ImagesRootFolder);
 
-                statusService.UpdateStatus( $"Writing {image.FileName} to {localPath}..." );
+                statusService.UpdateStatus($"Writing {image.FileName} to {localPath}...");
 
-                // Now, shell out to Javascript, which will trigger the download in the Electron container
+    // Now, shell out to Javascript, which will trigger the download in the Electron container
                 await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
 
-                // TODO: Get the sidecar file - something like this, but we need a URL for the
-                // sidecar file, or at least a way to bundle the two together in the controller
-                // and stream to the client.
-                //
-                //var sideCar = image.GetSideCar();
-                //if( sideCar != null )
-                //{
-                //    string sidecarlocalPath = sideCar.Filename.FullName.MakePathRelativeTo(IndexingService.RootFolder);
-                //    await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
-                //}
-                
+    // TODO: Get the sidecar file - something like this, but we need a URL for the
+    // sidecar file, or at least a way to bundle the two together in the controller
+    // and stream to the client.
+    //
+    //var sideCar = image.GetSideCar();
+    //if( sideCar != null )
+    //{
+    //    string sidecarlocalPath = sideCar.Filename.FullName.MakePathRelativeTo(IndexingService.RootFolder);
+    //    await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
+    //}
             }
 
-            statusService.UpdateStatus( "Local image download started." );
+            statusService.UpdateStatus("Local image download started.");
         }
         else
-            statusService.UpdateStatus( "Local save is not available outside the Desktop Client." );
+            statusService.UpdateStatus("Local save is not available outside the Desktop Client.");
     }
 
     /// <summary>
-    /// Initialise the state to tell us if LocalFS is available.
+    ///     Initialise the state to tell us if LocalFS is available.
     /// </summary>
     /// <param name="firstRender"></param>
     /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if( firstRender )
         {
-            // Probe for a js function which indicates we're in the electron container
+    // Probe for a js function which indicates we're in the electron container
             DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
             NotifyStateChanged();
         }
     }
-}
+    } 
