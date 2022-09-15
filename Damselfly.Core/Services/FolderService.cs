@@ -48,9 +48,10 @@ public class FolderService : IFolderService
         _ = LoadFolders();
     }
 
-    public async Task<ICollection<Folder>> GetFolders()
+    public Task<ICollection<Folder>> GetFolders()
     {
-        return allFolders;
+        ICollection<Folder> result = allFolders;
+        return Task.FromResult(result);
     }
 
     private void NotifyStateChanged()

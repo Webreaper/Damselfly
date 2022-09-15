@@ -30,7 +30,7 @@ public class StatusController : ControllerBase
     [HttpPost("/api/status")]
     public async Task UpdateStatus(StatusUpdateRequest req)
     {
-        _statusService.UpdateStatus(req.NewStatus, req.UserId);
+        await _statusService.UpdateStatus(req.NewStatus, req.UserId);
     }
 }
 

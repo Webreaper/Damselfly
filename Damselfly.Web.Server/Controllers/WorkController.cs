@@ -1,9 +1,6 @@
 ﻿using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices;
 using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
@@ -32,21 +29,22 @@ public class WorkController : ControllerBase
     }
 
     [HttpPost("/api/work/pause")]
-    public async Task PauseWork(bool paused)
+    public Task PauseWork(bool paused)
     {
         _service.Paused = paused;
+        return Task.CompletedTask;
     }
 
     [HttpGet("/api/work/settings")]
     public async Task<CPULevelSettings> GetCPUSettings()
     {
-        throw new NotImplementedException();
+        return await _service.GetCPUSchedule();
     }
 
     [HttpPost("/api/work/settings")]
     public async Task SetCPUSettings(CPULevelSettings newSettings)
     {
-        throw new NotImplementedException();
+        await _service.SetCPUSchedule(newSettings);
     }
 }
 

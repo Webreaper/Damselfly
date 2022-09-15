@@ -82,10 +82,10 @@ public class ThemeService : IThemeService
         return await GetThemeConfig("Green");
     }
 
-    public async Task<ThemeConfig> GetThemeConfig(string name)
+    public Task<ThemeConfig> GetThemeConfig(string name)
     {
         if (_themeConfigs.TryGetValue(name, out var config))
-            return config;
+            return Task.FromResult( config );
 
         return null;
     }

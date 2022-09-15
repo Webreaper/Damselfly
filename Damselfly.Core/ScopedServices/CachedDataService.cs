@@ -27,9 +27,10 @@ public class CachedDataService : ICachedDataService
 
     public ICollection<Lens> Lenses => _metaDataService.Lenses;
 
-    public async Task InitialiseData()
+    public Task InitialiseData()
     {
         // Nothng to do here in the Blazor Server version
+        return Task.CompletedTask;
     }
 
     public async Task<Statistics> GetStatistics()

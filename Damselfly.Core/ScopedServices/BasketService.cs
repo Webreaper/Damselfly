@@ -51,8 +51,6 @@ public class BasketService : IBasketService
     {
         OnBasketChanged?.Invoke();
 
-        List<int> imageIds = null;
-
         var payload = new BasketChanged
         {
             ChangeType = changeType,

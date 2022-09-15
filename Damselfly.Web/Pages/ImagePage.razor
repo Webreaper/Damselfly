@@ -73,8 +73,8 @@ else
 
     public CropJsHelper JsHelper { get; set; }
 
-    private bool NextEnabled => nextImage != null && nextImage != CurrentImage.ImageId;
-    private bool PrevEnabled => prevImage != null && prevImage != CurrentImage.ImageId;
+    private bool NextEnabled => nextImage != 0 && nextImage != CurrentImage.ImageId;
+    private bool PrevEnabled => prevImage != 0 && prevImage != CurrentImage.ImageId;
     private string PrevImageIDUrl => $"/image/{prevImage}";
     private string NextImageIDUrl => $"/image/{nextImage}";
 

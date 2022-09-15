@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Damselfly.Core.DbModels;
+﻿using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -19,7 +18,6 @@ public class ClientImageCacheService : IImageCacheService
     private readonly IMemoryCache _memoryCache;
     private readonly MemoryCacheEntryOptions _cacheOptions;
     private readonly NotificationsService _notifications;
-    private static JsonSerializerOptions jsonOptions = new JsonSerializerOptions { ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve };
 
     public ClientImageCacheService(RestClient client, IMemoryCache cache, NotificationsService notifications, ILogger<ClientImageCacheService> logger)
     {

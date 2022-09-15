@@ -19,7 +19,6 @@ public class StaticDataController : ControllerBase
 {
     private readonly MetaDataService _metaDataService;
     private readonly StatisticsService _stats;
-    private readonly IRecentTagService _recentTagService;
 
     private readonly ILogger<StaticDataController> _logger;
 
@@ -41,15 +40,17 @@ public class StaticDataController : ControllerBase
     }
 
     [HttpGet("/api/data/cameras")]
-    public async Task<ICollection<Camera>> GetCameras()
+    public Task<ICollection<Camera>> GetCameras()
     {
-        return _metaDataService.Cameras;
+        ICollection<Camera> result = _metaDataService.Cameras;
+        return Task.FromResult( result );
     }
 
     [HttpGet("/api/data/lenses")]
-    public async Task<ICollection<Lens>> GetLenses()
+    public Task<ICollection<Lens>> GetLenses()
     {
-        return _metaDataService.Lenses;
+        ICollection<Lens> result = _metaDataService.Lenses;
+        return Task.FromResult(result);
     }
 
     [HttpGet("/api/data/stats")]

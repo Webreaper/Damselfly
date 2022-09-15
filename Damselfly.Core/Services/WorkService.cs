@@ -52,15 +52,17 @@ public class WorkService : IWorkService
         _cpuSettings.Load(configService);
     }
 
-    public async Task<CPULevelSettings> GetCPUSchedule()
+    public Task<CPULevelSettings> GetCPUSchedule()
     {
-        return _cpuSettings;
+        return Task.FromResult(_cpuSettings );
     }
 
-    public async Task SetCPUSchedule(CPULevelSettings cpuSettings)
+    public Task SetCPUSchedule(CPULevelSettings cpuSettings)
     {
         Logging.Log($"Work service updated with new CPU settings: {cpuSettings}");
         _cpuSettings = cpuSettings;
+
+        return Task.CompletedTask;
     }
 
     public void AddJobSource(IProcessJobFactory source)

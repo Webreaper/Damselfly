@@ -64,9 +64,10 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async Task<ICollection<Tag>> GetAllTags()
+    public Task<ICollection<Tag>> GetAllTags()
     {
-        return CachedTags.ToList();
+        ICollection<Tag> result = CachedTags.ToList();
+        return Task.FromResult( result );
     }
 
     /// <summary>
@@ -74,7 +75,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
-    public async Task<ICollection<Tag>> SearchTags(string text)
+    public Task<ICollection<Tag>> SearchTags(string text)
     {
         var results = new List<Tag>();
         var searchText = text.Trim();
@@ -96,7 +97,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
         results.Insert(0, new Tag { Keyword = text });
 
-        return results;
+        return Task.FromResult( (ICollection<Tag>)results );
     }
 
     /// <summary>

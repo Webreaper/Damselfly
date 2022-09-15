@@ -399,7 +399,7 @@ namespace Damselfly.Core.DBAbstractions
 
             OptimiseDB();
 
-            RebuildFreeText();
+            RebuildFreeText().Wait();
         }
 
         private void OptimiseDB()
@@ -417,7 +417,8 @@ namespace Damselfly.Core.DBAbstractions
             ExecutePragma(this, "PRAGMA schema.wal_checkpoint;");
         }
 
-        public async Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
+        // Can this be made async?
+        public Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
         {
             // Convert the string from a set of terms to quote and add * so they're all exact partial matches
             // TODO: How do we handle suffix matches - i.e., contains. SQLite FTS doesn't support that. :(
@@ -460,10 +461,10 @@ namespace Damselfly.Core.DBAbstractions
                 i++;
             }
 
-            return resultSet.FromSqlRaw(sql, terms);
+            return Task.FromResult( resultSet.FromSqlRaw(sql, terms) );
         }
 
-        private void RebuildFreeText()
+        private async Task RebuildFreeText()
         {
             const string delete = @"DELETE from FTSKeywords; DELETE from FTSImages; DELETE from FTSNames;";
             const string insertTags = @"INSERT INTO FTSKeywords (TagId, Keyword) SELECT t.TagId, t.Keyword FROM Tags t;";
@@ -476,7 +477,7 @@ namespace Damselfly.Core.DBAbstractions
             string sql = $"{delete} {insertTags} {insertPeople} {insertImages}";
 
             Logging.LogVerbose("Rebuilding Free Text Index.");
-            Database.ExecuteSqlRaw(sql);
+            await Database.ExecuteSqlRawAsync(sql);
             Logging.Log("Full-text search index rebuilt.");
         }
 

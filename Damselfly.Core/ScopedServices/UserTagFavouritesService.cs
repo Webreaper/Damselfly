@@ -18,9 +18,10 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
 
     public event Action OnRecentsChanged;
 
-    public async Task<ICollection<string>> GetRecentTags()
+    public Task<ICollection<string>> GetRecentTags()
     {
-        return recentTags;
+        ICollection<string> result = recentTags;
+        return Task.FromResult(result);
     }
 
     public UserTagRecentsService(ExifService exifService, IConfigService configService)

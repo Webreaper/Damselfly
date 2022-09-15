@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models.APIModels;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Core.Services;
-using Damselfly.Core.Utils;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,11 +13,12 @@ namespace Damselfly.Core.ScopedServices;
 
 public class UserConfigService : BaseConfigService, IDisposable
 {
-    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IUserService _userService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public UserConfigService(IUserService userService, ILogger<IConfigService> logger) : base(logger)
+    public UserConfigService(IUserService userService, IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base(logger)
     {
+        _scopeFactory = scopeFactory;
         _userService = userService;
         _userService.OnUserIdChanged += UserChanged;
 

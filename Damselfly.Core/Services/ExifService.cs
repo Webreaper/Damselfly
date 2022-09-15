@@ -39,9 +39,10 @@ public class ExifService : IProcessJobFactory, ITagService
     public event Action OnFavouritesChanged;
     public event Action<ICollection<string>> OnUserTagsAdded;
 
-    public async Task<ICollection<Tag>> GetFavouriteTags()
+    public Task<ICollection<Tag>> GetFavouriteTags()
     {
-        return faveTags;
+        ICollection<Tag> result = faveTags;
+        return Task.FromResult(result);
     }
 
     private void NotifyFavouritesChanged()

@@ -42,11 +42,11 @@ public class SystemSettingsService : ISystemSettingsService
         _logger = logger;
     }
 
-    public async Task<SystemConfigSettings> GetSystemSettings()
+    public Task<SystemConfigSettings> GetSystemSettings()
     {
         var settings = new SystemConfigSettings();
         settings.Load(_configService);
-        return settings;
+        return Task.FromResult( settings );
     }
 
     public async Task SaveSystemSettings(SystemConfigSettings settings)

@@ -29,7 +29,7 @@ public class BasketController : ControllerBase
     [HttpDelete("/api/basket/{basketId}")]
     public async Task DeleteBasket(int basketId)
     {
-        _service.Delete(basketId);
+        await _service.Delete(basketId);
     }
 
     [HttpPost("/api/basket")]

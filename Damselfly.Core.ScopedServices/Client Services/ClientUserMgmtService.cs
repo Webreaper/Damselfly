@@ -7,27 +7,23 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Components.Authorization;
-using Damselfly.Core.Utils;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.DbModels.Authentication;
-using System.Data;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class ClientUserMgmtService : IUserMgmtService
 {
     private readonly RestClient httpClient;
+    private readonly IConfigService _configService;
 
-    public ClientUserMgmtService(RestClient client)
+    public ClientUserMgmtService(RestClient client, IConfigService configService)
     {
         httpClient = client;
+        _configService = configService;
     }
 
-    // WASM: TODO
-    public bool RolesEnabled { get { return true; } }
+    public bool RolesEnabled { get { return _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, ConfigSettings.DefaultEnableRolesAndAuth); } }
 
     // WASM: should this be here?
     public bool AllowPublicRegistration => true;
