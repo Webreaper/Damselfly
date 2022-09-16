@@ -46,9 +46,9 @@
                 &nbsp; &nbsp;
 
                 <ToolbarButton IconStyle="fa-search-minus" OnClickCallback="@ZoomOut" Enabled="@CanZoomOut" title="Zoom Out" />
-                <input type="range" min="1" max="4" step="0.1" @bind-value="ZoomRange" @bind-value:event="oninput" title="Zoom Level" class="zoom-slider" />
+                <input type="range" min="1" max="4" step="0.1" @bind-value="ZoomRange" @bind-value:event="oninput" title="Zoom Level" class="zoom-slider" disabled="@ZoomDisabled"/>
                 <ToolbarButton IconStyle="fa-search-plus" OnClickCallback="@ZoomIn" Enabled="@CanZoomIn" title="Zoom In" />
-                <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" />
+                <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" Enabled="@(!ZoomDisabled)" />
             </div>
             <div class="damselfly-imagetitle" title="@CurrentImage.FullPath">
                 <h4>
@@ -90,8 +90,9 @@
     private async Task ZoomOut() => await theImagePreview?.ZoomOut();
     private async Task ResetZoom() => await theImagePreview?.ResetZoom();
     private double ZoomRange { get { return theImagePreview == null ? 0 : theImagePreview.ZoomRangeValue; } set { if (theImagePreview != null) theImagePreview.ZoomRangeValue = value; } }
-    private bool CanZoomIn => ZoomRange < 5.0;
-    private bool CanZoomOut => ZoomRange > 1.0;
+    private bool CanZoomIn => ZoomRange < 5.0 && !ZoomDisabled;
+    private bool CanZoomOut => ZoomRange > 1.0 && !ZoomDisabled;
+    private bool ZoomDisabled => ShowObjects;
 
     protected override void OnInitialized()
     {

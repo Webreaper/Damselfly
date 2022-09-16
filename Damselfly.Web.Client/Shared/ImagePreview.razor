@@ -18,19 +18,19 @@ of the visible image is updated which should update it instantly.
     <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
 
-        <Panzoom  @ref="_panzoom" WheelMode="WheelMode.ZoomWithWheel" PanzoomOptions="@PanZoomOptions">
-            <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
-        </Panzoom>
-
         <div class="objects-box" id="objectBox">
-            @if( ShowObjects )
+            @if (ShowObjects)
             {
-                @foreach( var obj in Objects )
+                @foreach (var obj in Objects)
                 {
-                    <AIObject theObject="@obj"/>
+                    <AIObject theObject="@obj" />
                 }
             }
         </div>
+
+        <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
+            <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
+        </Panzoom>
     </div>
 </div>
 
@@ -65,15 +65,21 @@ of the visible image is updated which should update it instantly.
 
     private int ZoomLevel { get; set; } = 400;
     private string ImgKey => $"prev{theImage.ImageId}";
-    private string ZoomKey => $"zoom{theImage.ImageId}";
     private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
 
+    // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
+    private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
+
     private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
     {
-        MinScale = 1, Step = 0.2, PanOnlyWhenZoomed = true, MaxScale = 5,
-        //Contain = Contain.Outside
+        MinScale = 1,
+        Step = 0.2,
+        PanOnlyWhenZoomed = true,
+        MaxScale = 5,
+        Cursor = Cursor.AllScroll,
+        Contain = Contain.Outside
     };
 
     private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
@@ -167,6 +173,9 @@ of the visible image is updated which should update it instantly.
     {
         if( newState == showObjects )
             return;
+
+        if (ZoomLevel != 1.0)
+            _ = ResetZoom();
 
         showObjects = newState;
         userConfigService.SetForUser(ConfigSettings.ShowObjects, showObjects.ToString());
