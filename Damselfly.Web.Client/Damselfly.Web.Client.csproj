@@ -33,6 +33,7 @@
         <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
         <PackageReference Include="Serilog.Sinks.BrowserHttp" Version="1.0.0-dev-00032" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.1-dev-10301" />
+        <PackageReference Include="BlazorPanzoom" Version="0.2.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -69,5 +70,6 @@
         <None Remove="Services\" />
         <None Remove="Serilog.Sinks.BrowserHttp" />
         <None Remove="Serilog.Extensions.Logging" />
+        <None Remove="BlazorPanzoom" />
     </ItemGroup>
 </Project>

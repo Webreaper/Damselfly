@@ -26,24 +26,29 @@
                 <NavBack/>
             </div>
             <div class="damselfly-imagebuttons">
-                <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image"/>
-                <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@ZoomEnabled" title="Toggle Zoom"/>
-                <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces"/>
+                <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image" />
+                <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces" />
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                    <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image"/>
+                    <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
                 </AuthorizeView>
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata"/>
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
                 </AuthorizeView>
-                <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
-                window.open(
-                '@FaceBookShareUrl',
-                'facebook-share-dialog',
-                'width=626,height=436');
-                return false;" />
-                <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
+                <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image" />
 
-                <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image"/>
+                <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
+    window.open(
+    '@FaceBookShareUrl',
+    'facebook-share-dialog',
+    'width=626,height=436');
+    return false;" />
+    <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
+                &nbsp;
+
+                <ToolbarButton IconStyle="fa-search-plus" OnClickCallback="@ZoomIn" Enabled="@CanZoomIn" title="Zoom In" />
+                <ToolbarButton IconStyle="fa-search-minus" OnClickCallback="@ZoomOut" Enabled="@CanZoomOut" title="Zoom Out" />
+                <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" />
+                <input type="range" min="1" max="4" step="0.1" @bind-value="ZoomRange" @bind-value:event="oninput" style="margin-left:5px" />
             </div>
             <div class="damselfly-imagetitle" title="@CurrentImage.FullPath">
                 <h4>
@@ -82,6 +87,13 @@
     private string PrevImageIDUrl => $"/image/{prevImage}";
     private string NextImageIDUrl => $"/image/{nextImage}";
 
+    private async Task ZoomIn() => await theImagePreview?.ZoomIn();
+    private async Task ZoomOut() => await theImagePreview?.ZoomOut();
+    private async Task ResetZoom() => await theImagePreview?.ResetZoom();
+    private double ZoomRange { get { return theImagePreview == null ? 0 : theImagePreview.ZoomRangeValue; } set { if (theImagePreview != null) theImagePreview.ZoomRangeValue = value; } }
+    private bool CanZoomIn => ZoomRange < 5.0;
+    private bool CanZoomOut => ZoomRange > 1.0;
+
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -110,8 +122,8 @@
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowImageProps = true, ShowTags = true, ShowMap = true });
 
-    //this.JsHelper = new CropJsHelper(this);
-    //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
+            //this.JsHelper = new CropJsHelper(this);
+            //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
 
             await SetUpNavigation();
 

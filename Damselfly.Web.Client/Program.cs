@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using BlazorPanzoom;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -49,6 +50,7 @@ public class Program
         builder.Services.AddMudServices();
         builder.Services.AddSyncfusionBlazor(options => { options.IgnoreScriptIsolation = true; });
         builder.Services.AddBlazoredLocalStorage();
+        builder.Services.AddBlazorPanzoomServices();
 
         builder.Services.AddScoped<ContextMenuService>();
         builder.Services.AddSingleton<RestClient>();

@@ -19,14 +19,14 @@
 }
 else
 {
-    <div class="grid-image" @ondblclick="NavigateToImage">
-        @if( !string.IsNullOrEmpty(ImageUrl) )
-        {
+<div class="grid-image" @ondblclick="NavigateToImage">
+    @if (!string.IsNullOrEmpty(ImageUrl))
+    {
             <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
                  @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
-        }
+    }
     </div>
     @if( DisplayFileName )
     {

@@ -21,7 +21,9 @@ of the visible image is updated which should update it instantly.
         {
             <div @key="ZoomKey" class="img-zoom-result" id="zoomPane"/>
         }
-        <img @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill"/>
+        <Panzoom  @ref="_panzoom" WheelMode="WheelMode.ZoomWithWheel" PanzoomOptions="@PanZoomOptions">
+            <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
+        </Panzoom>
         <div class="objects-box" id="objectBox">
             @if( ShowObjects )
             {
@@ -68,6 +70,8 @@ of the visible image is updated which should update it instantly.
     private bool zoomEnabled;
     private Image theImage;
     private LocalFileExporter FileExporter;
+    private double _rangeValue = 1.0;
+    private Panzoom _panzoom;
 
     private int ZoomLevel { get; set; } = 400;
     private string ImgKey => $"prev{theImage.ImageId}";
@@ -77,6 +81,11 @@ of the visible image is updated which should update it instantly.
     private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
     private string ImageUrlZoom => GetZoomUrl(theImage);
 
+    private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
+    {
+        MinScale = 1, Step = 0.2, PanOnlyWhenZoomed = true, MaxScale = 5
+    };
+
     private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
 
     private IList<ImageObject> Objects
@@ -85,8 +94,8 @@ of the visible image is updated which should update it instantly.
         {
             var objects = theImage?.ImageObjects ?? new List<ImageObject>();
 
-    // Sort objects first, then faces, and largest first, so that smaller
-    // objects will appear on top, so they can be easily accessed.
+            // Sort objects first, then faces, and largest first, so that smaller
+            // objects will appear on top, so they can be easily accessed.
             return objects.OrderBy(x => x.IsFace ? 2 : 1)
                 .ThenByDescending(x => x.RectWidth * x.RectHeight)
                 .ToList();
@@ -112,7 +121,7 @@ of the visible image is updated which should update it instantly.
         {
             return $"/rawimage/{theImage.ImageId}";
         }
-    // Browser can't render it, so return the JPG thumbnail
+        // Browser can't render it, so return the JPG thumbnail
         return theImage.ThumbUrl(ThumbSize.ExtraLarge);
     }
 
@@ -215,7 +224,7 @@ of the visible image is updated which should update it instantly.
 
             if( zoomEnabled && HiResImageLoaded )
             {
-                await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
+                //await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
             }
         }
     }
@@ -276,8 +285,8 @@ of the visible image is updated which should update it instantly.
 
         DoObjectBox();
 
-    // For when we want to do region selection
-    //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
+        // For when we want to do region selection
+        //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
     }
 
     void OnKeyDown(KeyboardEventArgs e)
@@ -305,5 +314,44 @@ of the visible image is updated which should update it instantly.
                 statusService.UpdateStatus($"Zoom level set to {ZoomLevel}%");
             }
         }
+    }
+
+
+
+    public double ZoomRangeValue
+    {
+        get => _rangeValue;
+        set
+        {
+            _rangeValue = value;
+            _panzoom.ZoomAsync(value);
+        }
+    }
+
+    public async Task ZoomIn()
+    {
+        await _panzoom.ZoomInAsync();
+        await UpdateSlider();
+    }
+
+    public async Task ZoomOut()
+    {
+        if( ZoomRangeValue > 1.0 )
+        {
+            await _panzoom.ZoomOutAsync();
+            await UpdateSlider();
+        }
+    }
+
+    public async Task ResetZoom()
+    {
+        await _panzoom.ResetAsync();
+        await UpdateSlider();
+    }
+
+    public async Task UpdateSlider()
+    {
+        var scale = await _panzoom.GetScaleAsync();
+        _rangeValue = scale;
     }
 }
