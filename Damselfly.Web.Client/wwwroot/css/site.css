@@ -2053,6 +2053,11 @@ hr.separator {
 
 #blazor-error-ui p {
     font-size: 1.2em;
-    border-radius: 10px;
+    border-radius: 10px;    
     color: var(--primary);
+}
+
+.zoom-slider {
+    color: var( --statusbar-gradstart);
+    transition: opacity .2s;
 }
