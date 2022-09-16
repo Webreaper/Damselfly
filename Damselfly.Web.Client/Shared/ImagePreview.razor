@@ -15,15 +15,13 @@ of the visible image is updated which should update it instantly.
 <LocalFileExporter @ref="FileExporter"/>
 
 <div class="damselfly-imagepreview">
-    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" @onkeydown="OnKeyDown"
+    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
-        @if( ZoomEnabled )
-        {
-            <div @key="ZoomKey" class="img-zoom-result" id="zoomPane"/>
-        }
+
         <Panzoom  @ref="_panzoom" WheelMode="WheelMode.ZoomWithWheel" PanzoomOptions="@PanZoomOptions">
             <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
         </Panzoom>
+
         <div class="objects-box" id="objectBox">
             @if( ShowObjects )
             {
@@ -56,18 +54,10 @@ of the visible image is updated which should update it instantly.
         set => SetShowObjects(value);
     }
 
-    [Parameter]
-    public bool ZoomEnabled
-    {
-        get => zoomEnabled;
-        set => SetZoomEnabled(value);
-    }
-
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
     private bool showObjects;
-    private bool zoomEnabled;
     private Image theImage;
     private LocalFileExporter FileExporter;
     private double _rangeValue = 1.0;
@@ -79,11 +69,10 @@ of the visible image is updated which should update it instantly.
     private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
-    private string ImageUrlZoom => GetZoomUrl(theImage);
 
     private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
     {
-        MinScale = 1, Step = 0.2, PanOnlyWhenZoomed = true, MaxScale = 5
+        MinScale = 1, Step = 0.2, PanOnlyWhenZoomed = true, MaxScale = 5, Contain = Contain.Outside
     };
 
     private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
@@ -104,35 +93,14 @@ of the visible image is updated which should update it instantly.
 
     private bool HiResImageLoaded { get; set; }
     private string ShowObjectsMenuText => ShowObjects ? "Hide Objects/Faces" : "Show Objects/Faces";
-    private string ShowZoomMenuText => ZoomEnabled ? "Hide Zoom" : "Show Zoom";
-
-    /// <summary>
-    ///     Gets the URL for the zoomed image. If the original image can be rendered in the browser
-    ///     we just serve that. But if it's a file format that can't be rendered, we'll serve the
-    ///     XL thumbnail.
-    /// </summary>
-    /// <param name="image"></param>
-    /// <returns></returns>
-    private string GetZoomUrl(Image image)
-    {
-        var ext = Path.GetExtension(image.FileName);
-
-        if( browserRenderedExtensions.Any(x => x.Equals(ext, StringComparison.OrdinalIgnoreCase)) )
-        {
-            return $"/rawimage/{theImage.ImageId}";
-        }
-        // Browser can't render it, so return the JPG thumbnail
-        return theImage.ThumbUrl(ThumbSize.ExtraLarge);
-    }
 
     void ShowContextMenu(MouseEventArgs args)
     {
         var menuItems = new List<ContextMenuItem>
         {
             new() { Text = ShowObjectsMenuText, Value = 0 },
-            new() { Text = ShowZoomMenuText, Value = 1 },
-            new() { Text = "Download", Value = 2 },
-            new() { Text = "Refresh", Value = 4 }
+            new() { Text = "Download", Value = 1 },
+            new() { Text = "Refresh", Value = 2 }
         };
 
         if( FileExporter.IsDesktopHosted )
@@ -147,16 +115,13 @@ of the visible image is updated which should update it instantly.
                     SetShowObjects(!ShowObjects);
                     break;
                 case 1:
-                    SetZoomEnabled(!ZoomEnabled);
+                    await DownloadImage();
                     break;
                 case 2:
-                    await DownloadImage();
+                    await ShowRescanDialog();
                     break;
                 case 3:
                     await FileExporter.ExportImagesToLocalFilesystem(new List<Image> { theImage });
-                    break;
-                case 4:
-                    await ShowRescanDialog();
                     break;
             }
         });
@@ -197,11 +162,6 @@ of the visible image is updated which should update it instantly.
         SetShowObjects(!showObjects);
     }
 
-    public void ToggleZoomEnabled()
-    {
-        SetZoomEnabled(!zoomEnabled);
-    }
-
     private void SetShowObjects(bool newState)
     {
         if( newState == showObjects )
@@ -221,29 +181,6 @@ of the visible image is updated which should update it instantly.
         {
             if( showObjects )
                 DoObjectBox();
-
-            if( zoomEnabled && HiResImageLoaded )
-            {
-                //await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
-            }
-        }
-    }
-
-    private void SetZoomEnabled(bool newState)
-    {
-        if( newState != zoomEnabled )
-        {
-            zoomEnabled = newState;
-            userConfigService.SetForUser(ConfigSettings.ShowZoom, zoomEnabled.ToString());
-            StateHasChanged();
-
-            if( zoomEnabled )
-            {
-                _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
-
-                if( showObjects )
-                    DoObjectBox();
-            }
         }
     }
 
@@ -265,7 +202,6 @@ of the visible image is updated which should update it instantly.
     protected override void OnInitialized()
     {
         ZoomLevel = userConfigService.GetInt(ConfigSettings.ZoomLevel, 400);
-        ZoomEnabled = userConfigService.GetBool(ConfigSettings.ShowZoom, true);
         ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
 
         base.OnInitialized();
@@ -277,9 +213,6 @@ of the visible image is updated which should update it instantly.
 
         HiResImageLoaded = true;
 
-        if( zoomEnabled )
-            await JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
-
         statusService.UpdateStatus("Hi-res image loaded.");
         StateHasChanged();
 
@@ -288,35 +221,6 @@ of the visible image is updated which should update it instantly.
         // For when we want to do region selection
         //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
     }
-
-    void OnKeyDown(KeyboardEventArgs e)
-    {
-        if( zoomEnabled )
-        {
-            var zoomChanged = false;
-            if( e.Key == "ArrowUp" )
-            {
-                ZoomLevel = Math.Min(ZoomLevel + 50, 400);
-                zoomChanged = true;
-            }
-            else if( e.Key == "ArrowDown" )
-            {
-                ZoomLevel = Math.Max(ZoomLevel - 50, 150);
-                zoomChanged = true;
-            }
-
-            if( zoomChanged )
-            {
-                userConfigService.SetForUser(ConfigSettings.ZoomLevel, ZoomLevel.ToString());
-                _ = JsRuntime.InvokeAsync<string>("imageZoom", "theImage", ImageUrlZoom, "zoomPane", ZoomLevel);
-
-                StateHasChanged();
-                statusService.UpdateStatus($"Zoom level set to {ZoomLevel}%");
-            }
-        }
-    }
-
-
 
     public double ZoomRangeValue
     {

@@ -71,7 +71,6 @@
     private int prevImage;
     private ElementReference ImageView;
 
-    private bool ZoomEnabled => theImagePreview == null ? false : theImagePreview.ZoomEnabled;
     private bool ShowObjects => theImagePreview == null ? false : theImagePreview.ShowObjects;
 
     private ImagePreview theImagePreview;
@@ -134,11 +133,6 @@
     private void ToggleShowObjects()
     {
         theImagePreview.ToggleShowObjects();
-    }
-
-    private void ToggleZoom()
-    {
-        theImagePreview.ToggleZoomEnabled();
     }
 
     protected void ReplaceUrl(ProgressEventArgs args)

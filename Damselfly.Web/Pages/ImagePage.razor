@@ -29,7 +29,6 @@
             </div>
             <div class="damselfly-imagebuttons">
                 <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image"/>
-                <ToolbarButton IconStyle="fa-search" OnClickCallback="@ToggleZoom" Selected="@ZoomEnabled" title="Toggle Zoom"/>
                 <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces"/>
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
                     <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image"/>
@@ -68,7 +67,6 @@
     private int prevImage;
     private ElementReference ImageView;
 
-    private bool ZoomEnabled => theImagePreview == null ? false : theImagePreview.ZoomEnabled;
     private bool ShowObjects => theImagePreview == null ? false : theImagePreview.ShowObjects;
 
     private ImagePreview theImagePreview;
@@ -124,11 +122,6 @@
     private void ToggleShowObjects()
     {
         theImagePreview.ToggleShowObjects();
-    }
-
-    private void ToggleZoom()
-    {
-        theImagePreview.ToggleZoomEnabled();
     }
 
     protected void ReplaceUrl(ProgressEventArgs args)
