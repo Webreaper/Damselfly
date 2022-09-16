@@ -2058,6 +2058,5 @@ hr.separator {
 }
 
 .zoom-slider {
-    color: var( --statusbar-gradstart);
-    transition: opacity .2s;
+    accent-color: var(--folder-entry-text-selected);
 }
