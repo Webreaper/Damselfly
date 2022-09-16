@@ -72,7 +72,8 @@ of the visible image is updated which should update it instantly.
 
     private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
     {
-        MinScale = 1, Step = 0.2, PanOnlyWhenZoomed = true, MaxScale = 5, Contain = Contain.Outside
+        MinScale = 1, Step = 0.2, PanOnlyWhenZoomed = true, MaxScale = 5,
+        //Contain = Contain.Outside
     };
 
     private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
