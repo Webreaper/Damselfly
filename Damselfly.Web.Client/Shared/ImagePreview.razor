@@ -62,8 +62,8 @@ of the visible image is updated which should update it instantly.
     private LocalFileExporter FileExporter;
     private double _rangeValue = 1.0;
     private Panzoom _panzoom;
+    public double ZoomLevel => _rangeValue;
 
-    public int ZoomLevel { get; set; } = 400;
     private string ImgKey => $"prev{theImage.ImageId}";
     private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
@@ -174,7 +174,7 @@ of the visible image is updated which should update it instantly.
         if( newState == showObjects )
             return;
 
-        if (ZoomLevel != 1.0)
+        if (ZoomRangeValue != 1.0)
             _ = ResetZoom();
 
         showObjects = newState;
@@ -211,7 +211,6 @@ of the visible image is updated which should update it instantly.
 
     protected override void OnInitialized()
     {
-        ZoomLevel = userConfigService.GetInt(ConfigSettings.ZoomLevel, 400);
         ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
 
         base.OnInitialized();

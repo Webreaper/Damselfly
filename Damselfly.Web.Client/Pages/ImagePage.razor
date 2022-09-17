@@ -212,7 +212,7 @@
         }
         else if (e.Key == "Escape")
         {
-            if (theImagePreview.ZoomLevel > 1.0)
+            if (theImagePreview.ZoomRangeValue > 2.0)
                 await theImagePreview.ResetZoom();
             else
                 NavigationManager.NavigateTo("/");

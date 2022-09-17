@@ -9,7 +9,6 @@ public class ConfigSettings
     public const string LoadedImages = "LoadedImages";
     public const string Theme = "Theme";
     public const string SimilarityThreshold = "SimilarityThreshold";
-    public const string ZoomLevel = "ZoomLevel";
     public const string ShowObjects = "ShowObjects";
     public const string SelectedBasketId = "SelectedBasketId";
     public const string SideBarWidth = "SideBarWidth";
