@@ -59,12 +59,14 @@ public class ConfigService : BaseConfigService, IConfigService
 
             // Combine them together.
             return await userSettings.Concat(globalSettings)
+                .OrderBy(x => x.Name)
                 .ToListAsync();
         }
 
         // No user, so just return the global settings.
         return await db.ConfigSettings
             .Where(x => x.UserId == 0 || x.UserId == null)
+            .OrderBy( x => x.Name )
             .ToListAsync();
     }
 

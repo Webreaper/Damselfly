@@ -15,7 +15,7 @@ of the visible image is updated which should update it instantly.
 <LocalFileExporter @ref="FileExporter"/>
 
 <div class="damselfly-imagepreview">
-    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
+    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" 
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
 
         <div class="objects-box" id="objectBox">
@@ -63,7 +63,7 @@ of the visible image is updated which should update it instantly.
     private double _rangeValue = 1.0;
     private Panzoom _panzoom;
 
-    private int ZoomLevel { get; set; } = 400;
+    public int ZoomLevel { get; set; } = 400;
     private string ImgKey => $"prev{theImage.ImageId}";
     private string ImgPreviewKey => $"{theImage.ImageId}";
     private string ImageUrl { get; set; }
@@ -75,9 +75,9 @@ of the visible image is updated which should update it instantly.
     private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
     {
         MinScale = 1,
+        MaxScale = 8,
         Step = 0.2,
         PanOnlyWhenZoomed = true,
-        MaxScale = 5,
         Cursor = Cursor.AllScroll,
         //Contain = Contain.Outside
     };

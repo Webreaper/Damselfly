@@ -110,8 +110,8 @@
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowImageProps = true, ShowTags = true, ShowMap = true });
 
-    //this.JsHelper = new CropJsHelper(this);
-    //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
+            //this.JsHelper = new CropJsHelper(this);
+            //await JsRuntime.InvokeAsync<string>("doImageCrop", "theImage", DotNetObjectReference.Create(JsHelper));
 
             await SetUpNavigation();
 
@@ -187,19 +187,30 @@
     }
 
 
-    void OnKeyDown(KeyboardEventArgs e)
+    async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if( e.Key == "ArrowRight" )
+        if (e.Key == "ArrowRight")
         {
             Next();
         }
-        else if( e.Key == "ArrowLeft" )
+        else if (e.Key == "ArrowLeft")
         {
             Prev();
         }
-        else if( e.Key == "Escape" )
+        else if (e.Key == "Escape")
         {
-            NavigationManager.NavigateTo("/");
+            if(theImagePreview.ZoomLevel > 1.0)
+                await theImagePreview.ResetZoom();
+            else
+                NavigationManager.NavigateTo("/");
+        }
+        else if (e.Key == "ArrowUp")
+        {
+            await theImagePreview.ZoomIn();
+        }
+        else if (e.Key == "ArrowDown")
+        {
+            await theImagePreview.ZoomOut();
         }
     }
 

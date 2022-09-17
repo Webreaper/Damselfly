@@ -1,6 +1,8 @@
 ﻿@page "/image"
 @page "/image/{ImageID}"
 
+@using Damselfly.Core.Constants
+
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ViewDataService ViewDataService
@@ -46,7 +48,7 @@
                 &nbsp; &nbsp;
 
                 <ToolbarButton IconStyle="fa-search-minus" OnClickCallback="@ZoomOut" Enabled="@CanZoomOut" title="Zoom Out" />
-                <input type="range" min="1" max="4" step="0.1" @bind-value="ZoomRange" @bind-value:event="oninput" title="Zoom Level" class="zoom-slider" disabled="@ZoomDisabled"/>
+                <input type="range" min="1" max="8" step="0.2" @bind-value="ZoomRange" @bind-value:event="oninput" title="Zoom Level" class="zoom-slider" disabled="@ZoomDisabled"/>
                 <ToolbarButton IconStyle="fa-search-plus" OnClickCallback="@ZoomIn" Enabled="@CanZoomIn" title="Zoom In" />
                 <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" Enabled="@(!ZoomDisabled)" />
             </div>
@@ -198,21 +200,30 @@
         }
     }
 
-
-    void OnKeyDown(KeyboardEventArgs e)
+    async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if( e.Key == "ArrowRight" )
+        if (e.Key == "ArrowRight")
         {
             Next();
         }
-        else if( e.Key == "ArrowLeft" )
+        else if (e.Key == "ArrowLeft")
         {
             Prev();
         }
-        else if( e.Key == "Escape" )
+        else if (e.Key == "Escape")
         {
-            NavigationManager.NavigateTo("/");
+            if (theImagePreview.ZoomLevel > 1.0)
+                await theImagePreview.ResetZoom();
+            else
+                NavigationManager.NavigateTo("/");
+        }
+        else if (e.Key == "ArrowUp")
+        {
+            await theImagePreview.ZoomIn();
+        }
+        else if (e.Key == "ArrowDown")
+        {
+            await theImagePreview.ZoomOut();
         }
     }
-
 }
