@@ -55,6 +55,12 @@
 
     private async Task ApplyQueryParams()
     {
+        // TODO: This is a hack to avoid the LoadMoreData call triggered by the Query changing, 
+        // from being called at the same time as the one in the AfterRenderAsync call in ImageGrid
+        // which means we get a re-entrancy issue, and the second LoadData from the query changed
+        // event is skipped.
+        await Task.Delay(200);
+
         if( !string.IsNullOrEmpty(S) )
         {
             searchService.SearchText = S;
@@ -73,7 +79,7 @@
 
         if( PersonId != 0 )
         {
-    // WASM: TODO - we can do this better
+            // WASM: TODO - we can do this better
             var people = await peopleService.GetAllPeople();
             var person = people.FirstOrDefault(x => x.PersonId == PersonId);
 
@@ -86,7 +92,7 @@
 
         if( TagId != 0 )
         {
-    // WASM: TODO - we can do this better
+            // WASM: TODO - we can do this better
             var tags = await tagService.GetAllTags();
             var tag = tags.FirstOrDefault(x => x.TagId == TagId);
 
@@ -95,7 +101,7 @@
         }
         else if( !string.IsNullOrEmpty(Tag) )
         {
-    // WASM: TODO - we can do this better
+            // WASM: TODO - we can do this better
             var tags = await tagService.GetAllTags();
             var tag = tags.FirstOrDefault(x => x.Keyword.Equals(Tag, StringComparison.OrdinalIgnoreCase));
 
@@ -103,8 +109,8 @@
                 searchService.Tag = tag;
         }
 
-    // Don't need this yet
-    //this.UpdateQueryString(navigationManager);
+        // Don't need this yet
+        //this.UpdateQueryString(navigationManager);
     }
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -118,7 +124,7 @@
     {
         base.OnInitialized();
 
-        viewdataService.SetSideBarState(new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true });
+        viewdataService.SetSideBarState( new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true } );
 
         navigationManager.LocationChanged += HandleLocationChanged;
     }
@@ -128,7 +134,7 @@
         this.SetParametersFromQueryString(navigationManager);
         StateHasChanged();
 
-    //_ = ApplyQueryParams();
+        _ = ApplyQueryParams();
     }
 
     public void Dispose()
@@ -141,6 +147,6 @@
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public void GetUpdateState(string clientVersion)
     {
-    //Logging.Log($"Checking for update: {clientVersion}");
+        //Logging.Log($"Checking for update: {clientVersion}");
     }
 }

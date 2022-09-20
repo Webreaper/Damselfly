@@ -112,7 +112,8 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         var success = false;
         try
         {
-            await this.BulkUpdateAsync(itemsToSave);
+            var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 500 };
+            await this.BulkUpdateAsync(itemsToSave, bulkConfig);
 
             success = true;
         }
@@ -144,11 +145,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         var success = false;
         try
         {
-            collection.RemoveRange(itemsToDelete);
-            await SaveChangesAsync();
-
-            // TODO: Replace when EFCore 7 has this
-            // await db.BulkDeleteAsync(itemsToDelete);
+            await this.BulkDeleteAsync(itemsToDelete);
 
             success = true;
         }

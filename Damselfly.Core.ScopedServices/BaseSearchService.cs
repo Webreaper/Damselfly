@@ -371,10 +371,10 @@ public abstract class BaseSearchService
     {
         _logger.LogInformation($"ImageSearch: Filter changed: {Query}");
 
-        OnSearchChanged?.Invoke();
+        OnSearchQueryChanged?.Invoke();
     }
 
-    public event Action OnSearchChanged;
+    public event Action OnSearchQueryChanged;
 
     public void Reset()
     {

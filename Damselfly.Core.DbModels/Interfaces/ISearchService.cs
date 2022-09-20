@@ -33,7 +33,7 @@ public interface ISearchService
     OrientationType? Orientation { get; set; }
 
     string SearchBreadcrumbs { get; }
-    event Action OnSearchChanged;
+    event Action OnSearchQueryChanged;
     void SetDateRange(DateTime? min, DateTime? max);
 
     void Refresh();

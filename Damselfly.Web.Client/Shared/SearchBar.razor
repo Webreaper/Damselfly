@@ -137,13 +137,13 @@
     {
         if( firstRender )
         {
-            searchService.OnSearchChanged += SearchQueryChanged;
+            searchService.OnSearchQueryChanged += SearchQueryChanged;
         }
     }
 
     public void Dispose()
     {
-        searchService.OnSearchChanged -= SearchQueryChanged;
+        searchService.OnSearchQueryChanged -= SearchQueryChanged;
     }
 
     protected void SearchQueryChanged()

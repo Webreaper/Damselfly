@@ -80,7 +80,7 @@
 
 @code {
     private LocalFileExporter FileExporter;
-        const int imagesPerPage = 250;
+    const int imagesPerPage = 250;
     private bool NoImagesSelected => !selectionService.Selection.Any();
     bool IsLoading { get; set; } = false;
     bool endOfImages = false;
@@ -126,7 +126,7 @@
     {
         get
         {
-    // TODO: Order by
+            // TODO: Order by
             if( searchService.Grouping == GroupingType.Folder )
             {
                 var result = gridImages.GroupBy(x => x.Folder.Path);
@@ -159,14 +159,14 @@
     private void ChangeGroupType(GroupingType newType)
     {
         searchService.Grouping = newType;
-    //Logging.Log($"Grouping changed to {searchService.Grouping}");
+        // Logging.Log($"Grouping changed to {searchService.Grouping}");
         StateHasChanged();
     }
 
     private void ChangeSortOrder(SortOrderType newType)
     {
         searchService.SortOrder = newType;
-    //Logging.Log($"Sort order changed to {searchService.SortOrder}");
+        // Logging.Log($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
 
@@ -205,24 +205,24 @@
     {
         var moreDataAvailable = searchService.SearchResults.Count() == imagesPerPage;
         await AddImagesToGrid(searchService.SearchResults, moreDataAvailable);
+
+        selectionService.OnSelectionChanged += SelectedImagesChanged;
+        searchService.OnSearchQueryChanged += SearchQueryChanged;
+        basketService.OnBasketChanged += BasketChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if( firstRender )
         {
-            selectionService.OnSelectionChanged += SelectedImagesChanged;
-            searchService.OnSearchChanged += SearchQueryChanged;
-            FileExporter.OnChange += StateHasChanged;
-            basketService.OnBasketChanged += BasketChanged;
-            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
-
             var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
-    //Logging.Log($"Loading {initialLoadCount} images into grid.");
             await LoadData(initialLoadCount);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
+
+            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
+            FileExporter.OnChange += StateHasChanged;
         }
     }
 
@@ -234,7 +234,7 @@
     public void Dispose()
     {
         selectionService.OnSelectionChanged -= SelectedImagesChanged;
-        searchService.OnSearchChanged -= SearchQueryChanged;
+        searchService.OnSearchQueryChanged -= SearchQueryChanged;
         FileExporter.OnChange -= StateHasChanged;
         basketService.OnBasketChanged -= BasketChanged;
         ScrollMonitor.OnScrollPositionChanged -= SaveScrollState;
@@ -251,8 +251,11 @@
         gridImages.Clear();
         endOfImages = false;
 
-        _ = InvokeAsync(StateHasChanged);
-        _ = LoadData(imagesPerPage);
+        _ = InvokeAsync( async () =>
+        {
+            StateHasChanged();
+            await LoadData(imagesPerPage);
+        });
     }
 
     private void SaveScrollState(int scrollTop)
@@ -279,12 +282,12 @@
 
             logger.LogInformation("ImageSearch: Calling LoadData...");
 
-    // Now, see if we need to load any more
+            // Now, see if we need to load any more
             var response = await searchService.GetQueryImagesAsync(gridImages.Count(), newImagesToLoad);
 
             await AddImagesToGrid(response.SearchResults, response.MoreDataAvailable);
 
-    // If we've tried to load data and there isn't any more, show the toast.
+            // If we've tried to load data and there isn't any more, show the toast.
             toastClass = endOfImages ? "show" : string.Empty;
 
             IsLoading = false;
@@ -311,7 +314,7 @@
             await InvokeAsync(StateHasChanged);
         }
 
-    // Flag the 'more' div if we loaded at least as many as we requested.
+        // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvaiable;
     }
 

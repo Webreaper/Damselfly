@@ -185,13 +185,13 @@
 
         if( firstRender )
         {
-            searchService.OnSearchChanged += OnSearchChanged;
+            searchService.OnSearchQueryChanged += OnSearchChanged;
         }
     }
 
     public void Dispose()
     {
-        searchService.OnSearchChanged -= OnSearchChanged;
+        searchService.OnSearchQueryChanged -= OnSearchChanged;
     }
 
     private void OnSearchChanged()

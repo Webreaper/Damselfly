@@ -235,7 +235,7 @@
         if( firstRender )
         {
             folderService.OnFoldersChanged += OnFoldersChanged;
-            searchService.OnSearchChanged += OnSearchChanged;
+            searchService.OnSearchQueryChanged += OnSearchChanged;
 
     // Kick off the data load
             await ProcessUpdatedFilter();
@@ -245,7 +245,7 @@
     public void Dispose()
     {
         folderService.OnFoldersChanged -= OnFoldersChanged;
-        searchService.OnSearchChanged -= OnSearchChanged;
+        searchService.OnSearchQueryChanged -= OnSearchChanged;
     }
 
     private void OnFoldersChanged()
