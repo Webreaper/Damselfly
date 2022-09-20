@@ -329,18 +329,23 @@ public class BasketService : IBasketService
             // Get the first shared
             defaultBasket = await db.Baskets
                 .Include(x => x.BasketEntries)
+                .OrderBy( x => x.Name )
                 .FirstOrDefaultAsync(x => x.UserId == null);
 
-            if ( defaultBasket == null )
+            if (defaultBasket == null)
+            {
                 // Get the first default basket
                 defaultBasket = await db.Baskets
                     .Include(x => x.BasketEntries)
                     .FirstOrDefaultAsync(x => x.Name == s_DefaultBasket);
+            }
 
             if ( defaultBasket == null )
             {
                 // Probably shouldn't ever happen, but just pick the first one
-                defaultBasket = db.Baskets.First();
+                defaultBasket = await db.Baskets
+                                    .OrderBy( x => x.Name )
+                                    .FirstAsync();
 
                 // TODO: If still null, should we create one?
                 throw new ArgumentException("No baskets - this is unexpected!");

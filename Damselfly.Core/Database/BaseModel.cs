@@ -79,7 +79,6 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         try
         {
             var bulkConfig = new BulkConfig { SetOutputIdentity = true, BatchSize = 500 };
-
             await this.BulkInsertAsync(itemsToSave, bulkConfig);
 
             success = true;
@@ -113,11 +112,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         var success = false;
         try
         {
-            collection.UpdateRange(itemsToSave);
-            await SaveChangesAsync();
-
-            // TODO: Replace when EFCore 7 has this
-            //await db.BulkUpdateAsync(itemsToSave);
+            await this.BulkUpdateAsync(itemsToSave);
 
             success = true;
         }

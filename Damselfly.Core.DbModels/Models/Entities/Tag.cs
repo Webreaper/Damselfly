@@ -18,14 +18,16 @@ public class Tag
         Classification = 1
     }
 
-    [Key] public int TagId { get; set; }
+    [Key]
+    public int TagId { get; set; }
 
-    [Required] public string Keyword { get; set; }
+    [Required]
+    public string Keyword { get; set; }
 
     public TagTypes TagType { get; set; }
     public bool Favourite { get; set; }
 
-    public DateTime TimeStamp { get; } = DateTime.UtcNow;
+    public DateTime TimeStamp { get; init; } = DateTime.UtcNow;
 
     [JsonIgnore] // This JsonIgnore prevents circular references when serializing the Image entity
     public virtual List<ImageTag> ImageTags { get; init; } = new();

@@ -717,7 +717,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             {
                 var addWatch = new Stopwatch("AddTagsInsert");
                 await db.BulkInsert(db.ImageTags, toAdd);
-                ;
+                
                 addWatch.Stop();
             }
 

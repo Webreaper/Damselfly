@@ -1,21 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <Folder Include="Migrations\"/>
+        <Folder Include="Migrations\" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj"/>
-        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0-rc.1.22426.7">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="EFCore.BulkExtensions" Version="6.5.6"/>
+        <PackageReference Include="EFCore.BulkExtensions" Version="6.5.6" />
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Microsoft.EntityFrameworkCore.Tools"/>
-        <None Remove="Z.EntityFramework.Extensions.EFCore"/>
+        <None Remove="Microsoft.EntityFrameworkCore.Tools" />
+        <None Remove="Z.EntityFramework.Extensions.EFCore" />
     </ItemGroup>
 </Project>
