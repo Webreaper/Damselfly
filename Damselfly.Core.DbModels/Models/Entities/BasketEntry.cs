@@ -10,15 +10,18 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class BasketEntry
 {
-    [Key] public int BasketEntryId { get; set; }
+    [Key]
+    public int BasketEntryId { get; set; }
 
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
 
-    [Required] public virtual Image Image { get; set; }
+    [Required]
+    public virtual Image Image { get; set; }
 
     public int ImageId { get; set; }
 
-    [Required] public virtual Basket Basket { get; set; }
+    [Required]
+    public virtual Basket Basket { get; set; }
 
     public int BasketId { get; set; }
 
