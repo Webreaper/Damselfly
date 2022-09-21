@@ -412,8 +412,8 @@ public abstract class BaseSearchService
 
     private void QueryChanged()
     {
-        NotifyQueryChanged();
         ClearSearchResults();
+        NotifyQueryChanged();
         _ = GetQueryImagesAsync();
     }
 

@@ -202,9 +202,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var moreDataAvailable = searchService.SearchResults.Count() == imagesPerPage;
-        await AddImagesToGrid(moreDataAvailable);
-
         selectionService.OnSelectionChanged += SelectedImagesChanged;
         searchService.OnSearchQueryChanged += SearchQueryChanged;
         searchService.OnSearchResultsChanged += SearchResultsChanged;
@@ -217,7 +214,10 @@
         {
             var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
-            searchService.LoadMore(initialLoadCount);
+            if (initialLoadCount > searchService.SearchResults.Count)
+                await searchService.LoadMore(initialLoadCount);
+            else
+                await AddImagesToGrid(true);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
 
@@ -250,16 +250,10 @@
     {
         logger.LogInformation("ImageSearch: Calling LoadData...");
 
-        InvokeAsync(async () =>
-        {
-            await AddImagesToGrid(response.MoreDataAvailable);
+        // If we've tried to load data and there isn't any more, show the toast.
+        toastClass = endOfImages ? "show" : string.Empty;
 
-            // If we've tried to load data and there isn't any more, show the toast.
-            toastClass = endOfImages ? "show" : string.Empty;
-
-            StateHasChanged();
-        });
-
+        _ = AddImagesToGrid(response.MoreDataAvailable);
     }
 
     protected void SearchQueryChanged()
@@ -300,11 +294,12 @@
         {
             logger.LogInformation("ImageSearch: No images to load into the grid.");
             ResultsMessage = $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
-            await InvokeAsync(StateHasChanged);
         }
 
         // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvaiable;
+
+        await InvokeAsync(StateHasChanged);
     }
 
 }

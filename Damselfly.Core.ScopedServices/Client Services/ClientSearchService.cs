@@ -28,7 +28,6 @@ public class ClientSearchService : BaseSearchService, ISearchService
         {
             if ( first < SearchResults.Count() && first + count < SearchResults.Count() )
             {
-                _logger.LogInformation("ImageSearch: => No results found.");
                 // Data already loaded. Nothing to do.
                 return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
             }
@@ -43,17 +42,12 @@ public class ClientSearchService : BaseSearchService, ISearchService
 
             if ( count == 0 )
             {
-                _logger.LogInformation("ImageSearch: => No more images needed.");
-
                 // If we have exactly the right number of results,
                 // assume there's more to come
                 return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
             }
 
             var request = new SearchRequest(Query, first, count);
-
-            _logger.LogInformation($"ImageSearch: Calling search API query for {request}");
-            //_statusService.UpdateStatus($"Searching for images: {request.Query}...");
 
             response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 
@@ -62,11 +56,6 @@ public class ClientSearchService : BaseSearchService, ISearchService
                 if ( response.SearchResults != null && response.SearchResults.Any() )
                 {
                     _searchResults.AddRange(response.SearchResults);
-                    _logger.LogInformation($"ImageSearch: => Found {response.SearchResults.Count()} results.");
-                }
-                else
-                {
-                    _logger.LogWarning("ImageSearch: NULL or empty search results returned from search API");
                 }
             }
         }

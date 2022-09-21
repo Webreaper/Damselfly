@@ -48,11 +48,6 @@
         StateHasChanged();
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        //await ApplyQueryParams();
-    }
-
     private async Task ApplyQueryParams()
     {
         if( !string.IsNullOrEmpty(S) )
