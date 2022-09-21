@@ -142,8 +142,6 @@ else
     private async Task SetBasketState(bool newState)
     {
         await basketService.SetImageBasketState(newState, new[] { CurrentImage.ImageId });
-        // WASM: TODO: Do we need this?
-        // searchService.NotifyStateChanged();
     
         // Notify the image list that the selection has changed
         StateHasChanged();
