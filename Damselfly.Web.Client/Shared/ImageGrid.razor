@@ -203,7 +203,7 @@
     protected override async Task OnInitializedAsync()
     {
         var moreDataAvailable = searchService.SearchResults.Count() == imagesPerPage;
-        await AddImagesToGrid(searchService.SearchResults, moreDataAvailable);
+        await AddImagesToGrid(moreDataAvailable);
 
         selectionService.OnSelectionChanged += SelectedImagesChanged;
         searchService.OnSearchQueryChanged += SearchQueryChanged;
@@ -252,7 +252,7 @@
 
         InvokeAsync(async () =>
         {
-            await AddImagesToGrid(response.SearchResults, response.MoreDataAvailable);
+            await AddImagesToGrid(response.MoreDataAvailable);
 
             // If we've tried to load data and there isn't any more, show the toast.
             toastClass = endOfImages ? "show" : string.Empty;
@@ -284,15 +284,16 @@
         await searchService.LoadMore();
     }
 
-    private async Task AddImagesToGrid(ICollection<int> imageIdsToAdd, bool moreDataAvaiable)
+    private async Task AddImagesToGrid(bool moreDataAvaiable)
     {
-        if( imageIdsToAdd.Any() )
+        if(searchService.SearchResults.Any() )
         {
-            ResultsMessage = $"Loading {imageIdsToAdd.Count()} images...";
+            ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
             await InvokeAsync(StateHasChanged);
 
-            var images = await imageCache.GetCachedImages(imageIdsToAdd);
+            var images = await imageCache.GetCachedImages(searchService.SearchResults);
             logger.LogInformation($"ImageSearch: Loading {images.Count()} more images into image grid.");
+            gridImages.Clear();
             gridImages.AddRange(images);
         }
         else
