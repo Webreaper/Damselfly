@@ -3,6 +3,8 @@ ARG BASE_IMAGE=webreaper/damselfly-base:latest
 FROM $BASE_IMAGE as final
 
 WORKDIR /app
+COPY /publish/Models ./Models
+COPY /publish/wwwroot/desktop ./wwwroot/desktop
 COPY /publish .
 RUN chmod +x Damselfly.Web.Server
 
