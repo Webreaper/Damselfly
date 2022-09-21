@@ -5,18 +5,23 @@
     <div class="imagefield">
         <label class="imagefield-label" title="@Tooltip">
             @FieldName:
-            @if( string.IsNullOrEmpty(Href) )
+            @if (string.IsNullOrEmpty(Href))
             {
-                @if( editing )
+                @if (editing)
                 {
-                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus"/>
+                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
                 }
                 else
                 {
-                    <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
-                    @if( Editable && allowedToEdit )
+                    @if (Editable && allowedToEdit)
                     {
-                        <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField"/>
+                        <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
+                        <i class="fas fa-edit" title="@EditTooltip" />
+                        
+                    }
+                    else
+                    {
+                        <span class="imagefield-val">@FieldValue</span>
                     }
                 }
             }

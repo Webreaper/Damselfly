@@ -76,8 +76,9 @@
                     await basketService.SwitchToBasket(selectedBasketId);
             }
             else
+            {
                 await basketService.SwitchToDefaultBasket();
-
+            }
 
             StateHasChanged();
         }
