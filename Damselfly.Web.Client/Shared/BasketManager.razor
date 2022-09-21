@@ -49,7 +49,7 @@
     {
         if( userService.RolesEnabled )
         {
-    // Shared baskets don't make sense if users and roles are disabled.
+            // Shared baskets don't make sense if users and roles are disabled.
             if( basket != null && !basket.UserId.HasValue )
             {
                 return "(shared)";
@@ -67,7 +67,7 @@
 
             await LoadBasketList();
 
-    // Restore the last-known basket
+            // Restore the last-known basket
             var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId);
 
             if( baskets.Any(x => x.BasketId == selectedBasketId) )
@@ -97,10 +97,18 @@
     {
         var watch = new Stopwatch("LoadBaskets");
 
-        var myBaskets = await basketService.GetUserBaskets(userService.UserId);
-
         baskets.Clear();
-        baskets.AddRange(myBaskets);
+
+        try
+        {
+            var myBaskets = await basketService.GetUserBaskets(userService.UserId);
+            baskets.AddRange(myBaskets);
+        }
+        catch( Exception ex )
+        {
+            logger.LogWarning($"Unable to load baskets for user {userService.UserId}: {ex.Message}");
+        }
+
         watch.Stop();
 
         await InvokeAsync(StateHasChanged);
