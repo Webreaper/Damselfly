@@ -412,9 +412,11 @@ public abstract class BaseSearchService
 
     private void QueryChanged()
     {
-        NotifyQueryChanged();
         _logger.LogInformation($"ImageSearch: Search query changed: {SearchBreadcrumbs}");
+        NotifyQueryChanged();
+
         ClearSearchResults();
+
         _ = GetQueryImagesAsync();
     }
 
