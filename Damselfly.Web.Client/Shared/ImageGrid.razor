@@ -82,7 +82,6 @@
     private LocalFileExporter FileExporter;
     const int imagesPerPage = 250;
     private bool NoImagesSelected => !selectionService.Selection.Any();
-    bool IsLoading { get; set; } = false;
     bool endOfImages = false;
     string toastClass = string.Empty;
     private ScrollMonitor ScrollMonitor;
@@ -208,6 +207,7 @@
 
         selectionService.OnSelectionChanged += SelectedImagesChanged;
         searchService.OnSearchQueryChanged += SearchQueryChanged;
+        searchService.OnSearchResultsChanged += SearchResultsChanged;
         basketService.OnBasketChanged += BasketChanged;
     }
 
@@ -217,7 +217,7 @@
         {
             var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
-            await LoadData(initialLoadCount);
+            searchService.LoadMore(initialLoadCount);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
 
@@ -235,6 +235,7 @@
     {
         selectionService.OnSelectionChanged -= SelectedImagesChanged;
         searchService.OnSearchQueryChanged -= SearchQueryChanged;
+        searchService.OnSearchResultsChanged -= SearchResultsChanged;
         FileExporter.OnChange -= StateHasChanged;
         basketService.OnBasketChanged -= BasketChanged;
         ScrollMonitor.OnScrollPositionChanged -= SaveScrollState;
@@ -245,17 +246,28 @@
         InvokeAsync(StateHasChanged);
     }
 
+    protected void SearchResultsChanged( SearchResponse response )
+    {
+        logger.LogInformation("ImageSearch: Calling LoadData...");
+
+        InvokeAsync(async () =>
+        {
+            await AddImagesToGrid(response.SearchResults, response.MoreDataAvailable);
+
+            // If we've tried to load data and there isn't any more, show the toast.
+            toastClass = endOfImages ? "show" : string.Empty;
+
+            StateHasChanged();
+        });
+
+    }
+
     protected void SearchQueryChanged()
     {
         selectionService.ClearSelection();
         gridImages.Clear();
         endOfImages = false;
-
-        _ = InvokeAsync( async () =>
-        {
-            StateHasChanged();
-            await LoadData(imagesPerPage);
-        });
+        StateHasChanged();
     }
 
     private void SaveScrollState(int scrollTop)
@@ -269,31 +281,7 @@
     {
         logger.LogTrace("Javscript callback triggered to load more data.");
 
-        await LoadData(imagesPerPage);
-    }
-
-    public async Task LoadData(int newImagesToLoad)
-    {
-        if( !IsLoading )
-        {
-            IsLoading = true;
-
-            ChangeThumbSize(CurrentThumbSize);
-
-            logger.LogInformation("ImageSearch: Calling LoadData...");
-
-            // Now, see if we need to load any more
-            var response = await searchService.GetQueryImagesAsync(gridImages.Count(), newImagesToLoad);
-
-            await AddImagesToGrid(response.SearchResults, response.MoreDataAvailable);
-
-            // If we've tried to load data and there isn't any more, show the toast.
-            toastClass = endOfImages ? "show" : string.Empty;
-
-            IsLoading = false;
-
-            await InvokeAsync(StateHasChanged);
-        }
+        await searchService.LoadMore();
     }
 
     private async Task AddImagesToGrid(ICollection<int> imageIdsToAdd, bool moreDataAvaiable)

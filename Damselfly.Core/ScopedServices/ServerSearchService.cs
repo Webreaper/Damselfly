@@ -25,8 +25,10 @@ public class ServerSearchService : BaseSearchService, ISearchService
         _queryService = queryService;
     }
 
-    public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
+    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = 250)
     {
+        int first = _searchResults.Count;
+
         if ( first < SearchResults.Count() && first + count < SearchResults.Count() )
             // Data already loaded. Nothing to do.
             return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };

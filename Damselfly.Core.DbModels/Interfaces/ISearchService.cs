@@ -33,12 +33,13 @@ public interface ISearchService
     OrientationType? Orientation { get; set; }
 
     string SearchBreadcrumbs { get; }
-    event Action OnSearchQueryChanged;
     void SetDateRange(DateTime? min, DateTime? max);
 
     void Refresh();
     void Reset();
-    void NotifyStateChanged(); // TODO: Do we need this?
 
-    Task<SearchResponse> GetQueryImagesAsync(int start, int count);
+    event Action OnSearchQueryChanged;
+    event Action<SearchResponse> OnSearchResultsChanged;
+
+    Task LoadMore(int count = 250);
 }

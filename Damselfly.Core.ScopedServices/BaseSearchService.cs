@@ -21,6 +21,8 @@ public abstract class BaseSearchService
     protected readonly List<int> _searchResults = new();
     private readonly ICachedDataService _service;
 
+    protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = 250);
+
     public BaseSearchService(ICachedDataService dataService, ILogger<BaseSearchService> logger)
     {
         _service = dataService;
@@ -360,21 +362,27 @@ public abstract class BaseSearchService
         }
     }
 
-    public abstract Task<SearchResponse> GetQueryImagesAsync(int start, int count);
-
     protected void ClearSearchResults()
     {
         _searchResults.Clear();
     }
 
-    public void NotifyStateChanged()
+    public void NotifyQueryChanged()
     {
         _logger.LogInformation($"ImageSearch: Filter changed: {Query}");
 
         OnSearchQueryChanged?.Invoke();
     }
 
+    public void NotifySearchComplete(SearchResponse response)
+    {
+        _logger.LogInformation($"ImageSearch: Filter changed: {Query}");
+
+        OnSearchResultsChanged?.Invoke(response);
+    }
+
     public event Action OnSearchQueryChanged;
+    public event Action<SearchResponse> OnSearchResultsChanged;
 
     public void Reset()
     {
@@ -388,7 +396,8 @@ public abstract class BaseSearchService
 
     public void ApplyQuery(SearchQuery newQuery)
     {
-        if ( newQuery.CopyPropertiesTo(Query) ) QueryChanged();
+        if ( newQuery.CopyPropertiesTo(Query) ) 
+            QueryChanged();
     }
 
     public void SetDateRange(DateTime? min, DateTime? max)
@@ -403,11 +412,14 @@ public abstract class BaseSearchService
 
     private void QueryChanged()
     {
-        Task.Run(() =>
-        {
-            _logger.LogInformation($"ImageSearch: Search query changed: {SearchBreadcrumbs}");
-            ClearSearchResults();
-            NotifyStateChanged();
-        });
+        NotifyQueryChanged();
+        _logger.LogInformation($"ImageSearch: Search query changed: {SearchBreadcrumbs}");
+        ClearSearchResults();
+        _ = GetQueryImagesAsync();
+    }
+
+    public async Task LoadMore( int count = 250 )
+    {
+        await GetQueryImagesAsync( count );
     }
 }

@@ -50,17 +50,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await ApplyQueryParams();
+        //await ApplyQueryParams();
     }
 
     private async Task ApplyQueryParams()
     {
-        // TODO: This is a hack to avoid the LoadMoreData call triggered by the Query changing, 
-        // from being called at the same time as the one in the AfterRenderAsync call in ImageGrid
-        // which means we get a re-entrancy issue, and the second LoadData from the query changed
-        // event is skipped.
-        await Task.Delay(200);
-
         if( !string.IsNullOrEmpty(S) )
         {
             searchService.SearchText = S;
@@ -120,13 +114,15 @@
         return base.SetParametersAsync(parameters);
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
         viewdataService.SetSideBarState( new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true } );
 
         navigationManager.LocationChanged += HandleLocationChanged;
+
+        await ApplyQueryParams();
     }
 
     void HandleLocationChanged(object sender, LocationChangedEventArgs e)

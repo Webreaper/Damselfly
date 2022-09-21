@@ -16,15 +16,13 @@ namespace Damselfly.Core.Services;
 public class SearchQueryService
 {
     private readonly IConfigService _configService;
-    private readonly IFolderService _folderService;
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
 
     public SearchQueryService(IStatusService statusService, IServiceScopeFactory scopeFactory, ImageCache cache,
-        IConfigService configService, IFolderService folderService)
+        IConfigService configService)
     {
-        _folderService = folderService;
         _scopeFactory = scopeFactory;
         _configService = configService;
         _statusService = statusService;

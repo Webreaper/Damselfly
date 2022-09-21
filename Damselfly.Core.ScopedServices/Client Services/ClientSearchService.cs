@@ -19,8 +19,11 @@ public class ClientSearchService : BaseSearchService, ISearchService
         httpClient = client;
     }
 
-    public override async Task<SearchResponse> GetQueryImagesAsync(int first, int count)
+    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = 250)
     {
+        int first = SearchResults.Count;
+        var response = new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
+
         try
         {
             if ( first < SearchResults.Count() && first + count < SearchResults.Count() )
@@ -50,9 +53,9 @@ public class ClientSearchService : BaseSearchService, ISearchService
             var request = new SearchRequest(Query, first, count);
 
             _logger.LogInformation($"ImageSearch: Calling search API query for {request}");
+            //_statusService.UpdateStatus($"Searching for images: {request.Query}...");
 
-            var response =
-                await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
+            response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 
             if ( response != null )
             {
@@ -65,17 +68,15 @@ public class ClientSearchService : BaseSearchService, ISearchService
                 {
                     _logger.LogWarning("ImageSearch: NULL or empty search results returned from search API");
                 }
-
-                return response;
             }
-
-            _logger.LogError("ImageSearch: NULL response returned from search API");
         }
         catch ( Exception ex )
         {
             _logger.LogError($"Exception during search query API call: {ex}");
         }
 
-        return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
+        NotifySearchComplete(response);
+
+        return response;
     }
 }
