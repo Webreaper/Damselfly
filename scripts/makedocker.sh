@@ -1,3 +1,5 @@
+mv ./publish/Models .
+mv ./publish/wwwroot/desktop .
 
 if [ -z "$1" ]; then
     echo 'No docker tag specified. Pushing to dev'
