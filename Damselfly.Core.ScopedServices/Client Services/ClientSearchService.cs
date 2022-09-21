@@ -12,11 +12,13 @@ namespace Damselfly.Core.ScopedServices;
 public class ClientSearchService : BaseSearchService, ISearchService
 {
     private readonly RestClient httpClient;
+    private readonly IUserStatusService _statusService;
 
-    public ClientSearchService(RestClient client, ICachedDataService dataService, ILogger<BaseSearchService> logger) :
+    public ClientSearchService(RestClient client, IUserStatusService statusService, ICachedDataService dataService, ILogger<BaseSearchService> logger) :
         base(dataService, logger)
     {
         httpClient = client;
+        _statusService = statusService;
     }
 
     protected override async Task<SearchResponse> GetQueryImagesAsync( int count = 250)
@@ -56,6 +58,8 @@ public class ClientSearchService : BaseSearchService, ISearchService
                 if ( response.SearchResults != null && response.SearchResults.Any() )
                 {
                     _searchResults.AddRange(response.SearchResults);
+
+                    _statusService.UpdateStatus($"Loaded {response.SearchResults.Count()} search results.");
                 }
             }
         }

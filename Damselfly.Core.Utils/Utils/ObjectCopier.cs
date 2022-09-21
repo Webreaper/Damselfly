@@ -16,7 +16,9 @@ public static class ObjectUtils
 
         foreach ( var sourceProp in sourceProps )
         {
-            var destProp = destProps.FirstOrDefault(x => x.Name == sourceProp.Name);
+            string propName = sourceProp.Name;
+
+            var destProp = destProps.FirstOrDefault(x => x.Name == propName);
 
             if ( destProp != null )
             {

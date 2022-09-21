@@ -386,18 +386,13 @@ public abstract class BaseSearchService
 
     public void Reset()
     {
-        ApplyQuery(new SearchQuery());
+        Query.Reset();
+        QueryChanged();
     }
 
     public void Refresh()
     {
         QueryChanged();
-    }
-
-    public void ApplyQuery(SearchQuery newQuery)
-    {
-        if ( newQuery.CopyPropertiesTo(Query) ) 
-            QueryChanged();
     }
 
     public void SetDateRange(DateTime? min, DateTime? max)

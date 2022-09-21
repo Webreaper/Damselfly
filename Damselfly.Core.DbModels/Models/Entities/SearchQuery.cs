@@ -32,6 +32,33 @@ public class SearchQuery
     public GroupingType Grouping { get; set; } = GroupingType.None;
     public SortOrderType SortOrder { get; set; } = SortOrderType.Descending;
 
+    public SearchQuery()
+    {
+        Reset();
+    }
+
+    public void Reset()
+    {
+        SearchText = string.Empty;
+        TagsOnly = false;
+        IncludeAITags = true;
+        UntaggedImages = false;
+        MaxSizeKB = null;
+        MinSizeKB = null;
+        CameraId = null;
+        LensId = null;
+        Month = null;
+        MinRating = null;
+        SimilarTo = null;
+        Folder = null;
+        Tag = null;
+        Person = null;
+        MinDate = null;
+        MaxDate = null;
+        FaceSearch = null;
+        Orientation = null;
+    }
+
     public override string ToString()
     {
         return
@@ -39,6 +66,10 @@ public class SearchQuery
     }
 }
 
+/// <summary>
+/// A shadow object which only references the IDs of the image and other objects, rather than the whole object.
+/// Eventually we can probably convert the query to use IDs instead of entities, and this will become redundant.
+/// </summary>
 public class SearchQueryDTO
 {
     public string SearchText { get; set; } = string.Empty;
