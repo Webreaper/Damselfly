@@ -127,6 +127,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
             // Add/update the cache
             _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
         }
+
+        _imageCache.Evict(faceObject.ImageId);
     }
 
     public async Task UpdatePerson(Person person, string name)
