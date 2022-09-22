@@ -95,13 +95,16 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
     public async Task UpdateName(ImageObject faceObject, string name)
     {
-        if ( !faceObject.IsFace )
+        if (!faceObject.IsFace)
             throw new ArgumentException("Image object passed to name update.");
+
+        if (faceObject.Person == null)
+            throw new Exception("Person object did not have person included");
 
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        if ( faceObject.Person == null )
+        if (faceObject.Person == null)
         {
             faceObject.Person = new Person();
             db.People.Add(faceObject.Person);
@@ -119,8 +122,11 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
         await db.SaveChangesAsync("SetName");
 
-        // Add/update the cache
-        _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
+        if (faceObject.Person.AzurePersonId != null)
+        {
+            // Add/update the cache
+            _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
+        }
     }
 
     public async Task UpdatePerson(Person person, string name)

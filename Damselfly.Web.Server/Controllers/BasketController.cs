@@ -89,7 +89,7 @@ public class BasketController : ControllerBase
         return await _service.GetUserBaskets(null);
     }
 
-    [Authorize(Policy = PolicyDefinitions.s_IsEditor)]
+    //[Authorize(Policy = PolicyDefinitions.s_IsEditor)]
     [HttpPost("/api/basketimage/state")]
     public async Task SetBasketState(BasketStateRequest req)
     {

@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Models;
+﻿using Damselfly.Core.DbModels.Models.APIModels;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 
@@ -25,11 +26,13 @@ public class ClientPeopleService : IPeopleService
 
     public async Task UpdateName(ImageObject theObject, string newName)
     {
-        await httpClient.CustomPutAsJsonAsync($"/api/people/name/{theObject.ImageObjectId}", newName);
+        var req = new NameChangeRequest { ObjectId = theObject.ImageObjectId, NewName = newName };
+        await httpClient.CustomPutAsJsonAsync($"/api/object/name", req);
     }
 
     public async Task UpdatePerson(Person thePerson, string newName)
     {
+        throw new NotImplementedException();
         await httpClient.CustomPutAsJsonAsync($"/api/people/name/{thePerson.PersonId}", newName);
     }
 }
