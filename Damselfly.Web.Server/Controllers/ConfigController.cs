@@ -4,13 +4,12 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/config")]
+[Route("/api/config")]
 public class ConfigController : ControllerBase
 {
     private readonly ConfigService _configService;

@@ -1,15 +1,16 @@
-﻿using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/basket")]
+[Route("/api/basket")]
 public class BasketController : ControllerBase
 {
     private readonly ILogger<BasketController> _logger;
@@ -88,6 +89,7 @@ public class BasketController : ControllerBase
         return await _service.GetUserBaskets(null);
     }
 
+    [Authorize(Policy = PolicyDefinitions.s_IsEditor)]
     [HttpPost("/api/basketimage/state")]
     public async Task SetBasketState(BasketStateRequest req)
     {

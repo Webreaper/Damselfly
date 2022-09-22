@@ -1,13 +1,12 @@
 ﻿using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/status")]
+[Route("/api/status")]
 public class StatusController : ControllerBase
 {
     private readonly ILogger<StatusController> _logger;

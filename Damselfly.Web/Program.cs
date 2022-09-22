@@ -257,12 +257,8 @@ public class Program
             if ( Logging.Verbose )
                 app.UseSerilogRequestLogging();
 
-            app.UseResponseCompression();
-            app.UseRouting();
-            app.UseResponseCaching();
-
             // Disable this for now
-            // app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
 
             // TODO: Do we need this if we serve all the images via the controller?
             app.UseStaticFiles();
@@ -272,7 +268,10 @@ public class Program
                 RequestPath = ThumbnailService.RequestRoot
             });
 
-            // Enable auth
+            app.UseResponseCompression();
+            app.UseResponseCaching();
+
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
 

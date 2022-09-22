@@ -1,15 +1,16 @@
-﻿using Damselfly.Core.DbModels.Authentication;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/users")]
+[Route("/api/users")]
 public class UserManagementController : ControllerBase
 {
     private readonly ILogger<UserManagementController> _logger;

@@ -1,14 +1,15 @@
-﻿using Damselfly.Core.DbModels.Models;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsDownloader)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/download")]
+[Route("/api/download")]
 public class DownloadController : ControllerBase
 {
     private readonly IDownloadService _downloadService;

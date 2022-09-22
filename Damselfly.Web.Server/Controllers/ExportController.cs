@@ -1,14 +1,15 @@
-﻿using Damselfly.Core.Models;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Models;
 using Damselfly.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsDownloader)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/export")]
+[Route("/api/export")]
 public class ExportController : ControllerBase
 {
     private readonly ImageRecognitionService _aiService;

@@ -1,15 +1,16 @@
-﻿using Damselfly.Core.DbModels.Models;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/data")]
+[Route("/api/data")]
 public class StaticDataController : ControllerBase
 {
     private readonly ILogger<StaticDataController> _logger;

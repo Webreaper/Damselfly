@@ -1,13 +1,14 @@
-﻿using Damselfly.Core.Models;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Models;
 using Damselfly.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/folders")]
+[Route("/api/folders")]
 public class FolderController : ControllerBase
 {
     private readonly ILogger<FolderController> _logger;

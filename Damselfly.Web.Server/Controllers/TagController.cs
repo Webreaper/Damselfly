@@ -1,14 +1,15 @@
-﻿using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/tags")]
+[Route("/api/tags")]
 public class TagController : ControllerBase
 {
     private readonly ILogger<TagController> _logger;

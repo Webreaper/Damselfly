@@ -1,13 +1,14 @@
-﻿using Damselfly.Core.DbModels;
+﻿using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels;
 using Damselfly.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Route = Microsoft.AspNetCore.Mvc.RouteAttribute;
 
 namespace Damselfly.Web.Server.Controllers;
 
-// TODO: WASM: [Authorize]
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
-[Microsoft.AspNetCore.Mvc.Route("/api/search")]
+[Route("/api/search")]
 public class ImageSearchController : ControllerBase
 {
     private readonly ILogger<ImageSearchController> _logger;

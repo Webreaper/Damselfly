@@ -4,15 +4,13 @@ using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Web.Controllers;
 
-/// <summary>
-///     Image Controller used for dynamic as-loaded transforms
-///     TODO: Convert this to use minimal APIs?
-/// </summary>
+//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [Route("images")]
 [ApiController]
 public class ImageController : Controller
