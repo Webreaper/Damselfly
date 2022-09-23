@@ -148,6 +148,17 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     /// </summary>
     /// <param name="text"></param>
     /// <returns></returns>
+    public Task<Tag> GetTag( int tagId )
+    {
+        var result = CachedTags.FirstOrDefault( x => x.TagId == tagId );
+        return Task.FromResult(result);
+    }
+
+    /// <summary>
+    ///     Search for a set of tags - used for autocomplete.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     public Task<ICollection<Tag>> SearchTags(string text)
     {
         var results = new List<Tag>();

@@ -79,18 +79,16 @@
 
         if( TagId != 0 )
         {
-            // WASM: TODO - we can do this better
-            var tags = await tagService.GetAllTags();
-            var tag = tags.FirstOrDefault(x => x.TagId == TagId);
+            var tag = await tagService.GetTag( TagId );
 
             if( tag != null )
                 searchService.Tag = tag;
         }
         else if( !string.IsNullOrEmpty(Tag) )
         {
-            // WASM: TODO - we can do this better
-            var tags = await tagService.GetAllTags();
-            var tag = tags.FirstOrDefault(x => x.Keyword.Equals(Tag, StringComparison.OrdinalIgnoreCase));
+            // Search by text - this might return multiple results
+            var matchingTags = await tagService.SearchTags(Tag);
+            var tag = matchingTags.FirstOrDefault(x => x.Keyword.Equals(Tag, StringComparison.OrdinalIgnoreCase));
 
             if( tag != null )
                 searchService.Tag = tag;

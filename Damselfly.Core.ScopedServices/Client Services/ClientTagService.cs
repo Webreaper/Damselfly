@@ -35,6 +35,11 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>($"/api/tags/search/{filterText}");
     }
 
+    public async Task<Tag> GetTag( int tagId )
+    {
+        return await httpClient.CustomGetFromJsonAsync<Tag>($"/api/tag/{tagId}");
+    }
+
     public async Task<ICollection<Tag>> GetAllTags()
     {
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags");

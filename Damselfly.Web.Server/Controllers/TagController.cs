@@ -44,6 +44,12 @@ public class TagController : ControllerBase
         return await _tagSearch.SearchTags(filterText);
     }
 
+    [HttpGet("/api/tags/{tagId}")]
+    public async Task<Tag> GetTag( int tagId )
+    {
+        return await _tagSearch.GetTag( tagId );
+    }
+
     [HttpGet("/api/tags")]
     public async Task<ICollection<Tag>> GetAllTags()
     {

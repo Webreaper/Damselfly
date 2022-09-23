@@ -27,4 +27,5 @@ public interface ITagSearchService
 {
     Task<ICollection<Tag>> SearchTags(string filterText);
     Task<ICollection<Tag>> GetAllTags();
+    Task<Tag> GetTag( int tagId );
 }
