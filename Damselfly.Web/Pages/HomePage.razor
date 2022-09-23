@@ -80,7 +80,7 @@
 
         if( TagId != 0 )
         {
-            var tag = metadataService.GetTag(TagId);
+            var tag = await metadataService.GetTag(TagId);
 
             if( tag != null )
                 searchService.Tag = tag;
