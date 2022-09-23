@@ -23,6 +23,12 @@ public class PeopleController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("/api/people/{personId}")]
+    public async Task<Person> GetPerson( int personId )
+    {
+        return await _aiService.GetPerson( personId );
+    }
+
     [HttpGet("/api/people")]
     public async Task<List<Person>> Get()
     {
