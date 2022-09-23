@@ -223,6 +223,9 @@ public class DownloadService : IDownloadService
                             }
                         }
 
+                        Logging.Log($"Unix File Perms: {File.GetUnixFileMode(imagePath.FullName)}");
+                        Logging.Log($"Zip file entry attributes: {Convert.ToString((uint)entry.ExternalAttributes >> 16, 8)}");
+
                         // Linux memory stream zip entries don't get good permissions, so fix that here:
                         // https://github.com/dotnet/runtime/issues/17912
                         entry.ExternalAttributes = entry.ExternalAttributes | ( Convert.ToInt32( "664", 8 ) << 16 );
