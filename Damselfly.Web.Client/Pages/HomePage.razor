@@ -68,9 +68,7 @@
 
         if( PersonId != 0 )
         {
-            // WASM: TODO - we can do this better
-            var people = await peopleService.GetAllPeople();
-            var person = people.FirstOrDefault(x => x.PersonId == PersonId);
+            var person = await peopleService.GetPerson( PersonId );
 
             if( person != null )
             {

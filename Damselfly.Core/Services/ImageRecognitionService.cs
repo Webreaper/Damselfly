@@ -77,6 +77,13 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         return _peopleCache.Values.OrderBy(x => x?.Name).ToList();
     }
 
+    public async Task<Person> GetPerson( int personId )
+    {
+        await LoadPersonCache();
+
+        return _peopleCache.Values.FirstOrDefault(x => x.PersonId == personId);
+    }
+
     public async Task<List<string>> GetPeopleNames(string searchText)
     {
         await LoadPersonCache();
@@ -220,6 +227,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     {
         if ( azurePersonId.HasValue )
         {
+            // TODO Await
             LoadPersonCache();
 
             if ( _peopleCache.TryGetValue(azurePersonId.ToString(), out var person) )
