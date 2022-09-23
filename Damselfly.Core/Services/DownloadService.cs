@@ -228,7 +228,7 @@ public class DownloadService : IDownloadService
 
                         // Linux memory stream zip entries don't get good permissions, so fix that here:
                         // https://github.com/dotnet/runtime/issues/17912
-                        entry.ExternalAttributes = entry.ExternalAttributes | ( Convert.ToInt32( "664", 8 ) << 16 );
+                        // entry.ExternalAttributes = entry.ExternalAttributes | ( Convert.ToInt32( "664", 8 ) << 16 );
                     }
                     else
                     {
