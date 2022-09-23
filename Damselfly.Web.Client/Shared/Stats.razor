@@ -16,7 +16,7 @@
                 </td>
             </tr>
             <tr>
-                <td>.Net Version:</td><td>@Environment.Version</td>
+                <td>.Net Version:</td><td>@FrameworkVersion</td>
             </tr>
             <tr>
                 <td>OS Version:</td><td>@Environment.OSVersion</td>
@@ -94,6 +94,8 @@
 @code {
     private Statistics statistics;
     private string ClientPlatform = RuntimeInformation.ProcessArchitecture.ToString();
+    private string FrameworkVersion => RuntimeInformation.FrameworkDescription.Replace(".Net ", "v", StringComparison.OrdinalIgnoreCase);
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
