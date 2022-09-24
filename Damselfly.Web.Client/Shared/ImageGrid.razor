@@ -200,18 +200,17 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        selectionService.OnSelectionChanged += SelectedImagesChanged;
-        searchService.OnSearchQueryChanged += SearchQueryChanged;
-        searchService.OnSearchResultsChanged += SearchResultsChanged;
-        basketService.OnBasketChanged += BasketChanged;
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if( firstRender )
         {
+            selectionService.OnSelectionChanged += SelectedImagesChanged;
+            searchService.OnSearchQueryChanged += SearchQueryChanged;
+            searchService.OnSearchResultsChanged += SearchResultsChanged;
+            basketService.OnBasketChanged += BasketChanged;
+            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
+            FileExporter.OnChange += StateHasChanged;
+
             var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
             if (initialLoadCount > searchService.SearchResults.Count)
@@ -220,9 +219,6 @@
                 await AddImagesToGrid(true);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
-
-            ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
-            FileExporter.OnChange += StateHasChanged;
         }
     }
 

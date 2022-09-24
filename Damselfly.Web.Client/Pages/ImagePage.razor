@@ -48,7 +48,7 @@
                 &nbsp; &nbsp;
 
                 <ToolbarButton IconStyle="fa-search-minus" OnClickCallback="@ZoomOut" Enabled="@CanZoomOut" title="Zoom Out" />
-                <input type="range" min="1" max="8" step="0.2" @bind-value="ZoomRange" @bind-value:event="oninput" title="Zoom Level" class="zoom-slider" disabled="@ZoomDisabled"/>
+                <input type="range" min="1" max="8" step="0.2" @bind-value="ZoomRange" @bind-value:event="oninput" title="@ZoomTitle" class="zoom-slider" disabled="@ZoomDisabled"/>
                 <ToolbarButton IconStyle="fa-search-plus" OnClickCallback="@ZoomIn" Enabled="@CanZoomIn" title="Zoom In" />
                 <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" Enabled="@(!ZoomDisabled)" />
             </div>
@@ -78,6 +78,7 @@
     private ImagePreview theImagePreview;
     public string ImgKey => $"prev{CurrentImage.ImageId}";
     public string ImgPreviewKey => $"{CurrentImage.ImageId}";
+    public string ZoomTitle => ShowObjects ? "Disable Objects/Faces to Zoom" : "Zoom Level (press up/down to change)";
     public string ImageUrl { get; set; }
     public string ImageUrlHighRes { get; set; }
 
