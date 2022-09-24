@@ -285,6 +285,8 @@
             logger.LogInformation($"ImageSearch: Loading {images.Count()} more images into image grid.");
             gridImages.Clear();
             gridImages.AddRange(images);
+
+            configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
         }
         else
         {

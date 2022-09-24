@@ -14,14 +14,12 @@ public class ClientSearchService : BaseSearchService, ISearchService
 {
     private readonly RestClient httpClient;
     private readonly IUserStatusService _statusService;
-    private readonly IUserConfigService _configService;
 
-    public ClientSearchService(RestClient client, IUserStatusService statusService, IUserConfigService configService, 
+    public ClientSearchService(RestClient client, IUserStatusService statusService,
                         ICachedDataService dataService, ILogger<BaseSearchService> logger) :
         base(dataService, logger)
     {
         httpClient = client;
-        _configService = configService;
         _statusService = statusService;
     }
 
@@ -62,8 +60,6 @@ public class ClientSearchService : BaseSearchService, ISearchService
                 if ( response.SearchResults != null && response.SearchResults.Any() )
                 {
                     _searchResults.AddRange(response.SearchResults);
-
-                    _configService.Set(ConfigSettings.LoadedImages, _searchResults.Count.ToString());
 
                     _statusService.UpdateStatus($"Loaded {response.SearchResults.Count()} search results.");
                 }
