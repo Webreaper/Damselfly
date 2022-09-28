@@ -96,32 +96,34 @@ else
         contextMenuService.Open(args, ds =>
             @<CascadingAuthenticationState>
                 <RadzenMenu Click="OnMenuItemClick">
-                    <RadzenMenuItem Text="View Image" Value="0"/>
+                    <RadzenMenuItem Text="View Image" Value="0" />
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                        <RadzenMenuItem Text="Download" Value="1"/>
+                        <RadzenMenuItem Text="Download" Value="1" />
                     </AuthorizeView>
-                    @if( CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash() )
+                    @if (CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash())
                     {
-                        <RadzenMenuItem Text="Find Similar Images (Experimental)" Value="6"/>
+                        <RadzenMenuItem Text="Find Similar Images" Value="6" />
                     }
+                    <RadzenMenuItem Text="View Folder" Value="7" />
+                    <RadzenMenuItem Text="View Images From This Day" Value="8" />
                     <hr class="separator">
-                    @if( InBasket )
+                    @if (InBasket)
                     {
-                        <RadzenMenuItem Text="Remove from basket" Value="2"/>
+                        <RadzenMenuItem Text="Remove from basket" Value="2" />
                     }
                     else
                     {
-                        <RadzenMenuItem Text="Add to basket" Value="3"/>
+                        <RadzenMenuItem Text="Add to basket" Value="3" />
                     }
-                    @if( FileExporter != null && FileExporter.IsDesktopHosted )
+                    @if (FileExporter != null && FileExporter.IsDesktopHosted)
                     {
                         <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                            <RadzenMenuItem Text="Save Locally" Value="4"/>
+                            <RadzenMenuItem Text="Save Locally" Value="4" />
                         </AuthorizeView>
                     }
 
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                        <RadzenMenuItem Text="Refresh" Value="5"/>
+                        <RadzenMenuItem Text="Refresh" Value="5" />
                     </AuthorizeView>
                 </RadzenMenu>
             </CascadingAuthenticationState>);
@@ -165,6 +167,12 @@ else
             case 6:
                 FindImageSimilarTo();
                 break;
+            case 7:
+                GoToImageFolder();
+                break;
+            case 8:
+                FilterByImageDate();
+                break;
         }
     }
 
@@ -174,6 +182,17 @@ else
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
+    }
+
+    private void  GoToImageFolder()
+    {
+        NavigationManager.NavigateTo( $"/?folderId={CurrentImage.Folder.FolderId}" );
+    }
+
+    private void FilterByImageDate()
+    {
+        var url = $"/?date={CurrentImage.SortDate:dd-MMM-yyyy}";
+        NavigationManager.NavigateTo(url);
     }
 
     private void FindImageSimilarTo()

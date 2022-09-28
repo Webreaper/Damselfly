@@ -38,7 +38,7 @@
     public int PersonId { get; set; }
 
     [QueryStringParameter]
-    public DateTime Date { get; set; }
+    public string Date { get; set; }
 
     private ThumbSize thumbSize { get; set; }
 
@@ -53,6 +53,18 @@
         if( !string.IsNullOrEmpty(S) )
         {
             searchService.SearchText = S;
+        }
+
+        if( ! string.IsNullOrEmpty( Date ))
+        {
+            if( DateTime.TryParse( Date, out var parsedDate))
+            {
+                var start = parsedDate;
+                var end = parsedDate.AddHours(24);
+
+                statusService.UpdateStatus($"Selected date {parsedDate:dd-MMM-yyyy}");
+                searchService.SetDateRange(start, end);
+            }
         }
 
         if( FolderId != 0 )

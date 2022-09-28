@@ -10,12 +10,13 @@ of the visible image is updated which should update it instantly.
 @inject IUserConfigService userConfigService
 @inject IDialogService DialogService
 @inject IUserStatusService statusService
+@inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
-<LocalFileExporter @ref="FileExporter"/>
+<LocalFileExporter @ref="FileExporter" />
 
 <div class="damselfly-imagepreview">
-    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0" 
+    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
 
         <div class="objects-box" id="objectBox">
@@ -104,19 +105,21 @@ of the visible image is updated which should update it instantly.
     void ShowContextMenu(MouseEventArgs args)
     {
         var menuItems = new List<ContextMenuItem>
-        {
+    {
+            new() { Text = "View Folder", Value = 4 },
+            new() { Text = "View Images From This Day", Value = 5 },
             new() { Text = ShowObjectsMenuText, Value = 0 },
             new() { Text = "Download", Value = 1 },
             new() { Text = "Refresh", Value = 2 }
         };
 
-        if( FileExporter.IsDesktopHosted )
+        if (FileExporter.IsDesktopHosted)
             menuItems.Insert(3, new ContextMenuItem { Text = "Save Locally", Value = 3 });
 
         contextMenuService.Open(args, menuItems, async args =>
         {
             contextMenuService.Close();
-            switch( args.Value )
+            switch (args.Value)
             {
                 case 0:
                     SetShowObjects(!ShowObjects);
@@ -130,9 +133,27 @@ of the visible image is updated which should update it instantly.
                 case 3:
                     await FileExporter.ExportImagesToLocalFilesystem(new List<Image> { theImage });
                     break;
+                case 4:
+                    GoToImageFolder();
+                    break;
+                case 5:
+                    FilterByImageDate();
+                    break;
             }
         });
     }
+
+    private void GoToImageFolder()
+    {
+        NavigationManager.NavigateTo($"/?folderId={theImage.Folder.FolderId}");
+    }
+
+    private void FilterByImageDate()
+    {
+        var url = $"/?date={theImage.SortDate:dd-MMM-yyyy}";
+        NavigationManager.NavigateTo(url);
+    }
+
 
     private void DoObjectBox()
     {
@@ -158,7 +179,7 @@ of the visible image is updated which should update it instantly.
             var downloadFile = theImage.DownloadImageUrl;
             await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
         }
-        catch( Exception ex )
+        catch (Exception ex)
         {
             Logging.LogError("Exception: " + ex.Message);
         }
@@ -171,7 +192,7 @@ of the visible image is updated which should update it instantly.
 
     private void SetShowObjects(bool newState)
     {
-        if( newState == showObjects )
+        if (newState == showObjects)
             return;
 
         if (ZoomRangeValue != 1.0)
@@ -181,25 +202,25 @@ of the visible image is updated which should update it instantly.
         userConfigService.SetForUser(ConfigSettings.ShowObjects, showObjects.ToString());
         StateHasChanged();
 
-        if( showObjects )
+        if (showObjects)
             DoObjectBox();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if( firstRender )
+        if (firstRender)
         {
-            if( showObjects )
+            if (showObjects)
                 DoObjectBox();
         }
     }
 
     private void ChangeImage(Image newImage)
     {
-        if( newImage == null )
+        if (newImage == null)
             throw new ArgumentException("Image cannot be null");
 
-        if( theImage == null || theImage.ImageId != newImage.ImageId )
+        if (theImage == null || theImage.ImageId != newImage.ImageId)
         {
             theImage = newImage;
             HiResImageLoaded = false;
@@ -249,7 +270,7 @@ of the visible image is updated which should update it instantly.
 
     public async Task ZoomOut()
     {
-        if( ZoomRangeValue > 1.0 )
+        if (ZoomRangeValue > 1.0)
         {
             await _panzoom.ZoomOutAsync();
             await UpdateSlider();

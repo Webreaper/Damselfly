@@ -37,7 +37,7 @@
                      @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
                     <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))"/>
                     <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
-                        @context.MetaData.DisplayName (@context.MetaData.TotalImages)
+                        @FolderDisplayName( context ) 
                     </span>
                 </div>
             </Virtualize>
@@ -111,6 +111,19 @@
             });
     }
 
+    private string FolderDisplayName( Folder folder )
+    {
+        string display = folder.MetaData.DisplayName;
+
+        if (FlatView)
+        { 
+            if (display.Length < 10 && folder.Parent != null)
+                display = folder.Parent.MetaData.DisplayName + $" {System.IO.Path.DirectorySeparatorChar} " + display;
+        }
+
+        return $"{display} ({folder.MetaData.TotalImages})";
+    }
+
     private async Task ToggleFlatView()
     {
         var newState = !FlatView;
@@ -155,7 +168,7 @@
 
     protected void SelectionChanged(Folder f)
     {
-    //Logging.Log($"Selected folder {f.FolderId}");
+        //Logging.Log($"Selected folder {f.FolderId}");
     }
 
     string FolderIcon(Folder folder)
@@ -237,7 +250,7 @@
             folderService.OnFoldersChanged += OnFoldersChanged;
             searchService.OnSearchQueryChanged += OnSearchChanged;
 
-    // Kick off the data load
+            // Kick off the data load
             await ProcessUpdatedFilter();
         }
     }
@@ -250,7 +263,7 @@
 
     private void OnFoldersChanged()
     {
-    // Be careful of threading - we may get called from anywhere
+        // Be careful of threading - we may get called from anywhere
         _ = InvokeAsync(ProcessUpdatedFilter);
     }
 
