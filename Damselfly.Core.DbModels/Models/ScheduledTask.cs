@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using Damselfly.Shared.Utils;
 
 namespace Damselfly.Core.Models;
@@ -33,6 +34,8 @@ public class ScheduledTask
     public bool ImmediateStart { get; set; } = false;
 
     public List<TaskType> ExclusiveToTasks { get; } = new();
+
+    [JsonIgnore]
     public Action WorkMethod { get; set; }
 
     public override string ToString()
