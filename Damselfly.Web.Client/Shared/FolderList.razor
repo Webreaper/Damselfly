@@ -121,7 +121,7 @@
                 display = folder.Parent.MetaData.DisplayName + $" {System.IO.Path.DirectorySeparatorChar} " + display;
         }
 
-        return $"{display} ({folder.MetaData.TotalImages})";
+        return $"{display} ({folder.MetaData.TotalImages:n0})";
     }
 
     private async Task ToggleFlatView()
