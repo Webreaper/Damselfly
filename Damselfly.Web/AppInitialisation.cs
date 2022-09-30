@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Constants;
 using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Hosting;
 
@@ -34,7 +35,7 @@ public static class AppInitialiser
         var thumbCleanupFreq = new TimeSpan(7, 0, 0, 0);
         tasks.Add(new ScheduledTask
         {
-            Type = ScheduledTask.TaskType.CleanupThumbs,
+            Type = TaskType.CleanupThumbs,
             ExecutionFrequency = thumbCleanupFreq,
             WorkMethod = () => thumbService.CleanUpThumbnails(thumbCleanupFreq),
             ImmediateStart = false
@@ -45,7 +46,7 @@ public static class AppInitialiser
         var downloadCleanupFreq = new TimeSpan(6, 0, 0);
         tasks.Add(new ScheduledTask
         {
-            Type = ScheduledTask.TaskType.CleanupDownloads,
+            Type = TaskType.CleanupDownloads,
             ExecutionFrequency = downloadCleanupFreq,
             WorkMethod = () => download.CleanUpOldDownloads(downloadCleanupFreq),
             ImmediateStart = false
@@ -55,7 +56,7 @@ public static class AppInitialiser
         var keywordCleanupFreq = new TimeSpan(24, 0, 0);
         tasks.Add(new ScheduledTask
         {
-            Type = ScheduledTask.TaskType.CleanupKeywordOps,
+            Type = TaskType.CleanupKeywordOps,
             ExecutionFrequency = new TimeSpan(12, 0, 0),
             WorkMethod = () => { _ = exifService.CleanUpKeywordOperations(keywordCleanupFreq); },
             ImmediateStart = false
@@ -64,7 +65,7 @@ public static class AppInitialiser
         // Dump performance stats out to the logfile
         tasks.Add(new ScheduledTask
         {
-            Type = ScheduledTask.TaskType.DumpPerformance,
+            Type = TaskType.DumpPerformance,
             ExecutionFrequency = new TimeSpan(24, 0, 0),
             WorkMethod = () =>
             {

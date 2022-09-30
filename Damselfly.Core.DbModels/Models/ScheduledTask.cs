@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Damselfly.Core.Constants;
 using Damselfly.Shared.Utils;
 
 namespace Damselfly.Core.Models;
@@ -10,22 +11,6 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class ScheduledTask
 {
-    public enum TaskType
-    {
-        FullIndex,
-        IncrementalIndex,
-        FullThumbnailGen,
-        IncrementalThumbnailGen,
-        CleanupDownloads,
-        CleanupKeywordOps,
-        ThumbnailCleanup,
-        MetadataScan,
-        FlushDBWriteCache,
-        DumpPerformance,
-        CleanupThumbs,
-        FreeTextIndex
-    }
-
     public TaskType Type { get; set; }
     public DateTime LastStarted { get; set; } = DateTime.UtcNow;
     public DateTime LastCompleted { get; set; } = DateTime.MinValue;

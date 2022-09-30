@@ -24,7 +24,14 @@ public class TasksController : ControllerBase
     [HttpGet("/api/tasks")]
     public async Task<List<ScheduledTask>> GetTasks()
     {
-        return await _service.GetTasksAsync();
+        try {
+            return await _service.GetTasksAsync();
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError($"Unable to retrieve task list: {ex.Message}.");
+            return new List<ScheduledTask>();
+        }
     }
 
     [HttpPost("/api/tasks/enqueue")]

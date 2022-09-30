@@ -7,6 +7,7 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Services;
 
@@ -21,8 +22,8 @@ public class TaskService : ITaskService
 {
     private readonly object runningTaskLock = new();
 
-    private readonly IDictionary<ScheduledTask.TaskType, Thread> runningTasks =
-        new Dictionary<ScheduledTask.TaskType, Thread>();
+    private readonly IDictionary<TaskType, Thread> runningTasks =
+        new Dictionary<TaskType, Thread>();
 
     private readonly List<ScheduledTask> taskDefinitions = new();
     private readonly Queue<ScheduledTask> taskQueue = new();
@@ -218,7 +219,7 @@ public class TaskService : ITaskService
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    private bool TaskIsRunning(ScheduledTask.TaskType type)
+    private bool TaskIsRunning(TaskType type)
     {
         lock ( runningTaskLock )
         {
