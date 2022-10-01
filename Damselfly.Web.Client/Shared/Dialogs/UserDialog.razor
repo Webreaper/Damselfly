@@ -1,5 +1,6 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @inject IUserMgmtService userService
+@inject IUserStatusService statusService
 @inject ILogger<UserDialog> logger
 
 <MudDialog>
@@ -99,7 +100,7 @@
             }
             else
             {
-    // For exsiting users, handle password reset.
+                // For exsiting users, handle password reset.
                 if( !string.IsNullOrEmpty(model.Password) && !model.Password2.StartsWith("*****") )
                 {
                     success = model.Password.Equals(model.Password2);
@@ -137,12 +138,19 @@
 
                 success = result != null && result.Succeeded;
 
-                if( !success )
+                if( success )
+                {
+                    var msg = AddingNewUser ? "added" : "updated";
+                    statusService.UpdateStatus($"User {User.UserName} {msg}");
+                }
+                else
                     DisplayIdentityResultError(result);
             }
 
             if( success )
+            {
                 MudDialog.Close(DialogResult.Ok(true));
+            }
         }
         catch( Exception ex )
         {
@@ -160,10 +168,10 @@
     {
         if( firstRender )
         {
-    // Default
+            // Default
             selectedRole = RoleDefinitions.s_UserRole;
 
-            allRoles.AddRange(await userService.GetRoles());
+            var systemRoles = await userService.GetRoles();
 
             if( User.UserRoles != null && User.UserRoles.Any() )
             {
@@ -171,11 +179,14 @@
 
                 if( !allUsers.Any() )
                 {
-    // If there's no users yet, default to Admin
-                    selectedRole = "Admin";
+                    var adminRole = systemRoles.FirstOrDefault(x => x.Name == "Admin");
+                    // If there's no users yet, default to Admin
+                    selectedRole = adminRole.Name;
+                    allRoles.Add(adminRole);
                 }
                 else
                 {
+                    allRoles.AddRange(systemRoles);
                     var role = User.UserRoles.First();
                     selectedRole = role.Role.Name;
                 }

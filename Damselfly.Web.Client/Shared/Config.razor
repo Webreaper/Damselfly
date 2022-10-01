@@ -358,14 +358,18 @@
             if( !allUsers.Any() )
             {
                 logger.LogWarning("Config Page: no users, checking if a new admin user needs to be created.");
-                // WASM TODO
-                // if( settingsModel.enableAuthAndRoles )
+                if( settingsModel.enableAuthAndRoles )
                 {
-                    var dialog = DialogService.Show<UserDialog>("Create Admin User");
-                    var result = await dialog.Result;
+                    await InvokeAsync(ShowAddUserDialog);
                 }
             }
         }
+    }
+
+    private async Task ShowAddUserDialog()
+    {
+        var dialog = DialogService.Show<UserDialog>("Create Admin User");
+        var result = await dialog.Result;
     }
 
     private Dictionary<int, string> CPULevels = new()
