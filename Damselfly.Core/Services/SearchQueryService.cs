@@ -77,15 +77,18 @@ public class SearchQueryService
                 images = await db.ImageSearch(searchText, query.IncludeAITags);
             }
 
-            if ( query.Tag != null )
+            // TODO: UI should make these two mutually exclusive
+            if (query.UntaggedImages)
+            {
+                images = images.Where(x => !x.ImageTags.Any() && ! x.ImageObjects.Any());
+            }
+            else if ( query.Tag != null )
             {
                 var tagImages = images.Where(x => x.ImageTags.Any(y => y.TagId == query.Tag.TagId));
                 var objImages = images.Where(x => x.ImageObjects.Any(y => y.TagId == query.Tag.TagId));
 
                 images = tagImages.Union(objImages);
             }
-
-            if ( query.UntaggedImages ) images = images.Where(x => !x.ImageTags.Any());
 
             if ( query.SimilarTo != null && query.SimilarTo.Hash != null )
             {

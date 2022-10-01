@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Constants;
+﻿using System.Globalization;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -334,6 +335,12 @@ public abstract class BaseSearchService
 
             if ( UntaggedImages )
                 hints.Add("Untagged images");
+
+            if (Month.HasValue)
+            {
+                string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(Month.Value);
+                hints.Add($"During {monthName}");
+            }
 
             if ( FaceSearch.HasValue )
                 hints.Add($"{FaceSearch.Humanize()}");
