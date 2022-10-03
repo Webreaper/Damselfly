@@ -127,13 +127,15 @@
                 User.Email = model.Email;
 
                 IdentityResult result;
-                if( AddingNewUser )
+                var role = new[] { selectedRole };
+
+                if ( AddingNewUser )
                 {
-                    result = await userService.CreateNewUser(User, model.Password);
+                    result = await userService.CreateNewUser(User, model.Password, role);
                 }
                 else
                 {
-                    result = await userService.UpdateUserAsync(User, new[] { selectedRole });
+                    result = await userService.UpdateUserAsync(User, role);
                 }
 
                 success = result != null && result.Succeeded;
@@ -168,27 +170,26 @@
     {
         if( firstRender )
         {
-            // Default
-            selectedRole = RoleDefinitions.s_UserRole;
-
             var systemRoles = await userService.GetRoles();
 
-            if( User.UserRoles != null && User.UserRoles.Any() )
+            if( systemRoles != null && systemRoles.Any() )
             {
                 var allUsers = await userService.GetUsers();
 
-                if( !allUsers.Any() )
-                {
-                    var adminRole = systemRoles.FirstOrDefault(x => x.Name == "Admin");
-                    // If there's no users yet, default to Admin
-                    selectedRole = adminRole.Name;
-                    allRoles.Add(adminRole);
-                }
-                else
+                if( allUsers.Any() )
                 {
                     allRoles.AddRange(systemRoles);
                     var role = User.UserRoles.First();
                     selectedRole = role.Role.Name;
+                }
+                else
+                {
+                    // Default
+                    selectedRole = RoleDefinitions.s_AdminRole;
+
+                    // If there's no users yet, default to Admin
+                    var adminRole = systemRoles.FirstOrDefault(x => x.Name == "Admin");
+                    allRoles.Add(adminRole);
                 }
             }
 

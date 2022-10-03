@@ -216,104 +216,104 @@
     </DetailedErrorBoundary>
 </MudTabPanel>
 
-@if( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles) )
-{
+<AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
     <MudTabPanel Text="User Management">
         <DetailedErrorBoundary>
             <div>
-                <UserManagement/>
+                <UserManagement />
             </div>
         </DetailedErrorBoundary>
     </MudTabPanel>
-}
+</AuthorizeView>
+
 <MudTabPanel Text="Email Notifications">
-    <DetailedErrorBoundary>
-        <EditForm Model="@(settingsModel.useSmtp ? settingsModel.smtpSettings : settingsModel.sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
-            <FluentValidationValidator/>
-            <ValidationSummary/>
+        <DetailedErrorBoundary>
+            <EditForm Model="@(settingsModel.useSmtp ? settingsModel.smtpSettings : settingsModel.sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
+                <FluentValidationValidator />
+                <ValidationSummary />
 
-            <h2>Email Settings for Password Reminders, etc.</h2>
+                <h2>Email Settings for Password Reminders, etc.</h2>
 
-            <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
-            <MudRadioGroup @bind-SelectedOption="@settingsModel.useSmtp">
-                <MudRadio Option="@true">SMTP</MudRadio>
-                <MudRadio Option="@false">SendGrid</MudRadio>
-            </MudRadioGroup>
+                <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
+                <MudRadioGroup @bind-SelectedOption="@settingsModel.useSmtp">
+                    <MudRadio Option="@true">SMTP</MudRadio>
+                    <MudRadio Option="@false">SendGrid</MudRadio>
+                </MudRadioGroup>
 
 
-            @if( settingsModel.useSmtp )
-            {
+                @if (settingsModel.useSmtp)
+                {
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                        </div>
+                    </div>
+
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                        </div>
+                    </div>
+
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" UserAttributes="@MudNoAutofill.noAutoFillAttr" Variant="UIConstants.MudVariant" />
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="UIConstants.MudVariant" />
+                        </div>
+                    </div>
+                    <div class="damselfly-configsetting">
+                        <div class="damselfly-configfield">
+                            <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" UserAttributes="@MudNoAutofill.noAutoFillAttr" InputType="InputType.Email" ReadOnly="false"
+                                          Variant="UIConstants.MudVariant" HelperText="This should match the email address associated with your API key in your SendGrid account" />
+                        </div>
+                    </div>
+                }
+                <button class="btn btn-primary" type="submit">Save Settings</button>
+            </EditForm>
+        </DetailedErrorBoundary>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Wordpress">
+        <DetailedErrorBoundary>
+            <EditForm Model="@settingsModel.wpSettings" OnValidSubmit="@HandleValidSubmit">
+                <FluentValidationValidator />
+                <ValidationSummary />
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+                        <MudTextField @bind-Value="@settingsModel.wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant" />
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+                        <MudTextField @bind-Value="@settingsModel.wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+                        <MudTextField @bind-Value="@settingsModel.wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant" />
                     </div>
                 </div>
-
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant"/>
-                    </div>
-                </div>
-
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" UserAttributes="@MudNoAutofill.noAutoFillAttr" Variant="UIConstants.MudVariant"/>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="UIConstants.MudVariant"/>
-                    </div>
-                </div>
-                <div class="damselfly-configsetting">
-                    <div class="damselfly-configfield">
-                        <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" UserAttributes="@MudNoAutofill.noAutoFillAttr" InputType="InputType.Email" ReadOnly="false"
-                                      Variant="UIConstants.MudVariant" HelperText="This should match the email address associated with your API key in your SendGrid account"/>
-                    </div>
-                </div>
-            }
-            <button class="btn btn-primary" type="submit">Save Settings</button>
-        </EditForm>
-    </DetailedErrorBoundary>
-</MudTabPanel>
-
-<MudTabPanel Text="Wordpress">
-    <DetailedErrorBoundary>
-        <EditForm Model="@settingsModel.wpSettings" OnValidSubmit="@HandleValidSubmit">
-            <FluentValidationValidator/>
-            <ValidationSummary/>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudTextField @bind-Value="@settingsModel.wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant"/>
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudTextField @bind-Value="@settingsModel.wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudTextField @bind-Value="@settingsModel.wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant"/>
-                </div>
-            </div>
-            <button class="btn btn-primary" type="submit">Save Settings</button>
-        </EditForm>
-    </DetailedErrorBoundary>
-</MudTabPanel>
+                <button class="btn btn-primary" type="submit">Save Settings</button>
+            </EditForm>
+        </DetailedErrorBoundary>
+    </MudTabPanel>
 </AuthorizeView>
 </MudTabs>
 </Authorized>

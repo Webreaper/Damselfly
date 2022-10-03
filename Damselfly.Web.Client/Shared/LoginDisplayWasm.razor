@@ -7,7 +7,7 @@
 {
     <AuthorizeView>
         <Authorized>
-            <div class="damselfly-statusbarpanel" title="Logged in as @context.User.Identity?.Name">
+            <div class="damselfly-statusbarpanel" title="Logged in as @IdentityToolTip(context)">
                 <i class="processing-icon fas fa-user"/>
                 <NavLink href="/config">@context.User.Identity?.Name</NavLink>
             </div>
@@ -24,6 +24,11 @@
 }
 
 @code{
+    private string IdentityToolTip(AuthenticationState state)
+    {
+        var adminRole = state.User.IsInRole(RoleDefinitions.s_AdminRole) ? " (Admin)" : string.Empty;
+        return $"{state.User.Identity?.Name}{adminRole}";
+    }
 
     async Task LogOut()
     {
@@ -37,4 +42,4 @@
         Navigation.NavigateTo("Login");
     }
 
-}
+    }
