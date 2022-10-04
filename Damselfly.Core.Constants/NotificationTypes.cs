@@ -9,7 +9,7 @@ public enum NotificationType
     FoldersChanged = 2,
     WorkStatusChanged = 3,
     CacheEvict = 4,
-    FavouritesChanged = 5,
+    FavouritesAndRecentsChanged = 5,
     BasketChanged = 6,
     SystemSettingsChanged = 7
 }

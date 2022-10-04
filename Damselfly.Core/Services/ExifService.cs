@@ -87,6 +87,7 @@ public class ExifService : IProcessJobFactory, ITagService
     }
 
     public event Action OnFavouritesChanged;
+    public event Action<ICollection<string>> OnUserTagsAdded;
 
     public Task<ICollection<Tag>> GetFavouriteTags()
     {
@@ -244,18 +245,18 @@ public class ExifService : IProcessJobFactory, ITagService
         return tag.Favourite;
     }
 
-    public event Action<ICollection<string>> OnUserTagsAdded;
-
     private void NotifyFavouritesChanged()
     {
         OnFavouritesChanged?.Invoke();
 
-        _ = _notifier.NotifyClients(NotificationType.FavouritesChanged);
+        _ = _notifier.NotifyClients(NotificationType.FavouritesAndRecentsChanged);
     }
 
     private void NotifyUserTagsAdded(ICollection<string> tagsAdded)
     {
         OnUserTagsAdded?.Invoke(tagsAdded);
+
+        _ = _notifier.NotifyClients(NotificationType.FavouritesAndRecentsChanged);
     }
 
     /// <summary>

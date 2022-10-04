@@ -8,6 +8,8 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 public interface ITagService
 {
     event Action OnFavouritesChanged;
+    event Action<ICollection<string>> OnUserTagsAdded;
+
     Task<ICollection<Tag>> GetFavouriteTags();
     Task<bool> ToggleFavourite(Tag tag);
 

@@ -14,13 +14,17 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     private ICollection<Tag> _favouriteTags;
     private ICollection<string> _recentTags;
 
+    public event Action OnFavouritesChanged;
+    public event Action<ICollection<string>> OnUserTagsAdded;
+
     public ClientTagService(RestClient client, NotificationsService notifications)
     {
         httpClient = client;
         _notifications = notifications;
 
-        _notifications.SubscribeToNotification(NotificationType.FavouritesChanged, FavouritesChanged);
+        _notifications.SubscribeToNotification(NotificationType.FavouritesAndRecentsChanged, FavouritesChanged);
     }
+
 
     public async Task<ICollection<string>> GetRecentTags()
     {
@@ -44,8 +48,6 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     {
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags");
     }
-
-    public event Action OnFavouritesChanged;
 
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
@@ -88,12 +90,16 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         await httpClient.CustomPostAsJsonAsync("/api/tags/exif", payload);
     }
 
-    private void FavouritesChanged()
+    private async void FavouritesChanged()
     {
         // Clear the cache
         _favouriteTags = null;
         _recentTags = null;
 
+        await GetRecentTags();
+        await GetFavouriteTags();
+
         OnFavouritesChanged?.Invoke();
     }
+
 }

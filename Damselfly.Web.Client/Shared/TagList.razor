@@ -157,7 +157,7 @@
     {
         Logging.Log($"Creating tag for {tagToAdd}...");
 
-    // If multiple tags have been added, split them and add individually.
+        // If multiple tags have been added, split them and add individually.
         var addedTags = tagToAdd.Split(',').Select(x => x.Trim()).ToList();
 
         _ = WriteNewTags(addedTags);
@@ -187,10 +187,10 @@
 
         var tagToDelete = new List<string> { tag.Keyword };
 
-    // Now store the state
+        // Now store the state
         theImageTags.Remove(tag);
 
-    // Write the change asynchronously and update the UI
+        // Write the change asynchronously and update the UI
         _ = WriteNewTags(null, tagToDelete);
     }
 
@@ -256,7 +256,7 @@
     {
         if( TrackSelection )
         {
-    // TODO: Dispose
+            // TODO: Dispose
             selectionService.OnSelectionChanged += SelectionChanged;
             tagService.OnFavouritesChanged += FavouritesChanged;
             SelectionChanged();
@@ -306,20 +306,27 @@
 
     protected void FavouritesChanged()
     {
-    // We might not be called from the dispatcher thread.
-        InvokeAsync(StateHasChanged);
+        _ = RefreshFavourites();
+    }
+
+    protected async Task RefreshFavourites()
+    {
+        faveTags.Clear();
+        recentTags.Clear();
+
+        faveTags.AddRange(await tagService.GetFavouriteTags());
+        recentTags.AddRange(await recentTagService.GetRecentTags());
+
+        // We might not be called from the dispatcher thread.
+        await InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        faveTags.Clear();
-        recentTags.Clear();
-        faveTags.AddRange(await tagService.GetFavouriteTags());
-        recentTags.AddRange(await recentTagService.GetRecentTags());
-
         theImageTags = GetImageTags();
         theObjectTags = GetObjectTags(theImageTags);
 
+        await RefreshFavourites();
         await InvokeAsync(StateHasChanged);
     }
 

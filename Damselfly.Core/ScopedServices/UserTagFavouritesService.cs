@@ -48,11 +48,12 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
     ///     Add most-recent tags to the list
     /// </summary>
     /// <param name="recentTags"></param>
-    private async void AddRecentTags(ICollection<string> newRecents)
+    public async void AddRecentTags( ICollection<string> newRecents)
     {
         const int maxRecents = 5;
 
         var faves = await _exifService.GetFavouriteTags();
+        var recents = await GetRecentTags();
 
         var newRecent = recentTags.Concat(newRecents)
             .Except(faves.Select(x => x.Keyword))
