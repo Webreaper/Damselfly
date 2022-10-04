@@ -283,9 +283,13 @@
 
             var images = await imageCache.GetCachedImages(searchService.SearchResults);
             logger.LogInformation($"ImageSearch: Loading {images.Count()} more images into image grid.");
-            gridImages.Clear();
-            gridImages.AddRange(images);
 
+            if( images != null )
+            {
+                List<Image> newImages = images;
+                var toAdd = newImages.ExceptBy( gridImages.Select( x => x.ImageId), x => x.ImageId );
+                gridImages.AddRange(toAdd);
+            }
             configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
         }
         else
