@@ -33,6 +33,7 @@
 
     async Task Move()
     {
+        // TODO: This can be done in one step via the API
         await basketService.CopyImages(selectedBasket.BasketId);
         await basketService.Clear();
 

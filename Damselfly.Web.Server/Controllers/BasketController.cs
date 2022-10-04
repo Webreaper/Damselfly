@@ -34,10 +34,16 @@ public class BasketController : ControllerBase
         return await _service.CopyImages(req.SourceBasketId, req.DestBasketId);
     }
 
-    [HttpPost("/api/basket")]
-    public async Task<Basket> SetBasketState(BasketCreateRequest req)
+    [HttpPut("/api/basket")]
+    public async Task<Basket> CreaeteBasket(BasketCreateRequest req)
     {
         return await _service.Create(req.Name, req.UserId);
+    }
+
+    [HttpPost("/api/basket")]
+    public async Task SaveBasket(Basket basket)
+    {
+        await _service.Save(basket);
     }
 
     [HttpGet("/api/basket/entries/{basketId}")]

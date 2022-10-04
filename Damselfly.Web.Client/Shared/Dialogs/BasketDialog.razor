@@ -98,7 +98,7 @@
             {
                 var newBasket = await basketService.Create(model.BasketName, userId);
 
-    // Force it to reload
+                // Force it to reload
                 await basketService.SwitchToBasket(newBasket.BasketId);
 
                 if( model.IsPublic )
@@ -119,6 +119,8 @@
             }
 
             MudDialog.Close(DialogResult.Ok(true));
+
+            StateHasChanged();
         }
         catch( Exception ex )
         {
