@@ -134,7 +134,8 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public async Task<int> CopyImages(int sourceBasketId, int destBasketId)
     {
-        return await httpClient.CustomGetFromJsonAsync<int>($"/api/basket/copy/{sourceBasketId}/{destBasketId}");
+        var req = new BasketCopyRequest { SourceBasketId = sourceBasketId, DestBasketId = destBasketId, Move = false };
+        return await httpClient.CustomPostAsJsonAsync<BasketCopyRequest, int>($"/api/basket/copy/", req);
     }
 
     public async Task<int> CopyImages(int destBasketId)

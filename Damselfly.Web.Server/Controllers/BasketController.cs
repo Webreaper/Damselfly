@@ -28,6 +28,12 @@ public class BasketController : ControllerBase
         await _service.Delete(basketId);
     }
 
+    [HttpPost("/api/basket/copy")]
+    public async Task<int> CopyImages(BasketCopyRequest req)
+    {
+        return await _service.CopyImages(req.SourceBasketId, req.DestBasketId);
+    }
+
     [HttpPost("/api/basket")]
     public async Task<Basket> SetBasketState(BasketCreateRequest req)
     {
