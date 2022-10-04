@@ -70,7 +70,7 @@
             // Restore the last-known basket
             var selectedBasketId = userConfigService.GetInt(ConfigSettings.SelectedBasketId);
 
-            if( baskets.Any(x => x.BasketId == selectedBasketId) )
+            if( basketService.CurrentBasket != null && baskets.Any(x => x.BasketId == selectedBasketId) )
             {
                 if( selectedBasketId > 0 && basketService.CurrentBasket.BasketId != selectedBasketId )
                     await basketService.SwitchToBasket(selectedBasketId);
