@@ -218,7 +218,7 @@ public class SearchQueryService
                     throw new ArgumentException("Unexpected grouping type.");
             }
 
-            results = await images.AsSplitQuery()
+            results = await images
                 .Select(x => x.ImageId)
                 .Skip(first)
                 .Take(count)

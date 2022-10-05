@@ -211,7 +211,6 @@ public class ImageCache : IImageCacheService
             .ThenInclude(x => x.Tag)
             .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
             .ThenInclude(x => x.Person)
-            .AsSplitQuery()
             .ToListAsync();
 
         foreach ( var enrichedImage in images ) _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
