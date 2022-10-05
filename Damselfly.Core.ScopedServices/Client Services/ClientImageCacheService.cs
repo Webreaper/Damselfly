@@ -70,7 +70,7 @@ public class ClientImageCacheService : IImageCacheService
         }
         catch ( Exception ex )
         {
-            _logger.LogError($"Exception during caching enrichment: {ex.Message}");
+            _logger.LogError($"Exception during caching enrichment: {ex}");
         }
 
         return result;
