@@ -10,6 +10,7 @@ using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using WordPressPCL.Models;
 
 namespace Damselfly.Core.Services;
 
@@ -158,6 +159,27 @@ public class ImageCache : IImageCacheService
         return cachedImage;
     }
 
+    /* Can we use a compiled query here?
+    private static Func<ImageContext, List<int>, Task<List<Image>>> getImagesAsync =
+            EF.CompileAsyncQuery((ImageContext context, List<int> imageIds) =>
+                context.Images
+                    .Where(x => imageIds.Contains(x.ImageId))
+                    .Include(x => x.Folder)
+                    .Include(x => x.MetaData)
+                    .Include(x => x.Hash)
+                    .Include(x => x.MetaData.Camera)
+                    .Include(x => x.MetaData.Lens)
+                    .Include(x => x.BasketEntries)
+                    .Include(x => x.ImageTags.Where(y => imageIds.Contains(y.ImageId)))
+                    .ThenInclude(x => x.Tag)
+                    .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
+                    .ThenInclude(x => x.Tag)
+                    .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
+                    .ThenInclude(x => x.Person)
+                    .ToList());
+    */
+
+
     private async Task<List<Image>> EnrichAndCache(List<int> imageIds)
     {
         if ( !imageIds.Any() )
@@ -189,6 +211,7 @@ public class ImageCache : IImageCacheService
             .ThenInclude(x => x.Tag)
             .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
             .ThenInclude(x => x.Person)
+            .AsSplitQuery()
             .ToListAsync();
 
         foreach ( var enrichedImage in images ) _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
