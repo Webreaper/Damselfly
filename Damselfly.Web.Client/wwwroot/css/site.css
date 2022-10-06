@@ -49,6 +49,7 @@ html, body {
     max-width: 500px;
 }
 
+
 .components-reconnect-hide > div {
     display: none;
 }
@@ -152,16 +153,6 @@ div::-webkit-scrollbar-thumb {
     padding-right: 6px;
 }
 
-.error-panel {
-    background-color: rgb(120, 10, 10, 0.4);
-    color: red;
-}
-
-.error-stacktrace {
-    background-color: rgba(40, 10, 10, 0.3);
-    white-space: pre;
-    font-family: consolas, monospace;
-}
 
 .btn-error {
     color: rgb(200, 200, 20, 0.6);
@@ -171,8 +162,9 @@ div::-webkit-scrollbar-thumb {
     margin-left: 1px;
     margin-right: 1px;
     border-radius: 2px;
-    padding-left: 3px;
-    padding-right: 3px;
+    padding: 5px;
+    padding-left: 6px;
+    padding-right: 6px;
 }
 
 .btn-primary:disabled {
@@ -1415,7 +1407,6 @@ f
 
 .damselfly-keywordtext-disabled {
     margin: 0 2px 0 2px;
-    text-wrap: none;
     color: #999999;
     flex: 0 1 auto;
 }

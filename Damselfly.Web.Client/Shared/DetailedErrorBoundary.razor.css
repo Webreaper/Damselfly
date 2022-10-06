@@ -1,0 +1,30 @@
+.error-panel {
+    background-color: rgb(145, 30, 30, 0.4);
+    padding: 5px;
+}
+
+.error-stacktrace {
+    background-color: rgba(10, 10, 10, 0.3);
+    white-space: pre-wrap;
+    font-family: consolas, monospace;
+    font-size: 10pt;
+    color: darkorange;
+    margin: 2%;
+    overflow-wrap: break-word;
+    overflow-y: auto;
+    max-width: 96%;
+    padding: 3%;
+}
+
+.damselfly-error-popup {
+    position: fixed;
+    left: 25vw;
+    top: 25vh;
+    width: 50vw;
+    min-width: 300px;
+    min-height: 200px;
+    max-height: 50vh;
+    scroll-behavior: auto;
+    background-color: var(--tool-window-bg);
+    padding: 10px;
+}

@@ -1,11 +1,11 @@
 ﻿@inject NavigationManager navManager
 @inherits ErrorBoundary
 
-@if( CurrentException is null )
+@if (CurrentException is null)
 {
     @ChildContent
 }
-else if( ErrorContent is not null )
+else if (ErrorContent is not null)
 {
     @ErrorContent(CurrentException)
 }
@@ -13,20 +13,24 @@ else
 {
     <div class="error-panel">
         <p>An error has occurred.</p>
-        <button class="btn btn-error" @onclick="@Reload">Reload Page.</button>
-        <button class="btn btn-error" @onclick="@ToggleDisplay">@ShowText Details.</button>
+        <button class="btn btn-primary" @onclick="@Reload">Reload Page.</button>
+        <button class="btn btn-primary" @onclick="@ToggleDisplay">@ShowText Details.</button>
+    </div>
+}
 
-        @if( Open )
-        {
-            <div class="error-stacktrace">
-                @foreach( var exception in receivedExceptions )
-                {
-                    <div class="received-exception" style="font-size: 10pt; color: darkorange; margin: 0.5rem; padding: 0.2rem;">
-                        @exception
-                    </div>
-                }
-            </div>
-        }
+@if (Open)
+{
+    <div class="damselfly-error-popup">
+        <h2>Error Details:</h2>
+        <div class="error-stacktrace">
+            @foreach (var exception in receivedExceptions)
+            {
+                @exception
+            }
+        </div>
+        <div>
+            <button class="btn btn-primary" @onclick="@ToggleDisplay">Close</button>
+        </div>
     </div>
 }
 
