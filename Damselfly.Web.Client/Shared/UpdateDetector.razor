@@ -1,0 +1,39 @@
+@inject IJSRuntime _jsRuntime
+@inject IUserStatusService statusService
+@inject ILogger<UpdateDetector> logger
+
+@if (updateAvailaable)
+{
+    <div class="damselfly-statusbarpanel" title="Update available. Please refresh the page.">
+        <label>
+            <a href="javascript:window.location.reload(true)">Update Available</a>
+        </label>
+    </div>
+}
+@code {
+
+    private bool updateAvailaable = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // this function is in the sw-registrator.js file
+        // that file is used to register the app's service worker
+        // and provides a hook that we can use to know when
+        // the service worker finds an update to the app
+
+        await _jsRuntime.InvokeAsync<object>(
+           identifier: "registerForUpdateAvailableNotification",
+           DotNetObjectReference.Create(this),
+           nameof(OnUpdateAvailable));
+    }
+
+    [JSInvokable(nameof(OnUpdateAvailable))]
+    public async Task OnUpdateAvailable()
+    {
+        statusService.UpdateStatus("A new version of Trackor is available! Please close the app or browser tab and re-start.");
+        updateAvailaable = true;
+        logger.LogInformation("Update detected in client.");
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -5,18 +5,19 @@
 
 
 <div class="damselfly-statusbar">
-    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText"/>
-    <WorkStatus/>
-    <ConnectionStatus/>
-    @if( wasmState.IsWebAssembly )
+    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
+    <UpdateDetector />
+    <WorkStatus />
+    <ConnectionStatus />
+    @if (wasmState.IsWebAssembly)
     {
-        <LoginDisplayWasm/>
+        <LoginDisplayWasm />
     }
     else
     {
-        <LoginDisplay/>
+        <LoginDisplay />
     }
-    <Toolbar/>
+    <Toolbar />
 </div>
 
 @code
