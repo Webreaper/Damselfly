@@ -2,6 +2,8 @@
 version=`cat VERSION`
 dotnetversion='7.0'
 
+echo "const CACHE_VERSION='${version}'" > Damselfly.Web.Client/wwwroot/version.js
+
 if [ -n "$1" ]; then
     PLATFORM=$1
 else
