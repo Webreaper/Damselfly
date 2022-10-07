@@ -3,18 +3,23 @@
         Init: function (scrollAreaID, DotNetRef, initialScrollPos) {
             var scrollArea = document.getElementById(scrollAreaID);
 
-            if (scrollArea !== null)
-                scrollArea.scrollTop = initialScrollPos;
-
-            function onScroll() {
-                if (scrollArea === null) {
-                    scrollArea = document.getElementById(scrollAreaID);
-                    scrollArea.addEventListener('scroll', onScroll);
-                }
-
+            function onScroll()
+            {
                 DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
             }
 
-            window.addEventListener('resize', onScroll);
+            if (scrollArea !== null)
+            {
+                scrollArea.addEventListener('scroll', onScroll);
+                window.addEventListener('resize', onScroll);
+
+                // For some reason this only works if it's executed async 
+                // Probably something to do with the ordering of the element
+                // creation in in the DOM
+                setTimeout(function () {
+                    scrollArea.scrollTop = initialScrollPos;
+                }, 1);
+
+            }
         }
     }

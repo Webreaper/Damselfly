@@ -4,13 +4,13 @@
 
 @code{
 
-    [Parameter]
-    [EditorRequired]
-    public string ScrollElementId { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public string ScrollElementId { get; set; }
 
-    [Parameter]
-    [EditorRequired]
-    public string ScrollConfigName { get; set; }
+        [Parameter]
+        [EditorRequired]
+        public string ScrollConfigName { get; set; }
 
     private EventConflator conflator = new();
 
@@ -18,7 +18,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        logger.LogTrace($"Saving scroll position to {scrollTop}");
+        logger.LogInformation($"Saving scroll position to {scrollTop}");
         configService.SetForUser(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);
@@ -47,9 +47,9 @@
 
     [JSInvokable]
     // Debugging method to help us differentiate between JS calls and other data loads
-    public void HandleScroll(int scrollTop)
+    public void HandleScroll(double scrollTop)
     {
-        conflator.HandleEvent(x => { SaveScrollState(scrollTop); });
+        conflator.HandleEvent(x => { SaveScrollState((int)scrollTop); });
     }
 
 }

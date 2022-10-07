@@ -8,11 +8,10 @@
 @implements IDisposable
 @inherits ImageGridBase
 
-<LocalFileExporter @ref="FileExporter"/>
-<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop"/>
+<LocalFileExporter @ref="FileExporter" />
 
 <div class="damselfly-imagegrid" id="scroll-area">
-    @if( !gridImages.Any() )
+    @if (!gridImages.Any())
     {
         <div class="damselfly-searchmsg">
             <span>@ResultsMessage</span>
@@ -21,9 +20,9 @@
     else
     {
         var allImages = 0;
-        foreach( var grouping in GroupedImages )
+        foreach (var grouping in GroupedImages)
         {
-            if( !string.IsNullOrEmpty(grouping.Key) )
+            if (!string.IsNullOrEmpty(grouping.Key))
             {
                 <div class="damselfly-imageseparator">
                     <div class="damselfly-imageseparatortitle">
@@ -31,11 +30,11 @@
                     </div>
                     <div class="damselfly-imageseparatorbuttons">
                         <button @onclick="async () => { await AddGroupToBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
-                            <i class="fas fa-shopping-basket"/>
+                            <i class="fas fa-shopping-basket" />
                             &nbsp;Add
                         </button>
                         <button @onclick="async () => { await RemoveGroupFromBasket(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
-                            <i class="fas fa-shopping-basket"/>
+                            <i class="fas fa-shopping-basket" />
                             &nbsp;Remove
                         </button>
                         <button @onclick="() => { SelectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
@@ -44,10 +43,10 @@
                         <button @onclick="() => { DeselectGroup(grouping); }" class="btn btn-primary damselfly-imageseparatorbutton">
                             &nbsp;De-select
                         </button>
-                        @if( FileExporter != null && FileExporter.IsDesktopHosted )
+                        @if (FileExporter != null && FileExporter.IsDesktopHosted)
                         {
                             <button @onclick="async () => { await FileExporter.ExportImagesToLocalFilesystem(grouping.Images); }" class="btn btn-primary">
-                                <i class="fas fa-download"/>
+                                <i class="fas fa-download" />
                                 &nbsp;Save Locally
                             </button>
                         }
@@ -55,17 +54,17 @@
                 </div>
             }
 
-            foreach( var image in grouping.Images )
+            foreach (var image in grouping.Images)
             {
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
                 <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
-                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize/>
+                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
                 </div>
             }
         }
 
-        if( !endOfImages )
+        if (!endOfImages)
         {
             <div class="damselfly-moreimages" id="list-end">
                 <div title="Loading more images..." class="imagegrid-loader"></div>
@@ -77,6 +76,9 @@
         }
     }
 </div>
+
+<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" />
+
 
 @code {
     private LocalFileExporter FileExporter;
@@ -126,11 +128,11 @@
         get
         {
             // TODO: Order by
-            if( searchService.Grouping == GroupingType.Folder )
+            if (searchService.Grouping == GroupingType.Folder)
             {
                 var result = gridImages.GroupBy(x => x.Folder.Path);
 
-                if( searchService.SortOrder == SortOrderType.Descending )
+                if (searchService.SortOrder == SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -138,11 +140,11 @@
                 return result.Select(x => new ImageGrouping { Key = x.Key, Images = x.ToList() })
                     .ToList();
             }
-            if( searchService.Grouping == GroupingType.Date )
+            if (searchService.Grouping == GroupingType.Date)
             {
                 var result = gridImages.GroupBy(x => x.SortDate.Date);
 
-                if( searchService.SortOrder == SortOrderType.Descending )
+                if (searchService.SortOrder == SortOrderType.Descending)
                     result = result.OrderByDescending(x => x.Key);
                 else
                     result = result.OrderBy(x => x.Key);
@@ -173,11 +175,11 @@
 
     protected void ChangeThumbSize(ThumbSize newSize)
     {
-        if( _currentThumbSize != newSize )
+        if (_currentThumbSize != newSize)
         {
             _currentThumbSize = newSize;
 
-            switch( newSize )
+            switch (newSize)
             {
                 case ThumbSize.Medium:
                     WrapStyle = "wrapping-table-medium";
@@ -202,7 +204,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if( firstRender )
+        if (firstRender)
         {
             selectionService.OnSelectionChanged += SelectedImagesChanged;
             searchService.OnSearchQueryChanged += SearchQueryChanged;
@@ -242,7 +244,7 @@
         InvokeAsync(StateHasChanged);
     }
 
-    protected void SearchResultsChanged( SearchResponse response )
+    protected void SearchResultsChanged(SearchResponse response)
     {
         logger.LogInformation("ImageSearch: Calling LoadData...");
 
@@ -276,7 +278,7 @@
 
     private async Task AddImagesToGrid(bool moreDataAvaiable)
     {
-        if(searchService.SearchResults.Any() )
+        if (searchService.SearchResults.Any())
         {
             ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
             await InvokeAsync(StateHasChanged);
@@ -284,11 +286,13 @@
             var images = await imageCache.GetCachedImages(searchService.SearchResults);
             logger.LogInformation($"ImageSearch: Loading {images.Count()} more images into image grid.");
 
-            if( images != null )
+            if (images != null)
             {
                 List<Image> newImages = images;
-                var toAdd = newImages.ExceptBy( gridImages.Select( x => x.ImageId), x => x.ImageId );
-                gridImages.AddRange(toAdd);
+                var toAdd = newImages.ExceptBy(gridImages.Select(x => x.ImageId), x => x.ImageId).ToList();
+
+                if (toAdd.Any())
+                    gridImages.AddRange(toAdd);
             }
             configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
         }
