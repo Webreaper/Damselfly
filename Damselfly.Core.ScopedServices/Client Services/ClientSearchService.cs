@@ -53,6 +53,10 @@ public class ClientSearchService : BaseSearchService, ISearchService
 
             var request = new SearchRequest(Query, first, count);
 
+            _logger.LogInformation($"Executing search for {SearchBreadcrumbs} ({SearchResults.Count} results were already loaded.");
+
+            _statusService.UpdateStatus($"Searching for images: {this.SearchBreadcrumbs}...");
+
             response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 
             if ( response != null )

@@ -18,14 +18,12 @@ public class SearchQueryService
     private readonly IConfigService _configService;
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
 
-    public SearchQueryService(IStatusService statusService, IServiceScopeFactory scopeFactory, ImageCache cache,
+    public SearchQueryService(IServiceScopeFactory scopeFactory, ImageCache cache,
         IConfigService configService)
     {
         _scopeFactory = scopeFactory;
         _configService = configService;
-        _statusService = statusService;
         _imageCache = cache;
     }
 
@@ -271,8 +269,6 @@ public class SearchQueryService
 
         // Set the results on the service property
         response.SearchResults = enrichedImages.Select(x => x.ImageId).ToArray();
-
-        _statusService.UpdateStatus($"Found at least {enrichedImages.Count} images that match the search query.");
 
         return response;
     }

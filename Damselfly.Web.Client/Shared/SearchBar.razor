@@ -153,8 +153,6 @@
 
     private void DoSearch(string searchTerm)
     {
-        if( !string.IsNullOrEmpty(searchTerm) )
-            statusService.UpdateStatus($"Searching for keyword: {searchTerm}...");
         searchService.SearchText = searchTerm;
     }
 

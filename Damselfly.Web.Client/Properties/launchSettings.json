@@ -20,7 +20,6 @@
     "Damselfly.Web.Client": {
       "commandName": "Project",
       "launchBrowser": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

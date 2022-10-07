@@ -1,3 +1,1 @@
-
-const CACHE_VERSION = '1'
-
+const CACHE_VERSION='4.0.0'
