@@ -2,7 +2,7 @@
 @inject IUserStatusService statusService
 @inject ILogger<UpdateDetector> logger
 
-@if (updateAvailaable)
+@if (updateAvailable)
 {
     <div class="damselfly-statusbarpanel" title="Update available. Please refresh the page.">
         <label>
@@ -10,6 +10,7 @@
         </label>
     </div>
 }
+
 @code {
 
     private bool updateAvailable = false;

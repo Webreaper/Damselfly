@@ -18,7 +18,7 @@
     "Damselfly.Web": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:58532",
+      "applicationUrl": "http://localhost:44006",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

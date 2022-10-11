@@ -7,25 +7,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
-        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="API Services\"/>
-        <Folder Include="Interfaces\"/>
+        <Folder Include="API Services\" />
+        <Folder Include="Interfaces\" />
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Microsoft.AspNetCore.SignalR.Client"/>
-        <None Remove="Microsoft.AspNetCore.Components"/>
-        <None Remove="Microsoft.JSInterop"/>
-        <None Remove="Blazored.LocalStorage"/>
-        <None Remove="Microsoft.AspNetCore.Components.Authorization"/>
+        <None Remove="Microsoft.AspNetCore.SignalR.Client" />
+        <None Remove="Microsoft.AspNetCore.Components" />
+        <None Remove="Microsoft.JSInterop" />
+        <None Remove="Blazored.LocalStorage" />
+        <None Remove="Microsoft.AspNetCore.Components.Authorization" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Microsoft.JSInterop" Version="7.0.0-rc.1.22427.2"/>
-        <PackageReference Include="Blazored.LocalStorage" Version="4.2.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.0-rc.1.22427.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.0-rc.2.22476.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.0-rc.2.22476.2" />
+        <PackageReference Include="Microsoft.JSInterop" Version="7.0.0-rc.2.22476.2" />
+        <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.0-rc.2.22476.2" />
     </ItemGroup>
 </Project>
