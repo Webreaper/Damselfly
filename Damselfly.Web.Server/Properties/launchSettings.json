@@ -27,8 +27,10 @@
     },
     "Damselfly.Web.Server": {
       "commandName": "Project",
+      "commandLineArgs": "/Users/markotway/Pictures",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:34111;http://localhost:39348",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "http://localhost:6363",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

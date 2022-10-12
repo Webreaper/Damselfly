@@ -57,7 +57,7 @@ public class ClientImageCacheService : IImageCacheService
         try
         {
             // First pre-cache them in batch
-            // await PreCacheImageList(imgIds);
+            await PreCacheImageList(imgIds);
 
             // This must be done in-order, otherwise we'll end up with a mess
             foreach ( var imgId in imgIds )
@@ -95,7 +95,7 @@ public class ClientImageCacheService : IImageCacheService
 
     private async Task PreCacheImageList(ICollection<int> imgIds)
     {
-        const int chunkSize = 10;
+        const int chunkSize = 250;
 
         if ( imgIds.Count() <= chunkSize )
         {
@@ -104,7 +104,7 @@ public class ClientImageCacheService : IImageCacheService
             {
                 var images = await GetImages(imgIds);
                 _logger.LogInformation($"Retreived {imgIds.Count} images from server in {watch.ElapsedTime}ms.");
-                images.ForEach(x => CacheImage(x));
+                images.ForEach(CacheImage);
             }
             catch ( Exception ex )
             {
@@ -118,7 +118,7 @@ public class ClientImageCacheService : IImageCacheService
         else
         {
             var tasks = imgIds.Chunk(chunkSize)
-                .Select(x => PreCacheImageList(x))
+                .Select(PreCacheImageList)
                 .ToList();
             var watch = new Stopwatch("ClientCacheImage");
             await Task.WhenAll(tasks);
@@ -136,15 +136,22 @@ public class ClientImageCacheService : IImageCacheService
 
     private async Task<List<Image>> GetImages(ICollection<int> imgIds)
     {
-        var req = new ImageRequest { ImageIds = imgIds.ToList() };
-        var response = await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
-        return response.Images;
+        if (imgIds.Any())
+        {
+            var req = new ImageRequest { ImageIds = imgIds.ToList() };
+            var response = await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
+            return response.Images;
+        }
+        else
+            return new List<Image>();
     }
 
     private async Task<Image> LoadAndCacheImage(int imageId)
     {
-        if ( _memoryCache.TryGetValue<Image>(imageId, out var image) )
+        if (_memoryCache.TryGetValue<Image>(imageId, out var image))
             return image;
+        else
+            _logger.LogWarning($"No image found in cache for ID: {imageId}.");
 
         try
         {
@@ -158,7 +165,7 @@ public class ClientImageCacheService : IImageCacheService
         if ( image != null )
             CacheImage(image);
         else
-            _logger.LogWarning($"No image loaded for ID: {imageId}.");
+            _logger.LogWarning($"No image was pre-loaded for ID: {imageId}.");
 
         return image;
     }
