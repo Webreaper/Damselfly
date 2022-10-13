@@ -155,6 +155,9 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public bool IsSelected(Image image)
     {
+        if (BasketImages == null || image == null)
+            return false;
+
         return BasketImages.Any(x => x.ImageId == image.ImageId);
     }
 
