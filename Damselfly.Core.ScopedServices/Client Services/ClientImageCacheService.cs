@@ -41,6 +41,15 @@ public class ClientImageCacheService : IImageCacheService
         return result.FirstOrDefault();
     }
 
+    private void DumpCacheStats(string context)
+    {
+        var cacheStats = _memoryCache.GetCurrentStatistics();
+        if( cacheStats is not null )
+            _logger.LogInformation($"CacheStats {context}: Entries: {cacheStats.CurrentEntryCount}, Hits: {cacheStats.TotalHits}, Misses: {cacheStats.TotalMisses})");
+        else
+            _logger.LogInformation($"CacheStats {context}: Not found");
+    }
+
     /// <summary>
     ///     For a given list of IDs, load them into the cache, and then return.
     ///     Note, it's critical that the results are returned in the same order
@@ -56,8 +65,10 @@ public class ClientImageCacheService : IImageCacheService
 
         try
         {
+            var idsNotInCache = imgIds.Where(x => !_memoryCache.TryGetValue(x, out _)).ToList();
+
             // First pre-cache them in batch
-            await PreCacheImageList(imgIds);
+            await PreCacheImageList(idsNotInCache);
 
             // This must be done in-order, otherwise we'll end up with a mess
             foreach ( var imgId in imgIds )
@@ -93,6 +104,14 @@ public class ClientImageCacheService : IImageCacheService
         if ( int.TryParse(imageId, out var id) ) _memoryCache.Remove(id);
     }
 
+    /// <summary>
+    /// Given a list of IDs, if that list is smaller than the chunkSize (i.e.,
+    /// max request size) we load them from the API/DB, and then cache. If 
+    /// there are more than the chunk size, we split them up into multiple 
+    /// requests and call async, and then recurse.
+    /// </summary>
+    /// <param name="imgIds"></param>
+    /// <returns></returns>
     private async Task PreCacheImageList(ICollection<int> imgIds)
     {
         const int chunkSize = 250;
@@ -150,8 +169,9 @@ public class ClientImageCacheService : IImageCacheService
     {
         if (_memoryCache.TryGetValue<Image>(imageId, out var image))
             return image;
-        else
-            _logger.LogWarning($"No image found in cache for ID: {imageId}.");
+
+        // This should never happen, if our caching is working. :)
+        _logger.LogWarning($"No image found in client-side cache for ID: {imageId}.");
 
         try
         {
