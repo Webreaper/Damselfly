@@ -122,7 +122,6 @@ public class ClientImageCacheService : IImageCacheService
             try
             {
                 var images = await GetImages(imgIds);
-                _logger.LogInformation($"Retreived {imgIds.Count} images from server in {watch.ElapsedTime}ms.");
                 images.ForEach(CacheImage);
             }
             catch ( Exception ex )

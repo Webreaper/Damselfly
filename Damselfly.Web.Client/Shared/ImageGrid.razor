@@ -246,8 +246,6 @@
 
     protected void SearchResultsChanged(SearchResponse response)
     {
-        logger.LogInformation("ImageSearch: Calling LoadData...");
-
         // If we've tried to load data and there isn't any more, show the toast.
         toastClass = endOfImages ? "show" : string.Empty;
 
@@ -284,7 +282,6 @@
             await InvokeAsync(StateHasChanged);
 
             var images = await imageCache.GetCachedImages(searchService.SearchResults);
-            logger.LogInformation($"ImageSearch: Loading {images.Count()} more images into image grid.");
 
             if (images != null)
             {
@@ -298,7 +295,6 @@
         }
         else
         {
-            logger.LogInformation("ImageSearch: No images to load into the grid.");
             ResultsMessage = $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
         }
 

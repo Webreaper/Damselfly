@@ -376,15 +376,11 @@ public abstract class BaseSearchService
 
     public void NotifyQueryChanged()
     {
-        _logger.LogInformation($"ImageSearch: Filter changed: {Query}");
-
         OnSearchQueryChanged?.Invoke();
     }
 
     public void NotifySearchComplete(SearchResponse response)
     {
-        _logger.LogInformation($"ImageSearch: Filter changed: {Query}");
-
         OnSearchResultsChanged?.Invoke(response);
     }
 

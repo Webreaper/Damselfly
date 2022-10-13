@@ -18,7 +18,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        logger.LogInformation($"Saving scroll position to {scrollTop}");
+        logger.LogTrace($"Saving scroll position to {scrollTop}");
         configService.SetForUser(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);

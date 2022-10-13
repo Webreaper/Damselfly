@@ -31,8 +31,6 @@ public class ClientDataService : ICachedDataService
 
     public async Task InitialiseData()
     {
-        _logger.LogInformation("Loading static Data");
-
         _cameras.Clear();
         _lenses.Clear();
 
@@ -40,7 +38,7 @@ public class ClientDataService : ICachedDataService
         _cameras.AddRange(await httpClient.CustomGetFromJsonAsync<List<Camera>>("/api/data/cameras"));
         _lenses.AddRange(await httpClient.CustomGetFromJsonAsync<List<Lens>>("/api/data/lenses"));
 
-        _logger.LogInformation($"Loaded {_cameras.Count()} cameras, {_lenses.Count} lenses.");
+        _logger.LogTrace($"Loaded {_cameras.Count()} cameras, {_lenses.Count} lenses.");
 
         _staticData = await httpClient.CustomGetFromJsonAsync<StaticData>("/api/data/static");
     }
