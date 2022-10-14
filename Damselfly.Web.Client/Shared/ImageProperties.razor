@@ -135,7 +135,7 @@ else
 
     public bool InBasket
     {
-        get => basketService.IsSelected(CurrentImage);
+        get => basketService.IsInCurrentBasket(CurrentImage);
         set => _ = SetBasketState(value);
     }
 

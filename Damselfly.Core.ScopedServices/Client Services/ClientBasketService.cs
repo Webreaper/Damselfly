@@ -32,15 +32,18 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public event Action<BasketChanged> OnBasketChanged;
 
-    /// <summary>
-    ///     The list of selected images in the basket
-    /// </summary>
-    public ICollection<Image> BasketImages => CurrentBasket == null
-        ? new List<Image>()
-        : CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
-
     public Basket CurrentBasket { get; private set; }
 
+    public ICollection<Image> BasketImages {
+        get
+        {
+            if (CurrentBasket != null)
+                return CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
+
+            return new List<Image>();
+        }
+    }
+    
     public async Task Clear(int basketId)
     {
         await httpClient.CustomPostAsync($"/api/basket/clear/{basketId}");
@@ -153,11 +156,8 @@ public class ClientBasketService : IUserBasketService, IBasketService
         await SetImageBasketState(CurrentBasket.BasketId, newState, imageIds);
     }
 
-    public bool IsSelected(Image image)
+    public bool IsInCurrentBasket(Image image)
     {
-        if (BasketImages == null || image == null)
-            return false;
-
         return BasketImages.Any(x => x.ImageId == image.ImageId);
     }
 

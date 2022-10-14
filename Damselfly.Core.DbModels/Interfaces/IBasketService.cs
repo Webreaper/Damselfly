@@ -32,7 +32,7 @@ public interface IUserBasketService : IBasketService
     Task<Basket> SwitchToDefaultBasket(int? userId);
     Task SetImageBasketState(bool newState, ICollection<int> imageIds);
     Task<int> CopyImages(int destBasketId);
-    bool IsSelected(Image image);
+    bool IsInCurrentBasket(Image image);
     Task Clear();
     Task<Basket> Create(string name);
     Task<ICollection<Basket>> GetUserBaskets();
