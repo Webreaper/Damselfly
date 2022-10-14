@@ -2,10 +2,10 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
     font-size: 14px;
-    background: var(--main-background);
-    color: var(--body-text);
+    background: var(--main-background) !important;
+    color: var(--body-text) !important;
     height: 100%;
     margin: 0;
     padding: 0;
@@ -48,7 +48,6 @@ html, body {
     padding: 30px;
     max-width: 500px;
 }
-
 
 .components-reconnect-hide > div {
     display: none;
@@ -173,6 +172,14 @@ div::-webkit-scrollbar-thumb {
 
 .image-grid-controls {
     font-size: 12px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var( --body-text ) !important;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    color: var( --body-text ) !important;
 }
 
 .damselfly-pagetitlebar {
