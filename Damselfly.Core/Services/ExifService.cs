@@ -269,7 +269,7 @@ public class ExifService : IProcessJobFactory, ITagService
 
         if ( string.IsNullOrEmpty(ExifToolVer) ) ExifToolVer = "Unavailable - ExifTool Not found";
 
-        Logging.Log($"ExifVersion: {ExifToolVer}");
+        Logging.Log($"ExifTool Version: {ExifToolVer}");
     }
 
     /// <summary>
