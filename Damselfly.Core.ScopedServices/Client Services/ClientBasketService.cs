@@ -158,7 +158,14 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public bool IsInCurrentBasket(Image image)
     {
-        return BasketImages.Any(x => x.ImageId == image.ImageId);
+        try {
+            return BasketImages.Any(x => x.ImageId == image.ImageId);
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError($"Exception checking basket state for {image.ImageId}: {ex}");
+            return false;
+        }
     }
 
     public async Task<Basket> SwitchToDefaultBasket()
