@@ -159,6 +159,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
     public bool IsInCurrentBasket(Image image)
     {
         try {
+            // TODO: fix this exception
             return BasketImages.Any(x => x.ImageId == image.ImageId);
         }
         catch( Exception ex )
