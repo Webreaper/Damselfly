@@ -34,6 +34,12 @@
         {
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
             _ = peopleService.UpdatePerson(Person, newName);
+
+            // Update the local copy
+            Person.Name = newName;
+
+            StateHasChanged();
+
             statusService.UpdateStatus($"Name set to '{newName}'");
         }
     }

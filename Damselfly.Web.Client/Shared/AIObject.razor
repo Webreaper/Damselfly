@@ -34,6 +34,9 @@
     [Parameter]
     public ImageObject theObject { get; set; }
 
+    [Parameter]
+    public Action<ImageObject> OnObjectChanged { get; set; }
+
     private bool Editing { get; set; }
 
     private string TypeAheadName { get; set; }
@@ -79,10 +82,10 @@
         var searchText = text.Trim();
         IEnumerable<string> results = new List<string>();
 
-    // Store the search text which is used in the NotFound template
+        // Store the search text which is used in the NotFound template
         tagSearchText = searchText;
 
-    // Only query the DB if we have more than 2 chars.
+        // Only query the DB if we have more than 2 chars.
         if( searchText.Length > 1 )
         {
             var names = await peopleService.GetPeopleNames(searchText);
@@ -102,16 +105,17 @@
         {
             logger.LogInformation($"Saving name: {name}");
             TypeAheadName = null;
+
             StateHasChanged();
 
             await peopleService.UpdateName(theObject, name);
 
             statusService.UpdateStatus($"Name saved as '{name}'");
 
-    // Reset the tag
+            // Reset the tag
             Editing = false;
 
-            StateHasChanged();
+            OnObjectChanged?.Invoke( theObject);
         }
     }
 

@@ -9,6 +9,7 @@ of the visible image is updated which should update it instantly.
 @inject IJSRuntime JsRuntime
 @inject IUserConfigService userConfigService
 @inject IDialogService DialogService
+@inject IImageCacheService imageCacheService
 @inject IUserStatusService statusService
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
@@ -24,7 +25,7 @@ of the visible image is updated which should update it instantly.
             {
                 @foreach (var obj in Objects)
                 {
-                    <AIObject theObject="@obj" />
+                    <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
                 }
             }
         </div>
@@ -99,13 +100,22 @@ of the visible image is updated which should update it instantly.
         }
     }
 
+    private void ImageObjectChanged(ImageObject imgObject)
+    {
+        Task.Run(async () =>
+        {
+            this.theImage = await imageCacheService.GetCachedImage(imgObject.ImageId);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
     private bool HiResImageLoaded { get; set; }
     private string ShowObjectsMenuText => ShowObjects ? "Hide Objects/Faces" : "Show Objects/Faces";
 
     void ShowContextMenu(MouseEventArgs args)
     {
         var menuItems = new List<ContextMenuItem>
-    {
+{
             new() { Text = "View Folder", Value = 4 },
             new() { Text = "View Images From This Day", Value = 5 },
             new() { Text = ShowObjectsMenuText, Value = 0 },
