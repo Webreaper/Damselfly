@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.DBAbstractions;
@@ -41,6 +42,45 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
     {
         return await base.ImageSearch(Images, query, IncludeAITags);
+    }
+
+    protected override bool DBNeedsCleaning()
+    {
+        bool needsUpdate = false; 
+        const string settingName = "LastVacuum";
+
+        var lastClean = ConfigSettings.FirstOrDefault(x => x.Name == settingName );
+
+        if( lastClean != null )
+        {
+            if (DateTime.TryParseExact(lastClean.Value, "dd-MMM-yyyy",
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var theDate))
+            {
+                if (theDate < DateTime.UtcNow.AddDays(-7))
+                {
+                    // It hasn't been done in the last 7 days, we need to vacuum
+                    needsUpdate = true;
+                }
+                else
+                    Logging.Log($"Skipping Sqlite DB optimisation (last run {lastClean.Value})...");
+            }
+        }
+        else
+        {
+            // Never done before, so create the record
+            lastClean = new ConfigSetting { Name = settingName, Value = DateTime.UtcNow.ToString("dd-MMM-yyyy") };
+            needsUpdate = true;
+        }
+
+        if( needsUpdate )
+        {
+            // Update the last-optimised date in the DB to indicate we did it this time.
+            ConfigSettings.Update(lastClean);
+            SaveChanges();
+        }
+
+        return needsUpdate;
     }
 
     /// <summary>

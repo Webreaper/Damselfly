@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
@@ -37,6 +38,8 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
 #else
         static bool traceSQL = false;
 #endif
+
+    protected abstract bool DBNeedsCleaning();
 
     private static readonly bool lazyLoad = false;
 
@@ -388,9 +391,12 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
 
     private void OptimiseDB()
     {
-        Logging.Log("Running Sqlite DB optimisation...");
-        Database.ExecuteSqlRaw("VACUUM;");
-        Logging.Log("DB optimisation complete.");
+        if( DBNeedsCleaning() )
+        {
+            Logging.Log("Running Sqlite DB optimisation...");
+            Database.ExecuteSqlRaw("VACUUM;");
+            Logging.Log("DB optimisation complete.");
+        }
     }
 
     /// <summary>
