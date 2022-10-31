@@ -1,9 +1,11 @@
 ﻿@inject IPeopleService peopleService
 @inject IUserStatusService statusService
+@inject ContextMenuService contextMenuService
+@inject NavigationManager NavigationManager
 @inject ILogger<AIObject> logger
 
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
-    @if( Editing )
+    @if (Editing)
     {
         <div class="object-editor">
             <BlazoredTypeahead SearchMethod="SearchNames" EnableDropDown="false"
@@ -62,6 +64,28 @@
         }
     }
 
+    private void ShowContextMenu(MouseEventArgs args)
+    {
+        if (theObject.Type != ImageObject.ObjectTypes.Face.ToString())
+            return;
+
+        var menuList = new List<ContextMenuItem>
+    {
+                new() { Text = $"Find more photos containing this person", Value = 0 },
+            };
+
+        contextMenuService.Open(args, menuList, async args =>
+        {
+            contextMenuService.Close();
+            switch (args.Value)
+            {
+                case 0:
+                    NavigationManager.NavigateTo($"/?personid={theObject.PersonId}");
+                    break;
+            }
+        });
+    }
+
     private void LostFocus()
     {
         Editing = false;
@@ -70,7 +94,7 @@
 
     private void EditName()
     {
-        if( !Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString() )
+        if (!Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString())
         {
             Editing = true;
             StateHasChanged();
@@ -86,11 +110,11 @@
         tagSearchText = searchText;
 
         // Only query the DB if we have more than 2 chars.
-        if( searchText.Length > 1 )
+        if (searchText.Length > 1)
         {
             var names = await peopleService.GetPeopleNames(searchText);
 
-            if( !names.Contains(searchText, StringComparer.OrdinalIgnoreCase) )
+            if (!names.Contains(searchText, StringComparer.OrdinalIgnoreCase))
                 names.Insert(0, searchText);
 
             results = names;
@@ -101,7 +125,7 @@
 
     private async Task UpdateName(string name)
     {
-        if( !string.IsNullOrEmpty(name) )
+        if (!string.IsNullOrEmpty(name))
         {
             logger.LogInformation($"Saving name: {name}");
             TypeAheadName = null;
@@ -115,7 +139,7 @@
             // Reset the tag
             Editing = false;
 
-            OnObjectChanged?.Invoke( theObject);
+            OnObjectChanged?.Invoke(theObject);
         }
     }
 

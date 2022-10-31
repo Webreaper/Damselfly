@@ -100,7 +100,7 @@
 
                     @foreach( var obj in theObjectTags )
                     {
-                        <div class="damselfly-keyword">
+                        <div class="damselfly-keyword" @oncontextmenu=@(args => ShowAIContextMenu(args, obj)) @oncontextmenu:preventDefault="true">
                             <div class="damselfly-favouritetag" title="Detected Object">
                                 <i class="fas @obj.Icon"/>
                             </div>
@@ -143,8 +143,9 @@
 
     private class AITag
     {
-        public string Name { get; set; }
-        public string Icon { get; set; }
+        public string Name { get; init; }
+        public string Icon { get; init; }
+        public int? PersonId { get; init; }
     }
 
     private readonly List<Tag> faveTags = new();
@@ -234,7 +235,8 @@
                     .Select(x => new AITag
                     {
                         Icon = x.Type == "Face" ? "fa-user" : "fa-lightbulb",
-                        Name = x.GetTagName()
+                        Name = x.GetTagName(),
+                        PersonId = x.Type == "Face" ? x.PersonId : null
                     })
                     .Where(x => !tagsToExclude.Any(y => y.Keyword.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
                     .DistinctBy(x => x.Name)
@@ -369,4 +371,25 @@
         });
     }
 
+    private void ShowAIContextMenu(MouseEventArgs args, AITag tag)
+    {
+        if (tag.PersonId == null)
+            return;
+
+        var menuList = new List<ContextMenuItem>
+        {
+            new() { Text = $"Find photos containing {tag.Name}", Value = 0 },
+        };
+
+        contextMenuService.Open(args, menuList, async args =>
+        {
+            contextMenuService.Close();
+            switch (args.Value)
+            {
+                case 0:
+                    NavigationManager.NavigateTo($"/?personid={tag.PersonId}");
+                    break;
+            }
+        });
+    }
 }
