@@ -332,4 +332,16 @@ public class ImageCache : IImageCacheService
     {
         imageId.ForEach(x => Evict(x));
     }
+
+    public Task ClearCache()
+    {
+        var memCache = _memoryCache as MemoryCache;
+        if (memCache is not null)
+        {
+            // Force the cache to compact 100% of the memory
+            memCache.Compact(1.0);
+        }
+
+        return Task.CompletedTask;
+    }
 }

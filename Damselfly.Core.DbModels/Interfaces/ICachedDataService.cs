@@ -13,4 +13,5 @@ public interface ICachedDataService
     ICollection<Lens> Lenses { get; }
     Task InitialiseData();
     Task<Statistics> GetStatistics();
+    Task ClearCache();
 }

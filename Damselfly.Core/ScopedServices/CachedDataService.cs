@@ -36,4 +36,10 @@ public class CachedDataService : ICachedDataService
     {
         return await _stats.GetStatistics();
     }
+
+    public Task ClearCache()
+    {
+        // No-op
+        return Task.CompletedTask;
+    }
 }

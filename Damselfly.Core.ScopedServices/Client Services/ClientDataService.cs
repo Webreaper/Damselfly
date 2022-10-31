@@ -47,4 +47,9 @@ public class ClientDataService : ICachedDataService
     {
         return await httpClient.CustomGetFromJsonAsync<Statistics>("/api/data/stats");
     }
+
+    public async Task ClearCache()
+    {
+        await InitialiseData();
+    }
 }

@@ -188,4 +188,16 @@ public class ClientImageCacheService : IImageCacheService
 
         return image;
     }
+
+    public Task ClearCache()
+    {
+        var memCache = _memoryCache as MemoryCache;
+        if (memCache is not null)
+        {
+            // Force the cache to compact 100% of the memory
+            memCache.Compact(1.0);
+        }
+
+        return Task.CompletedTask;
+    }
 }

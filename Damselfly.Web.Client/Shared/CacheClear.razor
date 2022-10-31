@@ -1,0 +1,14 @@
+﻿@inject ICachedDataService dataService
+@inject IImageCacheService cacheService
+
+<div>
+    <button class="btn btn-primary" @onclick="RefreshCache" type="button">Clear and Refresh the Damselfly Cache</button>
+</div>
+
+@code{
+    async Task RefreshCache()
+    {
+        cacheService.ClearCache();
+        dataService.ClearCache();
+    }
+}
