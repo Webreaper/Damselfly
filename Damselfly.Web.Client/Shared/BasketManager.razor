@@ -98,17 +98,21 @@
     {
         var watch = new Stopwatch("LoadBaskets");
 
-        baskets.Clear();
+        ICollection<Basket> newBaskets = null;
 
         try
         {
-            var myBaskets = await basketService.GetUserBaskets(userService.UserId);
-            baskets.AddRange(myBaskets);
+            newBaskets = await basketService.GetUserBaskets(userService.UserId);
         }
         catch( Exception ex )
         {
             logger.LogWarning($"Unable to load baskets for user {userService.UserId}: {ex.Message}");
         }
+
+        baskets.Clear();
+        
+        if( newBaskets != null )
+            baskets.AddRange(newBaskets);
 
         watch.Stop();
 

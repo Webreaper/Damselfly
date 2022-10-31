@@ -256,7 +256,7 @@ public class ExifService : IProcessJobFactory, ITagService
     {
         OnUserTagsAdded?.Invoke(tagsAdded);
 
-        _ = _notifier.NotifyClients(NotificationType.FavouritesAndRecentsChanged);
+        _ = _notifier.NotifyClients(NotificationType.FavouritesAndRecentsChanged, tagsAdded);
     }
 
     /// <summary>
@@ -509,6 +509,8 @@ public class ExifService : IProcessJobFactory, ITagService
             .ToList());
 
         _statusService.UpdateStatus($"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}");
+
+        NotifyFavouritesChanged();
 
         return success;
     }

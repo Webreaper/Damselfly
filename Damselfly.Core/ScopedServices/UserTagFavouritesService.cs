@@ -55,7 +55,7 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
         var faves = await _exifService.GetFavouriteTags();
         var recents = await GetRecentTags();
 
-        var newRecent = recentTags.Concat(newRecents)
+        var newRecent = newRecents.Concat(recentTags)
             .Except(faves.Select(x => x.Keyword))
             .Distinct()
             .Take(maxRecents).ToList();
