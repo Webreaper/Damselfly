@@ -41,7 +41,7 @@ jobs:
         run: sh scripts/makedesktop.sh ${{ matrix.target }}
 
       - name: Upload desktop builds for Docker build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Desktop-Dist
           path: Damselfly.Web/wwwroot/desktop/*.*
@@ -84,7 +84,7 @@ jobs:
         run: sh scripts/makeserver.sh ${{ matrix.target }} 
 
       - name: Upload server builds to artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Server-Dist
           path: server/*.zip     
