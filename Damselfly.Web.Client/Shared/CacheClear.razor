@@ -1,6 +1,6 @@
 ﻿@inject ICachedDataService dataService
 @inject IImageCacheService cacheService
-
+@inject IUserStatusService statusService
 <div>
     <button class="btn btn-primary" @onclick="RefreshCache" type="button">Clear and Refresh the Damselfly Cache</button>
 </div>
@@ -8,7 +8,9 @@
 @code{
     async Task RefreshCache()
     {
-        cacheService.ClearCache();
-        dataService.ClearCache();
+        await cacheService.ClearCache();
+        await dataService.ClearCache();
+
+        statusService.UpdateStatus("Cache cleared.");
     }
 }
