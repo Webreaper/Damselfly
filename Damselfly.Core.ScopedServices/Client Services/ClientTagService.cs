@@ -3,6 +3,7 @@ using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
@@ -10,6 +11,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 {
     private readonly NotificationsService _notifications;
     private readonly RestClient httpClient;
+    private readonly ILogger<ClientTagService> _logger;
 
     private ICollection<Tag> _favouriteTags;
     private ICollection<string> _recentTags;
@@ -17,8 +19,9 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     public event Action OnFavouritesChanged;
     public event Action<ICollection<string>> OnUserTagsAdded;
 
-    public ClientTagService(RestClient client, NotificationsService notifications)
+    public ClientTagService(RestClient client, NotificationsService notifications, ILogger<ClientTagService> logger )
     {
+        _logger = logger;
         httpClient = client;
         _notifications = notifications;
 
@@ -51,8 +54,11 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
-        if ( _favouriteTags == null )
+        if (_favouriteTags == null)
+        {
             _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
+            _logger.LogInformation($"Returned favourites from API: {string.Join( ", ", _favouriteTags)}");    
+        }
 
         return _favouriteTags;
     }
