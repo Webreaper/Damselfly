@@ -46,6 +46,9 @@ public class Hash
 
     public double SimilarityTo(Hash other)
     {
+        if (other == null)
+            return 0.0;
+
         var similarity = HashExtensions.Similarity(PerceptualHashValue, other.PerceptualHashValue);
 
         Logging.LogVerbose(

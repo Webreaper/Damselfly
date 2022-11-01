@@ -12,14 +12,12 @@
 
 <div class="damselfly-config">
 <h1>Configuration Settings</h1>
-<AuthorizeView Policy="@PolicyDefinitions.s_IsLoggedIn">
-<Authorized Context="auth">
 <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
 <MudTabPanel Text="User Settings">
     <DetailedErrorBoundary>
         <EditForm Model="settingsModel.similarityThreshold" OnValidSubmit="@HandleValidSubmit">
             <div>
-                <h2>Settings for @UserName(auth)</h2>
+                <h2>Settings </h2>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
                         <MudSelect T=" string " Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
@@ -51,97 +49,98 @@
     </DetailedErrorBoundary>
 </MudTabPanel>
 
-<AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin" Context="authPolicy">
-<MudTabPanel Text="System Settings">
-    <DetailedErrorBoundary>
-        <EditForm Model="@settingsModel.cpuSettings" OnValidSubmit="@HandleValidSubmit">
-            <FluentValidationValidator/>
-            <ValidationSummary/>
-            <h2>SideCar Processing</h2>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing"/>
-                </div>
-            </div>
-
-            <h2>Security</h2>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)"/>
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Enable public registration page"/>
-                </div>
-            </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly"/>
-                </div>
-            </div>
-
-            <h2>CPU Usage</h2>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudSelect T=" int " Label="CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevel" Variant="UIConstants.MudVariant"
-                               HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
-                        @foreach( var choice in CPULevels.OrderBy(x => x.Key) )
-                        {
-                            <MudSelectItem T=" int " Value="@choice.Key">
-                                @choice.Value
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
-                </div>
-            </div>
-
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.cpuSettings.EnableAltCPULevel"
-                                 Label="Adjust CPU usage limits during these times."/>
-                    <div class="damselfly-configsetting">
-                        <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeStart" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
-                                       Label="Alternate CPU level start time" AutoClose="true" Color="Color.Tertiary"/>
-                        <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeEnd" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
-                                       Label="Alternate CPU level end time" AutoClose="true" Color="Color.Tertiary"/>
+<AuthorizeView Policy="@PolicyDefinitions.s_IsAdminOrNoUsers" Context="authPolicy">
+    <MudTabPanel Text="System Settings">
+        <DetailedErrorBoundary>
+            <EditForm Model="@settingsModel.cpuSettings" OnValidSubmit="@HandleValidSubmit">
+                <FluentValidationValidator />
+                <ValidationSummary />
+                <h2>SideCar Processing</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing" />
                     </div>
                 </div>
-            </div>
 
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudSelect T=" int " Label="Alternate CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevelAlt" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)" Variant="UIConstants.MudVariant"
-                               HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
-                        @foreach( var choice in CPULevels.OrderBy(x => x.Key) )
-                        {
-                            <MudSelectItem T=" int " Value="@choice.Key">
-                                @choice.Value
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
+                <h2>Security</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)" />
+                    </div>
                 </div>
-            </div>
-
-            <h2>Logging</h2>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudSelect T=" LoggingLevel " Label="Log Level" @bind-Value="settingsModel.serverLogLevel" Variant="UIConstants.MudVariant"
-                               HelperText="Select the logging verbosity">
-                        @foreach( var choice in (LoggingLevel[])Enum.GetValues(typeof( LoggingLevel )) )
-                        {
-                            <MudSelectItem Value="@choice">
-                                @choice.ToString().Humanize()
-                            </MudSelectItem>
-                        }
-                    </MudSelect>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Enable public registration page" />
+                    </div>
                 </div>
-            </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
+                    </div>
+                </div>
 
-            <button class="btn btn-primary" type="submit">Save Settings</button>
-        </EditForm>
-    </DetailedErrorBoundary>
-</MudTabPanel>
+                <h2>CPU Usage</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudSelect T=" int " Label="CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevel" Variant="UIConstants.MudVariant"
+                                   HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
+                            @foreach (var choice in CPULevels.OrderBy(x => x.Key))
+                            {
+                                <MudSelectItem T=" int " Value="@choice.Key">
+                                    @choice.Value
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
+
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.cpuSettings.EnableAltCPULevel"
+                                     Label="Adjust CPU usage limits during these times." />
+                        <div class="damselfly-configsetting">
+                            <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeStart" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
+                                           Label="Alternate CPU level start time" AutoClose="true" Color="Color.Tertiary" />
+                            <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeEnd" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
+                                           Label="Alternate CPU level end time" AutoClose="true" Color="Color.Tertiary" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudSelect T=" int " Label="Alternate CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevelAlt" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)" Variant="UIConstants.MudVariant"
+                                   HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
+                            @foreach (var choice in CPULevels.OrderBy(x => x.Key))
+                            {
+                                <MudSelectItem T=" int " Value="@choice.Key">
+                                    @choice.Value
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
+
+                <h2>Logging</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudSelect T=" LoggingLevel " Label="Log Level" @bind-Value="settingsModel.serverLogLevel" Variant="UIConstants.MudVariant"
+                                   HelperText="Select the logging verbosity">
+                            @foreach (var choice in (LoggingLevel[])Enum.GetValues(typeof(LoggingLevel)))
+                            {
+                                <MudSelectItem Value="@choice">
+                                    @choice.ToString().Humanize()
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Save Settings</button>
+            </EditForm>
+        </DetailedErrorBoundary>
+    </MudTabPanel>
+</AuthorizeView>
 
 <MudTabPanel Text="Image Recognition">
     <DetailedErrorBoundary>
@@ -216,7 +215,7 @@
     </DetailedErrorBoundary>
 </MudTabPanel>
 
-<AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
+<AuthorizeView Policy="@PolicyDefinitions.s_IsAdminOrNoUsers">
     <MudTabPanel Text="User Management">
         <DetailedErrorBoundary>
             <div>
@@ -314,13 +313,7 @@
             </EditForm>
         </DetailedErrorBoundary>
     </MudTabPanel>
-</AuthorizeView>
 </MudTabs>
-</Authorized>
-<NotAuthorized>
-    <p>Please <a href="Login">log in</a> to access user and system settings.</p>
-</NotAuthorized>
-</AuthorizeView>
 </div>
 
 @code {

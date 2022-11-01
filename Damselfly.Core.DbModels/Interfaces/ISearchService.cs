@@ -15,10 +15,10 @@ public interface ISearchService
     Folder Folder { get; set; }
     Person Person { get; set; }
     Tag Tag { get; set; }
-    Image SimilarTo { get; set; }
     DateTime? MaxDate { get; set; }
     DateTime? MinDate { get; set; }
     int? CameraId { get; set; }
+    int? SimilarToId { get; set; }
     int? LensId { get; set; }
     int? Month { get; set; }
     int? MinRating { get; set; }

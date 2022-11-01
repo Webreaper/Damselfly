@@ -21,12 +21,14 @@ public abstract class BaseSearchService
     protected readonly ILogger<BaseSearchService> _logger;
     protected readonly List<int> _searchResults = new();
     private readonly ICachedDataService _service;
+    private readonly IImageCacheService _imageCache;
 
     protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = 250);
 
-    public BaseSearchService(ICachedDataService dataService, ILogger<BaseSearchService> logger)
+    public BaseSearchService(ICachedDataService dataService, IImageCacheService imageCache, ILogger<BaseSearchService> logger)
     {
         _service = dataService;
+        _imageCache = imageCache;
         _logger = logger;
     }
 
@@ -214,14 +216,14 @@ public abstract class BaseSearchService
         }
     }
 
-    public Image SimilarTo
+    public int? SimilarToId
     {
-        get => Query.SimilarTo;
+        get => Query.SimilarToId;
         set
         {
-            if ( Query.SimilarTo != value )
+            if ( Query.SimilarToId != value )
             {
-                Query.SimilarTo = value;
+                Query.SimilarToId = value;
                 QueryChanged();
             }
         }
@@ -312,8 +314,12 @@ public abstract class BaseSearchService
             if ( MinRating != null )
                 hints.Add($"Rating: at least {MinRating} stars");
 
-            if ( SimilarTo != null )
-                hints.Add($"Looks Like: {SimilarTo.FileName}");
+            if (SimilarToId != null)
+            {
+                var image = _imageCache.GetCachedImage(SimilarToId.Value).Result;
+                if( image is not null )
+                    hints.Add($"Looks Like: {image.FileName}");
+            }
 
             if ( Tag != null )
                 hints.Add($"Tag: {Tag.Keyword}");

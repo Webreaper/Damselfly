@@ -16,8 +16,8 @@ public class ClientSearchService : BaseSearchService, ISearchService
     private readonly IUserStatusService _statusService;
 
     public ClientSearchService(RestClient client, IUserStatusService statusService,
-                        ICachedDataService dataService, ILogger<BaseSearchService> logger) :
-        base(dataService, logger)
+                        ICachedDataService dataService, IImageCacheService imageCache, ILogger<BaseSearchService> logger) :
+        base(dataService, imageCache, logger)
     {
         httpClient = client;
         _statusService = statusService;

@@ -20,7 +20,7 @@ public class SearchQuery
     public int? LensId { get; set; } = null;
     public int? Month { get; set; } = null;
     public int? MinRating { get; set; } = null;
-    public Image SimilarTo { get; set; } = null;
+    public int? SimilarToId { get; set; } = null;
     public Folder Folder { get; set; } = null;
     public Tag Tag { get; set; } = null;
     public Person Person { get; set; } = null;
@@ -49,7 +49,7 @@ public class SearchQuery
         LensId = null;
         Month = null;
         MinRating = null;
-        SimilarTo = null;
+        SimilarToId = null;
         Folder = null;
         Tag = null;
         Person = null;
@@ -62,7 +62,7 @@ public class SearchQuery
     public override string ToString()
     {
         return
-            $"Filter: T={SearchText}, F={Folder?.FolderId}, Tag={Tag?.TagId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarTo?.ImageId}";
+            $"Filter: T={SearchText}, F={Folder?.FolderId}, Tag={Tag?.TagId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarToId}";
     }
 }
 
@@ -82,7 +82,7 @@ public class SearchQueryDTO
     public int? LensId { get; set; } = null;
     public int? Month { get; set; } = null;
     public int? MinRating { get; set; } = null;
-    public int? SimilarToImageId { get; set; }
+    public int? SimilarToId { get; set; }
     public int? FolderId { get; set; }
     public int? TagId { get; set; }
     public int? PersonId { get; set; }
@@ -99,7 +99,6 @@ public class SearchQueryDTO
         var result = new SearchQueryDTO();
         source.CopyPropertiesTo(result);
 
-        result.SimilarToImageId = source?.SimilarTo?.ImageId;
         result.FolderId = source?.Folder?.FolderId;
         result.TagId = source?.Tag?.TagId;
         result.PersonId = source?.Person?.PersonId;

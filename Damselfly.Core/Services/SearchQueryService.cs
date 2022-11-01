@@ -58,6 +58,15 @@ public class SearchQueryService
 
         var watch = new Stopwatch("ImagesLoadData");
         var results = new List<int>();
+        
+        Image similarImage = null;
+        int similarId = 0;
+
+        if (query.SimilarToId != null)
+        {
+            similarId = query.SimilarToId.Value;
+            similarImage = await _imageCache.GetCachedImage(similarId);
+        }
 
         try
         {
@@ -88,28 +97,33 @@ public class SearchQueryService
                 images = tagImages.Union(objImages);
             }
 
-            if ( query.SimilarTo != null && query.SimilarTo.Hash != null )
+            if (similarImage != null && similarImage.Hash != null)
             {
-                var hash1A = $"{query.SimilarTo.Hash.PerceptualHex1.Substring(0, 2)}%";
-                var hash1B = $"%{query.SimilarTo.Hash.PerceptualHex1.Substring(2, 2)}";
-                var hash2A = $"{query.SimilarTo.Hash.PerceptualHex2.Substring(0, 2)}%";
-                var hash2B = $"%{query.SimilarTo.Hash.PerceptualHex2.Substring(2, 2)}";
-                var hash3A = $"{query.SimilarTo.Hash.PerceptualHex3.Substring(0, 2)}%";
-                var hash3B = $"%{query.SimilarTo.Hash.PerceptualHex3.Substring(2, 2)}";
-                var hash4A = $"{query.SimilarTo.Hash.PerceptualHex4.Substring(0, 2)}%";
-                var hash4B = $"%{query.SimilarTo.Hash.PerceptualHex4.Substring(2, 2)}";
+                var similarHash = similarImage.Hash;
 
-                images = images.Where(x => x.ImageId != query.SimilarTo.ImageId &&
-                                           (
-                                               EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex2, hash2A) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex2, hash2B) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex3, hash3A) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex3, hash3B) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex4, hash4A) ||
-                                               EF.Functions.Like(x.Hash.PerceptualHex4, hash4B)
-                                           ));
+                if (similarHash.HasPerceptualHash())
+                {
+                    var hash1A = $"{similarHash.PerceptualHex1.Substring(0, 2)}%";
+                    var hash1B = $"%{similarHash.PerceptualHex1.Substring(2, 2)}";
+                    var hash2A = $"{similarHash.PerceptualHex2.Substring(0, 2)}%";
+                    var hash2B = $"%{similarHash.PerceptualHex2.Substring(2, 2)}";
+                    var hash3A = $"{similarHash.PerceptualHex3.Substring(0, 2)}%";
+                    var hash3B = $"%{similarHash.PerceptualHex3.Substring(2, 2)}";
+                    var hash4A = $"{similarHash.PerceptualHex4.Substring(0, 2)}%";
+                    var hash4B = $"%{similarHash.PerceptualHex4.Substring(2, 2)}";
+
+                    images = images.Where(x => x.ImageId != similarId &&
+                                            (
+                                                EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex2, hash2A) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex2, hash2B) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex3, hash3A) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex3, hash3B) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex4, hash4A) ||
+                                                EF.Functions.Like(x.Hash.PerceptualHex4, hash4B)
+                                            ));
+                }
             }
 
             // If selected, filter by the image filename/foldername
@@ -246,18 +260,18 @@ public class SearchQueryService
         try
         {
             // If it's a 'similar to' query, filter out the ones that don't pass the threshold.
-            if ( query.SimilarTo != null && enrichedImages.Any() )
+            if ( query.SimilarToId != null && enrichedImages.Any() )
             {
                 var threshold = _configService.GetInt(ConfigSettings.SimilarityThreshold, 75) / 100.0;
 
                 // Complete the hamming distance calculation here:
-                var searchHash = query.SimilarTo.Hash;
+                var searchHash = similarImage.Hash;
 
                 var similarImages = enrichedImages
                     .Where(x => x.Hash != null && x.Hash.SimilarityTo(searchHash) > threshold).ToList();
 
                 Logging.Log(
-                    $"Found {similarImages.Count} of {enrichedImages.Count} prefiltered images that match image ID {query.SimilarTo.ImageId} with a threshold of {threshold:P1} or more.");
+                    $"Found {similarImages.Count} of {enrichedImages.Count} prefiltered images that match image ID {query.SimilarToId} with a threshold of {threshold:P1} or more.");
 
                 enrichedImages = similarImages;
             }
@@ -278,9 +292,6 @@ public class SearchQueryService
         var query = new SearchQuery();
         request.Query.CopyPropertiesTo(query);
 
-        if ( request.Query.SimilarToImageId.HasValue )
-            query.SimilarTo = await _imageCache.GetCachedImage(request.Query.SimilarToImageId.Value);
-
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
@@ -291,9 +302,6 @@ public class SearchQueryService
             query.Tag = await db.Tags.FirstOrDefaultAsync(x => x.TagId == request.Query.TagId.Value);
         if ( request.Query.PersonId.HasValue )
             query.Person = await db.People.FirstOrDefaultAsync(x => x.PersonId == request.Query.PersonId.Value);
-        if ( request.Query.SimilarToImageId.HasValue )
-            query.SimilarTo =
-                await db.Images.FirstOrDefaultAsync(x => x.ImageId == request.Query.SimilarToImageId.Value);
 
         // Load more data if we need it.
         return await LoadMoreData(query, request.First, request.Count);

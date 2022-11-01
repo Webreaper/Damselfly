@@ -6,7 +6,9 @@ using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using static Damselfly.Core.DbModels.AuthorisationRegistration;
 
 namespace Damselfly.Core.Utils;
 

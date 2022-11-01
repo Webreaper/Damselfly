@@ -19,8 +19,8 @@ public class ServerSearchService : BaseSearchService, ISearchService
 {
     private readonly SearchQueryService _queryService;
 
-    public ServerSearchService(ICachedDataService dataService, SearchQueryService queryService,
-        ILogger<BaseSearchService> logger) : base(dataService, logger)
+    public ServerSearchService(ICachedDataService dataService, IImageCacheService imageCache, SearchQueryService queryService,
+        ILogger<BaseSearchService> logger) : base(dataService, imageCache, logger)
     {
         _queryService = queryService;
     }
