@@ -55,10 +55,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
         if (_favouriteTags == null)
-        {
             _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
-            _logger.LogInformation($"Returned favourites from API: {string.Join( ", ", _favouriteTags)}");    
-        }
 
         return _favouriteTags;
     }

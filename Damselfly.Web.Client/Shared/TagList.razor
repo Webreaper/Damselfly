@@ -254,23 +254,16 @@
         return new List<AITag>();
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        if( TrackSelection )
+        navContext.OnChange += NavigationChanged;
+
+        if (TrackSelection)
         {
             selectionService.OnSelectionChanged += SelectionChanged;
             tagService.OnFavouritesChanged += FavouritesChanged;
             SelectionChanged();
         }
-        else
-        {
-            await OnParametersSetAsync();
-        }
-    }
-
-    protected override void OnInitialized()
-    {
-        navContext.OnChange += NavigationChanged;
     }
 
     protected void NavigationChanged(Image image)
@@ -328,7 +321,6 @@
         theObjectTags = GetObjectTags(theImageTags);
 
         await RefreshFavourites();
-        await InvokeAsync(StateHasChanged);
     }
 
     async Task ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)
