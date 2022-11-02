@@ -274,12 +274,24 @@ of the visible image is updated which should update it instantly.
 
     public async Task ZoomIn()
     {
+        if (ShowObjects)
+        {
+            ShowObjects = false;
+            StateHasChanged();
+        }
+
         await _panzoom.ZoomInAsync();
         await UpdateSlider();
     }
 
     public async Task ZoomOut()
     {
+        if (ShowObjects)
+        {
+            ShowObjects = false;
+            StateHasChanged();
+        }
+
         if (ZoomRangeValue > 1.0)
         {
             await _panzoom.ZoomOutAsync();
