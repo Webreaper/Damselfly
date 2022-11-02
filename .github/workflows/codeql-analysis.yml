@@ -55,7 +55,7 @@ jobs:
         languages: ${{ matrix.language }}
     
     - name: Compile the Code
-      run: dotnet build Damselfly.sln -f net-7.0 -c Release 
+      run: dotnet build Damselfly.sln -c Release 
     
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
