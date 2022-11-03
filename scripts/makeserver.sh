@@ -1,8 +1,9 @@
 # Read the version from disk.
 version=`cat VERSION`
 dotnetversion='7.0'
+date=$(date '+%Y%m%d%H%M%S')
 
-echo "const CACHE_VERSION='${version}'" > Damselfly.Web.Client/wwwroot/version.js
+echo "const CACHE_VERSION='${version}-${date}'" > Damselfly.Web.Client/wwwroot/version.js
 
 if [ -n "$1" ]; then
     PLATFORM=$1
