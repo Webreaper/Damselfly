@@ -7,6 +7,6 @@ public static class SyncfusionLicence
     public static void RegisterSyncfusionLicence()
     {
         SyncfusionLicenseProvider.RegisterLicense(
-            "NTUxMzEwQDMxMzkyZTM0MmUzMGFRSFpzQUhjdUE2M2V4S1BmYSs5bk13dkpGbkhvam5Wb1VRbGVURkRsOHM9");
+            "NjE0NjkyQDMyMzAyZTMxMmUzMG0rVVJObG52UWJCYXhoVm12eXRRVFVXcHN3RHJFdDRFa01Gc3RhZHUwZmM9");
     }
 }

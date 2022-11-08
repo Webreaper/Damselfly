@@ -75,7 +75,7 @@ jobs:
       - name: Setup Dotnet Environment
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.100-rc.2.22477.23'
+          dotnet-version: '7.0.100'
       
       - name: Install WASM-Tools
         run: dotnet workload install wasm-tools

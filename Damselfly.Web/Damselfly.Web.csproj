@@ -78,7 +78,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0-rc.2.22476.2" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0-rc.2.22476.2" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.0-rc.2.22476.2" />
-        <PackageReference Include="Syncfusion.Blazor.Maps" Version="19.4.0.56" />
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.3.0.52" />
         <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="0.1.0-alpha.22351.1" />
     </ItemGroup>
     <ItemGroup>

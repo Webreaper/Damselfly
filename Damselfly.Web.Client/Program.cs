@@ -22,6 +22,8 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        SyncfusionLicence.RegisterSyncfusionLicence();
+
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
         var levelSwitch = new LoggingLevelSwitch();
@@ -59,8 +61,6 @@ public class Program
         builder.Services.AddScoped<IAuthService, AuthService>();
 
         builder.Services.AddDamselflyUIServices();
-
-        SyncfusionLicence.RegisterSyncfusionLicence();
 
         levelSwitch.MinimumLevel = LogEventLevel.Warning;
 
