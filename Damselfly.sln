@@ -27,8 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassific
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{C2504134-A19E-428F-8681-927152563DBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web", "Damselfly.Web\Damselfly.Web.csproj", "{10C25AF1-7791-4748-A83A-9C1C1FC20CA8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Client", "Damselfly.Web.Client\Damselfly.Web.Client.csproj", "{C10B9995-46DF-4188-B2BC-7BF20EB9F466}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Server", "Damselfly.Web.Server\Damselfly.Web.Server.csproj", "{CC90115D-4146-47D4-8B26-D773FAA51437}"
@@ -92,10 +90,6 @@ Global
 		{C2504134-A19E-428F-8681-927152563DBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2504134-A19E-428F-8681-927152563DBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2504134-A19E-428F-8681-927152563DBB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{10C25AF1-7791-4748-A83A-9C1C1FC20CA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{10C25AF1-7791-4748-A83A-9C1C1FC20CA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{10C25AF1-7791-4748-A83A-9C1C1FC20CA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{10C25AF1-7791-4748-A83A-9C1C1FC20CA8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C10B9995-46DF-4188-B2BC-7BF20EB9F466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C10B9995-46DF-4188-B2BC-7BF20EB9F466}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C10B9995-46DF-4188-B2BC-7BF20EB9F466}.Release|Any CPU.ActiveCfg = Release|Any CPU

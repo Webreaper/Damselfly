@@ -8,12 +8,12 @@ using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
-using EFCore.BulkExtensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
+using EFCore.BulkExtensions;
 
 namespace Damselfly.Core.DBAbstractions;
 
