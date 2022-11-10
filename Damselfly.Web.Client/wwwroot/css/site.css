@@ -1960,6 +1960,13 @@ hr.separator {
     background: rgba(0, 100, 0, 0.4);
 }
 
+.adduser-error {
+    width: 100%;
+    text-align: center;
+    color: orangered;
+    font-weight: bold;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
