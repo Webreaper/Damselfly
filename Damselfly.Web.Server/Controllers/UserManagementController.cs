@@ -35,16 +35,17 @@ public class UserManagementController : ControllerBase
     }
 
     [HttpPut("/api/users")]
-    public async Task<IdentityResult> CreateUser(UserRequest request)
+    public async Task<UserResponse> CreateUser(UserRequest request)
     {
         return await _service.CreateNewUser(request.User, request.Password, request.Roles);
     }
 
     [HttpPost("/api/users")]
-    public async Task<IdentityResult> UpdateUser(UserRequest request)
+    public async Task<UserResponse> UpdateUser(UserRequest request)
     {
         if ( request.Roles != null && request.Roles.Any() )
             return await _service.UpdateUserAsync(request.User, request.Roles);
+
         return await _service.SetUserPasswordAsync(request.User, request.Password);
     }
 }

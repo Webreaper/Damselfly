@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
@@ -91,7 +92,7 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="newRoleSet"></param>
     /// <returns></returns>
-    public async Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
+    public async Task<UserResponse> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
     {
         var result = await _userManager.UpdateAsync(user);
 
@@ -104,7 +105,7 @@ public class UserManagementService : IUserMgmtService
                 result = syncResult;
         }
 
-        return result;
+        return new UserResponse( result );
     }
 
     /// <summary>
@@ -113,14 +114,14 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="password">Unhashed password</param>
     /// <returns></returns>
-    public async Task<IdentityResult> SetUserPasswordAsync(AppIdentityUser user, string password)
+    public async Task<UserResponse> SetUserPasswordAsync(AppIdentityUser user, string password)
     {
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        return await _userManager.ResetPasswordAsync(user, token, password);
+        return new UserResponse( await _userManager.ResetPasswordAsync(user, token, password) );
     }
 
-    public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password,
+    public async Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password,
         ICollection<string> roles = null)
     {
         var result = await _userManager.CreateAsync(newUser, password);
@@ -135,7 +136,7 @@ public class UserManagementService : IUserMgmtService
                 await SyncUserRoles(newUser, roles, false);
         }
 
-        return result;
+        return new UserResponse( result );
     }
 
     public /*async*/ Task<string> GetUserPasswordResetLink(AppIdentityUser user)

@@ -73,11 +73,11 @@
         StateHasChanged();
     }
 
-    private void DisplayIdentityResultError(IdentityResult result)
+    private void DisplayIdentityResultError(UserResponse result)
     {
         if( result != null && result.Errors.Any() )
         {
-            var msg = string.Join(", ", result.Errors.Select(x => x.Description));
+            var msg = string.Join(", ", result.Errors);
             DisplayError(msg);
         }
     }
@@ -126,7 +126,7 @@
                 User.UserName = model.Username;
                 User.Email = model.Email;
 
-                IdentityResult result;
+                UserResponse result;
                 var role = new[] { selectedRole };
 
                 if ( AddingNewUser )

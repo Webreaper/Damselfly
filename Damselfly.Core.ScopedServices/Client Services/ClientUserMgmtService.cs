@@ -29,26 +29,26 @@ public class ClientUserMgmtService : IUserMgmtService
         return await httpClient.CustomGetFromJsonAsync<ICollection<AppIdentityUser>>("/api/users");
     }
 
-    public async Task<IdentityResult> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
+    public async Task<UserResponse> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
     {
         var req = new UserRequest { User = user, Roles = newRoles };
-        var result = await httpClient.CustomPostAsJsonAsync<UserRequest, IdentityResult>("/api/users", req);
+        var result = await httpClient.CustomPostAsJsonAsync<UserRequest, UserResponse>("/api/users", req);
         return result;
     }
 
-    public async Task<IdentityResult> SetUserPasswordAsync(AppIdentityUser user, string password)
+    public async Task<UserResponse> SetUserPasswordAsync(AppIdentityUser user, string password)
     {
         var req = new UserRequest { User = user, Password = password };
-        var result = await httpClient.CustomPostAsJsonAsync<UserRequest, IdentityResult>("/api/users", req);
+        var result = await httpClient.CustomPostAsJsonAsync<UserRequest, UserResponse>("/api/users", req);
         return result;
     }
 
-    public async Task<IdentityResult> CreateNewUser(AppIdentityUser newUser, string password,
+    public async Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password,
         ICollection<string> roles = null)
     {
         // /api/users
         var req = new UserRequest { User = newUser, Password = password, Roles = roles };
-        var result = await httpClient.CustomPutAsJsonAsync<UserRequest, IdentityResult>("/api/users", req);
+        var result = await httpClient.CustomPutAsJsonAsync<UserRequest, UserResponse>("/api/users", req);
 
         return result;
     }
