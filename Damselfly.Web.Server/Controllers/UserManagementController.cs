@@ -34,6 +34,12 @@ public class UserManagementController : ControllerBase
         return await _service.GetUsers();
     }
 
+    [HttpGet("/api/user/{userId}")]
+    public async Task<AppIdentityUser> GetUser( int userId )
+    {
+        return await _service.GetUser( userId );
+    }
+
     [HttpPut("/api/users")]
     public async Task<UserResponse> CreateUser(UserRequest request)
     {

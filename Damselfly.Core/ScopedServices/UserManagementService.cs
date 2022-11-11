@@ -57,6 +57,21 @@ public class UserManagementService : IUserMgmtService
         return users;
     }
 
+
+    /// <summary>
+    ///     Gets the list of users currently registered
+    /// </summary>
+    /// <returns></returns>
+    public async Task<AppIdentityUser> GetUser(int userId )
+    {
+        var user = await _userManager.Users
+            .Where( x => x.Id == userId )
+            .Include(x => x.UserRoles)
+            .ThenInclude(y => y.Role)
+            .FirstOrDefaultAsync();
+        return user;
+    }
+
     /// <summary>
     ///     Gets the list of roles configured in the system
     /// </summary>

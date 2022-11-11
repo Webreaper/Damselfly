@@ -11,6 +11,7 @@ public interface IUserMgmtService
     bool RolesEnabled { get; }
     bool AllowPublicRegistration { get; } // WASM: Do we need this?
     Task<ICollection<AppIdentityUser>> GetUsers();
+    Task<AppIdentityUser> GetUser( int userId );
     Task<UserResponse> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles);
     Task<UserResponse> SetUserPasswordAsync(AppIdentityUser user, string password);
     Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null);

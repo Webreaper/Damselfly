@@ -29,6 +29,11 @@ public class ClientUserMgmtService : IUserMgmtService
         return await httpClient.CustomGetFromJsonAsync<ICollection<AppIdentityUser>>("/api/users");
     }
 
+    public async Task<AppIdentityUser> GetUser( int userId )
+    {
+        return await httpClient.CustomGetFromJsonAsync<AppIdentityUser>($"/api/user/{userId}");
+    }
+
     public async Task<UserResponse> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
     {
         var req = new UserRequest { User = user, Roles = newRoles };

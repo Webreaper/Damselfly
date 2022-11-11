@@ -38,8 +38,9 @@
     MudDialogInstance MudDialog { get; set; }
 
     [Parameter]
-    public AppIdentityUser User { get; set; }
+    public int? UserID { get; set; }
 
+    AppIdentityUser User;
     bool AddingNewUser { get; set; }
     string SaveButtonText => AddingNewUser ? "Create User" : "Save";
 
@@ -197,14 +198,18 @@
         }
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
 
-        if( User == null )
+        if( UserID is null || UserID == 0 )
         {
             AddingNewUser = true;
             User = new AppIdentityUser();
+        }
+        else
+        {
+            User = await userService.GetUser( UserID.Value );
         }
 
         model.Username = User.UserName;

@@ -39,7 +39,7 @@
 
     private async Task OpenUserDialog(AppIdentityUser user)
     {
-        var parameters = new DialogParameters { ["user"] = user };
+        var parameters = new DialogParameters { ["userid"] = user.Id };
         var dialog = DialogService.Show<UserDialog>("Edit User", parameters);
         var result = await dialog.Result;
 
