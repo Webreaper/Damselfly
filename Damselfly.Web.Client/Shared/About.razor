@@ -36,6 +36,9 @@
             <li>
                 <NavLink href="https://reddit.com/r/damselflyphotos"><i class="fab fa-reddit"></i> Reddit</NavLink>
             </li>
+            <li>
+                <NavLink href="@mastodonUrl"><i class="fab fa-mastodon"></i> Mastodon</NavLink>
+            </li>
         </ul>
     </p>
     <h4> Want to Support Damselfly?</h4>
@@ -53,4 +56,5 @@
 
 @code {
     public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+    private string mastodonUrl => "https://fosstodon.org/@damselfly";
 }

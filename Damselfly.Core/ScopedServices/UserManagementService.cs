@@ -242,7 +242,8 @@ public class UserManagementService : IUserMgmtService
     /// <returns></returns>
     public async Task<IdentityResult> SyncUserRoles(AppIdentityUser user, ICollection<string> newRoles, bool addOnly)
     {
-        var result = new IdentityResult();
+        // Assume success until proven otherwise. 
+        var result = IdentityResult.Success;
 
         var roles = await _userManager.GetRolesAsync(user);
 
@@ -282,7 +283,7 @@ public class UserManagementService : IUserMgmtService
                 changes = $"removed from {string.Join(", ", rolesToRemove.Select(x => "'x'"))} roles";
         }
 
-        if ( rolesToAdd.Any() )
+        if ( result.Succeeded && rolesToAdd.Any() )
         {
             prefix = $"User {user.UserName} ";
             result = await _userManager.AddToRolesAsync(user, rolesToAdd);

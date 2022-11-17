@@ -40,13 +40,17 @@
     private async Task OpenUserDialog(AppIdentityUser user)
     {
         var parameters = new DialogParameters { ["userid"] = user.Id };
-        var dialog = DialogService.Show<UserDialog>("Edit User", parameters);
-        var result = await dialog.Result;
 
-        if( !result.Cancelled )
+        await InvokeAsync(async () =>
         {
-            await LoadUsers();
-        }
+            var dialog = DialogService.Show<UserDialog>("Edit User", parameters);
+            var result = await dialog.Result;
+
+            if (!result.Cancelled)
+            {
+                await LoadUsers();
+            }
+        });
     }
 
     private ICollection<string> GetUserRoleList(AppIdentityUser user)
@@ -57,13 +61,13 @@
 
     private void AddRole(AppIdentityUser user)
     {
-    // TODO: Popup here.
+        // TODO: Popup here.
     }
 
     private void RemoveRole(AppIdentityUser user, string roleToRemove)
     {
         Logging.Log($"Removing user {user.UserName} from role '{roleToRemove}'");
-    // If admin, Only allow removal if another admin user exists.
+        // If admin, Only allow removal if another admin user exists.
     }
 
     private bool UserFilterFunc(AppIdentityUser user)
