@@ -272,14 +272,13 @@ public class WorkService : IWorkService
                 // to complete could end up freezing the worker thread for 3 minutes, which makes no
                 // sense whatsoeever. :)
                 const int maxWaitTime = 10 * 1000;
-                var waitTime = Math.Min((int)(sleepFactor * stopwatch.ElapsedTime), maxWaitTime);
 
-                if (waitTime < 25)
-                {
-                    // If the sleep factor is > 0 (i.e., we're not using 100% of CPU)
-                    // ALWAYS sleep for a short period so as not to overwhelm the CPU
-                    waitTime = 50;
-                }
+                // If the job took less than 100ms, assume it took 100ms - so that the sleep factor * job
+                // time never approaches zero. This is to stop very fast/short jobs overwhelming the CPU
+                double jobTime = Math.Max(stopwatch.ElapsedTime, 100);
+
+                var waitTime = Math.Min((int)(sleepFactor * jobTime), maxWaitTime);
+
                 Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
                 Thread.Sleep(waitTime);
             }
