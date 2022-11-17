@@ -159,7 +159,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
     public bool IsInCurrentBasket(Image image)
     {
         try {
-            // TODO: fix this exception
+            // TODO: Figure out how there can be an image in this collection that's null
             return BasketImages.Any(x => x is not null && x.ImageId == image.ImageId);
         }
         catch( Exception ex )
