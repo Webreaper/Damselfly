@@ -274,30 +274,38 @@ public class UserManagementService : IUserMgmtService
             prefix = $"User {user.UserName} ";
             result = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
 
-            if ( result.Succeeded )
-                changes = $"removed from {string.Join(", ", rolesToRemove.Select(x => "'x'"))} roles";
-            else
+            if (result.Succeeded)
+            {
                 errorMsg = $"role removal failed: {result.Errors}";
+            }
+            else
+                changes = $"removed from {string.Join(", ", rolesToRemove.Select(x => "'x'"))} roles";
         }
 
-        if ( result.Succeeded && rolesToAdd.Any() )
+        if ( rolesToAdd.Any() )
         {
             prefix = $"User {user.UserName} ";
             result = await _userManager.AddToRolesAsync(user, rolesToAdd);
 
             if ( !string.IsNullOrEmpty(changes) ) changes += " and ";
 
-            if ( result.Succeeded )
-                changes += $"added to {string.Join(", ", rolesToAdd.Select(x => "'x'"))} roles";
-            else
+            if (!result.Succeeded)
+            {
                 errorMsg = $"role addition failed: {result.Errors}";
+            }
+            else
+                changes += $"added to {string.Join(", ", rolesToAdd.Select(x => $"'{x}'"))} roles";
         }
 
         if ( !string.IsNullOrEmpty(changes) )
             changes += ". ";
 
         _statusService.UpdateStatus($"{prefix}{changes}{errorMsg}");
-        Logging.Log($"SyncUserRoles: {prefix}{changes}{errorMsg}");
+        
+        if( ! string.IsNullOrEmpty( errorMsg ))
+            Logging.LogError($"SyncUserRoles: {prefix}{changes}{errorMsg}");
+        else
+            Logging.Log($"SyncUserRoles: {prefix}{changes}");
 
         return result;
     }

@@ -16,14 +16,17 @@ public class LoginController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly SignInManager<AppIdentityUser> _signInManager;
     private readonly UserManager<AppIdentityUser> _userManager;
+    private readonly ILogger<LoginController> _logger;
 
     public LoginController(IConfiguration configuration,
         SignInManager<AppIdentityUser> signInManager,
-        UserManager<AppIdentityUser> userManager)
+        UserManager<AppIdentityUser> userManager,
+         ILogger<LoginController> logger)
     {
         _configuration = configuration;
         _signInManager = signInManager;
         _userManager = userManager;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -46,7 +49,8 @@ public class LoginController : ControllerBase
         claims.Add(new Claim(ClaimTypes.Email, login.Email));
         claims.Add(new Claim(ClaimTypes.Name, user.UserName));
 
-        foreach ( var role in roles ) claims.Add(new Claim(ClaimTypes.Role, role));
+        foreach (var role in roles)
+            claims.Add(new Claim(ClaimTypes.Role, role));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama"));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
