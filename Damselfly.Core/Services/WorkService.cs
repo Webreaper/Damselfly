@@ -273,8 +273,14 @@ public class WorkService : IWorkService
                 // sense whatsoeever. :)
                 const int maxWaitTime = 10 * 1000;
                 var waitTime = Math.Min((int)(sleepFactor * stopwatch.ElapsedTime), maxWaitTime);
-                Logging.LogVerbose(
-                    $"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
+
+                if (waitTime < 25)
+                {
+                    // If the sleep factor is > 0 (i.e., we're not using 100% of CPU)
+                    // ALWAYS sleep for a short period so as not to overwhelm the CPU
+                    waitTime = 50;
+                }
+                Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
                 Thread.Sleep(waitTime);
             }
         }
