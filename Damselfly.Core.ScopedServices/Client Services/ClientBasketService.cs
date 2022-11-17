@@ -160,7 +160,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
     {
         try {
             // TODO: fix this exception
-            return BasketImages.Any(x => x.ImageId == image.ImageId);
+            return BasketImages.Any(x => x is not null && x.ImageId == image.ImageId);
         }
         catch( Exception ex )
         {
