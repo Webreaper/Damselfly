@@ -112,7 +112,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
     public async Task<Basket> Create(string name, int? userId)
     {
         var payload = new BasketCreateRequest { Name = name, UserId = userId };
-        return await httpClient.CustomPostAsJsonAsync<BasketCreateRequest, Basket>("/api/basket", payload);
+        return await httpClient.CustomPutAsJsonAsync<BasketCreateRequest, Basket>("/api/basket", payload);
     }
 
     public async Task Save(Basket basket)
