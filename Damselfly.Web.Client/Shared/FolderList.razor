@@ -35,7 +35,7 @@
             <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.FolderId) expandable"
                      @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
-                    <i style="@IndentMargin(context)" class="folder-icomn fa @FolderIcon(context) folder-icon" @onclick="@(() => ToggleExpand(context))"/>
+                    <i style="@IndentMargin(context)" class="folder-icon fa @FolderIcon(context)" @onclick="@(() => ToggleExpand(context))"/>
                     <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
                         @FolderDisplayName( context ) 
                     </span>
