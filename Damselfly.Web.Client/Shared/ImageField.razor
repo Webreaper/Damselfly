@@ -16,7 +16,7 @@
                     @if (Editable && allowedToEdit)
                     {
                         <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
-                        <i class="fas fa-edit" title="@EditTooltip" />
+                        <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField"/>
                         
                     }
                     else

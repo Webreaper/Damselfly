@@ -689,6 +689,7 @@ f
     font-weight: bold;
     margin-right: 3px;
     margin-left: 2px;
+    height: 100%;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
