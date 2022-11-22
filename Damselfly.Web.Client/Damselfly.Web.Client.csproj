@@ -7,6 +7,7 @@
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <RunAOTCompilation>false</RunAOTCompilation>
         <InvariantGlobalization>false</InvariantGlobalization>
+        <CurrentDate>$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmmss`))</CurrentDate>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
@@ -72,4 +73,11 @@
         <None Remove="Serilog.Extensions.Logging" />
         <None Remove="BlazorPanzoom" />
     </ItemGroup>
+
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+        <ReadLinesFromFile File="../VERSION">
+            <Output TaskParameter="Lines" PropertyName="VersionNumber" />
+        </ReadLinesFromFile>
+        <Exec Command="echo %22const CACHE_VERSION='$(VersionNumber)-$(CurrentDate)'%22 &gt; wwwroot/version.js" />
+    </Target>
 </Project>
