@@ -2071,3 +2071,22 @@ hr.separator {
 .zoom-slider {
     accent-color: var(--folder-entry-text-selected);
 }
+
+.tag-autocomplete {
+    margin-top: 0px;
+}
+
+.tag-autocomplete > .mud-input-control-input-container > div.mud-input.mud-input-text {
+    margin-top: 0px;
+}
+
+.tag-autocomplete .mud-input {
+    font-size: 0.8rem;
+}
+
+/* text of the control */
+
+.tag-autocomplete-popover .mud-typography-body1 {
+    font-size: 0.8rem;
+}
+/* elements in the control list */
