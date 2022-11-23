@@ -3,43 +3,30 @@
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
-<div class="SearchBox">
-    <div class="SearchFieldIcon" title="Add Tags/Keywords">
-        <i class="fa fa-tag"/>
-    </div>
-    <BlazoredTypeahead disabled="@IsDisabled" class="SearchField" SearchMethod="SearchTags" EnableDropDown="false"
-                       placeholder="Add a keyword" Debounce="100"
-                       @bind-Value="@TypeAheadTag" @ref="_typeaheadCtrl">
-        <SelectedTemplate>
-            @{
-                CreateNewTags(context);
-            }
-        </SelectedTemplate>
-        <ResultTemplate>
-            @context
-        </ResultTemplate>
-        <NotFoundTemplate>
-            @tagSearchText
-        </NotFoundTemplate>
-    </BlazoredTypeahead>
+<div>
+    <MudAutocomplete T="string" Placeholder="Tag to Add" SearchFunc="SearchTags"
+                     @bind-Value="@TypeAheadTag" ShowProgressIndicator="true" MinCharacters="2"
+                     CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
+                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
+                     ariant="UIConstants.MudVariant" Disabled="@IsDisabled" />
 </div>
 
+
 @code {
-    private string TypeAheadTag { get; set; }
-    private string tagSearchText { get; set; }
+    private string tagText;
+    private string TypeAheadTag { get { return tagText; } set { CreateNewTags(value); } }
 
     [Parameter]
     public bool IsDisabled { get; set; } = false;
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public Action<string> OnAddNewtag { private get; set; }
 
     private BlazoredTypeahead<string, string> _typeaheadCtrl;
 
     protected override void OnParametersSet()
     {
-    // TODO https://github.com/dotnet/aspnetcore/issues/11815
-        if( OnAddNewtag == null )
+        if (OnAddNewtag == null)
             throw new ArgumentException("No callback specified for OnAddNewTag!");
 
         base.OnParametersSet();
@@ -47,18 +34,18 @@
 
     private void CreateNewTags(string tag)
     {
-        if( !string.IsNullOrEmpty(tag) )
+        if (!string.IsNullOrEmpty(tag))
         {
             Logging.Log("Saving new tag: " + tag);
 
-    // Reset the tag
+            // Reset the tag
             TypeAheadTag = null;
             StateHasChanged();
 
-    // Call the callback
+            // Call the callback
             OnAddNewtag(tag);
 
-            if( _typeaheadCtrl != null )
+            if (_typeaheadCtrl != null)
                 _ = _typeaheadCtrl.Focus();
         }
     }
