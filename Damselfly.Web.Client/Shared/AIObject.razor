@@ -8,21 +8,11 @@
     @if (Editing)
     {
         <div class="object-editor">
-            <BlazoredTypeahead SearchMethod="SearchNames" EnableDropDown="false"
-                               placeholder="Enter a Name" Debounce="100"
-                               @bind-Value="@TypeAheadName" @onblur="@LostFocus">
-                <SelectedTemplate>
-                    @{
-                        _ = UpdateName(context);
-                    }
-                </SelectedTemplate>
-                <ResultTemplate>
-                    @context
-                </ResultTemplate>
-                <NotFoundTemplate>
-                    @tagSearchText
-                </NotFoundTemplate>
-            </BlazoredTypeahead>
+            <MudAutocomplete T="string" Placeholder="Tag to Add" SearchFunc="SearchNames"
+                             @bind-Value="@TypeAheadName" ShowProgressIndicator="true" MinCharacters="2"
+                             CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
+                             Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
+                             ariant="UIConstants.MudVariant" /> 
         </div>
     }
     else
@@ -41,7 +31,8 @@
 
     private bool Editing { get; set; }
 
-    private string TypeAheadName { get; set; }
+    private string nameText;
+    private string TypeAheadName { get { return nameText; } set { _ = UpdateName(value); } }
     private string tagSearchText { get; set; }
 
     public string ObjectName => theObject.ToString();
@@ -128,7 +119,7 @@
         if (!string.IsNullOrEmpty(name))
         {
             logger.LogInformation($"Saving name: {name}");
-            TypeAheadName = null;
+            TypeAheadName = string.Empty;
 
             StateHasChanged();
 
