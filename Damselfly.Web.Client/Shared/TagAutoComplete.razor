@@ -23,8 +23,6 @@
     [Parameter, EditorRequired]
     public Action<string> OnAddNewtag { private get; set; }
 
-    private BlazoredTypeahead<string, string> _typeaheadCtrl;
-
     protected override void OnParametersSet()
     {
         if (OnAddNewtag == null)
@@ -45,9 +43,6 @@
 
             // Call the callback
             OnAddNewtag(tag);
-
-            if (_typeaheadCtrl != null)
-                _ = _typeaheadCtrl.Focus();
         }
     }
 

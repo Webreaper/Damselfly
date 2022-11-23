@@ -1772,21 +1772,6 @@ hr.separator {
     margin: 3px;
 }
 
-.blazored-typeahead__loader {
-    display: none;
-}
-
-.blazored-typeahead__input-mask-wrapper--disabled {
-    min-height: 32px;
-    background: lightgrey;
-}
-
-.blazored-typeahead__input-mask-wrapper {
-    background: white;
-    color: black;
-    padding-left: 4px;
-}
-
 .container {
     display: flex;
     flex-direction: column;
@@ -1855,77 +1840,6 @@ hr.separator {
 
 .damselfly-ratingstarmouse:hover {
     color: var(--image-checkbox-checked-hover-bg);
-}
-
-/* Autocomplete */
-
-.blazored-typeahead__results {
-    background: var(--folder-entry-text-selected-bg);
-    color: var(--folder-entry-text-selected);
-}
-
-.blazored-typeahead {
-    border: 0;
-}
-
-.blazored-typeahead__input {
-    border: 0;
-    color: var(--body-text);
-    background: transparent;
-    padding: 2px;
-    outline-color: var(--statusbar-topborder);
-}
-
-.blazored-typeahead__selected-item {
-    background-color: var(--folder-entry-text);
-    font-weight: bold;
-}
-
-.blazored-typeahead__selected-item-highlighted {
-    background-color: var(--folder-entry-text-selected);
-}
-
-.blazored-typeahead__active-item,
-.blazored-typeahead__result:hover,
-.blazored-typeahead__result:focus {
-    color: var(--tag-editor-text);
-    background-color: var(--image-checkbox-hover-bg);
-    border-top: 1px solid var(--tag-editor-border);
-    border-bottom: 1px solid var(--tag-editor-border);
-}
-
-.blazored-typeahead__input-mask-wrapper--disabled {
-    border: 0;
-    background: transparent;
-    color: lightgrey;
-    min-height: 20px;
-}
-
-.blazored-typeahead__input-mask {
-    border: 0;
-    background: transparent;
-    padding: 0;
-    min-height: 20px;
-}
-
-.blazored-typeahead__input-icon--disabled,
-.blazored-typeahead__input-icon--disabled:hover {
-    display: none;
-}
-
-.blazored-typeahead__input-mask-wrapper {
-    display: flex;
-    width: 100%;
-    background: transparent;
-}
-
-.blazored-typeahead__multi-value {
-    background-color: var(--tag-editor-bg);
-}
-
-.blazored-typeahead__clear {
-    color: var(--button-border);
-    display: none;
 }
 
 .fa-spin-25 {
