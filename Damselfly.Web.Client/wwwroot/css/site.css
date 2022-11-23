@@ -11,6 +11,11 @@ html, body {
     padding: 0;
 }
 
+::selection {
+    color: var( --body-text );
+    background: var(--statusbar-gradstart);
+}
+
 /* Reconnection Scrreen stuff */
 
 .damselfly-reconnect-modal > div {
