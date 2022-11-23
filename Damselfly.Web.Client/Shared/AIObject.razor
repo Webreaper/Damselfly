@@ -8,7 +8,7 @@
     @if (Editing)
     {
         <div class="object-editor">
-            <MudAutocomplete T="string" Placeholder="Tag to Add" SearchFunc="SearchNames"
+            <MudAutocomplete T="string" Label="Name" Placeholder="Add Name" SearchFunc="SearchNames"
                              @bind-Value="@TypeAheadName" ShowProgressIndicator="true" MinCharacters="2"
                              CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
