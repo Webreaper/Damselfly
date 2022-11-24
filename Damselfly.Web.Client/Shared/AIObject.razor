@@ -3,6 +3,9 @@
 @inject ContextMenuService contextMenuService
 @inject NavigationManager NavigationManager
 @inject ILogger<AIObject> logger
+@inject IDialogService DialogService
+
+
 
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
     @if (Editing)
@@ -33,13 +36,15 @@
     private bool Editing { get; set; }
 
     private string nameText = string.Empty;
-    private string TypeAheadName { get
+    private string TypeAheadName
+    {
+        get
         {
             return nameText;
         }
         set
         {
-            _ = UpdateName( value );
+            nameText = value;
         }
     }
 
@@ -69,7 +74,7 @@
             return;
 
         var menuList = new List<ContextMenuItem>
-    {
+{
                 new() { Text = $"Find more photos containing this person", Value = 0 },
             };
 
@@ -91,21 +96,33 @@
         StateHasChanged();
     }
 
-    private void EditName()
+    private async Task EditName()
     {
         if (!Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString())
         {
             Editing = true;
-            StateHasChanged();
+
+            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, CloseButton = false, CloseOnEscapeKey = true };
+            var parameters = new DialogParameters { { "theObject", theObject } };
+            var dialog = DialogService.Show<NameDialog>("Add Name", parameters);
+            var result = await dialog.Result;
+
+            if( !dialog.Result.IsCanceled)
+            {
+                // Reset the tag
+                Editing = false;
+
+                OnObjectChanged?.Invoke(theObject);
+
+                StateHasChanged();
+            }
         }
     }
 
     private async Task<IEnumerable<string>> SearchNames(string text)
     {
-        return new List<string> { "Fred", "John", "Beth" };
-
-        // var list = await peopleService.GetPeopleNames(text.Trim());
-        //return list;
+        var list = await peopleService.GetPeopleNames(text.Trim());
+        return list;
     }
 
     private async Task UpdateName(string name)

@@ -1,0 +1,60 @@
+﻿@using System.ComponentModel.DataAnnotations
+@inject IPeopleService peopleService
+@inject IUserBasketService basketService
+@inject IUserService userService
+@inject ClientStatusService statusService
+@inject IConfigService configService
+@inject ILogger<BasketDialog> logger
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">Add Name </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAutocomplete T="string" Placeholder="Add Name" SearchFunc="SearchNames"
+                            @bind-Value="@TypeAheadName" ShowProgressIndicator="true" MinCharacters="2"
+                            CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
+                            Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
+                            Variant="UIConstants.MudVariant" AutoFocus="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Save">Save Name</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public ImageObject theObject { get; set; }
+
+    private string TypeAheadName { get; set; }
+
+    protected override void OnInitialized()
+    {
+        TypeAheadName = theObject.Person.Name;
+    }
+
+    private async Task<IEnumerable<string>> SearchNames(string text)
+    {
+        var list = await peopleService.GetPeopleNames(text.Trim());
+        return list;
+    }
+
+    private async Task Save()
+    {
+        await peopleService.UpdateName(theObject, TypeAheadName);
+
+        statusService.UpdateStatus($"Name saved as '{TypeAheadName}'");
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Close(DialogResult.Cancel());
+    }
+}
