@@ -1724,8 +1724,8 @@ hr.separator {
     flex: 1;
     font-size: 10pt;
     min-width: 200px;
-    min-height: 20px;
-    max-height: 28px;
+    min-height: 40px;
+    max-height: 48px;
     background: var(--keyword-bg);
 }
 
