@@ -108,7 +108,7 @@ public class AzureFaceService
     public async Task ClearAllFaceData()
     {
         // TEMP WHILE DEBUGGING
-        await _transThrottle.Run("Delete", _faceClient.PersonDirectory.DeleteDynamicPersonGroupAsync(GroupId));
+        await _transThrottle.Call("Delete", _faceClient.PersonDirectory.DeleteDynamicPersonGroupAsync(GroupId));
     }
 
     /// <summary>
@@ -238,23 +238,37 @@ public class AzureFaceService
                         // Hopefully they'll improve this....
                         // https://docs.microsoft.com/en-us/answers/questions/494886/azure-faceclient-persondirectory-api-usage.html
 
-                        using var stream = new MemoryStream();
-                        await imageProcessor.CropImage(new FileInfo(imagePath), face.Left, face.Top, face.Width,
-                            face.Height, stream);
-
-                        if ( stream != null )
+                        if (face.Height >= 200 && face.Width >= 200)
                         {
-                            var persistedFace = await _transThrottle.Call("AddFace",
-                                _faceClient.PersonDirectory.AddPersonFaceFromStreamAsync(
-                                    face.PersonId.ToString(),
-                                    image: stream,
-                                    recognitionModel: RECOGNITION_MODEL,
-                                    detectionModel: DETECTION_MODEL));
+                            using var stream = new MemoryStream();
+                            await imageProcessor.CropImage(new FileInfo(imagePath), face.Left, face.Top, face.Width,
+                                face.Height, stream);
+                            stream.Seek(0, SeekOrigin.Begin);
+
+                            if (stream != null)
+                            {
+                                try
+                                {
+                                    var persistedFace = await _transThrottle.Call("AddFace",
+                                        _faceClient.PersonDirectory.AddPersonFaceFromStreamAsync(
+                                            face.PersonId.ToString(),
+                                            image: stream,
+                                            recognitionModel: RECOGNITION_MODEL,
+                                            detectionModel: DETECTION_MODEL));
+                                }
+                                catch (ErrorException ex)
+                                {
+                                    Logging.Log($"Exception AddFace: {ex.Message} : {ex.Response.Content}");
+                                }
+                            }
+                            else
+                            {
+                                Logging.Log($"Unable to crop image for Azure: no supported image processor for {imagePath}");
+                            }
                         }
                         else
                         {
-                            Logging.Log(
-                                $"Unable to crop image for Azure: no supported image processor for {imagePath}");
+                            Logging.Log($"Cropped face was too small for Azure face detection: {imagePath}");
                         }
                     }
                 }

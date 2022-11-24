@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
@@ -18,19 +19,56 @@ namespace Damselfly.Core.Utils;
 /// </summary>
 public class TransThrottle : ITransactionThrottle
 {
+    /// <summary>
+    /// https://stackoverflow.com/questions/34315589/queue-of-async-tasks-with-throttling-which-supports-muti-threading
+    /// </summary>
+    public class TimeGatedSemaphore
+    {
+        private readonly SemaphoreSlim semaphore;
+
+        public TimeGatedSemaphore(int maxRequest, TimeSpan minimumHoldTime)
+        {
+            semaphore = new SemaphoreSlim(maxRequest);
+            MinimumHoldTime = minimumHoldTime;
+        }
+
+        public TimeSpan MinimumHoldTime { get; }
+
+        public async Task<IDisposable> WaitAsync()
+        {
+            await semaphore.WaitAsync();
+            return new InternalReleaser(semaphore, Task.Delay(MinimumHoldTime));
+        }
+
+        private class InternalReleaser : IDisposable
+        {
+            private readonly SemaphoreSlim semaphoreToRelease;
+            private readonly Task notBeforeTask;
+
+            public InternalReleaser(SemaphoreSlim semaphoreSlim, Task dependantTask)
+            {
+                semaphoreToRelease = semaphoreSlim;
+                notBeforeTask = dependantTask;
+            }
+
+            public void Dispose()
+            {
+                notBeforeTask.ContinueWith(_ => semaphoreToRelease.Release());
+            }
+        }
+    }
+
     private readonly MonthTransCount _monthTransCount;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly CloudTransaction.TransactionType _serviceType = CloudTransaction.TransactionType.AzureFace;
     private int _maxTransPerMinute = 20;
     private int _maxTransPerMonth = 30000;
     private volatile int _totalTransactions;
-
-    private DateTime _windowStart = DateTime.MinValue;
-    private volatile int _windowTransactions;
+    private TimeGatedSemaphore gatedSemaphore;
 
     public TransThrottle(IServiceScopeFactory factory)
     {
-        SetLimits(20, 30000);
+        SetLimits(30, 30000);
 
         var date = DateTime.UtcNow.Date;
 
@@ -58,6 +96,8 @@ public class TransThrottle : ITransactionThrottle
         _maxTransPerMinute = maxTransPerMin;
         _maxTransPerMonth = maxTransPerMonth;
 
+        gatedSemaphore = new TimeGatedSemaphore(maxTransPerMin, TimeSpan.FromMinutes(1));
+
         Logging.Log($"Transaction limits set to {_maxTransPerMinute}/min, and {_maxTransPerMonth}/month");
     }
 
@@ -75,43 +115,42 @@ public class TransThrottle : ITransactionThrottle
         var t = default( T );
         var retries = 3;
 
-        while ( retries-- > 0 )
+        while (retries-- > 0)
+        {
             try
             {
-                t = await method;
-                await WaitAfterTransaction(desc);
+                using (await gatedSemaphore.WaitAsync())
+                {
+                    t = await method;
+                }
+
                 retries = 0;
             }
-            catch ( Exception ex )
+            catch (ErrorException ex)
             {
-                retries = await HandleThrottleException(ex, retries);
+                if (ex.Response.StatusCode == HttpStatusCode.TooManyRequests && retries > 0)
+                {
+                    Logging.LogWarning($"Azure throttle error: {ex.Response.Content}. Retrying {retries} more times.");
+                }
+                else
+                    throw;
             }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("'faceIds' exceeds maximum item count of '10'"))
+                {
+                    Logging.LogWarning("Photo had more than 10 faces. This is not supported in the free Azure API.");
+                    retries = 0; // Bail
+                }
+                else
+                {
+                    Logging.LogError($"Unexpected exception in TransThrottle: {ex}");
+                    throw;
+                }
+            }
+        }
 
         return t;
-    }
-
-    /// <summary>
-    ///     Wrapper for Face Service calls to manage throttling and retries
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="desc"></param>
-    /// <param name="method"></param>
-    /// <returns></returns>
-    public async Task Run(string desc, Task method)
-    {
-        var retries = 3;
-
-        while ( retries-- > 0 )
-            try
-            {
-                await method;
-                await WaitAfterTransaction(desc);
-                retries = 0;
-            }
-            catch ( Exception ex )
-            {
-                retries = await HandleThrottleException(ex, retries);
-            }
     }
 
     /// <summary>
@@ -159,89 +198,7 @@ public class TransThrottle : ITransactionThrottle
         }
     }
 
-    private async Task WaitAfterTransaction(string desc)
-    {
-        var now = DateTime.UtcNow;
-
-        if ( _windowStart == DateTime.MinValue )
-            _windowStart = now;
-
-        var windowSecs = (int)(now - _windowStart).TotalSeconds;
-
-        if ( windowSecs > 60 )
-        {
-            // Completed a minute - so clean slate.
-            _windowStart = now;
-            _windowTransactions = 0;
-        }
-
-        // Increment our transaction count
-        _windowTransactions++;
-        _totalTransactions++;
-
-        if ( _windowTransactions >= _maxTransPerMinute )
-        {
-            // Too many transactions in this 1-min window. So sleep.
-            var sleepTime = 60 - windowSecs + 5;
-            if ( sleepTime > 10 )
-                // Log for long delays.
-                Logging.Log($"Sleeping for {sleepTime}s to avoid Azure transaction throttle on {desc} API call.");
-            await Task.Delay(sleepTime * 1000);
-        }
-    }
-
-    /// <summary>
-    ///     If the throttling didn't work for some edge-case reason, we may get a
-    ///     TooManyRequests exception. So sleep for 5s, and then retry.
-    /// </summary>
-    /// <param name="ex"></param>
-    /// <param name="retriesRemaining"></param>
-    /// <returns>Number of retries (depending on this error this may be altered)</returns>
-    private async Task<int> HandleThrottleException(Exception ex, int retriesRemaining)
-    {
-        var retriesToReturn = retriesRemaining;
-
-        const int requestsDelay = 30;
-
-        if ( ex is ErrorException )
-        {
-            var errorEx = ex as ErrorException;
-            if ( errorEx.Response.StatusCode == HttpStatusCode.TooManyRequests && retriesRemaining > 0 )
-            {
-                Logging.LogWarning(
-                    $"Azure throttle error: {errorEx.Response.Content}. Window Transcount: {_windowTransactions}. Retrying {retriesRemaining} more times.");
-                await Task.Delay(requestsDelay * 1000);
-            }
-        }
-        else if ( ex is APIErrorException )
-        {
-            var errorEx = ex as APIErrorException;
-            if ( errorEx.Response.StatusCode == HttpStatusCode.TooManyRequests && retriesRemaining > 0 )
-            {
-                Logging.LogWarning(
-                    $"Azure throttle API error: {errorEx.Response.Content}. Window Transcount: {_windowTransactions}. Retrying {retriesRemaining} more times.");
-                await Task.Delay(requestsDelay * 1000);
-            }
-        }
-        else if ( ex is ValidationException )
-        {
-            var errorEx = ex as ValidationException;
-
-            if ( errorEx.Message.Contains("'faceIds' exceeds maximum item count of '10'") )
-            {
-                Logging.LogWarning("Photo had more than 10 faces. This is not supported in the free Azure API.");
-                // No point retrying. All bets are off for this pic.
-                retriesToReturn = 0;
-            }
-        }
-        else
-        {
-            throw ex;
-        }
-
-        return retriesToReturn;
-    }
-
+   
     private class MonthTransCount
     {
         public int Year { get; set; }

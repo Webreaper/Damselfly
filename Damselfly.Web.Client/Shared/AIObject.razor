@@ -11,8 +11,9 @@
             <MudAutocomplete T="string" Placeholder="Add Name" SearchFunc="SearchNames"
                              @bind-Value="@TypeAheadName" ShowProgressIndicator="true" MinCharacters="2"
                              CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
-                             Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.PersonAdd"
-                             ariant="UIConstants.MudVariant" AutoFocus="true" @onblur="@LostFocus"/> 
+                             Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
+                             Variant="UIConstants.MudVariant" @onblur="LostFocus"
+                             class="tag-autocomplete" PopoverClass="tag-autocomplete-popover" />
         </div>
     }
     else
@@ -31,8 +32,16 @@
 
     private bool Editing { get; set; }
 
-    private string nameText;
-    private string TypeAheadName { get { return nameText; } set { _ = UpdateName(value); } }
+    private string nameText = string.Empty;
+    private string TypeAheadName { get
+        {
+            return nameText;
+        }
+        set
+        {
+            _ = UpdateName( value );
+        }
+    }
 
     public string ObjectName => theObject.ToString();
     public string ObjectTitle => $"{ObjectName} - click to edit";
@@ -93,21 +102,10 @@
 
     private async Task<IEnumerable<string>> SearchNames(string text)
     {
-        var searchText = text.Trim();
-        IEnumerable<string> results = new List<string>();
+        return new List<string> { "Fred", "John", "Beth" };
 
-        // Only query the DB if we have more than 2 chars.
-        if (searchText.Length > 1)
-        {
-            var names = await peopleService.GetPeopleNames(searchText);
-
-            if (!names.Contains(searchText, StringComparer.OrdinalIgnoreCase))
-                names.Insert(0, searchText);
-
-            results = names;
-        }
-
-        return results;
+        // var list = await peopleService.GetPeopleNames(text.Trim());
+        //return list;
     }
 
     private async Task UpdateName(string name)

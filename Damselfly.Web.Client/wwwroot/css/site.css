@@ -1722,8 +1722,9 @@ hr.separator {
 
 .object-editor {
     flex: 1;
+    margin: 5px;
     font-size: 10pt;
-    min-width: 200px;
+    min-width: 150px;
     min-height: 40px;
     background: var(--keyword-bg);
 }
