@@ -8,10 +8,10 @@
     @if (Editing)
     {
         <div class="object-editor">
-            <MudAutocomplete T="string" Label="Name" Placeholder="Add Name" SearchFunc="SearchNames"
+            <MudAutocomplete T="string" Placeholder="Add Name" SearchFunc="SearchNames"
                              @bind-Value="@TypeAheadName" ShowProgressIndicator="true" MinCharacters="2"
                              CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
-                             Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
+                             Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.PersonAdd"
                              ariant="UIConstants.MudVariant" AutoFocus="true" @onblur="@LostFocus"/> 
         </div>
     }
@@ -33,7 +33,6 @@
 
     private string nameText;
     private string TypeAheadName { get { return nameText; } set { _ = UpdateName(value); } }
-    private string tagSearchText { get; set; }
 
     public string ObjectName => theObject.ToString();
     public string ObjectTitle => $"{ObjectName} - click to edit";
@@ -97,9 +96,6 @@
         var searchText = text.Trim();
         IEnumerable<string> results = new List<string>();
 
-        // Store the search text which is used in the NotFound template
-        tagSearchText = searchText;
-
         // Only query the DB if we have more than 2 chars.
         if (searchText.Length > 1)
         {
@@ -119,7 +115,6 @@
         if (!string.IsNullOrEmpty(name))
         {
             logger.LogInformation($"Saving name: {name}");
-            TypeAheadName = string.Empty;
 
             StateHasChanged();
 

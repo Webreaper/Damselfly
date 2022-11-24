@@ -21,10 +21,12 @@
     left: 25vw;
     top: 25vh;
     width: 50vw;
+    z-index: 100;
     min-width: 300px;
     min-height: 200px;
     max-height: 50vh;
     scroll-behavior: auto;
+    overflow-y: auto;
     background-color: var(--tool-window-bg);
     padding: 10px;
 }
