@@ -4,7 +4,7 @@
 @inject ContextMenuService contextMenuService
 
 <div>
-    <MudAutocomplete T="string" Placeholder="Tag to Add" SearchFunc="SearchTags"
+    <MudAutocomplete T="string" Placeholder="Add a Keyword" SearchFunc="SearchTags"
                      @bind-Value="@TypeAheadTag" ShowProgressIndicator="true" MinCharacters="2"
                      CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
