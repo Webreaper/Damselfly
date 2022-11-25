@@ -1,0 +1,15 @@
+﻿@page "/logout"
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+@code {
+
+    // WASM TODO - We may not need this control at all
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.Logout();
+        NavigationManager.NavigateTo("/");
+    }
+
+}

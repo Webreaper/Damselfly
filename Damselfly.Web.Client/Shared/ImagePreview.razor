@@ -1,0 +1,313 @@
+﻿@using DialogOptions = MudBlazor.DialogOptions
+<!--
+Image preview panel - displays an image in full res. To keep the UX nice, the initial image
+is set to the medium thumb (which should load very quickly) and a hidden image loads the
+full-res version - which may need to be generated on the fly. Once that's loaded, the URL
+of the visible image is updated which should update it instantly.
+-->
+
+@inject IJSRuntime JsRuntime
+@inject IUserConfigService userConfigService
+@inject IDialogService DialogService
+@inject IImageCacheService imageCacheService
+@inject IUserStatusService statusService
+@inject NavigationManager NavigationManager
+@inject ContextMenuService contextMenuService
+
+<LocalFileExporter @ref="FileExporter" />
+
+<div class="damselfly-imagepreview">
+    <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
+         @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
+
+        <div class="objects-box" id="objectBox">
+            @if (ShowObjects)
+            {
+                @foreach (var obj in Objects)
+                {
+                    <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
+                }
+            }
+        </div>
+
+        <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
+            <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
+        </Panzoom>
+    </div>
+</div>
+
+<!-- Hidden image to background load the hi-res version-->
+<img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
+
+@code
+{
+    [Parameter]
+    [EditorRequired]
+    public Image Image
+    {
+        get => theImage;
+        set => ChangeImage(value);
+    }
+
+    [Parameter]
+    public bool ShowObjects
+    {
+        get => showObjects;
+        set => SetShowObjects(value);
+    }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private bool showObjects;
+    private Image theImage;
+    private LocalFileExporter FileExporter;
+    private double _rangeValue = 1.0;
+    private Panzoom _panzoom;
+    public double ZoomLevel => _rangeValue;
+
+    private string ImgKey => $"prev{theImage.ImageId}";
+    private string ImgPreviewKey => $"{theImage.ImageId}";
+    private string ImageUrl { get; set; }
+    private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
+
+    // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
+    private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
+
+    private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
+    {
+        MinScale = 1,
+        MaxScale = 8,
+        Step = 0.2,
+        PanOnlyWhenZoomed = true,
+        Cursor = Cursor.AllScroll,
+        //Contain = Contain.Outside
+    };
+
+    private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
+
+    private IList<ImageObject> Objects
+    {
+        get
+        {
+            var objects = theImage?.ImageObjects ?? new List<ImageObject>();
+
+            // Sort objects first, then faces, and largest first, so that smaller
+            // objects will appear on top, so they can be easily accessed.
+            return objects.OrderBy(x => x.IsFace ? 2 : 1)
+                .ThenByDescending(x => x.RectWidth * x.RectHeight)
+                .ToList();
+        }
+    }
+
+    private void ImageObjectChanged(ImageObject imgObject)
+    {
+        Task.Run(async () =>
+        {
+            this.theImage = await imageCacheService.GetCachedImage(imgObject.ImageId);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private bool HiResImageLoaded { get; set; }
+    private string ShowObjectsMenuText => ShowObjects ? "Hide Objects/Faces" : "Show Objects/Faces";
+
+    void ShowContextMenu(MouseEventArgs args)
+    {
+        var menuItems = new List<ContextMenuItem>
+{
+            new() { Text = "View Folder", Value = 4 },
+            new() { Text = "View Images From This Day", Value = 5 },
+            new() { Text = ShowObjectsMenuText, Value = 0 },
+            new() { Text = "Download", Value = 1 },
+            new() { Text = "Refresh", Value = 2 }
+        };
+
+        if (FileExporter.IsDesktopHosted)
+            menuItems.Insert(3, new ContextMenuItem { Text = "Save Locally", Value = 3 });
+
+        contextMenuService.Open(args, menuItems, async args =>
+        {
+            contextMenuService.Close();
+            switch (args.Value)
+            {
+                case 0:
+                    SetShowObjects(!ShowObjects);
+                    break;
+                case 1:
+                    await DownloadImage();
+                    break;
+                case 2:
+                    await ShowRescanDialog();
+                    break;
+                case 3:
+                    await FileExporter.ExportImagesToLocalFilesystem(new List<Image> { theImage });
+                    break;
+                case 4:
+                    GoToImageFolder();
+                    break;
+                case 5:
+                    FilterByImageDate();
+                    break;
+            }
+        });
+    }
+
+    private void GoToImageFolder()
+    {
+        NavigationManager.NavigateTo($"/?folderId={theImage.Folder.FolderId}");
+    }
+
+    private void FilterByImageDate()
+    {
+        var url = $"/?date={theImage.SortDate:dd-MMM-yyyy}";
+        NavigationManager.NavigateTo(url);
+    }
+
+
+    private void DoObjectBox()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await JsRuntime.InvokeAsync<string>("ScaleToFitImage", "theImage", "objectBox");
+            StateHasChanged();
+        });
+    }
+
+    private async Task ShowRescanDialog()
+    {
+        var parameters = new DialogParameters { { "images", new List<Image> { theImage } } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
+    }
+
+    public async Task DownloadImage()
+    {
+        try
+        {
+            var downloadFile = theImage.DownloadImageUrl;
+            await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError("Exception: " + ex.Message);
+        }
+    }
+
+    public void ToggleShowObjects()
+    {
+        SetShowObjects(!showObjects);
+    }
+
+    private void SetShowObjects(bool newState)
+    {
+        if (newState == showObjects)
+            return;
+
+        if (ZoomRangeValue != 1.0)
+            _ = ResetZoom();
+
+        showObjects = newState;
+        userConfigService.SetForUser(ConfigSettings.ShowObjects, showObjects.ToString());
+        StateHasChanged();
+
+        if (showObjects)
+            DoObjectBox();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (showObjects)
+                DoObjectBox();
+        }
+    }
+
+    private void ChangeImage(Image newImage)
+    {
+        if (newImage == null)
+            throw new ArgumentException("Image cannot be null");
+
+        if (theImage == null || theImage.ImageId != newImage.ImageId)
+        {
+            theImage = newImage;
+            HiResImageLoaded = false;
+            ImageUrl = $"/thumb/{ThumbSize.Medium}/{theImage.ImageId}";
+            statusService.UpdateStatus("Loading hi-res image...");
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
+
+        base.OnInitialized();
+    }
+
+    protected async Task ReplaceUrl(ProgressEventArgs args)
+    {
+        ImageUrl = ImageUrlHighRes;
+
+        HiResImageLoaded = true;
+
+        statusService.UpdateStatus("Hi-res image loaded.");
+        StateHasChanged();
+
+        DoObjectBox();
+
+        // For when we want to do region selection
+        //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
+    }
+
+    public double ZoomRangeValue
+    {
+        get => _rangeValue;
+        set
+        {
+            _rangeValue = value;
+            _panzoom.ZoomAsync(value);
+        }
+    }
+
+    public async Task ZoomIn()
+    {
+        if (ShowObjects)
+        {
+            ShowObjects = false;
+            StateHasChanged();
+        }
+
+        await _panzoom.ZoomInAsync();
+        await UpdateSlider();
+    }
+
+    public async Task ZoomOut()
+    {
+        if (ShowObjects)
+        {
+            ShowObjects = false;
+            StateHasChanged();
+        }
+
+        if (ZoomRangeValue > 1.0)
+        {
+            await _panzoom.ZoomOutAsync();
+            await UpdateSlider();
+        }
+    }
+
+    public async Task ResetZoom()
+    {
+        await _panzoom.ResetAsync();
+        await UpdateSlider();
+    }
+
+    public async Task UpdateSlider()
+    {
+        var scale = await _panzoom.GetScaleAsync();
+        _rangeValue = scale;
+    }
+}

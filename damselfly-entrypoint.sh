@@ -10,14 +10,23 @@ fi;
 #echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
 echo "Preparing to start Damselfly...."
-echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
 
 # Let's turn this on for extra performance.
 # https://devblogs.microsoft.com/dotnet/announcing-net-6/#dynamic-pgo
 export DOTNET_TieredPGO=1
+# Fix for https://github.com/dotnet/runtime/issues/70758
+export COMPlus_EnableWriteXorExecute=0
 
 cd /app
-./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+
+if ! [ -z "$DAMSELFLY_BLAZORSERVER" ];
+then
+   echo "  ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
+   ./Damselfly.Web /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+else
+   echo "  ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}"
+   ./Damselfly.Web.Server /pictures --config=/config --thumbs=/thumbs ${cmdlineargs}
+fi;
 
 exec "$@"
 

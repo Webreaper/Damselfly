@@ -1,21 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="SixLabors.ImageSharp" />
-    <None Remove="SixLabors.Fonts" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.2" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta16" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="SixLabors.ImageSharp"/>
+        <None Remove="SixLabors.Fonts"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3"/>
+        <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta16"/>
+    </ItemGroup>
 </Project>

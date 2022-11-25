@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <RunAOTCompilation>false</RunAOTCompilation>
+        <InvariantGlobalization>false</InvariantGlobalization>
+        <CurrentDate>$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmmss`))</CurrentDate>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
+        <ExternalConsole>true</ExternalConsole>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
+        <PackageReference Include="MudBlazor" Version="6.0.18" />
+        <PackageReference Include="Radzen.Blazor" Version="4.3.1" />
+        <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
+        <PackageReference Include="FluentValidation" Version="11.2.2" />
+        <PackageReference Include="Humanizer" Version="2.14.1" />
+        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
+        <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="1.0.0" />
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.3.0.56" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.0" />
+        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
+        <PackageReference Include="Serilog.Sinks.BrowserHttp" Version="1.0.0-dev-00032" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.1-dev-10301" />
+        <PackageReference Include="BlazorPanzoom" Version="0.2.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Shared\" />
+        <Folder Include="Pages\" />
+        <Folder Include="Extensions\" />
+        <Folder Include="Services\" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Extensions\" />
+        <None Remove="Microsoft.AspNetCore.WebUtilities" />
+        <None Remove="Syncfusion.Blazor.Maps" />
+        <None Remove="Microsoft.AspNetCore.SignalR.Client" />
+        <None Remove="Serilog" />
+        <None Remove="Blazored.LocalStorage" />
+        <None Remove="Services\" />
+        <None Remove="Serilog.Sinks.BrowserHttp" />
+        <None Remove="Serilog.Extensions.Logging" />
+        <None Remove="BlazorPanzoom" />
+    </ItemGroup>
+
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+        <ReadLinesFromFile File="../VERSION">
+            <Output TaskParameter="Lines" PropertyName="VersionNumber" />
+        </ReadLinesFromFile>
+        <Exec Command="echo %22const CACHE_VERSION='$(VersionNumber)-$(CurrentDate)'%22 &gt; wwwroot/version.js" />
+    </Target>
+</Project>

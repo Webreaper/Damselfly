@@ -1,113 +1,84 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Damselfly.Core.DbModels;
+using System.Threading.Tasks;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
-using Damselfly.Core.Services;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices;
 
 public class UserConfigService : BaseConfigService, IDisposable
 {
-    private UserService _userService;
-    private AppIdentityUser _user;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IUserService _userService;
 
-    public UserConfigService(UserService userService)
+    public UserConfigService(IUserService userService, IServiceScopeFactory scopeFactory,
+        ILogger<IConfigService> logger) : base(logger)
     {
+        _scopeFactory = scopeFactory;
         _userService = userService;
-        _userService.OnChange += UserChanged;
-        _user = userService.User;
+        _userService.OnUserIdChanged += UserChanged;
 
-        InitialiseCache();
-    }
-
-    private void UserChanged( AppIdentityUser user )
-    {
-        _user = user;
-        InitialiseCache();
+        _ = InitialiseCache();
     }
 
     public void Dispose()
     {
-        _userService.OnChange -= UserChanged;
+        _userService.OnUserIdChanged -= UserChanged;
     }
 
-    public override void InitialiseCache()
+    private void UserChanged(int? userId)
     {
-        lock (_cache)
+        _ = InitialiseCache();
+    }
+
+    protected override async Task<List<ConfigSetting>> LoadAllSettings()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var settings = await db.ConfigSettings.Where(x => x.UserId == _userService.UserId).ToListAsync();
+
+        return settings;
+    }
+
+    protected override async Task PersistSetting(ConfigSetRequest setRequest)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var existing = await db.ConfigSettings
+            .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)
+            .FirstOrDefaultAsync();
+
+        if ( string.IsNullOrEmpty(setRequest.NewValue) )
         {
-            _cache.Clear();
-
-            if (_user != null)
-            {
-                using var db = new ImageContext();
-
-                var settings = db.ConfigSettings.Where(x => x.UserId == _user.Id).ToList();
-
-                foreach (var setting in settings)
-                {
-                    _cache[setting.Name] = setting;
-                }
-            }
+            // Setting set to null - delete from the DB and cache
+            if ( existing != null )
+                db.ConfigSettings.Remove(existing);
         }
-    }
-
-    /// <summary>
-    /// Save the settings. Note that if there is no logged in
-    /// user, we store the settings in the cache with an ID of
-    /// zero, and we don't save to the DB (which would give a
-    /// FK constraint exception. Means that settings will work
-    /// but only for the current session.
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="value"></param>
-    public override void Set(string name, string value)
-    {
-        // UserID of zero indicates "no user", so default global setting
-        int userId = _user != null ? _user.Id : 0;
-
-        lock (_cache)
+        else
         {
-            using var db = new ImageContext();
-
-            if (_cache.TryGetValue(name, out ConfigSetting existing))
+            // Set the value - either update the existing or create a new one
+            if ( existing != null )
             {
-                if (String.IsNullOrEmpty(value))
-                {
-                    _cache.Remove(name);
-
-                    if (_user != null)
-                    {
-                        // Setting set to null - delete from the DB and cache
-                        db.ConfigSettings.Remove(existing);
-                    }
-                }
-                else
-                {
-                    // Setting set to non-null - save in the DB and cache
-                    existing.Value = value;
-                    existing.UserId = userId;
-
-                    _cache[name] = existing;
-
-                    if( _user != null )
-                        db.ConfigSettings.Update(existing);
-                }
+                // Setting set to non-null - save in the DB and cache
+                existing.Value = setRequest.NewValue;
+                db.ConfigSettings.Update(existing);
             }
             else
             {
-                if (!String.IsNullOrEmpty(value))
-                {
-                    // Existing setting set to non-null - create in the DB and cache.
-                    existing = new ConfigSetting { Name = name, Value = value, UserId = userId };
-                    _cache[name] = existing;
-
-                    if( _user != null )
-                        db.ConfigSettings.Add(existing);
-                }
+                // Existing setting set to non-null - create in the DB and cache.
+                var newEntry = new ConfigSetting
+                    { Name = setRequest.Name, Value = setRequest.NewValue, UserId = setRequest.UserId };
+                db.ConfigSettings.Add(newEntry);
             }
-
-            if( _user != null )
-                db.SaveChanges("SaveConfig");
         }
+
+        db.SaveChanges("SaveConfig");
     }
 }

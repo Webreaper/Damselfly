@@ -1,29 +1,34 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Collections.Generic;
-using Damselfly.Core.Utils;
-using Damselfly.Core.Models;
 using System.Threading.Tasks;
+using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
+using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.Services;
 
 /// <summary>
-/// Service to manage scheduled tasks. Each task has a nextRun property, and the
-/// service periodically triggers, checks if there are any tasks scheduled to run
-/// and if so, runs them. We support the concept of task exclusivity so that
-/// certain tasks can be made mutually exclusive. For example, we don't want to
-/// run an incremental indexing task while a full indexing task is in progress.
+///     Service to manage scheduled tasks. Each task has a nextRun property, and the
+///     service periodically triggers, checks if there are any tasks scheduled to run
+///     and if so, runs them. We support the concept of task exclusivity so that
+///     certain tasks can be made mutually exclusive. For example, we don't want to
+///     run an incremental indexing task while a full indexing task is in progress.
 /// </summary>
-public class TaskService
+public class TaskService : ITaskService
 {
-    private Timer timer;
-    private readonly TimeSpan timerFreq = new TimeSpan(0, 1, 0); // Every minute
-    private readonly List<ScheduledTask> taskDefinitions = new List<ScheduledTask>();
-    private readonly Queue<ScheduledTask> taskQueue = new Queue<ScheduledTask>();
-    private readonly IDictionary<ScheduledTask.TaskType, Thread> runningTasks = new Dictionary<ScheduledTask.TaskType, Thread>();
+    private readonly object runningTaskLock = new();
 
-    private readonly object runningTaskLock = new object();
+    private readonly IDictionary<TaskType, Thread> runningTasks =
+        new Dictionary<TaskType, Thread>();
+
+    private readonly List<ScheduledTask> taskDefinitions = new();
+    private readonly Queue<ScheduledTask> taskQueue = new();
+    private readonly TimeSpan timerFreq = new( 0, 1, 0 ); // Every minute
+    private Timer timer;
 
     public TaskService()
     {
@@ -31,8 +36,41 @@ public class TaskService
     }
 
     /// <summary>
-    /// Create the base timer that will be used to cycle checking the scheduled tasks.
-    /// We'll check for task statuses every minute.
+    ///     Get a list of tasks and statuses (so we can display some status
+    ///     in the UI).
+    /// </summary>
+    /// <returns></returns>
+    public Task<List<ScheduledTask>> GetTasksAsync()
+    {
+        lock ( runningTaskLock )
+        {
+            return Task.FromResult(taskDefinitions);
+        }
+    }
+
+    /// <summary>
+    ///     Adds a scheduled task to the queue of tasks that is pending being
+    ///     executed. This is basically the method that says "time to run this,
+    ///     so add it to the queue". Note that tasks may not always get executed
+    ///     immediately, they just go into the queue and get picked up when we
+    ///     have cycles.
+    /// </summary>
+    /// <param name="task"></param>
+    /// <returns></returns>
+    public Task<bool> EnqueueTaskAsync(ScheduledTask task)
+    {
+        var result = EnqueueTask(task);
+
+        if ( result )
+            // Now process the tasks
+            ProcessTaskQueue();
+
+        return Task.FromResult(result);
+    }
+
+    /// <summary>
+    ///     Create the base timer that will be used to cycle checking the scheduled tasks.
+    ///     We'll check for task statuses every minute.
     /// </summary>
     public void Start()
     {
@@ -42,60 +80,24 @@ public class TaskService
     }
 
     /// <summary>
-    /// Get a list of tasks and statuses (so we can display some status
-    /// in the UI).
-    /// </summary>
-    /// <returns></returns>
-    public Task<ScheduledTask[]> GetTasksAsync()
-    {
-        lock( runningTaskLock )
-        {
-            var tasks = taskDefinitions.ToArray();
-            return Task.FromResult(tasks);
-        }
-    }
-
-    /// <summary>
-    /// Adds a scheduled task to the queue of tasks that is pending being
-    /// executed. This is basically the method that says "time to run this,
-    /// so add it to the queue". Note that tasks may not always get executed
-    /// immediately, they just go into the queue and get picked up when we
-    /// have cycles.
-    /// </summary>
-    /// <param name="task"></param>
-    /// <returns></returns>
-    public Task<bool> EnqueueTaskAsync(ScheduledTask task)
-    {
-        bool result = EnqueueTask(task);
-
-        if (result)
-        {
-            // Now process the tasks
-            ProcessTaskQueue();
-        }
-
-        return Task.FromResult(result);
-    }
-
-    /// <summary>
-    /// Adds a task definition to the list of tasks that could be executed.
-    /// Some basic checks for duplicates, and we also see if the task is
-    /// scheduled for immediate start. If so, we set its NextRun to now.
-    /// Otherwise, we just tee it up to get executed in the future.
+    ///     Adds a task definition to the list of tasks that could be executed.
+    ///     Some basic checks for duplicates, and we also see if the task is
+    ///     scheduled for immediate start. If so, we set its NextRun to now.
+    ///     Otherwise, we just tee it up to get executed in the future.
     /// </summary>
     /// <param name="task"></param>
     public void AddTaskDefinition(ScheduledTask task)
     {
         Logging.Log("Adding scheduled task: {0} every {1}", task.Type, task.ExecutionFrequency.ToHumanReadableString());
 
-        if (taskDefinitions.Any(x => x.Type == task.Type))
+        if ( taskDefinitions.Any(x => x.Type == task.Type) )
         {
             Logging.LogError("Duplicate task {0} added! Logic error.", task.Type);
             throw new Exception("Logic exception - duplicate scheduled task");
         }
 
-        if (task.ImmediateStart)
-            task.NextRun = DateTime.UtcNow; 
+        if ( task.ImmediateStart )
+            task.NextRun = DateTime.UtcNow;
         else
             task.NextRun = DateTime.UtcNow + task.ExecutionFrequency;
 
@@ -103,7 +105,7 @@ public class TaskService
     }
 
     /// <summary>
-    /// Our task scheduler execution.
+    ///     Our task scheduler execution.
     /// </summary>
     /// <param name="state"></param>
     private void ProcessPendingTasks(object state)
@@ -114,42 +116,37 @@ public class TaskService
         // Now process the tasks
         ProcessTaskQueue();
 
-        foreach( var job in runningTasks )
-        {
-            if (job.Value.IsAlive)
+        foreach ( var job in runningTasks )
+            if ( job.Value.IsAlive )
                 Logging.LogTrace("Status: Task {0} is still running.", job.Key);
-        }
     }
 
     /// <summary>
-    /// Checks what tasks are due to be scheduled and adds them to the queue
-    /// to be processed. 
+    ///     Checks what tasks are due to be scheduled and adds them to the queue
+    ///     to be processed.
     /// </summary>
     private void QueuePendingTasks()
     {
-        foreach (var task in taskDefinitions)
+        foreach ( var task in taskDefinitions )
         {
             Logging.LogTrace($"Checking NextRun for task: {task}");
 
             // Have we passed the due time? Do it! 
-            if ( task.NextRun <= DateTime.UtcNow )
-            {
-                EnqueueTask(task);
-            }
+            if ( task.NextRun <= DateTime.UtcNow ) EnqueueTask(task);
         }
     }
 
     /// <summary>
-    /// Add the task to the queue - but only if it's not currently running.
+    ///     Add the task to the queue - but only if it's not currently running.
     /// </summary>
     /// <param name="task"></param>
     /// <returns></returns>
     private bool EnqueueTask(ScheduledTask task)
     {
-        bool enqueued = false;
+        var enqueued = false;
 
         // If the task isn't already running, and hasn't been queued to run, enqueue it
-        if (!TaskIsRunning(task.Type) && !taskQueue.Where(x => x.Type == task.Type).Any())
+        if ( !TaskIsRunning(task.Type) && !taskQueue.Where(x => x.Type == task.Type).Any() )
         {
             taskQueue.Enqueue(task);
             Logging.LogVerbose("Task {0} enqueued", task.Type);
@@ -165,25 +162,26 @@ public class TaskService
     }
 
     /// <summary>
-    /// Works through the list of queued tasks, and spins up a new named thread
-    /// to execute each one.
+    ///     Works through the list of queued tasks, and spins up a new named thread
+    ///     to execute each one.
     /// </summary>
     private void ProcessTaskQueue()
     {
-        while (taskQueue.Any())
+        while ( taskQueue.Any() )
         {
             var task = taskQueue.Dequeue();
-            var thread = new Thread(new ThreadStart( () => { ExecuteMethod(task); } ) );
+            var thread = new Thread(() => { ExecuteMethod(task); });
             thread.Name = $"{task.Type}Thread";
             thread.IsBackground = true;
             thread.Priority = ThreadPriority.Lowest;
 
-            lock (runningTaskLock)
+            lock ( runningTaskLock )
             {
-                if (runningTasks.Keys.Intersect(task.ExclusiveToTasks).Any())
+                if ( runningTasks.Keys.Intersect(task.ExclusiveToTasks).Any() )
                 {
-                    string avoid = string.Join(", ", task.ExclusiveToTasks);
-                    Logging.LogVerbose($"One or more exclusive tasks is running ({avoid}). Skipping execution of {task.Type}");
+                    var avoid = string.Join(", ", task.ExclusiveToTasks);
+                    Logging.LogVerbose(
+                        $"One or more exclusive tasks is running ({avoid}). Skipping execution of {task.Type}");
                 }
                 else
                 {
@@ -202,12 +200,12 @@ public class TaskService
     }
 
     /// <summary>
-    /// When a task completes, this callback is executed.
+    ///     When a task completes, this callback is executed.
     /// </summary>
     /// <param name="task"></param>
-    private void TaskCompleted( ScheduledTask task )
+    private void TaskCompleted(ScheduledTask task)
     {
-        lock (runningTaskLock)
+        lock ( runningTaskLock )
         {
             // Remove the task from the collection
             runningTasks.Remove(task.Type);
@@ -217,29 +215,29 @@ public class TaskService
     }
 
     /// <summary>
-    /// Helper to access a task status and see if it's running.
+    ///     Helper to access a task status and see if it's running.
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    private bool TaskIsRunning( ScheduledTask.TaskType type )
+    private bool TaskIsRunning(TaskType type)
     {
-        lock (runningTaskLock)
+        lock ( runningTaskLock )
         {
             return runningTasks.ContainsKey(type);
         }
     }
 
     /// <summary>
-    /// Executes the actual work method. This is always run on a
-    /// named background thread that's been allocated for this
-    /// task type.
+    ///     Executes the actual work method. This is always run on a
+    ///     named background thread that's been allocated for this
+    ///     task type.
     /// </summary>
     /// <param name="task"></param>
     private void ExecuteMethod(ScheduledTask task)
     {
         try
         {
-            if (task.WorkMethod != null)
+            if ( task.WorkMethod != null )
             {
                 Logging.LogVerbose("Starting execution for task {0}", task.Type);
                 task.WorkMethod();
@@ -250,7 +248,7 @@ public class TaskService
                 Logging.LogWarning($"Task {task.Type} did not have a work method.");
             }
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError("Exception while executing task {0}: {1}", task.Type, ex.Message);
         }
@@ -259,25 +257,22 @@ public class TaskService
             Logging.LogVerbose("Completed execution for task {0}.", task.Type);
 
             TaskCompleted(task);
-            Stopwatch.WriteTotals();
+            Action<string> logFunc = Logging.Verbose ? s => Logging.LogVerbose(s) : s => Logging.Log(s);
+            Stopwatch.WriteTotals(logFunc);
         }
     }
 
     /// <summary>
-    /// Close ourselves down; remove all of the threads and clear any running tasks.
+    ///     Close ourselves down; remove all of the threads and clear any running tasks.
     /// </summary>
     public void Shutdown()
     {
         timer.Dispose();
 
-        lock( runningTaskLock )
+        lock ( runningTaskLock )
         {
-            foreach( var task in runningTasks )
-            {
-                Logging.Log($"Terminating thread for {task.Key}...");
-                // TODO - use cancellation token to end the thread.
-            }
-
+            foreach ( var task in runningTasks ) Logging.Log($"Terminating thread for {task.Key}...");
+            // TODO - use cancellation token to end the thread.
             runningTasks.Clear();
         }
     }

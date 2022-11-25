@@ -1,29 +1,37 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using Damselfly.Core.Utils;
-using Damselfly.Core.Models;
-using System.Threading.Tasks;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
 
 public class FolderWatcherService
 {
-    private static ConcurrentQueue<string> folderQueue = new ConcurrentQueue<string>();
-    private IDictionary<string, FileSystemWatcher> _watchers = new Dictionary<string, FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
-
-    private bool _fileWatchersDisabled = false;
+    private static readonly ConcurrentQueue<string> folderQueue = new();
     private readonly ImageProcessService _imageProcessService;
-    private readonly StatusService _statusService;
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IStatusService _statusService;
+
+    private readonly IDictionary<string, FileSystemWatcher> _watchers =
+        new Dictionary<string, FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
+
+    private bool _fileWatchersDisabled;
     private IndexingService _indexingService;
     private Task _queueTask;
 
-    public FolderWatcherService(StatusService statusService,
-                                ImageProcessService imageService)
+    public FolderWatcherService(IServiceScopeFactory scopeFactory,
+        IStatusService statusService,
+        ImageProcessService imageService)
     {
+        _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageProcessService = imageService;
 
@@ -31,14 +39,13 @@ public class FolderWatcherService
         _queueTask = Task.Run(FolderQueueProcessor);
     }
 
-    public void LinkIndexingServiceInstance( IndexingService indexingService )
+    public void LinkIndexingServiceInstance(IndexingService indexingService)
     {
         _indexingService = indexingService;
     }
 
     /// <summary>
-    /// Processor to drain the folder queue and update the DB. This
-    /// 
+    ///     Processor to drain the folder queue and update the DB. This
     /// </summary>
     /// <returns></returns>
     private async Task FolderQueueProcessor()
@@ -46,7 +53,7 @@ public class FolderWatcherService
         // Process the queue every 30s
         var timer = new PeriodicTimer(TimeSpan.FromSeconds(30));
 
-        while (true)
+        while ( true )
         {
             // Wait until the next iteration
             await timer.WaitForNextTickAsync();
@@ -55,18 +62,21 @@ public class FolderWatcherService
             // by setting the FolderScanDate to null.
             var folders = new List<string>();
 
-            while (folderQueue.TryDequeue(out var folder))
+            while ( folderQueue.TryDequeue(out var folder) )
             {
                 Logging.Log($"Flagging change for folder: {folder}");
                 folders.Add(folder);
             }
 
-            if (_indexingService != null && folders.Any())
+            if ( _indexingService != null && folders.Any() )
             {
-                using var db = new ImageContext();
+                using var scope = _scopeFactory.CreateScope();
+                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 var uniqueFolders = folders.Distinct(StringComparer.OrdinalIgnoreCase);
-                var pendingFolders = db.Folders.Where(f => uniqueFolders.Contains(f.Path)).ToList();
+                var pendingFolders = await db.Folders.Where(f => uniqueFolders.Contains(f.Path))
+                    .Select(x => x.FolderId)
+                    .ToListAsync();
 
                 // Call this method synchronously, we don't want to continue otherwise
                 // we'll end up with race conditions as the timer triggers while
@@ -78,11 +88,10 @@ public class FolderWatcherService
 
     public void CreateFileWatcher(DirectoryInfo path)
     {
-        if (_fileWatchersDisabled)
+        if ( _fileWatchersDisabled )
             return;
 
-        if (!_watchers.ContainsKey(path.FullName))
-        {
+        if ( !_watchers.ContainsKey(path.FullName) )
             try
             {
                 var watcher = new FileSystemWatcher();
@@ -94,9 +103,9 @@ public class FolderWatcherService
                 // Watch for changes in LastAccess and LastWrite
                 // times, and the renaming of files.
                 watcher.NotifyFilter = NotifyFilters.LastWrite
-                                      | NotifyFilters.FileName
-                                      | NotifyFilters.Size
-                                      | NotifyFilters.DirectoryName;
+                                       | NotifyFilters.FileName
+                                       | NotifyFilters.Size
+                                       | NotifyFilters.DirectoryName;
 
                 // Add event handlers.
                 watcher.Changed += OnChanged;
@@ -111,45 +120,47 @@ public class FolderWatcherService
                 // Begin watching.
                 watcher.EnableRaisingEvents = true;
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 Logging.LogError($"Exception creating filewatcher for {path}: {ex.Message}");
 
-                if (ex.Message.Contains("process limit on the number of open file descriptors has been reached"))
+                if ( ex.Message.Contains("process limit on the number of open file descriptors has been reached") )
                 {
                     _fileWatchersDisabled = true;
 
-                    const string msg = @"OS inotify/ file - watcher limit reached. Damselfly cannot monitor any more
-                                            folders for changes. You should increase the watcher limit - see this article:
-                                            https://github.com/Webreaper/Damselfly/blob/master/docs/Installation.md#filewatcher-inotify-limits";
+                    _statusService.UpdateStatus(
+                        "OS inotify/file watcher limit reached. See the installation guide on how to increase this.");
 
-                    Logging.LogError(msg);
+                    Logging.LogError(
+                        @"OS inotify/ file-watcher limit reached. Damselfly cannot monitor any more folders for changes.");
+                    Logging.LogError(
+                        "You should increase the watcher limit - see this article: https://github.com/Webreaper/Damselfly/blob/master/docs/Installation.md#filewatcher-inotify-limits");
                 }
             }
-        }
     }
 
     /// <summary>
-    /// Process disk-level inotify changes. Note that this should be *very*
-    /// fast to keep up with updates as they come in. So we put all distinct
-    /// changes into a queue and then return, and the queue contents will be
-    /// processed in batch later. This has the effect of us being able to
-    /// collect up a conflated list of actual changes with minimal blocking.
+    ///     Process disk-level inotify changes. Note that this should be *very*
+    ///     fast to keep up with updates as they come in. So we put all distinct
+    ///     changes into a queue and then return, and the queue contents will be
+    ///     processed in batch later. This has the effect of us being able to
+    ///     collect up a conflated list of actual changes with minimal blocking.
     /// </summary>
     /// <param name="file"></param>
     /// <param name="changeType"></param>
     private void EnqueueFolderChangeForRescan(FileInfo file, WatcherChangeTypes changeType)
     {
-        using var db = new ImageContext();
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var folder = file.Directory.FullName;
 
         // If it's hidden, or already in the queue, ignore it.
-        if (file.IsHidden() || folderQueue.Contains(folder))
+        if ( file.IsHidden() || folderQueue.Contains(folder) )
             return;
 
         // Ignore non images, and hidden files/folders.
-        if (file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType())
+        if ( file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType() )
         {
             Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
             folderQueue.Enqueue(folder);
@@ -184,7 +195,7 @@ public class FolderWatcherService
 
     public void RemoveFileWatcher(string path)
     {
-        if (_watchers.TryGetValue(path, out var fsw))
+        if ( _watchers.TryGetValue(path, out var fsw) )
         {
             Logging.Log($"Removing FileWatcher for {path}");
 
@@ -200,4 +211,3 @@ public class FolderWatcherService
         }
     }
 }
-

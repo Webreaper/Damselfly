@@ -1,0 +1,109 @@
+﻿@using System.Runtime.InteropServices
+@inject ICachedDataService dataService
+
+<div>
+    @if( statistics != null )
+    {
+        <table>
+            <colgroup>
+                <col span="1" style="width: 200px">
+                <col span="1" style="width: 300px">
+            </colgroup>
+            <tbody>
+            <tr>
+                <td colspan="2">
+                    <h4>System</h4>
+                </td>
+            </tr>
+            <tr>
+                <td>.Net Version:</td><td>@FrameworkVersion</td>
+            </tr>
+            <tr>
+                <td>OS Version:</td><td>@Environment.OSVersion</td>
+            </tr>
+            @if( ClientPlatform != statistics.OperatingSystem )
+            {
+                <tr>
+                    <td>Client Runtime:</td><td>@ClientPlatform</td>
+                </tr>
+            }
+            <tr>
+                <td>Server Architecture:</td><td>@statistics.OperatingSystem</td>
+            </tr>
+            <tr>
+                <td>Processor Count:</td><td>@Environment.ProcessorCount</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <h4>Photo Collection</h4>
+                </td>
+            </tr>
+            <tr>
+                <td>Folders:</td><td>@statistics.TotalFolders</td>
+            </tr>
+            <tr>
+                <td>Images:</td><td>@statistics.TotalImages</td>
+            </tr>
+            <tr>
+                <td>Image File Size:</td><td>@statistics.TotalImagesSizeBytes.Bytes().Humanize()</td>
+            </tr>
+            <tr>
+                <td>Tags/Keywords:</td><td>@statistics.TotalTags</td>
+            </tr>
+            <tr>
+                <td>Recognised Objects:</td><td>@statistics.ObjectsRecognised</td>
+            </tr>
+            <tr>
+                <td>Faces:</td><td>@statistics.PeopleFound</td>
+            </tr>
+            <tr>
+                <td>People Identified:</td><td>@statistics.PeopleIdentified</td>
+            </tr>
+            @if( !string.IsNullOrEmpty(statistics.AzureMonthlyTransactions) )
+            {
+                <tr>
+                    <td>Azure Transactions:</td><td>@statistics.AzureMonthlyTransactions</td>
+                </tr>
+            }
+            <tr>
+                <td colspan="2">
+                    <h4>Process Queue</h4>
+                </td>
+            </tr>
+            <tr>
+                <td>Pending Metadata Scans:</td><td>@statistics.PendingImages</td>
+            </tr>
+            <tr>
+                <td>Pending Thumbnails:</td><td>@statistics.PendingThumbs</td>
+            </tr>
+            <tr>
+                <td>Pending AI Scans:</td><td>@statistics.PendingAIScans</td>
+            </tr>
+            <tr>
+                <td>Pending Keyword Updates:</td><td>@statistics.PendingKeywordImages (total keywords: @statistics.PendingKeywordOps)</td>
+            </tr>
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Preparing stats... please wait.</p>
+    }
+</div>
+
+@code {
+    private Statistics statistics;
+    private string ClientPlatform = RuntimeInformation.ProcessArchitecture.ToString();
+    private string FrameworkVersion => RuntimeInformation.FrameworkDescription.Replace(".Net ", "v", StringComparison.OrdinalIgnoreCase);
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if( firstRender )
+        {
+            statistics = await dataService.GetStatistics();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+}

@@ -1,0 +1,151 @@
+﻿@page "/"
+
+@implements IDisposable
+
+@inject NavigationManager navigationManager
+@inject ViewDataService viewdataService
+@inject IUserStatusService statusService
+@inject ISearchService searchService
+@inject IUserFolderService folderService
+@inject IPeopleService peopleService
+@inject ITagSearchService tagService
+
+<div class="damselfly-imagebrowser">
+
+    <DetailedErrorBoundary>
+        <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
+    </DetailedErrorBoundary>
+    <DetailedErrorBoundary>
+        <ImageGrid CurrentThumbSize="@thumbSize"/>
+    </DetailedErrorBoundary>
+</div>
+
+@code
+{
+    [QueryStringParameter]
+    public string S { get; set; }
+
+    [QueryStringParameter]
+    public int FolderId { get; set; }
+
+    [QueryStringParameter]
+    public int TagId { get; set; }
+
+    [QueryStringParameter]
+    public string Tag { get; set; }
+
+    [QueryStringParameter]
+    public int PersonId { get; set; }
+
+    [QueryStringParameter]
+    public string Date { get; set; }
+
+    private ThumbSize thumbSize { get; set; }
+
+    private void ThumbSizeChanged(ThumbSize newSize)
+    {
+        thumbSize = newSize;
+        StateHasChanged();
+    }
+
+    private async Task ApplyQueryParams()
+    {
+        if( !string.IsNullOrEmpty(S) )
+        {
+            searchService.SearchText = S;
+        }
+
+        if( ! string.IsNullOrEmpty( Date ))
+        {
+            if( DateTime.TryParse( Date, out var parsedDate))
+            {
+                var start = parsedDate;
+                var end = parsedDate.AddHours(24);
+
+                statusService.UpdateStatus($"Selected date {parsedDate:dd-MMM-yyyy}");
+                searchService.SetDateRange(start, end);
+            }
+        }
+
+        if( FolderId != 0 )
+        {
+            var folder = await folderService.GetFolder(FolderId);
+
+            if( folder != null )
+            {
+                statusService.UpdateStatus($"Selected folder {folder.Name}");
+                searchService.Folder = folder;
+            }
+        }
+
+        if( PersonId != 0 )
+        {
+            var person = await peopleService.GetPerson( PersonId );
+
+            if( person != null )
+            {
+                statusService.UpdateStatus($"Selected person {person.Name}");
+                searchService.Person = person;
+            }
+        }
+
+        if( TagId != 0 )
+        {
+            var tag = await tagService.GetTag( TagId );
+
+            if( tag != null )
+                searchService.Tag = tag;
+        }
+        else if( !string.IsNullOrEmpty(Tag) )
+        {
+            // Search by text - this might return multiple results
+            var matchingTags = await tagService.SearchTags(Tag);
+            var tag = matchingTags.FirstOrDefault(x => x.Keyword.Equals(Tag, StringComparison.OrdinalIgnoreCase));
+
+            if( tag != null )
+                searchService.Tag = tag;
+        }
+
+        // Don't need this yet
+        //this.UpdateQueryString(navigationManager);
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        viewdataService.SetSideBarState( new ViewDataService.SideBarState { ShowFolderList = true, ShowBasket = true, ShowTags = true } );
+
+        navigationManager.LocationChanged += HandleLocationChanged;
+
+        await ApplyQueryParams();
+    }
+
+    void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        this.SetParametersFromQueryString(navigationManager);
+        StateHasChanged();
+
+        _ = ApplyQueryParams();
+    }
+
+    public void Dispose()
+    {
+        navigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    // TODO: Don't think we need this
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public void GetUpdateState(string clientVersion)
+    {
+        //Logging.Log($"Checking for update: {clientVersion}");
+    }
+}

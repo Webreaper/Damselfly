@@ -1,0 +1,98 @@
+﻿@inject IThemeService themeService
+@inject IUserConfigService configService
+@inject ILogger<ThemeSwitcher> logger
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<MudThemeProvider Theme="@mudTheme"/>
+
+@code {
+    private long cacheBuster = 1;
+    private MudTheme? mudTheme;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if( mudTheme == null )
+        {
+            var themeName = configService.Get(ConfigSettings.Theme, "Green");
+
+            if( !string.IsNullOrEmpty(themeName) )
+            {
+                var newTheme = await themeService.GetThemeConfig(themeName);
+                mudTheme = CreateMudTheme(newTheme);
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if( firstRender )
+        {
+            themeService.OnChangeTheme += SwitchTheme;
+        }
+    }
+
+    public void Dispose()
+    {
+        themeService.OnChangeTheme -= SwitchTheme;
+    }
+
+    private static MudColor? CreateMudColor(string value)
+    {
+        if( string.IsNullOrEmpty(value) )
+            return null;
+
+        return new MudColor(value);
+    }
+
+    public MudTheme CreateMudTheme(ThemeConfig theme)
+    {
+        return new MudTheme
+        {
+            Palette = new Palette
+            {
+                Black = CreateMudColor(theme.Black),
+                Primary = CreateMudColor(theme.Primary),
+                Surface = CreateMudColor(theme.Surface),
+                TextPrimary = CreateMudColor(theme.TextPrimary),
+                TextSecondary = CreateMudColor(theme.TextSecondary),
+                ActionDefault = CreateMudColor(theme.ActionDefault),
+                TableLines = CreateMudColor(theme.TableLines),
+                LinesInputs = CreateMudColor(theme.LinesInputs),
+                TextDisabled = CreateMudColor(theme.TextDisabled),
+                Tertiary = CreateMudColor(theme.Tertiary),
+                ActionDisabledBackground = CreateMudColor(theme.ActionDisabledBackground),
+                ActionDisabled = CreateMudColor(theme.ActionDisabled),
+                Background = CreateMudColor(theme.Background),
+                BackgroundGrey = CreateMudColor(theme.BackgroundGrey),
+                DrawerBackground = CreateMudColor(theme.DrawerBackground),
+                DrawerText = CreateMudColor(theme.DrawerText),
+                DrawerIcon = CreateMudColor(theme.DrawerIcon),
+                AppbarBackground = CreateMudColor(theme.AppbarBackground),
+                AppbarText = CreateMudColor(theme.AppbarText),
+                Divider = CreateMudColor(theme.Divider),
+                DividerLight = CreateMudColor(theme.DividerLight),
+                LinesDefault = CreateMudColor(theme.LinesDefault)
+            }
+        };
+    }
+
+
+    private void SwitchTheme(ThemeConfig newTheme)
+    {
+        if( newTheme != null )
+        {
+            logger.LogInformation($"Switching theme to {newTheme}");
+
+    // Apply the new stylesheet to Damselfly
+            var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
+            _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);
+
+            mudTheme = CreateMudTheme(newTheme);
+
+    // Trigger a statechanged for Mud
+            StateHasChanged();
+        }
+    }
+
+}

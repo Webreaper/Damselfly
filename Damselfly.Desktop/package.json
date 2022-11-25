@@ -1,6 +1,6 @@
 {
   "name": "Damselfly",
-  "version": "1.7.7",
+  "version": "3.0.0",
   "description": "Damselfy Desktop App",
   "main": "main.js",
   "scripts": {
@@ -22,14 +22,14 @@
   "author": "Mark Otway",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "13.3.0",
-    "electron-builder": "22.14.2"
+    "electron": "20.0.0",
+    "electron-builder": "23.3.3"
   },
   "build": {
     "appId": "damselfly-desktop",
     "win": {
       "target": "zip",
-      "legalTrademarks": "(C) Mark Otway 2021)",
+      "legalTrademarks": "(C) Mark Otway 2019-2022",
       "icon": "build/icon.png"
     },
     "mac": {
@@ -38,7 +38,7 @@
     }
   },
   "dependencies": {
-    "electron-dl": "^3.0.2",
-    "electron-log": "^4.2.4"
+    "electron-dl": "^3.3.1",
+    "electron-log": "^4.4.8"
   }
 }

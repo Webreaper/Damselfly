@@ -1,33 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22102.15" />
-    <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.11.0" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.11.0" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.2-mauipre.1.22102.15" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="ObjectDetection\" />
-    <None Remove="ObjectDetection\Yolov5Net.Scorer\" />
-    <None Remove="Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ObjectDetection\" />
-    <Folder Include="ObjectDetection\Yolov5Net.Scorer\" />
-    <Folder Include="Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Models\yolov5s.onnx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.13.1" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.13.1" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="ObjectDetection\" />
+        <None Remove="ObjectDetection\Yolov5Net.Scorer\" />
+        <None Remove="Models\" />
+        <None Remove="SixLabors.ImageSharp" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="ObjectDetection\" />
+        <Folder Include="ObjectDetection\Yolov5Net.Scorer\" />
+        <Folder Include="Models\" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="Models\yolov5s.onnx">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

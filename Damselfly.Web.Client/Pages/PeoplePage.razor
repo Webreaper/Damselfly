@@ -1,0 +1,144 @@
+﻿@page "/people"
+
+@inject IUserStatusService statusService
+@inject IRescanService rescanService
+@inject IPeopleService faceService
+@inject ViewDataService ViewDataService
+
+<div class="damselfly-exportview">
+    <div class="damselfly-pagetitlebar">
+        <NavBack/>
+        <h4 class="damselfly-imagetitle">
+            Faces &amp; Names
+        </h4>
+    </div>
+
+    <div class="damselfly-dialogrow">
+        <div class="damselfly-dialogctrl">
+            <MudButton @onclick="@ClearFaceThumbs">Refresh Thumbs</MudButton>
+        </div>
+        <div class="damselfly-dialogctrl">
+            <MudRadioGroup @bind-SelectedOption="identifiedType">
+                <MudRadio Option="@FilterType.All" Color="Color.Primary">All</MudRadio>
+                <MudRadio Option="@FilterType.Unidentified" Color="Color.Primary">Unidentified</MudRadio>
+                <MudRadio Option="@FilterType.Identified" Color="Color.Primary">Identified</MudRadio>
+            </MudRadioGroup>
+        </div>
+        <div class="damselfly-dialogctrl">
+            <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText"/>
+        </div>
+    </div>
+    <div class="damselfly-tagview">
+        @if( People == null )
+        {
+            <p>
+                <em>Loading People...</em>
+            </p>
+        }
+        else
+        {
+            <div class="damselfly-exportlist">
+                @if( People.Any() )
+                {
+                    @foreach( var person in People )
+                    {
+                        <PersonTile Person="person"/>
+                    }
+                }
+                else
+                {
+                    <p>There are no people currently listed in Damselfly.</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string PersonName { get; set; }
+
+    private enum FilterType
+    {
+        All,
+        Unidentified,
+        Identified
+    }
+
+    string searchText;
+    FilterType filterType;
+
+    FilterType identifiedType
+    {
+        get => filterType;
+        set
+        {
+            if( filterType != value )
+            {
+                filterType = value;
+                _ = LoadData();
+            }
+        }
+    }
+
+    private List<Person> filteredPeople;
+
+    private IEnumerable<Person> People => filteredPeople;
+
+    private void DoSearch(string searchTerm)
+    {
+        if( searchText != searchTerm )
+        {
+            statusService.UpdateStatus($"Searching for {searchTerm}...");
+            searchText = searchTerm;
+            _ = LoadData();
+        }
+    }
+
+    private void ClearFaceThumbs()
+    {
+        statusService.UpdateStatus("Deleting face thumbnails...");
+
+        _ = rescanService.ClearFaceThumbs();
+    }
+
+    private bool FilterFunc(Person person)
+    {
+        var display = true;
+
+        if( identifiedType == FilterType.Identified && person.State == Person.PersonState.Unknown )
+            display = false;
+
+        if( identifiedType == FilterType.Unidentified && person.State != Person.PersonState.Unknown )
+            display = false;
+
+        if( !string.IsNullOrEmpty(searchText) )
+        {
+            if( !person.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) )
+                display = false;
+        }
+
+        return display;
+    }
+
+    private async Task LoadData()
+    {
+        var names = await faceService.GetAllPeople();
+        filteredPeople = names.Where(x => FilterFunc(x))
+            .ToList();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if( firstRender )
+        {
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowTags = true });
+
+            await LoadData();
+        }
+    }
+
+}

@@ -1,0 +1,55 @@
+﻿@inject ITagSearchService tagSearchService
+@inject NavigationService navContext
+@inject NavigationManager NavigationManager
+@inject ContextMenuService contextMenuService
+
+<div>
+    <MudAutocomplete T="string" Placeholder="Add a Keyword" SearchFunc="SearchTags"
+                     @bind-Value="@TypeAheadTag" ShowProgressIndicator="true" MinCharacters="2"
+                     CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
+                     Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
+                     Variant="UIConstants.MudVariant" Disabled="@IsDisabled"
+                     class="tag-autocomplete" PopoverClass="tag-autocomplete-popover"/>
+</div>
+
+
+@code {
+    private string tagText;
+    private string TypeAheadTag { get { return tagText; } set { CreateNewTags(value); } }
+
+    [Parameter]
+    public bool IsDisabled { get; set; } = false;
+
+    [Parameter, EditorRequired]
+    public Action<string> OnAddNewtag { private get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (OnAddNewtag == null)
+            throw new ArgumentException("No callback specified for OnAddNewTag!");
+
+        base.OnParametersSet();
+    }
+
+    private void CreateNewTags(string tag)
+    {
+        if (!string.IsNullOrEmpty(tag))
+        {
+            Logging.Log("Saving new tag: " + tag);
+
+            // Reset the tag
+            TypeAheadTag = string.Empty;
+            StateHasChanged();
+
+            // Call the callback
+            OnAddNewtag(tag);
+        }
+    }
+
+    private async Task<IEnumerable<string>> SearchTags(string text)
+    {
+        var results = await tagSearchService.SearchTags(text);
+        return results.Select(x => x.Keyword);
+    }
+
+}

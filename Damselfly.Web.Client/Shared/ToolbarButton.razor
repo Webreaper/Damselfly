@@ -1,0 +1,29 @@
+﻿<span title="@title" class="fa-stack damselfly-toolbarbutton @EnabledStyle">
+    <i class="@IconEnabledStyle fa-circle fa-stack-2x"></i>
+    <i class="@StyleGroup @IconStyle fa-stack-1x fz-inverse" style="color: @TextColour;" @onclick="@OnClickCallback"></i>
+</span>
+
+@code {
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+
+    [Parameter]
+    public bool Selected { get; set; } = true;
+
+    [Parameter]
+    public string IconStyle { get; set; }
+
+    [Parameter]
+    public string StyleGroup { get; set; } = "fas";
+
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+
+    [Parameter]
+    public string title { get; set; }
+
+    private string IconEnabledStyle => Selected ? "fas" : "far";
+    private string TextColour => Selected ? " var( --keyword-text )" : " var( --body-text )";
+    private string EnabledStyle => Enabled ? string.Empty : "damselfly-toolbarbutton-disabled";
+}

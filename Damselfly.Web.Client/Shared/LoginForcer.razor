@@ -1,0 +1,29 @@
+﻿@inject NavigationManager Navigation
+@inject IConfigService configService
+@inject IUserMgmtService userService
+
+@code {
+
+    [CascadingParameter]
+    protected Task<AuthenticationState> AuthStat { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
+
+        // Check if any users have been created. If there aren't any, then we need to allow
+        // the user to create the first one, so disable the login redirect.
+        var users = await userService.GetUsers();
+
+        if ( users.Any() && forceLogin )
+        {
+            var user = (await AuthStat).User;
+
+            if( !user.Identity.IsAuthenticated )
+            {
+                if( ! Navigation.Uri.EndsWith( "/Login"))
+                    Navigation.NavigateTo("Login");
+            }
+        }
+    }
+}

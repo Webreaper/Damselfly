@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>Damselfly - Digital Asset Management</title>
+    <base href="/" />
+    <link href="Damselfly.Web.Client.styles.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+    <link href="font-awesome/css/all.min.css" rel="stylesheet" />
+    <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
+    <link href="Cropper/cropper.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet" />
+    <link href="css/snackbar.css" rel="stylesheet" />
+    <link href="themes/green.css" id="themeStyleSheet" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+</head>
+
+<body>
+<div id="app">
+    <img class="damselfly-loading-logo" src="damselfly-logo.png" title="Damselfly"/>
+    <p style="font-size: 14pt; text-align:center">Please Wait - Damselfly is loading: <span
+        class="loading-progress-text"></span>.... </p>
+    <div class="loading-bar">
+        <div class="loading-bar-progress"></div>
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    <i class="fa-solid fa-triangle-exclamation" style="color:darkorange"></i> An unexpected error has occurred starting
+    Damselfly.
+    <a class="reload" href="">Click here to Reload</a>
+    <a class="dismiss"><i class="fa-solid fa-circle-xmark" title="Dismiss"></i></a>
+</div>
+
+<script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+<script src="_framework/blazor.webassembly.js"></script>
+<script>navigator.serviceWorker.register('service-worker.js');</script>
+<script>navigator.serviceWorker.register('version.js');</script>
+<script src="objectrects/objectrects.js"></script>
+<script src="vScroll/virtualScroll.js"></script>
+<script src="vScroll/scrollMonitor.js"></script>
+<script src="Cropper/cropper.js"></script>
+<script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+<script src="Cropper/damselflyCrop.js"></script>
+<script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+<script src="_content/MudBlazor/MudBlazor.min.js"></script>
+<script src="desktop-interop/electron-interop.js"></script>
+<script src="_content/BlazorPanzoom/panzoom.min.js"></script>
+<script src="_content/BlazorPanzoom/blazorpanzoom.js"></script>
+
+<script>function setStyleSheet(url) {
+    var stylesheet = document.getElementById("themeStyleSheet");
+    stylesheet.setAttribute('href', url);
+}
+
+window.setSelection = (element, start, end) => {
+    return element.setSelectionRange(start, end);
+}
+
+function clearFocus() {
+    if (document.activeElement instanceof HTMLElement)
+        document.activeElement.blur();
+}
+
+function writeFileLocally(sourceUrl, localFilename) {
+    window.downloadUrl(sourceUrl, localFilename);
+}
+
+function downloadFile(filename) {
+    location.href = filename;
+}
+
+function doImageCrop(elementId, DotNetRef) {
+    var image = document.getElementById(elementId);
+    new Cropper(image, {
+        update: function (coords) {
+            DotNetRef.invokeMethodAsync("CompleteCrop", {
+                top: coords.y,
+                left: coords.x,
+                width: coords.width,
+                height: coords.height
+            });
+        }
+    });
+}
+
+/* END EXTERNAL SOURCE */
+/* BEGIN EXTERNAL SOURCE */</script>
+
+</body>
+
+</html>
+

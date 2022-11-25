@@ -25,7 +25,7 @@ Etymology of the name: DAM-_sel_-fly - **D**igital **A**sset **M**anagement that
 
 ### What is the Damselfly Architecture?
 
-Damselfly is written using C#/.Net 6 and Blazor Server. The data model and DB access is using Entity Framework Core. Currently the server supports Sqlite, but a future enhancement may be to add support for PostGres, MySql or MariaDB.
+Damselfly is written using C#/.Net 7 and Blazor WebAssembly. The data model and DB access is using Entity Framework Core. Currently the server supports Sqlite, but a future enhancement may be to add support for PostGres, MySql or MariaDB.
 
 ### How do I set up the Wordpress Integration?
 

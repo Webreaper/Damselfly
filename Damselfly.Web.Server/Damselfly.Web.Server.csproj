@@ -1,0 +1,79 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>Damselfly.Web.Server-69D9E22D-6BA1-4548-A809-7CE1DD4B905B</UserSecretsId>
+        <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+      <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.0" />
+        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+        <PackageReference Include="Serilog.AspNetCore.Ingestion" Version="1.0.0-dev-00032" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="AspNetCore.RouteAnalyzer" />
+        <None Remove="Swashbuckle.AspNetCore" />
+        <None Remove="Areas\" />
+        <None Remove="Models\" />
+        <None Remove="Serilog" />
+        <None Remove="Serilog.AspNetCore" />
+        <None Remove="Serilog.AspNetCore.Ingestion" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.3.0.56" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Damselfly.Web.Client\Damselfly.Web.Client.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Core.ImageProcessing\Damselfly.Core.ImageProcessing.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj">
+            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+        </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Remove="wwwroot\" />
+        <Content Remove="wwwroot\themes\" />
+        <Content Remove="wwwroot\fonts\" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="wwwroot\" />
+        <Folder Include="wwwroot\themes\" />
+        <Folder Include="wwwroot\fonts\" />
+        <Folder Include="Areas\" />
+        <Folder Include="Models\" />
+    </ItemGroup>
+</Project>

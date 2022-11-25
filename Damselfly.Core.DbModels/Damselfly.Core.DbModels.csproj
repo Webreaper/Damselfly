@@ -1,31 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.5">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.5">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.2-mauipre.1.22102.15" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.5" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.0" />
+        <PackageReference Include="FluentValidation" Version="11.2.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="7.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DBAbstractions\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Utils\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-    <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-  </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Authentication\" />
+        <Folder Include="Interfaces\" />
+        <Folder Include="Utils\" />
+        <Folder Include="Models\" />
+        <Folder Include="Models\SideCars\" />
+        <Folder Include="Images\" />
+        <Folder Include="Models\API Models\" />
+        <Folder Include="Models\ConfigSettings\" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
+        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+        <None Remove="Models\" />
+        <None Remove="Models\SideCars\" />
+        <None Remove="FluentValidation" />
+        <None Remove="Images\" />
+        <None Remove="Microsoft.AspNetCore.Authorization" />
+        <None Remove="Models\API Models\" />
+        <None Remove="Models\ConfigSettings\" />
+    </ItemGroup>
 </Project>

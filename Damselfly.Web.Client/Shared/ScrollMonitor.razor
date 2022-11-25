@@ -1,0 +1,55 @@
+﻿@inject IUserConfigService configService 
+@inject IJSRuntime JsRuntime
+@inject ILogger<ScrollMonitor> logger
+
+@code{
+
+        [Parameter]
+        [EditorRequired]
+        public string ScrollElementId { get; set; }
+
+        [Parameter]
+        [EditorRequired]
+        public string ScrollConfigName { get; set; }
+
+    private EventConflator conflator = new();
+
+    public event Action<int> OnScrollPositionChanged;
+
+    private void SaveScrollState(int scrollTop)
+    {
+        logger.LogTrace($"Saving scroll position to {scrollTop}");
+        configService.SetForUser(ScrollConfigName, scrollTop.ToString());
+
+        OnScrollPositionChanged?.Invoke(scrollTop);
+    }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if( firstRender )
+        {
+            var scrollPos = configService.GetInt(ScrollConfigName);
+
+            try
+            {
+                logger.LogTrace($"Data loaded - initialising scroll position to {scrollPos}");
+                await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
+            }
+            catch( TaskCanceledException )
+            {
+            }
+            catch( Exception ex )
+            {
+                logger.LogError($"Exception restoring scroll position: {ex.Message}");
+            }
+        }
+    }
+
+    [JSInvokable]
+    // Debugging method to help us differentiate between JS calls and other data loads
+    public void HandleScroll(double scrollTop)
+    {
+        conflator.HandleEvent(x => { SaveScrollState((int)scrollTop); });
+    }
+
+}

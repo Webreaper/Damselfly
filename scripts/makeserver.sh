@@ -27,35 +27,47 @@ esac
 
 serverdist="${PWD}/server"
 zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
+project='Damselfly.Web.Server'
+outputdir="$project/bin/Release/net${dotnetversion}/${runtime}/publish"
 
-echo "*** Building Server for ${PLATFORM} with runtime ${runtime} into ${zipname}"
+#  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
 
-dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-# Disable trimming until .Net 7 preview 5
-# dotnet publish Damselfly.Web -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true
+echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
-outputdir="Damselfly.Web/bin/Release/net${dotnetversion}/${runtime}/publish"
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 
-# Hack to get the libcvextern.so into the linux build. 
-case $PLATFORM in
-  linux)
-    runtime='linux-x64'
-    emguVer='4.5.1.4349'
-    wget https://www.nuget.org/api/v2/package/Emgu.CV.runtime.ubuntu.20.04-x64/$emguVer
-    unzip -j "$emguVer" "runtimes/ubuntu.20.04-x64/native/libcvextern.so" -d "$outputdir"
-    chmod 777 "$outputdir/libcvextern.so"
-    ls "$outputdir"
-    ;;
-esac
+if [ $? -ne 0 ]; then
+  echo "*** ERROR: Dotnet Build failed. Exiting."
+  exit 1
+fi
+
+echo "*** ${project} build succeeded. Packaging..."
 
 if [ -d "$outputdir" ]; then
-  echo "Zipping build to ${zipname}..."
+  # Hack to get the libcvextern.so into the linux build. 
+  case $PLATFORM in
+    linux)
+      runtime='linux-x64'
+      emguVer='4.5.1.4349'
+      wget https://www.nuget.org/api/v2/package/Emgu.CV.runtime.ubuntu.20.04-x64/$emguVer
+      unzip -j "$emguVer" "runtimes/ubuntu.20.04-x64/native/libcvextern.so" -d "$outputdir"
+      chmod 777 "$outputdir/libcvextern.so"
+      ls "$outputdir"
+      ;;
+  esac
+
+  echo "*** Contents of ${outputdir}:"
+
+  ls -l $outputdir
+
+  echo "*** Zipping build to ${zipname}..."
   mkdir $serverdist
 
   cd $outputdir
   zip $zipname . -rx "*.pdb" 
-  echo "Build complete."
+  echo "*** Build complete."
 else
-  echo "ERROR: Output folder ${outputdir} did not exist."
+  echo "*** ERROR: Output folder ${outputdir} did not exist."
+  exit 1
 fi
 

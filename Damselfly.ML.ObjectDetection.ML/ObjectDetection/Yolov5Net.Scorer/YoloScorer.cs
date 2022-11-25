@@ -1,310 +1,313 @@
-﻿using Damselfly.Core.Utils;
-using Microsoft.ML.OnnxRuntime;
-using Microsoft.ML.OnnxRuntime.Tensors;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using Damselfly.Core.Utils;
+using Microsoft.ML.OnnxRuntime;
+using Microsoft.ML.OnnxRuntime.Tensors;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using Yolov5Net.Scorer.Extensions;
 using Yolov5Net.Scorer.Models.Abstract;
 
-namespace Yolov5Net.Scorer
+namespace Yolov5Net.Scorer;
+
+/// <summary>
+///     Object detector.
+/// </summary>
+public class YoloScorer<T> where T : YoloModel
 {
-    /// <summary>
-    /// Object detector.
-    /// </summary>
-    public class YoloScorer<T> where T : YoloModel
+    private readonly InferenceSession _inference;
+    private readonly T _model;
+
+    public YoloScorer()
     {
-        private readonly T _model;
-        private readonly InferenceSession _inference;
+        _model = Activator.CreateInstance<T>();
 
-        /// <summary>
-        /// Outputs value between 0 and 1.
-        /// </summary>
-        private float Sigmoid(float value)
+        var modelFullPath = Path.Combine(AppContext.BaseDirectory, _model.ModelPath);
+
+        if ( File.Exists(modelFullPath) )
         {
-            return 1 / (1 + MathF.Exp(-value));
+            _inference = new InferenceSession(modelFullPath);
+            Logging.Log($"Initialised object detection with model: {modelFullPath}");
         }
-
-        /// <summary>
-        /// Converts xywh bbox format to xyxy.
-        /// </summary>
-        private float[] Xywh2xyxy(float[] source)
+        else
         {
-            var result = new float[4];
-
-            result[0] = source[0] - source[2] / 2f;
-            result[1] = source[1] - source[3] / 2f;
-            result[2] = source[0] + source[2] / 2f;
-            result[3] = source[1] + source[3] / 2f;
-
-            return result;
+            Logging.LogError($"Object Detection model not found at {modelFullPath}");
         }
+    }
 
-        /// <summary>
-        /// Fits input to net format.
-        /// </summary>
-        private Bitmap ResizeImage(Image image)
+    /// <summary>
+    ///     Outputs value between 0 and 1.
+    /// </summary>
+    private float Sigmoid(float value)
+    {
+        return 1 / (1 + MathF.Exp(-value));
+    }
+
+    /// <summary>
+    ///     Converts xywh bbox format to xyxy.
+    /// </summary>
+    private float[] Xywh2xyxy(float[] source)
+    {
+        var result = new float[4];
+
+        result[0] = source[0] - source[2] / 2f;
+        result[1] = source[1] - source[3] / 2f;
+        result[2] = source[0] + source[2] / 2f;
+        result[3] = source[1] + source[3] / 2f;
+
+        return result;
+    }
+
+    private Tensor<float> ExtractPixels(Image<Rgb24> image)
+    {
+        var tensor = new DenseTensor<float>(new[] { 1, 3, image.Height, image.Width });
+
+        image.ProcessPixelRows(pixelAccessor =>
         {
-            PixelFormat format = image.PixelFormat;
-
-            var result = new Bitmap(_model.Width, _model.Height, format);
-
-            if( image.HorizontalResolution == 0 || image.VerticalResolution == 0 )
-                result.SetResolution(300, 300);
-            else
-                result.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-
-            var rect = new Rectangle(0, 0, _model.Width, _model.Height);
-
-            using (var graphics = Graphics.FromImage(result))
+            for ( var y = 0; y < pixelAccessor.Height; y++ )
             {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBilinear;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
+                var row = pixelAccessor.GetRowSpan(y);
 
-                graphics.DrawImage(image, rect);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Extracts pixels into tensor for net input.
-        /// </summary>
-        private Tensor<float> ExtractPixels(Image image)
-        {
-            var bitmap = new Bitmap(image);
-
-            var rectangle = new Rectangle(0, 0, image.Width, image.Height);
-
-            BitmapData locked = bitmap.LockBits(rectangle, ImageLockMode.ReadOnly, image.PixelFormat);
-
-            var tensor = new DenseTensor<float>(new[] { 1, 3, image.Height, image.Width });
-
-            unsafe // speed up conversion by direct work with memory
-            {
-                for (int y = 0; y < locked.Height; y++)
+                for ( var x = 0; x < row.Length; x++ )
                 {
-                    byte* row = (byte*)locked.Scan0 + (y * locked.Stride);
-
-                    for (int x = 0; x < locked.Width; x++)
-                    {
-                        tensor[0, 0, y, x] = row[x * 3 + 0] / 255.0F;
-                        tensor[0, 1, y, x] = row[x * 3 + 1] / 255.0F;
-                        tensor[0, 2, y, x] = row[x * 3 + 2] / 255.0F;
-                    }
-                }
-
-                bitmap.UnlockBits(locked);
-            }
-
-            return tensor;
-        }
-
-        /// <summary>
-        /// Runs inference session.
-        /// </summary>
-        private DenseTensor<float>[] Inference(Image image)
-        {
-            Bitmap resized = null;
-
-            if (image.Width != _model.Width || image.Height != _model.Height)
-            {
-                resized = ResizeImage(image); // fit image size to specified input size
-            }
-
-            var inputs = new List<NamedOnnxValue> // add image as onnx input
-            {
-                NamedOnnxValue.CreateFromTensor("images", ExtractPixels(resized ?? image))
-            };
-
-            var result = _inference.Run(inputs); // run inference session
-
-            var output = new List<DenseTensor<float>>();
-
-            foreach (var item in _model.OutputNames) // add outputs for processing
-            {
-                output.Add(result.First(x => x.Name == item).Value as DenseTensor<float>);
-            };
-
-            return output.ToArray();
-        }
-
-        /// <summary>
-        /// Parses net output (detect) to predictions.
-        /// </summary>
-        private List<YoloPrediction> ParseDetect(DenseTensor<float> output, Image image)
-        {
-            var result = new List<YoloPrediction>();
-
-            var (xGain, yGain) = (_model.Width / (float)image.Width, _model.Height / (float)image.Height);
-
-            for (int i = 0; i < output.Length / _model.Dimensions; i++) // iterate tensor
-            {
-                if (output[0, i, 4] <= _model.Confidence) continue;
-
-                for (int j = 5; j < _model.Dimensions; j++) // compute mul conf
-                {
-                    output[0, i, j] = output[0, i, j] * output[0, i, 4]; // conf = obj_conf * cls_conf
-                }
-
-                for (int k = 5; k < _model.Dimensions; k++)
-                {
-                    if (output[0, i, k] <= _model.MulConfidence) continue;
-
-                    var xMin = (output[0, i, 0] - output[0, i, 2] / 2) / xGain; // top left x
-                    var yMin = (output[0, i, 1] - output[0, i, 3] / 2) / yGain; // top left y
-                    var xMax = (output[0, i, 0] + output[0, i, 2] / 2) / xGain; // bottom right x
-                    var yMax = (output[0, i, 1] + output[0, i, 3] / 2) / yGain; // bottom right y
-
-                    YoloLabel label = _model.Labels[k - 5];
-
-                    var prediction = new YoloPrediction(label, output[0, i, k])
-                    {
-                        Rectangle = new RectangleF(xMin, yMin, xMax - xMin, yMax - yMin)
-                    };
-
-                    result.Add(prediction);
+                    tensor[0, 0, y, x] = row[x].R / 255.0F;
+                    tensor[0, 1, y, x] = row[x].G / 255.0F;
+                    tensor[0, 2, y, x] = row[x].B / 255.0F;
                 }
             }
+        });
 
-            return result;
-        }
+        return tensor;
+    }
 
-        /// <summary>
-        /// Parses net outputs (sigmoid) to predictions.
-        /// </summary>
-        private List<YoloPrediction> ParseSigmoid(DenseTensor<float>[] output, Image image)
-        {
-            var result = new List<YoloPrediction>();
+    /// <summary>
+    ///     Runs inference session.
+    /// </summary>
+    private DenseTensor<float>[] Inference(Image<Rgb24> srcImage)
+    {
+        var image = srcImage;
 
-            var (xGain, yGain) = (_model.Width / (float)image.Width, _model.Height / (float)image.Height);
-
-            for (int i = 0; i < output.Length; i++) // iterate outputs
+        if ( image.Height > _model.Height || image.Width > _model.Width )
+            image = srcImage.Clone(x =>
             {
-                int shapes = _model.Shapes[i]; // shapes per output
-
-                for (int a = 0; a < _model.Anchors.Length; a++) // iterate anchors
+                x.Resize(new ResizeOptions
                 {
-                    for (int y = 0; y < shapes; y++) // iterate rows
-                    {
-                        for (int x = 0; x < shapes; x++) // iterate columns
-                        {
-                            int offset = (shapes * shapes * a + shapes * y + x) * _model.Dimensions;
+                    Size = new Size(_model.Width, _model.Height),
+                    Mode = ResizeMode.Pad
+                });
+            });
 
-                            float[] buffer = output[i].Skip(offset).Take(_model.Dimensions).Select(Sigmoid).ToArray();
+        var pixels = ExtractPixels(image);
 
-                            var objConfidence = buffer[4]; // extract object confidence
+        var inputs = new List<NamedOnnxValue> // add image as onnx input
+        {
+            NamedOnnxValue.CreateFromTensor("images", pixels)
+        };
 
-                            if (objConfidence < _model.Confidence) // check predicted object confidence
-                                continue;
+        var result = _inference.Run(inputs); // run inference session
 
-                            List<float> scores = buffer.Skip(5).Select(x => x * objConfidence).ToList();
+        var output = new List<DenseTensor<float>>();
 
-                            float mulConfidence = scores.Max(); // find the best label
+        foreach ( var item in _model.OutputNames ) // add outputs for processing
+            output.Add(result.First(x => x.Name == item).Value as DenseTensor<float>);
+        ;
 
-                            if (mulConfidence <= _model.MulConfidence) // check class obj_conf * cls_conf confidence
-                                continue;
+        return output.ToArray();
+    }
 
-                            var rawX = (buffer[0] * 2 - 0.5f + x) * _model.Strides[i]; // predicted bbox x (center)
-                            var rawY = (buffer[1] * 2 - 0.5f + y) * _model.Strides[i]; // predicted bbox y (center)
+    /// <summary>
+    ///     Parses net output (detect) to predictions.
+    /// </summary>
+    private List<YoloPrediction> ParseDetect(DenseTensor<float> output, int height, int width)
+    {
+        var result = new List<YoloPrediction>();
 
-                            var rawW = MathF.Pow(buffer[2] * 2, 2) * _model.Anchors[i][a][0]; // predicted bbox width
-                            var rawH = MathF.Pow(buffer[3] * 2, 2) * _model.Anchors[i][a][1]; // predicted bbox height
+        if ( _model.Height != _model.Width )
+            throw new ArgumentException("Scale calculation will not work if model is not square");
 
-                            float[] xyxy = Xywh2xyxy(new float[] { rawX, rawY, rawW, rawH });
+        var longestSide = 0;
+        var hOffset = 0.0f;
+        var vOffset = 0.0f;
 
-                            var xMin = xyxy[0] / xGain; // final bbox tlx scaled with ratio (to original size)
-                            var yMin = xyxy[1] / yGain; // final bbox tly scaled with ratio (to original size)
-                            var xMax = xyxy[2] / xGain; // final bbox brx scaled with ratio (to original size)
-                            var yMax = xyxy[3] / yGain; // final bbox bry scaled with ratio (to original size)
-
-                            YoloLabel label = _model.Labels[scores.IndexOf(mulConfidence)];
-
-                            var prediction = new YoloPrediction(label, mulConfidence)
-                            {
-                                Rectangle = new RectangleF(xMin, yMin, xMax - xMin, yMax - yMin)
-                            };
-
-                            result.Add(prediction);
-                        }
-                    }
-                }
-            }
-
-            return result;
+        // Need to take account of the padding, if the source image isn't square.
+        if ( height == width )
+        {
+            longestSide = height;
+        }
+        else if ( height > width )
+        {
+            // Portrait - padding is a negative horizontal offset
+            hOffset = (height - width) / 2.0f;
+            longestSide = height;
+        }
+        else
+        {
+            // Landscape - padding is a negative vertical offset
+            vOffset = (width - height) / 2.0f;
+            longestSide = width;
         }
 
-        /// <summary>
-        /// Parses net outputs (sigmoid or detect layer) to predictions.
-        /// </summary>
-        private List<YoloPrediction> ParseOutput(DenseTensor<float>[] output, Image image)
-        {
-            return _model.UseDetect ? ParseDetect(output[0], image) : ParseSigmoid(output, image);
-        }
+        // Now calculate the scale as if the source image and model are both square.
+        var scale = (float)longestSide / _model.Width;
 
-        /// <summary>
-        /// Removes overlaped duplicates (nms).
-        /// </summary>
-        private List<YoloPrediction> Supress(List<YoloPrediction> items)
+        for ( var i = 0; i < output.Length / _model.Dimensions; i++ ) // iterate tensor
         {
-            var result = new List<YoloPrediction>(items);
+            if ( output[0, i, 4] <= _model.Confidence )
+                continue;
 
-            foreach (var item in items)
+            for ( var j = 5; j < _model.Dimensions; j++ ) // compute mul conf
+                output[0, i, j] = output[0, i, j] * output[0, i, 4]; // conf = obj_conf * cls_conf
+
+            for ( var k = 5; k < _model.Dimensions; k++ )
             {
-                foreach (var current in result.ToList())
+                if ( output[0, i, k] <= _model.MulConfidence )
+                    continue;
+
+                var xMin = output[0, i, 0] - output[0, i, 2] / 2; // top left x
+                var yMin = output[0, i, 1] - output[0, i, 3] / 2; // top left y
+                var xMax = output[0, i, 0] + output[0, i, 2] / 2; // bottom right x
+                var yMax = output[0, i, 1] + output[0, i, 3] / 2; // bottom right y
+
+                var label = _model.Labels[k - 5];
+
+                // Now scale and offset if necessary.
+                var rectX = xMin * scale - hOffset;
+                var rectY = yMin * scale - vOffset;
+                var rectHeight = (xMax - xMin) * scale;
+                var rectWidth = (yMax - yMin) * scale;
+
+                var prediction = new YoloPrediction(label, output[0, i, k])
                 {
-                    if (current == item) continue;
+                    Rectangle = new RectangleF(rectX, rectY, rectHeight, rectWidth)
+                };
 
-                    var (rect1, rect2) = (item.Rectangle, current.Rectangle);
-
-                    RectangleF intersection = RectangleF.Intersect(rect1, rect2);
-
-                    float intArea = intersection.Area();
-                    float unionArea = rect1.Area() + rect2.Area() - intArea;
-                    float overlap = intArea / unionArea;
-
-                    if (overlap > _model.Overlap)
-                    {
-                        if (item.Score > current.Score)
-                        {
-                            result.Remove(current);
-                        }
-                    }
-                }
+                result.Add(prediction);
             }
-
-            return result;
         }
 
-        /// <summary>
-        /// Runs object detection.
-        /// </summary>
-        public List<YoloPrediction> Predict(Image image)
+        return result;
+    }
+
+    /// <summary>
+    ///     Parses net outputs (sigmoid) to predictions.
+    /// </summary>
+    private List<YoloPrediction> ParseSigmoid(DenseTensor<float>[] output, int height, int width)
+    {
+        var result = new List<YoloPrediction>();
+
+        var (xGain, yGain) = (_model.Width / (float)width, _model.Height / (float)height);
+
+        for ( var i = 0; i < output.Length; i++ ) // iterate outputs
         {
-            return Supress(ParseOutput(Inference(image), image));
-        }
+            var shapes = _model.Shapes[i]; // shapes per output
 
-        public YoloScorer()
-        {
-            _model = Activator.CreateInstance<T>();
-
-            var modelFullPath = Path.Combine(AppContext.BaseDirectory, _model.ModelPath);
-
-            if (File.Exists(modelFullPath))
+            for ( var a = 0; a < _model.Anchors.Length; a++ ) // iterate anchors
+            for ( var y = 0; y < shapes; y++ ) // iterate rows
+            for ( var x = 0; x < shapes; x++ ) // iterate columns
             {
-                _inference = new InferenceSession(modelFullPath);
-                Logging.Log($"Initialised object detection with model: {modelFullPath}");
+                var offset = (shapes * shapes * a + shapes * y + x) * _model.Dimensions;
+
+                var buffer = output[i].Skip(offset).Take(_model.Dimensions).Select(Sigmoid).ToArray();
+
+                var objConfidence = buffer[4]; // extract object confidence
+
+                if ( objConfidence < _model.Confidence ) // check predicted object confidence
+                    continue;
+
+                var scores = buffer.Skip(5).Select(x => x * objConfidence).ToList();
+
+                var mulConfidence = scores.Max(); // find the best label
+
+                if ( mulConfidence <= _model.MulConfidence ) // check class obj_conf * cls_conf confidence
+                    continue;
+
+                var rawX = (buffer[0] * 2 - 0.5f + x) * _model.Strides[i]; // predicted bbox x (center)
+                var rawY = (buffer[1] * 2 - 0.5f + y) * _model.Strides[i]; // predicted bbox y (center)
+
+                var rawW = MathF.Pow(buffer[2] * 2, 2) * _model.Anchors[i][a][0]; // predicted bbox width
+                var rawH = MathF.Pow(buffer[3] * 2, 2) * _model.Anchors[i][a][1]; // predicted bbox height
+
+                var xyxy = Xywh2xyxy(new[] { rawX, rawY, rawW, rawH });
+
+                var xMin = xyxy[0] / xGain; // final bbox tlx scaled with ratio (to original size)
+                var yMin = xyxy[1] / yGain; // final bbox tly scaled with ratio (to original size)
+                var xMax = xyxy[2] / xGain; // final bbox brx scaled with ratio (to original size)
+                var yMax = xyxy[3] / yGain; // final bbox bry scaled with ratio (to original size)
+
+                var label = _model.Labels[scores.IndexOf(mulConfidence)];
+
+                var prediction = new YoloPrediction(label, mulConfidence)
+                {
+                    Rectangle = new RectangleF(xMin, yMin, xMax - xMin, yMax - yMin)
+                };
+
+                result.Add(prediction);
             }
-            else
-                Logging.LogError($"Object Detection model not found at {modelFullPath}");
         }
+
+        return result;
+    }
+
+    /// <summary>
+    ///     Parses net outputs (sigmoid or detect layer) to predictions.
+    /// </summary>
+    private List<YoloPrediction> ParseOutput(DenseTensor<float>[] output, int height, int width)
+    {
+        return _model.UseDetect ? ParseDetect(output[0], height, width) : ParseSigmoid(output, height, width);
+    }
+
+    /// <summary>
+    ///     Removes overlaped duplicates (nms).
+    /// </summary>
+    private List<YoloPrediction> Supress(List<YoloPrediction> items)
+    {
+        var result = new List<YoloPrediction>(items);
+
+        try
+        {
+            foreach ( var item in items )
+            foreach ( var current in result.ToList() )
+            {
+                if ( current == item )
+                    continue;
+
+                var (rect1, rect2) = (item.Rectangle, current.Rectangle);
+
+                var intersection = RectangleF.Intersect(rect1, rect2);
+
+                var intArea = intersection.Area();
+                var unionArea = rect1.Area() + rect2.Area() - intArea;
+                var overlap = intArea / unionArea;
+
+                if ( overlap > _model.Overlap )
+                    if ( item.Score > current.Score )
+                        result.Remove(current);
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logging.Log($"Exception during object suppression: {ex}");
+            result.Clear();
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    ///     Runs object detection.
+    /// </summary>
+    public List<YoloPrediction> Predict(Image<Rgb24> image)
+    {
+        var originalWidth = image.Width;
+        var originalHeight = image.Height;
+
+        var inference = Inference(image);
+        var predictions = ParseOutput(inference, originalHeight, originalWidth);
+        var suppressed = Supress(predictions);
+
+        return suppressed;
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Linq;
 using MetadataExtractor;
-using MetadataExtractor.Formats.Exif;
 
 namespace Damselfly.Core.Utils;
 
 /// <summary>
-/// Utilities for extracting data from Metadata
+///     Utilities for extracting data from Metadata
 /// </summary>
 public static class ExifUtils
 {
@@ -40,11 +39,11 @@ public static class ExifUtils
 
     public static int SafeGetExifInt(this Directory dir, int tagType)
     {
-        int retVal = 0;
+        var retVal = 0;
         try
         {
             var val = dir?.GetInt32(tagType);
-            if (val.HasValue)
+            if ( val.HasValue )
                 retVal = val.Value;
         }
         catch
@@ -57,11 +56,11 @@ public static class ExifUtils
 
     public static DateTime SafeGetExifDateTime(this Directory dir, int tagType)
     {
-        DateTime retVal = DateTime.MinValue;
+        var retVal = DateTime.MinValue;
         try
         {
             var val = dir?.GetDateTime(tagType);
-            if (val.HasValue)
+            if ( val.HasValue )
                 retVal = val.Value;
         }
         catch

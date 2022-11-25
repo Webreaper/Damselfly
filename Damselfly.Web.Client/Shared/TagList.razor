@@ -1,0 +1,387 @@
+﻿@inject IJSRuntime JsRuntime
+@inject IImageCacheService imageCache
+@inject ITagService tagService
+@inject IUserService userService
+@inject IRecentTagService recentTagService
+@inject SelectionService selectionService
+@inject NavigationService navContext
+@inject NavigationManager NavigationManager
+@inject ContextMenuService contextMenuService
+@implements IDisposable
+
+<div class="damselfly-taglist">
+    @if( ShowAddKeywords )
+    {
+        <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled"/>
+    }
+
+    @if( ShowFavourites )
+    {
+        <div class="damselfly-keywordlist">
+            @foreach( var tag in faveTags )
+            {
+                @if( CurrentImages != null && CurrentImages.Any() )
+                {
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to image"
+                         @onclick="@(() => QuickAddTag(tag.Keyword))"
+                         @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
+                        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                            <div class="damselfly-addtag">
+                                <i class="fa fa-plus-circle"/>
+                            </div>
+                        </AuthorizeView>
+                        <div class="damselfly-keywordtext">@tag.Keyword</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add favourite '@tag.Keyword' to Selection"
+                         @oncontextmenu=@(args => ShowContextMenu(args, tag, true)) @oncontextmenu:preventDefault="true">
+                        <div class="damselfly-keywordtext-disabled">@tag.Keyword</div>
+                    </div>
+                }
+            }
+
+            @foreach( var tag in recentTags )
+            {
+                @if( CurrentImages != null && CurrentImages.Any() )
+                {
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to image"
+                         @onclick="@(() => QuickAddTag(tag))">
+                        <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                            <div class="damselfly-addtag">
+                                <i class="fa fa-history"/>
+                            </div>
+                        </AuthorizeView>
+                        <div class="damselfly-keywordtext">@tag</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="damselfly-keyword damselfly-addfavekeyword" title="Add recent '@tag' to Selection">
+                        <div class="damselfly-keywordtext-disabled">@tag</div>
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if( ShowImageKeywords )
+    {
+        <div class="damselfly-keywordlist">
+            @if( CurrentImages != null && CurrentImages.Any() )
+            {
+                @if( (theImageTags != null && theImageTags.Any()) ||
+                     (theObjectTags != null && theObjectTags.Any()) )
+                {
+                    @foreach( var tag in theImageTags )
+                    {
+                        <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
+                            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                                <div class="damselfly-favouritetag" title="Favourite" @onclick="@(async () => await tagService.ToggleFavourite(tag))">
+                                    @if( tag.Favourite )
+                                    {
+                                        <i class="fas fa-star"/>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star"/>
+                                    }
+                                </div>
+                            </AuthorizeView>
+                            <div class="damselfly-keywordtext">@tag.Keyword</div>
+                            <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                                <div class="damselfly-deletetag" title="Remove Tag" @onclick="@(() => DeleteTag(tag))">
+                                    <i class="fa fa-times-circle"/>
+                                </div>
+                            </AuthorizeView>
+                        </div>
+                    }
+
+                    @foreach( var obj in theObjectTags )
+                    {
+                        <div class="damselfly-keyword" @oncontextmenu=@(args => ShowAIContextMenu(args, obj)) @oncontextmenu:preventDefault="true">
+                            <div class="damselfly-favouritetag" title="Detected Object">
+                                <i class="fas @obj.Icon"/>
+                            </div>
+                            <div class="damselfly-keywordtext">@obj.Name</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div>No Keywords</div>
+                }
+            }
+            else
+            {
+                <div>No Images Selected</div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public bool ShowFavourites { get; set; }
+
+    [Parameter]
+    public bool ShowAddKeywords { get; set; }
+
+    [Parameter]
+    public bool ShowImageKeywords { get; set; }
+
+    [Parameter]
+    public Image[] CurrentImages { get; set; }
+
+    [Parameter]
+    public bool TrackSelection { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private class AITag
+    {
+        public string Name { get; init; }
+        public string Icon { get; init; }
+        public int? PersonId { get; init; }
+    }
+
+    private readonly List<Tag> faveTags = new();
+    private readonly List<string> recentTags = new();
+    private IList<Tag> theImageTags { get; set; }
+    private IList<AITag> theObjectTags { get; set; }
+    public bool IsDisabled => CurrentImages == null || !CurrentImages.Any();
+
+    private void CreateNewTag(string tagToAdd)
+    {
+        Logging.Log($"Creating tag for {tagToAdd}...");
+
+        // If multiple tags have been added, split them and add individually.
+        var addedTags = tagToAdd.Split(',').Select(x => x.Trim()).ToList();
+
+        _ = WriteNewTags(addedTags);
+    }
+
+    /// <summary>
+    ///     Helper to get identity and write the tags
+    /// </summary>
+    /// <param name="tagsToAdd"></param>
+    /// <returns></returns>
+    private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
+    {
+        await tagService.UpdateTagsAsync(CurrentImages.Select(x => x.ImageId).ToList(), tagsToAdd, tagsToDelete, userService.UserId);
+
+        StateHasChanged();
+    }
+
+    private void QuickAddTag(string tag)
+    {
+        var tagsToAdd = new List<string> { tag };
+        _ = WriteNewTags(tagsToAdd);
+    }
+
+    private void DeleteTag(Tag tag)
+    {
+        Logging.Log($"Tag {tag} removed");
+
+        var tagToDelete = new List<string> { tag.Keyword };
+
+        // Now store the state
+        theImageTags.Remove(tag);
+
+        // Write the change asynchronously and update the UI
+        _ = WriteNewTags(null, tagToDelete);
+    }
+
+    private IList<Tag> GetImageTags()
+    {
+        if( CurrentImages != null )
+        {
+            try
+            {
+                var tagLists = CurrentImages.Select(x => x.ImageTags.Select(t => t.Tag));
+
+                if( tagLists.Count() > 1 )
+                {
+                    return tagLists.Aggregate((x, y) => x.Intersect(y))
+                        .OrderBy(x => x.Keyword)
+                        .ToList();
+                }
+                if( tagLists.Count() == 1 )
+                {
+                    return tagLists.FirstOrDefault()
+                        .OrderBy(x => x.Keyword)
+                        .ToList();
+                }
+            }
+            catch( Exception ex )
+            {
+                Logging.Log($"Unable to get common tags: {ex}");
+            }
+        }
+
+        return new Tag[0];
+    }
+
+    private IList<AITag> GetObjectTags(IList<Tag> tagsToExclude)
+    {
+        if( CurrentImages != null )
+        {
+            try
+            {
+                var tagLists = CurrentImages.SelectMany(x => x.ImageObjects)
+                    .Select(x => new AITag
+                    {
+                        Icon = x.Type == "Face" ? "fa-user" : "fa-lightbulb",
+                        Name = x.GetTagName(),
+                        PersonId = x.Type == "Face" ? x.PersonId : null
+                    })
+                    .Where(x => !tagsToExclude.Any(y => y.Keyword.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
+                    .DistinctBy(x => x.Name)
+                    .OrderBy(x => x.Name)
+                    .ToList();
+
+                return tagLists;
+            }
+            catch( Exception ex )
+            {
+                Logging.Log($"Unable to get object tags: {ex}");
+            }
+        }
+
+        return new List<AITag>();
+    }
+
+    protected override void OnInitialized()
+    {
+        navContext.OnChange += NavigationChanged;
+
+        if (TrackSelection)
+        {
+            selectionService.OnSelectionChanged += SelectionChanged;
+            tagService.OnFavouritesChanged += FavouritesChanged;
+            SelectionChanged();
+        }
+    }
+
+    protected void NavigationChanged(Image image)
+    {
+        var images = new Image[0];
+
+        if( image != null )
+            images = new[] { image };
+
+        CurrentImages = images;
+
+        InvokeAsync(() => { _ = OnParametersSetAsync(); });
+    }
+
+    private async Task SetCurrentImages(List<int> imageIds)
+    {
+        var enriched = await imageCache.GetCachedImages(imageIds);
+        CurrentImages = enriched.ToArray();
+        await OnParametersSetAsync();
+    }
+
+    public void Dispose()
+    {
+        selectionService.OnSelectionChanged -= SelectionChanged;
+        tagService.OnFavouritesChanged -= FavouritesChanged;
+        navContext.OnChange += NavigationChanged;
+    }
+
+    protected void SelectionChanged()
+    {
+        var selectedIds = selectionService.Selection.Select(x => x.ImageId).ToList();
+        _ = SetCurrentImages(selectedIds);
+    }
+
+    protected void FavouritesChanged()
+    {
+        _ = RefreshFavourites();
+    }
+
+    protected async Task RefreshFavourites()
+    {
+        faveTags.Clear();
+        recentTags.Clear();
+
+        faveTags.AddRange(await tagService.GetFavouriteTags());
+        recentTags.AddRange(await recentTagService.GetRecentTags());
+
+        // We might not be called from the dispatcher thread.
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        theImageTags = GetImageTags();
+        theObjectTags = GetObjectTags(theImageTags);
+
+        await RefreshFavourites();
+    }
+
+    async Task ShowContextMenu(MouseEventArgs args, Tag tag, bool favourite)
+    {
+        var menuList = new List<ContextMenuItem>
+        {
+            new() { Text = "View Tag", Value = 0 },
+            new() { Text = (tag.Favourite ? "Remove from" : "Add to") + " Favourites", Value = 1 }
+        };
+
+        if( CurrentImages != null && CurrentImages.Any() )
+        {
+            if( await userService.PolicyApplies(PolicyDefinitions.s_IsEditor) )
+            {
+                if( favourite )
+                    menuList.Insert(0, new ContextMenuItem { Text = "Add Tag to Selection", Value = 2 });
+                else
+                    menuList.Insert(0, new ContextMenuItem { Text = "Remove Tag from Selection", Value = 3 });
+            }
+        }
+
+        contextMenuService.Open(args, menuList, async args =>
+        {
+            contextMenuService.Close();
+            switch( args.Value )
+            {
+                case 0:
+                    NavigationManager.NavigateTo($"/?tagid={tag.TagId}");
+                    break;
+                case 1:
+                    await tagService.ToggleFavourite(tag);
+                    break;
+                case 2:
+                    QuickAddTag(tag.Keyword);
+                    break;
+                case 3:
+                    DeleteTag(tag);
+                    break;
+            }
+        });
+    }
+
+    private void ShowAIContextMenu(MouseEventArgs args, AITag tag)
+    {
+        if (tag.PersonId == null)
+            return;
+
+        var menuList = new List<ContextMenuItem>
+        {
+            new() { Text = $"Find photos containing {tag.Name}", Value = 0 },
+        };
+
+        contextMenuService.Open(args, menuList, async args =>
+        {
+            contextMenuService.Close();
+            switch (args.Value)
+            {
+                case 0:
+                    NavigationManager.NavigateTo($"/?personid={tag.PersonId}");
+                    break;
+            }
+        });
+    }
+}
