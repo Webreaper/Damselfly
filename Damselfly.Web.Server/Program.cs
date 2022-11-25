@@ -113,7 +113,10 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
-            b => b.MigrationsAssembly("Damselfly.Migrations.Sqlite")));
+            b => {
+                b.MigrationsAssembly("Damselfly.Migrations.Sqlite");
+                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                }));
     }
 
     /// <summary>
