@@ -115,8 +115,8 @@ public class Program
         builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
             b => {
                 b.MigrationsAssembly("Damselfly.Migrations.Sqlite");
-                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-                }));
+                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+            }));
     }
 
     /// <summary>
