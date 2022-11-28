@@ -155,8 +155,10 @@ public class Program
         builder.Services.AddSignalR();
         builder.Services.AddResponseCompression(opts =>
         {
+            opts.Providers.Add<BrotliCompressionProvider>();
+            opts.Providers.Add<GzipCompressionProvider>();
             opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-                new[] { "application/octet-stream" });
+                new[] { "image/svg+xml",  "application/octet-stream" });
         });
 
         // Damselfly Services
