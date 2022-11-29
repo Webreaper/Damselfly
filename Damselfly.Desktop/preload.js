@@ -27,13 +27,17 @@ initConfig = function () {
 
 // Helper function to validate that a string is a valid URL. 
 // This is used by the settings form
-invalidUrl = function (s) {
+invalidUrl = function (s) 
+{
   if (s === "")
     return true;
   try {
     new URL(s);
     return false;
-  } catch (err) {
+  } 
+  catch (err) 
+  {
+     console.log( "Url is invalid: " + err);
     return true;
   }
 };
@@ -55,15 +59,25 @@ ipcRenderer.on('check-server-version', (event,args) => {
   console.log( 'Getting server version ');
   
     try{
-      setTimeout( function() {
-        // Call the server-provided method to check the version
-        // passing in the version we're currently running.
-        window.checkDesktopUpgrade(window.desktopVersion, function( upgradeVersion ) {
-              msg = 'There is a new version of the Damselfly Desktop client available (' + upgradeVersion + ').';
-              msg = msg + '\nPlease download the latest version from the About page.';    
-              alert( msg) ;
-          });
-        }, 3000 );
+      if( typeof window.checkDesktopUpgrade === 'function')
+      {
+        setTimeout( function() {
+          try
+          {
+            // Call the server-provided method to check the version
+            // passing in the version we're currently running.
+            window.checkDesktopUpgrade(window.desktopVersion, function( upgradeVersion ) {
+                  msg = 'There is a new version of the Damselfly Desktop client available (' + upgradeVersion + ').';
+                  msg = msg + '\nPlease download the latest version from the About page.';    
+                  alert( msg) ;
+             });
+          }
+          catch( err )
+          {
+            console.log( 'Unable to check the server version: ' + err);
+          }
+          }, 3000 );
+      }
     }
     catch( err )
     {
