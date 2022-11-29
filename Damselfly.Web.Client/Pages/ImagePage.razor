@@ -9,6 +9,8 @@
 @inject IRescanService rescanService
 @inject IImageCacheService imageCache 
 @inject IJSRuntime JsRuntime
+@inject ClientBasketService basketService 
+
 @using System.Net
 @implements ICropHelper
 
@@ -225,6 +227,11 @@
         else if (e.Key == "ArrowDown")
         {
             await theImagePreview.ZoomOut();
+        }
+        else if (e.Key == " " )
+        {
+            bool currentState = basketService.IsInCurrentBasket(CurrentImage);
+            await basketService.SetImageBasketState(!currentState, new[] { CurrentImage.ImageId });
         }
     }
 }
