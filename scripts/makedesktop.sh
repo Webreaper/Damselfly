@@ -64,7 +64,7 @@ case $PLATFORM in
     cp "dist/Damselfly-${version}-win.zip" $destfolder
     ;;
   linux)
-    cp "dist/Damselfly-${version}.AppImage" $destfolder
+    zip "${destfolder}/Damselfly-${version}-linux.zip" "Damselfly-${version}.AppImage"
     ;;
 esac
 

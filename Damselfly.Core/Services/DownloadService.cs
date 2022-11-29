@@ -135,7 +135,7 @@ public class DownloadService : IDownloadService
             _desktopAppInfo.WindowsApp = Path.Combine(s_appVPath, winAppPath.Name);
 
         var linuxAppPath =
-            desktopFiles.FirstOrDefault(x => x.Name.EndsWith(".appimage", StringComparison.OrdinalIgnoreCase));
+            desktopFiles.FirstOrDefault(x => x.Name.EndsWith("-linux.zip", StringComparison.OrdinalIgnoreCase));
 
         if ( linuxAppPath != null )
             _desktopAppInfo.LinuxApp = Path.Combine(s_appVPath, linuxAppPath.Name);
