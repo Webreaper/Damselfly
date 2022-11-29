@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Desktop-Dist
-          path: Damselfly.Web/wwwroot/desktop/*.*
+          path: Damselfly.Web.Client/wwwroot/desktop/*.*
           retention-days: 5
 
   build-server:
