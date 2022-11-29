@@ -37,7 +37,7 @@ invalidUrl = function (s)
   } 
   catch (err) 
   {
-     console.log( "Url is invalid: " + err);
+     console.log( "Damselfly url is invalid: " + err);
     return true;
   }
 };
