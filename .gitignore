@@ -10,11 +10,10 @@
 
 # Downloads folder
 server/
-Damselfly.Web/wwwroot/desktop
-Damselfly.Web/wwwroot/[Dd]ownloads
-Damselfly.Web/config/
-Damselfly.Desktop/dist/
+Damselfly.Web.Client/wwwroot/desktop
+Damselfly.Web.Client/wwwroot/[Dd]ownloads
 Damselfly.Web.Server/config/
+Damselfly.Desktop/dist/
 
 # User-specific files
 *.rsuser
