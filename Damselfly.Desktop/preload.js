@@ -1,5 +1,5 @@
 const { remote, ipcRenderer } = require('electron');
-const URL = require("url").URL;
+const url = require("url");
 
 let configData;
 
@@ -32,12 +32,12 @@ invalidUrl = function (s)
   if (s === "")
     return true;
   try {
-    new URL(s);
+    new URL( s );
     return false;
   } 
   catch (err) 
   {
-     console.log( "Damselfly url is invalid: " + err);
+     console.log( "Damselfly url " + s + " is invalid: " + err + " (URL = " + URL + ")");
     return true;
   }
 };
