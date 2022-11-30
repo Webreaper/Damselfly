@@ -27,7 +27,7 @@ case $PLATFORM in
     ;;
 esac
 
-destfolder="${PWD}/Damselfly.Web/wwwroot/desktop"
+destfolder="${PWD}/Damselfly.Web.Client/wwwroot/desktop"
 
 cd Damselfly.Desktop
 
@@ -64,7 +64,8 @@ case $PLATFORM in
     cp "dist/Damselfly-${version}-win.zip" $destfolder
     ;;
   linux)
-    cp "dist/Damselfly-${version}.AppImage" $destfolder
+    cd dist
+    zip "${destfolder}/Damselfly-${version}-linux.zip" "Damselfly-${version}.AppImage"
     ;;
 esac
 
