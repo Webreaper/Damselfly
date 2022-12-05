@@ -17,7 +17,9 @@ public class Folder
     public virtual Folder? Parent { get; set; }
 
     public DateTime? FolderScanDate { get; set; }
-    public ICollection<Folder> Children { get; set; }
+
+    [JsonIgnore] // This JsonIgnore prevents circular references when serializing the Image entity
+    public ICollection<Folder> Children { get; } = new List<Folder>();
 
     [JsonIgnore] // This JsonIgnore prevents circular references when serializing the Image entity
     public virtual List<Image> Images { get; } = new();
