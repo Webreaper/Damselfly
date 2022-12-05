@@ -34,7 +34,7 @@ outputdir="$project/bin/Release/net${dotnetversion}/${runtime}/publish"
 
 echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
-dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version /p:PublishTrimmed=true
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."
