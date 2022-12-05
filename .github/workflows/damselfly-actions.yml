@@ -174,3 +174,25 @@ jobs:
             Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
           draft: false
           prerelease: false
+
+      - name: Upload Server Artifacts
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: server/*.zip 
+          asset_name: Server-Dist.zip
+          asset_content_type: application/zip
+
+      - name: Upload Desktop Artifacts
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: Damselfly.Web.Client/wwwroot/desktop/*.*
+          asset_name: Desktop-Dist.zip
+          asset_content_type: application/zip
