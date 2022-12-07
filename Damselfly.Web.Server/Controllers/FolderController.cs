@@ -25,8 +25,16 @@ public class FolderController : ControllerBase
     {
         var folders = await _service.GetFolders();
 
-        foreach ( var folder in folders )
+        foreach (var folder in folders)
+        {
             folder.Images.Clear();
+
+            // We clear the children here, and reconstitute them on the client, 
+            // to avoid cyclic deserialization issues.
+
+            // TODO: Should probably convert this to use DTOs. 
+            folder.Children.Clear();
+        }
 
         return folders;
     }

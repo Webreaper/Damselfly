@@ -22,22 +22,22 @@
 
 @code
 {
-    [QueryStringParameter]
+    [Parameter, SupplyParameterFromQuery]
     public string S { get; set; }
 
-    [QueryStringParameter]
+    [Parameter, SupplyParameterFromQuery]
     public int FolderId { get; set; }
 
-    [QueryStringParameter]
+    [Parameter, SupplyParameterFromQuery]
     public int TagId { get; set; }
 
-    [QueryStringParameter]
+    [Parameter, SupplyParameterFromQuery]
     public string Tag { get; set; }
 
-    [QueryStringParameter]
+    [Parameter, SupplyParameterFromQuery]
     public int PersonId { get; set; }
 
-    [QueryStringParameter]
+    [Parameter, SupplyParameterFromQuery]
     public string Date { get; set; }
 
     private ThumbSize thumbSize { get; set; }
@@ -110,13 +110,6 @@
         //this.UpdateQueryString(navigationManager);
     }
 
-    public override Task SetParametersAsync(ParameterView parameters)
-    {
-        this.SetParametersFromQueryString(navigationManager);
-
-        return base.SetParametersAsync(parameters);
-    }
-
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -130,7 +123,6 @@
 
     void HandleLocationChanged(object sender, LocationChangedEventArgs e)
     {
-        this.SetParametersFromQueryString(navigationManager);
         StateHasChanged();
 
         _ = ApplyQueryParams();
