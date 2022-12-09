@@ -1,10 +1,10 @@
 ﻿@inject NavigationManager Navigation
 @inject NotificationsService notifications
-@inject WebAssemblyStatusService wasmState
+@inject ApplicationStateService appState
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IDisposable
 
-@if( wasmState.IsWebAssembly )
+@if( appState.IsWebAssembly )
 {
     <div class="damselfly-statusbarpanel" title="Server link is @Status">
         <label>

@@ -180,8 +180,14 @@
                 if( allUsers.Any() )
                 {
                     allRoles.AddRange(systemRoles);
-                    var role = User.UserRoles.First();
-                    selectedRole = role.Role.Name;
+
+                    if( User.UserRoles != null )
+                    {
+                        var role = User.UserRoles.First();
+                        selectedRole = role.Role.Name;
+                    }
+                    else
+                        selectedRole = RoleDefinitions.s_AdminRole;
                 }
                 else
                 {

@@ -1,14 +1,14 @@
 ﻿@implements IDisposable
 
 @inject IUserStatusService userStatusService
-@inject WebAssemblyStatusService wasmState
+@inject ApplicationStateService appState
 
 
 <div class="damselfly-statusbar">
     <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
     <WorkStatus />
     <ConnectionStatus />
-    @if (wasmState.IsWebAssembly)
+    @if (appState.IsWebAssembly)
     {
         <LoginDisplayWasm />
     }
@@ -27,7 +27,7 @@
     {
         InvokeAsync(() =>
         {
-            if( StatusText != newText )
+            if (StatusText != newText)
             {
                 StatusText = newText;
                 StateHasChanged();
@@ -37,7 +37,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if( firstRender )
+        if (firstRender)
         {
             userStatusService.OnStatusChanged += UpdateStatus;
         }

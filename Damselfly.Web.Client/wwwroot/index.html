@@ -52,7 +52,16 @@
 <script src="_content/BlazorPanzoom/panzoom.min.js"></script>
 <script src="_content/BlazorPanzoom/blazorpanzoom.js"></script>
 
-<script>function setStyleSheet(url) {
+<script>
+function isDevice() {
+    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent);
+}
+
+ function getInnerWidth () {
+    return window.innerWidth;
+}
+
+function setStyleSheet(url) {
     var stylesheet = document.getElementById("themeStyleSheet");
     stylesheet.setAttribute('href', url);
 }

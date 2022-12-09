@@ -769,6 +769,36 @@ f
     .damselfly-searchbar {
         flex-flow: column wrap;
     }
+
+    .wrapping-table-mini img {
+        width: 50px;
+        min-height: 50px;
+    }
+
+    .wrapping-table-small img {
+        width: 50px;
+        max-width: 50px;
+        max-height: 50px;
+        min-height: 50px;
+    }
+
+    .wrapping-table-medium img {
+        height: 80px;
+        min-height: 200px;
+        min-width: 80px;
+    }
+
+    .wrapping-table-large img {
+        height: 150px;
+        min-height: 250px;
+        min-width: 100px;
+    }
+
+    .wrapping-table-x-large img {
+        height: 300px;
+        min-height: 300px;
+        min-width: 100px;
+    }
 }
 
 .damselfly-imagegrid {

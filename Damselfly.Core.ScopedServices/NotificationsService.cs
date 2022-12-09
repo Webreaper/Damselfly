@@ -11,16 +11,16 @@ namespace Damselfly.Core.ScopedServices;
 public class NotificationsService : IAsyncDisposable
 {
     private readonly ILogger<NotificationsService> _logger;
-    private readonly WebAssemblyStatusService _wasmState;
+    private readonly ApplicationStateService _appState;
     private readonly HubConnection hubConnection;
 
-    public NotificationsService(NavigationManager navManager, WebAssemblyStatusService wasmState,
+    public NotificationsService(NavigationManager navManager, ApplicationStateService appState,
         ILogger<NotificationsService> logger)
     {
         _logger = logger;
-        _wasmState = wasmState;
+        _appState = appState;
 
-        if ( _wasmState.IsWebAssembly )
+        if (_appState.IsWebAssembly )
         {
             var hubUrl = $"{navManager.BaseUri}{NotificationHub.NotificationRoot}";
             _logger.LogInformation($"Setting up notifications listener on {hubUrl}...");
@@ -80,7 +80,7 @@ public class NotificationsService : IAsyncDisposable
         if ( action is null )
             throw new ArgumentException("Action cannot be null");
 
-        if ( !_wasmState.IsWebAssembly )
+        if ( !_appState.IsWebAssembly )
         {
             _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
             return;
@@ -116,7 +116,7 @@ public class NotificationsService : IAsyncDisposable
         if ( action is null )
             throw new ArgumentException("Action cannot be null");
 
-        if ( !_wasmState.IsWebAssembly )
+        if ( !_appState.IsWebAssembly )
         {
             _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
             return;
@@ -149,7 +149,7 @@ public class NotificationsService : IAsyncDisposable
     /// <param name="action"></param>
     public void SubscribeToNotification(NotificationType type, Action action)
     {
-        if ( !_wasmState.IsWebAssembly )
+        if ( !_appState.IsWebAssembly )
         {
             _logger.LogInformation($"Ignoring subscription to {type} in Blazor Server mode.");
             return;

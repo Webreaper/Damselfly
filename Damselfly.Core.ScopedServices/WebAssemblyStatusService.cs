@@ -2,12 +2,13 @@
 
 namespace Damselfly.Core.ScopedServices;
 
-public class WebAssemblyStatusService
+public class ApplicationStateService
 {
-    public WebAssemblyStatusService(IJSRuntime jsRuntime)
+    public ApplicationStateService(IJSRuntime jsRuntime)
     {
         IsWebAssembly = jsRuntime is IJSInProcessRuntime;
     }
 
+    public bool IsMobile { get; set; }
     public bool IsWebAssembly { get; }
 }
