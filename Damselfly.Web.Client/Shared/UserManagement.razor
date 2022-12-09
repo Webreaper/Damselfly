@@ -39,7 +39,7 @@
 
     private async Task OpenUserDialog(AppIdentityUser user)
     {
-        var parameters = new DialogParameters { ["userid"] = user.Id };
+        var parameters = new DialogParameters { ["userid"] = user == null ? null : user.Id };
 
         await InvokeAsync(async () =>
         {
