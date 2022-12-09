@@ -6,6 +6,9 @@
 @inject AuthenticationStateProvider authProvider
 @inject IConfigService configService
 @inject IUserMgmtService userService
+@inject IJSRuntime jsRuntime
+@inject ApplicationStateService appStatusService
+
 @implements IDisposable
 
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
@@ -31,14 +34,22 @@
                 {
                     <div class="damselfly-container">
                         <div class="damselfly-application">
-                            <SplitView>
-                                <LeftPane>
-                                    <SideBar />
-                                </LeftPane>
-                                <RightPane>
-                                    @Body
-                                </RightPane>
-                            </SplitView>
+                            @if (appStatusService.IsMobile)
+                            {
+                                @Body
+                                <SideBar />
+                            }
+                            else
+                            {
+                                <SplitView>
+                                    <LeftPane>
+                                        <SideBar />
+                                    </LeftPane>
+                                    <RightPane>
+                                        @Body
+                                    </RightPane>
+                                </SplitView>
+                            }
                         </div>
                         <DetailedErrorBoundary>
                             <Statusbar />
@@ -70,6 +81,16 @@
     public void Dispose()
     {
         authProvider.AuthenticationStateChanged -= AuthStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
+
+            appStatusService.IsMobile = (innerWidth <= 480);
+        }
     }
 
     protected override async Task OnInitializedAsync()

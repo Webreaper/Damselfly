@@ -36,7 +36,7 @@ public static class ServiceRegistrations
         services.AddSingleton<ClientTaskService>();
         services.AddSingleton<ClientWordpressService>();
         services.AddSingleton<ClientPeopleService>();
-        services.AddSingleton<WebAssemblyStatusService>();
+        services.AddSingleton<ApplicationStateService>();
         services.AddSingleton<ClientUserMgmtService>();
         services.AddSingleton<ClientExportService>();
 
