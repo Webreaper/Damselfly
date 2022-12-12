@@ -27,7 +27,6 @@ public class AzureFaceService
     // Assumine the newer/bigger numbers are better. 
     private const string RECOGNITION_MODEL = RecognitionModel.Recognition04;
     private const string DETECTION_MODEL = DetectionModel.Detection03;
-    private readonly IList<FaceAttributeType> _attributes;
     private readonly IConfigService _configService;
     private readonly ITransactionThrottle _transThrottle;
     private FaceClient _faceClient;
@@ -38,16 +37,6 @@ public class AzureFaceService
     {
         _configService = configService;
         _transThrottle = transThrottle;
-
-        // We have opted to not support a general-purpose system in the Face API that purports to infer
-        // emotional states, gender, age, smile, facial hair, hair, and makeup.
-        // Detection of these attributes will no longer be available to new customers beginning June 21, 2022
-        // https://azure.microsoft.com/en-us/blog/responsible-ai-investments-and-safeguards-for-facial-recognition/?WT.mc_id=AI-MVP-5003365
-        _attributes = new[]
-        {
-            FaceAttributeType.Glasses,
-            FaceAttributeType.HeadPose
-        };
     }
 
     public AzureDetection DetectionType { get; private set; }
@@ -194,7 +183,7 @@ public class AzureFaceService
         Logging.LogVerbose("Calling Azure Face service...");
 
         var detectedFaces = await _transThrottle.Call("Detect",
-            _faceClient.Face.DetectWithStreamAsync(fileStream, true, true, _attributes, RECOGNITION_MODEL));
+            _faceClient.Face.DetectWithStreamAsync(fileStream, returnFaceId: true, recognitionModel: RECOGNITION_MODEL));
 
         Logging.LogVerbose("Azure Face service call complete.");
 
