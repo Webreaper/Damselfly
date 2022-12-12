@@ -39,19 +39,14 @@ public class AzureFaceService
         _configService = configService;
         _transThrottle = transThrottle;
 
+        // We have opted to not support a general-purpose system in the Face API that purports to infer
+        // emotional states, gender, age, smile, facial hair, hair, and makeup.
+        // Detection of these attributes will no longer be available to new customers beginning June 21, 2022
+        // https://azure.microsoft.com/en-us/blog/responsible-ai-investments-and-safeguards-for-facial-recognition/?WT.mc_id=AI-MVP-5003365
         _attributes = new[]
         {
-            FaceAttributeType.Gender,
-            FaceAttributeType.Age,
-            FaceAttributeType.Smile,
-            FaceAttributeType.Emotion,
             FaceAttributeType.Glasses,
-            FaceAttributeType.Hair,
-            FaceAttributeType.FacialHair,
             FaceAttributeType.HeadPose
-            // These are currently not supported.
-            // FaceAttributeType.Mask
-            // FaceAttributeType.Makeup,
         };
     }
 
