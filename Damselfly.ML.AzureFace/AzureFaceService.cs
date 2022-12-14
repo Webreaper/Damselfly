@@ -105,7 +105,8 @@ public class AzureFaceService
         {
             InitFromConfig();
 
-            if ( _faceClient != null && DetectionType != AzureDetection.Disabled ) await InitializeAzureService();
+            if ( _faceClient != null && DetectionType != AzureDetection.Disabled ) 
+                await InitializeAzureService();
         }
         catch ( Exception ex )
         {

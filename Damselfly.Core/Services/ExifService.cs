@@ -708,6 +708,7 @@ public class ExifService : IProcessJobFactory, ITagService
         // TODO: Clear the tag cache and reload, and get this from the cache
         var faves = await Task.FromResult(db.Tags
             .Where(x => x.Favourite)
+            .Distinct()
             .OrderBy(x => x.Keyword)
             .ToList());
 
