@@ -40,6 +40,7 @@
 <script src="_framework/blazor.webassembly.js"></script>
 <script>navigator.serviceWorker.register('service-worker.js');</script>
 <script>navigator.serviceWorker.register('version.js');</script>
+<script src="version.js"></script>
 <script src="objectrects/objectrects.js"></script>
 <script src="vScroll/virtualScroll.js"></script>
 <script src="vScroll/scrollMonitor.js"></script>
@@ -68,6 +69,10 @@ function setStyleSheet(url) {
 
 window.setSelection = (element, start, end) => {
     return element.setSelectionRange(start, end);
+}
+
+function getClientVersion(){
+    return CACHE_VERSION;
 }
 
 function clearFocus() {
