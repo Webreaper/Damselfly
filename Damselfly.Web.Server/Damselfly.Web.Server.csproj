@@ -38,7 +38,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.4.0.41" />
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.4.0.38" />
     </ItemGroup>
 
     <ItemGroup>
