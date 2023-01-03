@@ -105,9 +105,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         if (!faceObject.IsFace)
             throw new ArgumentException("Image object passed to name update.");
 
-        if (faceObject.Person == null)
-            throw new Exception("Person object did not have person included");
-
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
