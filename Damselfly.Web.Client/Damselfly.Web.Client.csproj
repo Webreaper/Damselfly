@@ -15,22 +15,22 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.1" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="7.0.1" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0" />
-        <PackageReference Include="MudBlazor" Version="6.0.18" />
-        <PackageReference Include="Radzen.Blazor" Version="4.3.1" />
-        <PackageReference Include="Blazored.FluentValidation" Version="2.0.3" />
-        <PackageReference Include="FluentValidation" Version="11.2.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.1" />
+        <PackageReference Include="MudBlazor" Version="6.1.7" />
+        <PackageReference Include="Radzen.Blazor" Version="4.4.8" />
+        <PackageReference Include="Blazored.FluentValidation" Version="2.1.0" />
+        <PackageReference Include="FluentValidation" Version="11.4.0" />
         <PackageReference Include="Humanizer" Version="2.14.1" />
         <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
         <PackageReference Include="Serilog.Sinks.BrowserConsole" Version="1.0.0" />
-        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.3.0.56" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.0" />
+        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.4.0.41" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.1" />
         <PackageReference Include="Serilog" Version="2.12.0" />
-        <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
+        <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
         <PackageReference Include="Serilog.Sinks.BrowserHttp" Version="1.0.0-dev-00032" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.1-dev-10301" />
         <PackageReference Include="BlazorPanzoom" Version="0.2.1" />
