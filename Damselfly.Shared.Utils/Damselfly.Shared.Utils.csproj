@@ -13,7 +13,6 @@
     <ItemGroup>
         <PackageReference Include="Humanizer" Version="2.14.1" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
-        <PackageReference Include="Syncfusion.Blazor.Maps" Version="20.4.0.41" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="Microsoft.AspNetCore.SignalR.Common" />

@@ -1,6 +1,6 @@
 ﻿using Syncfusion.Licensing;
 
-namespace Damselfly.Shared.Utils;
+namespace Damselfly.Web.Client.Extensions;
 
 public static class SyncfusionLicence
 {
