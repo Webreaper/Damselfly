@@ -51,7 +51,7 @@ public class Program
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
-        builder.Services.AddSyncfusionBlazor(options => { options.IgnoreScriptIsolation = true; });
+        builder.Services.AddSyncfusionBlazor();
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddBlazorPanzoomServices();
 

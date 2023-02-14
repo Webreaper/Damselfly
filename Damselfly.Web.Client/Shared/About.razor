@@ -8,7 +8,7 @@
     </div>
     <h3>Damselfly v<span />@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h3>
     <h4>Server-based Digital Asset Management system</h4>
-    <p>Client Version: @ClientVersion</p>
+    <p>Client Version: @Client.ClientVersion</p>
     <hr />
     <h3>Credits/Thanks</h3>
     <p>
@@ -59,12 +59,4 @@
 @code {
     public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
     private string mastodonUrl => "https://fosstodon.org/@damselfly";
-    private string ClientVersion = "unknown";
-
-    protected override async Task OnInitializedAsync()
-    {
-        ClientVersion = await jsRuntime.InvokeAsync<string>( "getClientVersion" );
-
-        await base.OnInitializedAsync();
-    }
 }
