@@ -22,7 +22,7 @@ editing etc.
     * Facial detection
     * Object detection and recognition
     * Image Classification
-    * Facial Recognition (requires a [free Azure Face Services account](https://azure.microsoft.com/free/cognitive-services/))
+    * Facial Recognition (Temporarily unavailable - see note below)
 * Full-text search with multi-phrase partial-word searches
 * Advanced search - filter by:
   * Find visually similar images
@@ -32,7 +32,7 @@ editing etc.
   * File Size
   * Orientation
   * Images with no keyword tags
-
+  
 <div>
 <img style="margin: 5px;" src="docs/Damselfly-search.jpg" alt="Advanced Search in Damselfly" width="800"/>
 <div>
@@ -61,6 +61,18 @@ editing etc.
     * Other integrations coming in future
 * Runs on Windows, Linux and OSX, and in Docker.
 * Built with Microsoft .Net 7, hosted Blazor WebAssembly and EFCore 7. 
+
+## Update on Damselfly Face Recognition Support
+
+> Damselfly used to provide face-recognition via the Microsoft Azure Face API, which provided excellent 
+recognition results. However, Microsoft have recently locked down the use of this API, meaning it is no longer 
+practically available for anyone outside Enterprise organisations. This has effectively killed the use of Azure 
+Face for Open-source projects like Damselfly.
+
+> For more information on this, see [this StackOverFlow question](https://stackoverflow.com/questions/73095624/unable-to-use-azure-face-api-forbidden-error).
+
+> I will be working to add a new offline face-recognition capability to Damselfly this year (2023) to replace the
+Azure Face functionality.
 
 ## Want to Support Damselfly?
 
