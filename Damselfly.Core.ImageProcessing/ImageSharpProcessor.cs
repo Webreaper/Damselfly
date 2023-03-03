@@ -7,9 +7,11 @@ using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
+using Org.BouncyCastle.Utilities.Zlib;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -62,9 +64,15 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
         IImageProcessResult result = new ImageProcessResult();
         var load = new Stopwatch("ImageSharpLoad");
 
+        var largest = destFiles.Values
+                               .OrderByDescending( x => x.width )
+                               .First();
+
+        DecoderOptions options = new() { TargetSize = new(  width: largest.width, height: largest.height ) };
+
         // Image.Load(string path) is a shortcut for our default type. 
         // Other pixel formats use Image.Load<TPixel>(string path))
-        using var image = await Image.LoadAsync<Rgba32>(source.FullName);
+        using var image = await Image.LoadAsync<Rgba32>(options, source.FullName);
 
         load.Stop();
 
@@ -120,7 +128,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
 
         // Image.Load(string path) is a shortcut for our default type. 
         // Other pixel formats use Image.Load<TPixel>(string path))
-        using var image = Image.Load<Rgba32>(source.FullName);
+        using var image = await Image.LoadAsync<Rgba32>(source.FullName);
 
         var rect = new Rectangle(x, y, width, height);
         image.Mutate(x => x.AutoOrient());
@@ -136,7 +144,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
 
         // Image.Load(string path) is a shortcut for our default type. 
         // Other pixel formats use Image.Load<TPixel>(string path))
-        using var image = Image.Load<Rgba32>(source.FullName);
+        using var image = await Image.LoadAsync<Rgba32>(source.FullName);
 
         var rect = new Rectangle(x, y, width, height);
         image.Mutate(x => x.AutoOrient());
@@ -157,7 +165,9 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
     {
         Logging.Log($" Running image transform for Watermark: {config.WatermarkText}");
 
-        using var img = Image.Load(input, out var fmt);
+        DecoderOptions options = new() { TargetSize = new( width: config.MaxImageSize, height: config.MaxImageSize ) };
+
+        using var img = await Image.LoadAsync(options, input);
 
         if ( config.Size != ExportSize.FullRes )
         {
@@ -188,7 +198,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
             img.Mutate(context => ApplyWaterMark(context, font, config.WatermarkText, Color.White));
         }
 
-        await img.SaveAsync(output, fmt);
+        await img.SaveAsync( output, img.Metadata.DecodedImageFormat );
     }
 
     /// <summary>

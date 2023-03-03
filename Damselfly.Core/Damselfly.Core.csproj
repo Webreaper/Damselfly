@@ -19,7 +19,7 @@
         <PackageReference Include="MetadataExtractor" Version="2.7.2" />
         <PackageReference Include="CommandLineParser" Version="2.9.1" />
         <PackageReference Include="WordPressPCL" Version="2.0.1" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.0" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
         <PackageReference Include="font-awesome" Version="4.7.0" />
         <PackageReference Include="SkiaSharp" Version="2.88.3" />
