@@ -131,7 +131,8 @@ public class ExifService : IProcessJobFactory, ITagService
                     UserId = userId
                 }));
 
-            changeDesc += $"added: {string.Join(',', tagsToAdd)}";
+            var tagsAdded = string.Join( ',', tagsToAdd );
+            changeDesc += $"added: {tagsAdded}";
         }
 
         if ( removeTags != null )
