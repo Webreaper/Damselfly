@@ -53,7 +53,7 @@
     Folder SelectedItem { get; set; }
     bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
     bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending);
-    bool IncludeChildFolders => configService.GetBool(ConfigSettings.IncludeChildFolders, false);
+    bool IncludeChildFolders => configService.GetBool(ConfigSettings.IncludeChildFolders, true);
     string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
     string SortClass => SortMode == "Date" ? Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up" : Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z";
     string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
