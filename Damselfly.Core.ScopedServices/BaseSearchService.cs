@@ -124,7 +124,7 @@ public abstract class BaseSearchService
             }
         }
     }
-
+    
     public bool IncludeAITags
     {
         get => Query.IncludeAITags;
@@ -133,6 +133,19 @@ public abstract class BaseSearchService
             if ( Query.IncludeAITags != value )
             {
                 Query.IncludeAITags = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public bool IncludeChildFolders
+    {
+        get => Query.IncludeChildFolders;
+        set
+        {
+            if( Query.IncludeChildFolders != value )
+            {
+                Query.IncludeChildFolders = value;
                 QueryChanged();
             }
         }

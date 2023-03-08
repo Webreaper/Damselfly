@@ -144,7 +144,16 @@ public class SearchQueryService
 
             if ( query.Folder?.FolderId >= 0 )
             {
-                var descendants = query.Folder.Subfolders.ToList();
+                IEnumerable<Folder> descendants;
+
+                if( query.IncludeChildFolders )
+                {
+                    descendants = await db.GetChildFolderIds( db.Folders, query.Folder.FolderId );
+                }
+                else
+                {
+                    descendants = query.Folder.Subfolders.ToList();
+                }
 
                 // Filter by folderID
                 images = images.Where(x => descendants.Select(x => x.FolderId).Contains(x.FolderId));

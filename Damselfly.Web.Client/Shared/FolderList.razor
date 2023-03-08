@@ -53,6 +53,7 @@
     Folder SelectedItem { get; set; }
     bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
     bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending);
+    bool IncludeChildFolders => configService.GetBool(ConfigSettings.IncludeChildFolders, false);
     string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
     string SortClass => SortMode == "Date" ? Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up" : Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z";
     string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
@@ -64,6 +65,7 @@
         var selectText = "Select Folder";
         var viewText = FlatView ? "Tree View" : "Flat View";
         var sortDirection = "Sort Ascending";
+        var includeChildFolders = "Include Images from Child Folders";
         var sortText = "Sort by Date";
 
         if( SortMode == "Date" )
@@ -71,6 +73,9 @@
 
         if( Ascending )
             sortDirection = "Sort Descending";
+
+        if (IncludeChildFolders)
+            includeChildFolders = "Exclude images from Child Folders";
 
         if( folder == null )
         {
@@ -85,7 +90,8 @@
                 new() { Text = refreshText, Value = 1 },
                 new() { Text = viewText, Value = 3 },
                 new() { Text = sortText, Value = 4 },
-                new() { Text = sortDirection, Value = 5 }
+                new() { Text = sortDirection, Value = 5 },
+                new() { Text = includeChildFolders, Value = 6 }
             }, args =>
             {
                 contextMenuService.Close();
@@ -107,6 +113,9 @@
                     case 5:
                         _ = ToggleSortAscendingView();
                         break;
+                    case 6:
+                        _ = ToggleIncludeChildFolder();
+                        break;
                 }
             });
     }
@@ -116,7 +125,7 @@
         string display = folder.MetaData.DisplayName;
 
         if (FlatView)
-        { 
+        {
             if (display.Length < 10 && folder.Parent != null)
                 display = folder.Parent.MetaData.DisplayName + $" {System.IO.Path.DirectorySeparatorChar} " + display;
         }
@@ -143,6 +152,18 @@
         configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
 
         await ProcessUpdatedFilter();
+    }
+
+    private Task ToggleIncludeChildFolder()
+    {
+        var newState = !IncludeChildFolders;
+
+        searchService.IncludeChildFolders = newState;
+        StateHasChanged();
+
+        configService.SetForUser(ConfigSettings.IncludeChildFolders, newState.ToString() );
+
+        return Task.CompletedTask;
     }
 
     private async Task ToggleSortAscendingView()
