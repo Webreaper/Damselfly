@@ -381,8 +381,8 @@ public abstract class BaseSearchService
                     hints.Add($"Lens: {lens.Model}");
             }
 
-            if( IncludeChildFolders )
-                hints.Add( $"Include child folders" );
+            if( !IncludeChildFolders )
+                hints.Add( $"Exclude child folders" );
 
             if( hints.Any() )
                 return string.Join(", ", hints);
