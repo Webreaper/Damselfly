@@ -161,6 +161,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var tags = CachedTags
                 .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
                             && !x.Keyword.Equals(searchText, StringComparison.OrdinalIgnoreCase))
+                // The closer to the start of the text, the earlier in the list
+                .OrderBy( x => x.Keyword.IndexOf( text, StringComparison.OrdinalIgnoreCase ) ) 
                 .OrderBy(x => x.Favourite ? 0 : 1) // Favourites first
                 .ThenBy(x => x.Keyword) // Then order alphabetically
                 .Take(30); // Don't go mad with the number we return
