@@ -551,8 +551,8 @@ public class ExifService : IProcessJobFactory, ITagService
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // Clean up completed operations older than 24hrs
-        var cutOff = DateTime.UtcNow.AddDays(-1);
+        // Clean up completed operations older than 6 months
+        var cutOff = DateTime.UtcNow.AddMonths(-6);
 
         try
         {
