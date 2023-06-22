@@ -9,13 +9,13 @@
                      ShowProgressIndicator="true" MinCharacters="2"
                      CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
-                     Variant="UIConstants.MudVariant" Disabled="@IsDisabled"
+                     Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant" 
+                     Disabled="@IsDisabled"
                      class="tag-autocomplete" PopoverClass="tag-autocomplete-popover"/>
 </div>
 
 
 @code {
-    private string tagText;
     private string TypeAheadTag { get; set; }
 
     [Parameter]

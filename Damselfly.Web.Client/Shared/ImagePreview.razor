@@ -43,33 +43,23 @@ of the visible image is updated which should update it instantly.
 {
     [Parameter]
     [EditorRequired]
-    public Image Image
-    {
-        get => theImage;
-        set => ChangeImage(value);
-    }
+    public Image Image { get; set; }
 
     [Parameter]
-    public bool ShowObjects
-    {
-        get => showObjects;
-        set => SetShowObjects(value);
-    }
+    public bool ShowObjects { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
-    private bool showObjects;
-    private Image theImage;
     private LocalFileExporter FileExporter;
     private double _rangeValue = 1.0;
     private Panzoom _panzoom;
     public double ZoomLevel => _rangeValue;
 
-    private string ImgKey => $"prev{theImage.ImageId}";
-    private string ImgPreviewKey => $"{theImage.ImageId}";
+    private string ImgKey => $"prev{Image.ImageId}";
+    private string ImgPreviewKey => $"{Image.ImageId}";
     private string ImageUrl { get; set; }
-    private string ImageUrlHighRes => theImage.ThumbUrl(ThumbSize.ExtraLarge);
+    private string ImageUrlHighRes => Image.ThumbUrl(ThumbSize.ExtraLarge);
 
     // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
     private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
@@ -86,11 +76,20 @@ of the visible image is updated which should update it instantly.
 
     private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
 
+    protected override void OnParametersSet()
+    {
+        ChangeImage(Image);
+        SetShowObjects(ShowObjects);
+
+        base.OnParametersSetAsync();
+
+    }
+
     private IList<ImageObject> Objects
     {
         get
         {
-            var objects = theImage?.ImageObjects ?? new List<ImageObject>();
+            var objects = Image?.ImageObjects ?? new List<ImageObject>();
 
             // Sort objects first, then faces, and largest first, so that smaller
             // objects will appear on top, so they can be easily accessed.
@@ -104,7 +103,7 @@ of the visible image is updated which should update it instantly.
     {
         Task.Run(async () =>
         {
-            this.theImage = await imageCacheService.GetCachedImage(imgObject.ImageId);
+            this.Image = await imageCacheService.GetCachedImage(imgObject.ImageId);
             await InvokeAsync(StateHasChanged);
         });
     }
@@ -141,7 +140,7 @@ of the visible image is updated which should update it instantly.
                     await ShowRescanDialog();
                     break;
                 case 3:
-                    await FileExporter.ExportImagesToLocalFilesystem(new List<Image> { theImage });
+                    await FileExporter.ExportImagesToLocalFilesystem(new List<Image> { Image });
                     break;
                 case 4:
                     GoToImageFolder();
@@ -155,12 +154,12 @@ of the visible image is updated which should update it instantly.
 
     private void GoToImageFolder()
     {
-        NavigationManager.NavigateTo($"/?folderId={theImage.Folder.FolderId}");
+        NavigationManager.NavigateTo($"/?folderId={Image.Folder.FolderId}");
     }
 
     private void FilterByImageDate()
     {
-        var url = $"/?date={theImage.SortDate:dd-MMM-yyyy}";
+        var url = $"/?date={Image.SortDate:dd-MMM-yyyy}";
         NavigationManager.NavigateTo(url);
     }
 
@@ -176,7 +175,7 @@ of the visible image is updated which should update it instantly.
 
     private async Task ShowRescanDialog()
     {
-        var parameters = new DialogParameters { { "images", new List<Image> { theImage } } };
+        var parameters = new DialogParameters { { "images", new List<Image> { Image } } };
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
@@ -186,7 +185,7 @@ of the visible image is updated which should update it instantly.
     {
         try
         {
-            var downloadFile = theImage.DownloadImageUrl;
+            var downloadFile = Image.DownloadImageUrl;
             await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
         }
         catch (Exception ex)
@@ -197,22 +196,22 @@ of the visible image is updated which should update it instantly.
 
     public void ToggleShowObjects()
     {
-        SetShowObjects(!showObjects);
+        SetShowObjects(!ShowObjects);
     }
 
     private void SetShowObjects(bool newState)
     {
-        if (newState == showObjects)
+        if (newState == ShowObjects)
             return;
 
         if (ZoomRangeValue != 1.0)
             _ = ResetZoom();
 
-        showObjects = newState;
-        userConfigService.SetForUser(ConfigSettings.ShowObjects, showObjects.ToString());
+        ShowObjects = newState;
+        userConfigService.SetForUser(ConfigSettings.ShowObjects, ShowObjects.ToString());
         StateHasChanged();
 
-        if (showObjects)
+        if (ShowObjects)
             DoObjectBox();
     }
 
@@ -220,7 +219,7 @@ of the visible image is updated which should update it instantly.
     {
         if (firstRender)
         {
-            if (showObjects)
+            if (ShowObjects)
                 DoObjectBox();
         }
     }
@@ -230,11 +229,11 @@ of the visible image is updated which should update it instantly.
         if (newImage == null)
             throw new ArgumentException("Image cannot be null");
 
-        if (theImage == null || theImage.ImageId != newImage.ImageId)
+        if (Image == null || Image.ImageId != newImage.ImageId)
         {
-            theImage = newImage;
+            Image = newImage;
             HiResImageLoaded = false;
-            ImageUrl = $"/thumb/{ThumbSize.Medium}/{theImage.ImageId}";
+            ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
             statusService.UpdateStatus("Loading hi-res image...");
             StateHasChanged();
         }

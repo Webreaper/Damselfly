@@ -12,7 +12,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="EFCore.BulkExtensions" Version="7.0.1" />
+        <PackageReference Include="EFCore.BulkExtensions" Version="7.1.2" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="Microsoft.EntityFrameworkCore.Tools" />

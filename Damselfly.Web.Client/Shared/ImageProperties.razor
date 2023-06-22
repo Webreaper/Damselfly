@@ -41,7 +41,7 @@ else
             <div class="imagefield">
                 <label class="imagefield-label" title="@RatingTitle">
                     Rating:
-                    <StarRating Rating="CurrentImage.MetaData.Rating" OnValueChanged="OnRatingChanged"/>
+                    <StarRating @bind-Rating="CurrentImage.MetaData.Rating" @bind-Rating:after="OnRatingChanged"/>
                 </label>
             </div>
             <ImageField FieldName="Size" FieldValue="@Size"/>
@@ -147,14 +147,12 @@ else
         StateHasChanged();
     }
 
-    private async Task OnRatingChanged(int newValue)
+    private async Task OnRatingChanged()
     {
-        if( newValue != CurrentImage.MetaData.Rating )
-        {
-            await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.UserId);
-            CurrentImage.MetaData.Rating = newValue;
-            StateHasChanged();
-        }
+        var newValue = CurrentImage.MetaData.Rating;            
+        await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.UserId);
+        CurrentImage.MetaData.Rating = newValue;
+        StateHasChanged();
     }
 
     private async void CaptionChanged(ChangeEventArgs args)

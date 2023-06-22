@@ -89,13 +89,7 @@
     private ScrollMonitor ScrollMonitor;
 
     [Parameter]
-    public ThumbSize CurrentThumbSize
-    {
-        get => _currentThumbSize;
-        set => ChangeThumbSize(value);
-    }
-
-    private ThumbSize _currentThumbSize;
+    public ThumbSize CurrentThumbSize { get; set; }
 
     public string ResultsMessage { get; set; }
 
@@ -121,6 +115,12 @@
     void DeselectGroup(ImageGrouping grouping)
     {
         selectionService.DeselectImages(grouping.Images);
+    }
+
+    protected override void OnParametersSet()
+    {
+        ChangeThumbSize(CurrentThumbSize);
+        base.OnParametersSet();
     }
 
     private List<ImageGrouping> GroupedImages
@@ -175,31 +175,26 @@
 
     protected void ChangeThumbSize(ThumbSize newSize)
     {
-        if (_currentThumbSize != newSize)
+        switch (newSize)
         {
-            _currentThumbSize = newSize;
-
-            switch (newSize)
-            {
-                case ThumbSize.Medium:
-                    WrapStyle = "wrapping-table-medium";
-                    break;
-                case ThumbSize.Large:
-                    WrapStyle = "wrapping-table-large";
-                    break;
-                case ThumbSize.ExtraLarge:
-                    WrapStyle = "wrapping-table-x-large";
-                    break;
-                case ThumbSize.Small:
-                    WrapStyle = "wrapping-table-small";
-                    break;
-                default:
-                    WrapStyle = "wrapping-table-small";
-                    break;
-            }
-
-            configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
+            case ThumbSize.Medium:
+                WrapStyle = "wrapping-table-medium";
+                break;
+            case ThumbSize.Large:
+                WrapStyle = "wrapping-table-large";
+                break;
+            case ThumbSize.ExtraLarge:
+                WrapStyle = "wrapping-table-x-large";
+                break;
+            case ThumbSize.Small:
+                WrapStyle = "wrapping-table-small";
+                break;
+            default:
+                WrapStyle = "wrapping-table-small";
+                break;
         }
+
+        configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

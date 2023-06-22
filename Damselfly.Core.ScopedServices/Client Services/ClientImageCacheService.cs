@@ -29,7 +29,7 @@ public class ClientImageCacheService : IImageCacheService
         httpClient = client;
         _cacheOptions = new MemoryCacheEntryOptions()
             .SetSize(1)
-            .SetSlidingExpiration(TimeSpan.FromHours(4));
+            .SetAbsoluteExpiration(TimeSpan.FromHours(4));
 
         _notifications.SubscribeToNotification<string>(NotificationType.CacheEvict, Evict);
     }
