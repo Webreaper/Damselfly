@@ -7,8 +7,8 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.14.1" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.14.1" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.15.1" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.15.1" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
     </ItemGroup>
     <ItemGroup>
