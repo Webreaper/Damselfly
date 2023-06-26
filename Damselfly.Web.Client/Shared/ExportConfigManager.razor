@@ -84,6 +84,6 @@
             await OnValueChanged.InvokeAsync(new ChangeEventArgs { Value = CurrentConfig });
         }
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 }

@@ -204,7 +204,8 @@
     private void OnSearchChanged()
     {
         filterRange = new DateRange(searchService.MinDate, searchService.MaxDate);
-        InvokeAsync(StateHasChanged);
+        
+        StateHasChanged();
     }
 
     private void AddRangeShortcut(string name, DateRange range)

@@ -31,7 +31,7 @@
             HubConnectionState.Disconnected => "color:darkred;"
             } + " text-shadow: 1px 1px 1px #666;";
 
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()

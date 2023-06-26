@@ -261,7 +261,7 @@
         logger.LogInformation($"Retrieved {folders.Count} folders");
         folderItems = folders.ToList();
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected override async void OnAfterRender(bool firstRender)
@@ -290,7 +290,7 @@
 
     private void OnSearchChanged()
     {
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
 }
