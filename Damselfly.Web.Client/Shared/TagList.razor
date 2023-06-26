@@ -316,7 +316,7 @@
         recentTags.AddRange( recents );
 
         // We might not be called from the dispatcher thread.
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()

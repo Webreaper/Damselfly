@@ -104,7 +104,7 @@ of the visible image is updated which should update it instantly.
         Task.Run(async () =>
         {
             this.Image = await imageCacheService.GetCachedImage(imgObject.ImageId);
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
         });
     }
 
@@ -229,14 +229,11 @@ of the visible image is updated which should update it instantly.
         if (newImage == null)
             throw new ArgumentException("Image cannot be null");
 
-        if (Image == null || Image.ImageId != newImage.ImageId)
-        {
-            Image = newImage;
-            HiResImageLoaded = false;
-            ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
-            statusService.UpdateStatus("Loading hi-res image...");
-            StateHasChanged();
-        }
+        Image = newImage;
+        HiResImageLoaded = false;
+        ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
+        statusService.UpdateStatus("Loading hi-res image...");
+        StateHasChanged();
     }
 
     protected override void OnInitialized()
@@ -253,7 +250,7 @@ of the visible image is updated which should update it instantly.
         HiResImageLoaded = true;
 
         statusService.UpdateStatus("Hi-res image loaded.");
-        StateHasChanged();
+        await InvokeAsync( StateHasChanged );
 
         DoObjectBox();
 

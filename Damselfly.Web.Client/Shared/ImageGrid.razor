@@ -221,7 +221,7 @@
 
     protected void SelectedImagesChanged()
     {
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     public void Dispose()
@@ -236,7 +236,7 @@
 
     protected void BasketChanged(BasketChanged changeType)
     {
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected void SearchResultsChanged(SearchResponse response)
@@ -274,7 +274,7 @@
         if (searchService.SearchResults.Any())
         {
             ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
 
             var images = await imageCache.GetCachedImages(searchService.SearchResults);
 
@@ -296,7 +296,7 @@
         // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvaiable;
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
 }

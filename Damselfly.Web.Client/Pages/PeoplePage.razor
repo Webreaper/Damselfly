@@ -128,7 +128,7 @@
         filteredPeople = names.Where(x => FilterFunc(x))
             .ToList();
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

@@ -73,7 +73,7 @@
                 if( response.LogEntries != null )
                 {
                     logLines.AddRange(response.LogEntries);
-                    await InvokeAsync(StateHasChanged);
+                    StateHasChanged();
                     statusService.UpdateStatus($"Loaded {logLines.Count()} log lines...");
                 }
             }
@@ -82,7 +82,7 @@
 
     private async Task DownloadLogFile()
     {
-    // TODO: Download log file here
+        // TODO: Download log file here
         await Task.Delay(500);
     }
 

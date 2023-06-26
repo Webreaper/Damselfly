@@ -26,7 +26,7 @@
         if( ! string.IsNullOrEmpty( value ))
             searchTimer = new Timer(TimerCallback, null, DisplayIntervalSecs * 1000, Timeout.Infinite);
 
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private void KillTimer()

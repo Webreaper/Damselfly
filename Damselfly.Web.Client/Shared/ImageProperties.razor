@@ -142,14 +142,14 @@ else
     private async Task SetBasketState(bool newState)
     {
         await basketService.SetImageBasketState(newState, new[] { CurrentImage.ImageId });
-    
+
         // Notify the image list that the selection has changed
         StateHasChanged();
     }
 
     private async Task OnRatingChanged()
     {
-        var newValue = CurrentImage.MetaData.Rating;            
+        var newValue = CurrentImage.MetaData.Rating;
         await tagService.SetExifFieldAsync(new[] { CurrentImage.ImageId }, ExifOperation.ExifType.Rating, newValue.ToString(), userService.UserId);
         CurrentImage.MetaData.Rating = newValue;
         StateHasChanged();
@@ -210,7 +210,7 @@ else
 
     protected void BasketStateChanged(BasketChanged change)
     {
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected void NavigationChanged(Image image)
@@ -219,7 +219,7 @@ else
         {
             CurrentImage = image;
 
-            InvokeAsync(StateHasChanged);
+            StateHasChanged();
         }
     }
 

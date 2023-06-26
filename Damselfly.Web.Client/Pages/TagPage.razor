@@ -72,13 +72,13 @@
         statusService.UpdateStatus("Loading tags...");
         var results = await tagSearchService.GetAllTags();
         Tags = results.ToList();
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private void DoSearch(string searchTerm)
     {
         searchText = searchTerm;
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
 
