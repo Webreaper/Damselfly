@@ -84,9 +84,10 @@ public class ClientThemeService : IThemeService, IDisposable
             await ApplyTheme(themeConfig);
     }
 
-    public async Task ApplyTheme(ThemeConfig newTheme)
+    public Task ApplyTheme(ThemeConfig newTheme)
     {
         OnChangeTheme?.Invoke(newTheme);
+        return Task.CompletedTask;
     }
 
     private void SettingsLoaded(ICollection<ConfigSetting> newSettings)

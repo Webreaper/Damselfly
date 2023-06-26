@@ -37,31 +37,37 @@ public class ObjectDetector
     /// </summary>
     /// <param name="imageFile"></param>
     /// <returns></returns>
-    public async Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> image)
+    public Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> image)
     {
+        IList<ImageDetectResult> result = null;
         try
         {
-            if ( scorer == null )
-                return new List<ImageDetectResult>();
+            if( scorer != null )
+            {
 
-            var watch = new Stopwatch("DetectObjects");
+                var watch = new Stopwatch( "DetectObjects" );
 
-            var predictions = scorer.Predict(image);
+                var predictions = scorer.Predict( image );
 
-            watch.Stop();
+                watch.Stop();
 
-            var objectsFound = predictions.Where(x => x.Score > predictionThreshold)
-                .Select(x => MakeResult(x))
-                .ToList();
+                var objectsFound = predictions.Where( x => x.Score > predictionThreshold )
+                    .Select( x => MakeResult( x ) )
+                    .ToList();
 
-            return objectsFound;
+                result = objectsFound;
+
+            }
         }
         catch ( Exception ex )
         {
             Logging.LogError($"Error during object detection: {ex.Message}");
         }
 
-        return new List<ImageDetectResult>();
+        if( result == null )
+            result = new List<ImageDetectResult>();
+
+        return Task.FromResult( result );
     }
 
     private ImageDetectResult MakeResult(YoloPrediction prediction)

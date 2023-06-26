@@ -14,7 +14,7 @@ public class ScrollView
         return $"ClientHeight: {ClientHeight}, Top: {ScrollTop}";
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         var other = obj as ScrollView;
 
@@ -36,7 +36,7 @@ public class ScrollViewResult
     public int SkipItems { get; set; }
     public int TakeItems { get; set; }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         var other = obj as ScrollViewResult;
 

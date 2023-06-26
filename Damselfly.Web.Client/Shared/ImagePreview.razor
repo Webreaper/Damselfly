@@ -243,7 +243,7 @@ of the visible image is updated which should update it instantly.
         base.OnInitialized();
     }
 
-    protected async Task ReplaceUrl(ProgressEventArgs args)
+    protected Task ReplaceUrl(ProgressEventArgs args)
     {
         ImageUrl = ImageUrlHighRes;
 
@@ -256,6 +256,8 @@ of the visible image is updated which should update it instantly.
 
         // For when we want to do region selection
         //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
+
+        return Task.CompletedTask;
     }
 
     public double ZoomRangeValue

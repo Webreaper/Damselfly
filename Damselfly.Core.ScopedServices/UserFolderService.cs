@@ -108,12 +108,13 @@ public class UserFolderService : IDisposable, IUserFolderService
         return items.Where(x => x.ParentFolders.All(x => IsExpanded(x))).ToList();
     }
 
-    public async Task<Folder?> GetFolder(int folderId)
+    public Task<Folder?> GetFolder(int folderId)
     {
+        Folder? result = null;
         if ( folderStates.TryGetValue(folderId, out var folderState) )
-            return folderState.Folder;
+            result = folderState.Folder;
 
-        return null;
+        return Task.FromResult( result );
     }
 
     /// <summary>

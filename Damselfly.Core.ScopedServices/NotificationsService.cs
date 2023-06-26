@@ -61,14 +61,16 @@ public class NotificationsService : IAsyncDisposable
 
     public event Action OnConnectionChanged;
 
-    private async Task ConnectionOpened(string? arg)
+    private Task ConnectionOpened(string? arg)
     {
         OnConnectionChanged?.Invoke();
+        return Task.CompletedTask;
     }
 
-    private async Task ConnectionClosed(Exception? arg)
+    private Task ConnectionClosed(Exception? arg)
     {
         OnConnectionChanged?.Invoke();
+        return Task.CompletedTask;
     }
 
     /// <summary>
