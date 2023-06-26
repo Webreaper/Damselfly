@@ -250,7 +250,7 @@ of the visible image is updated which should update it instantly.
         HiResImageLoaded = true;
 
         statusService.UpdateStatus("Hi-res image loaded.");
-        await InvokeAsync( StateHasChanged );
+        StateHasChanged();
 
         DoObjectBox();
 
