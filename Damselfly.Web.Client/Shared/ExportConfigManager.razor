@@ -28,7 +28,7 @@
     readonly List<ExportConfig> configs = new();
 
     [Parameter]
-    public ExportConfig CurrentConfig { get; set; }
+    public ExportConfig? CurrentConfig { get; set; }
 
     [Parameter]
     public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }

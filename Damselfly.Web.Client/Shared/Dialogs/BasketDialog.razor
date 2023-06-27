@@ -72,8 +72,6 @@
     {
         await basketService.Delete(Basket.BasketId);
 
-        int? userId = null;
-
         if( model.IsPublic )
             statusService.UpdateGlobalStatus($"Basket '{model.BasketName}' was deleted.");
         else

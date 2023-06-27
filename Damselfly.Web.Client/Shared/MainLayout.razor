@@ -73,9 +73,12 @@
     {
         var authState = await authStateTask;
 
-        ShowLogin = ! authState.User.Identity.IsAuthenticated;
+        if( authState != null )
+        { 
+            ShowLogin = ! authState.User.Identity.IsAuthenticated;
 
-        StateHasChanged();
+            StateHasChanged();
+        }
     }
 
     public void Dispose()
