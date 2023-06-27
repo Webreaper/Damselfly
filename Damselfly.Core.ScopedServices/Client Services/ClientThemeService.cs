@@ -10,8 +10,6 @@ namespace Damselfly.Core.ScopedServices;
 
 public class ClientThemeService : IThemeService, IDisposable
 {
-    private readonly AuthenticationStateProvider _authProvider;
-
     private readonly IUserConfigService _configService;
     private readonly ILogger<ClientThemeService> _logger;
     private readonly RestClient httpClient;

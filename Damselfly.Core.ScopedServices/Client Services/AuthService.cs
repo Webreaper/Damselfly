@@ -52,6 +52,5 @@ public class AuthService : IAuthService
         await _localStorage.RemoveItemAsync("authToken");
         ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
         _httpClient.AuthHeader = null;
-        ;
     }
 }

@@ -35,13 +35,13 @@ public class RegisterModel : PageModel
 
     [BindProperty] public InputModel Input { get; set; }
 
-    public string ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 
     public bool CanRegister => _userService.AllowPublicRegistration;
 
     public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-    public async Task OnGetAsync(string returnUrl = null)
+    public async Task OnGetAsync(string? returnUrl = null)
     {
         ReturnUrl = returnUrl;
         ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -52,7 +52,7 @@ public class RegisterModel : PageModel
     /// </summary>
     /// <param name="returnUrl"></param>
     /// <returns></returns>
-    public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         if ( !_userService.AllowPublicRegistration )
         {

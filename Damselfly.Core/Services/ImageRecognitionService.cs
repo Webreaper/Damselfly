@@ -225,7 +225,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         if ( azurePersonId.HasValue )
         {
             // TODO Await
-            LoadPersonCache();
+            LoadPersonCache().Wait();
 
             if ( _peopleCache.TryGetValue(azurePersonId.ToString(), out var person) )
                 return person.PersonId;

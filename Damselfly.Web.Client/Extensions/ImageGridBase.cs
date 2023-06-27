@@ -16,7 +16,7 @@ public class ImageGridBase : ComponentBase
     // Grid images is a list of lists of images.
     protected readonly List<Image> gridImages = new();
 
-    private SelectionInfo prevSelection;
+    private SelectionInfo? prevSelection = null;
 
     [Inject] protected SelectionService selectionService { get; init; }
 

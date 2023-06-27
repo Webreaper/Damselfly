@@ -49,7 +49,7 @@ public class ImageController : Controller
 
                 if ( image != null )
                 {
-                    string downloadFilename = null;
+                    string? downloadFilename = null;
 
                     if ( isDownload )
                         downloadFilename = image.FileName;

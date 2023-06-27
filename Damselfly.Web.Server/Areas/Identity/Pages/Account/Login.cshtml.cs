@@ -31,13 +31,13 @@ public class LoginModel : PageModel
 
     public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-    public string ReturnUrl { get; set; }
+    public string? ReturnUrl { get; set; }
 
     [TempData] public string ErrorMessage { get; set; }
 
     public bool CanRegister => _userService.AllowPublicRegistration;
 
-    public async Task OnGetAsync(string returnUrl = null)
+    public async Task OnGetAsync(string? returnUrl = null)
     {
         if ( !string.IsNullOrEmpty(ErrorMessage) ) ModelState.AddModelError(string.Empty, ErrorMessage);
 
@@ -51,7 +51,7 @@ public class LoginModel : PageModel
         ReturnUrl = returnUrl;
     }
 
-    public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+    public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
     {
         returnUrl ??= Url.Content("~/");
 

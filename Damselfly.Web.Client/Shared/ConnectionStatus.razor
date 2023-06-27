@@ -28,8 +28,9 @@
             HubConnectionState.Connected => "color:green;",
             HubConnectionState.Reconnecting => "color:darkorange;",
             HubConnectionState.Connecting => "color:darkorange;",
-            HubConnectionState.Disconnected => "color:darkred;"
-            } + " text-shadow: 1px 1px 1px #666;";
+            HubConnectionState.Disconnected => "color:darkred;",
+            _ => "color:darkred;"
+        } + " text-shadow: 1px 1px 1px #666;";
 
         StateHasChanged();
     }

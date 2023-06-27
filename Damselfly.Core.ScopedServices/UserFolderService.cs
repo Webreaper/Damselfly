@@ -16,7 +16,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     private readonly IFolderService _folderService;
     private readonly NotificationsService _notifications;
     private readonly ISearchService _searchService;
-    private ICollection<Folder> folderItems;
+    private ICollection<Folder>? folderItems;
     private IDictionary<int, FolderState> folderStates;
 
     public UserFolderService(IFolderService folderService, ISearchService searchService, IConfigService configService,
