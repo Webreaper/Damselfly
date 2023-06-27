@@ -215,7 +215,7 @@ of the visible image is updated which should update it instantly.
             DoObjectBox();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
