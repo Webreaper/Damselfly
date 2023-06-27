@@ -60,6 +60,8 @@ of the visible image is updated which should update it instantly.
     private string ImgPreviewKey => $"{Image.ImageId}";
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => Image.ThumbUrl(ThumbSize.ExtraLarge);
+    private int currentImageId = -1;
+
 
     // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
     private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
@@ -76,13 +78,11 @@ of the visible image is updated which should update it instantly.
 
     private readonly List<string> browserRenderedExtensions = new() { ".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif" };
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        ChangeImage(Image);
+        ChangeImage();
         SetShowObjects(ShowObjects);
-
-        base.OnParametersSetAsync();
-
+        await base.OnParametersSetAsync();
     }
 
     private IList<ImageObject> Objects
@@ -224,40 +224,39 @@ of the visible image is updated which should update it instantly.
         }
     }
 
-    private void ChangeImage(Image newImage)
+    private void ChangeImage()
     {
-        if (newImage == null)
-            throw new ArgumentException("Image cannot be null");
-
-        Image = newImage;
-        HiResImageLoaded = false;
-        ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
-        statusService.UpdateStatus("Loading hi-res image...");
-        StateHasChanged();
+        if (currentImageId != Image.ImageId)
+        {
+            currentImageId = Image.ImageId;
+            HiResImageLoaded = false;
+            ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
+            statusService.UpdateStatus("Loading hi-res image...");
+            StateHasChanged();
+        }
     }
 
     protected override void OnInitialized()
     {
         ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
-
         base.OnInitialized();
     }
 
-    protected Task ReplaceUrl(ProgressEventArgs args)
+    protected async Task ReplaceUrl(ProgressEventArgs args)
     {
         ImageUrl = ImageUrlHighRes;
 
         HiResImageLoaded = true;
 
-        statusService.UpdateStatus("Hi-res image loaded.");
         StateHasChanged();
+        statusService.UpdateStatus("Hi-res image loaded.");
 
         DoObjectBox();
 
         // For when we want to do region selection
         //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
 
-        return Task.CompletedTask;
+        await ResetZoom();
     }
 
     public double ZoomRangeValue
@@ -308,4 +307,4 @@ of the visible image is updated which should update it instantly.
         var scale = await _panzoom.GetScaleAsync();
         _rangeValue = scale;
     }
-}
+    }
