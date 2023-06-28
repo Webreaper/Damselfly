@@ -80,8 +80,9 @@ of the visible image is updated which should update it instantly.
 
     protected override async Task OnParametersSetAsync()
     {
-        ChangeImage();
+        await ChangeImage();
         SetShowObjects(ShowObjects);
+
         await base.OnParametersSetAsync();
     }
 
@@ -224,7 +225,7 @@ of the visible image is updated which should update it instantly.
         }
     }
 
-    private void ChangeImage()
+    private async Task ChangeImage()
     {
         if (currentImageId != Image.ImageId)
         {
@@ -233,6 +234,8 @@ of the visible image is updated which should update it instantly.
             ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
             statusService.UpdateStatus("Loading hi-res image...");
             StateHasChanged();
+
+            await ResetZoom();
         }
     }
 
@@ -242,7 +245,7 @@ of the visible image is updated which should update it instantly.
         base.OnInitialized();
     }
 
-    protected async Task ReplaceUrl(ProgressEventArgs args)
+    protected void ReplaceUrl(ProgressEventArgs args)
     {
         ImageUrl = ImageUrlHighRes;
 
@@ -255,8 +258,6 @@ of the visible image is updated which should update it instantly.
 
         // For when we want to do region selection
         //_ = JsRuntime.InvokeAsync<string>("DoCropSelection", "theImage");
-
-        await ResetZoom();
     }
 
     public double ZoomRangeValue
@@ -298,13 +299,21 @@ of the visible image is updated which should update it instantly.
 
     public async Task ResetZoom()
     {
-        await _panzoom.ResetAsync();
-        await UpdateSlider();
+        if (_panzoom != null)
+        {
+            await _panzoom.ResetAsync();
+            await UpdateSlider();
+        }
     }
 
     public async Task UpdateSlider()
     {
         var scale = await _panzoom.GetScaleAsync();
-        _rangeValue = scale;
+        if (scale != _rangeValue)
+        {
+            _rangeValue = scale;
+            StateHasChanged();
+        }
     }
-    }
+
+}
