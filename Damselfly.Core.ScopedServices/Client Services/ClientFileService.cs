@@ -20,6 +20,22 @@ public class ClientFileService : IFileService
         _logger = logger;
     }
 
+    public async Task<bool> DeleteImages(MultiImageRequest req)
+    {
+        try
+        {
+            var response = await _restClient.CustomPostAsJsonAsync<MultiImageRequest, bool>( "/api/files/delete", req );
+
+            return response;
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError( $"Exception during image delete API call: {ex}" );
+        }
+
+        return false;
+    }
+
     public async Task<bool> MoveImages(ImageMoveRequest req)
     {
         try
@@ -30,7 +46,7 @@ public class ClientFileService : IFileService
         }
         catch( Exception ex )
         {
-            _logger.LogError( $"Exception during search query API call: {ex}" );
+            _logger.LogError( $"Exception during image move API call: {ex}" );
         }
 
         return false;

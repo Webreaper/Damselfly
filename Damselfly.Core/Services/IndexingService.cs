@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -29,10 +30,9 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     private readonly WorkService _workService;
     private bool _fullIndexComplete;
 
-    public IndexingService(IServiceScopeFactory scopeFactory, IStatusService statusService,
-        ImageProcessService imageService,
-        ConfigService config, ImageCache imageCache, FolderWatcherService watcherService,
-        WorkService workService)
+    public IndexingService( IServiceScopeFactory scopeFactory, IStatusService statusService,
+        ImageProcessService imageService, ConfigService config, ImageCache imageCache, 
+        FolderWatcherService watcherService, WorkService workService)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -143,6 +143,19 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
     public event Action OnFoldersChanged;
 
+    private bool IsIndexedFolder( DirectoryInfo dir )
+    {
+        var trashFolder = _configService.Get( ConfigSettings.TrashcanFolderName );
+
+        if( !string.IsNullOrEmpty( trashFolder ) )
+        {
+            if( dir.Name == trashFolder )
+                return false;
+        }
+
+        return dir.IsMonitoredFolder();
+    }
+
     private void NotifyFolderChanged()
     {
         Logging.LogVerbose("Folders changed.");
@@ -167,7 +180,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         // Get all the sub-folders on the disk, but filter out
         // ones we're not interested in.
         var subFolders = folder.SafeGetSubDirectories()
-            .Where(x => x.IsMonitoredFolder())
+            .Where(IsIndexedFolder )
             .ToList();
 
         try
@@ -222,7 +235,8 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         }
 
         // Scan subdirs recursively.
-        foreach ( var sub in subFolders ) await IndexFolder(sub, folderToScan);
+        foreach ( var sub in subFolders ) 
+            await IndexFolder(sub, folderToScan);
     }
 
     /// <summary>
@@ -247,7 +261,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
             // ...and then look for any DB folders that aren't included in the list of sub-folders.
             // That means they've been removed from the disk, and should be removed from the DB.
-            var missingDirs = dbChildDirs.Where(f => !new DirectoryInfo(f.Path).IsMonitoredFolder()).ToList();
+            var missingDirs = dbChildDirs.Where(f => !IsIndexedFolder( new DirectoryInfo(f.Path))).ToList();
 
             if ( missingDirs.Any() )
             {
