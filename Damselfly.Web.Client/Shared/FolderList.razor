@@ -99,7 +99,7 @@
                     <RadzenMenuItem Text="@sortDirection" Value="5" />
                     <RadzenMenuItem Text="@includeChildFolders" Value="6" />
                     <hr class="separator">
-                    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
                         @if (selectionService.Selection.Any())
                         {
                             <RadzenMenuItem Text="Move Selected Images Here" Value="7" />
