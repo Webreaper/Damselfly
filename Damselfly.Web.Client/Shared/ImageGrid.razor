@@ -14,7 +14,7 @@
     @if (!gridImages.Any())
     {
         <div class="damselfly-searchmsg">
-            <span>@ResultsMessage</span>
+            <div>@ResultsMessage</div>
         </div>
     }
     else
@@ -67,7 +67,7 @@
         if (!endOfImages)
         {
             <div class="damselfly-moreimages" id="list-end">
-                <div title="Loading more images..." class="imagegrid-loader"></div>
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
             </div>
         }
         else
