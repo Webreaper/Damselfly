@@ -31,7 +31,7 @@
         <PackageReference Include="MailKit" Version="4.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.8" />
         <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
-        <PackageReference Include="EFCore.BulkExtensions" Version="7.1.2" NoWarn="1605" />
+        <PackageReference Include="EFCore.BulkExtensions" Version="7.1.4" NoWarn="1605" />
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Services\" />

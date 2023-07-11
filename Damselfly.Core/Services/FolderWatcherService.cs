@@ -155,12 +155,20 @@ public class FolderWatcherService
 
         var folder = file.Directory.FullName;
 
-        // If it's hidden, or already in the queue, ignore it.
-        if ( file.IsHidden() || folderQueue.Contains(folder) )
+        if( changeType != WatcherChangeTypes.Deleted )
+        {
+            // This check isn't relevant for deleted files, which don't have valid attributes
+            // If it's hidden, ignore it
+            if( file.IsHidden() )
+                return;
+        }
+
+        // If it's already in the queue, ignore it.
+        if( folderQueue.Contains( folder ) )
             return;
 
         // Ignore non images, and hidden files/folders.
-        if ( file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType() )
+        if( file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType() )
         {
             Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
             folderQueue.Enqueue(folder);

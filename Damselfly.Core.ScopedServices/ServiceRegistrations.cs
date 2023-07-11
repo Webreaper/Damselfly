@@ -31,6 +31,7 @@ public static class ServiceRegistrations
         services.AddSingleton<ClientSearchService>();
         services.AddSingleton<ClientConfigService>();
         services.AddSingleton<ClientFolderService>();
+        services.AddSingleton<ClientFileService>();
         services.AddSingleton<ClientImageCacheService>();
         services.AddSingleton<ClientTagService>();
         services.AddSingleton<ClientTaskService>();
@@ -48,6 +49,7 @@ public static class ServiceRegistrations
         services.AddSingleton<ITagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddSingleton<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
         services.AddSingleton<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
+        services.AddSingleton<IFileService>( x => x.GetRequiredService<ClientFileService>() );
         services.AddSingleton<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddSingleton<ISearchService>(x => x.GetRequiredService<ClientSearchService>());
         services.AddSingleton<IWorkService>(x => x.GetRequiredService<ClientWorkService>());
