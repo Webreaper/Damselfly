@@ -35,7 +35,10 @@
 
     protected override void OnInitialized()
     {
-        TypeAheadName = theObject.Person.Name;
+        if( theObject.Person != null && theObject.Person.Name != null )
+        {
+            TypeAheadName = theObject.Person.Name;
+        }
     }
 
     private async Task<IEnumerable<string>> SearchNames(string text)

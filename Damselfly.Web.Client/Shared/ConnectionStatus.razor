@@ -28,10 +28,11 @@
             HubConnectionState.Connected => "color:green;",
             HubConnectionState.Reconnecting => "color:darkorange;",
             HubConnectionState.Connecting => "color:darkorange;",
-            HubConnectionState.Disconnected => "color:darkred;"
-            } + " text-shadow: 1px 1px 1px #666;";
+            HubConnectionState.Disconnected => "color:darkred;",
+            _ => "color:darkred;"
+        } + " text-shadow: 1px 1px 1px #666;";
 
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
@@ -41,7 +42,7 @@
         await base.OnInitializedAsync();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if( firstRender )
         {

@@ -48,7 +48,7 @@ public class ImageCache : IImageCacheService
         _memoryCache = memoryCache;
         _cacheOptions = new MemoryCacheEntryOptions()
             .SetSize(1)
-            .SetSlidingExpiration(TimeSpan.FromDays(2));
+            .SetAbsoluteExpiration(TimeSpan.FromDays(2));
     }
 
     /// <summary>

@@ -161,6 +161,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var tags = CachedTags
                 .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
                             && !x.Keyword.Equals(searchText, StringComparison.OrdinalIgnoreCase))
+                // The closer to the start of the text, the earlier in the list
+                .OrderBy( x => x.Keyword.IndexOf( text, StringComparison.OrdinalIgnoreCase ) ) 
                 .OrderBy(x => x.Favourite ? 0 : 1) // Favourites first
                 .ThenBy(x => x.Keyword) // Then order alphabetically
                 .Take(30); // Don't go mad with the number we return
@@ -519,13 +521,12 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         {
             var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
 
-            if ( lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
+            if (lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) && lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
             {
-                // If the last-write time is within 30s of now,
-                // skip it, as it's possible it might still be
-                // mid-copy.
+                // If the last-write time is within 30s of now, but it's not a time far in the future
+                // we skip it, as it's possible it might still be mid-copy.
                 // TODO: We need a better way of managing this
-                Logging.Log($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+                Logging.LogWarning($"Skipping metadata scan for {img.FileName} - write time is too recent.");
                 return;
             }
 
@@ -582,7 +583,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var changesSaved = await db.SaveChangesAsync("ImageMetaDataSave");
 
             if ( changesSaved == 0 )
-                Logging.LogError($"No changed saved after metadata scan for image {img.ImageId}");
+                Logging.LogError($"No changes saved after metadata scan for image {img.ImageId}");
         }
 
         // Now save the tags

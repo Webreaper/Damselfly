@@ -131,7 +131,8 @@ public class ExifService : IProcessJobFactory, ITagService
                     UserId = userId
                 }));
 
-            changeDesc += $"added: {string.Join(',', tagsToAdd)}";
+            var tagsAdded = string.Join( ',', tagsToAdd );
+            changeDesc += $"added: {tagsAdded}";
         }
 
         if ( removeTags != null )
@@ -550,8 +551,8 @@ public class ExifService : IProcessJobFactory, ITagService
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // Clean up completed operations older than 24hrs
-        var cutOff = DateTime.UtcNow.AddDays(-1);
+        // Clean up completed operations older than 6 months
+        var cutOff = DateTime.UtcNow.AddMonths(-6);
 
         try
         {
@@ -708,6 +709,7 @@ public class ExifService : IProcessJobFactory, ITagService
         // TODO: Clear the tag cache and reload, and get this from the cache
         var faves = await Task.FromResult(db.Tags
             .Where(x => x.Favourite)
+            .Distinct()
             .OrderBy(x => x.Keyword)
             .ToList());
 

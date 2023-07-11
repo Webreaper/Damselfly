@@ -5,17 +5,18 @@
 
 <div>
     <MudAutocomplete T="string" Placeholder="Add a Keyword" SearchFunc="SearchTags"
-                     @bind-Value="@TypeAheadTag" ShowProgressIndicator="true" MinCharacters="2"
+                     @bind-Value="@TypeAheadTag" @bind-Value:after=CreateNewTags 
+                     ShowProgressIndicator="true" MinCharacters="2"
                      CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
-                     Variant="UIConstants.MudVariant" Disabled="@IsDisabled"
+                     Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant" 
+                     Disabled="@IsDisabled"
                      class="tag-autocomplete" PopoverClass="tag-autocomplete-popover"/>
 </div>
 
 
 @code {
-    private string tagText;
-    private string TypeAheadTag { get { return tagText; } set { CreateNewTags(value); } }
+    private string TypeAheadTag { get; set; }
 
     [Parameter]
     public bool IsDisabled { get; set; } = false;
@@ -31,18 +32,19 @@
         base.OnParametersSet();
     }
 
-    private void CreateNewTags(string tag)
+    private void CreateNewTags()
     {
-        if (!string.IsNullOrEmpty(tag))
+        if (!string.IsNullOrEmpty(TypeAheadTag))
         {
-            Logging.Log("Saving new tag: " + tag);
+            var newTag = TypeAheadTag;
+            Logging.Log($"Saving new tag: {newTag}");
 
             // Reset the tag
             TypeAheadTag = string.Empty;
             StateHasChanged();
 
             // Call the callback
-            OnAddNewtag(tag);
+            OnAddNewtag(newTag);
         }
     }
 

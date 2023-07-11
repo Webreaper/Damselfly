@@ -407,6 +407,28 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         ExecutePragma(this, "PRAGMA schema.wal_checkpoint;");
     }
 
+    /// <summary>
+    /// Use SQLite recursion to find all the child folders under a particular parent.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="resultSet"></param>
+    /// <param name="rootId"></param>
+    /// <returns></returns>
+    public Task<IQueryable<T>> GetChildFolderIds<T>( DbSet<T> resultSet, int rootId ) where T : class
+    {
+        string sql = @"with recursive children(folderId, parentId) as (  
+                                select p.FolderID, p.ParentID                    
+                                    from Folders p where FolderID = {0}     
+                                union all 
+                                    select f.folderId, f.ParentID 
+                                    from folders f
+                                        join children c on c.FolderID = f.ParentId )
+                               select r.* from folders r 
+                                    join children x on r.FolderID = x.FolderID;";
+    
+        return Task.FromResult( resultSet.FromSqlRaw( sql, rootId ) );
+    }
+
     // Can this be made async?
     public Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
     {

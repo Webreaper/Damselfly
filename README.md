@@ -24,6 +24,7 @@ editing etc.
     * Image Classification
     * Facial Recognition (Temporarily unavailable - see note below)
 * Full-text search with multi-phrase partial-word searches
+* Image re-organisation - move/copy images between folders, and delete images (via a trashcan folder)
 * Advanced search - filter by:
   * Find visually similar images
   * Date ranges

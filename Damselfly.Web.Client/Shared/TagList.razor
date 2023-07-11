@@ -169,7 +169,7 @@
     /// </summary>
     /// <param name="tagsToAdd"></param>
     /// <returns></returns>
-    private async Task WriteNewTags(List<string> tagsToAdd, List<string> tagsToDelete = null)
+    private async Task WriteNewTags(List<string>? tagsToAdd, List<string>? tagsToDelete = null)
     {
         await tagService.UpdateTagsAsync(CurrentImages.Select(x => x.ImageId).ToList(), tagsToAdd, tagsToDelete, userService.UserId);
 
@@ -305,14 +305,18 @@
 
     protected async Task RefreshFavourites()
     {
-        faveTags.Clear();
-        recentTags.Clear();
+        var favourites = await tagService.GetFavouriteTags();
+        var recents = await recentTagService.GetRecentTags();
+        var uniqueRecents = recents.Except(favourites.Select(x => x.Keyword));
 
-        faveTags.AddRange(await tagService.GetFavouriteTags());
-        recentTags.AddRange(await recentTagService.GetRecentTags());
+        faveTags.Clear();
+        faveTags.AddRange(favourites);
+
+        recentTags.Clear();
+        recentTags.AddRange( recents );
 
         // We might not be called from the dispatcher thread.
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected override async Task OnParametersSetAsync()

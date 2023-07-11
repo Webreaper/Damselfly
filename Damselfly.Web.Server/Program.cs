@@ -230,30 +230,33 @@ public class Program
         app.Run();
     }
 
-    private static void InitialiseDB(WebApplication app, DamselflyOptions options)
+    private static void InitialiseDB( WebApplication app, DamselflyOptions options )
     {
         using var scope = app.Services.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        try
+        if( db != null )
         {
-            Logging.Log("Running Sqlite DB migrations...");
-            db.Database.Migrate();
+            try
+            {
+                Logging.Log( "Running Sqlite DB migrations..." );
+                db.Database.Migrate();
+            }
+            catch( Exception ex )
+            {
+                Logging.LogWarning( $"Migrations failed with exception: {ex}" );
+
+                if( ex.InnerException != null )
+                    Logging.LogWarning( $"InnerException: {ex.InnerException}" );
+
+                Logging.Log( "Creating DB." );
+                db.Database.EnsureCreated();
+            }
+
+            db.IncreasePerformance();
+
+            BaseDBModel.ReadOnly = options.ReadOnly;
         }
-        catch ( Exception ex )
-        {
-            Logging.LogWarning($"Migrations failed with exception: {ex}");
-
-            if ( ex.InnerException != null )
-                Logging.LogWarning($"InnerException: {ex.InnerException}");
-
-            Logging.Log("Creating DB.");
-            db.Database.EnsureCreated();
-        }
-
-        db.IncreasePerformance();
-
-        BaseDBModel.ReadOnly = options.ReadOnly;
     }
 
     private static void SetupIdentity(IServiceCollection services)

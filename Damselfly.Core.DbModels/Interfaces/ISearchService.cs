@@ -27,6 +27,7 @@ public interface ISearchService
     bool TagsOnly { get; set; }
     bool IncludeAITags { get; set; }
     bool UntaggedImages { get; set; }
+    bool IncludeChildFolders { get; set; }
     FaceSearchType? FaceSearch { get; set; }
     GroupingType Grouping { get; set; }
     SortOrderType SortOrder { get; set; }

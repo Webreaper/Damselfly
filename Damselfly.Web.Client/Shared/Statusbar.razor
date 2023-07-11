@@ -25,14 +25,11 @@
 
     private void UpdateStatus(string newText)
     {
-        InvokeAsync(() =>
+        if (StatusText != newText)
         {
-            if (StatusText != newText)
-            {
-                StatusText = newText;
-                StateHasChanged();
-            }
-        });
+            StatusText = newText;
+            StateHasChanged();
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)

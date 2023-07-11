@@ -180,12 +180,14 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: Desktop-Dist
+          path: Damselfly.Web.Client/wwwroot/desktop
 
       - name: Download Server Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v3
         with:
           name: Server-Dist
+          path: server
 
       - name: Upload Server Artifacts
         if: github.ref == 'refs/heads/master'

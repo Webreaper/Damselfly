@@ -78,7 +78,7 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
 
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
-        List<ConfigSetting> allSettings;
+        List<ConfigSetting>? allSettings;
         try
         {
             if ( _userId.HasValue )

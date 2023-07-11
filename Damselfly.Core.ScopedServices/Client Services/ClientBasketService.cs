@@ -72,21 +72,22 @@ public class ClientBasketService : IUserBasketService, IBasketService
         }
         catch ( Exception ex )
         {
-            _logger.LogError($"Attempted to switch to unknown basket ID {basketId}");
+            _logger.LogError($"Attempted to switch to unknown basket ID {basketId}: {ex}");
             throw;
         }
     }
 
     public async Task<Basket> SwitchToDefaultBasket(int? userId)
     {
-        Basket basket;
+        Basket? basket;
 
         if ( userId is null )
             basket = await httpClient.CustomGetFromJsonAsync<Basket>("/api/basketdefault");
         else
             basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basketdefault/{userId}");
 
-        await SetCurrentBasket(basket);
+        if( basket != null )
+            await SetCurrentBasket(basket);
 
         return basket;
     }

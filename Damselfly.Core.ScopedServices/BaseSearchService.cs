@@ -124,7 +124,7 @@ public abstract class BaseSearchService
             }
         }
     }
-
+    
     public bool IncludeAITags
     {
         get => Query.IncludeAITags;
@@ -133,6 +133,19 @@ public abstract class BaseSearchService
             if ( Query.IncludeAITags != value )
             {
                 Query.IncludeAITags = value;
+                QueryChanged();
+            }
+        }
+    }
+
+    public bool IncludeChildFolders
+    {
+        get => Query.IncludeChildFolders;
+        set
+        {
+            if( Query.IncludeChildFolders != value )
+            {
+                Query.IncludeChildFolders = value;
                 QueryChanged();
             }
         }
@@ -368,7 +381,10 @@ public abstract class BaseSearchService
                     hints.Add($"Lens: {lens.Model}");
             }
 
-            if ( hints.Any() )
+            if( !IncludeChildFolders )
+                hints.Add( $"Exclude child folders" );
+
+            if( hints.Any() )
                 return string.Join(", ", hints);
 
             return "No Filter";

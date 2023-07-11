@@ -75,9 +75,11 @@ public static class ServiceRegistrations
         services.AddSingleton<SearchQueryService>();
         services.AddSingleton<RescanService>();
         services.AddSingleton<FolderService>();
+        services.AddSingleton<FileService>();
         services.AddSingleton<ServerStatusService>();
 
         services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
+        services.AddSingleton<IFileService>( x => x.GetRequiredService<FileService>() );
 
         services.AddSingleton<DownloadService>();
         services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());

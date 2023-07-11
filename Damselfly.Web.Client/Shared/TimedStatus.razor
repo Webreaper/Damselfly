@@ -8,28 +8,25 @@
     public int DisplayIntervalSecs { get; set; } = 5;
 
     [Parameter]
-    public string StatusText
-    {
-        get => _text;
-        set => SetStatusText(value);
-    }
+    public string StatusText { get; set; }
 
-    private string _text;
-    private Timer searchTimer;
+    private Timer? searchTimer;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SetStatusText(StatusText);
+
+        await base.OnParametersSetAsync();
+    }
 
     private void SetStatusText(string value)
     {
-        if( _text != value )
-        {
-            KillTimer();
+        KillTimer();
+
+        if( ! string.IsNullOrEmpty( value ))
             searchTimer = new Timer(TimerCallback, null, DisplayIntervalSecs * 1000, Timeout.Infinite);
 
-            InvokeAsync(() =>
-            {
-                _text = value;
-                StateHasChanged();
-            });
-        }
+        StateHasChanged();
     }
 
     private void KillTimer()
@@ -40,15 +37,9 @@
             oldTimer.Dispose();
     }
 
-    private void TimerCallback(object state)
+    private void TimerCallback(object? state)
     {
-        KillTimer();
-
-        if( !string.IsNullOrEmpty(_text) )
-        {
-            _text = string.Empty;
-            InvokeAsync(StateHasChanged);
-        }
+        SetStatusText(string.Empty);
     }
 
 }

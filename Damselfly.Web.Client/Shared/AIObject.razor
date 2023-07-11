@@ -74,11 +74,11 @@
             return;
 
         var menuList = new List<ContextMenuItem>
-{
+            {
                 new() { Text = $"Find more photos containing this person", Value = 0 },
             };
 
-        contextMenuService.Open(args, menuList, async args =>
+        contextMenuService.Open(args, menuList, args =>
         {
             contextMenuService.Close();
             switch (args.Value)
@@ -107,7 +107,7 @@
             var dialog = DialogService.Show<NameDialog>("Add Name", parameters);
             var result = await dialog.Result;
 
-            if( !dialog.Result.IsCanceled)
+            if (!dialog.Result.IsCanceled)
             {
                 // Reset the tag
                 Editing = false;

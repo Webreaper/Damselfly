@@ -23,7 +23,9 @@
         </MudDateRangePicker>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" int? " Label="Month" @bind-Value="searchService.Month" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Month" @bind-Value="searchService.Month" @bind-Value:after="FilterChanged" 
+                                MultiSelection="true" Clearable="true" 
+                                Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in monthChoices )
             {
                 <MudSelectItem T=" int? " Value="@choice.Value">
@@ -33,7 +35,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" int? " Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in Enumerable.Range(1, 5).Reverse() )
             {
                 <MudSelectItem T=" int? " Value="@choice">
@@ -43,7 +45,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" FaceSearchType? " Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" FaceSearchType? " Label="People Filters" @bind-Value="searchService.FaceSearch" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in faceTypes )
             {
                 <MudSelectItem T=" FaceSearchType? " Value="@choice">
@@ -53,7 +55,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" OrientationType? " Label="Orientation" @bind-Value="searchService.Orientation" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" OrientationType? " Label="Orientation" @bind-Value="searchService.Orientation" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in orientationTypes )
             {
                 <MudSelectItem T=" OrientationType? " Value="@choice">
@@ -63,7 +65,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" int? " Label="Camera Make/Model" @bind-Value="searchService.CameraId" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Camera Make/Model" @bind-Value="searchService.CameraId" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var cam in cachedData.Cameras )
             {
                 <MudSelectItem T=" int? " Value="@cam.CameraId">
@@ -73,7 +75,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" int? " Label="Lens Make/Model" @bind-Value="searchService.LensId" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Lens Make/Model" @bind-Value="searchService.LensId" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var lens in cachedData.Lenses )
             {
                 <MudSelectItem T=" int? " Value="@lens.LensId">
@@ -83,7 +85,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" int? " Label="Max File Size" @bind-Value="searchService.MaxSizeKB" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Max File Size" @bind-Value="searchService.MaxSizeKB" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in fileSizeChoices )
             {
                 <MudSelectItem T=" int? " Value="@choice.Value">
@@ -93,7 +95,7 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T=" int? " Label="Min File Size" @bind-Value="searchService.MinSizeKB" Clearable="true" Variant="UIConstants.MudVariant">
+        <MudSelect T=" int? " Label="Min File Size" @bind-Value="searchService.MinSizeKB" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in fileSizeChoices )
             {
                 <MudSelectItem T=" int? " Value="@choice.Value">
@@ -117,6 +119,11 @@
     MudDateRangePicker _picker;
     List<KeyValuePair<string, DateRange>> DateRanges = new();
     DateRange filterRange = new();
+
+    private Task FilterChanged()
+    {
+        return Task.CompletedTask;
+    }
 
     DateRange DateRange
     {
@@ -154,7 +161,7 @@
         CreateShortcuts();
         filterRange = new DateRange(searchService.MinDate, searchService.MaxDate);
 
-    // TODO: Can we do better than do this every time the advanced Search panel opens?
+        // TODO: Can we do better than do this every time the advanced Search panel opens?
         cachedData.InitialiseData();
 
         base.OnInitialized();
@@ -197,7 +204,8 @@
     private void OnSearchChanged()
     {
         filterRange = new DateRange(searchService.MinDate, searchService.MaxDate);
-        InvokeAsync(StateHasChanged);
+        
+        StateHasChanged();
     }
 
     private void AddRangeShortcut(string name, DateRange range)
@@ -207,7 +215,7 @@
 
     private void CreateShortcuts()
     {
-    // TODO: Add more here
+        // TODO: Add more here
         var Jan1ThisYear = new DateTime(DateTime.UtcNow.Year, 1, 1);
 
         AddRangeShortcut("This year", new DateRange { Start = Jan1ThisYear, End = DateTime.UtcNow });

@@ -5,6 +5,7 @@ using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
+using Damselfly.Web.Client.Extensions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -50,15 +51,15 @@ public class Program
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
-        builder.Services.AddSyncfusionBlazor(options => { options.IgnoreScriptIsolation = true; });
+        builder.Services.AddSyncfusionBlazor();
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddBlazorPanzoomServices();
 
         builder.Services.AddScoped<ContextMenuService>();
         builder.Services.AddSingleton<RestClient>();
 
-        builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+        builder.Services.AddSingleton<IAuthService, AuthService>();
 
         builder.Services.AddDamselflyUIServices();
 

@@ -14,7 +14,7 @@
     @if (!gridImages.Any())
     {
         <div class="damselfly-searchmsg">
-            <span>@ResultsMessage</span>
+            <div>@ResultsMessage</div>
         </div>
     }
     else
@@ -67,7 +67,7 @@
         if (!endOfImages)
         {
             <div class="damselfly-moreimages" id="list-end">
-                <div title="Loading more images..." class="imagegrid-loader"></div>
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
             </div>
         }
         else
@@ -89,13 +89,7 @@
     private ScrollMonitor ScrollMonitor;
 
     [Parameter]
-    public ThumbSize CurrentThumbSize
-    {
-        get => _currentThumbSize;
-        set => ChangeThumbSize(value);
-    }
-
-    private ThumbSize _currentThumbSize;
+    public ThumbSize CurrentThumbSize { get; set; }
 
     public string ResultsMessage { get; set; }
 
@@ -121,6 +115,12 @@
     void DeselectGroup(ImageGrouping grouping)
     {
         selectionService.DeselectImages(grouping.Images);
+    }
+
+    protected override void OnParametersSet()
+    {
+        ChangeThumbSize(CurrentThumbSize);
+        base.OnParametersSet();
     }
 
     private List<ImageGrouping> GroupedImages
@@ -175,31 +175,26 @@
 
     protected void ChangeThumbSize(ThumbSize newSize)
     {
-        if (_currentThumbSize != newSize)
+        switch (newSize)
         {
-            _currentThumbSize = newSize;
-
-            switch (newSize)
-            {
-                case ThumbSize.Medium:
-                    WrapStyle = "wrapping-table-medium";
-                    break;
-                case ThumbSize.Large:
-                    WrapStyle = "wrapping-table-large";
-                    break;
-                case ThumbSize.ExtraLarge:
-                    WrapStyle = "wrapping-table-x-large";
-                    break;
-                case ThumbSize.Small:
-                    WrapStyle = "wrapping-table-small";
-                    break;
-                default:
-                    WrapStyle = "wrapping-table-small";
-                    break;
-            }
-
-            configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
+            case ThumbSize.Medium:
+                WrapStyle = "wrapping-table-medium";
+                break;
+            case ThumbSize.Large:
+                WrapStyle = "wrapping-table-large";
+                break;
+            case ThumbSize.ExtraLarge:
+                WrapStyle = "wrapping-table-x-large";
+                break;
+            case ThumbSize.Small:
+                WrapStyle = "wrapping-table-small";
+                break;
+            default:
+                WrapStyle = "wrapping-table-small";
+                break;
         }
+
+        configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -226,7 +221,7 @@
 
     protected void SelectedImagesChanged()
     {
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     public void Dispose()
@@ -241,7 +236,7 @@
 
     protected void BasketChanged(BasketChanged changeType)
     {
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     protected void SearchResultsChanged(SearchResponse response)
@@ -279,7 +274,7 @@
         if (searchService.SearchResults.Any())
         {
             ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
-            await InvokeAsync(StateHasChanged);
+            StateHasChanged();
 
             var images = await imageCache.GetCachedImages(searchService.SearchResults);
 
@@ -301,7 +296,7 @@
         // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvaiable;
 
-        await InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
 }

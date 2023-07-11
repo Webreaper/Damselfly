@@ -17,10 +17,10 @@ public class ClientFolderService : IFolderService
         httpClient = client;
         _logger = logger;
         _notificationService = notificationService;
+        OnChange = null;
     }
 
-    public event Action OnChange;
-
+    public event Action? OnChange;
 
     public async Task<ICollection<Folder>> GetFolders()
     {

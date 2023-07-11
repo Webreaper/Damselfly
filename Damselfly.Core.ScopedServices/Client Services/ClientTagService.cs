@@ -13,8 +13,8 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
     private readonly RestClient httpClient;
     private readonly ILogger<ClientTagService> _logger;
 
-    private ICollection<Tag> _favouriteTags;
-    private ICollection<string> _recentTags;
+    private ICollection<Tag>? _favouriteTags;
+    private ICollection<string>? _recentTags;
 
     public event Action OnFavouritesChanged;
     public event Action<ICollection<string>> OnUserTagsAdded;

@@ -38,6 +38,6 @@ public class ClientPeopleService : IPeopleService
     public async Task UpdatePerson(Person thePerson, string newName)
     {
         throw new NotImplementedException();
-        await httpClient.CustomPutAsJsonAsync($"/api/people/name/{thePerson.PersonId}", newName);
+        //await httpClient.CustomPutAsJsonAsync($"/api/people/name/{thePerson.PersonId}", newName);
     }
 }

@@ -33,12 +33,7 @@ public class EventConflator
     {
         theCallback = callback;
 
-        if ( eventTimer != null )
-        {
-            var oldTimer = eventTimer;
-            eventTimer = null;
-            oldTimer.Dispose();
-        }
+        ClearTimer();
 
         eventTimer = new Timer(TimerCallback, null, intervalMS, Timeout.Infinite);
     }
@@ -51,10 +46,15 @@ public class EventConflator
     /// <param name="state"></param>
     private void TimerCallback(object state)
     {
+        ClearTimer();  
+        theCallback(state);
+    }
+
+    private void ClearTimer()
+    {
         var oldTimer = eventTimer;
         eventTimer = null;
-        if ( oldTimer != null )
+        if( oldTimer != null )
             oldTimer.Dispose();
-        theCallback(state);
     }
 }

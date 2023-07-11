@@ -16,6 +16,8 @@ public class ConfigSettings
     public const string FlatView = "FlatView";
     public const string FolderSortAscending = "FolderSortAscending";
     public const string FolderSortMode = "FolderSortMode";
+    public const string IncludeChildFolders = "IncludeChildFolders";
+    public const string TrashcanFolderName = "TrashcanFolderName";
 
     public const string WordpressURL = "WordpressURL";
     public const string WordpressUser = "WordpressUser";

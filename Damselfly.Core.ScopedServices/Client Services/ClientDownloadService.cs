@@ -24,8 +24,11 @@ public class ClientDownloadService : IDownloadService
     {
         var request = new DownloadRequest { ImageIds = imageIds, Config = config };
 
-        var response =
-            await httpClient.CustomPostAsJsonAsync<DownloadRequest, DownloadResponse>("/api/download/images", request);
-        return response.DownloadUrl;
+        var response = await httpClient.CustomPostAsJsonAsync<DownloadRequest, DownloadResponse>("/api/download/images", request);
+
+        if( response != null )
+            return response.DownloadUrl;
+
+        return null;
     }
 }

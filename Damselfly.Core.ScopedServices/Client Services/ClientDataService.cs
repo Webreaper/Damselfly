@@ -16,7 +16,7 @@ public class ClientDataService : ICachedDataService
     private readonly List<Lens> _lenses = new();
     private readonly ILogger<ClientDataService> _logger;
     private readonly RestClient httpClient;
-    private StaticData _staticData;
+    private StaticData? _staticData;
 
     public ClientDataService(RestClient client, ILogger<ClientDataService> logger)
     {
@@ -24,8 +24,8 @@ public class ClientDataService : ICachedDataService
         _logger = logger;
     }
 
-    public string ImagesRootFolder => _staticData.ImagesRootFolder;
-    public string ExifToolVer => _staticData.ExifToolVer;
+    public string ImagesRootFolder => _staticData?.ImagesRootFolder;
+    public string ExifToolVer => _staticData?.ExifToolVer;
     public ICollection<Camera> Cameras => _cameras;
     public ICollection<Lens> Lenses => _lenses;
 

@@ -23,7 +23,12 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
 
         var recents = configService.Get(ConfigSettings.RecentTags);
 
-        if ( !string.IsNullOrEmpty(recents) ) recentTags.AddRange(recents.Split(",").Select(x => x.Trim()).ToList());
+        if (!string.IsNullOrEmpty(recents))
+        {
+            recentTags.AddRange(recents.Split(",")
+                                       .Select(x => x.Trim())
+                                       .ToList());
+        }
     }
 
     public void Dispose()

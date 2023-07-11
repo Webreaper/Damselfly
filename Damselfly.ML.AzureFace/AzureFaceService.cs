@@ -27,7 +27,6 @@ public class AzureFaceService
     // Assumine the newer/bigger numbers are better. 
     private const string RECOGNITION_MODEL = RecognitionModel.Recognition04;
     private const string DETECTION_MODEL = DetectionModel.Detection03;
-    private readonly IList<FaceAttributeType> _attributes;
     private readonly IConfigService _configService;
     private readonly ITransactionThrottle _transThrottle;
     private FaceClient _faceClient;
@@ -38,21 +37,6 @@ public class AzureFaceService
     {
         _configService = configService;
         _transThrottle = transThrottle;
-
-        _attributes = new[]
-        {
-            FaceAttributeType.Gender,
-            FaceAttributeType.Age,
-            FaceAttributeType.Smile,
-            FaceAttributeType.Emotion,
-            FaceAttributeType.Glasses,
-            FaceAttributeType.Hair,
-            FaceAttributeType.FacialHair,
-            FaceAttributeType.HeadPose
-            // These are currently not supported.
-            // FaceAttributeType.Mask
-            // FaceAttributeType.Makeup,
-        };
     }
 
     public AzureDetection DetectionType { get; private set; }
@@ -121,7 +105,8 @@ public class AzureFaceService
         {
             InitFromConfig();
 
-            if ( _faceClient != null && DetectionType != AzureDetection.Disabled ) await InitializeAzureService();
+            if ( _faceClient != null && DetectionType != AzureDetection.Disabled ) 
+                await InitializeAzureService();
         }
         catch ( Exception ex )
         {
@@ -199,7 +184,7 @@ public class AzureFaceService
         Logging.LogVerbose("Calling Azure Face service...");
 
         var detectedFaces = await _transThrottle.Call("Detect",
-            _faceClient.Face.DetectWithStreamAsync(fileStream, true, true, _attributes, RECOGNITION_MODEL));
+            _faceClient.Face.DetectWithStreamAsync(fileStream, returnFaceId: true, recognitionModel: RECOGNITION_MODEL));
 
         Logging.LogVerbose("Azure Face service call complete.");
 

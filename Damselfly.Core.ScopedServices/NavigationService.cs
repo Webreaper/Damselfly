@@ -56,9 +56,10 @@ public class NavigationService
     /// <param name="image"></param>
     /// <param name="next"></param>
     /// <returns></returns>
-    public async Task<int> GetNextImage(bool next)
+    public Task<int> GetNextImage(bool next)
     {
         var navigationItems = new List<int>();
+        int result = -1;
 
         if ( Context == NavigationContexts.Basket )
             navigationItems.AddRange(_basketService.BasketImages.Select(x => x.ImageId));
@@ -81,10 +82,10 @@ public class NavigationService
                 else
                     currentIndex = currentIndex % navigationItems.Count;
 
-                return navigationItems[currentIndex];
+                result = navigationItems[currentIndex];
             }
         }
 
-        return -1;
+        return Task.FromResult( result );
     }
 }

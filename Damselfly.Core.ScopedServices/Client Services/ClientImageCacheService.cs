@@ -29,7 +29,7 @@ public class ClientImageCacheService : IImageCacheService
         httpClient = client;
         _cacheOptions = new MemoryCacheEntryOptions()
             .SetSize(1)
-            .SetSlidingExpiration(TimeSpan.FromHours(4));
+            .SetAbsoluteExpiration(TimeSpan.FromHours(4));
 
         _notifications.SubscribeToNotification<string>(NotificationType.CacheEvict, Evict);
     }
@@ -158,10 +158,12 @@ public class ClientImageCacheService : IImageCacheService
         {
             var req = new ImageRequest { ImageIds = imgIds.ToList() };
             var response = await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
-            return response.Images;
+
+            if( response != null )
+                return response.Images;
         }
-        else
-            return new List<Image>();
+
+        return new List<Image>();
     }
 
     private async Task<Image> LoadAndCacheImage(int imageId)

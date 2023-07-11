@@ -33,7 +33,7 @@ public class AuthService : IAuthService
         var loginResult = await _httpClient.CustomPostAsJsonAsync<LoginModel, LoginResult>("api/Login", loginModel);
         var provider = _authenticationStateProvider as ApiAuthenticationStateProvider;
 
-        if ( loginResult.Successful )
+        if ( loginResult != null && provider != null &&loginResult.Successful )
         {
             await _localStorage.SetItemAsync("authToken", loginResult.Token);
 

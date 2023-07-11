@@ -61,14 +61,16 @@ public class NotificationsService : IAsyncDisposable
 
     public event Action OnConnectionChanged;
 
-    private async Task ConnectionOpened(string? arg)
+    private Task ConnectionOpened(string? arg)
     {
         OnConnectionChanged?.Invoke();
+        return Task.CompletedTask;
     }
 
-    private async Task ConnectionClosed(Exception? arg)
+    private Task ConnectionClosed(Exception? arg)
     {
         OnConnectionChanged?.Invoke();
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -98,7 +100,7 @@ public class NotificationsService : IAsyncDisposable
                 _logger.LogInformation($"Received {methodName} - calling async action {payloadLog}");
                 await action(theObj);
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 _logger.LogError($"Error processing serialized object for {methodName}: {payload}.");
             }
@@ -134,7 +136,7 @@ public class NotificationsService : IAsyncDisposable
                 _logger.LogInformation($"Received {methodName} - calling action {payloadLog}");
                 action.Invoke(theObj);
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 _logger.LogError($"Error processing serialized object for {methodName}: {payload}.");
             }

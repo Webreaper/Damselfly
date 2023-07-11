@@ -71,8 +71,8 @@
     public string ImageID { get; set; }
 
     private Image CurrentImage;
-    private int nextImage;
-    private int prevImage;
+    private int? nextImage;
+    private int? prevImage;
     private ElementReference ImageView;
 
     private bool ShowObjects => theImagePreview == null ? false : theImagePreview.ShowObjects;
@@ -91,9 +91,9 @@
     private string PrevImageIDUrl => $"/image/{prevImage}";
     private string NextImageIDUrl => $"/image/{nextImage}";
 
-    private async Task ZoomIn() => await theImagePreview?.ZoomIn();
-    private async Task ZoomOut() => await theImagePreview?.ZoomOut();
-    private async Task ResetZoom() => await theImagePreview?.ResetZoom();
+    private async Task ZoomIn() => await theImagePreview!.ZoomIn();
+    private async Task ZoomOut() => await theImagePreview!.ZoomOut();
+    private async Task ResetZoom() => await theImagePreview!.ResetZoom();
     private double ZoomRange { get { return theImagePreview == null ? 0 : theImagePreview.ZoomRangeValue; } set { if (theImagePreview != null) theImagePreview.ZoomRangeValue = value; } }
     private bool CanZoomIn => ZoomRange < 5.0 && !ZoomDisabled;
     private bool CanZoomOut => ZoomRange > 1.0 && !ZoomDisabled;

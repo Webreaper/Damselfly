@@ -49,7 +49,7 @@ public class ClientUserMgmtService : IUserMgmtService
     }
 
     public async Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password,
-        ICollection<string> roles = null)
+        ICollection<string>? roles = null)
     {
         // /api/users
         var req = new UserRequest { User = newUser, Password = password, Roles = roles };

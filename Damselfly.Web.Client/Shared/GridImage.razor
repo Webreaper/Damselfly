@@ -5,6 +5,7 @@
 @inject ISearchService searchService
 @inject NavigationService navContext
 @inject IUserBasketService basketService
+@inject IFileService fileService
 @inject IDownloadService downloadService
 @inject ILogger<GridImage> logger
 @inject IDialogService DialogService
@@ -122,8 +123,10 @@ else
                         </AuthorizeView>
                     }
 
-                    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                    <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
                         <RadzenMenuItem Text="Refresh" Value="5" />
+                        <hr class="separator">
+                        <RadzenMenuItem Text="Delete from Disk" Value="9" />
                     </AuthorizeView>
                 </RadzenMenu>
             </CascadingAuthenticationState>);
@@ -173,7 +176,16 @@ else
             case 8:
                 FilterByImageDate();
                 break;
+            case 9:
+                await DeleteImages(ContextSelection.Select(x => x.ImageId).ToList());
+                break;
         }
+    }
+
+    private async Task DeleteImages( ICollection<int> imageIds )
+    {
+        var req = new MultiImageRequest { ImageIDs = imageIds };
+        await fileService.DeleteImages(req);
     }
 
     private async Task ShowRescanDialog()

@@ -42,7 +42,7 @@ public class ViewDataService
         public bool ShowImageProps { get; set; } = false;
         public bool HideSideBar { get; set; } = false;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as SideBarState;
             if ( other != null )

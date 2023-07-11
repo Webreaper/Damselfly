@@ -77,7 +77,7 @@ public abstract class BaseConfigService
         SetSetting(name, new ConfigSetting { Name = name, Value = value });
     }
 
-    public string Get(string name, string defaultIfNotExists = null)
+    public string Get(string name, string? defaultIfNotExists = null)
     {
         var existing = GetSetting(name);
 

@@ -148,7 +148,7 @@
 
     protected void SearchQueryChanged()
     {
-        _ = InvokeAsync(StateHasChanged);
+        StateHasChanged();
     }
 
     private void DoSearch(string searchTerm)

@@ -1,13 +1,14 @@
 ﻿@using System.Reflection
 @inject ICachedDataService dataService
+@inject IJSRuntime jsRuntime
 
 <div class="damselfly-about">
     <div>
-        <img src="damselfly-logo.png" height="200" title="Damselfly"/>
+        <img src="damselfly-logo.png" height="200" title="Damselfly" />
     </div>
-    <h3>Damselfly v<span/>@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h3>
+    <h3>Damselfly v<span />@Version &copy; 2019-@DateTime.Now.Year Mark Otway, All rights reserved.</h3>
     <h4>Server-based Digital Asset Management system</h4>
-    <hr/>
+    <hr />
     <h3>Credits/Thanks</h3>
     <p>
         Powered by <NavLink href="http://blazor.net" target="_blank">Blazor</NavLink>.
@@ -15,11 +16,11 @@
         Icons by <NavLink href="https://fontawesome.com/" target="_blank">Font-Awesome</NavLink>.
         Image Processing by <NavLink href="https://github.com/mono/SkiaSharp" target="_blank">SkiaSharp</NavLink>
         and <NavLink href="https://github.com/SixLabors/ImageSharp" target="_blank">SixLabors ImageSharp</NavLink>
-        and <NavLink href="https://imagemagick.org/">ImageMagick</NavLink> <span/>.
+        and <NavLink href="https://imagemagick.org/">ImageMagick</NavLink> <span />.
         Face Detection by <NavLink href="https://www.emgu.com/">EmguCV</NavLink>.
         Facial recognition by <NavLink href="https://azure.microsoft.com/en-gb/services/cognitive-services/face/">Azure Cognitive Services Face API</NavLink>.
         Object Detection based on <NavLink href="https://github.com/mentalstack/yolov5-net" target="_blank">MentalStack's</NavLink> code.
-        <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span/>@dataService.ExifToolVer by Phil Harvey.
+        <NavLink href="https://exiftool.org/">ExifTool</NavLink> <span />@dataService.ExifToolVer by Phil Harvey.
         <NavLink href="https://github.com/jellever/DominantColor">Dominant Colour</NavLink> calculation by Jelle Vergeer.
         <NavLink href="https://github.com/shaigem/BlazorPanzoom/">Pan &amp; Zoom</NavLink> by Ronnie Tran
         Maps by <NavLink href="https://www.openstreetmap.org/copyright">OpenStreetMap</NavLink> and <NavLink href="https://www.syncfusion.com/blazor-components">Syncfusion</NavLink>.
