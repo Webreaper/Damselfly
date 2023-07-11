@@ -141,7 +141,10 @@
             ImageIDs = selectionService.Selection.Select( x => x.ImageId ).ToArray()
         };
 
-        await fileService.MoveImages(req);
+        if (await fileService.MoveImages(req))
+        {
+            statusService.UpdateStatus($"Files moved to {folder.Path} successfully.");
+        }
     }
 
     private string FolderDisplayName(Folder folder)
