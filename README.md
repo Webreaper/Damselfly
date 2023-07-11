@@ -22,8 +22,9 @@ editing etc.
     * Facial detection
     * Object detection and recognition
     * Image Classification
-    * Facial Recognition (requires a [free Azure Face Services account](https://azure.microsoft.com/free/cognitive-services/))
+    * Facial Detection
 * Full-text search with multi-phrase partial-word searches
+* Image re-organisation - move/copy images between folders, and delete images (via a trashcan folder)
 * Advanced search - filter by:
   * Find visually similar images
   * Date ranges
