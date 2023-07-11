@@ -36,8 +36,17 @@ public class FileService : IFileService
             {
                 try
                 {
-                    File.Move( source, dest );
-                    _statusService.UpdateStatus( $"Moved {image.FileName} to {req.Destination.Path}" );
+                    // Note, we *never* overwrite.
+                    if( req.Move )
+                    {
+                        File.Move( source, dest, false );
+                        _statusService.UpdateStatus( $"Moved {image.FileName} to {req.Destination.Path}" );
+                    }
+                    else
+                    {
+                        File.Copy( source, dest, false );
+                        _statusService.UpdateStatus( $"Copied {image.FileName} to {req.Destination.Path}" );
+                    }
                 }
                 catch( Exception ex )
                 {

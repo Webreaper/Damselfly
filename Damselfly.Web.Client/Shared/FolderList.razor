@@ -68,7 +68,7 @@
         var selectText = "Select Folder";
         var viewText = FlatView ? "Tree View" : "Flat View";
         var sortDirection = "Sort Ascending";
-        var includeChildFolders = "Include Child Folder Images";
+        var includeChildFolders = "Show sub-folder Images";
         var sortText = "Sort by Date";
 
         if (SortMode == "Date")
@@ -78,7 +78,7 @@
             sortDirection = "Sort Descending";
 
         if (IncludeChildFolders)
-            includeChildFolders = "Exclude Child Folder Images";
+            includeChildFolders = "Hide sub-folder Images";
 
         if (folder == null)
         {
@@ -86,59 +86,78 @@
             selectText = "Clear Folder Selection";
         }
 
-        var contextItems = new List<ContextMenuItem>
-    {
-                new() { Text = selectText, Value = 0 },
-                new() { Text = refreshText, Value = 1 },
-                new() { Text = viewText, Value = 3 },
-                new() { Text = sortText, Value = 4 },
-                new() { Text = sortDirection, Value = 5 },
-                new() { Text = includeChildFolders, Value = 6 },
-            };
+        Action<MenuItemEventArgs> OnMenuItemClick = async (x) => await MenuSelected(x, folder);
 
-        if (selectionService.Selection.Any())
-        {
-            contextItems.Add(new() { Text = "Move Selected Images Here", Value = 7 });
-        }
-
-        contextMenuService.Open(args,
-            contextItems, args =>
-            {
-                contextMenuService.Close();
-                switch (args.Value)
-                {
-                    case 0:
-                        if (folder == null) ResetFilterFolder();
-                        else SetFilterFolder(folder);
-                        break;
-                    case 1:
-                        _ = ShowRescanDialog(folder);
-                        break;
-                    case 3:
-                        _ = ToggleFlatView();
-                        break;
-                    case 4:
-                        _ = ToggleSortMode();
-                        break;
-                    case 5:
-                        _ = ToggleSortAscendingView();
-                        break;
-                    case 6:
-                        _ = ToggleIncludeChildFolder();
-                        break;
-                    case 7:
-                        _ = MoveSelectedImagesToFolder(folder);
-                        break;
-                }
-            });
+        contextMenuService.Open(args, ds =>
+            @<CascadingAuthenticationState>
+                <RadzenMenu Click="OnMenuItemClick">
+                    <RadzenMenuItem Text="@selectText" Value="0" />
+                    <RadzenMenuItem Text="@refreshText" Value="1" />
+                    <hr class="separator">
+                    <RadzenMenuItem Text="@viewText" Value="3" />
+                    <RadzenMenuItem Text="@sortText" Value="4" />
+                    <RadzenMenuItem Text="@sortDirection" Value="5" />
+                    <RadzenMenuItem Text="@includeChildFolders" Value="6" />
+                    <hr class="separator">
+                    <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
+                        @if (selectionService.Selection.Any())
+                        {
+                            <RadzenMenuItem Text="Move Selected Images Here" Value="7" />
+                            <RadzenMenuItem Text="Copy Selected Images Here" Value="8" />
+                        }
+                    </AuthorizeView>
+                </RadzenMenu>
+            </CascadingAuthenticationState>);
     }
 
-    private async Task MoveSelectedImagesToFolder(Folder folder)
+    private async Task MenuSelected(MenuItemEventArgs args, Folder folder)
+    {
+        contextMenuService.Close();
+        switch (args.Value)
+        {
+            case 0:
+                if (folder == null)
+                    ResetFilterFolder();
+                else
+                    SetFilterFolder(folder);
+                break;
+            case 1:
+                await ShowRescanDialog(folder);
+                break;
+            case 3:
+                await ToggleFlatView();
+                break;
+            case 4:
+                await ToggleSortMode();
+                break;
+            case 5:
+                await ToggleSortAscendingView();
+                break;
+            case 6:
+                await ToggleIncludeChildFolder();
+                break;
+            case 7:
+                await MoveSelectedImagesToFolder(folder, true);
+                break;
+            case 8:
+                await MoveSelectedImagesToFolder(folder, false);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <param name="move">True if the files are to be moved. False for them to be copied</param>
+    /// <returns></returns>
+    private async Task MoveSelectedImagesToFolder(Folder folder, bool move)
     {
         var req = new ImageMoveRequest
         {
             Destination = folder,
-            ImageIDs = selectionService.Selection.Select( x => x.ImageId ).ToArray()
+            ImageIDs = selectionService.Selection.Select( x => x.ImageId ).ToArray(),
+            Move = move
         };
 
         if (await fileService.MoveImages(req))
@@ -210,7 +229,8 @@
             parameters = new DialogParameters { { "folder", folder }, { "count", folder.MetaData.ImageCount } };
 
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
-        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var dialog = DialogService.Show<RescanDialog>
+    ("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
 
@@ -320,4 +340,4 @@
         StateHasChanged();
     }
 
-}
+    }

@@ -7,5 +7,6 @@ public class ImageMoveRequest
 {
     public Folder Destination { get; set; }
     public ICollection<int> ImageIDs { get; set; }
+    public bool Move { get; set; }
 }
 
