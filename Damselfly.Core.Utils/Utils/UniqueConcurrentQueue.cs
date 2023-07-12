@@ -12,14 +12,12 @@ namespace Damselfly.Core.Utils;
 public class UniqueConcurrentPriorityQueue<T, K> where T : class
 {
     private readonly Func<T, K> _keyFunc;
-    private readonly Func<T, int> _priorityFunc;
     private readonly PriorityQueue<T, int> _queue = new();
     private readonly Dictionary<K, T> _queueLookup = new();
 
-    public UniqueConcurrentPriorityQueue(Func<T, K> keyFunc, Func<T, int> priorityFunc)
+    public UniqueConcurrentPriorityQueue(Func<T, K> keyFunc)
     {
         _keyFunc = keyFunc;
-        _priorityFunc = priorityFunc;
     }
 
     public bool IsEmpty
@@ -38,8 +36,10 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
     /// </summary>
     /// <returns>Object of type T</returns>
     /// <exception cref="ApplicationException"></exception>
-    public T TryDequeue()
+    public bool TryDequeue( out T result)
     {
+        result = default;
+
         lock ( _queue )
         {
             if ( _queue.TryDequeue(out var item, out var _) )
@@ -49,19 +49,21 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
                     // Something bad happened - the collections are now out of sync.
                     throw new ApplicationException($"Unable to remove key {key} from lookup.");
 
-                return item;
+                result = item;
+                return true;
             }
         }
 
-        return default;
+        return false;
     }
 
     /// <summary>
     ///     When we dequeue, we remove the item from the lookup.
     /// </summary>
     /// <param name="newItem"></param>
+    /// <param name="priority">Priority = lower means higher priority</param>
     /// <returns>True if the item was added successfully</returns>
-    public bool TryAdd(T newItem)
+    public bool TryAdd(T newItem, int priority)
     {
         var added = false;
 
@@ -74,7 +76,7 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
             if ( _queueLookup.TryAdd(key, newItem) )
             {
                 // Success - this means the item wasn't already in the collection. So enqueue it
-                _queue.Enqueue(newItem, _priorityFunc(newItem));
+                _queue.Enqueue(newItem, priority);
                 added = true;
             }
         }

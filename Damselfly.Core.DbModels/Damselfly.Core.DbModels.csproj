@@ -27,6 +27,7 @@
         <Folder Include="Images\" />
         <Folder Include="Models\API Models\" />
         <Folder Include="Models\ConfigSettings\" />
+        <Folder Include="Models\TransformationModels\" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
@@ -42,5 +43,6 @@
         <None Remove="Microsoft.AspNetCore.Authorization" />
         <None Remove="Models\API Models\" />
         <None Remove="Models\ConfigSettings\" />
+        <None Remove="Models\TransformationModels\" />
     </ItemGroup>
 </Project>

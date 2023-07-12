@@ -9,7 +9,7 @@ public class ImageClassification
 {
     [Key] public int ClassificationId { get; set; }
 
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     public override string ToString()
     {

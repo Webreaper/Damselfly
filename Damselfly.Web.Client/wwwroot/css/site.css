@@ -926,6 +926,29 @@ f
     }
 }
 
+@keyframes slowFade {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
 
 .damselfly-searchfilter {
     flex: 0 0 auto;

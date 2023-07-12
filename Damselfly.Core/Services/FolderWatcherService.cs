@@ -15,7 +15,7 @@ namespace Damselfly.Core.Services;
 
 public class FolderWatcherService
 {
-    private static readonly ConcurrentQueue<string> folderQueue = new();
+    private static readonly UniqueConcurrentPriorityQueue<string, string> folderQueue = new( x => x );
     private readonly ImageProcessService _imageProcessService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
@@ -163,15 +163,23 @@ public class FolderWatcherService
                 return;
         }
 
-        // If it's already in the queue, ignore it.
-        if( folderQueue.Contains( folder ) )
-            return;
-
         // Ignore non images, and hidden files/folders.
         if( file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType() )
         {
-            Logging.Log($"FileWatcher: adding to queue: {folder} {changeType}");
-            folderQueue.Enqueue(folder);
+            // We prioritise deletes, because they're quicker to process, and it's
+            // more important to remove them from folders as soon as possible.
+            int priority = changeType switch
+            {
+                WatcherChangeTypes.Deleted => 0,
+                WatcherChangeTypes.Changed => 1,
+                _ => 2
+            };
+
+            if( folderQueue.TryAdd(folder, priority) )
+                Logging.Log( $"FileWatcher: adding to queue: {folder} {changeType}" );
+            else
+                Logging.Log( $"FileWatcher: folder was not added to the queue: {folder} {changeType}" );
+
         }
     }
 

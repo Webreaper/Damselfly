@@ -19,3 +19,12 @@ This script will:
 * Build the Electron Desktop apps for all 3 platforms (if you're on MacOS)
 * Build the server project for the platform you specify
 * Run a docker build for the Alpine/linux platform.
+
+## Building Damselfly Locally
+
+I wrote Damselfly entirely on the Mac, using an M2 MacBook Pro and Visual Studio for Mac. 
+
+Note that to build locally, you'll need to install the wasm-tools workload:
+```
+dotnet workload install wasm-tools
+```

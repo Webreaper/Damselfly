@@ -31,8 +31,7 @@ public class WorkService : IWorkService
     // for new entries rather than just ploughing through it. 
     private volatile bool _newJobsFlag;
 
-    private readonly UniqueConcurrentPriorityQueue<IProcessJob, string> _jobQueue = new( x => x.Description,
-        y => (int)y.Priority );
+    private readonly UniqueConcurrentPriorityQueue<IProcessJob, string> _jobQueue = new( x => x.Description );
 
     private readonly ConcurrentBag<IProcessJobFactory> _jobSources = new();
     private const int _maxQueueSize = 500;
@@ -134,9 +133,7 @@ public class WorkService : IWorkService
 
             var getNewJobs = _newJobsFlag;
             _newJobsFlag = false;
-            var item = _jobQueue.TryDequeue();
-
-            if ( item != null )
+            if( _jobQueue.TryDequeue( out var item ) )
                 ProcessJob(item, cpuPercentage);
             else
                 // No job to process, so we want to grab more
@@ -212,7 +209,7 @@ public class WorkService : IWorkService
                 var jobs = source.GetPendingJobs(maxCount).Result;
 
                 foreach ( var job in jobs )
-                    if ( _jobQueue.TryAdd(job) )
+                    if ( _jobQueue.TryAdd(job, (int)job.Priority) )
                         newJobs++;
 
                 if ( newJobs > 0 )

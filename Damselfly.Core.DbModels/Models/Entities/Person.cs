@@ -19,7 +19,7 @@ public class Person
     [Required] public string Name { get; set; } = "Unknown";
 
     public PersonState State { get; set; } = PersonState.Unknown;
-    public string AzurePersonId { get; set; }
+    public string? AzurePersonId { get; set; }
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
 
     public override string ToString()

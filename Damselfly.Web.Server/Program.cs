@@ -212,7 +212,7 @@ public class Program
         app.UseRouting();
 
         // Map the signalR notifications endpoints
-        app.UseEndpoints(ep => { ep.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}"); });
+        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowAcks = true );
 
         app.UseAuthentication();
         app.UseAuthorization();

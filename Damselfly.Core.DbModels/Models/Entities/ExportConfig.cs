@@ -10,11 +10,11 @@ namespace Damselfly.Core.Models;
 public class ExportConfig : IExportSettings
 {
     public int ExportConfigId { get; set; }
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public ExportType Type { get; set; } = ExportType.Download;
     public ExportSize Size { get; set; } = ExportSize.FullRes;
     public bool KeepFolders { get; set; }
-    public string WatermarkText { get; set; }
+    public string? WatermarkText { get; set; }
 
     public int MaxImageSize => MaxSize(Size);
 

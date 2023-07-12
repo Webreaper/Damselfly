@@ -1,0 +1,20 @@
+﻿
+<div class="@theClass">
+    <p>@displayText</p>
+</div>
+
+@code {
+    [Parameter]
+    public string Text { get; set; }
+
+    private string displayText;
+    string theClass => "toast-panel " + (string.IsNullOrEmpty(Text) ? "toast-panel-hide" : string.Empty);
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(Text))
+            displayText = Text;
+
+        base.OnParametersSet();
+    }
+}

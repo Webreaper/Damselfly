@@ -65,5 +65,5 @@ public class FTSTag
 {
     [Key] public int FTSTagId { get; set; }
 
-    public string Keyword { get; set; }
+    public string? Keyword { get; set; }
 }

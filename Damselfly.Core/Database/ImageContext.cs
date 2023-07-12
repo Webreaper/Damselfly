@@ -25,6 +25,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<Hash> Hashes { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<ImageTag> ImageTags { get; set; }
+    public DbSet<Transformations> Transformations { get; set; }
     public DbSet<ImageObject> ImageObjects { get; set; }
     public DbSet<Person> People { get; set; }
     public DbSet<ImageClassification> ImageClassifications { get; set; }
@@ -130,6 +131,11 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .HasOne(img => img.MetaData)
             .WithOne(meta => meta.Image)
             .HasForeignKey<ImageMetaData>(i => i.ImageId);
+
+        modelBuilder.Entity<Image>()
+            .HasOne( img => img.Transforms )
+            .WithOne( transform => transform.Image )
+            .HasForeignKey<Transformations>( i => i.ImageId );
 
         modelBuilder.Entity<Folder>()
             .HasMany(x => x.Children)

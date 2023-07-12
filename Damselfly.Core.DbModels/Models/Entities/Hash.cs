@@ -17,15 +17,15 @@ public class Hash
     public int ImageId { get; set; }
 
     // The MD5 image hash. 
-    public string MD5ImageHash { get; set; }
+    public string? MD5ImageHash { get; set; }
 
     // Four slices of the perceptual hash (split to allow
     // us to precalculate matches so we only have to calc
     // hamming distance on a subset of images.
-    public string PerceptualHex1 { get; set; }
-    public string PerceptualHex2 { get; set; }
-    public string PerceptualHex3 { get; set; }
-    public string PerceptualHex4 { get; set; }
+    public string? PerceptualHex1 { get; set; }
+    public string? PerceptualHex2 { get; set; }
+    public string? PerceptualHex3 { get; set; }
+    public string? PerceptualHex4 { get; set; }
 
     private ulong PerceptualHashValue => (ulong)Convert.ToInt64(HexPerceptualHash, 16);
 

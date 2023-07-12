@@ -1,4 +1,5 @@
 ﻿@using DialogOptions = MudBlazor.DialogOptions
+
 <!--
 Image preview panel - displays an image in full res. To keep the UX nice, the initial image
 is set to the medium thumb (which should load very quickly) and a hidden image loads the
@@ -30,11 +31,20 @@ of the visible image is updated which should update it instantly.
             }
         </div>
 
-        <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
-            <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
-        </Panzoom>
+        @if (System.Diagnostics.Debugger.IsAttached)
+        {
+            <ImageCanvas Image="@Image" Class="image-fill"/>
+        }
+        else
+        {
+            <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
+                <img @ref="@context.ElementReference" @key="ImgKey" id="theImage" class="image-fill" />
+            </Panzoom>
+        }
     </div>
+    <Toast Text="@ToastText" />
 </div>
+
 
 <!-- Hidden image to background load the hi-res version-->
 <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
@@ -51,6 +61,7 @@ of the visible image is updated which should update it instantly.
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
+    private string ToastText;
     private LocalFileExporter FileExporter;
     private double _rangeValue = 1.0;
     private Panzoom _panzoom;
@@ -61,7 +72,6 @@ of the visible image is updated which should update it instantly.
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => Image.ThumbUrl(ThumbSize.ExtraLarge);
     private int currentImageId = -1;
-
 
     // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
     private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
@@ -232,7 +242,7 @@ of the visible image is updated which should update it instantly.
             currentImageId = Image.ImageId;
             HiResImageLoaded = false;
             ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
-            statusService.UpdateStatus("Loading hi-res image...");
+            ToastText = "Sharpening...";
             StateHasChanged();
 
             await ResetZoom();
@@ -252,7 +262,7 @@ of the visible image is updated which should update it instantly.
         HiResImageLoaded = true;
 
         StateHasChanged();
-        statusService.UpdateStatus("Hi-res image loaded.");
+        ToastText = string.Empty;
 
         DoObjectBox();
 

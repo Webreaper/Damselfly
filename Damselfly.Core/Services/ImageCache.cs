@@ -201,6 +201,7 @@ public class ImageCache : IImageCacheService
             .Where(x => imageIds.Contains(x.ImageId))
             .Include(x => x.Folder)
             .Include(x => x.MetaData)
+            .Include(x=> x.Transforms)
             .Include(x => x.Hash)
             .Include(x => x.MetaData.Camera)
             .Include(x => x.MetaData.Lens)
@@ -266,7 +267,12 @@ public class ImageCache : IImageCacheService
                         .Include(x => x.Lens)
                         .LoadAsync();
 
-                if ( !entry.Reference(x => x.Hash).IsLoaded )
+                if( !entry.Reference( x => x.Transforms ).IsLoaded )
+                    await entry.Reference( x => x.Transforms )
+                        .Query()
+                        .LoadAsync();
+
+                if( !entry.Reference(x => x.Hash).IsLoaded )
                     await entry.Reference(x => x.Hash)
                         .LoadAsync();
 

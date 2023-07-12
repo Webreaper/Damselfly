@@ -1,0 +1,269 @@
+@using SkiaSharp
+
+@inject HttpClient restClient
+@inject ILogger<ImageCanvas> logger
+
+@implements IDisposable
+
+<div class="image-canvas">
+    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@dragging" class="@Class" 
+              @onmousedown="StartDrag" @onmouseup="EndDrag" @onmousemove="MoveMouse"/>
+    <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;"/>
+</div>
+
+@code {
+    [Parameter]
+    public Image Image { get; set; }
+
+    [Parameter]
+    public string Class { get; set; }
+
+    private SKGLView glViewRef;
+    private SKBitmap? sourceBitmap;
+    private bool isHiRes = false;
+    private int currentImageId = 0;
+    private CancellationTokenSource loadCancellationSource = new();
+    private string mouseStatus;
+
+    private byte lightenFactor = 0;
+
+    private SKPoint? dragStart;
+    private SKPoint? dragEnd;
+
+    private void Repaint()
+    {
+        if (glViewRef != null)
+            glViewRef.Invalidate();
+    }
+
+    bool dragging = false;
+    private void MoveMouse(MouseEventArgs e)
+    {
+        if( dragging )
+        {
+            mouseStatus = $"Mouse move: {e.ClientX}:{e.ClientY}";
+            dragEnd = new SKPoint((float)e.ClientX, (float)e.ClientY);
+        }
+    }
+
+    private void StartDrag(MouseEventArgs e)
+    {
+        dragging = true;
+        mouseStatus = $"Mouse coordinates: {e.ClientX}:{e.ClientY}";
+        dragStart = new SKPoint((float)e.ClientX, (float)e.ClientY);
+    }
+
+    private void EndDrag(MouseEventArgs e)
+    {
+        dragging = false;
+        mouseStatus = $"Mouse end coords: {e.ClientX}:{e.ClientY}";
+        dragStart = null;
+        dragEnd = null;
+        Repaint();
+    }
+
+    private void SetBitmap( SKBitmap bitmap )
+    {
+        Dispose();
+        sourceBitmap = bitmap;
+        Repaint();
+    }
+
+    private async Task LoadImage( CancellationToken token )
+    {
+        var url = Image.ThumbUrl(ThumbSize.Medium);
+
+        SKBitmap? bmp = null;
+        try
+        {
+            using var imageStream = await restClient.GetStreamAsync(url, token);
+
+            bmp = SKBitmap.Decode(imageStream);
+
+            if (bmp != null && ! token.IsCancellationRequested )
+            {
+                logger.LogInformation($"Loaded image {url} successfully");
+                SetBitmap( bmp );
+                isHiRes = false;
+            }
+            else
+                logger.LogError($"Failed to decode {url} - bitmap was null");
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning($"Cancelling low-res load as hi-res image is already loaded {url}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Unable to load image {url}: {ex}");
+        }
+    }
+
+    private async Task LoadHiResImage()
+    {
+        var url = Image.ThumbUrl(ThumbSize.ExtraLarge);
+
+        SKBitmap? bmp = null;
+        try
+        {
+            using var imageStream = await restClient.GetStreamAsync(url);
+
+            bmp = SKBitmap.Decode(imageStream);
+
+            if (bmp != null)
+            {
+                logger.LogInformation($"Loaded hi-res image {url} successfully");
+                // Cancel the low-res load.
+                loadCancellationSource.Cancel();
+                SetBitmap(bmp);
+                isHiRes = true;
+            }
+            else
+                logger.LogError($"Failed to decode hi-res {url} - bitmap was null");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Unable to load hi-res image {url}: {ex}");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if ( Image != null )
+        {
+            if( Image.ImageId != currentImageId )
+            {
+                currentImageId = Image.ImageId;
+                loadCancellationSource.TryReset();
+
+                await LoadImage(loadCancellationSource.Token);
+                await LoadHiResImage();
+            }
+        }
+        else
+        {
+            currentImageId = 0;
+            Dispose();
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    public void Dispose()
+    {
+        if (sourceBitmap != null)
+        {
+            sourceBitmap.Dispose();
+            sourceBitmap = null;
+        }
+    }
+
+    private void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
+    {
+        // the the canvas and properties
+        var canvas = e.Surface.Canvas;
+
+        // make sure the canvas is blank
+        canvas.Clear(SKColors.Black);
+
+        using var paint = new SKPaint
+        {
+            IsAntialias = true,
+            StrokeWidth = 10f,
+            StrokeCap = SKStrokeCap.Round,
+            TextAlign = SKTextAlign.Center,
+            TextSize = 24,
+            Color = new SKColor(200, 200, 200),
+        };
+
+        var surfaceSize = e.BackendRenderTarget.Size;
+
+        if (sourceBitmap != null)
+        {
+            var rect = GetRenderRect(sourceBitmap, surfaceSize);
+
+            using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
+            sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
+
+            using var filters = new SKPaint {
+                ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor))
+                //ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Red, SKBlendMode.SrcIn)
+                //ImageFilter = GetFilters()
+            };
+
+            canvas.DrawBitmap(scaledImage, rect, filters);
+
+            if( dragStart.HasValue && dragEnd.HasValue )
+            {
+                using var rectPaint = new SKPaint
+                {
+                    Style = SKPaintStyle.Stroke,
+                    StrokeCap = SKStrokeCap.Round,
+                    StrokeWidth = 2f,
+                    Color = SKColor.Parse("#ffffff"),
+                    PathEffect = SKPathEffect.CreateDash(new[] { 10f, 5f} , 20)
+                };
+                canvas.DrawRect(dragStart.Value.X, dragStart.Value.Y, dragEnd.Value.X, dragEnd.Value.Y, rectPaint);
+            }
+
+            canvas.DrawText($"{mouseStatus} - {Image.FileName}\n{surfaceSize}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+        }
+    }
+
+
+    // https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/blend-modes/separable
+    // From https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/color-filters
+
+    private SKColorFilter blackAndWhite =
+    SKColorFilter.CreateColorMatrix(new float[]
+    {
+                    0.21f, 0.72f, 0.07f, 0, 0,
+                    0.21f, 0.72f, 0.07f, 0, 0,
+                    0.21f, 0.72f, 0.07f, 0, 0,
+                    0,     0,     0,     1, 0
+    });
+    private SKColorFilter muteColours =
+            SKColorFilter.CreateColorMatrix(new float[]
+            {
+                    0.75f, 0.25f, 0.25f, 0, 0,
+                    0.25f, 0.75f, 0.25f, 0, 0,
+                    0.25f, 0.25f, 0.75f, 0, 0,
+                    0, 0, 0, 1, 0
+            });
+    private static void GetCrop( )
+    {
+        //var bitmap = new SKBitmap(cropRect.Width, cropRect.Height);
+        //original.ExtractSubset(bitmap, cropRect);
+        //return bitmap;
+    }
+
+    /// <summary>
+    /// Given a Bitmap and a canvas surface, calculates the rectangle for it to be
+    /// painted - at the right aspect ratio, and the right size, to fill the canvas 
+    /// as much as possible. 
+    /// </summary>
+    /// <param name="bmp"></param>
+    /// <param name="canvasSize"></param>
+    /// <returns></returns>
+    private static SKRect GetRenderRect( SKBitmap bmp, SKSize canvasSize )
+    {
+        float bmpAspectRatio = (float)bmp.Width / (float)bmp.Height;
+        float renderHeight = canvasSize.Height;
+        float renderWidth = renderHeight * bmpAspectRatio;
+        float shrinkFactor = 1.0f;
+
+        if (renderHeight > canvasSize.Height)
+            shrinkFactor = canvasSize.Height / renderHeight;
+        else if (renderWidth > canvasSize.Width)
+            shrinkFactor = canvasSize.Width / renderWidth;
+
+        renderWidth *= shrinkFactor;
+        renderHeight *= shrinkFactor;
+
+        float offsetX = (canvasSize.Width - renderWidth) / 2.0f;
+        float offsetY = (canvasSize.Height - renderHeight) / 2.0f;
+
+        return new SKRect(offsetX, offsetY, renderWidth + offsetX, renderHeight + offsetY);
+    }
+    }

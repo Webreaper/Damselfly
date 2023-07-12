@@ -34,7 +34,7 @@ public class ImageObject
 
     public virtual Tag Tag { get; set; }
 
-    public string Type { get; set; } = ObjectTypes.Object.ToString();
+    public string? Type { get; set; } = ObjectTypes.Object.ToString();
     public RecognitionType RecogntionSource { get; set; }
     public double Score { get; set; }
     public int RectX { get; set; }

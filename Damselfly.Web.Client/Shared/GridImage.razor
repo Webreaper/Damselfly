@@ -23,12 +23,12 @@ else
 <div class="grid-image" @ondblclick="NavigateToImage">
     @if (!string.IsNullOrEmpty(ImageUrl))
     {
-            <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
-                 @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
-                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
-            <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
+        <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
+             @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
+             @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+        <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
     }
-    </div>
+</div>
     @if( DisplayFileName )
     {
         <div class="grid-text">
@@ -57,6 +57,7 @@ else
         set => _ = SetImageBasketState(value);
     }
 
+    private string theClass => $"{ImageClass} {FadeClass}";
     private LocalFileExporter FileExporter;
     private string ImgToolTip => CurrentImage == null ? "No info" : $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}\n{ImageSize}";
     private string ImageUrl => CurrentImage.ThumbUrl(ThumbnailSize);
