@@ -104,8 +104,8 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> addTags,
-        ICollection<string> removeTags = null, int? userId = null)
+    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string>? addTags,
+        ICollection<string>? removeTags = null, int? userId = null)
     {
         // TODO: Split tags with commas here?
         var timestamp = DateTime.UtcNow;

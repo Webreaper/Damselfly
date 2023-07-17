@@ -16,6 +16,7 @@
         <PackageReference Include="Serilog" Version="3.0.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
         <PackageReference Include="Serilog.AspNetCore.Ingestion" Version="1.0.0-dev-00032" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>

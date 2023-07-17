@@ -13,7 +13,7 @@ public interface ITagService
     Task<ICollection<Tag>> GetFavouriteTags();
     Task<bool> ToggleFavourite(Tag tag);
 
-    Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> tagsToAdd, ICollection<string> tagsToDelete,
+    Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string>? tagsToAdd, ICollection<string>? tagsToDelete,
         int? userId = null);
 
     Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue,

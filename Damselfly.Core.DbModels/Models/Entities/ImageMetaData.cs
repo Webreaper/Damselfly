@@ -19,13 +19,13 @@ public class ImageMetaData
     public int Height { get; set; }
     public double AspectRatio { get; set; } = 1;
     public int Rating { get; set; } // 1-5, stars
-    public string Caption { get; set; }
-    public string Copyright { get; set; }
-    public string Credit { get; set; }
-    public string Description { get; set; }
-    public string ISO { get; set; }
-    public string FNum { get; set; }
-    public string Exposure { get; set; }
+    public string? Caption { get; set; }
+    public string? Copyright { get; set; }
+    public string? Credit { get; set; }
+    public string? Description { get; set; }
+    public string? ISO { get; set; }
+    public string? FNum { get; set; }
+    public string? Exposure { get; set; }
     public bool FlashFired { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }

@@ -471,7 +471,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var keywordsSummary = keywords.Any() ? $", found {keywords.Count()} keywords." : string.Empty;
             Logging.Log($"Read metadata for {image.FullPath} (ID: {image.ImageId}) {keywordsSummary}");
 
-            DumpMetaData(image, metadata);
+            // TODO Fix weirdness with EF8 migration which didn't work from a migrations perspective
+            if( string.IsNullOrEmpty( imgMetaData.Copyright ) ) imgMetaData.Copyright = string.Empty;
+            if( string.IsNullOrEmpty( imgMetaData.Caption ) ) imgMetaData.Caption = string.Empty;
+            if( string.IsNullOrEmpty( imgMetaData.Credit ) ) imgMetaData.Credit = string.Empty;
+            if( string.IsNullOrEmpty( imgMetaData.Description ) ) imgMetaData.Description = string.Empty;
+
+            DumpMetaData( image, metadata);
         }
         catch ( Exception ex )
         {

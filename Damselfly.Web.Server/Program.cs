@@ -161,6 +161,9 @@ public class Program
                 new[] { "image/svg+xml",  "application/octet-stream" });
         });
 
+        // Swagger
+        builder.Services.AddSwaggerGen();
+
         // Damselfly Services
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
@@ -210,6 +213,15 @@ public class Program
         app.UseStaticFiles();
         app.UseResponseCompression();
         app.UseRouting();
+
+        if( Debugger.IsAttached )
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI( c =>
+            {
+                c.SwaggerEndpoint( "/swagger/v1/swagger.json", "Damselfly API" );
+            } );
+        }
 
         // Map the signalR notifications endpoints
         app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowAcks = true );
