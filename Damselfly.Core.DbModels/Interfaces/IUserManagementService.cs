@@ -14,7 +14,7 @@ public interface IUserMgmtService
     Task<AppIdentityUser> GetUser( int userId );
     Task<UserResponse> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles);
     Task<UserResponse> SetUserPasswordAsync(AppIdentityUser user, string password);
-    Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string> roles = null);
+    Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password, ICollection<string>? roles = null);
     Task<ICollection<ApplicationRole>> GetRoles();
     Task AddUserToDefaultRoles(AppIdentityUser user);
 }

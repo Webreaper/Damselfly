@@ -8,7 +8,7 @@ namespace Damselfly.Core.Utils;
 /// </summary>
 public static class ObjectUtils
 {
-    public static bool CopyPropertiesTo<T, TU>(this T source, TU dest, List<string> nameFilter = null)
+    public static bool CopyPropertiesTo<T, TU>(this T source, TU dest, List<string>? nameFilter = null)
     {
         var changed = false;
         var sourceProps = typeof( T ).GetProperties().Where(x => x.CanRead).ToList();

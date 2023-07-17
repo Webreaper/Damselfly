@@ -22,7 +22,7 @@ public class ImageTag
         return $"{Image.FileName}=>{Tag.Keyword} [{ImageId}, {TagId}]";
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         var objTag = obj as ImageTag;
 

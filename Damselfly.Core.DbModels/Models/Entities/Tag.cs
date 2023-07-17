@@ -45,7 +45,7 @@ public class Tag
         return Keyword.GetHashCode();
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         var objTag = obj as Tag;
 

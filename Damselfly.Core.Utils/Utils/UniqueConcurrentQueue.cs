@@ -9,7 +9,8 @@ namespace Damselfly.Core.Utils;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 /// <typeparam name="K"></typeparam>
-public class UniqueConcurrentPriorityQueue<T, K> where T : class
+public class UniqueConcurrentPriorityQueue<T, K> where K : notnull
+                                                 where T : class
 {
     private readonly Func<T, K> _keyFunc;
     private readonly PriorityQueue<T, int> _queue = new();
@@ -36,7 +37,7 @@ public class UniqueConcurrentPriorityQueue<T, K> where T : class
     /// </summary>
     /// <returns>Object of type T</returns>
     /// <exception cref="ApplicationException"></exception>
-    public bool TryDequeue( out T result)
+    public bool TryDequeue( out T? result)
     {
         result = default;
 

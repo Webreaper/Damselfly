@@ -22,9 +22,9 @@ public class SearchQuery
     public int? Month { get; set; } = null;
     public int? MinRating { get; set; } = null;
     public int? SimilarToId { get; set; } = null;
-    public Folder Folder { get; set; } = null;
-    public Tag Tag { get; set; } = null;
-    public Person Person { get; set; } = null;
+    public Folder? Folder { get; set; } = null;
+    public Tag? Tag { get; set; } = null;
+    public Person? Person { get; set; } = null;
     public DateTime? MaxDate { get; set; } = null;
     public DateTime? MinDate { get; set; } = null;
     public FaceSearchType? FaceSearch { get; set; } = null;

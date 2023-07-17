@@ -32,9 +32,9 @@ public class On1Sidecar
     /// </summary>
     /// <param name="image"></param>
     /// <returns>Metadata, with keywords etc</returns>
-    public static MetaData LoadMetadata(FileInfo sidecarPath)
+    public static MetaData? LoadMetadata(FileInfo sidecarPath)
     {
-        MetaData result = null;
+        MetaData? result = null;
 
         try
         {
