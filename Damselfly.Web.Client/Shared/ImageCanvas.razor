@@ -1,4 +1,3 @@
-@using SkiaSharp
 
 @inject HttpClient restClient
 @inject ILogger<ImageCanvas> logger
@@ -6,11 +5,13 @@
 @implements IDisposable
 
 <div class="image-canvas">
-    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false" 
-              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove"/>
+    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
+              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" />
     <div class="tool-pallette">
-        <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" />
+        <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudIconButton Icon="@Icons.Material.Filled.Crop" Disabled="@(!CanCrop)" OnClick="DoCrop" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" Disabled="@(!CanCrop)" OnClick="DoRotate" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" Disabled="@(!CanCrop)" OnClick="DoRotate" />
     </div>
 </div>
 
@@ -27,7 +28,7 @@
     private int currentImageId = 0;
     private CancellationTokenSource loadCancellationSource = new();
     private string mouseStatus;
-
+    private SKRect imageRect;
     private byte lightenFactor = 0;
 
     private SKPoint? dragStart;
@@ -41,15 +42,33 @@
             glViewRef.Invalidate();
     }
 
+    private void DoRotate()
+    {
+
+    }
+
     private void DoCrop()
     {
 
     }
 
+    private double GetSurfaceDPI()
+    {
+        double dpi = 1;
+        var obj = typeof(SKGLView).GetField("dpi", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        if (obj != null)
+            dpi = (double)obj.GetValue(glViewRef)!;
+
+        return dpi;
+    }
+
     private SKPoint GetCoords(MouseEventArgs e)
     {
         var dpi = GetSurfaceDPI();
-        return new SKPoint((float)e.OffsetX * (float)dpi, (float)e.OffsetY * (float)dpi);
+        var x = (float)e.OffsetX * (float)dpi;
+        var y = (float)e.OffsetY * (float)dpi;
+        return new SKPoint(x, y);
     }
 
     private void MouseMove(MouseEventArgs e)
@@ -63,17 +82,17 @@
 
     private void MouseDown(MouseEventArgs e)
     {
-        dragStart = GetCoords( e );
+        dragStart = GetCoords(e);
         isDragging = true;
     }
 
     private void MouseUp(MouseEventArgs e)
     {
-        if( dragStart.HasValue )
+        if (dragStart.HasValue)
         {
             var mouseUp = GetCoords(e);
 
-            if( dragStart == mouseUp )
+            if (dragStart == mouseUp)
             {
                 dragStart = null;
                 dragEnd = null;
@@ -84,14 +103,14 @@
         Repaint();
     }
 
-    private void SetBitmap( SKBitmap bitmap )
+    private void SetBitmap(SKBitmap bitmap)
     {
         Dispose();
         sourceBitmap = bitmap;
         Repaint();
     }
 
-    private async Task LoadImage( CancellationToken token )
+    private async Task LoadImage(CancellationToken token)
     {
         var url = Image.ThumbUrl(ThumbSize.Medium);
 
@@ -102,10 +121,10 @@
 
             bmp = SKBitmap.Decode(imageStream);
 
-            if (bmp != null && ! token.IsCancellationRequested )
+            if (bmp != null && !token.IsCancellationRequested)
             {
                 logger.LogInformation($"Loaded image {url} successfully");
-                SetBitmap( bmp );
+                SetBitmap(bmp);
                 isHiRes = false;
             }
             else
@@ -152,9 +171,9 @@
     protected override async Task OnParametersSetAsync()
     {
 
-        if ( Image != null )
+        if (Image != null)
         {
-            if( Image.ImageId != currentImageId )
+            if (Image.ImageId != currentImageId)
             {
                 currentImageId = Image.ImageId;
                 loadCancellationSource.TryReset();
@@ -179,17 +198,6 @@
             sourceBitmap.Dispose();
             sourceBitmap = null;
         }
-    }
-
-    private double GetSurfaceDPI()
-    {
-        double dpi = 1;
-        var obj = typeof(SKGLView).GetField("dpi", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        if (obj != null)
-            dpi = (double)obj.GetValue(glViewRef)!;
-
-        return dpi;
     }
 
     private void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
@@ -219,15 +227,16 @@
             using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
             sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
 
-            using var filters = new SKPaint {
+            using var filters = new SKPaint
+            {
                 ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor))
                 //ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Red, SKBlendMode.SrcIn)
-                //ImageFilter = GetFilters()
+                // ImageFilter = GetFilters()
             };
 
             canvas.DrawBitmap(scaledImage, rect, filters);
 
-            if( dragStart.HasValue && dragEnd.HasValue )
+            if (dragStart.HasValue && dragEnd.HasValue)
             {
                 using var rectPaint = new SKPaint
                 {
@@ -235,7 +244,7 @@
                     StrokeCap = SKStrokeCap.Round,
                     StrokeWidth = 2f,
                     Color = SKColor.Parse("#ffffff"),
-                    PathEffect = SKPathEffect.CreateDash(new[] { 10f, 5f} , 20)
+                    PathEffect = SKPathEffect.CreateDash(new[] { 10f, 5f }, 20)
                 };
 
                 canvas.DrawRect(dragStart.Value.X,
@@ -260,7 +269,7 @@
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0,     0,     0,     1, 0
-    });
+        });
     private SKColorFilter muteColours =
             SKColorFilter.CreateColorMatrix(new float[]
             {
@@ -268,8 +277,8 @@
                     0.25f, 0.75f, 0.25f, 0, 0,
                     0.25f, 0.25f, 0.75f, 0, 0,
                     0, 0, 0, 1, 0
-            });
-    private static void GetCrop( )
+                });
+    private static void GetCrop()
     {
         //var bitmap = new SKBitmap(cropRect.Width, cropRect.Height);
         //original.ExtractSubset(bitmap, cropRect);
@@ -278,13 +287,13 @@
 
     /// <summary>
     /// Given a Bitmap and a canvas surface, calculates the rectangle for it to be
-    /// painted - at the right aspect ratio, and the right size, to fill the canvas 
-    /// as much as possible. 
+    /// painted - at the right aspect ratio, and the right size, to fill the canvas
+    /// as much as possible.
     /// </summary>
     /// <param name="bmp"></param>
     /// <param name="canvasSize"></param>
     /// <returns></returns>
-    private static SKRect GetRenderRect( SKBitmap bmp, SKSize canvasSize )
+    private SKRect GetRenderRect(SKBitmap bmp, SKSize canvasSize)
     {
         float bmpAspectRatio = (float)bmp.Width / (float)bmp.Height;
         float renderHeight = canvasSize.Height;
@@ -302,6 +311,8 @@
         float offsetX = (canvasSize.Width - renderWidth) / 2.0f;
         float offsetY = (canvasSize.Height - renderHeight) / 2.0f;
 
-        return new SKRect(offsetX, offsetY, renderWidth + offsetX, renderHeight + offsetY);
+        imageRect = new SKRect(offsetX, offsetY, renderWidth + offsetX, renderHeight + offsetY);
+
+        return imageRect;
     }
-    }
+}

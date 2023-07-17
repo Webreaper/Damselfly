@@ -52,8 +52,7 @@ of the visible image is updated which should update it instantly.
 @code
 {
     [Parameter]
-    [EditorRequired]
-    public Image Image { get; set; }
+    public required Image Image { get; set; }
 
     [Parameter]
     public bool ShowObjects { get; set; }

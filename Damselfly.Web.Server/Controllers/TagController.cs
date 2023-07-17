@@ -1,8 +1,6 @@
-﻿using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers;
@@ -63,7 +61,7 @@ public class TagController : ControllerBase
     }
 
     [HttpPost("/api/tags/exif")]
-    public async Task UpdateTags(ExifUpdateRequest req)
+    public async Task UpdateExif(ExifUpdateRequest req)
     {
         await _tagService.SetExifFieldAsync(req.ImageIDs, req.ExifType, req.NewValue, req.UserId);
     }

@@ -18,7 +18,7 @@ public static class ExifUtils
         catch
         {
             Logging.LogVerbose("Error reading string metadata!");
-            return null;
+            return string.Empty;
         }
     }
 
@@ -33,7 +33,7 @@ public static class ExifUtils
         catch
         {
             Logging.LogVerbose("Error reading string metadata!");
-            return null;
+            return string.Empty;
         }
     }
 
