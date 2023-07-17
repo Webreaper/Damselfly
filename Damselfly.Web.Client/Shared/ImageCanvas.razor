@@ -6,9 +6,12 @@
 @implements IDisposable
 
 <div class="image-canvas">
-    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@dragging" class="@Class" 
-              @onmousedown="StartDrag" @onmouseup="EndDrag" @onmousemove="MoveMouse"/>
-    <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;"/>
+    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false" 
+              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove"/>
+    <div class="tool-pallette">
+        <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" />
+        <MudIconButton Icon="@Icons.Material.Filled.Crop" Disabled="@(!CanCrop)" OnClick="DoCrop" />
+    </div>
 </div>
 
 @code {
@@ -29,6 +32,8 @@
 
     private SKPoint? dragStart;
     private SKPoint? dragEnd;
+    private bool isDragging;
+    private bool CanCrop => dragEnd.HasValue;
 
     private void Repaint()
     {
@@ -36,29 +41,46 @@
             glViewRef.Invalidate();
     }
 
-    bool dragging = false;
-    private void MoveMouse(MouseEventArgs e)
+    private void DoCrop()
     {
-        if( dragging )
+
+    }
+
+    private SKPoint GetCoords(MouseEventArgs e)
+    {
+        var dpi = GetSurfaceDPI();
+        return new SKPoint((float)e.OffsetX * (float)dpi, (float)e.OffsetY * (float)dpi);
+    }
+
+    private void MouseMove(MouseEventArgs e)
+    {
+        if (isDragging)
         {
-            mouseStatus = $"Mouse move: {e.ClientX}:{e.ClientY}";
-            dragEnd = new SKPoint((float)e.ClientX, (float)e.ClientY);
+            dragEnd = GetCoords(e);
+            Repaint();
         }
     }
 
-    private void StartDrag(MouseEventArgs e)
+    private void MouseDown(MouseEventArgs e)
     {
-        dragging = true;
-        mouseStatus = $"Mouse coordinates: {e.ClientX}:{e.ClientY}";
-        dragStart = new SKPoint((float)e.ClientX, (float)e.ClientY);
+        dragStart = GetCoords( e );
+        isDragging = true;
     }
 
-    private void EndDrag(MouseEventArgs e)
+    private void MouseUp(MouseEventArgs e)
     {
-        dragging = false;
-        mouseStatus = $"Mouse end coords: {e.ClientX}:{e.ClientY}";
-        dragStart = null;
-        dragEnd = null;
+        if( dragStart.HasValue )
+        {
+            var mouseUp = GetCoords(e);
+
+            if( dragStart == mouseUp )
+            {
+                dragStart = null;
+                dragEnd = null;
+            }
+        }
+
+        isDragging = false;
         Repaint();
     }
 
@@ -159,6 +181,17 @@
         }
     }
 
+    private double GetSurfaceDPI()
+    {
+        double dpi = 1;
+        var obj = typeof(SKGLView).GetField("dpi", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+        if (obj != null)
+            dpi = (double)obj.GetValue(glViewRef)!;
+
+        return dpi;
+    }
+
     private void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
     {
         // the the canvas and properties
@@ -204,7 +237,12 @@
                     Color = SKColor.Parse("#ffffff"),
                     PathEffect = SKPathEffect.CreateDash(new[] { 10f, 5f} , 20)
                 };
-                canvas.DrawRect(dragStart.Value.X, dragStart.Value.Y, dragEnd.Value.X, dragEnd.Value.Y, rectPaint);
+
+                canvas.DrawRect(dragStart.Value.X,
+                                dragStart.Value.Y,
+                                (dragEnd.Value.X - dragStart.Value.X),
+                                (dragEnd.Value.Y - dragStart.Value.Y),
+                                rectPaint);
             }
 
             canvas.DrawText($"{mouseStatus} - {Image.FileName}\n{surfaceSize}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
