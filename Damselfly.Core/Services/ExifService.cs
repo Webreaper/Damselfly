@@ -294,7 +294,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(Image image, List<string> addTags, List<string> removeTags = null,
+    public async Task UpdateTagsAsync(Image image, List<string>? addTags, List<string>? removeTags = null,
         int? userId = null)
     {
         await UpdateTagsAsync(new[] { image.ImageId }, addTags, removeTags, userId);

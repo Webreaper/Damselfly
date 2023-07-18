@@ -28,7 +28,7 @@ public class ConfigService : BaseConfigService, IConfigService
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         // Get all the settings that are either global, or match our user.
         var settings = await db.ConfigSettings
@@ -48,9 +48,9 @@ public class ConfigService : BaseConfigService, IConfigService
     public async Task<List<ConfigSetting>> GetAllSettingsForUser(int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
-        if ( userId != null && userId > 0 )
+        if( userId != null && userId > 0 )
         {
             // Get all the settings that are either global, or match our user.
             var userSettings = db.ConfigSettings.Where(x => x.UserId == userId);
@@ -73,7 +73,7 @@ public class ConfigService : BaseConfigService, IConfigService
     protected override async Task PersistSetting(ConfigSetRequest setRequest)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var existing = await db.ConfigSettings
             .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)

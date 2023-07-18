@@ -29,7 +29,7 @@ public class AzureFaceService
     private const string DETECTION_MODEL = DetectionModel.Detection03;
     private readonly IConfigService _configService;
     private readonly ITransactionThrottle _transThrottle;
-    private FaceClient _faceClient;
+    private FaceClient? _faceClient;
     private HttpClient _httpClient;
     private int _persistedFaces;
 
@@ -92,7 +92,7 @@ public class AzureFaceService
     public async Task ClearAllFaceData()
     {
         // TEMP WHILE DEBUGGING
-        await _transThrottle.Call("Delete", _faceClient.PersonDirectory.DeleteDynamicPersonGroupAsync(GroupId));
+        await _transThrottle.Call("Delete", _faceClient!.PersonDirectory.DeleteDynamicPersonGroupAsync(GroupId));
     }
 
     /// <summary>
@@ -304,7 +304,7 @@ public class AzureFaceService
         {
             var faceIdsToMatch = detectedFaces.Where(x => x.FaceId.HasValue).Select(x => x.FaceId.Value).ToList();
 
-            var matches = await _transThrottle.Call("Identify", _faceClient.Face.IdentifyAsync(faceIdsToMatch,
+            var matches = await _transThrottle.Call("Identify", _faceClient!.Face.IdentifyAsync(faceIdsToMatch,
                 personIds: new List<string> { "*" }, maxNumOfCandidatesReturned: 3));
 
             if ( matches != null )
@@ -342,7 +342,7 @@ public class AzureFaceService
 
 
                 newFace.PersonId = createdPerson.Body.PersonId;
-                Logging.Log($"Created new person {newFace.PersonId.Value}.");
+                Logging.Log($"Created new person {newFace.PersonId!.Value}.");
             }
             else
             {

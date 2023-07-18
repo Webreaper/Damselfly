@@ -35,8 +35,8 @@ public static class AuthorisationRegistration
         var configService = serviceProvider.GetService<IConfigService>();
         var userManager = serviceProvider.GetService<UserManager<AppIdentityUser>>();
         var logger = serviceProvider.GetService<ILogger<AuthorizationOptions>>();
-        var enablePolicies = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles,
-            ConfigSettings.DefaultEnableRolesAndAuth);
+        var enablePolicies = configService!.GetBool(ConfigSettings.EnablePoliciesAndRoles,
+                                ConfigSettings.DefaultEnableRolesAndAuth);
 
 
         if ( enablePolicies )

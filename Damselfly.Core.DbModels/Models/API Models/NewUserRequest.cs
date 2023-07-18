@@ -9,7 +9,7 @@ public class UserRequest
 {
     public AppIdentityUser User { get; set; }
     public string Password { get; set; }
-    public ICollection<string> Roles { get; set; }
+    public ICollection<string>? Roles { get; set; }
 }
 
 public class UserResponse

@@ -20,7 +20,7 @@ public class ServerNotifierService
         _logger = logger;
     }
 
-    public async Task NotifyClients(NotificationType type, string payloadMsg = null)
+    public async Task NotifyClients(NotificationType type, string? payloadMsg = null)
     {
         var methodName = type.ToString();
 

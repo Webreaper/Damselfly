@@ -43,7 +43,7 @@ public class CPULevelSettings
         configService.Set(ConfigSettings.CPULimit, CPULevel.ToString());
         configService.Set(ConfigSettings.AltCPULimit, CPULevelAlt.ToString());
 
-        string cpuTimeRangeSettings = null;
+        string? cpuTimeRangeSettings = null;
 
         if ( EnableAltCPULevel )
             cpuTimeRangeSettings = $"{AltTimeStart.LocalTimeSpanToUTC()}-{AltTimeEnd.LocalTimeSpanToUTC()}";

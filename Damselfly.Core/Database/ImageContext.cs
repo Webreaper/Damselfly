@@ -7,6 +7,7 @@ using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Models;
 
@@ -15,6 +16,15 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class ImageContext : BaseDBModel, IDataProtectionKeyContext
 {
+    public static ImageContext GetImageContext( IServiceScope scope )
+    {
+        var db = scope.ServiceProvider.GetService<ImageContext>();
+        if( db == null )
+            throw new Exception( "No DB found in scope factory" );
+
+        return db;
+    }
+
     public ImageContext(DbContextOptions options) : base(options)
     {
     }

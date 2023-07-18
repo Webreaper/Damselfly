@@ -137,7 +137,7 @@ public class UserManagementService : IUserMgmtService
     }
 
     public async Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password,
-        ICollection<string> roles = null)
+        ICollection<string>? roles = null)
     {
         var result = await _userManager.CreateAsync(newUser, password);
 

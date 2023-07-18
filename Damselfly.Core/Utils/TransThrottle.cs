@@ -75,7 +75,7 @@ public class TransThrottle : ITransactionThrottle
         _scopeFactory = factory;
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var monthStart = new DateTime(date.Year, date.Month, 1, 0, 0, 0);
         var monthTrans = db.CloudTransactions.Where(x => x.Date >= monthStart && x.TransType == _serviceType)
@@ -159,7 +159,7 @@ public class TransThrottle : ITransactionThrottle
     public void ProcessNewTransactions()
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var type = CloudTransaction.TransactionType.AzureFace;
 

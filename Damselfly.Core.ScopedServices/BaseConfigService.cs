@@ -47,6 +47,9 @@ public abstract class BaseConfigService
 
     protected bool SetSetting(string name, ConfigSetting setting)
     {
+        if( setting == null )
+            throw new ArgumentException( $"Invalid setting for {name}" );
+
         if ( _cache.TryGetValue(name, out var existingValue) )
             // Existing cache value is the same, so do nothing
             if ( existingValue.Equals(setting.Value) )
