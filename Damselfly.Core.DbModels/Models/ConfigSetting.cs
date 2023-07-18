@@ -8,7 +8,7 @@ namespace Damselfly.Core.Models;
 public class ConfigSetting
 {
     public int ConfigSettingId { get; set; }
-    public string? Name { get; set; }
+    public required string Name { get; set; }
     public string? Value { get; set; }
 
     public int? UserId { get; set; }

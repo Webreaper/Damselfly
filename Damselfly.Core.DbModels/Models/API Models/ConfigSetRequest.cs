@@ -3,6 +3,6 @@
 public class ConfigSetRequest
 {
     public string Name { get; set; }
-    public string NewValue { get; set; }
+    public string? NewValue { get; set; }
     public int? UserId { get; set; }
 }

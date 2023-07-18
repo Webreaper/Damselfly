@@ -52,7 +52,7 @@
 
     }
 
-    private double GetSurfaceDPI()
+    private float GetSurfaceDPI()
     {
         double dpi = 1;
         var obj = typeof(SKGLView).GetField("dpi", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -60,14 +60,13 @@
         if (obj != null)
             dpi = (double)obj.GetValue(glViewRef)!;
 
-        return dpi;
+        return (float)dpi;
     }
 
     private SKPoint GetCoords(MouseEventArgs e)
     {
-        var dpi = GetSurfaceDPI();
-        var x = (float)e.OffsetX * (float)dpi;
-        var y = (float)e.OffsetY * (float)dpi;
+        var x = (float)e.OffsetX;
+        var y = (float)e.OffsetY;
         return new SKPoint(x, y);
     }
 
@@ -202,6 +201,8 @@
 
     private void OnPaintSurface(SKPaintGLSurfaceEventArgs e)
     {
+        var dpi = GetSurfaceDPI();
+
         // the the canvas and properties
         var canvas = e.Surface.Canvas;
 
@@ -244,13 +245,13 @@
                     StrokeCap = SKStrokeCap.Round,
                     StrokeWidth = 2f,
                     Color = SKColor.Parse("#ffffff"),
-                    PathEffect = SKPathEffect.CreateDash(new[] { 10f, 5f }, 20)
+                    PathEffect = SKPathEffect.CreateDash(new[] { 5 * dpi, 2 * dpi }, 20)
                 };
 
-                canvas.DrawRect(dragStart.Value.X,
-                                dragStart.Value.Y,
-                                (dragEnd.Value.X - dragStart.Value.X),
-                                (dragEnd.Value.Y - dragStart.Value.Y),
+                canvas.DrawRect(dragStart.Value.X * dpi,
+                                dragStart.Value.Y * dpi,
+                                (dragEnd.Value.X - dragStart.Value.X) * dpi,
+                                (dragEnd.Value.Y - dragStart.Value.Y) * dpi,
                                 rectPaint);
             }
 

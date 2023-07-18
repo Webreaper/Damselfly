@@ -45,21 +45,21 @@ public abstract class BaseConfigService
         _cache.Clear();
     }
 
-    protected bool SetSetting(string name, ConfigSetting setting)
+    protected bool SetSetting(ConfigSetting setting)
     {
         if( setting == null )
-            throw new ArgumentException( $"Invalid setting for {name}" );
+            throw new ArgumentException( $"Invalid setting passed to SetSetting" );
 
-        if ( _cache.TryGetValue(name, out var existingValue) )
+        if ( _cache.TryGetValue(setting.Name, out var existingValue) )
             // Existing cache value is the same, so do nothing
             if ( existingValue.Equals(setting.Value) )
                 return false;
 
         // Update the cache
         if ( setting.Value == null )
-            _cache.Remove(name);
+            _cache.Remove(setting.Name);
         else
-            _cache[name] = setting;
+            _cache[setting.Name] = setting;
 
         var saveReq = new ConfigSetRequest { Name = setting.Name, NewValue = setting.Value, UserId = setting.UserId };
         _ = PersistSetting(saveReq);
@@ -77,7 +77,7 @@ public abstract class BaseConfigService
 
     public void Set(string name, string value)
     {
-        SetSetting(name, new ConfigSetting { Name = name, Value = value });
+        SetSetting(new ConfigSetting { Name = name, Value = value });
     }
 
     public string Get(string name, string? defaultIfNotExists = null)
