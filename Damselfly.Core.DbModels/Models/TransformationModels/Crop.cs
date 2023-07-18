@@ -1,8 +1,7 @@
-using Damselfly.Core.Constants;
 
 namespace Damselfly.Core.DbModels.Models.TransformationModels;
 
-public class Crop : ITransform
+public class CropTransform : ITransform
 {
     public int Order => 1;
 

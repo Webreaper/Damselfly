@@ -1,8 +1,8 @@
 using System;
 namespace Damselfly.Core.DbModels.Models.TransformationModels;
 
-public class TransformBase
+public interface ITransform
 {
-    public int Order { get; set; }
+    public int Order { get; }
 }
 

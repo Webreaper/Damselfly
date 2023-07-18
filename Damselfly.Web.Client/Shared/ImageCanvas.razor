@@ -1,3 +1,4 @@
+@using Damselfly.Core.DbModels.Models.TransformationModels;
 
 @inject HttpClient restClient
 @inject ILogger<ImageCanvas> logger
@@ -36,6 +37,8 @@
     private bool isDragging;
     private bool CanCrop => dragEnd.HasValue;
 
+    private List<ITransform> transformations = new();
+
     private void Repaint()
     {
         if (glViewRef != null)
@@ -49,7 +52,20 @@
 
     private void DoCrop()
     {
+        if (dragStart.HasValue && dragEnd.HasValue)
+        {
+            var crop = new CropTransform
+            {
+                Left = (int)dragStart.Value.X,
+                Top = (int)dragStart.Value.Y,
+                Width = (int)(dragEnd.Value.X - dragStart.Value.X),
+                Height = (int)(dragEnd.Value.Y - dragStart.Value.Y)
+            };
 
+            transformations.Add(crop);
+            ClearDrag();
+            Repaint();
+        }
     }
 
     private float GetSurfaceDPI()
@@ -92,14 +108,17 @@
             var mouseUp = GetCoords(e);
 
             if (dragStart == mouseUp)
-            {
-                dragStart = null;
-                dragEnd = null;
-            }
+                ClearDrag();
         }
 
         isDragging = false;
         Repaint();
+    }
+
+    private void ClearDrag()
+    {
+        dragStart = null;
+        dragEnd = null;
     }
 
     private void SetBitmap(SKBitmap bitmap)
@@ -223,7 +242,19 @@
 
         if (sourceBitmap != null)
         {
-            var rect = GetRenderRect(sourceBitmap, surfaceSize);
+            var outputBmp = new SKBitmap((int)sourceBitmap.Width, (int)sourceBitmap.Height);
+            // TODO This should be copy, not scale
+            sourceBitmap.ScalePixels(outputBmp.PeekPixels(), SKFilterQuality.Medium);
+
+            foreach (var transform in transformations)
+            {
+                if (transform is CropTransform)
+                {
+                    outputBmp = Crop(transform, outputBmp);
+                }
+            }
+
+            var rect = GetRenderRect(outputBmp, surfaceSize);
 
             using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
             sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
@@ -231,11 +262,11 @@
             using var filters = new SKPaint
             {
                 ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor))
-                //ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Red, SKBlendMode.SrcIn)
+                // ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Red, SKBlendMode.SrcIn)
                 // ImageFilter = GetFilters()
             };
 
-            canvas.DrawBitmap(scaledImage, rect, filters);
+            canvas.DrawBitmap(outputBmp, rect, filters);
 
             if (dragStart.HasValue && dragEnd.HasValue)
             {
@@ -259,18 +290,32 @@
         }
     }
 
+    public static SKBitmap Crop(ITransform transform, SKBitmap original)
+    {
+        CropTransform t = transform as CropTransform;
+
+        if( t != null )
+        {
+            var bitmap = new SKBitmap(t.Width, t.Height);
+            var cropRect = new SKRectI(t.Left, t.Top, t.Left + t.Width, t.Top + t.Height);
+            original.ExtractSubset(bitmap, cropRect);
+            return bitmap;
+        }
+
+        throw new ArgumentException("Transform was not crop");
+    }
 
     // https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/blend-modes/separable
     // From https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/color-filters
 
     private SKColorFilter blackAndWhite =
-    SKColorFilter.CreateColorMatrix(new float[]
-    {
+SKColorFilter.CreateColorMatrix(new float[]
+{
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0,     0,     0,     1, 0
-        });
+                });
     private SKColorFilter muteColours =
             SKColorFilter.CreateColorMatrix(new float[]
             {
@@ -278,7 +323,7 @@
                     0.25f, 0.75f, 0.25f, 0, 0,
                     0.25f, 0.25f, 0.75f, 0, 0,
                     0, 0, 0, 1, 0
-                });
+                            });
     private static void GetCrop()
     {
         //var bitmap = new SKBitmap(cropRect.Width, cropRect.Height);

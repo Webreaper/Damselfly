@@ -249,7 +249,7 @@ public class SkiaSharpProcessor : IImageProcessor
     /// <param name="original"></param>
     /// <param name="cropRect"></param>
     /// <returns></returns>
-    private SKBitmap Crop(SKBitmap original, SKRectI cropRect)
+    public static SKBitmap Crop(SKBitmap original, SKRectI cropRect)
     {
         // crop
         var bitmap = new SKBitmap(cropRect.Width, cropRect.Height);

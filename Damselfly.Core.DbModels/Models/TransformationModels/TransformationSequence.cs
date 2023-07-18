@@ -4,6 +4,6 @@ namespace Damselfly.Core.DbModels.Models.TransformationModels;
 
 public class TransformationSequence
 {
-    public ICollection<TransformBase> Transforms { get; set; }
+    public ICollection<ITransform> Transforms { get; set; }
 }
 
