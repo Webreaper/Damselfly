@@ -37,6 +37,9 @@
     private bool isDragging;
     private bool CanCrop => dragEnd.HasValue;
 
+    private SKPoint paintOffset = new SKPoint( 0, 0 );
+    private float paintScale = 0f;
+
     private List<ITransform> transformations = new();
 
     private void Repaint()
@@ -54,12 +57,15 @@
     {
         if (dragStart.HasValue && dragEnd.HasValue)
         {
+            SKRect rect = new SKRect( dragStart.Value.X, dragStart.Value.Y, dragEnd.Value.X, dragEnd.Value.Y);
+            rect.Offset(paintOffset.X * -1, paintOffset.Y * -1);
+
             var crop = new CropTransform
             {
-                Left = (int)dragStart.Value.X,
-                Top = (int)dragStart.Value.Y,
-                Width = (int)(dragEnd.Value.X - dragStart.Value.X),
-                Height = (int)(dragEnd.Value.Y - dragStart.Value.Y)
+                Left = (int)(rect.Left * paintScale),
+                Top = (int)(rect.Top * paintScale),
+                Width = (int)(rect.Width * paintScale),
+                Height = (int)(rect.Height * paintScale)
             };
 
             transformations.Add(crop);
@@ -243,8 +249,7 @@
         if (sourceBitmap != null)
         {
             var outputBmp = new SKBitmap((int)sourceBitmap.Width, (int)sourceBitmap.Height);
-            // TODO This should be copy, not scale
-            sourceBitmap.ScalePixels(outputBmp.PeekPixels(), SKFilterQuality.Medium);
+            sourceBitmap.CopyTo(outputBmp);
 
             foreach (var transform in transformations)
             {
@@ -255,6 +260,7 @@
             }
 
             var rect = GetRenderRect(outputBmp, surfaceSize);
+            paintScale = sourceBitmap.Width / rect.Width;
 
             using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
             sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
@@ -287,6 +293,8 @@
             }
 
             canvas.DrawText($"{mouseStatus} - {Image.FileName}\n{surfaceSize}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+
+            outputBmp.Dispose();
         }
     }
 
@@ -299,6 +307,7 @@
             var bitmap = new SKBitmap(t.Width, t.Height);
             var cropRect = new SKRectI(t.Left, t.Top, t.Left + t.Width, t.Top + t.Height);
             original.ExtractSubset(bitmap, cropRect);
+            original.Dispose();
             return bitmap;
         }
 
@@ -344,20 +353,20 @@ SKColorFilter.CreateColorMatrix(new float[]
         float bmpAspectRatio = (float)bmp.Width / (float)bmp.Height;
         float renderHeight = canvasSize.Height;
         float renderWidth = renderHeight * bmpAspectRatio;
-        float shrinkFactor = 1.0f;
+        float scaleFactor = 1.0f;
 
         if (renderHeight > canvasSize.Height)
-            shrinkFactor = canvasSize.Height / renderHeight;
+            scaleFactor = canvasSize.Height / renderHeight;
         else if (renderWidth > canvasSize.Width)
-            shrinkFactor = canvasSize.Width / renderWidth;
+            scaleFactor = canvasSize.Width / renderWidth;
 
-        renderWidth *= shrinkFactor;
-        renderHeight *= shrinkFactor;
+        renderWidth *= scaleFactor;
+        renderHeight *= scaleFactor;
 
-        float offsetX = (canvasSize.Width - renderWidth) / 2.0f;
-        float offsetY = (canvasSize.Height - renderHeight) / 2.0f;
+        paintOffset.X = (canvasSize.Width - renderWidth) / 2.0f;
+        paintOffset.Y = (canvasSize.Height - renderHeight) / 2.0f;
 
-        imageRect = new SKRect(offsetX, offsetY, renderWidth + offsetX, renderHeight + offsetY);
+        imageRect = new SKRect(paintOffset.X, paintOffset.Y, renderWidth + paintOffset.X, renderHeight + paintOffset.Y);
 
         return imageRect;
     }
