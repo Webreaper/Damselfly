@@ -24,7 +24,7 @@
     </div>
     <div class="damselfly-dialogctrl">
         <MudSelect T=" int? " Label="Month" @bind-Value="searchService.Month" @bind-Value:after="FilterChanged" 
-                                MultiSelection="true" Clearable="true" 
+                                MultiSelection="false" Clearable="true" 
                                 Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
             @foreach( var choice in monthChoices )
             {
