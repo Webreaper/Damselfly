@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
-    <title>Damselfly - Digital Asset Management</title>
     <base href="/" />
     <link href="Damselfly.Web.Client.styles.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
@@ -17,6 +16,7 @@
     <link href="css/snackbar.css" rel="stylesheet" />
     <link href="themes/green.css" id="themeStyleSheet" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
+    <HeadOutlet @rendermode="@RenderMode.WebAssembly" />
 </head>
 
 <body>
@@ -37,7 +37,7 @@
 </div>
 
 <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-<script src="_framework/blazor.webassembly.js"></script>
+<script src="_framework/blazor.web.js"></script>
 <script>navigator.serviceWorker.register('service-worker.js');</script>
 <script>navigator.serviceWorker.register('version.js');</script>
 <script src="version.js"></script>

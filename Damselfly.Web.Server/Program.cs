@@ -22,6 +22,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
+using Host = Damselfly.Web.Client.Host;
 
 namespace Damselfly.Web;
 
@@ -141,6 +142,8 @@ public class Program
 
         SetupIdentity(builder.Services);
 
+        builder.Services.AddRazorComponents().AddWebAssemblyComponents();
+
         // Cache up to 10,000 images. Should be enough given cache expiry.
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
@@ -209,7 +212,6 @@ public class Program
             RequestPath = ThumbnailService.RequestRoot
         });
 
-        app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
         app.UseResponseCompression();
         app.UseRouting();
@@ -231,7 +233,7 @@ public class Program
 
         app.MapRazorPages();
         app.MapControllers();
-        app.MapFallbackToFile("index.html");
+        app.MapRazorComponents<Host>().AddWebAssemblyRenderMode();
 
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);
