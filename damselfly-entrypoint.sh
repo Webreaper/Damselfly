@@ -6,6 +6,11 @@ if ! [ -z "$SYNO_THUMBS" ]; then
   cmdlineargs="--syno"
 fi;
 
+if ! [ -z "$ONDEMAND_THUMBS" ]; then
+  echo "Thumbnail genration disabled. Thumbs will be generated on-demand."
+  cmdlineargs="--nothumbs"
+fi;
+
 #echo "Increasing inotify watch limit..."
 #echo fs.inotify.max_user_instances=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
