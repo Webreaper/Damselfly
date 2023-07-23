@@ -1,7 +1,5 @@
 ﻿using Damselfly.Core.ScopedServices.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
-using static Damselfly.Core.DbModels.AuthorisationRegistration;
 
 namespace Damselfly.Core.ScopedServices;
 
