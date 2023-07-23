@@ -31,6 +31,7 @@ public class ClientAuthService : IAuthService
     public async Task<LoginResult> Login(LoginModel loginModel)
     {
         var loginResult = await _httpClient.CustomPostAsJsonAsync<LoginModel, LoginResult>("api/Login", loginModel);
+
         var provider = _authenticationStateProvider as ApiAuthenticationStateProvider;
 
         if ( loginResult != null && provider != null &&loginResult.Successful )

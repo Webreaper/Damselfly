@@ -299,8 +299,10 @@ public class Program
             });
 
         services.AddAuthorization(config => config.SetupPolicies(services));
+        services.AddScoped<AuthService>();
+        services.AddScoped<IAuthService>( x => x.GetRequiredService<AuthService>() );
+
         //services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
         //services.AddSingleton<IAuthService, ClientAuthService>();
-
     }
 }

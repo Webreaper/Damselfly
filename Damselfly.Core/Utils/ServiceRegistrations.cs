@@ -77,7 +77,6 @@ public static class ServiceRegistrations
         services.AddSingleton<FolderService>();
         services.AddSingleton<FileService>();
         services.AddSingleton<ServerStatusService>();
-
         services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
         services.AddSingleton<IFileService>( x => x.GetRequiredService<FileService>() );
 
