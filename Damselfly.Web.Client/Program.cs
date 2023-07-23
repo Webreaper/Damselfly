@@ -58,7 +58,7 @@ public class Program
         builder.Services.AddSingleton<RestClient>();
 
         builder.Services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-        builder.Services.AddSingleton<IAuthService, AuthService>();
+        builder.Services.AddSingleton<IAuthService, ClientAuthService>();
 
         builder.Services.AddDamselflyUIServices();
 

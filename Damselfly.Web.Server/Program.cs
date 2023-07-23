@@ -23,6 +23,8 @@ using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 using Host = Damselfly.Web.Client.Host;
+using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Damselfly.Web;
 
@@ -297,5 +299,8 @@ public class Program
             });
 
         services.AddAuthorization(config => config.SetupPolicies(services));
+        //services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+        //services.AddSingleton<IAuthService, ClientAuthService>();
+
     }
 }

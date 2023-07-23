@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace Damselfly.Core.ScopedServices.ClientServices;
 
-public class AuthService : IAuthService
+public class ClientAuthService : IAuthService
 {
     private readonly AuthenticationStateProvider _authenticationStateProvider;
     private readonly RestClient _httpClient;
     private readonly ILocalStorageService _localStorage;
 
-    public AuthService(RestClient httpClient,
+    public ClientAuthService(RestClient httpClient,
         AuthenticationStateProvider authenticationStateProvider,
         ILocalStorageService localStorage)
     {
