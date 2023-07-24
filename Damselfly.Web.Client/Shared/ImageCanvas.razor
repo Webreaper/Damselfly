@@ -7,7 +7,7 @@
 
 <div class="image-canvas">
     <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
-              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" />
+              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel"/>
     <div class="tool-pallette">
         <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudIconButton Icon="@Icons.Material.Filled.Crop" Disabled="@(!CanCrop)" OnClick="DoCrop" />
@@ -39,6 +39,8 @@
     private SKRect paintArea = new SKRect( 0, 0, 0, 0 );
     private float paintScale = 0f;
     private float lastDPI = 1.0f;
+    private float zoomAmount = 0.0f;
+
 
     private List<ITransform> transformations = new();
 
@@ -127,6 +129,12 @@
         var x = (float)e.OffsetX;
         var y = (float)e.OffsetY;
         return new SKPoint(x, y);
+    }
+
+    private void MouseWheel(WheelEventArgs e )
+    {
+        zoomAmount += (float)(e.DeltaY / 2.0f);
+        Repaint();
     }
 
     private void MouseMove(MouseEventArgs e)
@@ -331,7 +339,13 @@
                 // ImageFilter = GetFilters()
             }
 
-            canvas.DrawBitmap(paintBitmap, rect, filters);
+            var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
+            var zoomRect = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
+            if (zoomAmount > 0)
+                zoomRect.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
+
+            // Paint the actual bitmap
+            canvas.DrawBitmap(paintBitmap, zoomRect, rect, filters);
 
             var dragRect = GetDragRect();
 
