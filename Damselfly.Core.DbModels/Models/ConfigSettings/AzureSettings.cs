@@ -7,9 +7,9 @@ namespace Damselfly.Core.DbModels.Models;
 
 public class AzureSettings
 {
-    [Url] public string Endpoint { get; set; }
+    [Url] public string? Endpoint { get; set; }
 
-    public string ApiKey { get; set; }
+    public string? ApiKey { get; set; }
     public AzureDetection DetectionType { get; set; }
     public bool UsingFreeTier { get; set; } = true;
 }

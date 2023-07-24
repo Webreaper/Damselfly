@@ -31,7 +31,7 @@ of the visible image is updated which should update it instantly.
             }
         </div>
 
-        @if (System.Diagnostics.Debugger.IsAttached)
+        @if (EnableImageEditing)
         {
             <ImageCanvas Image="@Image" Class="image-fill"/>
         }
@@ -71,6 +71,7 @@ of the visible image is updated which should update it instantly.
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => Image.ThumbUrl(ThumbSize.ExtraLarge);
     private int currentImageId = -1;
+    private bool EnableImageEditing = false;
 
     // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
     private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
@@ -251,6 +252,7 @@ of the visible image is updated which should update it instantly.
     protected override void OnInitialized()
     {
         ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
+        EnableImageEditing = userConfigService.GetBool(ConfigSettings.EnableImageEditing);
         base.OnInitialized();
     }
 

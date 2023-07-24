@@ -20,6 +20,7 @@ public class SystemConfigSettings
     public bool writeAITagsToImages { get; set; }
     public bool allowExternalRegistration { get; set; }
     public bool enableAuthAndRoles { get; set; } = true;
+    public bool enableImageEditing { get; set; } = false;
     public int similarityThreshold { get; set; } = 75;
 
     public void Save(IConfigService configService)
@@ -43,6 +44,7 @@ public class SystemConfigSettings
         configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
         configService.Set(ConfigSettings.EnablePoliciesAndRoles, enableAuthAndRoles.ToString());
+        configService.Set(ConfigSettings.EnableImageEditing, enableImageEditing.ToString());
         configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
 
         smtpSettings.Save(configService);
@@ -67,6 +69,7 @@ public class SystemConfigSettings
         azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
         azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
 
+        enableImageEditing = configService.GetBool(ConfigSettings.EnableImageEditing);
         enableAuthAndRoles = configService.GetBool(ConfigSettings.EnablePoliciesAndRoles,
             ConfigSettings.DefaultEnableRolesAndAuth);
         forceLogin = configService.GetBool(ConfigSettings.ForceLogin);

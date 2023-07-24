@@ -43,6 +43,9 @@
                                 </MudSelect>
                             </div>
                         </div>
+                        <div class="damselfly-configsetting">
+                            <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Primary Color="Color.Success" LabelPosition="LabelPosition.Start" Label="Enable Image Editing (Experimental)" />
+                        </div>
                         <button class="btn btn-primary" type="submit">Save Settings</button>
                     </div>
                 </EditForm>

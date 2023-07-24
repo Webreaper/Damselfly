@@ -43,6 +43,7 @@ public class ConfigSettings
     public const string ForceLogin = "ForceLogin";
     public const string AllowExternalRegistration = "AllowExternalRegistration";
     public const string UseSmtp = "UseSMTP";
+    public const string EnableImageEditing = "EnableImageEditing";
 
     public const string SmtpServer = "SmtpServer";
     public const string SmtpPort = "SmtpPort";
