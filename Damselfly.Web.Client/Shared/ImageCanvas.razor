@@ -34,7 +34,7 @@
     private SKPoint? dragStart;
     private SKPoint? dragEnd;
     private bool isDragging;
-    private bool CanCrop => dragEnd.HasValue;
+    private bool CanCrop => dragEnd.HasValue || transformations.Any(x => x is CropTransform);
 
     private SKRect paintArea = new SKRect( 0, 0, 0, 0 );
     private float paintScale = 0f;
@@ -84,21 +84,30 @@
 
     private void DoCrop()
     {
-        var rect = GetDragRect();
-
-        if( rect.HasValue )
+        if( transformations.Any( x => x is CropTransform ))
         {
-            var crop = new CropTransform
-            {
-                Left = (int)(rect.Value.Left * paintScale),
-                Top = (int)(rect.Value.Top * paintScale),
-                Width = (int)(rect.Value.Width * paintScale),
-                Height = (int)(rect.Value.Height * paintScale)
-            };
-
-            transformations.Add(crop);
-            ClearDrag();
+            // Remove the previous crop
+            transformations = transformations.Where(x => !(x is CropTransform)).ToList();
             Repaint();
+        }
+        else
+        {
+            var rect = GetDragRect();
+
+            if( rect.HasValue )
+            {
+                var crop = new CropTransform
+                {
+                    Left = (int)((rect.Value.Left - paintArea.Left) * paintScale),
+                    Top = (int)((rect.Value.Top - paintArea.Top ) * paintScale),
+                    Width = (int)(rect.Value.Width * paintScale),
+                    Height = (int)(rect.Value.Height * paintScale)
+                };
+
+                transformations.Add(crop);
+                ClearDrag();
+                Repaint();
+            }
         }
     }
 
@@ -276,17 +285,35 @@
 
         if (sourceBitmap != null)
         {
-            var sourceBounds = new SKRect(0, 0, sourceBitmap.Width, sourceBitmap.Height);
+            var paintBitmap = sourceBitmap;
+            bool copied = false;
 
-            var crop = transformations.Where(x => x is CropTransform).FirstOrDefault();
+            // Now the transformations
+            var crop = transformations.Where(x => x is CropTransform).Cast<CropTransform>().FirstOrDefault();
 
             if( crop != null )
             {
-//                sourceBounds = crop.
+                using var cropBorder = new SKPaint
+                {
+                    Style = SKPaintStyle.Stroke,
+                    StrokeCap = SKStrokeCap.Round,
+                    StrokeWidth = 2f,
+                    Color = SKColor.Parse("#aa6666"),
+                };
+
+                var cropRect = new SKRectI(crop.Left,
+                                           crop.Top,
+                                           crop.Left + crop.Width,
+                                           crop.Top + crop.Height);
+
+                paintBitmap = new SKBitmap( crop.Width, crop.Height);
+                copied = true;
+
+                sourceBitmap.ExtractSubset(paintBitmap, cropRect);
             }
 
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
-            var rect = GetRenderRect(sourceBitmap, surfaceSize);
+            var rect = GetRenderRect(paintBitmap, surfaceSize);
 
             // Save the scale and the offset
             paintScale = (sourceBitmap.Width / rect.Width);
@@ -295,14 +322,16 @@
             using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
             sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
 
-            using var filters = new SKPaint
+            using var filters = new SKPaint();
+
+            if ( lightenFactor > 0 )
             {
-                ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor))
+                filters.ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor));
                 // ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Red, SKBlendMode.SrcIn)
                 // ImageFilter = GetFilters()
-            };
+            }
 
-            canvas.DrawBitmap(sourceBitmap, sourceBounds, rect, filters);
+            canvas.DrawBitmap(paintBitmap, rect, filters);
 
             var dragRect = GetDragRect();
 
@@ -321,31 +350,18 @@
             }
 
             canvas.DrawText($"{mouseStatus} - {Image.FileName}\n{surfaceSize}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+
+            if( copied )
+                paintBitmap.Dispose();
         }
-    }
-
-    public static SKBitmap Crop(ITransform transform, SKBitmap original)
-    {
-        CropTransform t = transform as CropTransform;
-
-        if( t != null )
-        {
-            var bitmap = new SKBitmap(t.Width, t.Height);
-            var cropRect = new SKRectI(t.Left, t.Top, t.Left + t.Width, t.Top + t.Height);
-            original.ExtractSubset(bitmap, cropRect);
-            original.Dispose();
-            return bitmap;
-        }
-
-        throw new ArgumentException("Transform was not crop");
     }
 
     // https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/blend-modes/separable
     // From https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/color-filters
 
     private SKColorFilter blackAndWhite =
-SKColorFilter.CreateColorMatrix(new float[]
-{
+        SKColorFilter.CreateColorMatrix(new float[]
+                {
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
