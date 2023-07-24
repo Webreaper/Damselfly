@@ -70,7 +70,6 @@ public class Program
             ThumbnailService.PicturesRoot = o.SourceDirectory;
             ThumbnailService.Synology = o.Synology;
             ThumbnailService.SetThumbnailRoot(o.ThumbPath);
-            ThumbnailService.EnableThumbnailGeneration = !o.NoGenerateThumbnails;
 
             var tieredPGO = Environment.GetEnvironmentVariable("DOTNET_TieredPGO") == "1";
 
@@ -188,6 +187,9 @@ public class Program
 
         var configService = app.Services.GetRequiredService<ConfigService>();
         var logLevel = configService.Get(ConfigSettings.LogLevel, LogEventLevel.Information);
+
+        if( cmdLineOptions.NoGenerateThumbnails )
+            configService.Set( ConfigSettings.EnableBackgroundThumbs, false.ToString() );
 
         Logging.ChangeLogLevel(logLevel);
 

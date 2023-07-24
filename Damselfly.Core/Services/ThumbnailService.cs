@@ -42,11 +42,13 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     private readonly ImageProcessService _imageProcessingService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
+    private readonly IConfigService _configService;
     private readonly WorkService _workService;
 
     public ThumbnailService(IServiceScopeFactory scopeFactory,
         IStatusService statusService,
         ImageProcessService imageService,
+        IConfigService configService,
         ImageCache imageCache, WorkService workService)
     {
         _scopeFactory = scopeFactory;
@@ -54,6 +56,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         _imageProcessingService = imageService;
         _imageCache = imageCache;
         _workService = workService;
+        _configService = configService;
 
         _workService.AddJobSource(this);
     }
@@ -62,19 +65,18 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     public static bool UseGraphicsMagick { get; set; }
     public static bool Synology { get; set; }
     public static string RequestRoot => _requestRoot;
-    public static bool EnableThumbnailGeneration { get; set; } = true;
 
     public JobPriorities Priority => JobPriorities.Thumbnails;
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
-        if ( !EnableThumbnailGeneration )
+        if ( !_configService.GetBool( ConfigSettings.EnableBackgroundThumbs, false) )
             return new ThumbProcess[0];
 
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        var images = await db.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
+        var images = await db!.ImageMetaData.Where(x => x.ThumbLastUpdated == null)
             .OrderByDescending(x => x.LastUpdated)
             .Take(maxJobs)
             .Select(x => x.ImageId)

@@ -44,6 +44,7 @@ public class ConfigSettings
     public const string AllowExternalRegistration = "AllowExternalRegistration";
     public const string UseSmtp = "UseSMTP";
     public const string EnableImageEditing = "EnableImageEditing";
+    public const string EnableBackgroundThumbs = "EnableBackgroundThumbs";
 
     public const string SmtpServer = "SmtpServer";
     public const string SmtpPort = "SmtpPort";

@@ -18,11 +18,13 @@ public class SystemSettingsService : ISystemSettingsService
     private readonly ServerNotifierService _notifier;
     private readonly WorkService _workService;
     private readonly WordpressService _wpService;
+    private readonly ThumbnailService _thumbService;
 
     public SystemSettingsService(ILogger<SystemSettingsService> logger,
         WorkService workService,
         AzureFaceService azureService,
         WordpressService wpService,
+        ThumbnailService thumbService,
         IConfigService configService,
         ServerNotifierService notifier)
     {
@@ -31,6 +33,7 @@ public class SystemSettingsService : ISystemSettingsService
         _azureService = azureService;
         _wpService = wpService;
         _configService = configService;
+        _thumbService = thumbService;
         _logger = logger;
     }
 

@@ -43,8 +43,23 @@
                                 </MudSelect>
                             </div>
                         </div>
+                        <p>
+                            By default, thumbnails are generated/created on-demand (but cached on disk). If you want, you can enable
+                            background thumbnail generation, so a background task will go through all images and create thumbnails
+                            for them in advance. This option can be useful for servers with less performance, where on-demand thumbnails
+                            might render slowly.
+                        </p>
                         <div class="damselfly-configsetting">
-                            <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Primary Color="Color.Success" LabelPosition="LabelPosition.Start" Label="Enable Image Editing (Experimental)" />
+                            <div class="damselfly-configfield">
+                                <MudSwitch @bind-Checked="settingsModel.enableBackgroundThumbs" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                                           Label="Enable Background Thumbnail Generation" />
+                            </div>
+                        </div>
+                        <div class="damselfly-configsetting">
+                            <div class="damselfly-configfield">
+                                <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                                           Label="Enable Image Editing (Experimental)" />
+                            </div>
                         </div>
                         <button class="btn btn-primary" type="submit">Save Settings</button>
                     </div>
