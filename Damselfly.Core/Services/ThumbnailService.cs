@@ -239,36 +239,41 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
             var needToGenerate = true;
 
-            if ( destFile.Exists )
+            if( destFile.Exists )
+            {
                 // We have a thumbnail on disk. See if it's suitable,
                 // or if it needs to be regenerated.
-                if ( !forceRegeneration )
+                if( !forceRegeneration )
+                {
                     // First, check if the source is older than the thumbnail
-                    if ( source.LastWriteTimeUtc < destFile.LastWriteTimeUtc )
+                    if( source.LastWriteTimeUtc < destFile.LastWriteTimeUtc )
                     {
                         // The source is older, so we might be able to use it. Check the res:
                         int actualHeight, actualWidth;
-                        MetaDataService.GetImageSize(destFile.FullName, out actualWidth, out actualHeight);
+                        MetaDataService.GetImageSize( destFile.FullName, out actualWidth, out actualHeight );
 
                         // Note that the size may be smaller - thumbconfigs are 'max' size, not actual.
-                        if ( actualHeight <= thumbConfig.height && actualWidth <= thumbConfig.width )
+                        if( actualHeight <= thumbConfig.height && actualWidth <= thumbConfig.width )
                         {
                             // Size matches - so no need to generate.
                             needToGenerate = false;
 
                             // If the creation time of both files is the same, we're done.
-                            Logging.LogTrace("File {0} already exists with matching creation time.", destFile);
+                            Logging.LogTrace( "File {0} already exists with matching creation time.", destFile );
 
                             // Since a smaller version that's suitable as a source exists, use it. This is a
                             // performance enhancement - it means that if we're scaling a 7MB image, but a 1MB
                             // thumbnail already exists, use that as the source instead, as it'll be faster
                             // to process.
-                            if ( altSource == null && thumbConfig.useAsSource )
+                            if( altSource == null && thumbConfig.useAsSource )
                                 altSource = destFile;
                         }
                     }
+                }
+            }
 
-            if ( needToGenerate ) thumbFileAndConfig.Add(destFile, thumbConfig);
+            if ( needToGenerate ) 
+                thumbFileAndConfig.Add(destFile, thumbConfig);
         }
 
         return thumbFileAndConfig;
@@ -607,14 +612,14 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         ThumbSize size = ThumbSize.Unknown)
     {
         var imagePath = new FileInfo(image.FullPath);
-        IImageProcessResult result = null;
+        IImageProcessResult? result = null;
 
         try
         {
             if ( imagePath.Exists )
             {
                 Dictionary<FileInfo, IThumbConfig> destFiles;
-                FileInfo altSource = null;
+                FileInfo? altSource = null;
 
                 if ( size == ThumbSize.Unknown )
                 {
@@ -660,7 +665,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                             $"{destFiles.Count()} thumbs created for {imagePath} in {watch.HumanElapsedTime}");
                     }
 
-                    if ( result.ThumbsGenerated )
+                    if ( result != null && result.ThumbsGenerated )
                     {
                         // Generate the perceptual hash from the large thumbnail.
                         var largeThumbPath = GetThumbPath(imagePath, ThumbSize.Large);
