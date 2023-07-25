@@ -6,16 +6,16 @@
 @implements IDisposable
 
 <div class="image-canvas">
-    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
-              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel"/>
     <div class="tool-pallette">
         <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudSlider @bind-Value="saturation" Max="1.5f" Step="0.01f" Min="0.5f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudIconButton Icon="@Icons.Material.Filled.Crop" Disabled="@(!CanCrop)" OnClick="DoCrop" />
+        <MudIconButton Icon="@Icons.Material.Filled.Crop" OnClick="DoCrop" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
         <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
     </div>
+    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
+              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel" />
 </div>
 
 @code {
@@ -38,13 +38,13 @@
     private SKPoint? dragStart;
     private SKPoint? dragEnd;
     private bool isDragging;
-    private bool CanCrop => dragEnd.HasValue || transformations.Any(x => x is CropTransform);
+    private bool isCropping;
 
     private SKRect paintArea = new SKRect( 0, 0, 0, 0 );
     private float paintScale = 0f;
     private float lastDPI = 1.0f;
     private float zoomAmount = 0.0f;
-
+    private SKPoint zoomOffset = new SKPoint();
 
     private List<ITransform> transformations = new();
 
@@ -101,14 +101,10 @@
 
     private void DoCrop()
     {
-        if( transformations.Any( x => x is CropTransform ))
+        if( isCropping )
         {
-            // Remove the previous crop
-            transformations = transformations.Where(x => !(x is CropTransform)).ToList();
-            Repaint();
-        }
-        else
-        {
+            isCropping = false;
+
             var rect = GetDragRect();
 
             if( rect.HasValue )
@@ -125,6 +121,17 @@
                 ClearDrag();
                 Repaint();
             }
+        }
+        else
+        {
+            if (transformations.Any(x => x is CropTransform))
+            {
+                // Remove the previous crop
+                transformations = transformations.Where(x => !(x is CropTransform)).ToList();
+            }
+
+            isCropping = true;
+            Repaint();
         }
     }
 
@@ -156,15 +163,24 @@
     {
         if (isDragging)
         {
-            dragEnd = GetCoords(e);
+            if( isCropping )
+                dragEnd = GetCoords(e);
+            else if( zoomAmount != 0 )
+                zoomOffset = GetCoords(e);
             Repaint();
         }
+
     }
 
     private void MouseDown(MouseEventArgs e)
     {
-        dragStart = GetCoords(e);
-        isDragging = true;
+        if( e.Button == 0 )
+        {
+            if( isCropping )
+                dragStart = GetCoords(e);
+
+            isDragging = true;
+        }
     }
 
     private void MouseUp(MouseEventArgs e)
@@ -380,7 +396,10 @@
             var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
             var zoomRect = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
             if (zoomAmount > 0)
+            {
                 zoomRect.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
+                zoomRect.Offset(zoomOffset);
+            }
 
             // Paint the actual bitmap
             canvas.DrawBitmap(paintBitmap, zoomRect, rect, filters);
@@ -401,7 +420,7 @@
                 canvas.DrawRect(dragRect.Value, dragBorder);
             }
 
-            canvas.DrawText($"{Image.FileName}\n{surfaceSize} R:{rotation}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+            canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
 
             if( copied )
                 paintBitmap.Dispose();

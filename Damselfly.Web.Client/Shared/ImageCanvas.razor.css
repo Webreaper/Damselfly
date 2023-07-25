@@ -2,6 +2,13 @@
 .image-canvas {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: calc( 100% - 200px);
     height: 100%;
+}
+
+.tool-pallette {
+    display: flex;
+    flex-direction: row;
+    min-width: 200px;
+    height: 30px;
 }

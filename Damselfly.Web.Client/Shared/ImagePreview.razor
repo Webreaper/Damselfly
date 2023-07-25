@@ -31,7 +31,7 @@ of the visible image is updated which should update it instantly.
             }
         </div>
 
-        @if (EnableImageEditing)
+        @if (EnableImageEditing && Editing)
         {
             <ImageCanvas Image="@Image" Class="image-fill"/>
         }
@@ -56,6 +56,9 @@ of the visible image is updated which should update it instantly.
 
     [Parameter]
     public bool ShowObjects { get; set; }
+
+    [Parameter]
+    public bool Editing { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
