@@ -9,7 +9,7 @@
     <div class="tool-pallette">
         <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudSlider @bind-Value="saturation" Max="1.5f" Step="0.01f" Min="0.5f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudIconButton Icon="@Icons.Material.Filled.Crop" OnClick="DoCrop" />
+        <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
         <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
@@ -24,6 +24,8 @@
 
     [Parameter]
     public string Class { get; set; }
+
+    public Color CropColour => isCropping ? Color.Primary : Color.Secondary;
 
     private SKGLView glViewRef;
     private SKBitmap? sourceBitmap;
@@ -54,13 +56,24 @@
             glViewRef.Invalidate();
     }
 
+    // SKEncodedOrigin.RightTop: 90
+    // SKEncodedOrigin.BottomRight: 180
+    // SKEncodedOrigin.RightTop: 90
+    // SKEncodedOrigin.LeftBottom: 270
+
     private void DoRotate(int degrees)
     {
+        var oldBitmap = sourceBitmap;
+
         rotation += degrees;
-        if (rotation == -90)
-            rotation = 270;
-        if (rotation == 360)
+        if (rotation >= 360)
             rotation = 0;
+        if (rotation < 0)
+            rotation = 270;
+
+        sourceBitmap = Rotate(oldBitmap, degrees);
+        oldBitmap.Dispose();
+        ClearCrop();
         Repaint();
     }
 
@@ -124,15 +137,18 @@
         }
         else
         {
-            if (transformations.Any(x => x is CropTransform))
-            {
-                // Remove the previous crop
-                transformations = transformations.Where(x => !(x is CropTransform)).ToList();
-            }
-
+            ClearCrop();
             isCropping = true;
             Repaint();
         }
+
+        StateHasChanged();
+    }
+
+    private void ClearCrop()
+    {
+        // Remove the previous crop
+        transformations = transformations.Where(x => !(x is CropTransform)).ToList();
     }
 
     private void GetSurfaceDPI()
@@ -351,6 +367,7 @@
                 sourceBitmap.ExtractSubset(paintBitmap, cropRect);
             }
 
+            /*
             if( rotation != 0 )
             {
                 var rotatedBmp = Rotate(paintBitmap, rotation);
@@ -361,6 +378,7 @@
                 }
                 paintBitmap = rotatedBmp;
             }
+            */
 
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
             var rect = GetRenderRect(paintBitmap, surfaceSize);
