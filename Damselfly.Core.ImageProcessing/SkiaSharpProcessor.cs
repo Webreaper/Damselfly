@@ -53,6 +53,15 @@ public class SkiaSharpProcessor : IImageProcessor
 
                 scale = new Stopwatch("ScaleThumb");
 
+                if( config.width >= sourceBitmap.Width && config.height >= sourceBitmap.Height )
+                {
+                    // The thumbnail being generated is the same size or larger than the
+                    // source. So just copy the file and continue to the next one
+                    source.CopyTo( dest.FullName );
+                    result.ThumbsGenerated = true;
+                    continue;
+                }
+
                 var widthScaleFactor = srcBitmap.Width / (float)config.width;
                 var heighScaleFactor = srcBitmap.Height / (float)config.height;
                 var scaleFactor = Math.Min(widthScaleFactor, heighScaleFactor);
