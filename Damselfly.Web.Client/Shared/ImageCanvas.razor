@@ -12,8 +12,8 @@
         <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudSlider @bind-Value="saturation" Max="1.5f" Step="0.01f" Min="0.5f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudIconButton Icon="@Icons.Material.Filled.Crop" Disabled="@(!CanCrop)" OnClick="DoCrop" />
-        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="DoRotate" />
-        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="DoRotate" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
         <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
     </div>
 </div>
@@ -54,9 +54,11 @@
             glViewRef.Invalidate();
     }
 
-    private void DoRotate()
+    private void DoRotate(int degrees)
     {
-        rotation += 90;
+        rotation += degrees;
+        if (rotation == -90)
+            rotation = 270;
         if (rotation == 360)
             rotation = 0;
         Repaint();
@@ -337,7 +339,7 @@
             {
                 var rotatedBmp = Rotate(paintBitmap, rotation);
                 if( crop != null )
-                { 
+                {
                     // We will have copied the source for the crop, so dispose that
                     paintBitmap.Dispose();
                 }
