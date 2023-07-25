@@ -10,9 +10,11 @@
               class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel"/>
     <div class="tool-pallette">
         <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="saturation" Max="1.5f" Step="0.01f" Min="0.5f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudIconButton Icon="@Icons.Material.Filled.Crop" Disabled="@(!CanCrop)" OnClick="DoCrop" />
-        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" Disabled="@(!CanCrop)" OnClick="DoRotate" />
-        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" Disabled="@(!CanCrop)" OnClick="DoRotate" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="DoRotate" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="DoRotate" />
+        <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
     </div>
 </div>
 
@@ -30,6 +32,8 @@
     private CancellationTokenSource loadCancellationSource = new();
     private string mouseStatus;
     private byte lightenFactor = 0;
+    private float saturation = 1.0f;
+    private int rotation = 0;
 
     private SKPoint? dragStart;
     private SKPoint? dragEnd;
@@ -52,7 +56,10 @@
 
     private void DoRotate()
     {
-
+        rotation += 90;
+        if (rotation == 360)
+            rotation = 0;
+        Repaint();
     }
 
     private SKRect? GetDragRect()
@@ -82,6 +89,12 @@
         }
 
         return null;
+    }
+
+    private void DoMono()
+    {
+        transformations.Add(new MonoTransform());
+        Repaint();
     }
 
     private void DoCrop()
@@ -293,7 +306,7 @@
 
         if (sourceBitmap != null)
         {
-            var paintBitmap = sourceBitmap;
+            SKBitmap paintBitmap = sourceBitmap;
             bool copied = false;
 
             // Now the transformations
@@ -320,6 +333,17 @@
                 sourceBitmap.ExtractSubset(paintBitmap, cropRect);
             }
 
+            if( rotation != 0 )
+            {
+                var rotatedBmp = Rotate(paintBitmap, rotation);
+                if( crop != null )
+                { 
+                    // We will have copied the source for the crop, so dispose that
+                    paintBitmap.Dispose();
+                }
+                paintBitmap = rotatedBmp;
+            }
+
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
             var rect = GetRenderRect(paintBitmap, surfaceSize);
 
@@ -332,11 +356,23 @@
 
             using var filters = new SKPaint();
 
-            if ( lightenFactor > 0 )
+            if( transformations.Any( x => x is MonoTransform ) )
+            {
+                filters.ColorFilter = blackAndWhite;
+            }
+            else if ( saturation != 1 )
+            {
+                var invert = saturation < 1 ? 1 - saturation : 0;
+                filters.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                            {
+                    saturation, invert, invert, 0, 0,
+                    invert, saturation, invert, 0, 0,
+                    invert, invert, saturation, 0, 0,
+                    0, 0, 0, 1, 0 });
+            }
+            else if ( lightenFactor > 0 )
             {
                 filters.ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor));
-                // ColorFilter = SKColorFilter.CreateBlendMode(SKColors.Red, SKBlendMode.SrcIn)
-                // ImageFilter = GetFilters()
             }
 
             var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
@@ -363,7 +399,7 @@
                 canvas.DrawRect(dragRect.Value, dragBorder);
             }
 
-            canvas.DrawText($"{mouseStatus} - {Image.FileName}\n{surfaceSize}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+            canvas.DrawText($"{Image.FileName}\n{surfaceSize} R:{rotation}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
 
             if( copied )
                 paintBitmap.Dispose();
@@ -381,19 +417,28 @@
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0,     0,     0,     1, 0
                 });
-    private SKColorFilter muteColours =
-            SKColorFilter.CreateColorMatrix(new float[]
-            {
-                    0.75f, 0.25f, 0.25f, 0, 0,
-                    0.25f, 0.75f, 0.25f, 0, 0,
-                    0.25f, 0.25f, 0.75f, 0, 0,
-                    0, 0, 0, 1, 0
-                            });
-    private static void GetCrop()
+
+    public static SKBitmap Rotate(SKBitmap bitmap, double angle)
     {
-        //var bitmap = new SKBitmap(cropRect.Width, cropRect.Height);
-        //original.ExtractSubset(bitmap, cropRect);
-        //return bitmap;
+        double radians = Math.PI * angle / 180;
+        float sine = (float)Math.Abs(Math.Sin(radians));
+        float cosine = (float)Math.Abs(Math.Cos(radians));
+        int originalWidth = bitmap.Width;
+        int originalHeight = bitmap.Height;
+        int rotatedWidth = (int)(cosine * originalWidth + sine * originalHeight);
+        int rotatedHeight = (int)(cosine * originalHeight + sine * originalWidth);
+
+        var rotatedBitmap = new SKBitmap(rotatedWidth, rotatedHeight);
+
+        using (var surface = new SKCanvas(rotatedBitmap))
+        {
+            surface.Clear();
+            surface.Translate(rotatedWidth / 2, rotatedHeight / 2);
+            surface.RotateDegrees((float)angle);
+            surface.Translate(-originalWidth / 2, -originalHeight / 2);
+            surface.DrawBitmap(bitmap, new SKPoint());
+        }
+        return rotatedBitmap;
     }
 
     /// <summary>
