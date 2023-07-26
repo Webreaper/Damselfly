@@ -8,6 +8,7 @@
 
 .tool-pallette {
     display: flex;
+    column-gap: 10px;
     flex-direction: row;
     min-width: 200px;
     height: 30px;

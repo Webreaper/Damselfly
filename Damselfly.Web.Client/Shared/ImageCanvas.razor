@@ -8,8 +8,19 @@
 
 <div class="image-canvas">
     <div class="tool-pallette">
-        <MudSlider @bind-Value="lightenFactor" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudSlider @bind-Value="saturation" Max="1.5f" Step="0.01f" Min="0.5f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+
+        <MudSelect @bind-Value="mode" @bind-Value:after="Repaint">
+            <MudSelectItem Value="SKBlendMode.Clear">None</MudSelectItem>
+            <MudSelectItem Value="SKBlendMode.Color">Col</MudSelectItem>
+            <MudSelectItem Value="SKBlendMode.Hue">Hue</MudSelectItem>
+            <MudSelectItem Value="SKBlendMode.Saturation">Sat</MudSelectItem>
+        </MudSelect>
+        <MudSlider @bind-Value="hue" Min="0" Max="360" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+
         <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
@@ -41,9 +52,14 @@
     private SKBitmap? sourceBitmap;
     private int currentImageId = 0;
     private CancellationTokenSource loadCancellationSource = new();
-    private byte lightenFactor = 0;
-    private float saturation = 1.0f;
+    private int lightenFactor = 0;
+    private float contrast = 0.0f;
     private int rotation = 0;
+
+    private SKBlendMode mode = SKBlendMode.Color;
+    private float hue = 0;
+    private float saturation = 0;
+    private float luminosity = 0;
 
     private SKPoint? dragStart;
     private SKPoint? dragEnd;
@@ -373,10 +389,17 @@
                 zoomViewPort.Offset(zoomOffset);
             }
 
-            var filters = CalculateColourFilters(canvas);
+            using var filters = CalculateColourFilters(canvas);
 
             // Paint the actual bitmap
             canvas.DrawBitmap(paintBitmap, zoomViewPort, rect, filters);
+
+            using (SKPaint paint = new SKPaint())
+            {
+                paint.Color = SKColor.FromHsl(hue, saturation, luminosity);
+                paint.BlendMode = mode;
+                canvas.DrawRect(rect, paint);
+            }
 
             DrawDragRect(canvas);
 
@@ -424,25 +447,36 @@
 
     private SKPaint CalculateColourFilters(SKCanvas canvas)
     {
-        using var filters = new SKPaint();
+        var filters = new SKPaint();
+        return filters;
 
         if (transformations.Any(x => x is MonoTransform))
         {
             filters.ColorFilter = blackAndWhite;
         }
+        else if (contrast != 0)
+        {
+            filters.ColorFilter = SKColorFilter.CreateHighContrast(false, SKHighContrastConfigInvertStyle.NoInvert, contrast);
+        }
         else if (saturation != 1)
         {
+            // 1.2 => 0
+            // 1 => 0
+            // 0.9 => 0.1
+            // 0.5 => 0.5
             var invert = saturation < 1 ? 1 - saturation : 0;
             filters.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                        {
+                    {
                     saturation, invert, invert, 0, 0,
                     invert, saturation, invert, 0, 0,
                     invert, invert, saturation, 0, 0,
                     0, 0, 0, 1, 0 });
         }
-        else if (lightenFactor > 0)
+        else if (lightenFactor != 0)
         {
-            filters.ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor));
+            var color = lightenFactor > 0 ? SKColors.White : SKColors.Black;
+            var factor = (byte)Math.Abs(lightenFactor);
+            filters.ColorFilter = SKColorFilter.CreateLighting(color, new SKColor(factor, factor, factor));
         }
 
         return filters;
