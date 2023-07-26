@@ -376,7 +376,6 @@
                 canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
             }
 
-            // Dispose of the copy we made
             if (croppedBmp != null)
                 croppedBmp.Dispose();
         }
