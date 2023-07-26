@@ -703,8 +703,8 @@ public class ExifService : IProcessJobFactory, ITagService
             // Save a new Operation, representing the conflated net rotation
             existingOps.Add( new ExifOperation { 
                     ImageId = netRotate.Image.ImageId,
-                    Operation = ExifOperation.OperationType.Add,
-                    Type = ExifOperation.ExifType.Rotate,
+                    Operation = OperationType.Add,
+                    Type = ExifType.Rotate,
                     Text = netRotate.Rotation.ToString(),
             } ); 
         }
