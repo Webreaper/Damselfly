@@ -25,14 +25,12 @@
     [Parameter]
     public string Class { get; set; }
 
-    public Color CropColour => isCropping ? Color.Primary : Color.Secondary;
+    public Color CropColour => isCropping ? Color.Tertiary : Color.Primary;
 
     private SKGLView glViewRef;
     private SKBitmap? sourceBitmap;
-    private bool isHiRes = false;
     private int currentImageId = 0;
     private CancellationTokenSource loadCancellationSource = new();
-    private string mouseStatus;
     private byte lightenFactor = 0;
     private float saturation = 1.0f;
     private int rotation = 0;
@@ -56,11 +54,13 @@
             glViewRef.Invalidate();
     }
 
-    // SKEncodedOrigin.RightTop: 90
-    // SKEncodedOrigin.BottomRight: 180
-    // SKEncodedOrigin.RightTop: 90
-    // SKEncodedOrigin.LeftBottom: 270
-
+    /// <summary>
+    /// SKEncodedOrigin.RightTop: 90
+    /// SKEncodedOrigin.BottomRight: 180
+    /// SKEncodedOrigin.RightTop: 90
+    /// SKEncodedOrigin.LeftBottom: 270
+    /// </summary>
+    /// <param name="degrees"></param>
     private void DoRotate(int degrees)
     {
         var oldBitmap = sourceBitmap;
@@ -241,7 +241,6 @@
             {
                 logger.LogInformation($"Loaded image {url} successfully");
                 SetBitmap(bmp);
-                isHiRes = false;
             }
             else
                 logger.LogError($"Failed to decode {url} - bitmap was null");
@@ -273,7 +272,6 @@
                 // Cancel the low-res load.
                 loadCancellationSource.Cancel();
                 SetBitmap(bmp);
-                isHiRes = true;
             }
             else
                 logger.LogError($"Failed to decode hi-res {url} - bitmap was null");
@@ -326,59 +324,16 @@
         // make sure the canvas is blank
         canvas.Clear(SKColors.Black);
 
-        using var paint = new SKPaint
-        {
-            IsAntialias = true,
-            StrokeWidth = 10f,
-            StrokeCap = SKStrokeCap.Round,
-            TextAlign = SKTextAlign.Center,
-            TextSize = 24,
-            Color = new SKColor(200, 200, 200),
-        };
-
         var surfaceSize = e.BackendRenderTarget.Size;
 
         if (sourceBitmap != null)
         {
             SKBitmap paintBitmap = sourceBitmap;
-            bool copied = false;
 
-            // Now the transformations
-            var crop = transformations.Where(x => x is CropTransform).Cast<CropTransform>().FirstOrDefault();
+            var croppedBmp = ApplyCrop(sourceBitmap);
 
-            if( crop != null )
-            {
-                using var cropBorder = new SKPaint
-                {
-                    Style = SKPaintStyle.Stroke,
-                    StrokeCap = SKStrokeCap.Round,
-                    StrokeWidth = 2f,
-                    Color = SKColor.Parse("#aa6666"),
-                };
-
-                var cropRect = new SKRectI(crop.Left,
-                                           crop.Top,
-                                           crop.Left + crop.Width,
-                                           crop.Top + crop.Height);
-
-                paintBitmap = new SKBitmap( crop.Width, crop.Height);
-                copied = true;
-
-                sourceBitmap.ExtractSubset(paintBitmap, cropRect);
-            }
-
-            /*
-            if( rotation != 0 )
-            {
-                var rotatedBmp = Rotate(paintBitmap, rotation);
-                if( crop != null )
-                {
-                    // We will have copied the source for the crop, so dispose that
-                    paintBitmap.Dispose();
-                }
-                paintBitmap = rotatedBmp;
-            }
-            */
+            if( croppedBmp != null )
+                paintBitmap = croppedBmp;
 
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
             var rect = GetRenderRect(paintBitmap, surfaceSize);
@@ -390,58 +345,107 @@
             using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
             sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
 
-            using var filters = new SKPaint();
-
-            if( transformations.Any( x => x is MonoTransform ) )
+            // Calculate the pan/zoom viewport
+            var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
+            var zoomViewPort = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
+            if (zoomAmount > 0)
             {
-                filters.ColorFilter = blackAndWhite;
+                zoomViewPort.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
+                zoomViewPort.Offset(zoomOffset);
             }
-            else if ( saturation != 1 )
+
+            var filters = CalculateColourFilters(canvas);
+
+            // Paint the actual bitmap
+            canvas.DrawBitmap(paintBitmap, zoomViewPort, rect, filters);
+
+            DrawDragRect(canvas);
+
+            if( System.Diagnostics.Debugger.IsAttached )
             {
-                var invert = saturation < 1 ? 1 - saturation : 0;
-                filters.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                            {
+                using var paint = new SKPaint
+                {
+                    IsAntialias = true,
+                    StrokeWidth = 10f,
+                    StrokeCap = SKStrokeCap.Round,
+                    TextAlign = SKTextAlign.Center,
+                    TextSize = 24,
+                    Color = new SKColor(200, 200, 200),
+                };
+
+                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+            }
+
+            // Dispose of the copy we made
+            if (croppedBmp != null)
+                croppedBmp.Dispose();
+        }
+    }
+
+    private SKBitmap? ApplyCrop( SKBitmap source )
+    {
+        SKBitmap? croppedBmp = null;
+
+        // See if we have a crop transformation
+        var crop = transformations.Where(x => x is CropTransform).Cast<CropTransform>().FirstOrDefault();
+
+        if (crop != null)
+        {
+            var cropRect = new SKRectI(crop.Left,
+                                       crop.Top,
+                                       crop.Left + crop.Width,
+                                       crop.Top + crop.Height);
+
+            croppedBmp = new SKBitmap(crop.Width, crop.Height);
+
+            source.ExtractSubset(croppedBmp, cropRect);
+        }
+
+        return croppedBmp;
+    }
+
+    private SKPaint CalculateColourFilters( SKCanvas canvas )
+    {
+        using var filters = new SKPaint();
+
+        if (transformations.Any(x => x is MonoTransform))
+        {
+            filters.ColorFilter = blackAndWhite;
+        }
+        else if (saturation != 1)
+        {
+            var invert = saturation < 1 ? 1 - saturation : 0;
+            filters.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
+                        {
                     saturation, invert, invert, 0, 0,
                     invert, saturation, invert, 0, 0,
                     invert, invert, saturation, 0, 0,
                     0, 0, 0, 1, 0 });
-            }
-            else if ( lightenFactor > 0 )
+        }
+        else if (lightenFactor > 0)
+        {
+            filters.ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor));
+        }
+
+        return filters;
+    }
+
+    private void DrawDragRect( SKCanvas canvas )
+    {
+        var dragRect = GetDragRect();
+
+        if (dragRect.HasValue)
+        {
+            using var dragBorder = new SKPaint
             {
-                filters.ColorFilter = SKColorFilter.CreateLighting(SKColors.White, new SKColor(lightenFactor, lightenFactor, lightenFactor));
-            }
+                Style = SKPaintStyle.Stroke,
+                StrokeCap = SKStrokeCap.Round,
+                StrokeWidth = 2f,
+                Color = SKColor.Parse("#ffffff"),
+                PathEffect = SKPathEffect.CreateDash(new[] { 5 * lastDPI, 2 * lastDPI }, 20)
+            };
 
-            var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
-            var zoomRect = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
-            if (zoomAmount > 0)
-            {
-                zoomRect.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
-                zoomRect.Offset(zoomOffset);
-            }
-
-            // Paint the actual bitmap
-            canvas.DrawBitmap(paintBitmap, zoomRect, rect, filters);
-
-            var dragRect = GetDragRect();
-
-            if (dragRect.HasValue)
-            {
-                using var dragBorder = new SKPaint
-                {
-                    Style = SKPaintStyle.Stroke,
-                    StrokeCap = SKStrokeCap.Round,
-                    StrokeWidth = 2f,
-                    Color = SKColor.Parse("#ffffff"),
-                    PathEffect = SKPathEffect.CreateDash(new[] { 5 * lastDPI, 2 * lastDPI }, 20)
-                };
-
-                canvas.DrawRect(dragRect.Value, dragBorder);
-            }
-
-            canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
-
-            if( copied )
-                paintBitmap.Dispose();
+            canvas.DrawRect(dragRect.Value, dragBorder);
         }
     }
 
@@ -449,13 +453,13 @@
     // From https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/color-filters
 
     private SKColorFilter blackAndWhite =
-        SKColorFilter.CreateColorMatrix(new float[]
-                {
+    SKColorFilter.CreateColorMatrix(new float[]
+            {
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0,     0,     0,     1, 0
-                });
+            });
 
     public static SKBitmap Rotate(SKBitmap bitmap, double angle)
     {
@@ -467,7 +471,7 @@
         int rotatedWidth = (int)(cosine * originalWidth + sine * originalHeight);
         int rotatedHeight = (int)(cosine * originalHeight + sine * originalWidth);
 
-        var rotatedBitmap = new SKBitmap(rotatedWidth, rotatedHeight);
+        var rotatedBitmap = new SKBitmap( bitmap.Height, bitmap.Width);
 
         using (var surface = new SKCanvas(rotatedBitmap))
         {
