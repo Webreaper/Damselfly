@@ -13,6 +13,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using static Damselfly.Core.Models.ExifOperation;
 using Stopwatch = Damselfly.Shared.Utils.Stopwatch;
 
 namespace Damselfly.Core.Services;
@@ -428,6 +429,12 @@ public class ExifService : IProcessJobFactory, ITagService
                 args += $" -exif:Rating=\"{op.Text}\"";
                 opsToProcess.Add(op);
             }
+            else if( op.Type == ExifOperation.ExifType.Rotate )
+            {
+                int rotationDegrees = Convert.ToUInt16( op.Text );
+                args += $" -orientation=\"Rotate {rotationDegrees} CW\"";
+                opsToProcess.Add( op );
+            }
             else if ( op.Type == ExifOperation.ExifType.Face )
             {
                 var imageObject = JsonSerializer.Deserialize<ImageObject>(op.Text);
@@ -649,6 +656,7 @@ public class ExifService : IProcessJobFactory, ITagService
             ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Description);
             ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Copyright);
             ConflateSingleObjects(opsToProcess, result, discardedOps, ExifOperation.ExifType.Rating);
+            ConflateRotation( opsToProcess, result, discardedOps );
         }
 
         if ( discardedOps.Any() )
@@ -666,6 +674,43 @@ public class ExifService : IProcessJobFactory, ITagService
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// If we have multiple rotations, we need to net them out. For example:
+    ///    90, 180, -90, 90, -270, 90 == 90
+    /// </summary>
+    /// <param name="opsToProcess"></param>
+    /// <param name="result"></param>
+    private void ConflateRotation(List<ExifOperation> opsToProcess, Dictionary<int, List<ExifOperation>> result, List<ExifOperation> discardedOps )
+    {
+        var rotateOps = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Rotate );
+
+        var opsByImage = rotateOps.GroupBy( x => x.Image );
+
+        var netRotations = opsByImage.Select( x => new { 
+                Image = x.Key, 
+                Rotation = x.Sum( op => Convert.ToInt16( op.Text ) ) % 360 } );
+
+        foreach( var netRotate in netRotations )
+        {
+            if( !result.TryGetValue( netRotate.Image.ImageId, out var existingOps ) )
+            {
+                existingOps = new List<ExifOperation>();
+                result[netRotate.Image.ImageId] = existingOps;
+            }
+
+            // Save a new Operation, representing the conflated net rotation
+            existingOps.Add( new ExifOperation { 
+                    ImageId = netRotate.Image.ImageId,
+                    Operation = ExifOperation.OperationType.Add,
+                    Type = ExifOperation.ExifType.Rotate,
+                    Text = netRotate.Rotation.ToString(),
+            } ); 
+        }
+
+        // We always discard, since we created a new op to represent the net rotation
+        discardedOps.AddRange( rotateOps );
     }
 
     private static void ConflateSingleObjects(List<ExifOperation> opsToProcess,

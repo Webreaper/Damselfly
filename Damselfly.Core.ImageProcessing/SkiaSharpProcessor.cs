@@ -54,7 +54,7 @@ public class SkiaSharpProcessor : IImageProcessor
 
                 scale = new Stopwatch("ScaleThumb");
 
-                if( config.width >= sourceBitmap.Width && config.height >= sourceBitmap.Height )
+                if( config.width < sourceBitmap.Width && config.height < sourceBitmap.Height )
                 {
                     // The thumbnail being generated is the same size or larger than the
                     // source. So just write the file without cropping or scaling, and continue.
@@ -90,7 +90,6 @@ public class SkiaSharpProcessor : IImageProcessor
                     srcBitmap = scaledImage.Copy();
 
                 result.ThumbsGenerated = true;
-                // TODO: Dispose
 
                 if ( pair.Value.size == ThumbSize.ExtraLarge )
                     Logging.Log(

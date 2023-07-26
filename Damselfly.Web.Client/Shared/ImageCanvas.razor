@@ -1,6 +1,7 @@
 @using Damselfly.Core.DbModels.Models.TransformationModels;
 
 @inject HttpClient restClient
+@inject ITagService tagService
 @inject ILogger<ImageCanvas> logger
 
 @implements IDisposable
@@ -79,6 +80,8 @@
             rotation = 0;
         if (rotation < 0)
             rotation = 270;
+
+        tagService.SetExifFieldAsync(new[] { Image.ImageId }, ExifOperation.ExifType.Rotate, rotation.ToString() );
 
         sourceBitmap = Rotate(oldBitmap, degrees);
         oldBitmap.Dispose();
