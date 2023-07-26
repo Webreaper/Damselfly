@@ -6,6 +6,7 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using SkiaSharp;
+using Tensorflow.Util;
 
 namespace Damselfly.Core.ImageProcessing;
 
@@ -56,8 +57,10 @@ public class SkiaSharpProcessor : IImageProcessor
                 if( config.width >= sourceBitmap.Width && config.height >= sourceBitmap.Height )
                 {
                     // The thumbnail being generated is the same size or larger than the
-                    // source. So just copy the file and continue to the next one
-                    source.CopyTo( dest.FullName );
+                    // source. So just write the file without cropping or scaling, and continue.
+                    // Note that we need to write the image, not just copy the file, because
+                    // we want to ensure that thumbs are oriented correctly.
+                    SaveBitmapAsJpeg( sourceBitmap, dest );
                     result.ThumbsGenerated = true;
                     continue;
                 }
@@ -73,24 +76,17 @@ public class SkiaSharpProcessor : IImageProcessor
                 var cropSize = new SKSize { Height = config.height, Width = config.width };
                 using var cropped = config.cropToRatio ? Crop(scaledImage, cropSize) : scaledImage;
 
-                using var data = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
-
                 scale.Stop();
-                save = new Stopwatch("SaveThumb");
-                // TODO: For configs flagged batchcreate == false, perhaps don't write to disk
-                // and just pass back the stream?
-                using ( var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write) )
-                {
-                    data.SaveTo(stream);
-                }
 
+                save = new Stopwatch( "SaveThumb" );
+                SaveBitmapAsJpeg( cropped, dest );
                 save.Stop();
 
                 // Now, use the previous scaled image as the basis for the
                 // next smaller thumbnail. This should reduce processing
                 // time as we only work on the large image on the first
                 // iteration
-                if ( destFiles.Count > 1 )
+                if( destFiles.Count > 1 )
                     srcBitmap = scaledImage.Copy();
 
                 result.ThumbsGenerated = true;
@@ -110,6 +106,18 @@ public class SkiaSharpProcessor : IImageProcessor
         }
 
         return Task.FromResult(result);
+    }
+
+    private void SaveBitmapAsJpeg( SKBitmap bitmap, FileInfo dest )
+    {
+        using var data = bitmap.Encode( SKEncodedImageFormat.Jpeg, 90 );
+
+        // TODO: For configs flagged batchcreate == false, perhaps don't write to disk
+        // and just pass back the stream?
+        using( var stream = new FileStream( dest.FullName, FileMode.Create, FileAccess.Write ) )
+        {
+            data.SaveTo( stream );
+        }
     }
 
     /// <summary>

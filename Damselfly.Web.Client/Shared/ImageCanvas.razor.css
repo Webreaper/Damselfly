@@ -16,3 +16,12 @@
 .cropping {
     cursor: crosshair;
 }
+
+.loading {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    padding-top: 30px;
+    justify-content: center;
+}

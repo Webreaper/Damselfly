@@ -14,8 +14,17 @@
         <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
         <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
     </div>
-    <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
-              class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel" />
+    @if (sourceBitmap == null)
+    {
+        <div class="loading">
+            <MudProgressCircular Indeterminate="true" />
+        </div>
+    }
+    else
+    {
+        <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
+                  class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel" />
+    }
 </div>
 
 @code {
@@ -40,7 +49,7 @@
     private bool isDragging;
     private bool isCropping;
 
-    private SKRect paintArea = new SKRect( 0, 0, 0, 0 );
+    private SKRect paintArea = new SKRect(0, 0, 0, 0);
     private float paintScale = 0f;
     private float lastDPI = 1.0f;
     private float zoomAmount = 0.0f;
@@ -86,14 +95,14 @@
                                      dragEnd.Value.X * lastDPI,
                                      dragEnd.Value.Y * lastDPI);
 
-            if ( rect.Left > rect.Right )
+            if (rect.Left > rect.Right)
             {
                 var temp = rect.Left;
                 rect.Left = rect.Right;
                 rect.Right = temp;
             }
 
-            if( rect.Top > rect.Bottom )
+            if (rect.Top > rect.Bottom)
             {
                 var temp = rect.Top;
                 rect.Top = rect.Bottom;
@@ -114,18 +123,18 @@
 
     private void DoCrop()
     {
-        if( isCropping )
+        if (isCropping)
         {
             isCropping = false;
 
             var rect = GetDragRect();
 
-            if( rect.HasValue )
+            if (rect.HasValue)
             {
                 var crop = new CropTransform
                 {
                     Left = (int)((rect.Value.Left - paintArea.Left) * paintScale),
-                    Top = (int)((rect.Value.Top - paintArea.Top ) * paintScale),
+                    Top = (int)((rect.Value.Top - paintArea.Top) * paintScale),
                     Width = (int)(rect.Value.Width * paintScale),
                     Height = (int)(rect.Value.Height * paintScale)
                 };
@@ -169,7 +178,7 @@
         return new SKPoint(x, y);
     }
 
-    private void MouseWheel(WheelEventArgs e )
+    private void MouseWheel(WheelEventArgs e)
     {
         zoomAmount += (float)(e.DeltaY / 2.0f);
         Repaint();
@@ -179,9 +188,9 @@
     {
         if (isDragging)
         {
-            if( isCropping )
+            if (isCropping)
                 dragEnd = GetCoords(e);
-            else if( zoomAmount != 0 )
+            else if (zoomAmount != 0)
                 zoomOffset = GetCoords(e);
             Repaint();
         }
@@ -190,9 +199,9 @@
 
     private void MouseDown(MouseEventArgs e)
     {
-        if( e.Button == 0 )
+        if (e.Button == 0)
         {
-            if( isCropping )
+            if (isCropping)
                 dragStart = GetCoords(e);
 
             isDragging = true;
@@ -226,6 +235,13 @@
         Repaint();
     }
 
+
+    private SKBitmap LoadOriented( Stream stream )
+    {
+        var codec = SKCodec.Create(stream);
+        return SKBitmap.Decode(codec);
+    }
+
     private async Task LoadImage(CancellationToken token)
     {
         var url = Image.ThumbUrl(ThumbSize.Medium);
@@ -235,7 +251,7 @@
         {
             using var imageStream = await restClient.GetStreamAsync(url, token);
 
-            bmp = SKBitmap.Decode(imageStream);
+            bmp = LoadOriented(imageStream);
 
             if (bmp != null && !token.IsCancellationRequested)
             {
@@ -332,7 +348,7 @@
 
             var croppedBmp = ApplyCrop(sourceBitmap);
 
-            if( croppedBmp != null )
+            if (croppedBmp != null)
                 paintBitmap = croppedBmp;
 
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
@@ -361,7 +377,7 @@
 
             DrawDragRect(canvas);
 
-            if( System.Diagnostics.Debugger.IsAttached )
+            if (System.Diagnostics.Debugger.IsAttached)
             {
                 using var paint = new SKPaint
                 {
@@ -381,7 +397,7 @@
         }
     }
 
-    private SKBitmap? ApplyCrop( SKBitmap source )
+    private SKBitmap? ApplyCrop(SKBitmap source)
     {
         SKBitmap? croppedBmp = null;
 
@@ -403,7 +419,7 @@
         return croppedBmp;
     }
 
-    private SKPaint CalculateColourFilters( SKCanvas canvas )
+    private SKPaint CalculateColourFilters(SKCanvas canvas)
     {
         using var filters = new SKPaint();
 
@@ -429,7 +445,7 @@
         return filters;
     }
 
-    private void DrawDragRect( SKCanvas canvas )
+    private void DrawDragRect(SKCanvas canvas)
     {
         var dragRect = GetDragRect();
 
@@ -458,7 +474,7 @@
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0.21f, 0.72f, 0.07f, 0, 0,
                     0,     0,     0,     1, 0
-            });
+                });
 
     public static SKBitmap Rotate(SKBitmap bitmap, double angle)
     {
@@ -470,7 +486,7 @@
         int rotatedWidth = (int)(cosine * originalWidth + sine * originalHeight);
         int rotatedHeight = (int)(cosine * originalHeight + sine * originalWidth);
 
-        var rotatedBitmap = new SKBitmap( bitmap.Height, bitmap.Width);
+        var rotatedBitmap = new SKBitmap(bitmap.Height, bitmap.Width);
 
         using (var surface = new SKCanvas(rotatedBitmap))
         {
@@ -507,7 +523,7 @@
         renderHeight *= scaleFactor;
 
         var origin = new SKPoint((canvasSize.Width - renderWidth) / 2.0f,
-                                 (canvasSize.Height - renderHeight) / 2.0f );
+                                 (canvasSize.Height - renderHeight) / 2.0f);
 
         return new SKRect(origin.X, origin.Y, renderWidth + origin.X, renderHeight + origin.Y);
     }
