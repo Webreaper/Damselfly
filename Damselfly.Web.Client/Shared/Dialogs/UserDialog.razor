@@ -108,7 +108,7 @@
 
                     if( success )
                     {
-                        var result = await userService.SetUserPasswordAsync(User, model.Password);
+                        var result = await userService.SetUserPasswordAsync(model.Username, model.Password);
 
                         success = result.Succeeded;
 
@@ -132,11 +132,11 @@
 
                 if ( AddingNewUser )
                 {
-                    result = await userService.CreateNewUser(User, model.Password, role);
+                    result = await userService.CreateNewUser(model.Username, model.Email, model.Password, role);
                 }
                 else
                 {
-                    result = await userService.UpdateUserAsync(User, role);
+                    result = await userService.UpdateUserAsync(model.Username, model.Email, role) ;
                 }
 
                 success = result != null && result.Succeeded;
@@ -157,8 +157,8 @@
         }
         catch( Exception ex )
         {
-            logger.LogError($"Exception when saving user settings: {ex}");
-            DisplayError("Unexpected error while saving user settings. Please try again.");
+            logger.LogError($"Exception when saving user: {ex}");
+            DisplayError("Unexpected error while saving user. Please try again.");
         }
     }
 

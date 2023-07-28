@@ -101,7 +101,7 @@ public class ImageController : Controller
                     var gotThumb = true;
 
 
-                    if ( !System.IO.File.Exists(imagePath) || image.MetaData.ThumbLastUpdated == null )
+                    if ( !System.IO.File.Exists(imagePath) )
                     {
                         gotThumb = false;
                         Logging.LogTrace($" - Generating thumbnail on-demand for {image.FileName}...");

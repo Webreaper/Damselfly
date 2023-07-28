@@ -63,6 +63,9 @@ public class RestClient
                 return new ArgumentException($"Object cycle exception for {requestUrl}", ex);
         }
 
+        if( ex.InnerException != null )
+            _logger.LogWarning( $"  Inner Exception: {ex.InnerException.Message}" );
+
         return ex;
     }
 

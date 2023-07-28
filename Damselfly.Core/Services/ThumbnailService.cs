@@ -68,9 +68,17 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
     public JobPriorities Priority => JobPriorities.Thumbnails;
 
+    private bool BackgroundThumbnailProcessingEnabled
+    {
+        get
+        {
+            return _configService.GetBool( ConfigSettings.EnableBackgroundThumbs, false );
+        }
+    }
+
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
-        if ( !_configService.GetBool( ConfigSettings.EnableBackgroundThumbs, false) )
+        if ( !BackgroundThumbnailProcessingEnabled )
             return new ThumbProcess[0];
 
         using var scope = _scopeFactory.CreateScope();
@@ -86,6 +94,46 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             .ToArray();
 
         return jobs;
+    }
+
+    private void DeleteThumbnails( IEnumerable<FileInfo> imagePaths )
+    {
+        var sizes = thumbConfigs.Select( x => x.size ).ToList();
+
+        var thumbPaths = imagePaths.SelectMany( x => sizes.Select( sz => GetThumbPath( x, sz ) ) )
+                            .Select( x => new FileInfo( x ) )
+                            .ToList();
+
+        foreach( var thumb in thumbPaths )
+        {
+            thumb.SafeDelete();
+        }
+    }
+
+    private async Task DeleteFolderThumbnails( int folderId )
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var files = await db!.Images.Where( x => x.FolderId == folderId )
+                             .Include( x => x.Folder )
+                             .Select( x => new FileInfo( Path.Combine( x.Folder.Path, x.FileName ) ) )
+                             .ToListAsync();
+
+        DeleteThumbnails( files );
+    }
+
+    private async Task DeleteThumbnails( IEnumerable<int> imageIds)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var files = await db!.Images.Where( x => imageIds.Contains( x.ImageId ) )
+                             .Include( x => x.Folder )
+                             .Select( x => new FileInfo( Path.Combine( x.Folder.Path, x.FileName ) ))
+                             .ToListAsync();
+
+        DeleteThumbnails( files );
     }
 
     public async Task MarkAllForScan()
@@ -107,6 +155,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
         var updated = await ImageContext.UpdateMetadataFields(db, folderId, "ThumbLastUpdated", "null");
 
+        if( !BackgroundThumbnailProcessingEnabled )
+            await DeleteFolderThumbnails( folderId );
+
         if ( updated != 0 )
             _statusService.UpdateStatus($"{updated} images in folder flagged for thumbnail re-generation.");
     }
@@ -121,6 +172,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
         // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
         await db.Database.ExecuteSqlRawAsync(sql);
+
+        if( !BackgroundThumbnailProcessingEnabled )
+            await DeleteThumbnails( imageIds );
 
         var msgText = imageIds.Count == 1 ? "Image" : $"{imageIds.Count} images";
         _statusService.UpdateStatus($"{msgText} flagged for thumbnail re-generation.");
@@ -302,7 +356,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         var foldersToDelete = thumbSubDirs.Except(picsSubDirs);
         var foldersToCheck = thumbSubDirs.Intersect(picsSubDirs);
 
-        foreach ( var deleteDir in foldersToDelete ) Logging.Log($"Deleting folder {deleteDir} [Dry run]");
+        foreach ( var deleteDir in foldersToDelete ) 
+            Logging.Log($"Deleting folder {deleteDir} [Dry run]");
 
         foreach ( var folderToCheck in foldersToCheck.Select(x => new DirectoryInfo(x)) )
         {

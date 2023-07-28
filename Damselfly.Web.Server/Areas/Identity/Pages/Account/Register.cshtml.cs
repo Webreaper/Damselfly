@@ -67,7 +67,7 @@ public class RegisterModel : PageModel
         {
             var user = new AppIdentityUser { UserName = Input.Email, Email = Input.Email };
 
-            var result = await _userService.CreateNewUser(user, Input.Password);
+            var result = await _userService.CreateNewUser(user.UserName, user.Email, Input.Password);
 
             if ( result.Succeeded )
             {
