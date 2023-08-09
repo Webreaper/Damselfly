@@ -16,7 +16,7 @@
         <None Remove="System.Drawing.Common" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.Face" Version="2.8.0-preview.2" />
+        <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.Face" Version="2.8.0-preview.3" />
         <PackageReference Include="FluentValidation" Version="11.6.0" />
     </ItemGroup>
 </Project>

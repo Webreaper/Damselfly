@@ -15,9 +15,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.ML" Version="2.0.1" />
-        <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="2.0.1" />
-        <PackageReference Include="Microsoft.ML.TensorFlow" Version="2.0.1" />
+        <PackageReference Include="Microsoft.ML" Version="3.0.0-preview.23266.6" />
+        <PackageReference Include="Microsoft.ML.ImageAnalytics" Version="3.0.0-preview.23266.6" />
+        <PackageReference Include="Microsoft.ML.TensorFlow" Version="3.0.0-preview.23266.6" />
         <PackageReference Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
     </ItemGroup>

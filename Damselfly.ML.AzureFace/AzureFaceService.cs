@@ -130,7 +130,8 @@ public class AzureFaceService
 
             if ( groups.Any(x => x.DynamicPersonGroupId == GroupId) )
             {
-                var faces = await _transThrottle.Call("List", _faceClient.PersonDirectory.GetPersonsAsync());
+                // Hack here as we're going to remove all this code in future.
+                var faces = await _transThrottle.Call("List", _faceClient.PersonDirectory.GetPersonsAsync(new Guid()));
 
                 _persistedFaces = faces.Count();
                 Logging.Log($"Azure directory currently contains {_persistedFaces} recognisable faces.");
@@ -330,7 +331,7 @@ public class AzureFaceService
 
         foreach ( var newFace in newFaces )
         {
-            var body = new EnrolledPerson { PersonId = newFace.PersonId, Name = $"Unknown{_persistedFaces}" };
+            var body = new EnrolledPerson { PersonId = newFace.PersonId.Value, Name = $"Unknown{_persistedFaces}" };
             // It's somebody new - create the person
             var createdPerson =
                 await _transThrottle.Call("CreatePerson", _faceClient.PersonDirectory.CreatePersonAsync(body));

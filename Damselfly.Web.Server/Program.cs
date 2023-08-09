@@ -219,6 +219,7 @@ public class Program
         app.UseStaticFiles();
         app.UseResponseCompression();
         app.UseRouting();
+        app.UseAntiforgery();
 
         if( Debugger.IsAttached )
         {
