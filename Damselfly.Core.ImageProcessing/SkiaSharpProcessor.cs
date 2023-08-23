@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Images;
@@ -187,17 +187,20 @@ public class SkiaSharpProcessor : IImageProcessor
 
             var pixels = sourceBitmap.GetPixelSpan();
 
-            var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 
             for ( var row = 0; row < sourceBitmap.Height; row++ )
             {
                 var rowPixels = pixels.Slice(row * sourceBitmap.RowBytes, sourceBitmap.RowBytes);
 
-                var rgbaBytes = MemoryMarshal.AsBytes(rowPixels).ToArray();
+                var rgbaBytes = MemoryMarshal.AsBytes(rowPixels);
                 hash.AppendData(rgbaBytes);
             }
 
-            result = hash.GetHashAndReset().ToHex(true);
+            Span<byte> buffer = stackalloc byte[SHA1.HashSizeInBytes];
+            hash.GetHashAndReset(buffer);
+            result = Convert.ToHexString(buffer);
+
             hashWatch.Stop();
             Logging.LogVerbose($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
         }
