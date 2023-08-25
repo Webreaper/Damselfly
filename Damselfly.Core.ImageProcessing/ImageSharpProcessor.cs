@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using CoenM.ImageHash;
 using CoenM.ImageHash.HashAlgorithms;
@@ -234,7 +234,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
         try
         {
             var hashWatch = new Stopwatch("CalcImageHash");
-            var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA1);
 
             image.ProcessPixelRows(pixelAccessor =>
             {
@@ -242,12 +242,15 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
                 {
                     var pixelRowSpan = pixelAccessor.GetRowSpan(y);
 
-                    var rgbaBytes = MemoryMarshal.AsBytes(pixelRowSpan).ToArray();
+                    var rgbaBytes = MemoryMarshal.AsBytes(pixelRowSpan);
                     hash.AppendData(rgbaBytes);
                 }
             });
 
-            result = hash.GetHashAndReset().ToHex(true);
+            Span<byte> buffer = stackalloc byte[SHA1.HashSizeInBytes];
+            hash.GetHashAndReset(buffer);
+            result = Convert.ToHexString(buffer);
+
             hashWatch.Stop();
             Logging.LogVerbose($"Hashed image ({result}) in {hashWatch.HumanElapsedTime}");
         }
