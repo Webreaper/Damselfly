@@ -8,7 +8,11 @@
 
 <div class="image-canvas">
     <div class="tool-pallette">
+        <MudText>Zoom:</MudText>
+        <MudSlider @bind-Value="zoomAmount" Min="0" Max="1000" Step="10" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudText>Lighten:</MudText>
         <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudText>Darken:</MudText>
         <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
 
         <MudSelect @bind-Value="mode" @bind-Value:after="Repaint">
@@ -17,8 +21,11 @@
             <MudSelectItem Value="SKBlendMode.Hue">Hue</MudSelectItem>
             <MudSelectItem Value="SKBlendMode.Saturation">Sat</MudSelectItem>
         </MudSelect>
+        <MudText>Hue:</MudText>
         <MudSlider @bind-Value="hue" Min="0" Max="360" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudText>Sat:</MudText>
         <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudText>Lum:</MudText>
         <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
 
         <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" />
@@ -48,6 +55,7 @@
 
     public Color CropColour => isCropping ? Color.Tertiary : Color.Primary;
 
+    private SKBlendMode mode = SKBlendMode.Color;
     private SKGLView glViewRef;
     private SKBitmap? sourceBitmap;
     private int currentImageId = 0;
@@ -56,7 +64,6 @@
     private float contrast = 0.0f;
     private int rotation = 0;
 
-    private SKBlendMode mode = SKBlendMode.Color;
     private float hue = 0;
     private float saturation = 0;
     private float luminosity = 0;
@@ -136,7 +143,10 @@
 
     private void DoMono()
     {
-        transformations.Add(new MonoTransform());
+        if (transformations.Any(x => x is MonoTransform))
+            transformations.Add(new MonoTransform());
+        else
+            transformations = transformations.Where(x => !(x is MonoTransform)).ToList();
         Repaint();
     }
 
@@ -394,11 +404,15 @@
             // Paint the actual bitmap
             canvas.DrawBitmap(paintBitmap, zoomViewPort, rect, filters);
 
-            using (SKPaint paint = new SKPaint())
-            {
-                paint.Color = SKColor.FromHsl(hue, saturation, luminosity);
-                paint.BlendMode = mode;
-                canvas.DrawRect(rect, paint);
+            if( hue != 0 || saturation != 0 || luminosity != 0 )
+            { 
+                // Now mask to do the H/S/L
+                using (SKPaint paint = new SKPaint())
+                {
+                    paint.Color = SKColor.FromHsl(hue, saturation, luminosity);
+                    paint.BlendMode = mode;
+                    canvas.DrawRect(rect, paint);
+                }
             }
 
             DrawDragRect(canvas);
@@ -415,7 +429,7 @@
                     Color = new SKColor(200, 200, 200),
                 };
 
-                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
+                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount} H: {hue} S: {saturation} L: {luminosity}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
             }
 
             if (croppedBmp != null)
@@ -448,7 +462,6 @@
     private SKPaint CalculateColourFilters(SKCanvas canvas)
     {
         var filters = new SKPaint();
-        return filters;
 
         if (transformations.Any(x => x is MonoTransform))
         {

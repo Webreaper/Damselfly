@@ -18,7 +18,7 @@
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0-preview.7.23375.6" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0-preview.7.23375.9" />
-        <PackageReference Include="FluentValidation" Version="11.6.0" />
+        <PackageReference Include="FluentValidation" Version="11.7.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="8.0.0-preview.7.23375.9" />
     </ItemGroup>
 
