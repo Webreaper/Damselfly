@@ -60,14 +60,17 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
         var faves = await _exifService.GetFavouriteTags();
         var recents = await GetRecentTags();
 
-        var newRecent = newRecents.Concat(recentTags)
-            .Except(faves.Select(x => x.Keyword))
-            .Distinct()
-            .Take(maxRecents).ToList();
-        recentTags.Clear();
-        recentTags.AddRange(newRecent);
+        if( recents != null && recents.Any() )
+        {
+            var newRecent = newRecents.Concat(recentTags)
+                .Except(faves.Select(x => x.Keyword))
+                .Distinct()
+                .Take(maxRecents).ToList();
+            recentTags.Clear();
+            recentTags.AddRange(newRecent);
 
-        _configService.Set(ConfigSettings.RecentTags, string.Join(",", recentTags));
-        NotifyRecentsChanged();
+            _configService.Set(ConfigSettings.RecentTags, string.Join(",", recentTags));
+            NotifyRecentsChanged();
+        }
     }
 }
