@@ -22,7 +22,7 @@
         <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14" />
         <PackageReference Include="font-awesome" Version="4.7.0" />
-        <PackageReference Include="SkiaSharp" Version="2.88.3" />
+        <PackageReference Include="SkiaSharp" Version="2.88.6" />
         <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
