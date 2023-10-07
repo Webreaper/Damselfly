@@ -63,9 +63,9 @@ public static class ExifUtils
             if ( val.HasValue )
                 retVal = val.Value;
         }
-        catch
+        catch( Exception ex )
         {
-            Logging.LogVerbose("Error reading date/time metadata!");
+            Logging.LogVerbose($"Error reading date/time metadata! {ex}");
         }
 
         return retVal;

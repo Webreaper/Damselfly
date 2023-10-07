@@ -92,7 +92,7 @@
         {
             int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
 
-            appStatusService.IsMobile = (innerWidth <= 480);
+            appStatusService.IsMobile = (innerWidth <= 640);
         }
     }
 
