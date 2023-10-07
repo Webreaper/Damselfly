@@ -407,6 +407,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
                 if ( IfdDirectory != null )
                 {
+                    if ( imgMetaData.DateTaken == DateTime.MinValue )
+                        imgMetaData.DateTaken = IfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTime);
+                            
                     var exifDesc = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription).SafeTrim();
                     imgMetaData.Description = FilteredDescription(exifDesc);
 
