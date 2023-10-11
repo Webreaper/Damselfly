@@ -27,7 +27,7 @@ public class NotificationsService : IAsyncDisposable
 
             hubConnection = new HubConnectionBuilder()
                 .WithUrl(hubUrl, options => { 
-                    options.UseAcks = true; 
+                    options.UseStatefulReconnect = true; 
                 } )
                 .WithAutomaticReconnect(new RetryPolicy())
                 .Build();
