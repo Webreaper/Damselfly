@@ -24,7 +24,6 @@ using Serilog.Events;
 using ILogger = Serilog.ILogger;
 using Host = Damselfly.Web.Client.Host;
 using Damselfly.Core.ScopedServices.Interfaces;
-using XmpCore.Options;
 
 namespace Damselfly.Web;
 
@@ -231,9 +230,7 @@ public class Program
         }
 
         // Map the signalR notifications endpoints
-        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options =>
-                options.AllowStatefulReconnects = true
-        );
+        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowAcks = true );
 
         app.UseAuthentication();
         app.UseAuthorization();
