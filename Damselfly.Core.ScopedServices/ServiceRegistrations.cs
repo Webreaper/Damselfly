@@ -12,60 +12,60 @@ public static class ServiceRegistrations
     /// <returns></returns>
     public static IServiceCollection AddDamselflyUIServices(this IServiceCollection services)
     {
-        services.AddSingleton<NotificationsService>();
+        services.AddScoped<ClientConfigService>();
 
-        services.AddSingleton<ViewDataService>();
-        services.AddSingleton<NavigationService>();
-        services.AddSingleton<UserFolderService>();
-        services.AddSingleton<UserService>();
+        services.AddScoped<NotificationsService>();
 
-        services.AddSingleton<ClientStatusService>();
-        services.AddSingleton<ClientDataService>();
-        services.AddSingleton<ClientBasketService>();
-        services.AddSingleton<ClientDownloadService>();
-        services.AddSingleton<ClientThemeService>();
-        services.AddSingleton<ClientRescanService>();
-        services.AddSingleton<ClientWorkService>();
-        services.AddSingleton<ClientSearchService>();
-        services.AddSingleton<ClientConfigService>();
-        services.AddSingleton<ClientFolderService>();
-        services.AddSingleton<ClientFileService>();
-        services.AddSingleton<ClientImageCacheService>();
-        services.AddSingleton<ClientTagService>();
-        services.AddSingleton<ClientTaskService>();
-        services.AddSingleton<ClientWordpressService>();
-        services.AddSingleton<ClientPeopleService>();
-        services.AddSingleton<ApplicationStateService>();
-        services.AddSingleton<ClientUserMgmtService>();
-        services.AddSingleton<ClientExportService>();
+        services.AddScoped<ViewDataService>();
+        services.AddScoped<NavigationService>();
+        services.AddScoped<UserFolderService>();
+        services.AddScoped<UserService>();
 
-        services.AddSingleton<IPeopleService>(x => x.GetRequiredService<ClientPeopleService>());
-        services.AddSingleton<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
-        services.AddSingleton<IRescanService>(x => x.GetRequiredService<ClientRescanService>());
-        services.AddSingleton<IThemeService>(x => x.GetRequiredService<ClientThemeService>());
-        services.AddSingleton<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
-        services.AddSingleton<ITagService>(x => x.GetRequiredService<ClientTagService>());
-        services.AddSingleton<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
-        services.AddSingleton<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
-        services.AddSingleton<IFileService>( x => x.GetRequiredService<ClientFileService>() );
-        services.AddSingleton<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
-        services.AddSingleton<ISearchService>(x => x.GetRequiredService<ClientSearchService>());
-        services.AddSingleton<IWorkService>(x => x.GetRequiredService<ClientWorkService>());
-        services.AddSingleton<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());
-        services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
-        services.AddSingleton<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
-        services.AddSingleton<IUserConfigService>(x => x.GetRequiredService<ClientConfigService>());
-        services.AddSingleton<ISystemSettingsService>(x => x.GetRequiredService<ClientConfigService>());
-        services.AddSingleton<IUserService>(x => x.GetRequiredService<UserService>());
-        services.AddSingleton<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
-        services.AddSingleton<IUserStatusService>(x => x.GetRequiredService<ClientStatusService>());
-        services.AddSingleton<IUserBasketService>(x => x.GetRequiredService<ClientBasketService>());
-        services.AddSingleton<IBasketService>(x => x.GetRequiredService<ClientBasketService>());
-        services.AddSingleton<IDownloadService>(x => x.GetRequiredService<ClientDownloadService>());
-        services.AddSingleton<IUserMgmtService>(x => x.GetRequiredService<ClientUserMgmtService>());
+        services.AddScoped<ClientStatusService>();
+        services.AddScoped<ClientDataService>();
+        services.AddScoped<ClientBasketService>();
+        services.AddScoped<ClientDownloadService>();
+        services.AddScoped<ClientThemeService>();
+        services.AddScoped<ClientRescanService>();
+        services.AddScoped<ClientWorkService>();
+        services.AddScoped<ClientSearchService>();
+        services.AddScoped<ClientFolderService>();
+        services.AddScoped<ClientFileService>();
+        services.AddScoped<ClientImageCacheService>();
+        services.AddScoped<ClientTagService>();
+        services.AddScoped<ClientTaskService>();
+        services.AddScoped<ClientWordpressService>();
+        services.AddScoped<ClientPeopleService>();
+        services.AddScoped<ApplicationStateService>();
+        services.AddScoped<ClientUserMgmtService>();
+        services.AddScoped<ClientExportService>();
+        services.AddScoped<SelectionService>();
 
-        services.AddSingleton<SelectionService>();
-
+        services.AddScoped<IPeopleService>(x => x.GetRequiredService<ClientPeopleService>());
+        services.AddScoped<IWordpressService>(x => x.GetRequiredService<ClientWordpressService>());
+        services.AddScoped<IRescanService>(x => x.GetRequiredService<ClientRescanService>());
+        services.AddScoped<IThemeService>(x => x.GetRequiredService<ClientThemeService>());
+        services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
+        services.AddScoped<ITagService>(x => x.GetRequiredService<ClientTagService>());
+        services.AddScoped<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
+        services.AddScoped<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
+        services.AddScoped<IFileService>( x => x.GetRequiredService<ClientFileService>() );
+        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
+        services.AddScoped<ISearchService>(x => x.GetRequiredService<ClientSearchService>());
+        services.AddScoped<IWorkService>(x => x.GetRequiredService<ClientWorkService>());
+        services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ClientImageCacheService>());
+        services.AddScoped<ICachedDataService>(x => x.GetRequiredService<ClientDataService>());
+        services.AddScoped<IConfigService>(x => x.GetRequiredService<ClientConfigService>());
+        services.AddScoped<IUserConfigService>(x => x.GetRequiredService<ClientConfigService>());
+        services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<ClientConfigService>());
+        services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
+        services.AddScoped<IFolderService>(x => x.GetRequiredService<ClientFolderService>());
+        services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ClientStatusService>());
+        services.AddScoped<IUserBasketService>(x => x.GetRequiredService<ClientBasketService>());
+        services.AddScoped<IBasketService>(x => x.GetRequiredService<ClientBasketService>());
+        services.AddScoped<IDownloadService>(x => x.GetRequiredService<ClientDownloadService>());
+        services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<ClientUserMgmtService>());
+        
         return services;
     }
 }

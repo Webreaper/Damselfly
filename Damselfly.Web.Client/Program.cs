@@ -56,10 +56,10 @@ public class Program
         builder.Services.AddBlazorPanzoomServices();
 
         builder.Services.AddScoped<ContextMenuService>();
-        builder.Services.AddSingleton<RestClient>();
+        builder.Services.AddScoped<RestClient>();
 
-        builder.Services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-        builder.Services.AddSingleton<IAuthService, ClientAuthService>();
+        builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+        builder.Services.AddScoped<IAuthService, ClientAuthService>();
 
         builder.Services.AddDamselflyUIServices();
 
