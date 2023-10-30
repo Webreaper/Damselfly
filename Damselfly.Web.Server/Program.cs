@@ -22,7 +22,6 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
-using Host = Damselfly.Web.Client.Host;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Web;
@@ -142,8 +141,6 @@ public class Program
 
         SetupIdentity(builder.Services);
 
-        builder.Services.AddRazorComponents().AddWebAssemblyComponents();
-
         // Cache up to 10,000 images. Should be enough given cache expiry.
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
@@ -207,6 +204,8 @@ public class Program
 
         app.UseHttpsRedirection();
 
+        app.UseBlazorFrameworkFiles();
+        
         // TODO: Do we need this if we serve all the images via the controller?
         app.UseStaticFiles();
         app.UseStaticFiles(new StaticFileOptions
@@ -230,15 +229,15 @@ public class Program
         }
 
         // Map the signalR notifications endpoints
-        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowAcks = true );
+        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowStatefulReconnects = true );
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapRazorPages();
         app.MapControllers();
-        app.MapRazorComponents<Host>().AddWebAssemblyRenderMode();
-
+        app.MapFallbackToFile("index.html");
+        
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);
 

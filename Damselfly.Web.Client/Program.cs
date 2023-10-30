@@ -39,7 +39,8 @@ public class Program
         builder.Logging.AddProvider(new SerilogLoggerProvider());
 
         builder.RootComponents.Add<App>("#app");
-
+        builder.RootComponents.Add<HeadOutlet>("head::after");
+        
         var httpClientBuilder = builder.Services.AddHttpClient("DamselflyAPI",
             client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 
