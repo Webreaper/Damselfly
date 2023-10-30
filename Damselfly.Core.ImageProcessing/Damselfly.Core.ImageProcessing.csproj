@@ -15,7 +15,7 @@
         <None Remove="SixLabors.Fonts" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
-        <PackageReference Include="SixLabors.Fonts" Version="1.0.0" />
+        <PackageReference Include="SixLabors.ImageSharp" />
+        <PackageReference Include="SixLabors.Fonts" />
     </ItemGroup>
 </Project>
