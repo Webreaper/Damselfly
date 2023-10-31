@@ -24,12 +24,10 @@
 
     <ItemGroup>
         <Folder Include="Authentication\" />
-        <Folder Include="Interfaces\" />
         <Folder Include="Utils\" />
         <Folder Include="Models\" />
         <Folder Include="Models\SideCars\" />
         <Folder Include="Images\" />
-        <Folder Include="Models\API Models\" />
         <Folder Include="Models\ConfigSettings\" />
         <Folder Include="Models\TransformationModels\" />
     </ItemGroup>

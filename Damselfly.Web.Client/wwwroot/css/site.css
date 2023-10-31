@@ -33,6 +33,10 @@ html, body {
     font-weight: bold;
 }
 
+.search-hints { 
+    max-width: 700px;
+}
+
 .imagegrid-loader {
     width: 24px;
     height: 24px;

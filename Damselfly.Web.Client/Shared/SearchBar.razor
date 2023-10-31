@@ -34,7 +34,24 @@
         <button class="btn btn-primary damselfly-searchtools" title="Tag Management" @onclick="@TagManagement">
             <i class="fas fa-tags"/>
         </button>
-        <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
+        @if( searchService.SearchHints.Any() )
+        {
+            <div class="search-hints">
+                <MudChipSet>
+                    @foreach( var hint in searchService.SearchHints )
+                    {
+                        <MudChip OnClose="@hint.Clear" Size="Size.Small">
+                            @hint.Description
+                        </MudChip>
+                    }
+                </MudChipSet>
+            </div>
+        }
+        else
+        {
+            <label class="damselfly-browsetoollabel" >No filter.</label>
+        }
+        
     </div>
 
     <div class="damselfly-browsetools">
