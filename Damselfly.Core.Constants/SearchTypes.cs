@@ -1,4 +1,5 @@
-﻿namespace Damselfly.Core.Constants;
+﻿
+namespace Damselfly.Core.Constants;
 
 public enum SortOrderType
 {
@@ -28,3 +29,4 @@ public enum OrientationType
     Panorama,
     Square
 }
+

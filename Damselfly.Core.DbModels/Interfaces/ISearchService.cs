@@ -44,5 +44,5 @@ public interface ISearchService
     event Action OnSearchQueryChanged;
     event Action<SearchResponse> OnSearchResultsChanged;
 
-    Task LoadMore(int count = 250);
+    Task LoadMore(int count = DamselflyContants.PageSize);
 }

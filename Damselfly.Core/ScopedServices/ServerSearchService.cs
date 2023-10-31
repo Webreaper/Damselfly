@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -25,7 +26,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
         _queryService = queryService;
     }
 
-    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = 250)
+    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = DamselflyContants.PageSize)
     {
         int first = _searchResults.Count;
 

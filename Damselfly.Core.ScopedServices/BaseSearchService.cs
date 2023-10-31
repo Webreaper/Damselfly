@@ -24,7 +24,7 @@ public abstract class BaseSearchService
     private readonly ICachedDataService _service;
     private readonly IImageCacheService _imageCache;
 
-    protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = 250);
+    protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = DamselflyContants.PageSize);
 
     public BaseSearchService(ICachedDataService dataService, IImageCacheService imageCache, ILogger<BaseSearchService> logger)
     {
@@ -477,7 +477,7 @@ public abstract class BaseSearchService
         _ = GetQueryImagesAsync();
     }
 
-    public async Task LoadMore( int count = 250 )
+    public async Task LoadMore( int count = DamselflyContants.PageSize )
     {
         await GetQueryImagesAsync( count );
     }

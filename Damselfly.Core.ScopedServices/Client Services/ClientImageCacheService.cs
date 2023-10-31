@@ -114,7 +114,7 @@ public class ClientImageCacheService : IImageCacheService
     /// <returns></returns>
     private async Task PreCacheImageList(ICollection<int> imgIds)
     {
-        const int chunkSize = 250;
+        const int chunkSize = DamselflyContants.PageSize;
 
         if ( imgIds.Count() <= chunkSize )
         {
