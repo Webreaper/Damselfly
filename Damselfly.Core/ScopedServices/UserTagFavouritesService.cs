@@ -55,6 +55,9 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
     /// <param name="recentTags"></param>
     public async void AddRecentTags( ICollection<string> newRecents)
     {
+        if( newRecents == null || ! newRecents.Any() )
+            return;
+
         const int maxRecents = 5;
 
         var faves = await _exifService.GetFavouriteTags();

@@ -530,17 +530,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var img = await _imageCache.GetCachedImage(imageId);
 
         db.Attach(img);
-
+        
         try
         {
             var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
 
-            if (lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) && lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
+            if( lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) &&
+                      lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
             {
                 // If the last-write time is within 30s of now, but it's not a time far in the future
                 // we skip it, as it's possible it might still be mid-copy.
                 // TODO: We need a better way of managing this
-                Logging.LogWarning($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+                Logging.LogVerbose($"Skipping metadata scan for {img.FileName} - write time is too recent.");
                 return;
             }
 
@@ -597,7 +598,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var changesSaved = await db.SaveChangesAsync("ImageMetaDataSave");
 
             if ( changesSaved == 0 )
-                Logging.LogError($"No changes saved after metadata scan for image {img.ImageId}");
+                Logging.LogVerbose($"No changes saved after metadata scan for image {img.ImageId}");
         }
 
         // Now save the tags
