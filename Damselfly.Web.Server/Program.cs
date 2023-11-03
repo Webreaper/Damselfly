@@ -168,8 +168,13 @@ public class Program
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
 
-        // Use Kestrel options to set the port. Using .Urls.Add breaks WASM debugging.
-        builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(cmdLineOptions.Port); });
+        if( ! Debugger.IsAttached )
+        {
+            // Use Kestrel options to set the port. Using .Urls.Add breaks WASM debugging.
+            // This line also breaks wasm debugging in Rider.
+            // See https://github.com/dotnet/aspnetcore/issues/43703
+            builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(cmdLineOptions.Port); });
+        }
 
         var app = builder.Build();
 
