@@ -64,6 +64,7 @@ public class EmguFaceService : IHashProvider
             var haarcascades = modelDir.GetFiles("haarcascade*.xml", SearchOption.AllDirectories).ToList();
 
             foreach ( var modelFile in haarcascades )
+            {
                 try
                 {
                     var tag = modelFile.Directory?.Name.Transform(To.SentenceCase);
@@ -81,6 +82,7 @@ public class EmguFaceService : IHashProvider
                 {
                     Logging.LogError($"Unable to initialize Emgu face detection: {ex}");
                 }
+            }
         }
         else
         {

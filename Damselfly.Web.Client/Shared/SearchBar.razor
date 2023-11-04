@@ -40,7 +40,7 @@
                 <MudChipSet>
                     @foreach( var hint in searchService.SearchHints )
                     {
-                        <MudChip OnClose="@hint.Clear" Size="Size.Small">
+                        <MudChip OnClose="@hint.Clear" Size="Size.Small" Color="Color.Tertiary">
                             @hint.Description
                         </MudChip>
                     }
