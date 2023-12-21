@@ -54,21 +54,18 @@ public class SkiaSharpProcessor : IImageProcessor
 
                 scale = new Stopwatch("ScaleThumb");
 
-                if( config.width < sourceBitmap.Width && config.height < sourceBitmap.Height )
-                {
-                    // The thumbnail being generated is the same size or larger than the
-                    // source. So just write the file without cropping or scaling, and continue.
-                    // Note that we need to write the image, not just copy the file, because
-                    // we want to ensure that thumbs are oriented correctly.
-                    SaveBitmapAsJpeg( sourceBitmap, dest );
-                    result.ThumbsGenerated = true;
-                    continue;
-                }
-
+                // The thumbnail being generated is the smaller than the
+                // source. Calculate the scale factor by which we need to reduce
                 var widthScaleFactor = srcBitmap.Width / (float)config.width;
-                var heighScaleFactor = srcBitmap.Height / (float)config.height;
-                var scaleFactor = Math.Min(widthScaleFactor, heighScaleFactor);
+                var heighScaleFactor = srcBitmap.Height / (float)config.height; 
+                
+                // If we're allowed to crop, pick the largest scale factor. Otherwise the smallest.
+                var scaleFactor = config.cropToRatio ? Math.Max(widthScaleFactor, heighScaleFactor) :
+                                                            Math.Min(widthScaleFactor, heighScaleFactor);
 
+                // Ensure we only ever scale down, never up
+                scaleFactor = Math.Max( 1, scaleFactor);
+                
                 using var scaledImage = new SKBitmap((int)(srcBitmap.Width / scaleFactor),
                     (int)(srcBitmap.Height / scaleFactor));
                 srcBitmap.ScalePixels(scaledImage.PeekPixels(), quality);
