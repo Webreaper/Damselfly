@@ -168,13 +168,22 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var imageIdList = string.Join(",", imageIds);
-        var sql = $"Update imagemetadata Set ThumbLastUpdated = null where imageid in ({imageIdList})";
-
-        // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
-        await db.Database.ExecuteSqlRawAsync(sql);
 
         if( !BackgroundThumbnailProcessingEnabled )
+        {
+            await db.BatchUpdate(db.ImageMetaData, i => 
+                i.SetProperty(x => x.ThumbLastUpdated, 
+                    x => DateTime.UtcNow));
             await DeleteThumbnails( imageIds );
+            _imageCache.Evict(imageIds.ToList());
+        }
+        else
+        {
+            await db.BatchUpdate(db.ImageMetaData, i => 
+                i.SetProperty(x => x.ThumbLastUpdated, 
+                    x => null));
+
+        }
 
         var msgText = imageIds.Count == 1 ? "Image" : $"{imageIds.Count} images";
         _statusService.UpdateStatus($"{msgText} flagged for thumbnail re-generation.");

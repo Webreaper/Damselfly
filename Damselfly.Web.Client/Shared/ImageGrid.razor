@@ -207,7 +207,7 @@
             basketService.OnBasketChanged += BasketChanged;
             ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
             FileExporter.OnChange += StateHasChanged;
-
+            
             var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
             if (initialLoadCount > searchService.SearchResults.Count)
@@ -224,6 +224,11 @@
         StateHasChanged();
     }
 
+    protected void ImagesChanged( int id )
+    {
+        StateHasChanged();
+    }
+    
     public void Dispose()
     {
         selectionService.OnSelectionChanged -= SelectedImagesChanged;

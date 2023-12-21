@@ -72,7 +72,9 @@ public class Image
     /// <returns></returns>
     public string ThumbUrl(ThumbSize size)
     {
-        return $"/thumb/{size}/{ImageId}?nocache={this?.LastUpdated:yyyyMMddHHmmss}";
+        var nocacheDate = this.MetaData?.ThumbLastUpdated;
+        
+        return $"/thumb/{size}/{ImageId}?nocache={nocacheDate:yyyyMMddHHmmss}";
     }
 
     public void FlagForMetadataUpdate()
