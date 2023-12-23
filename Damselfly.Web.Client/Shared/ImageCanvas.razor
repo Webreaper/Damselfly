@@ -28,7 +28,7 @@
         <MudText>Lum:</MudText>
         <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
 
-        <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" />
+        <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
         <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
         <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
         <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
@@ -53,7 +53,8 @@
     [Parameter]
     public string Class { get; set; }
 
-    public Color CropColour => isCropping ? Color.Tertiary : Color.Primary;
+    private Color CropColour => isCropping ? Color.Primary : Color.Tertiary;
+    private string CropTooltip => isCropping ? "Click to apply crop" : "Click to start crop mode";
 
     private SKBlendMode mode = SKBlendMode.Color;
     private SKGLView glViewRef;
@@ -123,16 +124,14 @@
 
             if (rect.Left > rect.Right)
             {
-                var temp = rect.Left;
-                rect.Left = rect.Right;
-                rect.Right = temp;
+                // Swap
+                (rect.Left, rect.Right) = (rect.Right, rect.Left);
             }
 
             if (rect.Top > rect.Bottom)
             {
-                var temp = rect.Top;
-                rect.Top = rect.Bottom;
-                rect.Bottom = temp;
+                // Swap
+                (rect.Top, rect.Bottom) = (rect.Bottom, rect.Top);
             }
 
             return rect;
@@ -329,7 +328,6 @@
 
     protected override async Task OnParametersSetAsync()
     {
-
         if (Image != null)
         {
             if (Image.ImageId != currentImageId)
@@ -347,6 +345,8 @@
             Dispose();
         }
 
+        StateHasChanged();
+        
         await base.OnParametersSetAsync();
     }
 
@@ -414,23 +414,24 @@
                     canvas.DrawRect(rect, paint);
                 }
             }
+            
 
-            DrawDragRect(canvas);
+            using var textPaint = new SKPaint();
+            
+            textPaint.IsAntialias = true;
+            textPaint.StrokeWidth = 10f;
+            textPaint.StrokeCap = SKStrokeCap.Round;
+            textPaint.TextAlign = SKTextAlign.Center;
+            textPaint.TextSize = 24;
+            textPaint.Color = new SKColor(200, 200, 200);
+
+            var dragRect = DrawDragRect(canvas);
+ 
+            if( isCropping && dragRect.HasValue)
+                canvas.DrawText($"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)", surfaceSize.Width / 2, surfaceSize.Height / 2, textPaint);
 
             if (System.Diagnostics.Debugger.IsAttached)
-            {
-                using var paint = new SKPaint
-                {
-                    IsAntialias = true,
-                    StrokeWidth = 10f,
-                    StrokeCap = SKStrokeCap.Round,
-                    TextAlign = SKTextAlign.Center,
-                    TextSize = 24,
-                    Color = new SKColor(200, 200, 200),
-                };
-
-                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount} H: {hue} S: {saturation} L: {luminosity}", surfaceSize.Width / 2, surfaceSize.Height - 10f, paint);
-            }
+                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount} H: {hue} S: {saturation} L: {luminosity}", surfaceSize.Width / 2, surfaceSize.Height - 10f, textPaint);
 
             if (croppedBmp != null)
                 croppedBmp.Dispose();
@@ -495,10 +496,10 @@
         return filters;
     }
 
-    private void DrawDragRect(SKCanvas canvas)
+    private SKRect? DrawDragRect(SKCanvas canvas)
     {
         var dragRect = GetDragRect();
-
+        
         if (dragRect.HasValue)
         {
             using var dragBorder = new SKPaint
@@ -512,6 +513,8 @@
 
             canvas.DrawRect(dragRect.Value, dragBorder);
         }
+
+        return dragRect;
     }
 
     // https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/blend-modes/separable
