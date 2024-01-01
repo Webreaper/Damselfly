@@ -15,7 +15,7 @@
     display: flex;
     align-items: center;
     margin: 2px;
-    padding: 2px 1px 1px 0px;
+    padding: 2px 1px 1px;
     flex-wrap: nowrap;
     font-size: 9pt;
     cursor: default;
@@ -32,7 +32,7 @@
 }
 
 .bricktext-label {
-    margin: 0 2px 0 2px;
+    margin: 5px 2px 0 2px;
     text-wrap: none;
     flex: 0 1 auto;
 }

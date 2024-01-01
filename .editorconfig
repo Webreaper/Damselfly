@@ -44,6 +44,21 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
+# Start of NO underscore prefix on private fields
+# Define the 'private_fields' symbol group:
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+# Define the 'notunderscored' naming style
+dotnet_naming_style.notunderscored.capitalization = camel_case
+dotnet_naming_style.notunderscored.required_prefix =
+
+# Define the 'private_fields_notunderscored' naming rule
+dotnet_naming_rule.private_fields_notunderscored.symbols = private_fields
+dotnet_naming_rule.private_fields_notunderscored.style = notunderscored
+dotnet_naming_rule.private_fields_notunderscored.severity = error
+# End of No underscore prefix on private fields
+
 # ReSharper properties
 resharper_autodetect_indent_settings = true
 resharper_csharp_extra_spaces = leave_all

@@ -48,7 +48,7 @@
 
 @code {
     [Parameter]
-    public Image Image { get; set; }
+    public Image? Image { get; set; }
 
     [Parameter]
     public string Class { get; set; }
@@ -57,7 +57,7 @@
     private string CropTooltip => isCropping ? "Click to apply crop" : "Click to start crop mode";
 
     private SKBlendMode mode = SKBlendMode.Color;
-    private SKGLView glViewRef;
+    private SKGLView? glViewRef;
     private SKBitmap? sourceBitmap;
     private int currentImageId = 0;
     private CancellationTokenSource loadCancellationSource = new();
@@ -76,7 +76,7 @@
 
     private SKRect paintArea = new SKRect(0, 0, 0, 0);
     private float paintScale = 0f;
-    private float lastDPI = 1.0f;
+    private float lastDpi = 1.0f;
     private float zoomAmount = 0.0f;
     private SKPoint zoomOffset = new SKPoint();
 
@@ -97,30 +97,33 @@
     /// <param name="degrees"></param>
     private void DoRotate(int degrees)
     {
-        var oldBitmap = sourceBitmap;
+        if( Image != null )
+        {
+            var oldBitmap = sourceBitmap;
 
-        rotation += degrees;
-        if (rotation >= 360)
-            rotation = 0;
-        if (rotation < 0)
-            rotation = 270;
+            rotation += degrees;
+            if ( rotation >= 360 )
+                rotation = 0;
+            if ( rotation < 0 )
+                rotation = 270;
 
-        tagService.SetExifFieldAsync(new[] { Image.ImageId }, ExifOperation.ExifType.Rotate, rotation.ToString() );
+            tagService.SetExifFieldAsync(new[] { Image.ImageId }, ExifOperation.ExifType.Rotate, rotation.ToString() );
 
-        sourceBitmap = Rotate(oldBitmap, degrees);
-        oldBitmap.Dispose();
-        ClearCrop();
-        Repaint();
+            sourceBitmap = Rotate(oldBitmap, degrees);
+            oldBitmap.Dispose();
+            ClearCrop();
+            Repaint();
+        }
     }
 
     private SKRect? GetDragRect()
     {
         if (dragStart.HasValue && dragEnd.HasValue)
         {
-            SKRect rect = new SKRect(dragStart.Value.X * lastDPI,
-                                     dragStart.Value.Y * lastDPI,
-                                     dragEnd.Value.X * lastDPI,
-                                     dragEnd.Value.Y * lastDPI);
+            SKRect rect = new SKRect(dragStart.Value.X * lastDpi,
+                                     dragStart.Value.Y * lastDpi,
+                                     dragEnd.Value.X * lastDpi,
+                                     dragEnd.Value.Y * lastDpi);
 
             if (rect.Left > rect.Right)
             {
@@ -196,7 +199,7 @@
         if (obj != null)
             dpi = (double)obj.GetValue(glViewRef)!;
 
-        lastDPI = (float)dpi;
+        lastDpi = (float)dpi;
     }
 
     private SKPoint GetCoords(MouseEventArgs e)
@@ -272,57 +275,61 @@
 
     private async Task LoadImage(CancellationToken token)
     {
-        var url = Image.ThumbUrl(ThumbSize.Medium);
-
-        SKBitmap? bmp = null;
-        try
+        if( Image != null )
         {
-            using var imageStream = await restClient.GetStreamAsync(url, token);
+            var url = Image.ThumbUrl(ThumbSize.Medium);
 
-            bmp = LoadOriented(imageStream);
-
-            if (bmp != null && !token.IsCancellationRequested)
+            try
             {
-                logger.LogInformation($"Loaded image {url} successfully");
-                SetBitmap(bmp);
+                using var imageStream = await restClient.GetStreamAsync(url, token);
+
+                var bmp = LoadOriented(imageStream);
+
+                if ( !token.IsCancellationRequested )
+                {
+                    logger.LogInformation($"Loaded image {url} successfully");
+                    SetBitmap(bmp);
+                }
+                else
+                    logger.LogError($"Failed to decode {url} - bitmap was null");
             }
-            else
-                logger.LogError($"Failed to decode {url} - bitmap was null");
-        }
-        catch (OperationCanceledException)
-        {
-            logger.LogWarning($"Cancelling low-res load as hi-res image is already loaded {url}");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError($"Unable to load image {url}: {ex}");
+            catch ( OperationCanceledException )
+            {
+                logger.LogWarning($"Cancelling low-res load as hi-res image is already loaded {url}");
+            }
+            catch ( Exception ex )
+            {
+                logger.LogError($"Unable to load image {url}: {ex}");
+            }
         }
     }
 
     private async Task LoadHiResImage()
     {
-        var url = Image.ThumbUrl(ThumbSize.ExtraLarge);
-
-        SKBitmap? bmp = null;
-        try
+        if( Image != null )
         {
-            using var imageStream = await restClient.GetStreamAsync(url);
+            var url = Image.ThumbUrl(ThumbSize.ExtraLarge);
 
-            bmp = SKBitmap.Decode(imageStream);
-
-            if (bmp != null)
+            try
             {
-                logger.LogInformation($"Loaded hi-res image {url} successfully");
-                // Cancel the low-res load.
-                loadCancellationSource.Cancel();
-                SetBitmap(bmp);
+                using var imageStream = await restClient.GetStreamAsync(url);
+
+                var bmp = SKBitmap.Decode(imageStream);
+
+                if ( bmp != null )
+                {
+                    logger.LogInformation($"Loaded hi-res image {url} successfully");
+                    // Cancel the low-res load.
+                    loadCancellationSource.Cancel();
+                    SetBitmap(bmp);
+                }
+                else
+                    logger.LogError($"Failed to decode hi-res {url} - bitmap was null");
             }
-            else
-                logger.LogError($"Failed to decode hi-res {url} - bitmap was null");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError($"Unable to load hi-res image {url}: {ex}");
+            catch ( Exception ex )
+            {
+                logger.LogError($"Unable to load hi-res image {url}: {ex}");
+            }
         }
     }
 
@@ -508,7 +515,7 @@
                 StrokeCap = SKStrokeCap.Round,
                 StrokeWidth = 2f,
                 Color = SKColor.Parse("#ffffff"),
-                PathEffect = SKPathEffect.CreateDash(new[] { 5 * lastDPI, 2 * lastDPI }, 20)
+                PathEffect = SKPathEffect.CreateDash(new[] { 5 * lastDpi, 2 * lastDpi }, 20)
             };
 
             canvas.DrawRect(dragRect.Value, dragBorder);
