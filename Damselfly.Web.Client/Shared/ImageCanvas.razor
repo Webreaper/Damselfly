@@ -327,7 +327,7 @@
                 {
                     logger.LogInformation($"Loaded hi-res image {url} successfully");
                     // Cancel the low-res load.
-                    loadCancellationSource.Cancel();
+                    await loadCancellationSource.CancelAsync();
                     SetBitmap(bmp);
                 }
                 else
@@ -423,16 +423,13 @@
             canvas.DrawBitmap(paintBitmap, zoomViewPort, rect, filters);
 
             if( hue != 0 || saturation != 0 || luminosity != 0 )
-            { 
+            {
                 // Now mask to do the H/S/L
-                using (SKPaint paint = new SKPaint())
-                {
-                    paint.Color = SKColor.FromHsl(hue, saturation, luminosity);
-                    paint.BlendMode = mode;
-                    canvas.DrawRect(rect, paint);
-                }
+                using SKPaint paint = new SKPaint();
+                paint.Color = SKColor.FromHsl(hue, saturation, luminosity);
+                paint.BlendMode = mode;
+                canvas.DrawRect(rect, paint);
             }
-            
 
             using var textPaint = new SKPaint();
             
