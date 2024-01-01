@@ -6,7 +6,7 @@
     height: 100%;
 }
 
-.tool-pallette {
+.tool-palette {
     display: flex;
     column-gap: 10px;
     flex-direction: row;

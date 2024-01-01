@@ -7,9 +7,9 @@
 @implements IDisposable
 
 <div class="image-canvas">
-    <div class="tool-pallette">
+    <div class="tool-palette">
         <MudText>Zoom:</MudText>
-        <MudSlider @bind-Value="zoomAmount" Min="0" Max="1000" Step="10" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="10" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudText>Lighten:</MudText>
         <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudText>Darken:</MudText>
@@ -41,8 +41,10 @@
     }
     else
     {
-        <SKGLView @ref="glViewRef" OnPaintSurface="OnPaintSurface" EnableRenderLoop="@isDragging" IgnorePixelScaling="false"
-                  class="@Class" @onmousedown="MouseDown" @onmouseup="MouseUp" @onmousemove="MouseMove" @onmousewheel="MouseWheel" />
+        <SKGLView @ref="glViewRef" @key="Image?.ImageId" OnPaintSurface="OnPaintSurface" 
+                  EnableRenderLoop="@isDragging" IgnorePixelScaling="false" class="@Class"
+                  @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" @onmousemove="@OnMouseMove" 
+                  @onmousewheel="@OnMouseWheel" />
     }
 </div>
 
@@ -53,12 +55,13 @@
     [Parameter]
     public string Class { get; set; }
 
+    private const int maxZoom = 800;
     private Color CropColour => isCropping ? Color.Primary : Color.Tertiary;
     private string CropTooltip => isCropping ? "Click to apply crop" : "Click to start crop mode";
 
     private SKBlendMode mode = SKBlendMode.Color;
-    private SKGLView? glViewRef;
-    private SKBitmap? sourceBitmap;
+    private SKGLView? glViewRef = null;
+    private SKBitmap? sourceBitmap = null;
     private int currentImageId = 0;
     private CancellationTokenSource loadCancellationSource = new();
     private int lightenFactor = 0;
@@ -209,26 +212,30 @@
         return new SKPoint(x, y);
     }
 
-    private void MouseWheel(WheelEventArgs e)
+    private void OnMouseWheel(WheelEventArgs e)
     {
-        zoomAmount += (float)(e.DeltaY / 2.0f);
+        zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 2.0f));
+        zoomAmount = Math.Min( maxZoom, zoomAmount );
         Repaint();
     }
 
-    private void MouseMove(MouseEventArgs e)
+    private void OnMouseMove(MouseEventArgs e)
     {
         if (isDragging)
         {
             if (isCropping)
                 dragEnd = GetCoords(e);
-            else if (zoomAmount != 0)
-                zoomOffset = GetCoords(e);
+            else if ( zoomAmount != 0 )
+            {
+                var offSet = GetCoords(e);
+                zoomOffset = new SKPoint( offSet.X * -1, offSet.Y * -1);
+            }
             Repaint();
         }
 
     }
 
-    private void MouseDown(MouseEventArgs e)
+    private void OnMouseDown(MouseEventArgs e)
     {
         if (e.Button == 0)
         {
@@ -239,7 +246,7 @@
         }
     }
 
-    private void MouseUp(MouseEventArgs e)
+    private void OnMouseUp(MouseEventArgs e)
     {
         if (dragStart.HasValue)
         {
@@ -390,6 +397,10 @@
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
             var rect = GetRenderRect(paintBitmap, surfaceSize);
 
+            // TODO: We should keep the image scaled so the aspect ratio is correct
+            // but allow the zoomed version to fill the space provided.
+            // DrawRect( rect, canvas );
+            
             // Save the scale and the offset
             paintScale = (sourceBitmap.Width / rect.Width);
             paintArea = rect;
@@ -501,6 +512,22 @@
         }
 
         return filters;
+    }
+
+    private void DrawRect(SKRect? rect, SKCanvas canvas)
+    {
+        if (rect.HasValue)
+        {
+            using var dragBorder = new SKPaint
+            {
+                Style = SKPaintStyle.Stroke,
+                StrokeCap = SKStrokeCap.Round,
+                StrokeWidth = 2f,
+                Color = SKColor.Parse("#ff5555"),
+            };
+
+            canvas.DrawRect(rect.Value, dragBorder);
+        }
     }
 
     private SKRect? DrawDragRect(SKCanvas canvas)

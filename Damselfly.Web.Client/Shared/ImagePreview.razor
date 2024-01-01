@@ -20,23 +20,23 @@ of the visible image is updated which should update it instantly.
 <div class="damselfly-imagepreview">
     <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
-
-        <div class="objects-box" id="objectBox">
-            @if (ShowObjects)
-            {
-                @foreach (var obj in Objects)
-                {
-                    <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
-                }
-            }
-        </div>
-
+        
         @if (EnableImageEditing && Editing)
         {
             <ImageCanvas Image="@Image" Class="image-fill"/>
         }
         else
         {
+            <div class="objects-box" id="objectBox">
+                @if (ShowObjects)
+                {
+                    @foreach (var obj in Objects)
+                    {
+                        <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
+                    }
+                }
+            </div>
+
             <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
                 <img @ref="@context.ElementReference" src="@ImageUrl" @key="ImgKey" id="theImage" class="image-fill" />
             </Panzoom>
