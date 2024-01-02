@@ -9,7 +9,7 @@
 <div class="image-canvas">
     <div class="tool-palette">
         <MudText>Zoom:</MudText>
-        <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="10" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="zoomAmount" Min="0" Max="50" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudText>Lighten:</MudText>
         <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudText>Darken:</MudText>
@@ -55,7 +55,6 @@
     [Parameter]
     public string Class { get; set; }
 
-    private const int maxZoom = 800;
     private Color CropColour => isCropping ? Color.Primary : Color.Tertiary;
     private string CropTooltip => isCropping ? "Click to apply crop" : "Click to start crop mode";
 
@@ -215,7 +214,7 @@
     private void OnMouseWheel(WheelEventArgs e)
     {
         zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 2.0f));
-        zoomAmount = Math.Min( maxZoom, zoomAmount );
+        zoomAmount = Math.Min( 100.0f, zoomAmount );
         if ( zoomAmount != 0 )
         {
             var offSet = GetCoords(e);
@@ -383,69 +382,70 @@
         // make sure the canvas is blank
         canvas.Clear(SKColors.Black);
 
-        var surfaceSize = e.BackendRenderTarget.Size;
+        var canvasRect = new SKRectI( 0, 0, e.BackendRenderTarget.Width, e.BackendRenderTarget.Height);
 
         if (sourceBitmap != null)
         {
             SKBitmap paintBitmap = sourceBitmap;
 
             // Always apply any user crops first
-            var croppedBmp = ApplyCrop(sourceBitmap);
+            using var croppedBmp = ApplyCrop(sourceBitmap);
 
             if (croppedBmp != null)
                 paintBitmap = croppedBmp;
 
-            var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
-
-            // Calculate the zoomed image size 
             var zoomViewPort = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
-            if ( zoomAmount > 0 )
+
+            if( zoomAmount > 0 )
             {
-                // First, upscale to represent the zoom
-                zoomViewPort.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
+                try
+                {
+                    // Calculate the zoomed image size 
+                    var hZoom = paintBitmap.Width * (zoomAmount * 0.01f);
+                    var vZoom = paintBitmap.Height * (zoomAmount * 0.01f);
 
-                // Now crop the zoom viewpoint to the canvas surface
-                if( zoomViewPort.Top < 0 )
-                    zoomViewPort.Top = 0;
-                if( zoomViewPort.Bottom > surfaceSize.Height )
-                    zoomViewPort.Bottom = surfaceSize.Height;
-                if( zoomViewPort.Left < 0 )
-                    zoomViewPort.Left = 0;
-                if( zoomViewPort.Right > surfaceSize.Width )
-                    zoomViewPort.Right = surfaceSize.Width;
+                    // Increase the viewport to represent the zoom, then constrain to the 
+                    // canvas intersect, and then shrink back down again. This will crop
+                    // the zoomed viewpoint to match the canvas surface.
+                    zoomViewPort.Inflate(-hZoom, -vZoom);
+                    zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
 
-                // Need to adjust this
-                // zoomViewPort.Offset(zoomOffset.X, zoomOffset.Y);
-                
-                // Now shrink back to give us the scaled viewport
-                zoomViewPort.Inflate(zoomAmount, zoomAmount * aspectRatio);
-
-                var zoomRect = SKRectI.Round( zoomViewPort);
-                var zoomCroppedBmp = new SKBitmap(zoomRect.Width, zoomRect.Height);
-
-                // Pull out the section that'll be visible once zoomed
-                paintBitmap.ExtractSubset(zoomCroppedBmp, zoomRect);
-
-                paintBitmap = zoomCroppedBmp;
+                    var intRect = SKRectI.Round(zoomViewPort);
+                    if( intRect.Height > 0 && intRect.Width > 0 )
+                    {
+                        var zoomedBmp = new SKBitmap(intRect.Width, intRect.Height);
+                        if( paintBitmap.ExtractSubset(zoomedBmp, intRect) )
+                        {
+                            // Replace the bitmap we're going to paint
+                            paintBitmap = zoomedBmp;
+                        }
+                    }
+                }
+                catch( Exception ex )
+                {
+                    logger.LogError($"Error while zooming: {ex}");
+                }
             }
 
-            //zoomViewPort.Offset(zoomOffset);
+            var rect = GetRenderRect( paintBitmap, canvasRect.Size);
 
-            // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
-            var rect = GetRenderRect(paintBitmap, surfaceSize);
-
-            // Save the scale and the offset
+            // Save the scale and the offset for use elsewhere
             paintScale = sourceBitmap.Width / rect.Width;
             paintArea = rect;
 
-            using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
-            sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
+            //using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
+            //sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
 
             using var filters = CalculateColourFilters(canvas);
 
+            if( rect.Width < 0 || rect.Height < 0 )
+                throw new InvalidOperationException("Whoa");
+            
             // Paint the actual bitmap
-            canvas.DrawBitmap(paintBitmap, zoomViewPort, rect, filters);
+            canvas.DrawBitmap(paintBitmap, rect, filters);
 
+            DrawRect( rect, canvas );
+            
             if( hue != 0 || saturation != 0 || luminosity != 0 )
             {
                 // Now mask to do the H/S/L
@@ -467,10 +467,10 @@
             var dragRect = DrawDragRect(canvas);
  
             if( isCropping && dragRect.HasValue)
-                canvas.DrawText($"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)", surfaceSize.Width / 2, surfaceSize.Height / 2, textPaint);
+                canvas.DrawText($"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)", canvasRect.Width / 2, canvasRect.Height / 2, textPaint);
 
             if (System.Diagnostics.Debugger.IsAttached)
-                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount} Offset: {zoomOffset} H: {hue} S: {saturation} L: {luminosity}", surfaceSize.Width / 2, surfaceSize.Height - 10f, textPaint);
+                canvas.DrawText($"{Image.FileName} - {canvasRect} R:{rotation} Z: {zoomAmount} Offset: {zoomOffset} H: {hue} S: {saturation} L: {luminosity}", canvasRect.Width / 2, canvasRect.Height - 10f, textPaint);
 
             if (croppedBmp != null)
                 croppedBmp.Dispose();
@@ -503,6 +503,9 @@
     {
         var filters = new SKPaint();
 
+        // Tempr
+        return filters;
+        
         if (transformations.Any(x => x is MonoTransform))
         {
             filters.ColorFilter = blackAndWhite;
@@ -539,15 +542,17 @@
     {
         if (rect.HasValue)
         {
-            using var dragBorder = new SKPaint
+            var smaller = rect.Value;
+            smaller.Inflate( -2, -2 );
+            using var redBorder = new SKPaint
             {
                 Style = SKPaintStyle.Stroke,
                 StrokeCap = SKStrokeCap.Round,
-                StrokeWidth = 2f,
+                StrokeWidth = 3f,
                 Color = SKColor.Parse("#ff5555"),
             };
 
-            canvas.DrawRect(rect.Value, dragBorder);
+            canvas.DrawRect(smaller, redBorder);
         }
     }
 
@@ -608,30 +613,30 @@
     }
 
     /// <summary>
-    /// Given a Bitmap and a canvas surface, calculates the rectangle for it to be
-    /// painted - at the right aspect ratio, and the right size, to fill the canvas
-    /// as much as possible.
+    /// Given a source region and a destination constraint, calculates the rectangle
+    /// for it to be painted - at the right aspect ratio, and the right size, to
+    /// fill the canvas as much as possible.
     /// </summary>
-    /// <param name="bmp"></param>
-    /// <param name="canvasSize"></param>
+    /// <param name="sourceRect"></param>
+    /// <param name="destSize"></param>
     /// <returns></returns>
-    private static SKRect GetRenderRect(SKBitmap bmp, SKSize canvasSize)
+    private static SKRect GetRenderRect(SKBitmap sourceRect, SKSize destSize)
     {
-        float bmpAspectRatio = (float)bmp.Width / (float)bmp.Height;
-        float renderHeight = canvasSize.Height;
-        float renderWidth = renderHeight * bmpAspectRatio;
+        float srcAspectRatio = sourceRect.Width / (float)sourceRect.Height;
+        float renderHeight = destSize.Height;
+        float renderWidth = renderHeight * srcAspectRatio;
         float scaleFactor = 1.0f;
 
-        if (renderHeight > canvasSize.Height)
-            scaleFactor = canvasSize.Height / renderHeight;
-        else if (renderWidth > canvasSize.Width)
-            scaleFactor = canvasSize.Width / renderWidth;
+        if (renderHeight > destSize.Height)
+            scaleFactor = destSize.Height / renderHeight;
+        else if (renderWidth > destSize.Width)
+            scaleFactor = destSize.Width / renderWidth;
 
         renderWidth *= scaleFactor;
         renderHeight *= scaleFactor;
 
-        var origin = new SKPoint((canvasSize.Width - renderWidth) / 2.0f,
-                                 (canvasSize.Height - renderHeight) / 2.0f);
+        var origin = new SKPoint((destSize.Width - renderWidth) / 2.0f,
+                                 (destSize.Height - renderHeight) / 2.0f);
 
         return new SKRect(origin.X, origin.Y, renderWidth + origin.X, renderHeight + origin.Y);
     }
