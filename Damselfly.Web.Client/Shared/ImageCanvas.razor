@@ -444,8 +444,7 @@
             // Paint the actual bitmap
             canvas.DrawBitmap(paintBitmap, rect, filters);
 
-            DrawRect( rect, canvas );
-            
+            // Now, apply colour filters
             if( hue != 0 || saturation != 0 || luminosity != 0 )
             {
                 // Now mask to do the H/S/L
