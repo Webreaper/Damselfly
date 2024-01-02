@@ -9,7 +9,7 @@
 <div class="image-canvas">
     <div class="tool-palette">
         <MudText>Zoom:</MudText>
-        <MudSlider @bind-Value="zoomAmount" Min="0" Max="50" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+        <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudText>Lighten:</MudText>
         <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
         <MudText>Darken:</MudText>
@@ -58,6 +58,7 @@
     private Color CropColour => isCropping ? Color.Primary : Color.Tertiary;
     private string CropTooltip => isCropping ? "Click to apply crop" : "Click to start crop mode";
 
+    private const float maxZoom = 49;
     private SKBlendMode mode = SKBlendMode.Color;
     private SKGLView? glViewRef = null;
     private SKBitmap? sourceBitmap = null;
@@ -214,7 +215,7 @@
     private void OnMouseWheel(WheelEventArgs e)
     {
         zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 2.0f));
-        zoomAmount = Math.Min( 100.0f, zoomAmount );
+        zoomAmount = Math.Min( maxZoom, zoomAmount );
         if ( zoomAmount != 0 )
         {
             var offSet = GetCoords(e);
@@ -389,7 +390,8 @@
             SKBitmap paintBitmap = sourceBitmap;
 
             // Always apply any user crops first
-            using var croppedBmp = ApplyCrop(sourceBitmap);
+            SKBitmap? zoomedBmp = null;
+            var croppedBmp = ApplyCrop(sourceBitmap);
 
             if (croppedBmp != null)
                 paintBitmap = croppedBmp;
@@ -413,7 +415,7 @@
                     var intRect = SKRectI.Round(zoomViewPort);
                     if( intRect.Height > 0 && intRect.Width > 0 )
                     {
-                        var zoomedBmp = new SKBitmap(intRect.Width, intRect.Height);
+                        zoomedBmp = new SKBitmap(intRect.Width, intRect.Height);
                         if( paintBitmap.ExtractSubset(zoomedBmp, intRect) )
                         {
                             // Replace the bitmap we're going to paint
@@ -473,6 +475,8 @@
 
             if (croppedBmp != null)
                 croppedBmp.Dispose();
+            if( zoomedBmp != null )
+                zoomedBmp.Dispose();
         }
     }
 
