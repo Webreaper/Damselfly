@@ -216,6 +216,11 @@
     {
         zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 2.0f));
         zoomAmount = Math.Min( maxZoom, zoomAmount );
+        if ( zoomAmount != 0 )
+        {
+            var offSet = GetCoords(e);
+            zoomOffset = new SKPoint( offSet.X * -1, offSet.Y * -1);
+        }
         Repaint();
     }
 
@@ -225,11 +230,6 @@
         {
             if (isCropping)
                 dragEnd = GetCoords(e);
-            else if ( zoomAmount != 0 )
-            {
-                var offSet = GetCoords(e);
-                zoomOffset = new SKPoint( offSet.X * -1, offSet.Y * -1);
-            }
             Repaint();
         }
 
@@ -389,33 +389,57 @@
         {
             SKBitmap paintBitmap = sourceBitmap;
 
+            // Always apply any user crops first
             var croppedBmp = ApplyCrop(sourceBitmap);
 
             if (croppedBmp != null)
                 paintBitmap = croppedBmp;
 
+            var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
+
+            // Calculate the zoomed image size 
+            var zoomViewPort = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
+            if ( zoomAmount > 0 )
+            {
+                // First, upscale to represent the zoom
+                zoomViewPort.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
+
+                // Now crop the zoom viewpoint to the canvas surface
+                if( zoomViewPort.Top < 0 )
+                    zoomViewPort.Top = 0;
+                if( zoomViewPort.Bottom > surfaceSize.Height )
+                    zoomViewPort.Bottom = surfaceSize.Height;
+                if( zoomViewPort.Left < 0 )
+                    zoomViewPort.Left = 0;
+                if( zoomViewPort.Right > surfaceSize.Width )
+                    zoomViewPort.Right = surfaceSize.Width;
+
+                // Need to adjust this
+                // zoomViewPort.Offset(zoomOffset.X, zoomOffset.Y);
+                
+                // Now shrink back to give us the scaled viewport
+                zoomViewPort.Inflate(zoomAmount, zoomAmount * aspectRatio);
+
+                var zoomRect = SKRectI.Round( zoomViewPort);
+                var zoomCroppedBmp = new SKBitmap(zoomRect.Width, zoomRect.Height);
+
+                // Pull out the section that'll be visible once zoomed
+                paintBitmap.ExtractSubset(zoomCroppedBmp, zoomRect);
+
+                paintBitmap = zoomCroppedBmp;
+            }
+
+            //zoomViewPort.Offset(zoomOffset);
+
             // Calculate the area we're going to paint onto - centering and scaling to fit the canvas
             var rect = GetRenderRect(paintBitmap, surfaceSize);
 
-            // TODO: We should keep the image scaled so the aspect ratio is correct
-            // but allow the zoomed version to fill the space provided.
-            // DrawRect( rect, canvas );
-            
             // Save the scale and the offset
-            paintScale = (sourceBitmap.Width / rect.Width);
+            paintScale = sourceBitmap.Width / rect.Width;
             paintArea = rect;
 
             using var scaledImage = new SKBitmap((int)rect.Width, (int)rect.Height);
             sourceBitmap.ScalePixels(scaledImage.PeekPixels(), SKFilterQuality.Medium);
-
-            // Calculate the pan/zoom viewport
-            var aspectRatio = (float)paintBitmap.Height / (float)paintBitmap.Width;
-            var zoomViewPort = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
-            if (zoomAmount > 0)
-            {
-                zoomViewPort.Inflate(zoomAmount * -1, zoomAmount * -1 * aspectRatio);
-                zoomViewPort.Offset(zoomOffset);
-            }
 
             using var filters = CalculateColourFilters(canvas);
 
@@ -446,7 +470,7 @@
                 canvas.DrawText($"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)", surfaceSize.Width / 2, surfaceSize.Height / 2, textPaint);
 
             if (System.Diagnostics.Debugger.IsAttached)
-                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount} H: {hue} S: {saturation} L: {luminosity}", surfaceSize.Width / 2, surfaceSize.Height - 10f, textPaint);
+                canvas.DrawText($"{Image.FileName} - {surfaceSize} R:{rotation} Z: {zoomAmount} Offset: {zoomOffset} H: {hue} S: {saturation} L: {luminosity}", surfaceSize.Width / 2, surfaceSize.Height - 10f, textPaint);
 
             if (croppedBmp != null)
                 croppedBmp.Dispose();
