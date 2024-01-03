@@ -62,7 +62,6 @@
     <ItemGroup>
         <Folder Include="Shared\" />
         <Folder Include="Pages\" />
-        <Folder Include="Extensions\" />
         <Folder Include="Services\" />
     </ItemGroup>
     <ItemGroup>

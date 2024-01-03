@@ -216,11 +216,9 @@
     {
         zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 2.0f));
         zoomAmount = Math.Min( maxZoom, zoomAmount );
+
         if ( zoomAmount != 0 )
-        {
-            var offSet = GetCoords(e);
-            zoomOffset = new SKPoint( offSet.X * -1, offSet.Y * -1);
-        }
+            zoomOffset = GetCoords(e);
         Repaint();
     }
 
@@ -230,6 +228,8 @@
         {
             if (isCropping)
                 dragEnd = GetCoords(e);
+            else
+                zoomOffset = GetCoords(e);
             Repaint();
         }
 
@@ -274,7 +274,7 @@
     }
 
 
-    private SKBitmap LoadOriented( Stream stream )
+    private SKBitmap? LoadImageFromStream( Stream stream)
     {
         var codec = SKCodec.Create(stream);
         return SKBitmap.Decode(codec);
@@ -288,9 +288,9 @@
 
             try
             {
-                using var imageStream = await restClient.GetStreamAsync(url, token);
+                await using var imageStream = await restClient.GetStreamAsync(url, token);
 
-                var bmp = LoadOriented(imageStream);
+                var bmp = LoadImageFromStream(imageStream);
 
                 if ( !token.IsCancellationRequested )
                 {
@@ -319,13 +319,13 @@
 
             try
             {
-                using var imageStream = await restClient.GetStreamAsync(url);
+                await using var imageStream = await restClient.GetStreamAsync(url);
 
-                var bmp = SKBitmap.Decode(imageStream);
+                var bmp = LoadImageFromStream(imageStream);
 
                 if ( bmp != null )
                 {
-                    logger.LogInformation($"Loaded hi-res image {url} successfully");
+                    logger.LogInformation($"Loaded hi-res image {url} successfully ({bmp.Info.BytesSize} bytes)");
                     // Cancel the low-res load.
                     await loadCancellationSource.CancelAsync();
                     SetBitmap(bmp);
@@ -412,6 +412,15 @@
                     zoomViewPort.Inflate(-hZoom, -vZoom);
                     zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
 
+                    var translateX = zoomOffset.X / 2;
+                    var translateY = zoomOffset.Y / 2;
+                    var viewportOffSet = new SKPoint(translateX,  translateY);
+                    
+                    // Offset based on the mouse drag etc
+                    zoomViewPort.Offset(viewportOffSet);
+
+                    zoomViewPort.Intersect(new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height));
+                        
                     var intRect = SKRectI.Round(zoomViewPort);
                     if( intRect.Height > 0 && intRect.Width > 0 )
                     {
