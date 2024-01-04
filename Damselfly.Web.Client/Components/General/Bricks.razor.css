@@ -32,7 +32,8 @@
 }
 
 .bricktext-label {
-    margin: 5px 2px 0 2px;
+    margin: 0 2px 0 2px;
+    margin-left: 5px;
     text-wrap: none;
     flex: 0 1 auto;
 }
