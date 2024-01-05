@@ -412,8 +412,8 @@
                     zoomViewPort.Inflate(-hZoom, -vZoom);
                     zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
 
-                    var translateX = zoomOffset.X / 2;
-                    var translateY = zoomOffset.Y / 2;
+                    var translateX = Math.Max( 0, Math.Min(zoomViewPort.Width, zoomOffset.X));
+                    var translateY = Math.Max( 0, Math.Min(zoomViewPort.Height, zoomOffset.Y));
                     var viewportOffSet = new SKPoint(translateX,  translateY);
                     
                     // Offset based on the mouse drag etc
