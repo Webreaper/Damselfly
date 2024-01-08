@@ -412,6 +412,7 @@
                     zoomViewPort.Inflate(-hZoom, -vZoom);
                     zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
 
+                    // TODO - need to scale this to match the zoom level
                     var translateX = Math.Max( 0, Math.Min(zoomViewPort.Width, zoomOffset.X));
                     var translateY = Math.Max( 0, Math.Min(zoomViewPort.Height, zoomOffset.Y));
                     var viewportOffSet = new SKPoint(translateX,  translateY);
