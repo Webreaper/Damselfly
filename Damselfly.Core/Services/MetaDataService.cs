@@ -16,6 +16,8 @@ using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.Iptc;
 using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.Photoshop;
+using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Xmp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -214,6 +216,32 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     }
 
     /// <summary>
+    ///     Pull out the XMP attributes
+    /// </summary>
+    /// <param name="xmpDirectory"></param>
+    /// <returns></returns>
+    private void ReadXMPData(XmpDirectory xmpDirectory, Image image)
+    {
+        try
+        {
+            var nvps = xmpDirectory.XmpMeta.Properties
+                .Where(x => !string.IsNullOrEmpty(x.Path))
+                .ToDictionary(x => x.Path, y => y.Value);
+
+            if( image.MetaData.DateTaken == DateTime.MinValue )
+            {
+                if( DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
+                    image.MetaData.DateTaken = dateTime;
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Exception while parsing XMP face/region data: {ex}");
+        }
+    }
+
+    
+    /// <summary>
     ///     Pull out the XMP face area so we can convert it to a real face in the DB
     /// </summary>
     /// <param name="xmpDirectory"></param>
@@ -325,8 +353,10 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             if ( metadata != null )
             {
-                metaDataReadSuccess = true;
+                DumpMetaData( image, metadata);
 
+                metaDataReadSuccess = true;
+                
                 var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
 
                 if ( subIfdDirectory != null )
@@ -468,9 +498,29 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                         keywords = keywordList;
                 }
 
+                var psDirectory = metadata.OfType<PhotoshopDirectory>().FirstOrDefault();
+                if ( psDirectory != null )
+                {
+                    // TODO
+                }
+
+                var pngDirectory = metadata.OfType<PngDirectory>().FirstOrDefault();
+                if ( pngDirectory != null )
+                {
+                    if ( imgMetaData.Width == 0 )
+                        imgMetaData.Width = pngDirectory.SafeGetExifInt(PngDirectory.TagImageWidth);
+                    if ( imgMetaData.Height == 0 )
+                        imgMetaData.Height = pngDirectory.SafeGetExifInt(PngDirectory.TagImageHeight);
+                }
+
                 var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
 
-                if ( xmpDirectory != null ) newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
+                if ( xmpDirectory != null )
+                {
+                    ReadXMPData(xmpDirectory, image);
+                    // Read the face data too
+                    newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
+                }
             }
 
             if ( imgMetaData.Width != 0 && imgMetaData.Height != 0 )
@@ -484,8 +534,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             if( string.IsNullOrEmpty( imgMetaData.Caption ) ) imgMetaData.Caption = string.Empty;
             if( string.IsNullOrEmpty( imgMetaData.Credit ) ) imgMetaData.Credit = string.Empty;
             if( string.IsNullOrEmpty( imgMetaData.Description ) ) imgMetaData.Description = string.Empty;
-
-            DumpMetaData( image, metadata);
         }
         catch ( Exception ex )
         {
