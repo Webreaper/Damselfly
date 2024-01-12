@@ -358,8 +358,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             if ( metadata != null )
             {
-                DumpMetaData( image, metadata);
-
                 metaDataReadSuccess = true;
                 
                 var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
@@ -520,7 +518,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
                 var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
 
-                if ( xmpDirectory != null )
+                if ( xmpDirectory != null && xmpDirectory.XmpMeta != null )
                 {
                     ReadXMPData(xmpDirectory, image);
                     // Read the face data too
@@ -539,6 +537,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             if( string.IsNullOrEmpty( imgMetaData.Caption ) ) imgMetaData.Caption = string.Empty;
             if( string.IsNullOrEmpty( imgMetaData.Credit ) ) imgMetaData.Credit = string.Empty;
             if( string.IsNullOrEmpty( imgMetaData.Description ) ) imgMetaData.Description = string.Empty;
+            
+            DumpMetaData( image, metadata);
         }
         catch ( Exception ex )
         {
@@ -930,17 +930,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         {
             Logging.Log($" Directory: {dir.Name}:");
 
-            if ( dir is XmpDirectory )
-            {
-                var xmpDirectory = dir as XmpDirectory;
+            var xmpDirectory = dir as XmpDirectory;
 
+            if( xmpDirectory != null && xmpDirectory.XmpMeta != null )
+            {
                 foreach ( var property in xmpDirectory.XmpMeta.Properties )
                     if ( !string.IsNullOrEmpty(property.Value) )
                         Logging.Log($"  Tag: {property.Path} = {property.Value}");
             }
             else
             {
-                foreach ( var tag in dir.Tags ) Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
+                foreach ( var tag in dir.Tags ) 
+                    Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
             }
         }
     }
