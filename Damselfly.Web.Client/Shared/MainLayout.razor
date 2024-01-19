@@ -11,52 +11,51 @@
 
 @implements IDisposable
 
-<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
-<RadzenContextMenu />
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small"/>
+<RadzenContextMenu/>
 
 <DetailedErrorBoundary>
     <ChildContent>
         <CascadingAuthenticationState>
-            <DetailedErrorBoundary>
-                <ThemeSwitcher />
-            </DetailedErrorBoundary>
-            @if (WaitingForAuth)
-            {
-                <p>Checking Login Status...</p>
-            }
-            else
-            {
-                @if (ShowLogin)
+            <ThemeSwitcher>
+                @if ( WaitingForAuth )
                 {
-                    <Login />
+                    <p>Checking Login Status...</p>
                 }
                 else
                 {
-                    <div class="damselfly-container">
-                        <div class="damselfly-application">
-                            @if (appStatusService.IsMobile)
-                            {
-                                @Body
-                                <SideBar />
-                            }
-                            else
-                            {
-                                <SplitView>
-                                    <LeftPane>
-                                        <SideBar />
-                                    </LeftPane>
-                                    <RightPane>
-                                        @Body
-                                    </RightPane>
-                                </SplitView>
-                            }
+                    @if ( ShowLogin )
+                    {
+                        <Login/>
+                    }
+                    else
+                    {
+                        <div class="damselfly-container">
+                            <div class="damselfly-application">
+                                @if ( appStatusService.IsMobile )
+                                {
+                                    @Body
+                                    <SideBar/>
+                                }
+                                else
+                                {
+                                    <SplitView>
+                                        <LeftPane>
+                                            <SideBar/>
+                                        </LeftPane>
+                                        <RightPane>
+                                            @Body
+                                        </RightPane>
+                                    </SplitView>
+                                }
+                            </div>
+                            <DetailedErrorBoundary>
+                                <Statusbar/>
+                            </DetailedErrorBoundary>
                         </div>
-                        <DetailedErrorBoundary>
-                            <Statusbar />
-                        </DetailedErrorBoundary>
-                    </div>
+                    }
                 }
-            }
+            </ThemeSwitcher>
         </CascadingAuthenticationState>
     </ChildContent>
     <ErrorContent>
@@ -74,7 +73,7 @@
         var authState = await authStateTask;
 
         if( authState != null )
-        { 
+        {
             ShowLogin = ! authState.User.Identity.IsAuthenticated;
 
             StateHasChanged();
@@ -88,7 +87,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
 
@@ -102,7 +101,7 @@
 
         var forceLogin = configService.GetBool(ConfigSettings.ForceLogin);
 
-        if (forceLogin)
+        if ( forceLogin )
         {
             WaitingForAuth = true;
 
@@ -110,13 +109,13 @@
 
             var user = authState.User;
 
-            if (!user.Identity.IsAuthenticated)
+            if ( !user.Identity.IsAuthenticated )
             {
                 // Check if any users have been created. If there aren't any, then we need to allow
                 // the user to create the first one, so disable the login redirect.
                 var users = await userService.GetUsers();
 
-                if (users.Any())
+                if ( users.Any() )
                 {
                     ShowLogin = true;
                 }
