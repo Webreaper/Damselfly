@@ -1,6 +1,10 @@
 @charset "UTF-8";
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+:root {
+    --main-background: #000000;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
     font-size: 14px;
@@ -8,7 +12,7 @@ html, body {
     color: var(--body-text) !important;
     height: 100%;
     margin: 0;
-    padding: 0;
+    padding: 0; 
 }
 
 ::selection {
@@ -475,6 +479,9 @@ app {
     color: white;
 }
 
+.themeswitcher-fade {
+    animation: fadeIn ease 2s; 
+}
 .content {
     padding-top: 1.1rem;
 }

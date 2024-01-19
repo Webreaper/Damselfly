@@ -6,9 +6,10 @@
 
 @if( themeSet )
 {
-    <MudThemeProvider Theme="@mudTheme"/>
-
-    @ChildContent
+    <div class="themeswitcher-fade">
+        <MudThemeProvider Theme="@mudTheme"/>
+        @ChildContent
+    </div>
 }
 
 @code {
@@ -96,17 +97,15 @@
     {
         if( newTheme != null )
         {
-            logger.LogInformation($"Switching theme to {newTheme}");
-
             // Apply the new stylesheet to Damselfly
             var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
             await JsRuntime.InvokeAsync<string>("setStyleSheet", themeCSS);
-
+            
             mudTheme = CreateMudTheme(newTheme);
             themeSet = true;
-
-            // Trigger a statechanged for Mud
             StateHasChanged();
+
+            logger.LogInformation($"Switched theme to {newTheme}");
         }
     }
 
