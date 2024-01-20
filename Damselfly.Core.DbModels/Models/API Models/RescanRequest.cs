@@ -7,6 +7,6 @@ public class RescanRequest
 {
     public RescanTypes ScanType { get; set; }
     public int? FolderId { get; set; }
-    public ICollection<int> ImageIds { get; set; }
+    public ICollection<int>? ImageIds { get; set; }
     public bool RescanAll { get; set; } = false;
 }
