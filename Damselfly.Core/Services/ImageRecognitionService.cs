@@ -371,8 +371,21 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         {
             var thumbSize = ThumbSize.Large;
             var medThumb = new FileInfo(_thumbService.GetThumbPath(fileName, thumbSize));
-            var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
+            // We need a large thumbnail to do AI processing. Ensure it's been created.
+            if( ! medThumb.Exists )
+            {
+                await _thumbService.CreateThumb(image.ImageId, thumbSize);
+                if( ! File.Exists( medThumb.FullName ) )
+                {
+                    // If we couldn't create the thumb, bail out.
+                    throw new InvalidOperationException(
+                        $"Unable to run AI processing - {thumbSize} thumbnail doesn't exist: {medThumb}");
+                }
+            }
+
+            var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
+    
             MetaDataService.GetImageSize(medThumb.FullName, out var thumbWidth, out var thumbHeight);
 
             var foundObjects = new List<ImageObject>();

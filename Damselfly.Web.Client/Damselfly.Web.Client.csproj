@@ -60,7 +60,6 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Shared\" />
         <Folder Include="Pages\" />
         <Folder Include="Services\" />
     </ItemGroup>

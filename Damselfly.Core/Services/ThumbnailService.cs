@@ -484,7 +484,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     /// <param name="sourceImage"></param>
     /// <param name="forceRegeneration"></param>
     /// <returns></returns>
-    public async Task<IImageProcessResult> CreateThumb(int imageId)
+    public async Task<IImageProcessResult> CreateThumb(int imageId, ThumbSize size = ThumbSize.Unknown)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -496,7 +496,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
         image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
 
-        var result = await ConvertFile(image, false);
+        var result = await ConvertFile(image, false, size);
 
         db.ImageMetaData.Update(image.MetaData);
         await db.SaveChangesAsync("UpdateThumbTimeStamp");
