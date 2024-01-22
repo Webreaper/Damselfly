@@ -156,24 +156,29 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
-        // Only pull out images where the thumb *has* been processed, and the
-        // metadata has already been scanned, the AI hasn't been processed.
-        var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
-                                                       && x.ThumbLastUpdated != null
-                                                       && x.AILastUpdated == null)
-            .OrderByDescending(x => x.LastUpdated)
-            .Take(maxJobs)
-            .Select(x => x.ImageId)
-            .ToListAsync();
-
-        if ( images.Any() )
+        if( enableAIProcessing )
         {
-            var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
-                .ToArray();
-            return jobs;
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+            // Only pull out images where the thumb *has* been processed, and the
+            // metadata has already been scanned, the AI hasn't been processed.
+            var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
+                                                           && x.ThumbLastUpdated != null
+                                                           && x.AILastUpdated == null)
+                .OrderByDescending(x => x.LastUpdated)
+                .Take(maxJobs)
+                .Select(x => x.ImageId)
+                .ToListAsync();
+
+            if ( images.Any() )
+            {
+                var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
+                    .ToArray();
+                return jobs;
+            }
         }
 
         return new AIProcess[0];
