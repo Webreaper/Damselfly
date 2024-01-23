@@ -161,8 +161,10 @@ public class SearchQueryService
 
             if ( query.MinDate.HasValue || query.MaxDate.HasValue )
             {
-                var minDate = query.MinDate.HasValue ? query.MinDate : DateTime.MinValue;
-                var maxDate = query.MaxDate.HasValue ? query.MaxDate : DateTime.MaxValue;
+                var minDate = query.MinDate.HasValue ? query.MinDate.Value : DateTime.MinValue;
+                // Ensure the end date is always inclusive, so set the time to 23:59:59
+                var maxDate = query.MaxDate.HasValue ? query.MaxDate.Value.AddDays(1).AddSeconds(-1) : DateTime.MaxValue;
+                
                 // Always filter by date - because if there's no filter
                 // set then they'll be set to min/max date.
                 images = images.Where(x => x.SortDate >= minDate &&
