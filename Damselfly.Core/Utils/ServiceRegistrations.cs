@@ -4,6 +4,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
+using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,7 @@ public static class ServiceRegistrations
         services.AddSingleton<AzureFaceService>();
         services.AddSingleton<ImageClassifier>();
         services.AddSingleton<EmguFaceService>();
+        services.AddSingleton<FaceONNXService>();
 
         return services;
     }

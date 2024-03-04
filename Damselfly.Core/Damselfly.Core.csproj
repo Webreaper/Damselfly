@@ -49,6 +49,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
         <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+        <ProjectReference Include="..\Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj" />
         <ProjectReference Include="..\Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
         <ProjectReference Include="..\Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj" />
         <ProjectReference Include="..\Damselfly.ML.EmguFace\Damselfly.ML.EmguFace.csproj" />

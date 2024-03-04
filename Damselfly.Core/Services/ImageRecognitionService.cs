@@ -12,6 +12,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
 using Damselfly.ML.Face.Azure;
 using Damselfly.ML.Face.Emgu;
+using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
 using Damselfly.Shared.Utils;
@@ -26,6 +27,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     private readonly AzureFaceService _azureFaceService;
     private readonly ConfigService _configService;
     private readonly EmguFaceService _emguFaceService;
+    private readonly FaceONNXService _faceOnnxService;
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
     private readonly ImageClassifier _imageClassifier;
@@ -43,7 +45,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     public ImageRecognitionService(IServiceScopeFactory scopeFactory,
         IStatusService statusService, ObjectDetector objectDetector,
         MetaDataService metadataService, AzureFaceService azureFace,
-        EmguFaceService emguService,
+        EmguFaceService emguService, FaceONNXService faceOnnxService,
         ThumbnailService thumbs, ConfigService configService,
         ImageClassifier imageClassifier, ImageCache imageCache,
         WorkService workService, ExifService exifService,
@@ -56,6 +58,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         _objectDetector = objectDetector;
         _metdataService = metadataService;
         _emguFaceService = emguService;
+        _faceOnnxService = faceOnnxService;
         _configService = configService;
         _imageClassifier = imageClassifier;
         _imageProcessor = imageProcessor;
@@ -421,6 +424,20 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                     $"Image {image.FullPath} has dominant colour {dominant.ToHex()}, average {average.ToHex()}");
             }
 
+            if( enableAIProcessing && _faceOnnxService != null)
+            {
+                var facewatch = new Stopwatch("FaceONNXDetect");
+
+                var faces = await _faceOnnxService.DetectFaces(theImage);
+
+                facewatch.Stop();
+
+                if( faces.Any() )
+                {
+                    Logging.Log($" FaceONNX found {faces.Count()} faces in {fileName}...");
+                }
+            }
+            
             // Next, look for faces. We need to determine if we:
             //  a) Use only local (EMGU) detection
             //  b) Use local detection, and then if we find a face, or a person object, submit to Azure
@@ -466,9 +483,12 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
             }
 
             if ( _azureFaceService.DetectionType == AzureDetection.AllImages )
+            {
                 // Skip local face detection and just go straight to Azure
                 useAzureDetection = true;
+            }
             else if ( enableAIProcessing )
+            {
                 if ( _emguFaceService.ServiceAvailable )
                 {
                     var emguwatch = new Stopwatch("EmguFaceDetect");
@@ -510,6 +530,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         foundFaces.AddRange(newObjects);
                     }
                 }
+            }
 
             if ( useAzureDetection )
             {

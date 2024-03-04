@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Damselfly.Core.Constants;
-using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using FaceEmbeddingsClassification;
 using FaceONNX;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -18,15 +16,17 @@ namespace Damselfly.ML.FaceONNX;
 public class FaceONNXService : IDisposable
 {
     private readonly IConfigService _configService;
-
+    private readonly ILogger<FaceONNXService> _logger;
+    
     private FaceDetector _faceDetector;
     private FaceLandmarksExtractor _faceLandmarksExtractor;
     private FaceEmbedder _faceEmbedder;
     private Embeddings _embeddings;
 
-    public FaceONNXService(IConfigService configService)
+    public FaceONNXService(IConfigService configService, ILogger<FaceONNXService> logger )
     {
         _configService = configService;
+        _logger = logger;
     }
     
     public void Dispose()
@@ -42,19 +42,22 @@ public class FaceONNXService : IDisposable
     /// <returns></returns>
     public async Task StartService()
     {
-        try
+        if( _embeddings == null )
         {
-            // TODO: Load the faces from the DB and populate the embeddings
-            _faceDetector = new FaceDetector();
-            _faceLandmarksExtractor = new FaceLandmarksExtractor();
-            _faceEmbedder = new FaceEmbedder();
-            _embeddings = new Embeddings();
-        }
-        catch ( Exception ex )
-        {
-            Logging.LogError($"Unable to start Azure service: {ex.Message}");
-            if ( ex.InnerException != null )
-                Logging.LogError($"Inner exception: {ex.InnerException}");
+            try
+            {
+                // TODO: Load the faces from the DB and populate the embeddings
+                _faceDetector = new FaceDetector();
+                _faceLandmarksExtractor = new FaceLandmarksExtractor();
+                _faceEmbedder = new FaceEmbedder();
+                _embeddings = new Embeddings();
+            }
+            catch ( Exception ex )
+            {
+                Logging.LogError($"Unable to start Azure service: {ex.Message}");
+                if ( ex.InnerException != null )
+                    Logging.LogError($"Inner exception: {ex.InnerException}");
+            }
         }
     }
 
@@ -88,12 +91,24 @@ public class FaceONNXService : IDisposable
             }
         });
 
-        var detectResults = _faceDetector.Forward(array);
+        FaceDetectionResult[] detectResults;
+        try
+        {
+            detectResults = _faceDetector.Forward(array);
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError($"Unexpected exception during FaceONNX detection: {ex}");
+            throw;
+        }
 
         foreach( var face in detectResults )
         {
             if ( !face.Box.IsEmpty )
             {
+                if( face.Score < 0.985 )
+                    continue;
+                
                 // landmarks
                 var points = _faceLandmarksExtractor.Forward(array, face.Box);
                 var angle = points.GetRotationAngle();
@@ -114,15 +129,18 @@ public class FaceONNXService : IDisposable
     /// </summary>
     /// <param name="image"></param>
     /// <returns></returns>
-    public async Task<List<Face>> DetectFaces(Image<Rgb24> image, IImageProcessor imageProcessor)
+    public async Task<List<Face>> DetectFaces(Image<Rgb24> image)
     {
+        // TODO - Put this somewhere better
+        await StartService();
+        
         var faces = new List<Face>();
         
         var watch = new Stopwatch("AzureFace");
 
         try
         {
-            var detectedFaces = GetFacesFromImage(image);
+            var detectedFaces = GetFacesFromImage(image).ToList();
 
             foreach( var face in detectedFaces )
             {
