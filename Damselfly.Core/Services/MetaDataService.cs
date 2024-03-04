@@ -29,7 +29,7 @@ namespace Damselfly.Core.Services;
 
 public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanProvider
 {
-    private static readonly DateTime NoMetadataDate = DateTime.MinValue;
+    private static readonly DateTime NoMetadataDate = new DateTime(1970,01,01,00,00,00);
     private readonly ConfigService _configService;
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
@@ -100,7 +100,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
         var updated =
-            await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
+            await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd HH:mm:ss}'");
 
         if ( updated != 0 )
             _statusService.UpdateStatus($"{updated} images in folder flagged for Metadata scanning.");
