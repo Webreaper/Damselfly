@@ -181,7 +181,8 @@ public class FaceONNXService : IDisposable
             Rect = new System.Drawing.Rectangle(x.Rectangle.X, x.Rectangle.Y, x.Rectangle.Width, x.Rectangle.Height),
             Score = x.Score,
             Tag = "Face",
-            Service = "FaceONNX"
+            Service = "FaceONNX",
+            Embeddings = x.Embeddings
         }).ToList();
         
         return result;

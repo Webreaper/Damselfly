@@ -288,16 +288,16 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     ///     Create the DB entries for people who we don't know about,
     ///     and then pre-populate the cache with their entries.
     /// </summary>
-    /// <param name="personIdsToAdd"></param>
+    /// <param name="embeddingsToAdd"></param>
     /// <returns></returns>
-    public async Task CreateMissingPeople(IEnumerable<string> personIdsToAdd)
+    public async Task CreateMissingPeople(IEnumerable<string> embeddingsToAdd)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         try
         {
-            if ( personIdsToAdd != null && personIdsToAdd.Any() )
+            if ( embeddingsToAdd != null && embeddingsToAdd.Any() )
             {
                 // Find the people that aren't already in the cache and add new ones
                 // Be careful - filter out empty ones (shouldn't ever happen, but belt
@@ -440,7 +440,13 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
                     var newTags = await CreateNewTags(faces);
 
-                    var newObjects = faces.Select(x => new ImageObject
+                    // Get a list of the Azure Person IDs
+                    var embeddingStrings = faces.Select(x => string.Join(",",x.Embeddings));
+
+                    // Create any new ones, or pull existing ones back from the cache
+                    await CreateMissingPeople(embeddingStrings);
+
+                    var newFaces = faces.Select(x => new ImageObject
                     {
                         RecogntionSource = ImageObject.RecognitionType.FaceONNX,
                         ImageId = image.ImageId,
@@ -455,8 +461,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         Score = 0
                     }).ToList();
 
-                    ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
-                    foundFaces.AddRange(newObjects);
+                    ScaleObjectRects(image, newFaces, thumbWidth, thumbHeight);
+                    foundFaces.AddRange(newFaces);
 
                 }
             }

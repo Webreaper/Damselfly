@@ -20,6 +20,10 @@ public class Person
 
     public PersonState State { get; set; } = PersonState.Unknown;
     public string? AzurePersonId { get; set; }
+
+    // This is the set of face properties, stored as a comma-separated list of floats.
+    public string Embeddings { get; set; }
+    
     public DateTime LastUpdated { get; set; } = DateTime.MinValue;
 
     public override string ToString()
