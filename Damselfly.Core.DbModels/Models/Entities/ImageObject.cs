@@ -21,7 +21,8 @@ public class ImageObject
         Accord = 2, // Deprecated
         Azure = 3,
         MLNetObject = 4,
-        ExternalApp = 5
+        ExternalApp = 5,
+        FaceONNX = 6
     }
 
     [Key] public int ImageObjectId { get; set; }

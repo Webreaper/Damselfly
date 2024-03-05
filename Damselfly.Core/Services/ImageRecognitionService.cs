@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SixLabors.ImageSharp.PixelFormats;
+using Image = Damselfly.Core.Models.Image;
 
 namespace Damselfly.Core.Services;
 
@@ -435,6 +437,27 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 if( faces.Any() )
                 {
                     Logging.Log($" FaceONNX found {faces.Count()} faces in {fileName}...");
+
+                    var newTags = await CreateNewTags(faces);
+
+                    var newObjects = faces.Select(x => new ImageObject
+                    {
+                        RecogntionSource = ImageObject.RecognitionType.FaceONNX,
+                        ImageId = image.ImageId,
+                        RectX = x.Rect.Left,
+                        RectY = x.Rect.Top,
+                        RectHeight = x.Rect.Height,
+                        RectWidth = x.Rect.Width,
+                        TagId = newTags[x.Tag],
+                        Type = x.IsFace
+                            ? ImageObject.ObjectTypes.Face.ToString()
+                            : ImageObject.ObjectTypes.Object.ToString(),
+                        Score = 0
+                    }).ToList();
+
+                    ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
+                    foundFaces.AddRange(newObjects);
+
                 }
             }
             

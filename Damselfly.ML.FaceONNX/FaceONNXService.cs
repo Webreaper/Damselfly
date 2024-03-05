@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
 using FaceEmbeddingsClassification;
 using FaceONNX;
@@ -66,6 +67,7 @@ public class FaceONNXService : IDisposable
         public string? PersonId { get; set; }
         public Rectangle Rectangle { get; set; }
         public float[] Embeddings { get; set; }
+        public float Score { get; set; }
     }
     
     private IEnumerable<FaceONNXFace> GetFacesFromImage(Image<Rgb24> image)
@@ -118,7 +120,8 @@ public class FaceONNXService : IDisposable
                 yield return new FaceONNXFace
                 {
                     Embeddings = _faceEmbedder.Forward(aligned),
-                    Rectangle = new Rectangle(face.Box.X, face.Box.Y, face.Box.Width, face.Box.Height)
+                    Rectangle = new Rectangle(face.Box.X, face.Box.Y, face.Box.Width, face.Box.Height),
+                    Score = face.Score
                 };
             }
         }
@@ -129,18 +132,18 @@ public class FaceONNXService : IDisposable
     /// </summary>
     /// <param name="image"></param>
     /// <returns></returns>
-    public async Task<List<Face>> DetectFaces(Image<Rgb24> image)
+    public async Task<List<ImageDetectResult>> DetectFaces(Image<Rgb24> image)
     {
+        List<FaceONNXFace> detectedFaces;
+        
         // TODO - Put this somewhere better
         await StartService();
-        
-        var faces = new List<Face>();
         
         var watch = new Stopwatch("AzureFace");
 
         try
         {
-            var detectedFaces = GetFacesFromImage(image).ToList();
+            detectedFaces = GetFacesFromImage(image).ToList();
 
             foreach( var face in detectedFaces )
             {
@@ -166,22 +169,24 @@ public class FaceONNXService : IDisposable
         catch ( Exception ex )
         {
             Logging.LogError($"Exception during FaceONNX face detection: {ex}");
+            detectedFaces = new();
         }
 
         watch.Stop();
 
-        if ( faces.Any() )
-            Logging.Log($"  FaceONNAX Detected {faces.Count()} faces in {watch.ElapsedTime}ms");
+        if ( detectedFaces.Any() )
+            Logging.Log($"  FaceONNAX Detected {detectedFaces.Count()} faces in {watch.ElapsedTime}ms");
+
+        // Convert to the caller's type. 
+        var result = detectedFaces.Select( x => new ImageDetectResult
+        {
+            // TODO - need to disambiguate rectangles...
+            Rect = new System.Drawing.Rectangle(x.Rectangle.X, x.Rectangle.Y, x.Rectangle.Width, x.Rectangle.Height),
+            Score = x.Score,
+            Tag = "Face",
+            Service = "FaceONNX"
+        }).ToList();
         
-        return faces;
-    }
-    
-    public class Face
-    {
-        public Guid? PersonId { get; set; }
-        public int Left { set; get; }
-        public int Top { set; get; }
-        public int Width { set; get; }
-        public int Height { set; get; }
+        return result;
     }
 }
