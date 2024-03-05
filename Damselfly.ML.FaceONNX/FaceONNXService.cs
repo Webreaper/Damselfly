@@ -104,12 +104,12 @@ public class FaceONNXService : IDisposable
             throw;
         }
 
-        foreach( var face in detectResults )
+        foreach( var face in detectResults.Take( 2 ) )
         {
             if ( !face.Box.IsEmpty )
             {
-                if( face.Score < 0.985 )
-                    continue;
+                //if( face.Score < 0.985 )
+                //    continue;
                 
                 // landmarks
                 var points = _faceLandmarksExtractor.Forward(array, face.Box);
@@ -152,7 +152,7 @@ public class FaceONNXService : IDisposable
                 var label = proto.Item1;
                 var similarity = proto.Item2;
 
-                if( similarity > 0.75 )
+                if( similarity > 0.85 )
                 {
                     // Looks like we have a match. Yay!
                     face.PersonId = label;

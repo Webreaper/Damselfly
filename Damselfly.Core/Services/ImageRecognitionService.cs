@@ -714,8 +714,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
             imgObj.RectWidth = (int)(imgObj.RectWidth * ratio);
             imgObj.RectHeight = (int)(imgObj.RectHeight * ratio);
         }
-
-        ;
     }
 
     public void StartService()
