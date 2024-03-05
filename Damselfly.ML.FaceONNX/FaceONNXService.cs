@@ -86,9 +86,9 @@ public class FaceONNXService : IDisposable
                 var row = pixelAccessor.GetRowSpan(y);
                 for(var x = 0; x < pixelAccessor.Width; x++ )
                 {
-                    array[0][y, x] = row[x].R;
-                    array[1][y, x] = row[x].G;
-                    array[2][y, x] = row[x].B;
+                    array[0][y, x] = row[x].R / 255.0F;
+                    array[1][y, x] = row[x].G / 255.0F;
+                    array[2][y, x] = row[x].B / 255.0F;
                 }
             }
         });
@@ -104,13 +104,10 @@ public class FaceONNXService : IDisposable
             throw;
         }
 
-        foreach( var face in detectResults.Take( 2 ) )
+        foreach( var face in detectResults )
         {
             if ( !face.Box.IsEmpty )
             {
-                //if( face.Score < 0.985 )
-                //    continue;
-                
                 // landmarks
                 var points = _faceLandmarksExtractor.Forward(array, face.Box);
                 var angle = points.GetRotationAngle();
