@@ -15,9 +15,6 @@ public static class ServiceRegistrations
 {
     public static IServiceCollection AddMLServices(this IServiceCollection services)
     {
-        services.AddSingleton<TransThrottle>();
-        services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
-
         services.AddSingleton<ImageClassifier>();
         services.AddSingleton<FaceONNXService>();
 
