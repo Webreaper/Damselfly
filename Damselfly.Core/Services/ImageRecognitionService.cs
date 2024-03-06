@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -251,17 +252,24 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
                 using var scope = _scopeFactory.CreateScope();
                 using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-                var dict = await db.People.Where(x => !string.IsNullOrEmpty(x.PersonGuid))
+                
+                var identifiedPeople = await db.People.Where(x => !string.IsNullOrEmpty(x.PersonGuid))
                     .AsNoTracking()
-                    .Select(p => new { p.PersonGuid, Person = p })
                     .ToListAsync();
 
-                if ( dict.Any() )
+                if( identifiedPeople.Any() )
                 {
                     // Merge the items into the people cache. Note that we use
                     // the indexer to avoid dupe key issues. TODO: Should the table be unique?
-                    dict.ToList().ForEach(x => _peopleCache[x.PersonGuid] = x.Person);
+                    foreach( var pair in identifiedPeople.ToDictionary( x => x.PersonGuid!, x => x) )
+                        _peopleCache[pair.Key] = pair.Value;
+
+                    // Now create the dictionary of embeddings. Parse the floats out from the comma-separated string, 
+                    // and load them into the ONNX embeddings collection.
+                    var embeddings = identifiedPeople.ToDictionary(x => x.PersonGuid,
+                        x => x.Embeddings.Split(",").Select( x => (float)Convert.ToDouble(x)).ToArray());
+
+                    _faceOnnxService.LoadFaceEmbeddings(embeddings);
 
                     Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
                 }

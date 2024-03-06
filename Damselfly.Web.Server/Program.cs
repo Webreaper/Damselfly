@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using CommandLine;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Authentication;

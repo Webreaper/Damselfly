@@ -4,12 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Damselfly.Core.Models;
+namespace Damselfly.Core.Database;
 
 /// <summary>
 ///     Our actual EF Core model describing a collection of images, lenses,
@@ -38,7 +39,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<Transformations> Transformations { get; set; }
     public DbSet<ImageObject> ImageObjects { get; set; }
     public DbSet<Person> People { get; set; }
-    public DbSet<ImageClassification> ImageClassifications { get; set; }
+    public DbSet<Models.ImageClassification> ImageClassifications { get; set; }
     public DbSet<Camera> Cameras { get; set; }
     public DbSet<Basket> Baskets { get; set; }
     public DbSet<BasketEntry> BasketEntries { get; set; }
@@ -130,7 +131,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Image>()
             .HasOne(img => img.Classification)
             .WithOne()
-            .HasForeignKey<ImageClassification>(i => i.ClassificationId);
+            .HasForeignKey<Models.ImageClassification>(i => i.ClassificationId);
 
         modelBuilder.Entity<BasketEntry>()
             .HasOne(a => a.Image)
@@ -176,7 +177,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
         modelBuilder.Entity<Hash>().HasIndex(x => new
             { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });
-        modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
+        modelBuilder.Entity<Models.ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
         RoleDefinitions.OnModelCreating(modelBuilder);
     }

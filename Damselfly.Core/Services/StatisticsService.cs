@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;

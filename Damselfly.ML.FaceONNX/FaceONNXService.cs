@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
 using FaceEmbeddingsClassification;
 using FaceONNX;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -17,14 +18,16 @@ namespace Damselfly.ML.FaceONNX;
 public class FaceONNXService : IDisposable
 {
     private readonly ILogger<FaceONNXService> _logger;
-    
+    private readonly IServiceScopeFactory _scopeFactory;
+        
     private FaceDetector _faceDetector;
     private FaceLandmarksExtractor _faceLandmarksExtractor;
     private FaceEmbedder _faceEmbedder;
     private Embeddings _embeddings;
 
-    public FaceONNXService(ILogger<FaceONNXService> logger )
+    public FaceONNXService(IServiceScopeFactory scopeFactory, ILogger<FaceONNXService> logger )
     {
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
     
@@ -57,6 +60,11 @@ public class FaceONNXService : IDisposable
         }
     }
 
+    public void LoadFaceEmbeddings(Dictionary<string,float[]> embeddings)
+    {
+        _embeddings = new Embeddings(embeddings);
+    }
+    
     private class FaceONNXFace
     {
         public string? PersonGuid { get; set; }

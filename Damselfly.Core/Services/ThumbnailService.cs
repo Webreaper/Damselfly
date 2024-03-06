@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;

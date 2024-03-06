@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
