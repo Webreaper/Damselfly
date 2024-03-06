@@ -151,7 +151,8 @@ public class FaceONNXService : IDisposable
 
                 bool isNewPerson = true;
                 
-                if( personGuid == null || similarity < 0.75 )
+                // TODO - maybe make this similarity threshold a preference?
+                if( personGuid == null || similarity < 0.5 )
                 {
                     // No match, so create a new person GUID
                     face.PersonGuid = Guid.NewGuid().ToString();

@@ -310,7 +310,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         State = Person.PersonState.Unknown,
                         LastUpdated = DateTime.UtcNow, 
                         Embeddings = string.Join( ",", x.Embeddings),
-                        PersonGuid = x.PersonGuid
+                        PersonGuid = x.PersonGuid,
                     }).ToList();
 
                     if ( newPeople.Any() )
@@ -426,6 +426,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                     {
                         RecogntionSource = ImageObject.RecognitionType.FaceONNX,
                         ImageId = image.ImageId,
+                        PersonId = _peopleCache[x.PersonGuid].PersonId,
                         RectX = x.Rect.Left,
                         RectY = x.Rect.Top,
                         RectHeight = x.Rect.Height,

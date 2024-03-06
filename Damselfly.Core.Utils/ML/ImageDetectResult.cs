@@ -2,6 +2,7 @@
 
 namespace Damselfly.Core.Utils.ML;
 
+
 public class ImageDetectResult
 {
     public Rectangle Rect { get; set; }
@@ -11,6 +12,6 @@ public class ImageDetectResult
     public float Score { get; set; }
     public float[] Embeddings { get; set; }
     public bool IsNewPerson { get; set; }
-    public string PersonGuid { get; set; }
+    public string? PersonGuid { get; set; }
     public bool IsFace => string.Compare(Tag, "Face", true) == 0;
 }
