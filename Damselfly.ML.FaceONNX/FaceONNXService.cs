@@ -39,24 +39,21 @@ public class FaceONNXService : IDisposable
     ///     Initialise the face training service
     /// </summary>
     /// <returns></returns>
-    public async Task StartService()
+    public void StartService()
     {
-        if( _embeddings == null )
+        try
         {
-            try
-            {
-                // TODO: Load the faces from the DB and populate the embeddings
-                _faceDetector = new FaceDetector();
-                _faceLandmarksExtractor = new FaceLandmarksExtractor();
-                _faceEmbedder = new FaceEmbedder();
-                _embeddings = new Embeddings();
-            }
-            catch ( Exception ex )
-            {
-                Logging.LogError($"Unable to start FaceONNX service: {ex.Message}");
-                if ( ex.InnerException != null )
-                    Logging.LogError($"Inner exception: {ex.InnerException}");
-            }
+            // TODO: Load the faces from the DB and populate the embeddings
+            _faceDetector = new FaceDetector();
+            _faceLandmarksExtractor = new FaceLandmarksExtractor();
+            _faceEmbedder = new FaceEmbedder();
+            _embeddings = new Embeddings();
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Unable to start FaceONNX service: {ex.Message}");
+            if ( ex.InnerException != null )
+                Logging.LogError($"Inner exception: {ex.InnerException}");
         }
     }
 
@@ -133,9 +130,6 @@ public class FaceONNXService : IDisposable
     public async Task<List<ImageDetectResult>> DetectFaces(Image<Rgb24> image)
     {
         List<FaceONNXFace> detectedFaces;
-        
-        // TODO - Put this somewhere better
-        await StartService();
         
         var watch = new Stopwatch("FaceOnnxDetection");
 
