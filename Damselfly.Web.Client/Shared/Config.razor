@@ -163,7 +163,7 @@
 
         <MudTabPanel Text="Image Recognition">
             <DetailedErrorBoundary>
-                <EditForm Model="@settingsModel.azureSettings" OnValidSubmit="@HandleValidSubmit">
+                <EditForm Model="@settingsModel" OnValidSubmit="@HandleValidSubmit">
                     <FluentValidationValidator />
                     <ValidationSummary />
 
@@ -184,48 +184,6 @@
                     <div class="damselfly-configsetting">
                         <div class="damselfly-configfield">
                             <MudCheckBox @bind-Checked="@settingsModel.writeAITagsToImages" Label="Write recognised item keywords to image EXIF metadata" />
-                        </div>
-                    </div>
-
-                    <h2>Azure Cognitive Services Face Recognition</h2>
-
-                    <p>
-                        <a href="https://azure.microsoft.com/services/cognitive-services/face/" target="_blank">Azure Face</a>
-                        is an online Face-recognition service provided by Microsoft.
-                        <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
-                        and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
-                        recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
-                        month (Damselfly uses around 3 transactions per image processed).
-                    </p>
-
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
-                    </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
-                    </div>
-
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudCheckBox @bind-Checked="@settingsModel.azureSettings.UsingFreeTier" Label="Throttle transactions for free tier. Note: only uncheck this if you have paid for Face services" />
-                        </div>
-                    </div>
-
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudSelect T=" AzureDetection " Label="AI Application" @bind-Value="settingsModel.azureSettings.DetectionType" Variant="UIConstants.MudVariant"
-                                       HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
-                                @foreach (var choice in (AzureDetection[])Enum.GetValues(typeof(AzureDetection)))
-                                {
-                                    <MudSelectItem T=" AzureDetection " Value="@choice">
-                                        @choice.ToString().Humanize()
-                                    </MudSelectItem>
-                                }
-                            </MudSelect>
                         </div>
                     </div>
 

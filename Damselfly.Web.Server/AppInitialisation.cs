@@ -2,7 +2,6 @@
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
-using Damselfly.ML.Face.Azure;
 using Damselfly.ML.ObjectDetection;
 using Damselfly.Shared.Utils;
 
@@ -29,8 +28,6 @@ public static class AppInitialiser
         // Start the work processing queue for AI, Thumbs, etc
         services.GetRequiredService<WorkService>().StartService();
 
-        // Start the face service before the thumbnail service
-        services.GetRequiredService<AzureFaceService>().StartService().Wait();
         services.GetRequiredService<MetaDataService>().StartService();
         services.GetRequiredService<IndexingService>().StartService();
         services.GetRequiredService<ImageRecognitionService>().StartService();

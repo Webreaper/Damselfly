@@ -1,5 +1,4 @@
 ﻿using Damselfly.Core.Interfaces;
-using Damselfly.ML.Face.Emgu;
 
 namespace Damselfly.Core.ImageProcessing;
 
@@ -9,7 +8,7 @@ public class ImageProcessorFactory : IImageProcessorFactory
     private readonly ImageSharpProcessor isharpProcessor;
     private readonly SkiaSharpProcessor skiaProcessor;
 
-    public ImageProcessorFactory(EmguFaceService emguFaceService)
+    public ImageProcessorFactory()
     {
         skiaProcessor = new SkiaSharpProcessor();
         isharpProcessor = new ImageSharpProcessor();

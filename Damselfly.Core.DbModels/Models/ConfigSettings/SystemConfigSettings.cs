@@ -7,7 +7,6 @@ namespace Damselfly.Core.DbModels.Models;
 public class SystemConfigSettings
 {
     public WordpressSettings wpSettings { get; init; } = new();
-    public AzureSettings azureSettings { get; init; } = new();
     public CPULevelSettings cpuSettings { get; init; } = new();
     public SmtpSettings smtpSettings { get; init; } = new();
     public SendGridSettings sendGridSettings { get; init; } = new();
@@ -32,12 +31,7 @@ public class SystemConfigSettings
         configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
         configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
         configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
-
-        configService.Set(ConfigSettings.AzureEndpoint, azureSettings.Endpoint);
-        configService.Set(ConfigSettings.AzureApiKey, azureSettings.ApiKey);
-        configService.Set(ConfigSettings.AzureUseFreeTier, azureSettings.UsingFreeTier.ToString());
-        configService.Set(ConfigSettings.AzureDetectionType, azureSettings.DetectionType.ToString());
-
+        
         configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
         configService.Set(ConfigSettings.EnableAIProcessing, enableAIProcessing.ToString());
         configService.Set(ConfigSettings.DisableObjectDetector, disableObjectDetector.ToString());
@@ -65,11 +59,6 @@ public class SystemConfigSettings
         wpSettings.URL = configService.Get(ConfigSettings.WordpressURL);
         wpSettings.UserName = configService.Get(ConfigSettings.WordpressUser);
         wpSettings.Password = configService.Get(ConfigSettings.WordpressPassword);
-
-        azureSettings.Endpoint = configService.Get(ConfigSettings.AzureEndpoint);
-        azureSettings.ApiKey = configService.Get(ConfigSettings.AzureApiKey);
-        azureSettings.UsingFreeTier = configService.GetBool(ConfigSettings.AzureUseFreeTier, true);
-        azureSettings.DetectionType = configService.Get(ConfigSettings.AzureDetectionType, AzureDetection.Disabled);
 
         enableImageEditing = configService.GetBool(ConfigSettings.EnableImageEditing);
         enableBackgroundThumbs = configService.GetBool( ConfigSettings.EnableBackgroundThumbs );

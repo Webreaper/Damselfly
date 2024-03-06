@@ -11,8 +11,6 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
-using Damselfly.ML.Face.Azure;
-using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
@@ -26,9 +24,7 @@ namespace Damselfly.Core.Services;
 
 public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IRescanProvider
 {
-    private readonly AzureFaceService _azureFaceService;
     private readonly ConfigService _configService;
-    private readonly EmguFaceService _emguFaceService;
     private readonly FaceONNXService _faceOnnxService;
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
@@ -46,8 +42,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
     public ImageRecognitionService(IServiceScopeFactory scopeFactory,
         IStatusService statusService, ObjectDetector objectDetector,
-        MetaDataService metadataService, AzureFaceService azureFace,
-        EmguFaceService emguService, FaceONNXService faceOnnxService,
+        MetaDataService metadataService, FaceONNXService faceOnnxService,
         ThumbnailService thumbs, ConfigService configService,
         ImageClassifier imageClassifier, ImageCache imageCache,
         WorkService workService, ExifService exifService,
@@ -55,11 +50,9 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     {
         _scopeFactory = scopeFactory;
         _thumbService = thumbs;
-        _azureFaceService = azureFace;
         _statusService = statusService;
         _objectDetector = objectDetector;
         _metdataService = metadataService;
-        _emguFaceService = emguService;
         _faceOnnxService = faceOnnxService;
         _configService = configService;
         _imageClassifier = imageClassifier;
@@ -131,10 +124,10 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
         await db.SaveChangesAsync("SetName");
 
-        if (faceObject.Person.AzurePersonId != null)
+        if (faceObject.Person.Embeddings != null)
         {
             // Add/update the cache
-            _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
+            _peopleCache[faceObject.Person.Embeddings] = faceObject.Person;
         }
 
         _imageCache.Evict(faceObject.ImageId);
@@ -154,7 +147,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         await db.SaveChangesAsync("SetName");
 
         // Add/update the cache
-        _peopleCache[person.AzurePersonId] = person;
+        _peopleCache[person.Embeddings] = person;
     }
 
     public JobPriorities Priority => JobPriorities.ImageRecognition;
@@ -302,20 +295,20 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 // Find the people that aren't already in the cache and add new ones
                 // Be careful - filter out empty ones (shouldn't ever happen, but belt
                 // and braces
-                var newNames = personIdsToAdd.Select(x => x.Trim())
+                var newEmbeddings = embeddingsToAdd.Select(x => x.Trim())
                     .Where(x => !string.IsNullOrEmpty(x) && !_peopleCache.ContainsKey(x))
                     .ToList();
 
-                if ( newNames.Any() )
+                if ( newEmbeddings.Any() )
                 {
-                    Logging.Log($"Adding {newNames.Count()} person records.");
+                    Logging.Log($"Adding {newEmbeddings.Count()} person records.");
 
-                    var newPeople = newNames.Select(x => new Person
+                    var newPeople = newEmbeddings.Select(x => new Person
                     {
-                        AzurePersonId = x,
                         Name = "Unknown",
                         State = Person.PersonState.Unknown,
-                        LastUpdated = DateTime.UtcNow
+                        LastUpdated = DateTime.UtcNow, 
+                        Embeddings = x
                     }).ToList();
 
                     if ( newPeople.Any() )
@@ -323,7 +316,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         await db.BulkInsert(db.People, newPeople);
 
                         // Add or replace the new people in the cache (this should always add)
-                        newPeople.ForEach(x => _peopleCache[x.AzurePersonId] = x);
+                        newPeople.ForEach(x => _peopleCache[x.Embeddings] = x);
                     }
                 }
             }
@@ -346,22 +339,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         var tags = await _metdataService.CreateTagsFromStrings(allLabels);
 
         return tags.ToDictionary(x => x.Keyword, y => y.TagId, StringComparer.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    ///     Returns true if ImagesWithFaces is selected and any of the
-    ///     objects contains either a person or a face
-    /// </summary>
-    /// <param name="objects"></param>
-    /// <returns></returns>
-    private bool UseAzureForRecogition(IList<ImageDetectResult> objects)
-    {
-        if ( _azureFaceService.DetectionType == AzureDetection.ImagesWithFaces )
-            if ( objects.Any(x => string.Compare(x.Tag, "face", true) == 0 ||
-                                  string.Compare(x.Tag, "person", true) == 0) )
-                return true;
-
-        return false;
     }
 
     /// <summary>
@@ -401,7 +378,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
 
-            if ( enableAIProcessing || _azureFaceService.DetectionType == AzureDetection.AllImages )
+            if ( enableAIProcessing )
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
 
             if ( !File.Exists(medThumb.FullName) )
@@ -412,7 +389,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
             if ( _imageClassifier != null && enableAIProcessing )
             {
-                var colorWatch = new Stopwatch("DetectObjects");
+                var colorWatch = new Stopwatch("DetectDominantColours");
 
                 var dominant = _imageClassifier.DetectDominantColour(theImage);
                 var average = _imageClassifier.DetectAverageColor(theImage);
@@ -467,13 +444,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 }
             }
             
-            // Next, look for faces. We need to determine if we:
-            //  a) Use only local (EMGU) detection
-            //  b) Use local detection, and then if we find a face, or a person object, submit to Azure
-            //  c) Always submit every image to Azure.
-            // This is a user config.
-            var useAzureDetection = false;
-
             // For the object detector, we need a successfully loaded bitmap
             if ( enableAIProcessing )
             {
@@ -502,120 +472,9 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         Type = ImageObject.ObjectTypes.Object.ToString(),
                         Score = x.Score
                     }).ToList();
-
-                    if ( UseAzureForRecogition(objects) )
-                        useAzureDetection = true;
-
+                    
                     ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                     foundObjects.AddRange(newObjects);
-                }
-            }
-
-            if ( _azureFaceService.DetectionType == AzureDetection.AllImages )
-            {
-                // Skip local face detection and just go straight to Azure
-                useAzureDetection = true;
-            }
-            else if ( enableAIProcessing )
-            {
-                if ( _emguFaceService.ServiceAvailable )
-                {
-                    var emguwatch = new Stopwatch("EmguFaceDetect");
-
-                    var rects = _emguFaceService.DetectFaces(medThumb.FullName);
-
-                    emguwatch.Stop();
-
-                    if ( UseAzureForRecogition(rects) )
-                    {
-                        // Filter out the faces if we're using Azure
-                        rects = rects.Where(x => !x.IsFace).ToList();
-                        useAzureDetection = true;
-                    }
-
-                    if ( rects.Any() )
-                    {
-                        // Azure is disabled, so just use what we've got.
-                        Logging.Log($" Emgu found {rects.Count} faces in {fileName}...");
-
-                        var newTags = await CreateNewTags(rects);
-
-                        var newObjects = rects.Select(x => new ImageObject
-                        {
-                            RecogntionSource = ImageObject.RecognitionType.Emgu,
-                            ImageId = image.ImageId,
-                            RectX = x.Rect.Left,
-                            RectY = x.Rect.Top,
-                            RectHeight = x.Rect.Height,
-                            RectWidth = x.Rect.Width,
-                            TagId = newTags[x.Tag],
-                            Type = x.IsFace
-                                ? ImageObject.ObjectTypes.Face.ToString()
-                                : ImageObject.ObjectTypes.Object.ToString(),
-                            Score = 0
-                        }).ToList();
-
-                        ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
-                        foundFaces.AddRange(newObjects);
-                    }
-                }
-            }
-
-            if ( useAzureDetection )
-            {
-                var faceTag = await _metdataService.CreateTagsFromStrings(new List<string> { "Face" });
-                var faceTagId = faceTag.FirstOrDefault()?.TagId ?? 0;
-
-                var azurewatch = new Stopwatch("AzureFaceDetect");
-
-                Logging.LogVerbose($"Processing {medThumb.FullName} with Azure Face Service");
-
-                // We got predictions or we're scanning everything - so now let's try the image with Azure.
-                var azureFaces = await _azureFaceService.DetectFaces(medThumb.FullName, _imageProcessor);
-
-                azurewatch.Stop();
-
-                if ( azureFaces.Any() )
-                {
-                    Logging.Log($" Azure found {azureFaces.Count} faces in {fileName}...");
-
-                    // Get a list of the Azure Person IDs
-                    var peopleIds = azureFaces.Select(x => x.PersonId.ToString());
-
-                    // Create any new ones, or pull existing ones back from the cache
-                    await CreateMissingPeople(peopleIds);
-
-                    // Now convert into ImageObjects. Note that if the peopleCache doesn't
-                    // contain the key, it means we didn't create a person record successfully
-                    // for that entry - so we skip it.
-                    var newObjects = azureFaces.Select(x => new ImageObject
-                    {
-                        ImageId = image.ImageId,
-                        RectX = x.Left,
-                        RectY = x.Top,
-                        RectHeight = x.Height,
-                        RectWidth = x.Width,
-                        Type = ImageObject.ObjectTypes.Face.ToString(),
-                        TagId = faceTagId,
-                        RecogntionSource = ImageObject.RecognitionType.Azure,
-                        Score = x.Score,
-                        PersonId = GetPersonIDFromCache(x.PersonId)
-                    }).ToList();
-
-                    ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
-                    foundFaces.AddRange(newObjects);
-
-                    var peopleToAdd = foundFaces.Select(x => x.Person);
-
-                    // Add them
-                }
-                else
-                {
-                    // If we're scanning because local face detection found a face, log the result.
-                    if ( _azureFaceService.DetectionType == AzureDetection.ImagesWithFaces )
-                        Logging.Log($"Azure found no faces in image {fileName}");
-                    else
-                        Logging.LogVerbose($"Azure found no faces in image {fileName}");
                 }
             }
 

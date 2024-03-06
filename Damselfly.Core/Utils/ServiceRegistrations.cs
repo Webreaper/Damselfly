@@ -2,8 +2,6 @@
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
-using Damselfly.ML.Face.Azure;
-using Damselfly.ML.Face.Emgu;
 using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
@@ -20,9 +18,7 @@ public static class ServiceRegistrations
         services.AddSingleton<TransThrottle>();
         services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
 
-        services.AddSingleton<AzureFaceService>();
         services.AddSingleton<ImageClassifier>();
-        services.AddSingleton<EmguFaceService>();
         services.AddSingleton<FaceONNXService>();
 
         return services;

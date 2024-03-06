@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
@@ -16,7 +15,6 @@ namespace Damselfly.ML.FaceONNX;
 
 public class FaceONNXService : IDisposable
 {
-    private readonly IConfigService _configService;
     private readonly ILogger<FaceONNXService> _logger;
     
     private FaceDetector _faceDetector;
@@ -24,9 +22,8 @@ public class FaceONNXService : IDisposable
     private FaceEmbedder _faceEmbedder;
     private Embeddings _embeddings;
 
-    public FaceONNXService(IConfigService configService, ILogger<FaceONNXService> logger )
+    public FaceONNXService(ILogger<FaceONNXService> logger )
     {
-        _configService = configService;
         _logger = logger;
     }
     
@@ -78,7 +75,8 @@ public class FaceONNXService : IDisposable
             new float [image.Height,image.Width],
             new float [image.Height,image.Width]
         };            
-            
+        
+        // First, convert from an image, to an array of RGB float values. 
         image.ProcessPixelRows(pixelAccessor =>
         {
             for ( var y = 0; y < pixelAccessor.Height; y++ )
@@ -86,6 +84,8 @@ public class FaceONNXService : IDisposable
                 var row = pixelAccessor.GetRowSpan(y);
                 for(var x = 0; x < pixelAccessor.Width; x++ )
                 {
+                    // ImageSharp pixel RGB are bytes from 0-255, but we 
+                    // need to convert to tensor values of 0.0 - 1.0
                     array[0][y, x] = row[x].R / 255.0F;
                     array[1][y, x] = row[x].G / 255.0F;
                     array[2][y, x] = row[x].B / 255.0F;
