@@ -267,7 +267,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                     // Now create the dictionary of embeddings. Parse the floats out from the comma-separated string, 
                     // and load them into the ONNX embeddings collection.
                     var embeddings = identifiedPeople.ToDictionary(x => x.PersonGuid,
-                        x => x.Embeddings.Split(",").Select( x => (float)Convert.ToDouble(x)).ToArray());
+                        x => x.FaceData.Select( x => x.Embeddings) );
 
                     _faceOnnxService.LoadFaceEmbeddings(embeddings);
 
@@ -309,8 +309,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         Name = "Unknown",
                         State = Person.PersonState.Unknown,
                         LastUpdated = DateTime.UtcNow, 
-                        Embeddings = string.Join( ",", x.Embeddings),
                         PersonGuid = x.PersonGuid,
+                        FaceData = new List<PersonFaceData> { new PersonFaceData { Embeddings = string.Join( ",", x.Embeddings) } },
                     }).ToList();
 
                     if ( newPeople.Any() )

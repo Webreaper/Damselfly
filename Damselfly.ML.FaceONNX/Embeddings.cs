@@ -9,7 +9,7 @@ namespace FaceEmbeddingsClassification;
 /// </summary>
 public class Embeddings
 {
-    private Dictionary<string, float[]> VectorLookup = new();
+    private Dictionary<string, List<float[]>> VectorLookup = new();
 
     public Embeddings()
     {
@@ -21,7 +21,7 @@ public class Embeddings
     /// </summary>
     /// <param name="vectors">Vectors</param>
     /// <param name="labels">Labels</param>
-    public Embeddings(Dictionary<string, float[]> vectorLookups)
+    public Embeddings(Dictionary<string, List<float[]>> vectorLookups)
     {
         VectorLookup = vectorLookups;
     }
@@ -31,9 +31,18 @@ public class Embeddings
     /// </summary>
     /// <param name="label">Label</param>
     /// <param name="vector">Vector</param>
-    public void Add(string label, float[] vector)
+    public void Add(string label, float[] vectors)
     {
-        VectorLookup[label] = vector;
+        if( VectorLookup.TryGetValue(label, out var existingList) )
+        {
+            existingList.Add( vectors);
+            return;
+        }
+        else
+        {
+            existingList = new List<float[]> { vectors };
+            VectorLookup[label] = existingList;
+        }
     }
 
     /// <summary>
@@ -79,12 +88,16 @@ public class Embeddings
         // do job
         foreach(var face in VectorLookup)
         {
-            var d = face.Value.Euclidean(vector);
-
-            if (d < min)
+            // There may be many sets of data for each unique person
+            foreach( var faceData in face.Value )
             {
-                closest = face.Key;
-                min = d;
+                var d = faceData.Euclidean(vector);
+
+                if ( d < min )
+                {
+                    closest = face.Key;
+                    min = d;
+                }
             }
         }
 
@@ -105,12 +118,16 @@ public class Embeddings
         // do job
         foreach( var face in VectorLookup)
         {
-            var d = face.Value.Cosine(vector);
-
-            if (d > max)
+            // There may be many sets of data for each unique person
+            foreach( var faceData in face.Value )
             {
-                closest = face.Key;
-                max = d;
+                var d = faceData.Cosine(vector);
+
+                if ( d > max )
+                {
+                    closest = face.Key;
+                    max = d;
+                }
             }
         }
 

@@ -60,9 +60,23 @@ public class FaceONNXService : IDisposable
         }
     }
 
-    public void LoadFaceEmbeddings(Dictionary<string,float[]> embeddings)
+    private List<float[]> GetEmbeddingsFromString( IEnumerable<string> strings )
     {
-        _embeddings = new Embeddings(embeddings);
+        return strings.Select( x => x.Split(",").Select( fl => (float)Convert.ToDouble(fl)).ToArray() ).ToList();
+    }
+    
+    /// <summary>
+    /// Takes a list of person GUIDs, each with a list of one or more sets of embeddings
+    /// data, and registered with the Embeddings DB that's used to find similarities
+    /// between faces.
+    /// </summary>
+    /// <param name="personIDAndEmbeddings"></param>
+    public void LoadFaceEmbeddings(Dictionary<string,IEnumerable<string>> personIDAndEmbeddings)
+    {
+        var convertedDict = personIDAndEmbeddings.ToDictionary( x => x.Key, 
+                        x => GetEmbeddingsFromString(x.Value));
+
+        _embeddings = new Embeddings(convertedDict);
     }
     
     private class FaceONNXFace

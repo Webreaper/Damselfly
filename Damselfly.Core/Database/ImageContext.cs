@@ -40,6 +40,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ImageObject> ImageObjects { get; set; }
     public DbSet<Person> People { get; set; }
     public DbSet<Models.ImageClassification> ImageClassifications { get; set; }
+    public DbSet<PersonFaceData> FaceData { get; set; }
     public DbSet<Camera> Cameras { get; set; }
     public DbSet<Basket> Baskets { get; set; }
     public DbSet<BasketEntry> BasketEntries { get; set; }
@@ -152,6 +153,12 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithOne(x => x.Parent)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // A person has none or many face data points
+        modelBuilder.Entity<PersonFaceData>()
+            .HasOne(p => p.Person)
+            .WithMany(x => x.FaceData)
+            .HasForeignKey(p => p.PersonId);
 
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
