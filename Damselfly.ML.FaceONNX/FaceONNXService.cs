@@ -67,7 +67,7 @@ public class FaceONNXService : IDisposable
     
     private class FaceONNXFace
     {
-        public string? PersonGuid { get; set; }
+        public string PersonGuid { get; set; }
         public Rectangle Rectangle { get; set; }
         public float[] Embeddings { get; set; }
         public float Score { get; set; }
@@ -137,55 +137,58 @@ public class FaceONNXService : IDisposable
     /// <returns></returns>
     public async Task<List<ImageDetectResult>> DetectFaces(Image<Rgb24> image)
     {
-        List<FaceONNXFace> detectedFaces;
-        
+        List<ImageDetectResult> detected = new();
         var watch = new Stopwatch("FaceOnnxDetection");
 
         try
         {
-            detectedFaces = GetFacesFromImage(image).ToList();
+            var detectedFaces = GetFacesFromImage(image).ToList();
 
             foreach( var face in detectedFaces )
             {
                 // For each result, loop through and see if we have a match
                 var (personGuid, similarity) = _embeddings.FromSimilarity(face.Embeddings);
 
-                if( personGuid != null )
-                {
-                    // Looks like we have a match. Yay!
-                    face.PersonGuid = personGuid;
-                }
-                else
+                bool isNewPerson = true;
+                
+                if( personGuid == null || similarity < 0.75 )
                 {
                     // No match, so create a new person GUID
                     face.PersonGuid = Guid.NewGuid().ToString();
                     // Add it to the embeddings DB
                     _embeddings.Add(face.PersonGuid, face.Embeddings);
                 }
+                else
+                {
+                    // Looks like we have a match. Yay!
+                    face.PersonGuid = personGuid;
+                    isNewPerson = false;
+                }
+
+                detected.Add( new ImageDetectResult
+                {
+                    // TODO - need to disambiguate rectangles...
+                    Rect = new System.Drawing.Rectangle(face.Rectangle.X, face.Rectangle.Y, 
+                            face.Rectangle.Width, face.Rectangle.Height),
+                    Score = face.Score,
+                    Tag = "Face",
+                    Service = "FaceONNX",
+                    IsNewPerson = isNewPerson,
+                    PersonGuid = face.PersonGuid,
+                    Embeddings = face.Embeddings
+                } );
             }
         }
         catch ( Exception ex )
         {
             Logging.LogError($"Exception during FaceONNX face detection: {ex}");
-            detectedFaces = new();
         }
 
         watch.Stop();
 
-        if ( detectedFaces.Any() )
-            Logging.Log($"  FaceONNAX Detected {detectedFaces.Count()} faces in {watch.ElapsedTime}ms");
+        if ( detected.Any() )
+            Logging.Log($"  FaceONNAX Detected {detected.Count()} faces in {watch.ElapsedTime}ms");
 
-        // Convert to the caller's type. 
-        var result = detectedFaces.Select( x => new ImageDetectResult
-        {
-            // TODO - need to disambiguate rectangles...
-            Rect = new System.Drawing.Rectangle(x.Rectangle.X, x.Rectangle.Y, x.Rectangle.Width, x.Rectangle.Height),
-            Score = x.Score,
-            Tag = "Face",
-            Service = "FaceONNX",
-            Embeddings = x.Embeddings
-        }).ToList();
-        
-        return result;
+        return detected;
     }
 }

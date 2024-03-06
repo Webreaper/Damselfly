@@ -124,10 +124,10 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
         await db.SaveChangesAsync("SetName");
 
-        if (faceObject.Person.Embeddings != null)
+        if (faceObject.Person.PersonGuid != null)
         {
             // Add/update the cache
-            _peopleCache[faceObject.Person.Embeddings] = faceObject.Person;
+            _peopleCache[faceObject.Person.PersonGuid] = faceObject.Person;
         }
 
         _imageCache.Evict(faceObject.ImageId);
@@ -146,7 +146,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         await db.SaveChangesAsync("SetName");
 
         // Add/update the cache
-        _peopleCache[person.Embeddings] = person;
+        _peopleCache[person.PersonGuid] = person;
     }
 
     public JobPriorities Priority => JobPriorities.ImageRecognition;
@@ -287,34 +287,30 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     ///     Create the DB entries for people who we don't know about,
     ///     and then pre-populate the cache with their entries.
     /// </summary>
-    /// <param name="embeddingsToAdd"></param>
+    /// <param name="detectedFaces"></param>
     /// <returns></returns>
-    public async Task CreateMissingPeople(IEnumerable<string> embeddingsToAdd)
+    public async Task CreateMissingPeople(IEnumerable<ImageDetectResult> detectedFaces)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         try
         {
-            if ( embeddingsToAdd != null && embeddingsToAdd.Any() )
+            if ( detectedFaces != null )
             {
-                // Find the people that aren't already in the cache and add new ones
-                // Be careful - filter out empty ones (shouldn't ever happen, but belt
-                // and braces
-                var newEmbeddings = embeddingsToAdd.Select(x => x.Trim())
-                    .Where(x => !string.IsNullOrEmpty(x) && !_peopleCache.ContainsKey(x))
-                    .ToList();
+                var newFaces = detectedFaces.Where( x => x.IsNewPerson ).ToList();
 
-                if ( newEmbeddings.Any() )
+                if ( newFaces.Any() )
                 {
-                    Logging.Log($"Adding {newEmbeddings.Count()} person records.");
+                    Logging.Log($"Adding {newFaces.Count()} person records.");
 
-                    var newPeople = newEmbeddings.Select(x => new Person
+                    var newPeople = newFaces.Select(x => new Person
                     {
                         Name = "Unknown",
                         State = Person.PersonState.Unknown,
                         LastUpdated = DateTime.UtcNow, 
-                        Embeddings = x
+                        Embeddings = string.Join( ",", x.Embeddings),
+                        PersonGuid = x.PersonGuid
                     }).ToList();
 
                     if ( newPeople.Any() )
@@ -322,7 +318,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         await db.BulkInsert(db.People, newPeople);
 
                         // Add or replace the new people in the cache (this should always add)
-                        newPeople.ForEach(x => _peopleCache[x.Embeddings] = x);
+                        newPeople.ForEach(x => _peopleCache[x.PersonGuid] = x);
                     }
                 }
             }
@@ -423,12 +419,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
                     var newTags = await CreateNewTags(faces);
 
-                    // Get a list of the new Embeddings
-                    // TODO this logic may be wrong
-                    var embeddingStrings = faces.Select(x => string.Join(",",x.Embeddings));
-
                     // Create any new ones, or pull existing ones back from the cache
-                    await CreateMissingPeople(embeddingStrings);
+                    await CreateMissingPeople(faces);
 
                     var newFaces = faces.Select(x => new ImageObject
                     {
