@@ -254,21 +254,22 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 using var db = scope.ServiceProvider.GetService<ImageContext>();
                 
                 var identifiedPeople = await db.People.Where(x => !string.IsNullOrEmpty(x.PersonGuid))
+                    .Include(x => x.FaceData)
+                    .Where( x => x.FaceData.Count > 0)
                     .AsNoTracking()
                     .ToListAsync();
 
                 if( identifiedPeople.Any() )
                 {
-                    // Merge the items into the people cache. Note that we use
-                    // the indexer to avoid dupe key issues. TODO: Should the table be unique?
-                    foreach( var pair in identifiedPeople.ToDictionary( x => x.PersonGuid!, x => x) )
-                        _peopleCache[pair.Key] = pair.Value;
-
-                    // Now create the dictionary of embeddings. Parse the floats out from the comma-separated string, 
-                    // and load them into the ONNX embeddings collection.
-                    var embeddings = identifiedPeople.ToDictionary(x => x.PersonGuid,
-                        x => x.FaceData.Select( x => x.Embeddings) );
-
+                    // Populate the people cache
+                    foreach( var person in identifiedPeople )
+                        _peopleCache[person.PersonGuid] = person;
+                    
+                    // Now populate the embeddings lookup
+                    var embeddings = identifiedPeople.ToDictionary(
+                        x => x.PersonGuid,
+                        x => x.FaceData.Select( e => e.Embeddings));
+                    
                     _faceOnnxService.LoadFaceEmbeddings(embeddings);
 
                     Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
@@ -310,12 +311,13 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         State = Person.PersonState.Unknown,
                         LastUpdated = DateTime.UtcNow, 
                         PersonGuid = x.PersonGuid,
-                        FaceData = new List<PersonFaceData> { new PersonFaceData { Embeddings = string.Join( ",", x.Embeddings) } },
+                        FaceData = new List<PersonFaceData> { new() { Embeddings = string.Join( ",", x.Embeddings) } },
                     }).ToList();
 
                     if ( newPeople.Any() )
                     {
-                        await db.BulkInsert(db.People, newPeople);
+                        await db.People.AddRangeAsync( newPeople );
+                        await db.SaveChangesAsync();
 
                         // Add or replace the new people in the cache (this should always add)
                         newPeople.ForEach(x => _peopleCache[x.PersonGuid] = x);

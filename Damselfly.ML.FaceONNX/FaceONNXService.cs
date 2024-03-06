@@ -23,7 +23,7 @@ public class FaceONNXService : IDisposable
     private FaceDetector _faceDetector;
     private FaceLandmarksExtractor _faceLandmarksExtractor;
     private FaceEmbedder _faceEmbedder;
-    private Embeddings _embeddings;
+    private readonly Embeddings _embeddings = new();
 
     public FaceONNXService(IServiceScopeFactory scopeFactory, ILogger<FaceONNXService> logger )
     {
@@ -50,7 +50,6 @@ public class FaceONNXService : IDisposable
             _faceDetector = new FaceDetector();
             _faceLandmarksExtractor = new FaceLandmarksExtractor();
             _faceEmbedder = new FaceEmbedder();
-            _embeddings = new Embeddings();
         }
         catch ( Exception ex )
         {
@@ -58,11 +57,6 @@ public class FaceONNXService : IDisposable
             if ( ex.InnerException != null )
                 Logging.LogError($"Inner exception: {ex.InnerException}");
         }
-    }
-
-    private List<float[]> GetEmbeddingsFromString( IEnumerable<string> strings )
-    {
-        return strings.Select( x => x.Split(",").Select( fl => (float)Convert.ToDouble(fl)).ToArray() ).ToList();
     }
     
     /// <summary>
@@ -73,10 +67,8 @@ public class FaceONNXService : IDisposable
     /// <param name="personIDAndEmbeddings"></param>
     public void LoadFaceEmbeddings(Dictionary<string,IEnumerable<string>> personIDAndEmbeddings)
     {
-        var convertedDict = personIDAndEmbeddings.ToDictionary( x => x.Key, 
-                        x => GetEmbeddingsFromString(x.Value));
-
-        _embeddings = new Embeddings(convertedDict);
+        foreach( var pair in personIDAndEmbeddings )
+            _embeddings.Add( pair.Key, pair.Value);
     }
     
     private class FaceONNXFace
@@ -170,8 +162,9 @@ public class FaceONNXService : IDisposable
                 {
                     // No match, so create a new person GUID
                     face.PersonGuid = Guid.NewGuid().ToString();
+                    var vectorStr = string.Join(",", face.Embeddings);
                     // Add it to the embeddings DB
-                    _embeddings.Add(face.PersonGuid, face.Embeddings);
+                    _embeddings.Add(face.PersonGuid, new[] {vectorStr});
                 }
                 else
                 {

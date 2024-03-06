@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UMapx.Core;
 
 namespace FaceEmbeddingsClassification;
@@ -9,7 +10,7 @@ namespace FaceEmbeddingsClassification;
 /// </summary>
 public class Embeddings
 {
-    private Dictionary<string, List<float[]>> VectorLookup = new();
+    private readonly Dictionary<string, List<float[]>> VectorLookup = new();
 
     public Embeddings()
     {
@@ -23,7 +24,16 @@ public class Embeddings
     /// <param name="labels">Labels</param>
     public Embeddings(Dictionary<string, List<float[]>> vectorLookups)
     {
-        VectorLookup = vectorLookups;
+        Clear();
+        
+        foreach( var pair in vectorLookups )
+            VectorLookup[pair.Key] = pair.Value;
+    }
+
+    private float[] GetVectorFromString( string s )
+    {
+        return s.Split(",", StringSplitOptions.TrimEntries)
+                .Select( fl => (float)Convert.ToDouble(fl)).ToArray();
     }
 
     /// <summary>
@@ -31,16 +41,18 @@ public class Embeddings
     /// </summary>
     /// <param name="label">Label</param>
     /// <param name="vector">Vector</param>
-    public void Add(string label, float[] vectors)
+    public void Add(string label, IEnumerable<string> embeddings)
     {
+        var vectors = embeddings.Select( x => GetVectorFromString(x)).ToList();
+        
         if( VectorLookup.TryGetValue(label, out var existingList) )
         {
-            existingList.Add( vectors);
+            existingList.AddRange( vectors );
             return;
         }
         else
         {
-            existingList = new List<float[]> { vectors };
+            existingList = new List<float[]>(vectors);
             VectorLookup[label] = existingList;
         }
     }
