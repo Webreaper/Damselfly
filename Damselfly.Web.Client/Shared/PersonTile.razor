@@ -2,6 +2,7 @@
 @inject IUserStatusService statusService
 @inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
+@inject IDialogService dialogService
 
 <div class="damselfly-exportitem">
     <div title="@Person.PersonGuid" class="damselfly-personimg">
@@ -22,16 +23,30 @@
     public string Name
     {
         get => Person.Name;
-        set => UpdateName(value);
+        set => _ = UpdateName(value);
     }
 
     public string FaceLink => $"/face/{Person.PersonId}?nocache={Person.LastUpdated:yyyyMMddHHmmss}";
     public string PersonLink => $"/?personid={Person.PersonId}";
 
-    private void UpdateName(string newName)
+    private async Task UpdateName(string newName)
     {
         if( !string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name) )
         {
+            var allNames = await peopleService.GetPeopleNames(newName);
+            if( Person.State == Person.PersonState.Unknown && allNames.Contains(newName,StringComparer.OrdinalIgnoreCase))
+            {
+                bool? result = await dialogService.ShowMessageBox(
+                    $"Merge with existing {newName}?", 
+                    $"A person with the name '{newName}' exists already. Would you like to merge the two?", 
+                    yesText:"Merge", cancelText:"Create New Person");
+
+                if( result != null && result.Value )
+                {
+                    statusService.UpdateStatus("Merging people is not yet implemented!");
+                    return;
+                }
+            }            
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
             _ = peopleService.UpdatePerson(Person, newName);
 
