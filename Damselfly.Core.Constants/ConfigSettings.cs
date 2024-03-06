@@ -29,11 +29,6 @@ public class ConfigSettings
     public const string DisableObjectDetector = "DisableObjectDetector";
     public const string LogLevel = "LogLevel";
 
-    public const string AzureEndpoint = "AzureEndpoint";
-    public const string AzureApiKey = "AzureApiKey";
-    public const string AzureUseFreeTier = "UseFreeTier";
-    public const string AzureDetectionType = "AzureDetectionType";
-
     public const string AltCPULimitEnabled = "AltCPULimitEnabled";
     public const string CPULimit = "CPULimit";
     public const string AltCPULimit = "AltCPULimit";

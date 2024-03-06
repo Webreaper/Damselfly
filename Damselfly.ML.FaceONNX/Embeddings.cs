@@ -9,48 +9,31 @@ namespace FaceEmbeddingsClassification;
 /// </summary>
 public class Embeddings
 {
-    /// <summary>
-    /// Initializes the embeddings database.
-    /// </summary>
+    private Dictionary<string, float[]> VectorLookup = new();
+
     public Embeddings()
     {
-        Vectors = new List<float[]>();
-        Labels = new List<string>();
+        
     }
 
-    /// <summary>
+/// <summary>
     /// Initializes the embeddings database.
     /// </summary>
     /// <param name="vectors">Vectors</param>
     /// <param name="labels">Labels</param>
-    public Embeddings(List<float[]> vectors, List<string> labels)
+    public Embeddings(Dictionary<string, float[]> vectorLookups)
     {
-        if (vectors.Count != labels.Count)
-            throw new Exception("Input embedding vectors and labels must be same sizes.");
-
-        Vectors = vectors;
-        Labels = labels;
+        VectorLookup = vectorLookups;
     }
 
     /// <summary>
     /// Adds embedding to embeddings database.
     /// </summary>
-    /// <param name="vector">Vector</param>
     /// <param name="label">Label</param>
-    public void Add(float[] vector, string label)
+    /// <param name="vector">Vector</param>
+    public void Add(string label, float[] vector)
     {
-        Vectors.Add(vector);
-        Labels.Add(label);
-    }
-
-    /// <summary>
-    /// Removes embedding from embeddings database.
-    /// </summary>
-    /// <param name="index">Index</param>
-    public void Remove(int index)
-    {
-        Vectors.RemoveAt(index);
-        Labels.RemoveAt(index);
+        VectorLookup[label] = vector;
     }
 
     /// <summary>
@@ -59,16 +42,8 @@ public class Embeddings
     /// <param name="label">Label</param>
     public void Remove(string label)
     {
-        int index = Labels.IndexOf(label);
-
-        if (index != -1)
-        {
-            Remove(index);
-        }
-        else
-        {
-            throw new Exception("Embedding with selected label does not exist.");
-        }
+        if( VectorLookup.ContainsKey(label) )
+            VectorLookup.Remove(label);
     }
 
     /// <summary>
@@ -76,8 +51,7 @@ public class Embeddings
     /// </summary>
     public void Clear()
     {
-        Vectors.Clear();
-        Labels.Clear();
+        VectorLookup.Clear();
     }
 
     /// <summary>
@@ -87,46 +61,35 @@ public class Embeddings
     {
         get
         {
-            return Vectors.Count;
+            return VectorLookup.Count;
         }
     }
 
-    /// <summary>
-    /// Gets or sets vectors.
-    /// </summary>
-    public List<float[]> Vectors { get; }
-
-    /// <summary>
-    /// Gets or sets labels.
-    /// </summary>
-    public List<string> Labels { get; }
 
     /// <summary>
     /// Score vector from database by Euclidean distance.
     /// </summary>
     /// <param name="vector">Vector</param>
     /// <returns>Label</returns>
-    public (string, float) FromDistance(float[] vector)
+    public (string? personGuid, float similarity) FromDistance(float[] vector)
     {
-        var length = Count;
         var min = float.MaxValue;
-        var index = -1;
+        string? closest = null;
 
         // do job
-        for (var i = 0; i < length; i++)
+        foreach(var face in VectorLookup)
         {
-            var d = Vectors[i].Euclidean(vector);
+            var d = face.Value.Euclidean(vector);
 
             if (d < min)
             {
-                index = i;
+                closest = face.Key;
                 min = d;
             }
         }
 
         // result
-        var label = index != -1 ? Labels?[index] : string.Empty;
-        return (label, min);
+        return (closest, min);
     }
 
     /// <summary>
@@ -134,27 +97,25 @@ public class Embeddings
     /// </summary>
     /// <param name="vector">Vector</param>
     /// <returns>Label and value</returns>
-    public (string, float) FromSimilarity(float[] vector)
+    public (string? personGuid, float similarity) FromSimilarity(float[] vector)
     {
-        var length = Vectors.Count;
         var max = float.MinValue;
-        var index = -1;
+        string? closest = null;
 
         // do job
-        for (var i = 0; i < length; i++)
+        foreach( var face in VectorLookup)
         {
-            var d = Vectors[i].Cosine(vector);
+            var d = face.Value.Cosine(vector);
 
             if (d > max)
             {
-                index = i;
+                closest = face.Key;
                 max = d;
             }
         }
 
         // result
-        var label = index != -1 ? Labels?[index] : string.Empty;
-        return (label, max);
+        return (closest, max);
     }
 
 }

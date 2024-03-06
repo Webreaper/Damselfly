@@ -17,9 +17,9 @@ public class ImageObject
     public enum RecognitionType
     {
         Manual = 0,
-        Emgu = 1,
+        Emgu = 1, // Deprecated
         Accord = 2, // Deprecated
-        Azure = 3,
+        Azure = 3, // Deprecated
         MLNetObject = 4,
         ExternalApp = 5,
         FaceONNX = 6

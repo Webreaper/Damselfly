@@ -19,7 +19,7 @@ public class Person
     [Required] public string Name { get; set; } = "Unknown";
 
     public PersonState State { get; set; } = PersonState.Unknown;
-    public string? AzurePersonId { get; set; }
+    public string? PersonGuid { get; set; }
 
     // This is the set of face properties, stored as a comma-separated list of floats.
     public string Embeddings { get; set; }
@@ -28,6 +28,6 @@ public class Person
 
     public override string ToString()
     {
-        return $"{PersonId}=>{Name} [{State}, AzureID: {AzurePersonId}]";
+        return $"{PersonId}=>{Name} [{State}, GUID: {PersonGuid}]";
     }
 }

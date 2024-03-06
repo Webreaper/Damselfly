@@ -14,18 +14,11 @@ namespace Damselfly.Web.Server.Controllers;
 [ApiController]
 public class LoginController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
     private readonly IAuthService _authService;
-    private readonly UserManager<AppIdentityUser> _userManager;
-    private readonly ILogger<LoginController> _logger;
 
-    public LoginController(IConfiguration configuration,
-        IAuthService authService,
-         ILogger<LoginController> logger)
+    public LoginController(IAuthService authService)
     {
-        _configuration = configuration;
         _authService = authService;
-        _logger = logger;
     }
 
     [HttpPost]

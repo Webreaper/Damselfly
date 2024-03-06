@@ -4,7 +4,7 @@
 @inject IJSRuntime JsRuntime
 
 <div class="damselfly-exportitem">
-    <div title="@Person.AzurePersonId" class="damselfly-personimg">
+    <div title="@Person.PersonGuid" class="damselfly-personimg">
         <NavLink href="@PersonLink">
             <img @key="@Person.PersonId" title="@Person.Name" src="@FaceLink">
         </NavLink>

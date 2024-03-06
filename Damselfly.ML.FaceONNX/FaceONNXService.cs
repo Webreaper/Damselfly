@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
@@ -52,7 +53,7 @@ public class FaceONNXService : IDisposable
             }
             catch ( Exception ex )
             {
-                Logging.LogError($"Unable to start Azure service: {ex.Message}");
+                Logging.LogError($"Unable to start FaceONNX service: {ex.Message}");
                 if ( ex.InnerException != null )
                     Logging.LogError($"Inner exception: {ex.InnerException}");
             }
@@ -61,7 +62,7 @@ public class FaceONNXService : IDisposable
 
     private class FaceONNXFace
     {
-        public string? PersonId { get; set; }
+        public string? PersonGuid { get; set; }
         public Rectangle Rectangle { get; set; }
         public float[] Embeddings { get; set; }
         public float Score { get; set; }
@@ -136,7 +137,7 @@ public class FaceONNXService : IDisposable
         // TODO - Put this somewhere better
         await StartService();
         
-        var watch = new Stopwatch("AzureFace");
+        var watch = new Stopwatch("FaceOnnxDetection");
 
         try
         {
@@ -145,21 +146,19 @@ public class FaceONNXService : IDisposable
             foreach( var face in detectedFaces )
             {
                 // For each result, loop through and see if we have a match
-                var proto = _embeddings.FromSimilarity(face.Embeddings);
-                var label = proto.Item1;
-                var similarity = proto.Item2;
+                var (personGuid, similarity) = _embeddings.FromSimilarity(face.Embeddings);
 
-                if( similarity > 0.85 )
+                if( personGuid != null )
                 {
                     // Looks like we have a match. Yay!
-                    face.PersonId = label;
+                    face.PersonGuid = personGuid;
                 }
                 else
                 {
                     // No match, so create a new person GUID
-                    face.PersonId = Guid.NewGuid().ToString();
+                    face.PersonGuid = Guid.NewGuid().ToString();
                     // Add it to the embeddings DB
-                    _embeddings.Add( face.Embeddings, face.PersonId);
+                    _embeddings.Add(face.PersonGuid, face.Embeddings);
                 }
             }
         }

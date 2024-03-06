@@ -47,7 +47,6 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ExportConfig> DownloadConfigs { get; set; }
     public DbSet<ConfigSetting> ConfigSettings { get; set; }
     public DbSet<ExifOperation> KeywordOperations { get; set; }
-    public DbSet<CloudTransaction> CloudTransactions { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
@@ -174,7 +173,6 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
         modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
         modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
-        modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
         modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
         modelBuilder.Entity<Hash>().HasIndex(x => new
             { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });

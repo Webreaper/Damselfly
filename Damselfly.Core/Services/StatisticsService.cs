@@ -50,17 +50,6 @@ public class StatisticsService
                 .Distinct().CountAsync()
         };
 
-        // TODO: Should pull this out of the TransThrottle instance.
-        var now = DateTime.UtcNow;
-        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0);
-        var monthEnd = monthStart.AddMonths(1).AddSeconds(-1);
-        var totalTrans = await db.CloudTransactions
-            .Where(x => x.Date >= monthStart && x.Date <= monthEnd)
-            .SumAsync(x => x.TransCount);
-
-        if ( totalTrans > 0 )
-            stats.AzureMonthlyTransactions = $"{totalTrans} (during {monthStart:MMM})";
-
         return stats;
     }
 }

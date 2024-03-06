@@ -116,7 +116,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
             db.People.Update(faceObject.Person);
         }
 
-        // TODO: If this is an existing person/name, we might need to merge in Azure
         faceObject.Person.Name = name;
         faceObject.Person.State = Person.PersonState.Identified;
         faceObject.Person.LastUpdated = DateTime.UtcNow;
@@ -138,7 +137,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // TODO: If this is an existing person/name, we might need to merge in Azure
         person.Name = name;
         person.State = Person.PersonState.Identified;
         person.LastUpdated = DateTime.UtcNow;
@@ -223,14 +221,14 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         _statusService.UpdateStatus($"{msgText} flagged for AI reprocessing.");
     }
 
-    private int GetPersonIDFromCache(Guid? azurePersonId)
+    private int GetPersonIDFromCache(Guid? PersonGuid)
     {
-        if ( azurePersonId.HasValue )
+        if ( PersonGuid.HasValue )
         {
             // TODO Await
             LoadPersonCache().Wait();
 
-            if ( _peopleCache.TryGetValue(azurePersonId.ToString(), out var person) )
+            if ( _peopleCache.TryGetValue(PersonGuid.ToString(), out var person) )
                 return person.PersonId;
         }
 
@@ -254,16 +252,16 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                 using var scope = _scopeFactory.CreateScope();
                 using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-                var dict = await db.People.Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
+                var dict = await db.People.Where(x => !string.IsNullOrEmpty(x.PersonGuid))
                     .AsNoTracking()
-                    .Select(p => new { p.AzurePersonId, Person = p })
+                    .Select(p => new { p.PersonGuid, Person = p })
                     .ToListAsync();
 
                 if ( dict.Any() )
                 {
                     // Merge the items into the people cache. Note that we use
                     // the indexer to avoid dupe key issues. TODO: Should the table be unique?
-                    dict.ToList().ForEach(x => _peopleCache[x.AzurePersonId] = x.Person);
+                    dict.ToList().ForEach(x => _peopleCache[x.PersonGuid] = x.Person);
 
                     Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
                 }
@@ -417,7 +415,8 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
                     var newTags = await CreateNewTags(faces);
 
-                    // Get a list of the Azure Person IDs
+                    // Get a list of the new Embeddings
+                    // TODO this logic may be wrong
                     var embeddingStrings = faces.Select(x => string.Join(",",x.Embeddings));
 
                     // Create any new ones, or pull existing ones back from the cache
