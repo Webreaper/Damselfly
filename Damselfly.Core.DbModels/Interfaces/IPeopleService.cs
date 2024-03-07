@@ -10,5 +10,5 @@ public interface IPeopleService
     Task<List<Person>> GetAllPeople();
     Task<List<string>> GetPeopleNames(string searchText);
     Task UpdatePerson(Person thePerson, string newName);
-    Task UpdateName(ImageObject theObject, string newName);
+    Task UpdateName(ImageObject theObject, string newName, bool merge);
 }

@@ -34,28 +34,39 @@
         if( !string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name) )
         {
             var allNames = await peopleService.GetPeopleNames(newName);
-            if( Person.State == Person.PersonState.Unknown && allNames.Contains(newName,StringComparer.OrdinalIgnoreCase))
+            bool canRename = true;
+
+            // If the new name already exists for another person, then we're going to merge 
+            // them together to form a single person. 
+            if( allNames.Contains(newName, StringComparer.OrdinalIgnoreCase) )
             {
+                canRename = false;
+
                 bool? result = await dialogService.ShowMessageBox(
-                    $"Merge with existing {newName}?", 
-                    $"A person with the name '{newName}' exists already. Would you like to merge the two?", 
-                    yesText:"Merge", cancelText:"Create New Person");
+                    $"Merge with existing {newName}?",
+                    $"A person with the name '{newName}' exists already. Would you like to merge the two?",
+                    yesText: "Merge", cancelText: "Cancel");
 
                 if( result != null && result.Value )
                 {
                     statusService.UpdateStatus("Merging people is not yet implemented!");
-                    return;
+                    canRename = true;
                 }
-            }            
+            }
+
             _ = JsRuntime.InvokeAsync<string>("clearFocus");
-            _ = peopleService.UpdatePerson(Person, newName);
 
-            // Update the local copy
-            Person.Name = newName;
+            if( canRename )
+            {
+                _ = peopleService.UpdatePerson(Person, newName);
 
-            StateHasChanged();
+                // Update the local copy
+                Person.Name = newName;
 
-            statusService.UpdateStatus($"Name set to '{newName}'");
+                StateHasChanged();
+
+                statusService.UpdateStatus($"Name set to '{newName}'");
+            }
         }
     }
 

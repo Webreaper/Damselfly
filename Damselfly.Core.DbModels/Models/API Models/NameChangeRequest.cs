@@ -5,5 +5,6 @@ public class NameChangeRequest
 {
     public int ObjectId { get; set; }
     public string NewName { get; set; }
+    public bool Merge { get; set; }
 }
 

@@ -99,7 +99,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         return names;
     }
 
-    public async Task UpdateName(ImageObject faceObject, string name)
+    public async Task UpdateName(ImageObject faceObject, string name, bool merge)
     {
         if (!faceObject.IsFace)
             throw new ArgumentException("Image object passed to name update.");

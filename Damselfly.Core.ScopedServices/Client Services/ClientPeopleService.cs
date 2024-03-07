@@ -29,9 +29,9 @@ public class ClientPeopleService : IPeopleService
         return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/{searchText}");
     }
 
-    public async Task UpdateName(ImageObject theObject, string newName)
+    public async Task UpdateName(ImageObject theObject, string newName, bool merge)
     {
-        var req = new NameChangeRequest { ObjectId = theObject.ImageObjectId, NewName = newName };
+        var req = new NameChangeRequest { ObjectId = theObject.ImageObjectId, NewName = newName, Merge = merge};
         await httpClient.CustomPutAsJsonAsync($"/api/object/name", req);
     }
 

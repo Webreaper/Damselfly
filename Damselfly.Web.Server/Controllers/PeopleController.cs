@@ -53,7 +53,7 @@ public class PeopleController : ControllerBase
 
         if (obj is not null)
         {
-            await _aiService.UpdateName( obj, req.NewName );
+            await _aiService.UpdateName( obj, req.NewName, req.Merge );
         }
     }
 }
