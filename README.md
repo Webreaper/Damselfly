@@ -6,9 +6,8 @@ Damselfly is a server-based Digital Photograph Management system. Damselfly is d
 collection of photographs, with a particular focus on fast search and keyword-tagging workflow.
 
 Damselfly includes powerful Machine Learning functions which can help you identify photographs and their subjects, including
-face detection, object detection, and (with an optional Azure Face Services account) full facial recognition - allowing you 
-to tag people once, and have Damselfly identify other photos in which they appear.
-
+face detection, face recognition and object detection - allowing you to tag people once, and have Damselfly identify other 
+photos in which they appear.
 
 The user-interface and workflow is loosely based on the much-loved Google Picasa app, with a basket to select images for 
 export and other types of processing. Damselfly also provides a desktop/client app which gives closer integraton with your 
@@ -20,9 +19,9 @@ editing etc.
 * Support for most image formats including JPG, PNG, HEIC, TIFF, Webp, BMP and DNG/CR2/ORF (RAW) files.
 * AI / Computer vision image recognition:
     * Facial detection
+    * Facial Recognition
     * Object detection and recognition
-    * Image Classification
-    * Facial Recognition (Temporarily unavailable - see note below)
+    * Image Colour Classification
 * Full-text search with multi-phrase partial-word searches
 * Image re-organisation - move/copy images between folders, and delete images (via a trashcan folder)
 * Advanced search - filter by:
@@ -41,6 +40,7 @@ editing etc.
 * Focus on extremely fast performance - searching a 500,000-image catalogue returns results in less than a second.
 * Fast keyword tagging workflow with non-destructive EXIF data updates (using ExifTool) - so JPEGs are not re-encoded 
   when keyword-tagged
+* Face detection and recognition, and object recognition in images
 * [Multi-user support with user accounts](./docs/Multi-user.md), and role-based entitlements (e.g., users with ReadOnly 
   role are prevented from keyword-tagging images)
 * Download/export processing to watermark images ready for social media, or sending via Email etc.
@@ -65,15 +65,10 @@ editing etc.
 
 ## Update on Damselfly Face Recognition Support
 
-> Damselfly used to provide face-recognition via the Microsoft Azure Face API, which provided excellent 
-recognition results. However, Microsoft have recently locked down the use of this API, meaning it is no longer 
-practically available for anyone outside Enterprise organisations. This has effectively killed the use of Azure 
-Face for Open-source projects like Damselfly.
+> Damselfly used to provide face-recognition via the Microsoft Azure Face API. However, Microsoft have recently 
+[locked down the use of this API](https://stackoverflow.com/questions/73095624/unable-to-use-azure-face-api-forbidden-error). 
 
-> For more information on this, see [this StackOverFlow question](https://stackoverflow.com/questions/73095624/unable-to-use-azure-face-api-forbidden-error).
-
-> I will be working to add a new offline face-recognition capability to Damselfly this year (2023) to replace the
-Azure Face functionality.
+The latest version of Damselfly now supports full face detection and recognition locally and offline.
 
 ## Want to Support Damselfly?
 
@@ -101,12 +96,10 @@ You can follow Damselfly on [Twitter](https://twitter.com/damselflyphotos) or as
 
 ## Planned Features/Enhancements
 
+* Simple non-destructive editing/manipulation - cropping, colour adjustment etc (in progress)
 * Image de-duplication (in progress)
-* Direct upload to Social media platforms, Google Drive, etc.
 * Support for more image formats, and possibly video
-* Direct sharing to social media (Twitter, Facebook etc)
 * Support for selection and upload to Alamy Stock Image photo service
-* Simple non-destructive editing/manipulation - cropping, colour adjustment etc
 * Synchronisation of local images back to the server
 * If you have ideas for other features - let me know by [raising an issue](https://github.com/Webreaper/Damselfly/issues)!
 
@@ -147,9 +140,7 @@ do this for you) where the server will re-index them to pick up your changes.
 * Phil Harvey's [ExifTool](https://exiftool.org/) which Damselfly uses for all of the EXIF write operations
 * ZZZ Project's [Entity Framework Extensions](https://entityframework-extensions.net) for their excellent EFCore extensions.
 * [MudBlazor](https://mudblazor.com/) for their excellent Blazor component library
-* [EmguCV](https://www.emgu.com) for their Face and Object detection Haar classifier models
-* [Azure Cognitive Services](https://azure.microsoft.com/en-gb/services/cognitive-services/face/) for their Face-recognition engine
-* [Accord.Net](http://accord-framework.net) for additional Face recognition libraries
+* [FaceONNX](https://github.com/FaceONNX/FaceONNX) for their excellent face detection and recognition library
 * [Font Awesome](https://fontawesome.com/) for their Awesome icons
 * Chris Sainty for [Blazored](https://github.com/Blazored) Modal and Typeahead, and all his excellent info on Blazor
 * [Serilog.Net](https://serilog.net/) for logging
