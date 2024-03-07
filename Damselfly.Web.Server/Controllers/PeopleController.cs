@@ -12,18 +12,10 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/people")]
-public class PeopleController : ControllerBase
+public class PeopleController( ImageRecognitionService _aiService, 
+                                ILogger<PeopleController> _logger,
+                                ImageCache _imageCache) : ControllerBase
 {
-    private readonly ImageRecognitionService _aiService;
-
-    private readonly ILogger<PeopleController> _logger;
-
-    public PeopleController(ImageRecognitionService service, ILogger<PeopleController> logger)
-    {
-        _aiService = service;
-        _logger = logger;
-    }
-
     [HttpGet("/api/person/{personId}")]
     public async Task<Person> GetPerson( int personId )
     {
@@ -44,16 +36,12 @@ public class PeopleController : ControllerBase
         return names;
     }
 
-    [HttpPut("/api/object/name")]
-    public async Task UpdateName( NameChangeRequest req, [FromServices] ImageContext db )
+    [HttpPut("/api/people/name")]
+    public async Task UpdatePersonName( NameChangeRequest req )
     {
-        var obj = db.ImageObjects
-                    .Include(x => x.Person)
-                    .FirstOrDefault(n => n.ImageObjectId == req.ObjectId);
-
-        if (obj is not null)
-        {
-            await _aiService.UpdateName( obj, req.NewName, req.Merge );
-        }
+        await _aiService.UpdatePersonName( req );
+        
+        // TODO: Evict the image from the cache here?
     }
+
 }

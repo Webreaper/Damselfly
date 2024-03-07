@@ -4,14 +4,14 @@
 @inject IJSRuntime JsRuntime
 @inject IDialogService dialogService
 
-<div class="damselfly-exportitem">
+<div class="damselfly-persontile">
     <div title="@Person.PersonGuid" class="damselfly-personimg">
         <NavLink href="@PersonLink">
             <img @key="@Person.PersonId" title="@Person.Name" src="@FaceLink">
         </NavLink>
     </div>
     <div class="damselfly-personfield">
-        @Person.FaceData.Count sets of face data
+        Face Data Sets: @Person.FaceData.Count 
     </div>
     <div class="damselfly-personfield">
         <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
@@ -38,6 +38,7 @@
         {
             var allNames = await peopleService.GetPeopleNames(newName);
             bool canRename = true;
+            bool merge = false;
 
             // If the new name already exists for another person, then we're going to merge 
             // them together to form a single person. 
@@ -52,8 +53,8 @@
 
                 if( result != null && result.Value )
                 {
-                    statusService.UpdateStatus("Merging people is not yet implemented!");
                     canRename = true;
+                    merge = true;
                 }
             }
 
@@ -61,7 +62,8 @@
 
             if( canRename )
             {
-                _ = peopleService.UpdatePerson(Person, newName);
+                var req = new NameChangeRequest { PersonId = Person.PersonId, NewName = newName, Merge = merge };
+                await peopleService.UpdatePersonName(req);
 
                 // Update the local copy
                 Person.Name = newName;

@@ -132,7 +132,7 @@ public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
     /// </summary>
     /// <param name="image"></param>
     /// <returns></returns>
-    public async Task<List<ImageDetectResult>> DetectFaces(Image<Rgb24> image)
+    public Task<List<ImageDetectResult>> DetectFaces(Image<Rgb24> image)
     {
         List<ImageDetectResult> detected = new();
         var watch = new Stopwatch("FaceOnnxDetection");
@@ -188,6 +188,6 @@ public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
         if ( detected.Any() )
             Logging.Log($"  FaceONNAX Detected {detected.Count()} faces in {watch.ElapsedTime}ms");
 
-        return detected;
+        return Task.FromResult(detected);
     }
 }

@@ -28,16 +28,9 @@ public class ClientPeopleService : IPeopleService
     {
         return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/{searchText}");
     }
-
-    public async Task UpdateName(ImageObject theObject, string newName, bool merge)
+    
+    public async Task UpdatePersonName(NameChangeRequest req)
     {
-        var req = new NameChangeRequest { ObjectId = theObject.ImageObjectId, NewName = newName, Merge = merge};
-        await httpClient.CustomPutAsJsonAsync($"/api/object/name", req);
-    }
-
-    public async Task UpdatePerson(Person thePerson, string newName)
-    {
-        throw new NotImplementedException();
-        //await httpClient.CustomPutAsJsonAsync($"/api/people/name/{thePerson.PersonId}", newName);
+        await httpClient.CustomPutAsJsonAsync($"/api/people/name", req);
     }
 }

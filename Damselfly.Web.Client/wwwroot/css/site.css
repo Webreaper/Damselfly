@@ -1114,25 +1114,6 @@ f
     max-width: 300px;
 }
 
-.damselfly-personimg {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    margin: 3px;
-}
-
-.damselfly-personimg img {
-    height: 120px;
-    width: 120px;
-}
-
-.damselfly-personfield {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
 .toolwindow {
     display: flex;
     flex: 0 0 auto;

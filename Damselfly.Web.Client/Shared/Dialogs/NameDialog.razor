@@ -67,20 +67,24 @@
 
     private async Task CheckForMerge()
     {
-        var allNames = await peopleService.GetPeopleNames(TypeAheadName);
-
-        // First, check if the name is the same as somebody else in the system. 
-        var showDupe = allNames.Contains(TypeAheadName, StringComparer.OrdinalIgnoreCase);
-
-        if( showDupeMessage != showDupe )
+        if( TypeAheadName != "Unknown" )
         {
-            showDupeMessage = showDupe;
-            StateHasChanged();
+            var allNames = await peopleService.GetPeopleNames(TypeAheadName);
+
+            // First, check if the name is the same as somebody else in the system. 
+            var showDupe = allNames.Contains(TypeAheadName, StringComparer.OrdinalIgnoreCase);
+
+            if( showDupeMessage != showDupe )
+            {
+                showDupeMessage = showDupe;
+                StateHasChanged();
+            }
         }
     }
     private async Task Save()
     {
-        await peopleService.UpdateName(theObject, TypeAheadName, false);
+        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName };
+        await peopleService.UpdatePersonName(req);
 
         statusService.UpdateStatus($"Name saved as '{TypeAheadName}'");
 
@@ -89,7 +93,8 @@
 
     private async Task Merge()
     {
-        await peopleService.UpdateName(theObject, TypeAheadName, true);
+        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName, Merge = true};
+        await peopleService.UpdatePersonName(req);
 
         statusService.UpdateStatus($"Face merged with '{TypeAheadName}'");
 

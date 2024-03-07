@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -66,18 +67,14 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return names;
     }
 
-    private async Task MergeWithNamne(ImageObject faceObject, string name)
+    private async Task MergeWithName(ImageContext db, int personId, string name)
     {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
-
         var transaction = db.Database.BeginTransaction();
 
         try
         {
             var matchingPeople = await GetAllPeople();
             
-            var oldPersonId = faceObject.PersonId;
             var newPersonId = matchingPeople.Where( x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                                             .Select( x => x.PersonId )
                                             .SingleOrDefault(-1);
@@ -85,69 +82,69 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             if( newPersonId != -1 )
             {
                 // Update personID in image objects to the new person ID
-                await db.ImageObjects.Where( x => x.PersonId == oldPersonId )
+                await db.ImageObjects.Where( x => x.PersonId == personId )
                     .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
                 
                 // Update personID in FaceData
-                await db.FaceData.Where( x => x.PersonId == oldPersonId )
+                await db.FaceData.Where( x => x.PersonId == personId )
                     .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
 
                 // Delete old personID
-                await db.People.Where( x => x.PersonId == oldPersonId )
+                await db.People.Where( x => x.PersonId == personId )
                     .ExecuteDeleteAsync();
                 
                 await transaction.CommitAsync();
-
-                await LoadPersonCache( true );
             }
         }
         catch( Exception ex )
         {
-            _logger.LogError( $"Exception while merging person {faceObject.PersonId} => {name}");
+            _logger.LogError( $"Exception while merging person {personId} => {name}");
             await transaction.RollbackAsync();
         }
     }
 
-    private async Task ChangeName(ImageObject faceObject, string name)
+    public async Task UpdatePersonName(NameChangeRequest req)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        if (faceObject.Person == null)
+        ImageObject imageObject = null;
+        if( req.ImageObjectId != null )
+            imageObject = db.ImageObjects.FirstOrDefault( x => x.ImageObjectId == req.ImageObjectId);
+        
+        if( req.PersonId == null )
         {
-            faceObject.Person = new Person();
-            db.People.Add(faceObject.Person);
+            // It's a new person. Create it and associate it with the image object
+            imageObject.Person = new Person
+            {
+                Name = req.NewName,
+                State = Person.PersonState.Identified,
+                LastUpdated = DateTime.UtcNow
+            };
+            
+            db.ImageObjects.Update(imageObject);
+            await db.SaveChangesAsync("SetName");
+            
+        }
+        else if( req.Merge )
+        {
+            // Merge two people together
+            await MergeWithName(db, req.PersonId.Value, req.NewName);
         }
         else
-        {
-            db.People.Update(faceObject.Person);
+        { 
+            // Update the person with the new details
+            await db.People.Where( x => x.PersonId == req.PersonId)
+                    .ExecuteUpdateAsync( setter => setter
+                    .SetProperty(p => p.Name, v => req.NewName)
+                    .SetProperty(p => p.State, v => Person.PersonState.Identified)
+                    .SetProperty(p => p.LastUpdated, v => DateTime.UtcNow));
         }
 
-        faceObject.Person.Name = name;
-        faceObject.Person.State = Person.PersonState.Identified;
-        faceObject.Person.LastUpdated = DateTime.UtcNow;
-        db.ImageObjects.Update(faceObject);
-
-        await db.SaveChangesAsync("SetName");
-
-    }
-    public async Task UpdateName(ImageObject faceObject, string name, bool merge)
-    {
-        if (!faceObject.IsFace)
-            throw new ArgumentException("Image object passed to name update.");
-
-        if( merge )
-            await MergeWithNamne(faceObject, name);
-        else
-            await ChangeName( faceObject, name);
-
-        if (faceObject.Person.PersonGuid != null)
-        {
-            // Add/update the cache
-            _peopleCache[faceObject.Person.PersonGuid] = faceObject.Person;
-        }
-
-        _imageCache.Evict(faceObject.ImageId);
+        // Add/update the cache and embeddings
+        await LoadPersonCache(true);
+        
+        _imageCache.Evict(imageObject.ImageId);
     }
 
     public async Task UpdatePerson(Person person, string name)
