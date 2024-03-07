@@ -10,6 +10,7 @@ using FaceEmbeddingsClassification;
 using FaceONNX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.ML.OnnxRuntime;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -46,7 +47,9 @@ public class FaceONNXService : IDisposable
     {
         try
         {
-            // TODO: Load the faces from the DB and populate the embeddings
+            // TODO Add support for GPU
+            // using var options = useGPU ? SessionOptions.MakeSessionOptionWithCudaProvider(gpuId) : new SessionOptions();
+
             _faceDetector = new FaceDetector();
             _faceLandmarksExtractor = new FaceLandmarksExtractor();
             _faceEmbedder = new FaceEmbedder();
