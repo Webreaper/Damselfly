@@ -8,11 +8,8 @@
 <div class="damselfly-persontile">
     <div title="@Person.PersonGuid" class="damselfly-personimg">
         <NavLink href="@PersonLink">
-            <img @key="@Person.PersonId" title="@Person.Name" src="@FaceLink">
+            <img @key="@Person.PersonId" title="@PersonTitle" src="@FaceLink">
         </NavLink>
-    </div>
-    <div class="damselfly-personfield">
-        Face Data Sets: @Person.FaceData.Count 
     </div>
     <div class="damselfly-personfield">
         <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
@@ -20,6 +17,7 @@
 </div>
 
 @code {
+    private string PersonTitle => $"{Person.Name}\nState: {Person.State}\nFace Data Sets: {Person.FaceData.Count}";
 
     [Parameter]
     public Person Person { get; set; }
