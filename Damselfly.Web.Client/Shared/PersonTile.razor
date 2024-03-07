@@ -2,6 +2,7 @@
 @inject IUserStatusService statusService
 @inject ViewDataService ViewDataService
 @inject IJSRuntime JsRuntime
+@inject IImageCacheService imageCache
 @inject IDialogService dialogService
 
 <div class="damselfly-persontile">
@@ -68,6 +69,11 @@
                 // Update the local copy
                 Person.Name = newName;
 
+                // Massive hammer to crack a small nut. We've changed the name of a person, and any 
+                // number of imageObjects could be cached with the old name. So evict them all. 
+                // Performance hit, of course, but better than showing stale names.
+                await imageCache.ClearCache();
+                
                 StateHasChanged();
 
                 statusService.UpdateStatus($"Name set to '{newName}'");

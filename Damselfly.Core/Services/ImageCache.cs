@@ -149,8 +149,7 @@ public class ImageCache : IImageCacheService
     public async Task<Image> GetCachedImage(Image img)
     {
         Image cachedImage;
-
-
+        
         if ( !_memoryCache.TryGetValue(img.ImageId, out cachedImage) )
         {
             Logging.LogVerbose($"Cache miss for image {img.ImageId}");
@@ -229,7 +228,8 @@ public class ImageCache : IImageCacheService
     {
         var enrichedImage = await GetImage(image);
 
-        if ( enrichedImage != null ) _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
+        if ( enrichedImage != null ) 
+            _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
 
         return enrichedImage;
     }

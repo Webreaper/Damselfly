@@ -145,6 +145,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         await LoadPersonCache(true);
         
         _imageCache.Evict(imageObject.ImageId);
+        
+        // TODO - if we've changed a person's name, we should find all of the images that reference that 
+        // person, and evict them from the cache. But this could be exceptionally memory intensive.
     }
 
     public async Task UpdatePerson(Person person, string name)
