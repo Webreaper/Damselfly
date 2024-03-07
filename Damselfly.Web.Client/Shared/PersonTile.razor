@@ -11,6 +11,9 @@
         </NavLink>
     </div>
     <div class="damselfly-personfield">
+        @Person.FaceData.Count sets of face data
+    </div>
+    <div class="damselfly-personfield">
         <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
     </div>
 </div>

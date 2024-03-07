@@ -17,6 +17,7 @@ using Damselfly.ML.ObjectDetection;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp.PixelFormats;
 using Image = Damselfly.Core.Models.Image;
 
@@ -27,7 +28,8 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
     MetaDataService _metdataService, FaceONNXService _faceOnnxService,
     ThumbnailService _thumbService, ConfigService _configService,
     ImageClassifier _imageClassifier, ImageCache _imageCache,
-    WorkService _workService, ExifService _exifService) : IPeopleService, IProcessJobFactory, IRescanProvider
+    WorkService _workService, ExifService _exifService,
+    ILogger<ImageRecognitionService> _logger) : IPeopleService, IProcessJobFactory, IRescanProvider
 {
     // WASM: This should be a MemoryCache
     private readonly IDictionary<string, Person> _peopleCache = new ConcurrentDictionary<string, Person>();
@@ -64,11 +66,50 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return names;
     }
 
-    public async Task UpdateName(ImageObject faceObject, string name, bool merge)
+    private async Task MergeWithNamne(ImageObject faceObject, string name)
     {
-        if (!faceObject.IsFace)
-            throw new ArgumentException("Image object passed to name update.");
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
+        var transaction = db.Database.BeginTransaction();
+
+        try
+        {
+            var matchingPeople = await GetAllPeople();
+            
+            var oldPersonId = faceObject.PersonId;
+            var newPersonId = matchingPeople.Where( x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                            .Select( x => x.PersonId )
+                                            .SingleOrDefault(-1);
+
+            if( newPersonId != -1 )
+            {
+                // Update personID in image objects to the new person ID
+                await db.ImageObjects.Where( x => x.PersonId == oldPersonId )
+                    .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
+                
+                // Update personID in FaceData
+                await db.FaceData.Where( x => x.PersonId == oldPersonId )
+                    .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
+
+                // Delete old personID
+                await db.People.Where( x => x.PersonId == oldPersonId )
+                    .ExecuteDeleteAsync();
+                
+                await transaction.CommitAsync();
+
+                await LoadPersonCache( true );
+            }
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError( $"Exception while merging person {faceObject.PersonId} => {name}");
+            await transaction.RollbackAsync();
+        }
+    }
+
+    private async Task ChangeName(ImageObject faceObject, string name)
+    {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
@@ -88,6 +129,17 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         db.ImageObjects.Update(faceObject);
 
         await db.SaveChangesAsync("SetName");
+
+    }
+    public async Task UpdateName(ImageObject faceObject, string name, bool merge)
+    {
+        if (!faceObject.IsFace)
+            throw new ArgumentException("Image object passed to name update.");
+
+        if( merge )
+            await MergeWithNamne(faceObject, name);
+        else
+            await ChangeName( faceObject, name);
 
         if (faceObject.Person.PersonGuid != null)
         {
