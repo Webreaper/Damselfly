@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,50 +22,16 @@ using Image = Damselfly.Core.Models.Image;
 
 namespace Damselfly.Core.Services;
 
-public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IRescanProvider
+public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
+    IStatusService _statusService, ObjectDetector _objectDetector,
+    MetaDataService _metdataService, FaceONNXService _faceOnnxService,
+    ThumbnailService _thumbService, ConfigService _configService,
+    ImageClassifier _imageClassifier, ImageCache _imageCache,
+    WorkService _workService, ExifService _exifService) : IPeopleService, IProcessJobFactory, IRescanProvider
 {
-    private readonly ConfigService _configService;
-    private readonly FaceONNXService _faceOnnxService;
-    private readonly ExifService _exifService;
-    private readonly ImageCache _imageCache;
-    private readonly ImageClassifier _imageClassifier;
-    private readonly ImageProcessService _imageProcessor;
-    private readonly MetaDataService _metdataService;
-    private readonly ObjectDetector _objectDetector;
-
     // WASM: This should be a MemoryCache
     private readonly IDictionary<string, Person> _peopleCache = new ConcurrentDictionary<string, Person>();
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
-    private readonly ThumbnailService _thumbService;
-    private readonly WorkService _workService;
-
-    public ImageRecognitionService(IServiceScopeFactory scopeFactory,
-        IStatusService statusService, ObjectDetector objectDetector,
-        MetaDataService metadataService, FaceONNXService faceOnnxService,
-        ThumbnailService thumbs, ConfigService configService,
-        ImageClassifier imageClassifier, ImageCache imageCache,
-        WorkService workService, ExifService exifService,
-        ImageProcessService imageProcessor)
-    {
-        _scopeFactory = scopeFactory;
-        _thumbService = thumbs;
-        _statusService = statusService;
-        _objectDetector = objectDetector;
-        _metdataService = metadataService;
-        _faceOnnxService = faceOnnxService;
-        _configService = configService;
-        _imageClassifier = imageClassifier;
-        _imageProcessor = imageProcessor;
-        _imageCache = imageCache;
-        _workService = workService;
-        _exifService = exifService;
-    }
-
-    public ImageRecognitionService()
-    {
-    }
-
+    
     public static bool EnableImageRecognition { get; set; } = true;
 
     public async Task<List<Person>> GetAllPeople()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,29 +7,18 @@ using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
 using FaceEmbeddingsClassification;
 using FaceONNX;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.ML.OnnxRuntime;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Damselfly.ML.FaceONNX;
 
-public class FaceONNXService : IDisposable
+public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
 {
-    private readonly ILogger<FaceONNXService> _logger;
-    private readonly IServiceScopeFactory _scopeFactory;
-        
     private FaceDetector _faceDetector;
     private FaceLandmarksExtractor _faceLandmarksExtractor;
     private FaceEmbedder _faceEmbedder;
     private readonly Embeddings _embeddings = new();
-
-    public FaceONNXService(IServiceScopeFactory scopeFactory, ILogger<FaceONNXService> logger )
-    {
-        _scopeFactory = scopeFactory;
-        _logger = logger;
-    }
     
     public void Dispose()
     {

@@ -4,5 +4,6 @@
         <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
         <TargetFramework>net8.0</TargetFramework>
         <NoWarn>CS8603;CS8604;CS8618;IL2121</NoWarn>
-    </PropertyGroup>
+        <LangVersion>latest</LangVersion>
+     </PropertyGroup>
 </Project>
