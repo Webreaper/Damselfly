@@ -1,14 +1,14 @@
 ﻿@using Damselfly.Core.ScopedServices
 @inherits LayoutComponentBase
 
-@inject NavigationManager NavigationManager
-@inject ViewDataService ViewDataService
 @inject AuthenticationStateProvider authProvider
 @inject IConfigService configService
 @inject IUserMgmtService userService
 @inject IJSRuntime jsRuntime
 @inject ILogger<MainLayout> logger
 @inject ApplicationStateService appStatusService
+@inject IDialogService dialogService
+@inject IPeopleService peopleService
 
 @implements IDisposable
 
@@ -81,6 +81,17 @@
         }
     }
 
+    private async Task CheckForAIMigration()
+    {
+        if( await peopleService.NeedsAIMigration() )
+        {
+            var parameters = new DialogParameters();
+            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+            var dialog = dialogService.Show<AIMigrationDialog>("AI Migration", parameters, options);
+            var result = await dialog.Result;
+        }
+    }
+
     public void Dispose()
     {
         authProvider.AuthenticationStateChanged -= AuthStateChanged;
@@ -95,6 +106,8 @@
                 int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
 
                 appStatusService.IsMobile = (innerWidth <= 640);
+
+                await CheckForAIMigration();
             }
             catch( Exception ex )
             {

@@ -2,6 +2,7 @@
 using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace Damselfly.Web.Server.Controllers;
 [ApiController]
 [Route("/api/people")]
 public class PeopleController( ImageRecognitionService _aiService, 
+                                IPeopleService _peopleService,
                                 ILogger<PeopleController> _logger,
                                 ImageCache _imageCache) : ControllerBase
 {
@@ -40,8 +42,11 @@ public class PeopleController( ImageRecognitionService _aiService,
     public async Task UpdatePersonName( NameChangeRequest req )
     {
         await _aiService.UpdatePersonName( req );
-        
-        // TODO: Evict the image from the cache here?
     }
 
+    [HttpGet("/api/people/needsmigration")]
+    public async Task<bool> NeedsAIMigration()
+    {
+        return await _peopleService.NeedsAIMigration();
+    }
 }

@@ -11,4 +11,5 @@ public interface IPeopleService
     Task<List<Person>> GetAllPeople();
     Task<List<string>> GetPeopleNames(string searchText);
     Task UpdatePersonName(NameChangeRequest req);
+    Task<bool> NeedsAIMigration();
 }

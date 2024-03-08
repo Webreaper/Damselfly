@@ -33,4 +33,9 @@ public class ClientPeopleService : IPeopleService
     {
         await httpClient.CustomPutAsJsonAsync($"/api/people/name", req);
     }
+
+    public async Task<bool> NeedsAIMigration()
+    {
+        return await httpClient.CustomGetFromJsonAsync<bool>("/api/people/needsmigration");
+    }
 }

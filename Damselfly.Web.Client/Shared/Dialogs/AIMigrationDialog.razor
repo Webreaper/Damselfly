@@ -1,0 +1,35 @@
+﻿<MudDialog>
+    <DialogContent>
+        <h3>Face Recognition Migration Changes</h3>
+        <p>
+            Damselfly's face recognition engine has changed; the Azure Face service is no longer
+            supported, and has been replaced by a new locally-run face recognition system.
+        </p>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Close</MudButton>
+        <MudButton Color="Color.Surface" OnClick="ScanAll">Scan All Pictures</MudButton>
+        <MudButton Color="Color.Primary" OnClick="ScanFaces">Scan Pictures With Faces</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    void ScanAll()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void ScanFaces()
+    {
+        MudDialog.Close(DialogResult.Ok(false));
+    }
+
+    void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

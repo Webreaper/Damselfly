@@ -647,6 +647,17 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         _imageCache.Evict(imageId);
     }
 
+    public async Task<bool> NeedsAIMigration()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        // If we have any faces that were recognised by EMGU, Accord, or Azure, we need to rescan them
+        var needsMigration = await db.ImageObjects.AnyAsync( x => x.Type == "Face" &&
+                                      x.RecogntionSource != ImageObject.RecognitionType.FaceONNX);
+        return needsMigration;
+    }
+
     public class AIProcess : IProcessJob
     {
         public int ImageId { get; set; }
