@@ -181,7 +181,8 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             // Only pull out images where the  metadata has already been scanned,
             // and the AI hasn't been processed.
             var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
-                                                           && x.AILastUpdated == null)
+                                                           && x.AILastUpdated == null 
+                                                           && x.Width > 0 && x.Height > 0)
                 .OrderByDescending(x => x.LastUpdated)
                 .Take(maxJobs)
                 .Select(x => x.ImageId)
