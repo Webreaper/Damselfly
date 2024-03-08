@@ -445,6 +445,11 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
                 if ( IfdDirectory != null )
                 {
+                    if ( imgMetaData.Width == 0 )
+                        imgMetaData.Width = IfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagImageWidth);
+                    if ( imgMetaData.Height == 0 )
+                        imgMetaData.Height = IfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagImageHeight);
+
                     if ( imgMetaData.DateTaken == DateTime.MinValue )
                         imgMetaData.DateTaken =
                             IfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTime);
