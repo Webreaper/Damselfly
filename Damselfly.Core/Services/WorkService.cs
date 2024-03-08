@@ -270,7 +270,7 @@ public class WorkService : IWorkService
 
                 var waitTime = Math.Min((int)(sleepFactor * jobTime), maxWaitTime);
 
-                Logging.Log($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
+                Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
                 await Task.Delay(waitTime);
             }
         }

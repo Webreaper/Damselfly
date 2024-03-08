@@ -20,7 +20,7 @@ public class CPULevelSettings
     {
         get
         {
-            var useAlternateLevel = true;
+            var useAlternateLevel = false;
 
             if ( EnableAltCPULevel && AltTimeStart.HasValue && AltTimeEnd.HasValue )
             {
