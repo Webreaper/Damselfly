@@ -42,7 +42,7 @@
                 {
                     @foreach( var person in People )
                     {
-                        <PersonTile Person="person"/>
+                        <PersonTile Person="person" PersonChanged="RefreshData"/>
                     }
                 }
                 else
@@ -86,6 +86,11 @@
 
     private IEnumerable<Person> People => filteredPeople;
 
+    private void RefreshData()
+    {
+        _ = LoadData();
+    }
+    
     private void DoSearch(string searchTerm)
     {
         if( searchText != searchTerm )
@@ -124,6 +129,9 @@
 
     private async Task LoadData()
     {
+        filteredPeople = null;
+        StateHasChanged();
+        
         var names = await faceService.GetAllPeople();
         filteredPeople = names.Where(x => FilterFunc(x))
             .ToList();

@@ -21,6 +21,9 @@
 
     [Parameter]
     public Person Person { get; set; }
+    
+    [Parameter]
+    public Action? PersonChanged { get; set; }
 
     public string Name
     {
@@ -72,6 +75,7 @@
                 // Performance hit, of course, but better than showing stale names.
                 await imageCache.ClearCache();
                 
+                PersonChanged?.Invoke();
                 StateHasChanged();
 
                 statusService.UpdateStatus($"Name set to '{newName}'");

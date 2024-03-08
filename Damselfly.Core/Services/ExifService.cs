@@ -326,6 +326,7 @@ public class ExifService : IProcessJobFactory, ITagService
         var ops = new List<ExifOperation>();
 
         if ( faces != null )
+        {
             foreach ( var image in images )
                 ops.AddRange(faces.Select(face => new ExifOperation
                 {
@@ -336,6 +337,8 @@ public class ExifService : IProcessJobFactory, ITagService
                     TimeStamp = timestamp,
                     UserId = userId
                 }));
+            changeDesc = $"added {faces.Count} face tags";
+        }
 
         Logging.LogVerbose($"Bulk inserting {ops.Count()} face exif operations (for {images.Count()}) into queue. ");
 
