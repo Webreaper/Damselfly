@@ -1,5 +1,6 @@
 ﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -48,5 +49,11 @@ public class PeopleController( ImageRecognitionService _aiService,
     public async Task<bool> NeedsAIMigration()
     {
         return await _peopleService.NeedsAIMigration();
+    }
+    
+    [HttpPut("/api/people/runaimigration")]
+    public async Task RunAIMigration( AIMigrationRequest req )
+    {
+        await _aiService.ExecuteAIMigration( req );
     }
 }

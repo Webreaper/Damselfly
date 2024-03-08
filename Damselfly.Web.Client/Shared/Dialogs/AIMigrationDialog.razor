@@ -1,4 +1,7 @@
-﻿<MudDialog>
+﻿@using Damselfly.Core.DbModels.Models.API_Models
+@inject IPeopleService peopleService 
+
+<MudDialog>
     <DialogContent>
         <h3>Face Recognition Migration Changes</h3>
         <p>
@@ -15,21 +18,23 @@
 
 @code {
 
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    void ScanAll()
+    async Task ScanAll()
     {
+        await peopleService.ExecuteAIMigration( new AIMigrationRequest { MigrateAllImages = true });
         MudDialog.Close(DialogResult.Ok(true));
     }
 
-    void ScanFaces()
+    async Task ScanFaces()
     {
-        MudDialog.Close(DialogResult.Ok(false));
+        await peopleService.ExecuteAIMigration( new AIMigrationRequest { MigrateImagesWithFaces = true });
+        MudDialog.Close(DialogResult.Ok(true));
     }
 
     void Cancel()
     {
         MudDialog.Cancel();
     }
+
 }

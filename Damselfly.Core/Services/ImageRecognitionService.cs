@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
@@ -69,7 +70,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
     private async Task MergeWithName(ImageContext db, int personId, string name)
     {
-        var transaction = db.Database.BeginTransaction();
+        var transaction = await db.Database.BeginTransactionAsync();
 
         try
         {
@@ -658,6 +659,60 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return needsMigration;
     }
 
+    public async Task ExecuteAIMigration( AIMigrationRequest req )
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var trans = await db.Database.BeginTransactionAsync();
+
+        try
+        {
+            _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
+            
+            // First, set all people associated with Image Objects to null
+            await db.ImageObjects.Where( x => x.Type == "Face" )
+                .ExecuteUpdateAsync( x => 
+                    x.SetProperty(p => p.PersonId, v => null));
+            
+            // Delete all existing people
+            var peopleDeleted = await db.People.ExecuteDeleteAsync();
+            var imagesUpdated = 0;
+
+            if( req.MigrateImagesWithFaces )
+            {
+                _statusService.UpdateStatus("AI Migration: marking images with faces for AI Rescan...");
+
+                // Find all the images with imageObjects of type face, and set their AILastUpdated to null
+                imagesUpdated = await db.ImageMetaData
+                    .Include( x => x.Image)
+                    .ThenInclude(x => x.ImageObjects)
+                    .Where( x => x.Image.ImageObjects.Any( io => io.Type == "Face"))
+                    .ExecuteUpdateAsync(x =>
+                        x.SetProperty( p => p.AILastUpdated, v => null));
+            }
+            else if( req.MigrateAllImages )
+            {
+                _statusService.UpdateStatus("AI Migration: marking all images for AI Rescan...");
+
+                // Set AILastUpdate = null for all images in the DB
+                imagesUpdated = await db.ImageMetaData
+                    .ExecuteUpdateAsync(x =>
+                        x.SetProperty( p => p.AILastUpdated, v => null));
+            }
+
+            var msg = $"Deleted {peopleDeleted} people, and updated {imagesUpdated} images for AI scanning.";
+            _statusService.UpdateStatus(msg);
+            _logger.LogInformation(msg);
+
+            await trans.CommitAsync();
+        }
+        catch( Exception ex )
+        {
+            await trans.RollbackAsync();
+        }
+        
+    }
     public class AIProcess : IProcessJob
     {
         public int ImageId { get; set; }

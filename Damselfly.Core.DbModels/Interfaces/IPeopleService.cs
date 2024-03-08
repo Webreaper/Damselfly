@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 
@@ -12,4 +13,5 @@ public interface IPeopleService
     Task<List<string>> GetPeopleNames(string searchText);
     Task UpdatePersonName(NameChangeRequest req);
     Task<bool> NeedsAIMigration();
+    Task ExecuteAIMigration( AIMigrationRequest req );
 }

@@ -755,7 +755,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
-        using var transaction = db.Database.BeginTransaction();
+        using var transaction = await db.Database.BeginTransactionAsync();
 
         try
         {
@@ -791,12 +791,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                 addWatch.Stop();
             }
 
-            transaction.Commit();
+            await transaction.CommitAsync();
             tagsAdded = newImageTags.Count;
         }
         catch ( Exception ex )
         {
             Logging.LogError("Exception adding ImageTags: {0}", ex);
+            await transaction.RollbackAsync();
         }
 
         watch.Stop();

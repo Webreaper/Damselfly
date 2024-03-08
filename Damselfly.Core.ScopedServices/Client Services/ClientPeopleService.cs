@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.DbModels.Models.API_Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -37,5 +38,10 @@ public class ClientPeopleService : IPeopleService
     public async Task<bool> NeedsAIMigration()
     {
         return await httpClient.CustomGetFromJsonAsync<bool>("/api/people/needsmigration");
+    }
+
+    public async Task ExecuteAIMigration(AIMigrationRequest req)
+    {
+        await httpClient.CustomPostAsJsonAsync("/api/people/runaimigration", req);
     }
 }
