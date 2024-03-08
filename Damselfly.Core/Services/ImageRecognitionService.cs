@@ -181,8 +181,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             // Only pull out images where the  metadata has already been scanned,
             // and the AI hasn't been processed.
             var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
-                                                           && x.AILastUpdated == null 
-                                                           && x.Width > 0 && x.Height > 0)
+                                                           && x.AILastUpdated == null )
                 .OrderByDescending(x => x.LastUpdated)
                 .Take(maxJobs)
                 .Select(x => x.ImageId)
@@ -380,6 +379,12 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         if ( !fileName.Exists )
             return;
 
+        if( metadata.Width == 0 || metadata.Height == 0 )
+        {
+            _logger.LogWarning($"Skipping AI detection for image {image.FullPath} - dimensions metadata was zero!!");
+            return;
+        }
+        
         try
         {
             var thumbSize = ThumbSize.Large;

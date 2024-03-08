@@ -137,9 +137,6 @@ public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
         List<ImageDetectResult> detected = new();
         var watch = new Stopwatch("FaceOnnxDetection");
 
-        if( image.Width == 0 || image.Height == 0 )
-            return Task.FromResult(detected);
-        
         try
         {
             var detectedFaces = GetFacesFromImage(image).ToList();
