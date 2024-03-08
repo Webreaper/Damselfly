@@ -177,10 +177,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-            // Only pull out images where the thumb *has* been processed, and the
-            // metadata has already been scanned, the AI hasn't been processed.
+            // Only pull out images where the  metadata has already been scanned,
+            // and the AI hasn't been processed.
             var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
-                                                           && x.ThumbLastUpdated != null
                                                            && x.AILastUpdated == null)
                 .OrderByDescending(x => x.LastUpdated)
                 .Take(maxJobs)
