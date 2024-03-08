@@ -231,13 +231,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             if( image.MetaData.DateTaken == DateTime.MinValue )
             {
-                if( DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
+                if( nvps.ContainsKey("exif:DateTimeOriginal") && DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
                     image.MetaData.DateTaken = dateTime;
             }
-            if( string.IsNullOrEmpty(image.MetaData.Description) )
+            if( string.IsNullOrEmpty(image.MetaData.Description) && nvps.ContainsKey("exif:Description"))
                 image.MetaData.Description = nvps["exif:Description"];
             
-            if( string.IsNullOrEmpty(image.MetaData.Caption) )
+            if( string.IsNullOrEmpty(image.MetaData.Caption) && nvps.ContainsKey("exif:Caption") )
                 image.MetaData.Caption = nvps["exif:Caption"];
         }
         catch ( Exception ex )
