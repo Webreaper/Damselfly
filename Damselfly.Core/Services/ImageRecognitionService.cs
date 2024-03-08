@@ -328,7 +328,11 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                         State = Person.PersonState.Unknown,
                         LastUpdated = DateTime.UtcNow, 
                         PersonGuid = x.PersonGuid,
-                        FaceData = new List<PersonFaceData> { new() { Embeddings = string.Join( ",", x.Embeddings) } },
+                        FaceData = new List<PersonFaceData> { new()
+                        {
+                            Score = x.Score, 
+                            Embeddings = string.Join( ",", x.Embeddings)
+                        } },
                     }).ToList();
 
                     if ( newPeople.Any() )

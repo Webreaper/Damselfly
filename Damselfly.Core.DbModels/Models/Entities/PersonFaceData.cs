@@ -16,6 +16,8 @@ public class PersonFaceData
 
     // This is the set of face properties, stored as a comma-separated list of floats.
     public string Embeddings { get; set; }
+    
+    public float Score { get; set; }
 
     public override string ToString()
     {
