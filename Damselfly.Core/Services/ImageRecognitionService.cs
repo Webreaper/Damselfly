@@ -668,15 +668,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
         try
         {
-            _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
-            
-            // First, set all people associated with Image Objects to null
-            await db.ImageObjects.Where( x => x.Type == "Face" )
-                .ExecuteUpdateAsync( x => 
-                    x.SetProperty(p => p.PersonId, v => null));
-            
-            // Delete all existing people
-            var peopleDeleted = await db.People.ExecuteDeleteAsync();
             var imagesUpdated = 0;
 
             if( req.MigrateImagesWithFaces )
@@ -701,9 +692,21 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                         x.SetProperty( p => p.AILastUpdated, v => null));
             }
 
+            _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
+            
+            // Now, delete all existing face imageObjects
+            await db.ImageObjects.Where( x => x.Type == "Face" )
+                                 .ExecuteDeleteAsync();
+            
+            // Delete all existing people
+            var peopleDeleted = await db.People.ExecuteDeleteAsync();
+
             var msg = $"Deleted {peopleDeleted} people, and updated {imagesUpdated} images for AI scanning.";
             _statusService.UpdateStatus(msg);
             _logger.LogInformation(msg);
+
+            await LoadPersonCache(true);
+            await _thumbService.ClearFaceThumbs();
 
             await trans.CommitAsync();
         }

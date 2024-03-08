@@ -51,7 +51,7 @@ public class PeopleController( ImageRecognitionService _aiService,
         return await _peopleService.NeedsAIMigration();
     }
     
-    [HttpPut("/api/people/runaimigration")]
+    [HttpPost("/api/people/runaimigration")]
     public async Task RunAIMigration( AIMigrationRequest req )
     {
         await _aiService.ExecuteAIMigration( req );

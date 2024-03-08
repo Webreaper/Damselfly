@@ -86,7 +86,7 @@
         if( await peopleService.NeedsAIMigration() )
         {
             var parameters = new DialogParameters();
-            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, DisableBackdropClick = true };
             var dialog = dialogService.Show<AIMigrationDialog>("AI Migration", parameters, options);
             var result = await dialog.Result;
         }

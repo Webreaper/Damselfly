@@ -6,13 +6,29 @@
         <h3>Face Recognition Migration Changes</h3>
         <p>
             Damselfly's face recognition engine has changed; the Azure Face service is no longer
-            supported, and has been replaced by a new locally-run face recognition system.
+            supported, and has been replaced by a new locally-run face recognition system. The
+            new face-detection is not compatible with Azure face data, so <strong>existing people and
+            detected faces will be deleted from the database</strong>.
+        </p>
+        <p>
+            In order to support the new process, you will need to re-scan all images for faces,
+            and re-identify the faces that are detected. 
+        </p>
+        <div class="button-choice-row">
+            <div><p>You can choose to have all images re-scanned</p></div>
+            <div><MudButton Color="Color.Surface" Variant="Variant.Filled" OnClick="ScanAll">Scan All Pictures</MudButton></div>
+        </div>
+        <div class="button-choice-row">
+            <div><p>To save processing, you can mark all images with previously-detected faces, to be rescanned.</p></div>
+            <div><MudButton Color="Color.Surface" Variant="Variant.Filled" OnClick="ScanFaces">Scan Pictures With Faces</MudButton></div>
+        </div>
+        <p>
+            If you would like to take no action yet (e.g., to back up your Damselfly database 
+            first), please click 'Close' below.
         </p>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Close</MudButton>
-        <MudButton Color="Color.Surface" OnClick="ScanAll">Scan All Pictures</MudButton>
-        <MudButton Color="Color.Primary" OnClick="ScanFaces">Scan Pictures With Faces</MudButton>
     </DialogActions>
 </MudDialog>
 
