@@ -12,7 +12,7 @@ public class ImageMagickProcessor : IImageProcessor
     private const string graphicsMagickExe = "gm";
 
     // SkiaSharp doesn't handle .heic files... yet
-    private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw"};
+    private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr3" };
     private static bool imAvailable;
     private readonly bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
     private string verString = "(not found)";
