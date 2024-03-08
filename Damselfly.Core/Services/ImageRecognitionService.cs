@@ -657,9 +657,14 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
+        var deprecatedTypes = new[]
+        {
+            ImageObject.RecognitionType.Emgu, ImageObject.RecognitionType.Accord, ImageObject.RecognitionType.Azure
+        };
+        
         // If we have any faces that were recognised by EMGU, Accord, or Azure, we need to rescan them
-        var needsMigration = await db.ImageObjects.AnyAsync( x => x.Type == "Face" &&
-                                      x.RecogntionSource != ImageObject.RecognitionType.FaceONNX);
+        var needsMigration = await db.ImageObjects.AnyAsync( x => x.Type == "Face" && 
+                                                                  deprecatedTypes.Contains( x.RecogntionSource));
         return needsMigration;
     }
 
@@ -680,8 +685,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                 // Find all the images with imageObjects of type face, and set their AILastUpdated to null
                 imagesUpdated = await db.ImageMetaData
-                    .Include( x => x.Image)
-                    .ThenInclude(x => x.ImageObjects)
                     .Where( x => x.Image.ImageObjects.Any( io => io.Type == "Face"))
                     .ExecuteUpdateAsync(x =>
                         x.SetProperty( p => p.AILastUpdated, v => null));
@@ -698,14 +701,17 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
             _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
             
-            // Now, delete all existing face imageObjects
-            await db.ImageObjects.Where( x => x.Type == "Face" )
-                                 .ExecuteDeleteAsync();
-            
             // Delete all existing people
             var peopleDeleted = await db.People.ExecuteDeleteAsync();
 
-            var msg = $"Deleted {peopleDeleted} people, and updated {imagesUpdated} images for AI scanning.";
+            _statusService.UpdateStatus("AI Migration: obsolete Image Objects DB...");
+
+            // Now, delete all existing face imageObjects
+            int deletedObjects = await db.ImageObjects.Where( x => x.Type == "Face"
+                                  && x.RecogntionSource != ImageObject.RecognitionType.FaceONNX)
+                                 .ExecuteDeleteAsync();
+            
+            var msg = $"Deleted {peopleDeleted} people & {deletedObjects} objects, and updated {imagesUpdated} images for AI scanning.";
             _statusService.UpdateStatus(msg);
             _logger.LogInformation(msg);
 
