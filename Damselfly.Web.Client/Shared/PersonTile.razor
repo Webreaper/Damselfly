@@ -11,19 +11,29 @@
             <img @key="@Person.PersonId" title="@PersonTitle" src="@FaceLink">
         </NavLink>
     </div>
-    <div class="damselfly-personfield">
-        <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
-    </div>
+    @if( processingUpdate )
+    {
+        <div class="damselfly-personfield">
+            Updating name...
+        </div>
+    }
+    else
+    {
+        <div class="damselfly-personfield">
+            <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+        </div>
+    }
 </div>
 
 @code {
     private string PersonTitle => $"{Person.Name}\nState: {Person.State}\nFace Data Sets: {Person.FaceData.Count}";
-
+    private bool processingUpdate = false;
+    
     [Parameter]
     public Person Person { get; set; }
     
     [Parameter]
-    public Action? PersonChanged { get; set; }
+    public EventCallback PersonChanged { get; set; }
 
     public string Name
     {
@@ -38,6 +48,9 @@
     {
         if( !string.IsNullOrEmpty(newName) && !newName.Equals(Person.Name) )
         {
+            processingUpdate = true;
+            StateHasChanged();
+            
             var allNames = await peopleService.GetPeopleNames(newName);
             bool canRename = true;
             bool merge = false;
@@ -74,8 +87,9 @@
                 // number of imageObjects could be cached with the old name. So evict them all. 
                 // Performance hit, of course, but better than showing stale names.
                 await imageCache.ClearCache();
-                
-                PersonChanged?.Invoke();
+
+                await PersonChanged.InvokeAsync();
+                processingUpdate = false;
                 StateHasChanged();
 
                 statusService.UpdateStatus($"Name set to '{newName}'");

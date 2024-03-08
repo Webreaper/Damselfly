@@ -86,9 +86,9 @@
 
     private IEnumerable<Person> People => filteredPeople;
 
-    private void RefreshData()
+    private async Task RefreshData()
     {
-        _ = LoadData();
+        await LoadData();
     }
     
     private void DoSearch(string searchTerm)
@@ -129,9 +129,6 @@
 
     private async Task LoadData()
     {
-        filteredPeople = null;
-        StateHasChanged();
-        
         var names = await faceService.GetAllPeople();
         filteredPeople = names.Where(x => FilterFunc(x))
             .ToList();

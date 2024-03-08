@@ -1,7 +1,7 @@
 ﻿
 .damselfly-persontile {
     display: flex;
-    flex: 0 0 auto;
+    flex: 0 0 200px;
     flex-direction: column;
     align-items: center;
     margin: 4px;
