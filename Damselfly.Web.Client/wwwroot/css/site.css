@@ -1,14 +1,10 @@
 @charset "UTF-8";
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
-:root {
-    --main-background: #000000;
-}
-
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
     font-size: 14px;
-    background: var(--main-background) !important;
+    background: var(--main-background, #000000) !important;
     color: var(--body-text) !important;
     height: 100%;
     margin: 0;
