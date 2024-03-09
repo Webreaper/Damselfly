@@ -172,6 +172,10 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Person>().HasIndex(x => x.State);
         modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
 
+        modelBuilder.Entity<ImageObject>().HasIndex(x => x.ImageId);
+        modelBuilder.Entity<ImageObject>().HasIndex(x => x.PersonId);
+        modelBuilder.Entity<ImageObject>().HasIndex(x => new { x.ImageId, x.PersonId});
+        
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
