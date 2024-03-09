@@ -1,4 +1,5 @@
-﻿@inject IJSRuntime JsRuntime
+﻿@using System.Diagnostics
+@inject IJSRuntime JsRuntime
 @inject IConfigService configService
 @inject ISystemSettingsService settingsService
 @inject ClientThemeService themeService
@@ -54,12 +55,15 @@
                                Label="Enable Background Thumbnail Generation"/>
                 </div>
             </div>
-            <div class="damselfly-configsetting">
-                <div class="damselfly-configfield">
-                    <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Tertiary Color="Color.Primary"
-                               Label="Enable Image Editing (Experimental)"/>
+            @if( Debugger.IsAttached )
+            {
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                                   Label="Enable Image Editing (Experimental)"/>
+                    </div>
                 </div>
-            </div>
+            }
             <button class="btn btn-primary" type="submit">Save Settings</button>
         </EditForm>
     </DetailedErrorBoundary>
