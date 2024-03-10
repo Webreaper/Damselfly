@@ -6,25 +6,19 @@
 @inject ViewDataService ViewDataService
 
 <div class="damselfly-exportview">
-    <div class="damselfly-pagetitlebar">
-        <NavBack/>
-        <h4 class="damselfly-imagetitle">
-            Faces &amp; Names
-        </h4>
-    </div>
-
-    <div class="damselfly-dialogrow">
-        <div class="damselfly-dialogctrl">
+    <div class="title-bar">
+        <div class="title-section">
+            <NavBack/>
             <MudButton @onclick="@ClearFaceThumbs">Refresh Thumbs</MudButton>
         </div>
-        <div class="damselfly-dialogctrl">
+        <div class="title-section">
             <MudRadioGroup @bind-SelectedOption="identifiedType">
                 <MudRadio Option="@FilterType.All" Color="Color.Primary">All</MudRadio>
                 <MudRadio Option="@FilterType.Unidentified" Color="Color.Primary">Unidentified</MudRadio>
                 <MudRadio Option="@FilterType.Identified" Color="Color.Primary">Identified</MudRadio>
             </MudRadioGroup>
         </div>
-        <div class="damselfly-dialogctrl">
+        <div class="title-section">
             <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText"/>
         </div>
     </div>
