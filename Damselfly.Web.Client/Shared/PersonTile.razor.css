@@ -1,0 +1,34 @@
+﻿
+.damselfly-persontile {
+    display: flex;
+    flex: 0 0 200px;
+    flex-direction: column;
+    align-items: center;
+    margin: 4px;
+    padding: 3px;
+    background-color: var(--tool-window-bg);
+}
+
+.damselfly-personimg {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    margin: 3px;
+}
+
+.damselfly-personimg img {
+    height: 120px;
+    width: 120px;
+}
+
+.damselfly-personfield {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+
+.damselfly-persontile {
+    margin: 10px;
+}

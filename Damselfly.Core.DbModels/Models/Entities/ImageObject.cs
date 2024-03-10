@@ -17,11 +17,12 @@ public class ImageObject
     public enum RecognitionType
     {
         Manual = 0,
-        Emgu = 1,
+        Emgu = 1, // Deprecated
         Accord = 2, // Deprecated
-        Azure = 3,
+        Azure = 3, // Deprecated
         MLNetObject = 4,
-        ExternalApp = 5
+        ExternalApp = 5,
+        FaceONNX = 6
     }
 
     [Key] public int ImageObjectId { get; set; }
@@ -34,7 +35,7 @@ public class ImageObject
 
     public virtual Tag Tag { get; set; }
 
-    public string Type { get; set; } = ObjectTypes.Object.ToString();
+    public string? Type { get; set; } = ObjectTypes.Object.ToString();
     public RecognitionType RecogntionSource { get; set; }
     public double Score { get; set; }
     public int RectX { get; set; }

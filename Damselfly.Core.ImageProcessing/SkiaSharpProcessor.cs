@@ -6,6 +6,7 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using SkiaSharp;
+using Tensorflow.Util;
 
 namespace Damselfly.Core.ImageProcessing;
 
@@ -53,10 +54,18 @@ public class SkiaSharpProcessor : IImageProcessor
 
                 scale = new Stopwatch("ScaleThumb");
 
+                // The thumbnail being generated is the smaller than the
+                // source. Calculate the scale factor by which we need to reduce
                 var widthScaleFactor = srcBitmap.Width / (float)config.width;
-                var heighScaleFactor = srcBitmap.Height / (float)config.height;
-                var scaleFactor = Math.Min(widthScaleFactor, heighScaleFactor);
+                var heighScaleFactor = srcBitmap.Height / (float)config.height; 
+                
+                // If we're allowed to crop, pick the largest scale factor. Otherwise the smallest.
+                var scaleFactor = config.cropToRatio ? Math.Max(widthScaleFactor, heighScaleFactor) :
+                                                            Math.Min(widthScaleFactor, heighScaleFactor);
 
+                // Ensure we only ever scale down, never up
+                scaleFactor = Math.Max( 1, scaleFactor);
+                
                 using var scaledImage = new SKBitmap((int)(srcBitmap.Width / scaleFactor),
                     (int)(srcBitmap.Height / scaleFactor));
                 srcBitmap.ScalePixels(scaledImage.PeekPixels(), quality);
@@ -64,28 +73,20 @@ public class SkiaSharpProcessor : IImageProcessor
                 var cropSize = new SKSize { Height = config.height, Width = config.width };
                 using var cropped = config.cropToRatio ? Crop(scaledImage, cropSize) : scaledImage;
 
-                using var data = cropped.Encode(SKEncodedImageFormat.Jpeg, 90);
-
                 scale.Stop();
-                save = new Stopwatch("SaveThumb");
-                // TODO: For configs flagged batchcreate == false, perhaps don't write to disk
-                // and just pass back the stream?
-                using ( var stream = new FileStream(dest.FullName, FileMode.Create, FileAccess.Write) )
-                {
-                    data.SaveTo(stream);
-                }
 
+                save = new Stopwatch( "SaveThumb" );
+                SaveBitmapAsJpeg( cropped, dest );
                 save.Stop();
 
                 // Now, use the previous scaled image as the basis for the
                 // next smaller thumbnail. This should reduce processing
                 // time as we only work on the large image on the first
                 // iteration
-                if ( destFiles.Count > 1 )
+                if( destFiles.Count > 1 )
                     srcBitmap = scaledImage.Copy();
 
                 result.ThumbsGenerated = true;
-                // TODO: Dispose
 
                 if ( pair.Value.size == ThumbSize.ExtraLarge )
                     Logging.Log(
@@ -101,6 +102,18 @@ public class SkiaSharpProcessor : IImageProcessor
         }
 
         return Task.FromResult(result);
+    }
+
+    private void SaveBitmapAsJpeg( SKBitmap bitmap, FileInfo dest )
+    {
+        using var data = bitmap.Encode( SKEncodedImageFormat.Jpeg, 90 );
+
+        // TODO: For configs flagged batchcreate == false, perhaps don't write to disk
+        // and just pass back the stream?
+        using( var stream = new FileStream( dest.FullName, FileMode.Create, FileAccess.Write ) )
+        {
+            data.SaveTo( stream );
+        }
     }
 
     /// <summary>
@@ -252,7 +265,7 @@ public class SkiaSharpProcessor : IImageProcessor
     /// <param name="original"></param>
     /// <param name="cropRect"></param>
     /// <returns></returns>
-    private SKBitmap Crop(SKBitmap original, SKRectI cropRect)
+    public static SKBitmap Crop(SKBitmap original, SKRectI cropRect)
     {
         // crop
         var bitmap = new SKBitmap(cropRect.Width, cropRect.Height);

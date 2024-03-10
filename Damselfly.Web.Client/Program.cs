@@ -4,7 +4,6 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.Shared.Utils;
 using Damselfly.Web.Client.Extensions;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -40,7 +39,7 @@ public class Program
 
         builder.RootComponents.Add<App>("#app");
         builder.RootComponents.Add<HeadOutlet>("head::after");
-
+        
         var httpClientBuilder = builder.Services.AddHttpClient("DamselflyAPI",
             client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 
@@ -56,10 +55,10 @@ public class Program
         builder.Services.AddBlazorPanzoomServices();
 
         builder.Services.AddScoped<ContextMenuService>();
-        builder.Services.AddSingleton<RestClient>();
+        builder.Services.AddScoped<RestClient>();
 
-        builder.Services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
-        builder.Services.AddSingleton<IAuthService, AuthService>();
+        builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+        builder.Services.AddScoped<IAuthService, ClientAuthService>();
 
         builder.Services.AddDamselflyUIServices();
 

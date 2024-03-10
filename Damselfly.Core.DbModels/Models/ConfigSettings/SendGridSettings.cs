@@ -5,8 +5,8 @@ namespace Damselfly.Core.DbModels.Models;
 
 public class SendGridSettings
 {
-    public string SendGridFromAddress { get; set; }
-    public string SendGridKey { get; set; }
+    public string? SendGridFromAddress { get; set; }
+    public string? SendGridKey { get; set; }
 
     public void Load(IConfigService configService)
     {

@@ -1,9 +1,6 @@
-﻿using Damselfly.Core.Constants;
-using Damselfly.Core.DbModels.Authentication;
+﻿using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers;
@@ -43,15 +40,15 @@ public class UserManagementController : ControllerBase
     [HttpPut("/api/users")]
     public async Task<UserResponse> CreateUser(UserRequest request)
     {
-        return await _service.CreateNewUser(request.User, request.Password, request.Roles);
+        return await _service.CreateNewUser(request.UserName, request.Email, request.Password, request.Roles);
     }
 
     [HttpPost("/api/users")]
     public async Task<UserResponse> UpdateUser(UserRequest request)
     {
         if ( request.Roles != null && request.Roles.Any() )
-            return await _service.UpdateUserAsync(request.User, request.Roles);
+            return await _service.UpdateUserAsync(request.UserName, request.Email, request.Roles);
 
-        return await _service.SetUserPasswordAsync(request.User, request.Password);
+        return await _service.SetUserPasswordAsync(request.UserName, request.Password);
     }
 }

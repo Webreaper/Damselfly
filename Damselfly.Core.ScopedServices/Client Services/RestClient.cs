@@ -2,6 +2,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.ScopedServices.ClientServices;
 
@@ -18,10 +19,12 @@ public class RestClient
     public static readonly JsonSerializerOptions JsonOptions = SetJsonOptions(new JsonSerializerOptions());
 
     private readonly HttpClient _restClient;
+    private readonly ILogger<RestClient> _logger;
 
-    public RestClient(HttpClient client)
+    public RestClient(HttpClient client, ILogger<RestClient> logger)
     {
         _restClient = client;
+        _logger = logger;
     }
 
     public AuthenticationHeaderValue AuthHeader
@@ -48,13 +51,20 @@ public class RestClient
 
     private Exception GetRestException(Exception ex, string requestUrl)
     {
-        if ( ex is JsonException )
+        if(ex is HttpRequestException )
+        {
+            _logger.LogWarning( $"HTTP Exception: {ex.Message} ({requestUrl})" );
+        }
+        if( ex is JsonException )
         {
             if ( ex.Message.Contains("'<' is an invalid start of a value") )
                 return new ArgumentException($"Possible 404 / Page Not Found exception for {requestUrl}", ex);
             if ( ex.Message.Contains("A possible object cycle") )
                 return new ArgumentException($"Object cycle exception for {requestUrl}", ex);
         }
+
+        if( ex.InnerException != null )
+            _logger.LogWarning( $"  Inner Exception: {ex.InnerException.Message}" );
 
         return ex;
     }
@@ -76,6 +86,7 @@ public class RestClient
         try
         {
             var msg = await _restClient.PostAsync(requestUri, null);
+            msg.EnsureSuccessStatusCode();
             return msg;
         }
         catch ( Exception ex )
@@ -89,9 +100,10 @@ public class RestClient
         try
         {
             var msg = await _restClient.PostAsJsonAsync(requestUri, obj, JsonOptions);
+            msg.EnsureSuccessStatusCode();
             return msg;
         }
-        catch ( Exception ex )
+        catch( Exception ex )
         {
             throw GetRestException(ex, requestUri);
         }
@@ -102,6 +114,7 @@ public class RestClient
         try
         {
             var response = await _restClient.PostAsJsonAsync(requestUri, obj, JsonOptions);
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
         }
         catch ( Exception ex )
@@ -115,6 +128,7 @@ public class RestClient
         try
         {
             var response = await _restClient.PutAsJsonAsync(requestUri, obj, JsonOptions);
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
         }
         catch ( Exception ex )

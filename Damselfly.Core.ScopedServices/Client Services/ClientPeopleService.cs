@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.DbModels.Models.API_Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -28,16 +29,19 @@ public class ClientPeopleService : IPeopleService
     {
         return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/{searchText}");
     }
-
-    public async Task UpdateName(ImageObject theObject, string newName)
+    
+    public async Task UpdatePersonName(NameChangeRequest req)
     {
-        var req = new NameChangeRequest { ObjectId = theObject.ImageObjectId, NewName = newName };
-        await httpClient.CustomPutAsJsonAsync($"/api/object/name", req);
+        await httpClient.CustomPutAsJsonAsync($"/api/people/name", req);
     }
 
-    public async Task UpdatePerson(Person thePerson, string newName)
+    public async Task<bool> NeedsAIMigration()
     {
-        throw new NotImplementedException();
-        //await httpClient.CustomPutAsJsonAsync($"/api/people/name/{thePerson.PersonId}", newName);
+        return await httpClient.CustomGetFromJsonAsync<bool>("/api/people/needsmigration");
+    }
+
+    public async Task ExecuteAIMigration(AIMigrationRequest req)
+    {
+        await httpClient.CustomPostAsJsonAsync("/api/people/runaimigration", req);
     }
 }

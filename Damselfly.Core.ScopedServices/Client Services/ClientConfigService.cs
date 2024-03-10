@@ -48,7 +48,7 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
     public void SetForUser(string name, string value)
     {
         var newSetting = new ConfigSetting { Name = name, Value = value, UserId = _userId };
-        SetSetting(name, newSetting);
+        SetSetting(newSetting);
     }
 
     private async void AuthStateChanged(Task<AuthenticationState> authStateTask)

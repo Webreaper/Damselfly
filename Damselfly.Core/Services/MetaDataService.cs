@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
@@ -16,6 +17,8 @@ using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.Iptc;
 using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.Photoshop;
+using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Xmp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +30,7 @@ namespace Damselfly.Core.Services;
 
 public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanProvider
 {
-    private static readonly DateTime NoMetadataDate = DateTime.MinValue;
+    private static readonly DateTime NoMetadataDate = new DateTime(1970,01,01,00,00,00);
     private readonly ConfigService _configService;
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
@@ -98,7 +101,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
         var updated =
-            await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd}'");
+            await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd HH:mm:ss}'");
 
         if ( updated != 0 )
             _statusService.UpdateStatus($"{updated} images in folder flagged for Metadata scanning.");
@@ -214,6 +217,37 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     }
 
     /// <summary>
+    ///     Pull out the XMP attributes
+    /// </summary>
+    /// <param name="xmpDirectory"></param>
+    /// <returns></returns>
+    private void ReadXMPData(XmpDirectory xmpDirectory, Image image)
+    {
+        try
+        {
+            var nvps = xmpDirectory.XmpMeta.Properties
+                .Where(x => !string.IsNullOrEmpty(x.Path))
+                .ToDictionary(x => x.Path, y => y.Value);
+
+            if( image.MetaData.DateTaken == DateTime.MinValue )
+            {
+                if( nvps.ContainsKey("exif:DateTimeOriginal") && DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
+                    image.MetaData.DateTaken = dateTime;
+            }
+            if( string.IsNullOrEmpty(image.MetaData.Description) && nvps.ContainsKey("exif:Description"))
+                image.MetaData.Description = nvps["exif:Description"];
+            
+            if( string.IsNullOrEmpty(image.MetaData.Caption) && nvps.ContainsKey("exif:Caption") )
+                image.MetaData.Caption = nvps["exif:Caption"];
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Exception while parsing XMP face/region data: {ex}");
+        }
+    }
+
+    
+    /// <summary>
     ///     Pull out the XMP face area so we can convert it to a real face in the DB
     /// </summary>
     /// <param name="xmpDirectory"></param>
@@ -326,7 +360,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             if ( metadata != null )
             {
                 metaDataReadSuccess = true;
-
+                
                 var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
 
                 if ( subIfdDirectory != null )
@@ -337,6 +371,10 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                         imgMetaData.DateTaken =
                             subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTimeOriginal);
 
+                    if ( imgMetaData.DateTaken == DateTime.MinValue )
+                        imgMetaData.DateTaken =
+                            subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTime);
+                    
                     imgMetaData.Height = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
                     imgMetaData.Width = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
 
@@ -407,9 +445,16 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
                 if ( IfdDirectory != null )
                 {
+
+                    if ( imgMetaData.Width == 0 )
+                        imgMetaData.Width = IfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagImageWidth);
+                    if ( imgMetaData.Height == 0 )
+                        imgMetaData.Height = IfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagImageHeight);
+
                     if ( imgMetaData.DateTaken == DateTime.MinValue )
-                        imgMetaData.DateTaken = IfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTime);
-                            
+                        imgMetaData.DateTaken =
+                            IfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTime);
+
                     var exifDesc = IfdDirectory.SafeExifGetString(ExifDirectoryBase.TagImageDescription).SafeTrim();
                     imgMetaData.Description = FilteredDescription(exifDesc);
 
@@ -463,9 +508,29 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                         keywords = keywordList;
                 }
 
+                var psDirectory = metadata.OfType<PhotoshopDirectory>().FirstOrDefault();
+                if ( psDirectory != null )
+                {
+                    // TODO
+                }
+
+                var pngDirectory = metadata.OfType<PngDirectory>().FirstOrDefault();
+                if ( pngDirectory != null )
+                {
+                    if ( imgMetaData.Width == 0 )
+                        imgMetaData.Width = pngDirectory.SafeGetExifInt(PngDirectory.TagImageWidth);
+                    if ( imgMetaData.Height == 0 )
+                        imgMetaData.Height = pngDirectory.SafeGetExifInt(PngDirectory.TagImageHeight);
+                }
+
                 var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
 
-                if ( xmpDirectory != null ) newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
+                if ( xmpDirectory != null && xmpDirectory.XmpMeta != null )
+                {
+                    ReadXMPData(xmpDirectory, image);
+                    // Read the face data too
+                    newFaces = ReadXMPFaceRegionData(xmpDirectory, image, orientation);
+                }
             }
 
             if ( imgMetaData.Width != 0 && imgMetaData.Height != 0 )
@@ -474,7 +539,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var keywordsSummary = keywords.Any() ? $", found {keywords.Count()} keywords." : string.Empty;
             Logging.Log($"Read metadata for {image.FullPath} (ID: {image.ImageId}) {keywordsSummary}");
 
-            DumpMetaData(image, metadata);
+            // TODO Fix weirdness with EF8 migration which didn't work from a migrations perspective
+            if( string.IsNullOrEmpty( imgMetaData.Copyright ) ) imgMetaData.Copyright = string.Empty;
+            if( string.IsNullOrEmpty( imgMetaData.Caption ) ) imgMetaData.Caption = string.Empty;
+            if( string.IsNullOrEmpty( imgMetaData.Credit ) ) imgMetaData.Credit = string.Empty;
+            if( string.IsNullOrEmpty( imgMetaData.Description ) ) imgMetaData.Description = string.Empty;
+            
+            DumpMetaData( image, metadata);
         }
         catch ( Exception ex )
         {
@@ -519,17 +590,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var img = await _imageCache.GetCachedImage(imageId);
 
         db.Attach(img);
-
+        
         try
         {
             var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
 
-            if (lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) && lastWriteTime > DateTime.UtcNow.AddSeconds(-10))
+            if( lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) &&
+                      lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
             {
                 // If the last-write time is within 30s of now, but it's not a time far in the future
                 // we skip it, as it's possible it might still be mid-copy.
                 // TODO: We need a better way of managing this
-                Logging.LogWarning($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+                Logging.LogVerbose($"Skipping metadata scan for {img.FileName} - write time is too recent.");
                 return;
             }
 
@@ -586,7 +658,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             var changesSaved = await db.SaveChangesAsync("ImageMetaDataSave");
 
             if ( changesSaved == 0 )
-                Logging.LogError($"No changes saved after metadata scan for image {img.ImageId}");
+                Logging.LogVerbose($"No changes saved after metadata scan for image {img.ImageId}");
         }
 
         // Now save the tags
@@ -689,7 +761,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
-        using var transaction = db.Database.BeginTransaction();
+        using var transaction = await db.Database.BeginTransactionAsync();
 
         try
         {
@@ -725,12 +797,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                 addWatch.Stop();
             }
 
-            transaction.Commit();
+            await transaction.CommitAsync();
             tagsAdded = newImageTags.Count;
         }
         catch ( Exception ex )
         {
             Logging.LogError("Exception adding ImageTags: {0}", ex);
+            await transaction.RollbackAsync();
         }
 
         watch.Stop();
@@ -865,17 +938,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         {
             Logging.Log($" Directory: {dir.Name}:");
 
-            if ( dir is XmpDirectory )
-            {
-                var xmpDirectory = dir as XmpDirectory;
+            var xmpDirectory = dir as XmpDirectory;
 
+            if( xmpDirectory != null && xmpDirectory.XmpMeta != null )
+            {
                 foreach ( var property in xmpDirectory.XmpMeta.Properties )
                     if ( !string.IsNullOrEmpty(property.Value) )
                         Logging.Log($"  Tag: {property.Path} = {property.Value}");
             }
             else
             {
-                foreach ( var tag in dir.Tags ) Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
+                foreach ( var tag in dir.Tags ) 
+                    Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
             }
         }
     }

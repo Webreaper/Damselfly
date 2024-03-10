@@ -2,7 +2,6 @@
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Damselfly.ML.Face.Azure;
 using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.Services;
@@ -12,25 +11,25 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class SystemSettingsService : ISystemSettingsService
 {
-    private readonly AzureFaceService _azureService;
     private readonly IConfigService _configService;
     private readonly ILogger<SystemSettingsService> _logger;
     private readonly ServerNotifierService _notifier;
     private readonly WorkService _workService;
     private readonly WordpressService _wpService;
+    private readonly ThumbnailService _thumbService;
 
     public SystemSettingsService(ILogger<SystemSettingsService> logger,
         WorkService workService,
-        AzureFaceService azureService,
         WordpressService wpService,
+        ThumbnailService thumbService,
         IConfigService configService,
         ServerNotifierService notifier)
     {
         _notifier = notifier;
         _workService = workService;
-        _azureService = azureService;
         _wpService = wpService;
         _configService = configService;
+        _thumbService = thumbService;
         _logger = logger;
     }
 
@@ -47,9 +46,6 @@ public class SystemSettingsService : ISystemSettingsService
 
         // Now update the services with the new settings
         await _workService.SetCPUSchedule(settings.cpuSettings);
-
-        // Init the azure service status based on config.
-        await _azureService.StartService();
 
         // WP Settings have changed, so reset the client and token
         _wpService.ResetClient();

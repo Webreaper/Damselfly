@@ -4,37 +4,48 @@
 @inject IJSRuntime JsRuntime
 @implements IDisposable
 
-<MudThemeProvider Theme="@mudTheme"/>
+@if( themeSet )
+{
+    <div class="themeswitcher-fade">
+        <MudThemeProvider Theme="@mudTheme"/>
+        @ChildContent
+    </div>
+}
 
 @code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
     private long cacheBuster = 1;
     private MudTheme? mudTheme;
+    private ThemeConfig? currentConfig;
+    private bool themeSet = false;
 
     protected override async Task OnInitializedAsync()
     {
-        if( mudTheme == null )
-        {
-            var themeName = configService.Get(ConfigSettings.Theme, "Green");
-
-            if( !string.IsNullOrEmpty(themeName) )
-            {
-                var newTheme = await themeService.GetThemeConfig(themeName);
-                mudTheme = CreateMudTheme(newTheme);
-            }
-        }
+        themeService.OnChangeTheme += ThemeChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if( firstRender )
         {
-            themeService.OnChangeTheme += SwitchTheme;
+            if( mudTheme == null )
+            {
+                var themeName = configService.Get(ConfigSettings.Theme, "Green");
+
+                if( !string.IsNullOrEmpty(themeName) )
+                {
+                    currentConfig = await themeService.GetThemeConfig(themeName);
+                    await SwitchTheme(currentConfig);
+                }
+            }
         }
     }
 
     public void Dispose()
     {
-        themeService.OnChangeTheme -= SwitchTheme;
+        themeService.OnChangeTheme -= ThemeChanged;
     }
 
     private static MudColor? CreateMudColor(string value)
@@ -77,21 +88,24 @@
         };
     }
 
-
-    private void SwitchTheme(ThemeConfig newTheme)
+    private void ThemeChanged( ThemeConfig newTheme )
+    {
+        _ = SwitchTheme(newTheme);
+    }   
+    
+    private async Task SwitchTheme(ThemeConfig newTheme)
     {
         if( newTheme != null )
         {
-            logger.LogInformation($"Switching theme to {newTheme}");
-
-    // Apply the new stylesheet to Damselfly
+            // Apply the new stylesheet to Damselfly
             var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
-            _ = JsRuntime.InvokeAsync<string>("setStyleSheet", newTheme.Path);
-
+            await JsRuntime.InvokeAsync<string>("setStyleSheet", themeCSS);
+            
             mudTheme = CreateMudTheme(newTheme);
-
-    // Trigger a statechanged for Mud
+            themeSet = true;
             StateHasChanged();
+
+            logger.LogInformation($"Switched theme to {newTheme}");
         }
     }
 

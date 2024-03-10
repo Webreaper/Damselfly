@@ -12,7 +12,7 @@ public static class AuthUtils
         {
             var user = authState.User;
 
-            if ( user.Identity.IsAuthenticated )
+            if ( user != null && user.Identity != null && user.Identity.IsAuthenticated )
             {
                 var userId = user.Claims
                     .Where(x => x.Type.Contains("NameIdentifier", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();

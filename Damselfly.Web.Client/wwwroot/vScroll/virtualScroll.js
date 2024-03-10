@@ -34,5 +34,8 @@
 
             window.addEventListener('resize', loadIfMoreVisible);
             scrollArea.addEventListener('scroll', loadIfMoreVisible);
+
+            // Ensure initial load
+            loadIfMoreVisible();
         }
     }

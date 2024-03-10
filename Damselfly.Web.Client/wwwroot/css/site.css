@@ -4,11 +4,11 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
     font-size: 14px;
-    background: var(--main-background) !important;
+    background: var(--main-background, #000000) !important;
     color: var(--body-text) !important;
     height: 100%;
     margin: 0;
-    padding: 0;
+    padding: 0; 
 }
 
 ::selection {
@@ -31,6 +31,10 @@ html, body {
     text-align: center;
     vertical-align: middle;
     font-weight: bold;
+}
+
+.search-hints { 
+    max-width: 700px;
 }
 
 .imagegrid-loader {
@@ -471,6 +475,9 @@ app {
     color: white;
 }
 
+.themeswitcher-fade {
+    animation: fadeIn ease 2s; 
+}
 .content {
     padding-top: 1.1rem;
 }
@@ -516,29 +523,6 @@ f
     font-size: 12px;
     width: 200px;
     height: 60px;
-}
-
-.damselfly-container {
-    height: calc(100vh - 30px);
-    display: flex;
-    flex-direction: column;
-}
-
-.damselfly-statusbar {
-    flex: 0 1 30px;
-    align-items: center;
-    min-height: 30px;
-    padding: 5px;
-    background-image: linear-gradient(180deg, var(--statusbar-gradstart), var(--statusbar-gradend));
-    display: flex;
-    flex-direction: row;
-}
-
-.damselfly-application {
-    flex: 1 0 100%;
-    display: flex;
-    min-height: 100%;
-    flex-direction: row;
 }
 
 .damselfly-sidebar {
@@ -926,6 +910,29 @@ f
     }
 }
 
+@keyframes slowFade {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
 
 .damselfly-searchfilter {
     flex: 0 0 auto;
@@ -1101,25 +1108,6 @@ f
 .damselfly-exportitem img {
     max-height: 300px;
     max-width: 300px;
-}
-
-.damselfly-personimg {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    margin: 3px;
-}
-
-.damselfly-personimg img {
-    height: 120px;
-    width: 120px;
-}
-
-.damselfly-personfield {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    margin-bottom: 6px;
 }
 
 .toolwindow {
@@ -1708,36 +1696,6 @@ hr.separator {
     height: 0px;
 }
 
-.object {
-    z-index: 50;
-    display: none;
-    position: absolute;
-    padding: 3px;
-    font-weight: bold;
-    border: 2px solid #555555;
-    background-color: rgba(155, 155, 155, 0.35);
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-    animation: fadeIn ease 0.4s;
-}
-
-.object:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-    border: 3px solid #ffffff;
-    animation: fadeIn ease 0.2s;
-}
-
-.object-text {
-    flex: 1;
-    color: black;
-    padding: 3px;
-    font-size: 14pt;
-    font-weight: bold;
-    z-index: 60;
-    text-shadow: -2px -2px 0 rgb(255, 255, 255, 0.5), 2px -2px 0 rgb(255, 255, 255, 0.5), -2px 2px 0 rgb(255, 255, 255, 0.5), 2px 2px 0 rgb(255, 255, 255, 0.5);
-}
-
 .img-zoom-result {
     z-index: 100;
     border: 1px solid rgba(130, 130, 130, 0.6);
@@ -1748,15 +1706,6 @@ hr.separator {
     width: 100%;
     cursor: zoom-in;
     background-repeat: no-repeat;
-}
-
-.object-editor {
-    flex: 1;
-    margin: 5px;
-    font-size: 10pt;
-    min-width: 150px;
-    min-height: 40px;
-    background: var(--keyword-bg);
 }
 
 .damselfly-toolbarbutton {

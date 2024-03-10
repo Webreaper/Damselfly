@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -49,7 +50,7 @@ public class UserConfigService : BaseConfigService, IDisposable
     protected override async Task PersistSetting(ConfigSetRequest setRequest)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var existing = await db.ConfigSettings
             .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)

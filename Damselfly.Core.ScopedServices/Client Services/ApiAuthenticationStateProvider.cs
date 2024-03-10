@@ -92,7 +92,7 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
         return claims;
     }
 
-    private byte[] ParseBase64WithoutPadding(string base64)
+    private static byte[] ParseBase64WithoutPadding(string base64)
     {
         switch ( base64.Length % 4 )
         {

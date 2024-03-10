@@ -7,7 +7,6 @@ using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
-using Org.BouncyCastle.Utilities.Zlib;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -267,28 +266,6 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
     }
 
     /// <summary>
-    ///     Draw rectangles onto a file
-    /// </summary>
-    /// <param name="path"></param>
-    /// <param name="rects"></param>
-    /// <param name="output"></param>
-    public static void DrawRects(string path, List<Rectangle> rects, string output)
-    {
-        using var image = Image.Load<Rgba32>(path);
-
-        foreach ( var rect in rects )
-        {
-            var pen = new Pen(Color.HotPink, 7);
-
-            image.Mutate(x => x.AutoOrient());
-            image.Mutate(x => x.Draw(pen, rect));
-        }
-
-        image.Save(output);
-    }
-
-
-    /// <summary>
     ///     Given a SixLabours ImageSharp image context, applies a watermark text overlay
     ///     to the bottom right corner in the given font and colour.
     /// </summary>
@@ -303,7 +280,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
         var imgSize = processingContext.GetCurrentSize();
 
         // measure the text size
-        var size = TextMeasurer.Measure(text, new TextOptions(font));
+        var size = TextMeasurer.MeasureBounds(text, new TextOptions(font));
 
         var ratio = 4; // Landscape, we make the text 25% of the width
 
@@ -325,7 +302,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
         // 5% from the bottom right.
         var position = new PointF(imgSize.Width - fivePercent, imgSize.Height - fivePercent);
 
-        var textOptions = new TextOptions(scaledFont)
+        var textOptions = new RichTextOptions(scaledFont)
         {
             VerticalAlignment = VerticalAlignment.Bottom,
             HorizontalAlignment = HorizontalAlignment.Right

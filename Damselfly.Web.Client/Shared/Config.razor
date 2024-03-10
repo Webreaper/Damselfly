@@ -1,4 +1,5 @@
-﻿@inject IJSRuntime JsRuntime
+﻿@using System.Diagnostics
+@inject IJSRuntime JsRuntime
 @inject IConfigService configService
 @inject ISystemSettingsService settingsService
 @inject ClientThemeService themeService
@@ -11,310 +12,287 @@
 @inject ILogger<Config> logger
 
 <div class="damselfly-config">
-    <h1>Configuration Settings</h1>
-    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
-        <MudTabPanel Text="User Settings">
-            <DetailedErrorBoundary>
-                <EditForm Model="settingsModel.similarityThreshold" OnValidSubmit="@HandleValidSubmit">
-                    <div>
-                        <h2>Settings </h2>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T=" string " Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
-                                    @foreach (var choice in allThemes)
-                                    {
-                                        <MudSelectItem T=" string " Value="@choice">
-                                            @choice.Transform(To.SentenceCase)
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T=" int " Label="Similarity Threshold" @bind-Value="settingsModel.similarityThreshold" Variant="UIConstants.MudVariant"
-                                           HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
-                                    @foreach (var choice in new[] { 100, 90, 75, 50, 25 })
-                                    {
-                                        <MudSelectItem T=" int " Value="@choice">
-                                            @choice.ToString()
-                                        </MudSelectItem>
-                                    }
-                                </MudSelect>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" type="submit">Save Settings</button>
+<h1>Configuration Settings</h1>
+<MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="damselfly-configsection">
+<MudTabPanel Text="User Settings">
+    <DetailedErrorBoundary>
+        <EditForm Model="settingsModel.similarityThreshold" OnValidSubmit="@HandleValidSubmit">
+            <h2>Settings </h2>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudSelect T=" string " Label="Theme" HelperText="Select colour theme for the app" @bind-Value="selectedTheme" Variant="UIConstants.MudVariant">
+                        @foreach ( var choice in allThemes )
+                        {
+                            <MudSelectItem T=" string " Value="@choice">
+                                @choice.Transform(To.SentenceCase)
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            </div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudSelect T=" int " Label="Similarity Threshold" @bind-Value="settingsModel.similarityThreshold" Variant="UIConstants.MudVariant"
+                               HelperText="Select percentage threshold for image similarity searches. 75 usually gives good results.">
+                        @foreach ( var choice in new[] { 100, 90, 75, 50, 25 } )
+                        {
+                            <MudSelectItem T=" int " Value="@choice">
+                                @choice.ToString()
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            </div>
+            <p>
+                By default, thumbnails are generated/created on-demand (but cached on disk). If you want, you can enable
+                background thumbnail generation, so a background task will go through all images and create thumbnails
+                for them in advance. This option can be useful for servers with less performance, where on-demand thumbnails
+                might render slowly.
+            </p>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudSwitch @bind-Checked="settingsModel.enableBackgroundThumbs" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                               Label="Enable Background Thumbnail Generation"/>
+                </div>
+            </div>
+            @if( Debugger.IsAttached )
+            {
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                                   Label="Enable Image Editing (Experimental)"/>
                     </div>
-                </EditForm>
-            </DetailedErrorBoundary>
-        </MudTabPanel>
+                </div>
+            }
+            <button class="btn btn-primary" type="submit">Save Settings</button>
+        </EditForm>
+    </DetailedErrorBoundary>
+</MudTabPanel>
 
-        @if (shoeSystemSettings)
-        {
-            <MudTabPanel Text="System Settings">
-                <DetailedErrorBoundary>
-                    <EditForm Model="@settingsModel.cpuSettings" OnValidSubmit="@HandleValidSubmit">
-                        <FluentValidationValidator />
-                        <ValidationSummary />
-                        <h2>SideCar Processing</h2>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudCheckBox @bind-Checked="@settingsModel.importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing" />
-                            </div>
-                        </div>
+@if ( shoeSystemSettings )
+{
+    <MudTabPanel Text="System Settings">
+        <DetailedErrorBoundary>
+            <EditForm Model="@settingsModel.cpuSettings" OnValidSubmit="@HandleValidSubmit">
+                <FluentValidationValidator/>
+                <ValidationSummary/>
+                <h2>SideCar Processing</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing"/>
+                    </div>
+                </div>
 
-                        <h2>Security</h2>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudCheckBox @bind-Checked="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)" />
-                            </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Enable public registration page" />
-                            </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly" />
-                            </div>
-                        </div>
+                <h2>Security</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)"/>
+                    </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Enable public registration page"/>
+                    </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly"/>
+                    </div>
+                </div>
 
-                        <h2>CPU Usage</h2>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T=" int " Label="CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevel" Variant="UIConstants.MudVariant"
-                                           HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
-                                    @foreach (var choice in CPULevels.OrderBy(x => x.Key))
-                                        {
-                                        <MudSelectItem T=" int " Value="@choice.Key">
-                                            @choice.Value
-                                        </MudSelectItem>
-                                        }
-                                </MudSelect>
-                            </div>
-                        </div>
+                <h2>Logging</h2>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudSelect T=" LoggingLevel " Label="Log Level" @bind-Value="settingsModel.serverLogLevel" Variant="UIConstants.MudVariant"
+                                   HelperText="Select the logging verbosity">
+                            @foreach ( var choice in (LoggingLevel[])Enum.GetValues(typeof( LoggingLevel )) )
+                            {
+                                <MudSelectItem Value="@choice">
+                                    @choice.ToString().Humanize()
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </div>
 
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudCheckBox @bind-Checked="@settingsModel.cpuSettings.EnableAltCPULevel"
-                                             Label="Adjust CPU usage limits during these times." />
-                                <div class="damselfly-configsetting">
-                                    <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeStart" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
-                                                   Label="Alternate CPU level start time" AutoClose="true" Color="Color.Tertiary" />
-                                    <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeEnd" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
-                                                   Label="Alternate CPU level end time" AutoClose="true" Color="Color.Tertiary" />
-                                </div>
-                            </div>
-                        </div>
+                <button class="btn btn-primary" type="submit">Save Settings</button>
+            </EditForm>
+        </DetailedErrorBoundary>
+    </MudTabPanel>
+}
 
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T=" int " Label="Alternate CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevelAlt" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)" Variant="UIConstants.MudVariant"
-                                           HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
-                                    @foreach (var choice in CPULevels.OrderBy(x => x.Key))
-                                        {
-                                        <MudSelectItem T=" int " Value="@choice.Key">
-                                            @choice.Value
-                                        </MudSelectItem>
-                                        }
-                                </MudSelect>
-                            </div>
-                        </div>
+<MudTabPanel Text="Image Recognition">
+    <DetailedErrorBoundary>
+        <EditForm Model="@settingsModel" OnValidSubmit="@HandleValidSubmit">
+            <FluentValidationValidator/>
+            <ValidationSummary/>
 
-                        <h2>Logging</h2>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudSelect T=" LoggingLevel " Label="Log Level" @bind-Value="settingsModel.serverLogLevel" Variant="UIConstants.MudVariant"
-                                           HelperText="Select the logging verbosity">
-                                    @foreach (var choice in (LoggingLevel[])Enum.GetValues(typeof(LoggingLevel)))
-                                        {
-                                        <MudSelectItem Value="@choice">
-                                            @choice.ToString().Humanize()
-                                        </MudSelectItem>
-                                        }
-                                </MudSelect>
-                            </div>
-                        </div>
+            <h2>Image Recognition Settings</h2>
 
-                        <button class="btn btn-primary" type="submit">Save Settings</button>
-                    </EditForm>
-                </DetailedErrorBoundary>
-            </MudTabPanel>
-        }
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudCheckBox @bind-Checked="@settingsModel.enableAIProcessing" Label="Scan images locally for objects/faces using AI (this will use a lot of CPU)"/>
+                </div>
+            </div>
 
-        <MudTabPanel Text="Image Recognition">
-            <DetailedErrorBoundary>
-                <EditForm Model="@settingsModel.azureSettings" OnValidSubmit="@HandleValidSubmit">
-                    <FluentValidationValidator />
-                    <ValidationSummary />
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudCheckBox @bind-Checked="@settingsModel.disableObjectDetector" Label="Disable object detection scanner"/>
+                </div>
+            </div>
 
-                    <h2>Image Recognition Settings</h2>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudCheckBox @bind-Checked="@settingsModel.writeAITagsToImages" Label="Write recognised item keywords to image EXIF metadata"/>
+                </div>
+            </div>
 
+            <h2>CPU Usage</h2>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudSelect T=" int " Label="CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevel" Variant="UIConstants.MudVariant"
+                               HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
+                        @foreach ( var choice in CPULevels.OrderBy(x => x.Key) )
+                        {
+                            <MudSelectItem T=" int " Value="@choice.Key">
+                                @choice.Value
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            </div>
+
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudCheckBox @bind-Checked="@settingsModel.cpuSettings.EnableAltCPULevel"
+                                 Label="Adjust CPU usage limits during these times."/>
                     <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudCheckBox @bind-Checked="@settingsModel.enableAIProcessing" Label="Scan images locally for objects/faces using AI (this will use a lot of CPU)" />
-                        </div>
+                        <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeStart" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
+                                       Label="Alternate CPU level start time" AutoClose="true" Color="Color.Tertiary"/>
+                        <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeEnd" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
+                                       Label="Alternate CPU level end time" AutoClose="true" Color="Color.Tertiary"/>
                     </div>
+                </div>
+            </div>
 
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudCheckBox @bind-Checked="@settingsModel.disableObjectDetector" Label="Disable object detection scanner" />
-                        </div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudSelect T=" int " Label="Alternate CPU Usage Limit" @bind-Value="settingsModel.cpuSettings.CPULevelAlt" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)" Variant="UIConstants.MudVariant"
+                               HelperText="Set the maximum CPU level used by AI and thumbnail generation processing">
+                        @foreach ( var choice in CPULevels.OrderBy(x => x.Key) )
+                        {
+                            <MudSelectItem T=" int " Value="@choice.Key">
+                                @choice.Value
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" type="submit">Save Settings</button>
+        </EditForm>
+    </DetailedErrorBoundary>
+</MudTabPanel>
+
+<AuthorizeView Policy="@PolicyDefinitions.s_IsAdminOrNoUsers">
+    <MudTabPanel Text="User Management">
+        <DetailedErrorBoundary>
+            <div>
+                <UserManagement/>
+            </div>
+        </DetailedErrorBoundary>
+    </MudTabPanel>
+</AuthorizeView>
+
+<MudTabPanel Text="Email Notifications">
+    <DetailedErrorBoundary>
+        <EditForm Model="@(settingsModel.useSmtp ? settingsModel.smtpSettings : settingsModel.sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
+            <FluentValidationValidator/>
+            <ValidationSummary/>
+
+            <h2>Email Settings for Password Reminders, etc.</h2>
+
+            <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
+            <MudRadioGroup @bind-SelectedOption="@settingsModel.useSmtp">
+                <MudRadio Option="@true">SMTP</MudRadio>
+                <MudRadio Option="@false">SendGrid</MudRadio>
+            </MudRadioGroup>
+
+
+            @if ( settingsModel.useSmtp )
+            {
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="UIConstants.MudVariant"/>
                     </div>
-
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudCheckBox @bind-Checked="@settingsModel.writeAITagsToImages" Label="Write recognised item keywords to image EXIF metadata" />
-                        </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="UIConstants.MudVariant"/>
                     </div>
-
-                    <h2>Azure Cognitive Services Face Recognition</h2>
-
-                    <p>
-                        <a href="https://azure.microsoft.com/services/cognitive-services/face/" target="_blank">Azure Face</a>
-                        is an online Face-recognition service provided by Microsoft.
-                        <a href="https://azure.microsoft.com/free/cognitive-services/" target="_blank">Sign up for a free account</a>
-                        and register your endpoint and key here; Damselfly will then use the service for fast, accurate face
-                        recognition. Note that free accounts have a limit of 20 transactions per min, and 30,000 transactions per
-                        month (Damselfly uses around 3 transactions per image processed).
-                    </p>
-
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.azureSettings.Endpoint" Label="Azure Endpoint" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant"/>
                     </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.azureSettings.ApiKey" Label="Azure API Key" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
+                </div>
+
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant"/>
                     </div>
+                </div>
 
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudCheckBox @bind-Checked="@settingsModel.azureSettings.UsingFreeTier" Label="Throttle transactions for free tier. Note: only uncheck this if you have paid for Face services" />
-                        </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" UserAttributes="@MudNoAutofill.noAutoFillAttr" Variant="UIConstants.MudVariant"/>
                     </div>
-
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudSelect T=" AzureDetection " Label="AI Application" @bind-Value="settingsModel.azureSettings.DetectionType" Variant="UIConstants.MudVariant"
-                                       HelperText="To use the tranaction limit efficiently you can elect to only submit images to Azure which have had faces or people detected in them.">
-                                @foreach (var choice in (AzureDetection[])Enum.GetValues(typeof(AzureDetection)))
-                                {
-                                    <MudSelectItem T=" AzureDetection " Value="@choice">
-                                        @choice.ToString().Humanize()
-                                    </MudSelectItem>
-                                }
-                            </MudSelect>
-                        </div>
+                </div>
+            }
+            else
+            {
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="UIConstants.MudVariant"/>
                     </div>
-
-                    <button class="btn btn-primary" type="submit">Save Settings</button>
-                </EditForm>
-            </DetailedErrorBoundary>
-        </MudTabPanel>
-
-        <AuthorizeView Policy="@PolicyDefinitions.s_IsAdminOrNoUsers">
-            <MudTabPanel Text="User Management">
-                <DetailedErrorBoundary>
-                    <div>
-                        <UserManagement />
+                </div>
+                <div class="damselfly-configsetting">
+                    <div class="damselfly-configfield">
+                        <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" UserAttributes="@MudNoAutofill.noAutoFillAttr" InputType="InputType.Email" ReadOnly="false"
+                                      Variant="UIConstants.MudVariant" HelperText="This should match the email address associated with your API key in your SendGrid account"/>
                     </div>
-                </DetailedErrorBoundary>
-            </MudTabPanel>
-        </AuthorizeView>
+                </div>
+            }
+            <button class="btn btn-primary" type="submit">Save Settings</button>
+        </EditForm>
+    </DetailedErrorBoundary>
+</MudTabPanel>
 
-        <MudTabPanel Text="Email Notifications">
-            <DetailedErrorBoundary>
-                <EditForm Model="@(settingsModel.useSmtp ? settingsModel.smtpSettings : settingsModel.sendGridSettings)" OnValidSubmit="@HandleValidSubmit">
-                    <FluentValidationValidator />
-                    <ValidationSummary />
-
-                    <h2>Email Settings for Password Reminders, etc.</h2>
-
-                    <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
-                    <MudRadioGroup @bind-SelectedOption="@settingsModel.useSmtp">
-                        <MudRadio Option="@true">SMTP</MudRadio>
-                        <MudRadio Option="@false">SendGrid</MudRadio>
-                    </MudRadioGroup>
-
-
-                    @if (settingsModel.useSmtp)
-                    {
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.smtpSettings.MailServer" Label="SMTP Server Address" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                            </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.smtpSettings.MailPort" Label="SMTP Port" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                            </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.smtpSettings.Password" InputType="InputType.Password" Label="SMTP Password" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                            </div>
-                        </div>
-
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.smtpSettings.Sender" Label="Sender Email" InputType="InputType.Email" UserAttributes="@MudNoAutofill.noAutoFillAttr" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                            </div>
-                        </div>
-
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.smtpSettings.SenderName" Label="Sender Name" ReadOnly="false" UserAttributes="@MudNoAutofill.noAutoFillAttr" Variant="UIConstants.MudVariant" />
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridKey" Label="SendGrid API Key" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                            </div>
-                        </div>
-                        <div class="damselfly-configsetting">
-                            <div class="damselfly-configfield">
-                                <MudTextField @bind-Value="@settingsModel.sendGridSettings.SendGridFromAddress" Label="SendGrid From Address" UserAttributes="@MudNoAutofill.noAutoFillAttr" InputType="InputType.Email" ReadOnly="false"
-                                              Variant="UIConstants.MudVariant" HelperText="This should match the email address associated with your API key in your SendGrid account" />
-                            </div>
-                        </div>
-                    }
-                    <button class="btn btn-primary" type="submit">Save Settings</button>
-                </EditForm>
-            </DetailedErrorBoundary>
-        </MudTabPanel>
-
-        <MudTabPanel Text="Wordpress">
-            <DetailedErrorBoundary>
-                <EditForm Model="@settingsModel.wpSettings" OnValidSubmit="@HandleValidSubmit">
-                    <FluentValidationValidator />
-                    <ValidationSummary />
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
-                    </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
-                    </div>
-                    <div class="damselfly-configsetting">
-                        <div class="damselfly-configfield">
-                            <MudTextField @bind-Value="@settingsModel.wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant" />
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" type="submit">Save Settings</button>
-                </EditForm>
-            </DetailedErrorBoundary>
-        </MudTabPanel>
-    </MudTabs>
+<MudTabPanel Text="Wordpress">
+    <DetailedErrorBoundary>
+        <EditForm Model="@settingsModel.wpSettings" OnValidSubmit="@HandleValidSubmit">
+            <FluentValidationValidator/>
+            <ValidationSummary/>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudTextField @bind-Value="@settingsModel.wpSettings.URL" Label="Wordpress URL" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+                </div>
+            </div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudTextField @bind-Value="@settingsModel.wpSettings.UserName" Label="Wordpress User Name" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+                </div>
+            </div>
+            <div class="damselfly-configsetting">
+                <div class="damselfly-configfield">
+                    <MudTextField @bind-Value="@settingsModel.wpSettings.Password" InputType="InputType.Password" Label="Wordpress Password" ReadOnly="false" Variant="UIConstants.MudVariant"/>
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit">Save Settings</button>
+        </EditForm>
+    </DetailedErrorBoundary>
+</MudTabPanel>
+</MudTabs>
 </div>
 
 @code {
@@ -333,7 +311,7 @@
     {
         var existingSettings = await settingsService.GetSystemSettings();
 
-        if (existingSettings is not null)
+        if ( existingSettings is not null )
             settingsModel = existingSettings;
 
         var themes = await themeService.GetAllThemes();
@@ -346,19 +324,19 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             bool isAdmin = await userService.PolicyApplies(PolicyDefinitions.s_IsAdmin);
 
             var allUsers = await userMgmtService.GetUsers();
 
-            if (isAdmin || !allUsers.Any())
+            if ( isAdmin || !allUsers.Any() )
                 shoeSystemSettings = true;
 
-            if (!allUsers.Any())
+            if ( !allUsers.Any() )
             {
                 logger.LogWarning("Config Page: no users, checking if a new admin user needs to be created.");
-                if (settingsModel.enableAuthAndRoles)
+                if ( settingsModel.enableAuthAndRoles )
                 {
                     await InvokeAsync(ShowAddUserDialog);
                 }
@@ -373,7 +351,7 @@
     }
 
     private Dictionary<int, string> CPULevels = new()
-{
+    {
         { 0, "0% (Disabled)" },
         { 25, "25%" },
         { 50, "50%" },
@@ -390,7 +368,7 @@
             await themeService.SetTheme(selectedTheme);
             await settingsService.SaveSystemSettings(settingsModel);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             statusService.UpdateStatus($"Error saving settings: {ex.Message}");
             Logging.LogError($"Error saving settings: {ex}");

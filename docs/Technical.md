@@ -57,13 +57,13 @@ be skipped.
 
 ## How does Damselfly's Image/Object/Face Recognition Work?
 
-The latest version of Damselfly includes machine-learning functionality to find objects and faces in your images, and tag them. 
+Damselfly includes machine-learning functionality to find objects and faces in your images, and tag them. 
 If you're interested in the technical design/implementation of this feature, there's an article about it 
 [here](https://damselfly.info/face-recognition-in-net-the-good-the-bad-and-the-ugly/). 
 
-Faces and objects that are recognised will be displayed as special tags, alongside normal keyword-tags, when browsing the
-images. You can distinguish them by the different icon (a lightbulb for objects, and a head/shoulders for faces - you can
-also hold your mouse over the icon for a description). 
+Faces and objects that are recognised will be displayed as special tags, alongside normal keyword-tags, when 
+browsing the images. You can distinguish them by the different icon (a lightbulb for objects, and a 
+head/shoulders for faces - you can also hold your mouse over the icon for a description). 
 
 <img src="./Damselfly-AI.jpg" alt="Image Recognition in Damselfly" width="800"/>
 
@@ -72,45 +72,26 @@ also hold your mouse over the icon for a description).
 The initial revision of the object-recognition is high-level and simplistic, but will recognise a number of objects such as 
 cats, people, cars etc. In future I hope to improve this with enhanced recognition models.
 
-### Face Detection
+### Face Detection and Recognition
 
-Damselfly will run face detection on all images, to try and identify faces within each image. The accuracy is good,
-but you may find false-positives or missed faces occasionally. Note that this functionality all runs offline/locally, and 
-is quite CPU-intensive.
+Damselfly will run face detection on all images, to try to detect and identify faces within each image. As each face is 
+detected, a 'person' record is created for each set of unique facial traits and characteristics. These are initially 
+tagged as 'Unknown', but by clicking on the face you can associate a name with that person. When future faces are 
+detected that match the same characteristics, they will be tagged against the same person. 
 
-For thsoe with an interest in ML, the technique used to detect faces is by applying a number of 
-[Haar Cascade classifiers](https://en.wikipedia.org/wiki/Haar-like_feature) with pre-trained models, to the image. Since
-these cascades can be used to detect other objects, Damselfly supports the ability to add your own models, which it will
-then use to detect items. To do this, map your docker container to the `/Models` folder, and put your cascades in a 
-folder structure where the containing folder indicates the tag to be applied when an object is found. 
+Due to the way facial recognition works, it's possible that a person may not be identifed every time their face is 
+detected. This may be because their face is viewed from a different angle, etc. In this case, Damselfly will create
+a new 'unknown' for that person. However, if you enter the same name as an existing person, you'll be prompted to 
+merge the two - which will associate both sets of face data with the same person. As these collections of face data
+increase for each person, the detection will become more accurate for future photos.
 
-So for example, if you had a pre-trained cascade classifier that could identify butterflies, you can add it to Damselfly
-by putting it in this folder:
-```
-   Models/butterfly/haarcascade_butterflies.xml
-```
-will apply the tag 'butterfly' to any object found through this particular cascade/model. By default Damselfly ships with
-the main face-detection cascades from [OpenCV](https://github.com/opencv/opencv/tree/master/data/haarcascades).
+Note: If you have more than one friend with the same name, you will need to give a unique name to avoid their face
+data being merged against the same person. So you might have, for example, "John Smith (school)" and "John Smith (work)"
+to disambiguate between them and ensure their face data remains separate and distinct.
 
-### Face Recognition
-
-To implement Facial Recognition, Damselfly uses the [Azure Face](https://azure.microsoft.com/services/cognitive-services/face/)
-online Face-recognition service provided by Microsoft. Images are submitted to the service, where they undergo a very accurate
-face-detection process; if faces are detected, they are then submitted for identification, to match against a known list of 
-faces previously found by Damselfly. Damselfly then uses these unique Face IDs to build a database of people, and you can then 
-associate a name with each identified face; enable the object/face rects using the icon in the toolbar above the image, and 
-click on a face to name it.
-
-Note that Microsoft does not store images, or any personal information about each person, other than identifer for a particular 
-identifer for a unique face. No names are submitted or associated with each face. You can read more about Microsoft's Azure 
-Face platform [here](https://docs.microsoft.com/en-us/azure/cognitive-services/face/overview) and the privacy policy 
-[here](https://azure.microsoft.com/en-us/support/legal/cognitive-services-compliance-and-privacy/).
-
-You can [Sign up for a free Azure Face account](https://azure.microsoft.com/free/cognitive-services/), which will allow you
-to process around 10,000 face-recognition operations per month (note that transactions-per-minute are limited, but Damselfly 
-will throttle them automatically). To ensure these transactions aren't wasted on pictures that do not contain faces, Damselfly
-has an option in the config page to allow you to only submit images to Azure when a face or person has already been detected 
-by Damselfly's offline processing.
+It is important to note that face-recognition is extremely CPU intensive, and so when running against large collections
+of images the server on which Damselfly is running may use 100% CPU for some time. There are some CPU throttling settings
+available in the settings page which can reduce the intensity of the CPU usage for AI processing.
 
 ## How does Damselfly manage EXIF data?
 

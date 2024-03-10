@@ -21,8 +21,8 @@
     [Parameter]
     public bool IsDisabled { get; set; } = false;
 
-    [Parameter, EditorRequired]
-    public Action<string> OnAddNewtag { private get; set; }
+    [Parameter]
+    public required Action<string> OnAddNewtag { private get; set; }
 
     protected override void OnParametersSet()
     {

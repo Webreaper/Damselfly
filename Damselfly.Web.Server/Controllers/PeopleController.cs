@@ -1,6 +1,9 @@
 ﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,18 +14,11 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/people")]
-public class PeopleController : ControllerBase
+public class PeopleController( ImageRecognitionService _aiService, 
+                                IPeopleService _peopleService,
+                                ILogger<PeopleController> _logger,
+                                ImageCache _imageCache) : ControllerBase
 {
-    private readonly ImageRecognitionService _aiService;
-
-    private readonly ILogger<PeopleController> _logger;
-
-    public PeopleController(ImageRecognitionService service, ILogger<PeopleController> logger)
-    {
-        _aiService = service;
-        _logger = logger;
-    }
-
     [HttpGet("/api/person/{personId}")]
     public async Task<Person> GetPerson( int personId )
     {
@@ -43,16 +39,21 @@ public class PeopleController : ControllerBase
         return names;
     }
 
-    [HttpPut("/api/object/name")]
-    public async Task UpdateName( NameChangeRequest req, [FromServices] ImageContext db )
+    [HttpPut("/api/people/name")]
+    public async Task UpdatePersonName( NameChangeRequest req )
     {
-        var obj = db.ImageObjects
-                    .Include(x => x.Person)
-                    .FirstOrDefault(n => n.ImageObjectId == req.ObjectId);
+        await _aiService.UpdatePersonName( req );
+    }
 
-        if (obj is not null)
-        {
-            await _aiService.UpdateName( obj, req.NewName );
-        }
+    [HttpGet("/api/people/needsmigration")]
+    public async Task<bool> NeedsAIMigration()
+    {
+        return await _peopleService.NeedsAIMigration();
+    }
+    
+    [HttpPost("/api/people/runaimigration")]
+    public async Task RunAIMigration( AIMigrationRequest req )
+    {
+        await _aiService.ExecuteAIMigration( req );
     }
 }

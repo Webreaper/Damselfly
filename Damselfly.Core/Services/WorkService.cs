@@ -31,8 +31,7 @@ public class WorkService : IWorkService
     // for new entries rather than just ploughing through it. 
     private volatile bool _newJobsFlag;
 
-    private readonly UniqueConcurrentPriorityQueue<IProcessJob, string> _jobQueue = new( x => x.Description,
-        y => (int)y.Priority );
+    private readonly UniqueConcurrentPriorityQueue<IProcessJob, string> _jobQueue = new( x => x.Description );
 
     private readonly ConcurrentBag<IProcessJobFactory> _jobSources = new();
     private const int _maxQueueSize = 500;
@@ -98,13 +97,7 @@ public class WorkService : IWorkService
     {
         Logging.Log("Started Work service thread.");
 
-        var thread = new Thread(ProcessJobs)
-        {
-            Name = "WorkThread",
-            IsBackground = true,
-            Priority = ThreadPriority.Lowest
-        };
-        thread.Start();
+        _ = Task.Run(ProcessJobs);
     }
 
     /// <summary>
@@ -114,7 +107,7 @@ public class WorkService : IWorkService
     ///     problems (although we could perhaps allow that when a
     ///     DB like PostGres is in use. For SQLite, definitely not.
     /// </summary>
-    private void ProcessJobs()
+    private async Task ProcessJobs()
     {
         while ( true )
         {
@@ -128,16 +121,14 @@ public class WorkService : IWorkService
                     SetStatus("Disabled", JobStatus.Disabled, cpuPercentage);
 
                 // Nothing to do, so have a kip.
-                Thread.Sleep(jobFetchSleep * 1000);
+                await Task.Delay(jobFetchSleep * 1000);
                 continue;
             }
 
             var getNewJobs = _newJobsFlag;
             _newJobsFlag = false;
-            var item = _jobQueue.TryDequeue();
-
-            if ( item != null )
-                ProcessJob(item, cpuPercentage);
+            if( _jobQueue.TryDequeue( out var item ) )
+                await ProcessJob(item, cpuPercentage);
             else
                 // No job to process, so we want to grab more
                 getNewJobs = true;
@@ -148,7 +139,7 @@ public class WorkService : IWorkService
                 {
                     // Nothing to do, so set the status to idle, and have a kip.
                     SetStatus("Idle", JobStatus.Idle, cpuPercentage);
-                    Thread.Sleep(jobFetchSleep * 1000);
+                    await Task.Delay(jobFetchSleep * 1000);
                 }
         }
     }
@@ -212,7 +203,7 @@ public class WorkService : IWorkService
                 var jobs = source.GetPendingJobs(maxCount).Result;
 
                 foreach ( var job in jobs )
-                    if ( _jobQueue.TryAdd(job) )
+                    if ( _jobQueue.TryAdd(job, (int)job.Priority) )
                         newJobs++;
 
                 if ( newJobs > 0 )
@@ -234,7 +225,7 @@ public class WorkService : IWorkService
     /// <param name="job"></param>
     /// <param name="cpuPercentage"></param>
     /// <returns></returns>
-    private void ProcessJob(IProcessJob job, int cpuPercentage)
+    private async Task ProcessJob(IProcessJob job, int cpuPercentage)
     {
         var jobName = job.GetType().Name;
 
@@ -249,7 +240,7 @@ public class WorkService : IWorkService
             var stopwatch = new Stopwatch($"ProcessJob{jobName}");
             try
             {
-                job.Process();
+                await job.Process();
             }
             catch ( Exception ex )
             {
@@ -280,7 +271,7 @@ public class WorkService : IWorkService
                 var waitTime = Math.Min((int)(sleepFactor * jobTime), maxWaitTime);
 
                 Logging.LogVerbose($"Job '{jobName}' took {stopwatch.ElapsedTime}ms, so sleeping {waitTime} to give {cpuPercentage}% CPU usage.");
-                Thread.Sleep(waitTime);
+                await Task.Delay(waitTime);
             }
         }
         else

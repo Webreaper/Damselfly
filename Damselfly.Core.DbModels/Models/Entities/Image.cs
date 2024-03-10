@@ -22,7 +22,7 @@ public class Image
     public virtual Folder Folder { get; set; }
 
     // Image File metadata
-    public string FileName { get; set; }
+    public string? FileName { get; set; }
     public int FileSizeBytes { get; set; }
     public DateTime FileCreationDate { get; set; }
     public DateTime FileLastModDate { get; set; }
@@ -35,6 +35,9 @@ public class Image
 
     public virtual ImageMetaData MetaData { get; set; }
     public virtual Hash Hash { get; set; }
+
+    // An image may have a set of image transforms
+    public virtual Transformations? Transforms { get; set; }
 
     // An image can appear in many baskets
     public virtual List<BasketEntry> BasketEntries { get; init; } = new();
@@ -69,7 +72,9 @@ public class Image
     /// <returns></returns>
     public string ThumbUrl(ThumbSize size)
     {
-        return $"/thumb/{size}/{ImageId}?nocache={this?.LastUpdated:yyyyMMddHHmmss}";
+        var nocacheDate = this.MetaData?.ThumbLastUpdated;
+        
+        return $"/thumb/{size}/{ImageId}?nocache={nocacheDate:yyyyMMddHHmmss}";
     }
 
     public void FlagForMetadataUpdate()

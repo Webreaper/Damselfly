@@ -1,4 +1,5 @@
 ﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
@@ -186,7 +187,7 @@ public class ImageController : Controller
             if ( int.TryParse(faceId, out var personId) )
                 query = query.Where(x => x.Person.PersonId == personId);
             else
-                query = query.Where(x => x.Person.AzurePersonId == faceId);
+                query = query.Where(x => x.Person.PersonGuid == faceId);
 
             // Sort by largest face picture, then by most recent date taken
             var face = await query

@@ -1,5 +1,4 @@
 ﻿using Damselfly.Core.Interfaces;
-using Damselfly.ML.Face.Emgu;
 
 namespace Damselfly.Core.ImageProcessing;
 
@@ -8,11 +7,9 @@ public class ImageProcessorFactory : IImageProcessorFactory
     private readonly ImageMagickProcessor imProcessor;
     private readonly ImageSharpProcessor isharpProcessor;
     private readonly SkiaSharpProcessor skiaProcessor;
-    private EmguFaceService _emguHashProvider;
 
-    public ImageProcessorFactory(EmguFaceService emguFaceService)
+    public ImageProcessorFactory()
     {
-        _emguHashProvider = emguFaceService;
         skiaProcessor = new SkiaSharpProcessor();
         isharpProcessor = new ImageSharpProcessor();
         imProcessor = new ImageMagickProcessor();
@@ -30,10 +27,6 @@ public class ImageProcessorFactory : IImageProcessorFactory
     public IHashProvider GetHashProvider()
     {
         return isharpProcessor;
-
-        // EMGU may be faster or better, but needs testing etc.
-        // if (_emguHashProvider.ServiceAvailable)
-        //    return _emguHashProvider;
     }
 
     /// <summary>

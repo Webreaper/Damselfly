@@ -4,17 +4,28 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Damselfly.Core.Models;
+namespace Damselfly.Core.Database;
 
 /// <summary>
 ///     Our actual EF Core model describing a collection of images, lenses,
 /// </summary>
 public class ImageContext : BaseDBModel, IDataProtectionKeyContext
 {
+    public static ImageContext GetImageContext( IServiceScope scope )
+    {
+        var db = scope.ServiceProvider.GetService<ImageContext>();
+        if( db == null )
+            throw new Exception( "No DB found in scope factory" );
+
+        return db;
+    }
+
     public ImageContext(DbContextOptions options) : base(options)
     {
     }
@@ -25,9 +36,11 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<Hash> Hashes { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<ImageTag> ImageTags { get; set; }
+    public DbSet<Transformations> Transformations { get; set; }
     public DbSet<ImageObject> ImageObjects { get; set; }
     public DbSet<Person> People { get; set; }
-    public DbSet<ImageClassification> ImageClassifications { get; set; }
+    public DbSet<Models.ImageClassification> ImageClassifications { get; set; }
+    public DbSet<PersonFaceData> FaceData { get; set; }
     public DbSet<Camera> Cameras { get; set; }
     public DbSet<Basket> Baskets { get; set; }
     public DbSet<BasketEntry> BasketEntries { get; set; }
@@ -36,7 +49,6 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ExportConfig> DownloadConfigs { get; set; }
     public DbSet<ConfigSetting> ConfigSettings { get; set; }
     public DbSet<ExifOperation> KeywordOperations { get; set; }
-    public DbSet<CloudTransaction> CloudTransactions { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
     public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
@@ -120,7 +132,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Image>()
             .HasOne(img => img.Classification)
             .WithOne()
-            .HasForeignKey<ImageClassification>(i => i.ClassificationId);
+            .HasForeignKey<Models.ImageClassification>(i => i.ClassificationId);
 
         modelBuilder.Entity<BasketEntry>()
             .HasOne(a => a.Image)
@@ -131,11 +143,22 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithOne(meta => meta.Image)
             .HasForeignKey<ImageMetaData>(i => i.ImageId);
 
+        modelBuilder.Entity<Image>()
+            .HasOne( img => img.Transforms )
+            .WithOne( transform => transform.Image )
+            .HasForeignKey<Transformations>( i => i.ImageId );
+
         modelBuilder.Entity<Folder>()
             .HasMany(x => x.Children)
             .WithOne(x => x.Parent)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // A person has none or many face data points
+        modelBuilder.Entity<PersonFaceData>()
+            .HasOne(p => p.Person)
+            .WithMany(x => x.FaceData)
+            .HasForeignKey(p => p.PersonId);
 
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
@@ -149,6 +172,10 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Person>().HasIndex(x => x.State);
         modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
 
+        modelBuilder.Entity<ImageObject>().HasIndex(x => x.ImageId);
+        modelBuilder.Entity<ImageObject>().HasIndex(x => x.PersonId);
+        modelBuilder.Entity<ImageObject>().HasIndex(x => new { x.ImageId, x.PersonId});
+        
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
@@ -158,11 +185,10 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
         modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
         modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
-        modelBuilder.Entity<CloudTransaction>().HasIndex(x => new { x.Date, x.TransType });
         modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
         modelBuilder.Entity<Hash>().HasIndex(x => new
             { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });
-        modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
+        modelBuilder.Entity<Models.ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
         RoleDefinitions.OnModelCreating(modelBuilder);
     }

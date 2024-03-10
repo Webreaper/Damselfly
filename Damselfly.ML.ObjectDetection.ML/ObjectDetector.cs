@@ -16,7 +16,7 @@ namespace Damselfly.ML.ObjectDetection;
 public class ObjectDetector
 {
     private const float predictionThreshold = 0.5f;
-    private YoloScorer<YoloCocoModel> scorer;
+    private YoloScorer<YoloCocoModel>? scorer;
 
     public void InitScorer()
     {
@@ -39,7 +39,7 @@ public class ObjectDetector
     /// <returns></returns>
     public Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> image)
     {
-        IList<ImageDetectResult> result = null;
+        IList<ImageDetectResult>? result = null;
         try
         {
             if( scorer != null )

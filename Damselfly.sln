@@ -19,10 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Utils", "Dam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj", "{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.AzureFace", "Damselfly.ML.AzureFace\Damselfly.ML.AzureFace.csproj", "{6A35D4F5-76E9-43AD-ABF4-6C2E44C7A2EB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.EmguFace", "Damselfly.ML.EmguFace\Damselfly.ML.EmguFace.csproj", "{02ACD82A-6F51-4F3C-B2F0-B53CE5013A2B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassification", "Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{A40A832A-5736-442A-88D4-5DDE71964193}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{C2504134-A19E-428F-8681-927152563DBB}"
@@ -32,6 +28,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Server", "Damselfly.Web.Server\Damselfly.Web.Server.csproj", "{CC90115D-4146-47D4-8B26-D773FAA51437}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Shared.Utils", "Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj", "{091549AC-51FC-4F7B-B1DB-92982866D9F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.FaceONNX", "Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj", "{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,14 +72,6 @@ Global
 		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A35D4F5-76E9-43AD-ABF4-6C2E44C7A2EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A35D4F5-76E9-43AD-ABF4-6C2E44C7A2EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A35D4F5-76E9-43AD-ABF4-6C2E44C7A2EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A35D4F5-76E9-43AD-ABF4-6C2E44C7A2EB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02ACD82A-6F51-4F3C-B2F0-B53CE5013A2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02ACD82A-6F51-4F3C-B2F0-B53CE5013A2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02ACD82A-6F51-4F3C-B2F0-B53CE5013A2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02ACD82A-6F51-4F3C-B2F0-B53CE5013A2B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A40A832A-5736-442A-88D4-5DDE71964193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A40A832A-5736-442A-88D4-5DDE71964193}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A40A832A-5736-442A-88D4-5DDE71964193}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -102,6 +92,10 @@ Global
 		{091549AC-51FC-4F7B-B1DB-92982866D9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{091549AC-51FC-4F7B-B1DB-92982866D9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{091549AC-51FC-4F7B-B1DB-92982866D9F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

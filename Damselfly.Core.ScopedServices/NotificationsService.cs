@@ -26,7 +26,9 @@ public class NotificationsService : IAsyncDisposable
             _logger.LogInformation($"Setting up notifications listener on {hubUrl}...");
 
             hubConnection = new HubConnectionBuilder()
-                .WithUrl(hubUrl)
+                .WithUrl(hubUrl, options => { 
+                    options.UseStatefulReconnect = true; 
+                } )
                 .WithAutomaticReconnect(new RetryPolicy())
                 .Build();
 

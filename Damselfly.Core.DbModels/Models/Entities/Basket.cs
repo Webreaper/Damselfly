@@ -13,7 +13,7 @@ public class Basket
     [Key] public int BasketId { get; set; }
 
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     public int? UserId { get; set; }
     public virtual AppIdentityUser User { get; set; }

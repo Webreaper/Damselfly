@@ -8,6 +8,6 @@ public interface IExportSettings
     ExportSize Size { get; set; }
 
     bool KeepFolders { get; set; }
-    string WatermarkText { get; set; }
+    string? WatermarkText { get; set; }
     int MaxImageSize { get; }
 }

@@ -16,7 +16,8 @@ public class ExifOperation
         Face = 2,
         Description = 3,
         Rating = 4,
-        Copyright = 5
+        Copyright = 5,
+        Rotate = 6 // Text == the rotation degrees - 90/180/270
     }
 
     public enum FileWriteState

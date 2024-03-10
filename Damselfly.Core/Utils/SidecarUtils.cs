@@ -86,7 +86,7 @@ public static class SidecarUtils
     /// <returns></returns>
     public static ImageSideCar GetSideCar(this Image img)
     {
-        ImageSideCar result = null;
+        ImageSideCar? result = null;
 
         var sidecarSearch = Path.ChangeExtension(img.FileName, "*");
         var dir = new DirectoryInfo(img.Folder.Path);

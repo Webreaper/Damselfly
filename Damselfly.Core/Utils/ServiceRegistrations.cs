@@ -2,8 +2,7 @@
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
-using Damselfly.ML.Face.Azure;
-using Damselfly.ML.Face.Emgu;
+using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +15,8 @@ public static class ServiceRegistrations
 {
     public static IServiceCollection AddMLServices(this IServiceCollection services)
     {
-        services.AddSingleton<TransThrottle>();
-        services.AddSingleton<ITransactionThrottle>(x => x.GetRequiredService<TransThrottle>());
-
-        services.AddSingleton<AzureFaceService>();
         services.AddSingleton<ImageClassifier>();
-        services.AddSingleton<EmguFaceService>();
+        services.AddSingleton<FaceONNXService>();
 
         return services;
     }
@@ -77,7 +72,6 @@ public static class ServiceRegistrations
         services.AddSingleton<FolderService>();
         services.AddSingleton<FileService>();
         services.AddSingleton<ServerStatusService>();
-
         services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
         services.AddSingleton<IFileService>( x => x.GetRequiredService<FileService>() );
 

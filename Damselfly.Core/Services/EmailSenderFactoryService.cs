@@ -15,7 +15,7 @@ namespace Damselfly.Core.Services;
 /// </summary>
 public class EmailSenderFactoryService : IEmailSender
 {
-    private readonly IEmailSender _senderInstance;
+    private readonly IEmailSender? _senderInstance;
 
     public EmailSenderFactoryService(IConfigService configService)
     {

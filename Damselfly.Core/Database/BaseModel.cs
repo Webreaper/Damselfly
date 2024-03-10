@@ -88,8 +88,20 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         }
         catch ( Exception ex )
         {
-            Logging.LogError($"Exception during bulk insert: {ex}");
-            throw;
+            try
+            {
+                foreach( var item in itemsToSave )
+                    collection.Add( item );
+                await SaveChangesAsync();
+
+                Logging.LogWarning( $"EF Core bulkExtensions failed. Standard insert used (Msg: {ex.Message})" );
+
+            }
+            catch( Exception ex2 )
+            {
+                Logging.LogError( $"Exception during bulk insert: {ex2}" );
+                throw;
+            }
         }
 
         return success;
@@ -122,8 +134,20 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
         }
         catch ( Exception ex )
         {
-            Logging.LogError($"Exception during bulk update: {ex}");
-            throw;
+            try
+            {
+                foreach( var item in itemsToSave )
+                    collection.Update( item );
+                await SaveChangesAsync();
+
+                Logging.LogWarning( $"EF Core bulkExtensions failed. Standard update used (Msg: {ex.Message})" );
+
+            }
+            catch( Exception ex2 )
+            {
+                Logging.LogError( $"Exception during bulk update: {ex2}" );
+                throw;
+            }
         }
 
         return success;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
@@ -148,8 +149,7 @@ public class ImageCache : IImageCacheService
     public async Task<Image> GetCachedImage(Image img)
     {
         Image cachedImage;
-
-
+        
         if ( !_memoryCache.TryGetValue(img.ImageId, out cachedImage) )
         {
             Logging.LogVerbose($"Cache miss for image {img.ImageId}");
@@ -201,6 +201,7 @@ public class ImageCache : IImageCacheService
             .Where(x => imageIds.Contains(x.ImageId))
             .Include(x => x.Folder)
             .Include(x => x.MetaData)
+            .Include(x=> x.Transforms)
             .Include(x => x.Hash)
             .Include(x => x.MetaData.Camera)
             .Include(x => x.MetaData.Lens)
@@ -227,7 +228,8 @@ public class ImageCache : IImageCacheService
     {
         var enrichedImage = await GetImage(image);
 
-        if ( enrichedImage != null ) _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
+        if ( enrichedImage != null ) 
+            _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
 
         return enrichedImage;
     }
@@ -266,7 +268,12 @@ public class ImageCache : IImageCacheService
                         .Include(x => x.Lens)
                         .LoadAsync();
 
-                if ( !entry.Reference(x => x.Hash).IsLoaded )
+                if( !entry.Reference( x => x.Transforms ).IsLoaded )
+                    await entry.Reference( x => x.Transforms )
+                        .Query()
+                        .LoadAsync();
+
+                if( !entry.Reference(x => x.Hash).IsLoaded )
                     await entry.Reference(x => x.Hash)
                         .LoadAsync();
 

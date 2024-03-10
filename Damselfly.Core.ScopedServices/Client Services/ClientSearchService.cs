@@ -23,7 +23,7 @@ public class ClientSearchService : BaseSearchService, ISearchService
         _statusService = statusService;
     }
 
-    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = 250)
+    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = DamselflyContants.PageSize)
     {
         int first = SearchResults.Count;
         var response = new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };

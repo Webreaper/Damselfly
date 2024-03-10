@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -22,10 +21,10 @@
         <None Remove="Microsoft.AspNetCore.Components.Authorization" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.9" />
-        <PackageReference Include="Microsoft.AspNetCore.Components" Version="7.0.9" />
-        <PackageReference Include="Microsoft.JSInterop" Version="7.0.9" />
-        <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="7.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+        <PackageReference Include="Microsoft.AspNetCore.Components" />
+        <PackageReference Include="Microsoft.JSInterop" />
+        <PackageReference Include="Blazored.LocalStorage" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
     </ItemGroup>
 </Project>

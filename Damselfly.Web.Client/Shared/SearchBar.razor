@@ -18,7 +18,7 @@
         <button class="btn btn-primary damselfly-searchtools" title="Reset Search" @onclick="@(() => searchService.Reset())">
             <i class="fas fa-times"/>
         </button>
-        <button class="btn btn-primary damselfly-searchtools" title="Advanced Search" @onclick="@(() => ToggleAdvancedSearch())">
+        <button class="btn btn-primary damselfly-searchtools" title="Advanced Search" @onclick="ToggleAdvancedSearch">
             @if( ShowAdvancedSearch )
             {
                 <i class="fas fa-chevron-up"/>
@@ -34,7 +34,18 @@
         <button class="btn btn-primary damselfly-searchtools" title="Tag Management" @onclick="@TagManagement">
             <i class="fas fa-tags"/>
         </button>
-        <label class="damselfly-browsetoollabel" title="Current Search Parameters">@searchService.SearchBreadcrumbs</label>
+        @if( searchService.SearchHints.Any() )
+        {
+            <div class="search-hints">
+                <Bricks Items="@searchService.SearchHints" ToStrFunc="x => x.Description" 
+                        RemoveLabel="Clear filter" ItemRemoved="x => x.Clear()"/>
+            </div>
+        }
+        else
+        {
+            <label class="damselfly-browsetoollabel" >No filter.</label>
+        }
+        
     </div>
 
     <div class="damselfly-browsetools">

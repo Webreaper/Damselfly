@@ -6,11 +6,10 @@
 
         [Parameter]
         [EditorRequired]
-        public string ScrollElementId { get; set; }
+        public required string ScrollElementId { get; set; }
 
         [Parameter]
-        [EditorRequired]
-        public string ScrollConfigName { get; set; }
+        public required string ScrollConfigName { get; set; }
 
     private EventConflator conflator = new();
 

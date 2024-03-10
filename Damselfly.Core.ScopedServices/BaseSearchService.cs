@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
@@ -23,7 +24,7 @@ public abstract class BaseSearchService
     private readonly ICachedDataService _service;
     private readonly IImageCacheService _imageCache;
 
-    protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = 250);
+    protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = DamselflyContants.PageSize);
 
     public BaseSearchService(ICachedDataService dataService, IImageCacheService imageCache, ILogger<BaseSearchService> logger)
     {
@@ -309,33 +310,58 @@ public abstract class BaseSearchService
 
     public SearchQuery Query { get; } = new();
 
-    public string SearchBreadcrumbs
+    public IEnumerable<ISearchHint> SearchHints
     {
         get
         {
-            var hints = new List<string>();
+            var hints = new List<ISearchHint>();
 
-            if ( !string.IsNullOrEmpty(SearchText) )
-                hints.Add($"Text: {SearchText}");
+            if( !string.IsNullOrEmpty( SearchText) )
+            {
+                var text = (TagsOnly ? "Text (tags only): " : "Text: ") + SearchText;
+                hints.Add( new SearchHint{ Description = text, Clear = () => SearchText = String.Empty });
+            }
 
-            if ( Folder != null )
-                hints.Add($"Folder: {Folder.Name}");
+            if( Folder != null )
+                hints.Add( new SearchHint { Description = $"Folder: {Folder.Name}", Clear = () => Folder = null });
+            
+            if( Person != null )
+                hints.Add( new SearchHint { Description = $"Person: {Person.Name}", Clear = () => Person = null });
 
-            if ( Person != null )
-                hints.Add($"Person: {Person.Name}");
+            if( Tag != null )
+                hints.Add( new SearchHint { Description = $"Tag: {Tag.Keyword}", Clear = () => Tag = null });
 
-            if ( MinRating != null )
-                hints.Add($"Rating: at least {MinRating} stars");
-
+            if( MinRating != null )
+                hints.Add( new SearchHint { Description = $"Rating: at least {MinRating} stars", Clear = () => MinRating = null });
+            
             if (SimilarToId != null)
             {
                 var image = _imageCache.GetCachedImage(SimilarToId.Value).Result;
                 if( image is not null )
-                    hints.Add($"Looks Like: {image.FileName}");
+                    hints.Add( new SearchHint { Description = $"Looks Like: {image.FileName}", Clear = () => SimilarToId = null } );
             }
 
-            if ( Tag != null )
-                hints.Add($"Tag: {Tag.Keyword}");
+            string dateString = string.Empty;
+            if( MaxSizeKB.HasValue && MinSizeKB.HasValue )
+            {
+                dateString = $"Between {MinSizeKB.Value}KB and {MaxSizeKB.Value}KB";
+            }
+            else
+            {
+                if( MaxSizeKB.HasValue )
+                    dateString = $"Less than: {MaxSizeKB.Value}KB";
+
+                if( MinSizeKB.HasValue )
+                    dateString = $"At least: {MinSizeKB.Value}KB";
+            }
+            
+            if( ! string.IsNullOrEmpty(dateString) )
+                hints.Add( new SearchHint { Description = dateString, Clear = () =>
+                    {
+                        MinSizeKB = null;
+                        MaxSizeKB = null;
+                    }
+                } );
 
             var dateRange = string.Empty;
             if ( MinDate.HasValue )
@@ -350,39 +376,53 @@ public abstract class BaseSearchService
             }
 
             if ( !string.IsNullOrEmpty(dateRange) )
-                hints.Add($"Date: {dateRange}");
+                hints.Add( new SearchHint {Description = $"Date: {dateRange}", Clear = () =>
+                {
+                    MinDate = null;
+                    MaxDate = null; } 
+                });
 
             if ( UntaggedImages )
-                hints.Add("Untagged images");
-
-            if (Month.HasValue)
+                hints.Add( new SearchHint {Description = "Untagged Images", Clear = () => UntaggedImages = false });
+            
+            if( !IncludeChildFolders )
+                hints.Add( new SearchHint {Description = "Exclude child folders", Clear = () => IncludeChildFolders = true });
+            
+            if( Month.HasValue )
             {
                 string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(Month.Value);
-                hints.Add($"During {monthName}");
+                hints.Add( new SearchHint { Description = $"During: {monthName}", Clear = () => Month = null } );
             }
-
-            if ( FaceSearch.HasValue )
-                hints.Add($"{FaceSearch.Humanize()}");
-
-            if ( Orientation.HasValue )
-                hints.Add($"{Orientation.Humanize()}");
 
             if ( CameraId > 0 )
             {
                 var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
                 if ( cam != null )
-                    hints.Add($"Camera: {cam.Model}");
+                    hints.Add( new SearchHint{ Description = $"Camera: {cam.Model}", Clear = () => CameraId = null});
             }
 
             if ( LensId > 0 )
             {
                 var lens = _service.Lenses.FirstOrDefault(x => x.LensId == LensId);
                 if ( lens != null )
-                    hints.Add($"Lens: {lens.Model}");
+                    hints.Add( new SearchHint{ Description = $"Lens: {lens.Model}", Clear = () => LensId = null});
             }
+            
+            if ( FaceSearch.HasValue )
+                hints.Add( new SearchHint{ Description = FaceSearch.Humanize(), Clear = () => FaceSearch = null});
 
-            if( !IncludeChildFolders )
-                hints.Add( $"Exclude child folders" );
+            if ( Orientation.HasValue )
+                hints.Add( new SearchHint{ Description = Orientation.Humanize(), Clear = () => Orientation = null});
+
+            return hints;
+        }    
+    }
+    
+    public string SearchBreadcrumbs
+    {
+        get
+        {
+            var hints = new List<string>();
 
             if( hints.Any() )
                 return string.Join(", ", hints);
@@ -437,7 +477,7 @@ public abstract class BaseSearchService
         _ = GetQueryImagesAsync();
     }
 
-    public async Task LoadMore( int count = 250 )
+    public async Task LoadMore( int count = DamselflyContants.PageSize )
     {
         await GetQueryImagesAsync( count );
     }

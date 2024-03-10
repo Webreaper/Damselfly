@@ -1,4 +1,4 @@
-﻿@inject IPeopleService peopleService
+﻿    @inject IPeopleService peopleService
 @inject IUserStatusService statusService
 @inject ContextMenuService contextMenuService
 @inject NavigationManager NavigationManager
@@ -27,25 +27,18 @@
 
 @code {
 
-    [Parameter]
-    public ImageObject theObject { get; set; }
+    [Parameter] public ImageObject theObject { get; set; }
 
-    [Parameter]
-    public Action<ImageObject> OnObjectChanged { get; set; }
+    [Parameter] public Action<ImageObject> OnObjectChanged { get; set; }
 
     private bool Editing { get; set; }
 
     private string nameText = string.Empty;
+
     private string TypeAheadName
     {
-        get
-        {
-            return nameText;
-        }
-        set
-        {
-            nameText = value;
-        }
+        get { return nameText; }
+        set { nameText = value; }
     }
 
     public string ObjectName => theObject.ToString();
@@ -70,18 +63,18 @@
 
     private void ShowContextMenu(MouseEventArgs args)
     {
-        if (theObject.Type != ImageObject.ObjectTypes.Face.ToString())
+        if ( theObject.Type != ImageObject.ObjectTypes.Face.ToString() )
             return;
 
         var menuList = new List<ContextMenuItem>
-            {
-                new() { Text = $"Find more photos containing this person", Value = 0 },
-            };
+        {
+            new() { Text = $"Find more photos containing this person", Value = 0 },
+        };
 
         contextMenuService.Open(args, menuList, args =>
         {
             contextMenuService.Close();
-            switch (args.Value)
+            switch ( args.Value )
             {
                 case 0:
                     NavigationManager.NavigateTo($"/?personid={theObject.PersonId}");
@@ -98,7 +91,7 @@
 
     private async Task EditName()
     {
-        if (!Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString())
+        if ( !Editing && theObject.Type == ImageObject.ObjectTypes.Face.ToString() )
         {
             Editing = true;
 
@@ -107,7 +100,7 @@
             var dialog = DialogService.Show<NameDialog>("Add Name", parameters);
             var result = await dialog.Result;
 
-            if (!dialog.Result.IsCanceled)
+            if ( !dialog.Result.IsCanceled )
             {
                 // Reset the tag
                 Editing = false;
@@ -124,24 +117,4 @@
         var list = await peopleService.GetPeopleNames(text.Trim());
         return list;
     }
-
-    private async Task UpdateName(string name)
-    {
-        if (!string.IsNullOrEmpty(name))
-        {
-            logger.LogInformation($"Saving name: {name}");
-
-            StateHasChanged();
-
-            await peopleService.UpdateName(theObject, name);
-
-            statusService.UpdateStatus($"Name saved as '{name}'");
-
-            // Reset the tag
-            Editing = false;
-
-            OnObjectChanged?.Invoke(theObject);
-        }
-    }
-
 }

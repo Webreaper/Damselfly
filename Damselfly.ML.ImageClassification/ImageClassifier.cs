@@ -62,7 +62,7 @@ public class ImageClassifier
             return null;
         }
 
-        ImageDetectResult result = null;
+        ImageDetectResult? result = null;
 
         var inceptionPb = Path.Combine(modelDir.FullName, "tensorflow_inception_graph.pb");
         var labelsTxt = Path.Combine(modelDir.FullName, "imagenet_comp_graph_label_strings.txt");

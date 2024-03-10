@@ -1,4 +1,5 @@
 ﻿@using DialogOptions = MudBlazor.DialogOptions
+
 <!--
 Image preview panel - displays an image in full res. To keep the UX nice, the initial image
 is set to the medium thumb (which should load very quickly) and a hidden image loads the
@@ -19,22 +20,31 @@ of the visible image is updated which should update it instantly.
 <div class="damselfly-imagepreview">
     <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
-
-        <div class="objects-box" id="objectBox">
-            @if (ShowObjects)
-            {
-                @foreach (var obj in Objects)
+        
+        @if (EnableImageEditing && Editing)
+        {
+            <ImageCanvas Image="@Image" Class="image-fill"/>
+        }
+        else
+        {
+            <div class="objects-box" id="objectBox">
+                @if (ShowObjects)
                 {
-                    <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
+                    @foreach (var obj in Objects)
+                    {
+                        <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
+                    }
                 }
-            }
-        </div>
+            </div>
 
-        <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
-            <img @ref="@context.ElementReference" @key="ImgKey" src="@ImageUrl" id="theImage" class="image-fill" />
-        </Panzoom>
+            <Panzoom @ref="_panzoom" WheelMode="@WheelMode" PanzoomOptions="@PanZoomOptions">
+                <img @ref="@context.ElementReference" src="@ImageUrl" @key="ImgKey" id="theImage" class="image-fill" />
+            </Panzoom>
+        }
     </div>
+    <Toast Text="@ToastText" />
 </div>
+
 
 <!-- Hidden image to background load the hi-res version-->
 <img @key="ImgPreviewKey" src="@ImageUrlHighRes" @onload="ReplaceUrl" style="display:none">
@@ -42,15 +52,18 @@ of the visible image is updated which should update it instantly.
 @code
 {
     [Parameter]
-    [EditorRequired]
-    public Image Image { get; set; }
+    public required Image Image { get; set; }
 
     [Parameter]
     public bool ShowObjects { get; set; }
 
+    [Parameter]
+    public bool Editing { get; set; }
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationStateTask { get; set; }
 
+    private string ToastText;
     private LocalFileExporter FileExporter;
     private double _rangeValue = 1.0;
     private Panzoom _panzoom;
@@ -61,7 +74,7 @@ of the visible image is updated which should update it instantly.
     private string ImageUrl { get; set; }
     private string ImageUrlHighRes => Image.ThumbUrl(ThumbSize.ExtraLarge);
     private int currentImageId = -1;
-
+    private bool EnableImageEditing = false;
 
     // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
     private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
@@ -232,7 +245,7 @@ of the visible image is updated which should update it instantly.
             currentImageId = Image.ImageId;
             HiResImageLoaded = false;
             ImageUrl = $"/thumb/{ThumbSize.Medium}/{Image.ImageId}";
-            statusService.UpdateStatus("Loading hi-res image...");
+            ToastText = "Sharpening...";
             StateHasChanged();
 
             await ResetZoom();
@@ -242,6 +255,7 @@ of the visible image is updated which should update it instantly.
     protected override void OnInitialized()
     {
         ShowObjects = userConfigService.GetBool(ConfigSettings.ShowObjects);
+        EnableImageEditing = userConfigService.GetBool(ConfigSettings.EnableImageEditing);
         base.OnInitialized();
     }
 
@@ -252,7 +266,7 @@ of the visible image is updated which should update it instantly.
         HiResImageLoaded = true;
 
         StateHasChanged();
-        statusService.UpdateStatus("Hi-res image loaded.");
+        ToastText = string.Empty;
 
         DoObjectBox();
 

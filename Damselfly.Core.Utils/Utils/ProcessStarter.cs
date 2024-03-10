@@ -18,7 +18,7 @@ public class ProcessStarter
     /// <param name="exe"></param>
     /// <param name="args"></param>
     /// <returns>True if execution succeeded</returns>
-    public bool StartProcess(string exe, string args, IDictionary<string, string> envVars = null)
+    public bool StartProcess(string exe, string args, IDictionary<string, string>? envVars = null)
     {
         var process = new Process();
 

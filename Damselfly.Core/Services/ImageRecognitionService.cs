@@ -5,69 +5,37 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Models.API_Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
-using Damselfly.ML.Face.Azure;
-using Damselfly.ML.Face.Emgu;
+using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ImageClassification;
 using Damselfly.ML.ObjectDetection;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp.PixelFormats;
+using Image = Damselfly.Core.Models.Image;
 
 namespace Damselfly.Core.Services;
 
-public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IRescanProvider
+public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
+    IStatusService _statusService, ObjectDetector _objectDetector,
+    MetaDataService _metdataService, FaceONNXService _faceOnnxService,
+    ThumbnailService _thumbService, ConfigService _configService,
+    ImageClassifier _imageClassifier, ImageCache _imageCache,
+    WorkService _workService, ExifService _exifService,
+    ILogger<ImageRecognitionService> _logger) : IPeopleService, IProcessJobFactory, IRescanProvider
 {
-    private readonly AzureFaceService _azureFaceService;
-    private readonly ConfigService _configService;
-    private readonly EmguFaceService _emguFaceService;
-    private readonly ExifService _exifService;
-    private readonly ImageCache _imageCache;
-    private readonly ImageClassifier _imageClassifier;
-    private readonly ImageProcessService _imageProcessor;
-    private readonly MetaDataService _metdataService;
-    private readonly ObjectDetector _objectDetector;
-
     // WASM: This should be a MemoryCache
     private readonly IDictionary<string, Person> _peopleCache = new ConcurrentDictionary<string, Person>();
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
-    private readonly ThumbnailService _thumbService;
-    private readonly WorkService _workService;
-
-    public ImageRecognitionService(IServiceScopeFactory scopeFactory,
-        IStatusService statusService, ObjectDetector objectDetector,
-        MetaDataService metadataService, AzureFaceService azureFace,
-        EmguFaceService emguService,
-        ThumbnailService thumbs, ConfigService configService,
-        ImageClassifier imageClassifier, ImageCache imageCache,
-        WorkService workService, ExifService exifService,
-        ImageProcessService imageProcessor)
-    {
-        _scopeFactory = scopeFactory;
-        _thumbService = thumbs;
-        _azureFaceService = azureFace;
-        _statusService = statusService;
-        _objectDetector = objectDetector;
-        _metdataService = metadataService;
-        _emguFaceService = emguService;
-        _configService = configService;
-        _imageClassifier = imageClassifier;
-        _imageProcessor = imageProcessor;
-        _imageCache = imageCache;
-        _workService = workService;
-        _exifService = exifService;
-    }
-
-    public ImageRecognitionService()
-    {
-    }
-
+    
     public static bool EnableImageRecognition { get; set; } = true;
 
     public async Task<List<Person>> GetAllPeople()
@@ -100,39 +68,87 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         return names;
     }
 
-    public async Task UpdateName(ImageObject faceObject, string name)
+    private async Task MergeWithName(ImageContext db, int personId, string name)
     {
-        if (!faceObject.IsFace)
-            throw new ArgumentException("Image object passed to name update.");
+        var transaction = await db.Database.BeginTransactionAsync();
 
+        try
+        {
+            var matchingPeople = await GetAllPeople();
+            
+            var newPersonId = matchingPeople.Where( x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                            .Select( x => x.PersonId )
+                                            .SingleOrDefault(-1);
+
+            if( newPersonId != -1 )
+            {
+                // Update personID in image objects to the new person ID
+                await db.ImageObjects.Where( x => x.PersonId == personId )
+                    .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
+                
+                // Update personID in FaceData
+                await db.FaceData.Where( x => x.PersonId == personId )
+                    .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
+
+                // Delete old personID
+                await db.People.Where( x => x.PersonId == personId )
+                    .ExecuteDeleteAsync();
+                
+                await transaction.CommitAsync();
+            }
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError( $"Exception while merging person {personId} => {name}");
+            await transaction.RollbackAsync();
+        }
+    }
+
+    public async Task UpdatePersonName(NameChangeRequest req)
+    {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        if (faceObject.Person == null)
+        ImageObject imageObject = null;
+        if( req.ImageObjectId != null )
+            imageObject = db.ImageObjects.FirstOrDefault( x => x.ImageObjectId == req.ImageObjectId);
+        
+        if( req.PersonId == null )
         {
-            faceObject.Person = new Person();
-            db.People.Add(faceObject.Person);
+            // It's a new person. Create it and associate it with the image object
+            imageObject.Person = new Person
+            {
+                Name = req.NewName,
+                State = Person.PersonState.Identified,
+                LastUpdated = DateTime.UtcNow
+            };
+            
+            db.ImageObjects.Update(imageObject);
+            await db.SaveChangesAsync("SetName");
+            
+        }
+        else if( req.Merge )
+        {
+            // Merge two people together
+            await MergeWithName(db, req.PersonId.Value, req.NewName);
         }
         else
-        {
-            db.People.Update(faceObject.Person);
+        { 
+            // Update the person with the new details
+            await db.People.Where( x => x.PersonId == req.PersonId)
+                    .ExecuteUpdateAsync( setter => setter
+                    .SetProperty(p => p.Name, v => req.NewName)
+                    .SetProperty(p => p.State, v => Person.PersonState.Identified)
+                    .SetProperty(p => p.LastUpdated, v => DateTime.UtcNow));
         }
 
-        // TODO: If this is an existing person/name, we might need to merge in Azure
-        faceObject.Person.Name = name;
-        faceObject.Person.State = Person.PersonState.Identified;
-        faceObject.Person.LastUpdated = DateTime.UtcNow;
-        db.ImageObjects.Update(faceObject);
-
-        await db.SaveChangesAsync("SetName");
-
-        if (faceObject.Person.AzurePersonId != null)
-        {
-            // Add/update the cache
-            _peopleCache[faceObject.Person.AzurePersonId] = faceObject.Person;
-        }
-
-        _imageCache.Evict(faceObject.ImageId);
+        // Add/update the cache and embeddings
+        await LoadPersonCache(true);
+        
+        _imageCache.Evict(imageObject.ImageId);
+        
+        // TODO - if we've changed a person's name, we should find all of the images that reference that 
+        // person, and evict them from the cache. But this could be exceptionally memory intensive.
     }
 
     public async Task UpdatePerson(Person person, string name)
@@ -140,7 +156,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        // TODO: If this is an existing person/name, we might need to merge in Azure
         person.Name = name;
         person.State = Person.PersonState.Identified;
         person.LastUpdated = DateTime.UtcNow;
@@ -149,31 +164,35 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         await db.SaveChangesAsync("SetName");
 
         // Add/update the cache
-        _peopleCache[person.AzurePersonId] = person;
+        _peopleCache[person.PersonGuid] = person;
     }
 
     public JobPriorities Priority => JobPriorities.ImageRecognition;
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
-        // Only pull out images where the thumb *has* been processed, and the
-        // metadata has already been scanned, the AI hasn't been processed.
-        var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
-                                                       && x.ThumbLastUpdated != null
-                                                       && x.AILastUpdated == null)
-            .OrderByDescending(x => x.LastUpdated)
-            .Take(maxJobs)
-            .Select(x => x.ImageId)
-            .ToListAsync();
-
-        if ( images.Any() )
+        if( enableAIProcessing )
         {
-            var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
-                .ToArray();
-            return jobs;
+            using var scope = _scopeFactory.CreateScope();
+            using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+            // Only pull out images where the  metadata has already been scanned,
+            // and the AI hasn't been processed.
+            var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
+                                                           && x.AILastUpdated == null )
+                .OrderByDescending(x => x.LastUpdated)
+                .Take(maxJobs)
+                .Select(x => x.ImageId)
+                .ToListAsync();
+
+            if ( images.Any() )
+            {
+                var jobs = images.Select(x => new AIProcess { ImageId = x, Service = this })
+                    .ToArray();
+                return jobs;
+            }
         }
 
         return new AIProcess[0];
@@ -220,14 +239,14 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         _statusService.UpdateStatus($"{msgText} flagged for AI reprocessing.");
     }
 
-    private int GetPersonIDFromCache(Guid? azurePersonId)
+    private int GetPersonIDFromCache(Guid? PersonGuid)
     {
-        if ( azurePersonId.HasValue )
+        if ( PersonGuid.HasValue )
         {
             // TODO Await
             LoadPersonCache().Wait();
 
-            if ( _peopleCache.TryGetValue(azurePersonId.ToString(), out var person) )
+            if ( _peopleCache.TryGetValue(PersonGuid.ToString(), out var person) )
                 return person.PersonId;
         }
 
@@ -250,17 +269,25 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
                 using var scope = _scopeFactory.CreateScope();
                 using var db = scope.ServiceProvider.GetService<ImageContext>();
-
-                var dict = await db.People.Where(x => !string.IsNullOrEmpty(x.AzurePersonId))
+                
+                var identifiedPeople = await db.People.Where(x => !string.IsNullOrEmpty(x.PersonGuid))
+                    .Include(x => x.FaceData)
+                    .Where( x => x.FaceData.Count > 0)
                     .AsNoTracking()
-                    .Select(p => new { p.AzurePersonId, Person = p })
                     .ToListAsync();
 
-                if ( dict.Any() )
+                if( identifiedPeople.Any() )
                 {
-                    // Merge the items into the people cache. Note that we use
-                    // the indexer to avoid dupe key issues. TODO: Should the table be unique?
-                    dict.ToList().ForEach(x => _peopleCache[x.AzurePersonId] = x.Person);
+                    // Populate the people cache
+                    foreach( var person in identifiedPeople )
+                        _peopleCache[person.PersonGuid] = person;
+                    
+                    // Now populate the embeddings lookup
+                    var embeddings = identifiedPeople.ToDictionary(
+                        x => x.PersonGuid,
+                        x => x.FaceData.Select( e => e.Embeddings));
+                    
+                    _faceOnnxService.LoadFaceEmbeddings(embeddings);
 
                     Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
                 }
@@ -278,42 +305,43 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     ///     Create the DB entries for people who we don't know about,
     ///     and then pre-populate the cache with their entries.
     /// </summary>
-    /// <param name="personIdsToAdd"></param>
+    /// <param name="detectedFaces"></param>
     /// <returns></returns>
-    public async Task CreateMissingPeople(IEnumerable<string> personIdsToAdd)
+    public async Task CreateMissingPeople(IEnumerable<ImageDetectResult> detectedFaces)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         try
         {
-            if ( personIdsToAdd != null && personIdsToAdd.Any() )
+            if ( detectedFaces != null )
             {
-                // Find the people that aren't already in the cache and add new ones
-                // Be careful - filter out empty ones (shouldn't ever happen, but belt
-                // and braces
-                var newNames = personIdsToAdd.Select(x => x.Trim())
-                    .Where(x => !string.IsNullOrEmpty(x) && !_peopleCache.ContainsKey(x))
-                    .ToList();
+                var newFaces = detectedFaces.Where( x => x.IsNewPerson ).ToList();
 
-                if ( newNames.Any() )
+                if ( newFaces.Any() )
                 {
-                    Logging.Log($"Adding {newNames.Count()} person records.");
+                    Logging.Log($"Adding {newFaces.Count()} person records.");
 
-                    var newPeople = newNames.Select(x => new Person
+                    var newPeople = newFaces.Select(x => new Person
                     {
-                        AzurePersonId = x,
                         Name = "Unknown",
                         State = Person.PersonState.Unknown,
-                        LastUpdated = DateTime.UtcNow
+                        LastUpdated = DateTime.UtcNow, 
+                        PersonGuid = x.PersonGuid,
+                        FaceData = new List<PersonFaceData> { new()
+                        {
+                            Score = x.Score, 
+                            Embeddings = string.Join( ",", x.Embeddings)
+                        } },
                     }).ToList();
 
                     if ( newPeople.Any() )
                     {
-                        await db.BulkInsert(db.People, newPeople);
+                        await db.People.AddRangeAsync( newPeople );
+                        await db.SaveChangesAsync();
 
                         // Add or replace the new people in the cache (this should always add)
-                        newPeople.ForEach(x => _peopleCache[x.AzurePersonId] = x);
+                        newPeople.ForEach(x => _peopleCache[x.PersonGuid] = x);
                     }
                 }
             }
@@ -339,22 +367,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
     }
 
     /// <summary>
-    ///     Returns true if ImagesWithFaces is selected and any of the
-    ///     objects contains either a person or a face
-    /// </summary>
-    /// <param name="objects"></param>
-    /// <returns></returns>
-    private bool UseAzureForRecogition(IList<ImageDetectResult> objects)
-    {
-        if ( _azureFaceService.DetectionType == AzureDetection.ImagesWithFaces )
-            if ( objects.Any(x => string.Compare(x.Tag, "face", true) == 0 ||
-                                  string.Compare(x.Tag, "person", true) == 0) )
-                return true;
-
-        return false;
-    }
-
-    /// <summary>
     ///     Detect objects in the image.
     /// </summary>
     /// <param name="image"></param>
@@ -367,18 +379,37 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         if ( !fileName.Exists )
             return;
 
+        if( metadata.Width == 0 || metadata.Height == 0 )
+        {
+            _logger.LogWarning($"Skipping AI detection for image {image.FullPath} - dimensions metadata was zero!!");
+            return;
+        }
+        
         try
         {
             var thumbSize = ThumbSize.Large;
             var medThumb = new FileInfo(_thumbService.GetThumbPath(fileName, thumbSize));
-            var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
+            // We need a large thumbnail to do AI processing. Ensure it's been created.
+            if( ! medThumb.Exists )
+            {
+                await _thumbService.CreateThumb(image.ImageId, thumbSize);
+                if( ! File.Exists( medThumb.FullName ) )
+                {
+                    // If we couldn't create the thumb, bail out.
+                    throw new InvalidOperationException(
+                        $"Unable to run AI processing - {thumbSize} thumbnail doesn't exist: {medThumb}");
+                }
+            }
+
+            var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
+    
             MetaDataService.GetImageSize(medThumb.FullName, out var thumbWidth, out var thumbHeight);
 
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
 
-            if ( enableAIProcessing || _azureFaceService.DetectionType == AzureDetection.AllImages )
+            if ( enableAIProcessing )
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
 
             if ( !File.Exists(medThumb.FullName) )
@@ -389,7 +420,7 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
 
             if ( _imageClassifier != null && enableAIProcessing )
             {
-                var colorWatch = new Stopwatch("DetectObjects");
+                var colorWatch = new Stopwatch("DetectDominantColours");
 
                 var dominant = _imageClassifier.DetectDominantColour(theImage);
                 var average = _imageClassifier.DetectAverageColor(theImage);
@@ -403,13 +434,45 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                     $"Image {image.FullPath} has dominant colour {dominant.ToHex()}, average {average.ToHex()}");
             }
 
-            // Next, look for faces. We need to determine if we:
-            //  a) Use only local (EMGU) detection
-            //  b) Use local detection, and then if we find a face, or a person object, submit to Azure
-            //  c) Always submit every image to Azure.
-            // This is a user config.
-            var useAzureDetection = false;
+            if( enableAIProcessing && _faceOnnxService != null)
+            {
+                var facewatch = new Stopwatch("FaceONNXDetect");
 
+                var faces = await _faceOnnxService.DetectFaces(theImage);
+
+                facewatch.Stop();
+
+                if( faces.Any() )
+                {
+                    Logging.Log($" FaceONNX found {faces.Count()} faces in {fileName}...");
+
+                    var newTags = await CreateNewTags(faces);
+
+                    // Create any new ones, or pull existing ones back from the cache
+                    await CreateMissingPeople(faces);
+
+                    var newFaces = faces.Select(x => new ImageObject
+                    {
+                        RecogntionSource = ImageObject.RecognitionType.FaceONNX,
+                        ImageId = image.ImageId,
+                        PersonId = _peopleCache[x.PersonGuid].PersonId,
+                        RectX = x.Rect.Left,
+                        RectY = x.Rect.Top,
+                        RectHeight = x.Rect.Height,
+                        RectWidth = x.Rect.Width,
+                        TagId = newTags[x.Tag],
+                        Type = x.IsFace
+                            ? ImageObject.ObjectTypes.Face.ToString()
+                            : ImageObject.ObjectTypes.Object.ToString(),
+                        Score = 0
+                    }).ToList();
+
+                    ScaleObjectRects(image, newFaces, thumbWidth, thumbHeight);
+                    foundFaces.AddRange(newFaces);
+
+                }
+            }
+            
             // For the object detector, we need a successfully loaded bitmap
             if ( enableAIProcessing )
             {
@@ -438,116 +501,9 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
                         Type = ImageObject.ObjectTypes.Object.ToString(),
                         Score = x.Score
                     }).ToList();
-
-                    if ( UseAzureForRecogition(objects) )
-                        useAzureDetection = true;
-
+                    
                     ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                     foundObjects.AddRange(newObjects);
-                }
-            }
-
-            if ( _azureFaceService.DetectionType == AzureDetection.AllImages )
-                // Skip local face detection and just go straight to Azure
-                useAzureDetection = true;
-            else if ( enableAIProcessing )
-                if ( _emguFaceService.ServiceAvailable )
-                {
-                    var emguwatch = new Stopwatch("EmguFaceDetect");
-
-                    var rects = _emguFaceService.DetectFaces(medThumb.FullName);
-
-                    emguwatch.Stop();
-
-                    if ( UseAzureForRecogition(rects) )
-                    {
-                        // Filter out the faces if we're using Azure
-                        rects = rects.Where(x => !x.IsFace).ToList();
-                        useAzureDetection = true;
-                    }
-
-                    if ( rects.Any() )
-                    {
-                        // Azure is disabled, so just use what we've got.
-                        Logging.Log($" Emgu found {rects.Count} faces in {fileName}...");
-
-                        var newTags = await CreateNewTags(rects);
-
-                        var newObjects = rects.Select(x => new ImageObject
-                        {
-                            RecogntionSource = ImageObject.RecognitionType.Emgu,
-                            ImageId = image.ImageId,
-                            RectX = x.Rect.Left,
-                            RectY = x.Rect.Top,
-                            RectHeight = x.Rect.Height,
-                            RectWidth = x.Rect.Width,
-                            TagId = newTags[x.Tag],
-                            Type = x.IsFace
-                                ? ImageObject.ObjectTypes.Face.ToString()
-                                : ImageObject.ObjectTypes.Object.ToString(),
-                            Score = 0
-                        }).ToList();
-
-                        ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
-                        foundFaces.AddRange(newObjects);
-                    }
-                }
-
-            if ( useAzureDetection )
-            {
-                var faceTag = await _metdataService.CreateTagsFromStrings(new List<string> { "Face" });
-                var faceTagId = faceTag.FirstOrDefault()?.TagId ?? 0;
-
-                var azurewatch = new Stopwatch("AzureFaceDetect");
-
-                Logging.LogVerbose($"Processing {medThumb.FullName} with Azure Face Service");
-
-                // We got predictions or we're scanning everything - so now let's try the image with Azure.
-                var azureFaces = await _azureFaceService.DetectFaces(medThumb.FullName, _imageProcessor);
-
-                azurewatch.Stop();
-
-                if ( azureFaces.Any() )
-                {
-                    Logging.Log($" Azure found {azureFaces.Count} faces in {fileName}...");
-
-                    // Get a list of the Azure Person IDs
-                    var peopleIds = azureFaces.Select(x => x.PersonId.ToString());
-
-                    // Create any new ones, or pull existing ones back from the cache
-                    await CreateMissingPeople(peopleIds);
-
-                    // Now convert into ImageObjects. Note that if the peopleCache doesn't
-                    // contain the key, it means we didn't create a person record successfully
-                    // for that entry - so we skip it.
-                    var newObjects = azureFaces.Select(x => new ImageObject
-                    {
-                        ImageId = image.ImageId,
-                        RectX = x.Left,
-                        RectY = x.Top,
-                        RectHeight = x.Height,
-                        RectWidth = x.Width,
-                        Type = ImageObject.ObjectTypes.Face.ToString(),
-                        TagId = faceTagId,
-                        RecogntionSource = ImageObject.RecognitionType.Azure,
-                        Score = x.Score,
-                        PersonId = GetPersonIDFromCache(x.PersonId)
-                    }).ToList();
-
-                    ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
-                    foundFaces.AddRange(newObjects);
-
-                    var peopleToAdd = foundFaces.Select(x => x.Person);
-
-                    // Add them
-                }
-                else
-                {
-                    // If we're scanning because local face detection found a face, log the result.
-                    if ( _azureFaceService.DetectionType == AzureDetection.ImagesWithFaces )
-                        Logging.Log($"Azure found no faces in image {fileName}");
-                    else
-                        Logging.LogVerbose($"Azure found no faces in image {fileName}");
                 }
             }
 
@@ -652,8 +608,6 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
             imgObj.RectWidth = (int)(imgObj.RectWidth * ratio);
             imgObj.RectHeight = (int)(imgObj.RectHeight * ratio);
         }
-
-        ;
     }
 
     public void StartService()
@@ -704,6 +658,80 @@ public class ImageRecognitionService : IPeopleService, IProcessJobFactory, IResc
         _imageCache.Evict(imageId);
     }
 
+    public async Task<bool> NeedsAIMigration()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var deprecatedTypes = new[]
+        {
+            ImageObject.RecognitionType.Emgu, ImageObject.RecognitionType.Accord, ImageObject.RecognitionType.Azure
+        };
+        
+        // If we have any faces that were recognised by EMGU, Accord, or Azure, we need to rescan them
+        var needsMigration = await db.ImageObjects.AnyAsync( x => x.Type == "Face" && 
+                                                                  deprecatedTypes.Contains( x.RecogntionSource));
+        return needsMigration;
+    }
+
+    public async Task ExecuteAIMigration( AIMigrationRequest req )
+    {
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var trans = await db.Database.BeginTransactionAsync();
+
+        try
+        {
+            var imagesUpdated = 0;
+
+            if( req.MigrateImagesWithFaces )
+            {
+                _statusService.UpdateStatus("AI Migration: marking images with faces for AI Rescan...");
+
+                // Find all the images with imageObjects of type face, and set their AILastUpdated to null
+                imagesUpdated = await db.ImageMetaData
+                    .Where( x => x.Image.ImageObjects.Any( io => io.Type == "Face"))
+                    .ExecuteUpdateAsync(x =>
+                        x.SetProperty( p => p.AILastUpdated, v => null));
+            }
+            else if( req.MigrateAllImages )
+            {
+                _statusService.UpdateStatus("AI Migration: marking all images for AI Rescan...");
+
+                // Set AILastUpdate = null for all images in the DB
+                imagesUpdated = await db.ImageMetaData
+                    .ExecuteUpdateAsync(x =>
+                        x.SetProperty( p => p.AILastUpdated, v => null));
+            }
+
+            _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
+            
+            // Delete all existing people
+            var peopleDeleted = await db.People.ExecuteDeleteAsync();
+
+            _statusService.UpdateStatus("AI Migration: obsolete Image Objects DB...");
+
+            // Now, delete all existing face imageObjects
+            int deletedObjects = await db.ImageObjects.Where( x => x.Type == "Face"
+                                  && x.RecogntionSource != ImageObject.RecognitionType.FaceONNX)
+                                 .ExecuteDeleteAsync();
+            
+            var msg = $"Deleted {peopleDeleted} people & {deletedObjects} objects, and updated {imagesUpdated} images for AI scanning.";
+            _statusService.UpdateStatus(msg);
+            _logger.LogInformation(msg);
+
+            await LoadPersonCache(true);
+            await _thumbService.ClearFaceThumbs();
+
+            await trans.CommitAsync();
+        }
+        catch( Exception ex )
+        {
+            await trans.RollbackAsync();
+        }
+        
+    }
     public class AIProcess : IProcessJob
     {
         public int ImageId { get; set; }

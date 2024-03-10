@@ -34,6 +34,8 @@ public interface ISearchService
     OrientationType? Orientation { get; set; }
 
     string SearchBreadcrumbs { get; }
+    IEnumerable<ISearchHint> SearchHints { get; }
+
     void SetDateRange(DateTime? min, DateTime? max);
 
     void Refresh();
@@ -42,5 +44,5 @@ public interface ISearchService
     event Action OnSearchQueryChanged;
     event Action<SearchResponse> OnSearchResultsChanged;
 
-    Task LoadMore(int count = 250);
+    Task LoadMore(int count = DamselflyContants.PageSize);
 }

@@ -25,7 +25,7 @@ public class TFModelScorer
         mlContext = new MLContext();
     }
 
-    public void Score(List<ImageNetData> images)
+    public void Score(List<ImageNetData>? images)
     {
         var model = LoadModel(imagesFolder, modelLocation);
 

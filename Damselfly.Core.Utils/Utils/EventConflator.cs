@@ -14,7 +14,7 @@ namespace Damselfly.Core.Utils;
 public class EventConflator
 {
     private readonly long intervalMS;
-    private Timer eventTimer;
+    private Timer? eventTimer;
     private TimerCallback theCallback;
 
     public EventConflator(int delayMs = 1000)
@@ -44,7 +44,7 @@ public class EventConflator
     ///     with the keypress.
     /// </summary>
     /// <param name="state"></param>
-    private void TimerCallback(object state)
+    private void TimerCallback(object? state)
     {
         ClearTimer();  
         theCallback(state);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
+using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -48,7 +49,7 @@ public class BasketService : IBasketService
     public async Task Delete(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var existingBasket = db.Baskets.Where(x => x.BasketId == basketId).FirstOrDefault();
 
@@ -68,7 +69,7 @@ public class BasketService : IBasketService
     public async Task Clear(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         try
         {
@@ -90,7 +91,7 @@ public class BasketService : IBasketService
     {
         var result = 0;
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         try
         {
@@ -130,7 +131,7 @@ public class BasketService : IBasketService
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var myBaskets = await db.Baskets.Where(x => x.UserId == null || x.UserId == userId)
             .OrderBy(x => x.UserId == null ? 1 : 0)
@@ -168,7 +169,7 @@ public class BasketService : IBasketService
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
+            using var db = ImageContext.GetImageContext( scope );
             var change = newState ? BasketChangeType.ImagesAdded : BasketChangeType.ImagesRemoved;
 
             var changed = false;
@@ -247,7 +248,7 @@ public class BasketService : IBasketService
     public async Task<Basket> Create(string name, int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var existing = db.Baskets.FirstOrDefault(x => x.Name == name);
 
@@ -269,7 +270,7 @@ public class BasketService : IBasketService
     public async Task Save(Basket basket)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         db.Baskets.Update(basket);
         await db.SaveChangesAsync("EditBasket");
@@ -281,7 +282,7 @@ public class BasketService : IBasketService
     public async Task<Basket> GetBasketById(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var newBasket = await db.Baskets.Where(x => x.BasketId.Equals(basketId))
             .Include(x => x.BasketEntries)
@@ -305,7 +306,7 @@ public class BasketService : IBasketService
         // TODO: WASM: - load basket entries here. Also, maybe make this more efficient, with a single query?
         // Maybe return ID here, and then caller can load?
 
-        Basket defaultBasket = null;
+        Basket? defaultBasket = null;
 
         if ( userId.HasValue )
         {
@@ -324,7 +325,7 @@ public class BasketService : IBasketService
         else
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
+            using var db = ImageContext.GetImageContext( scope );
 
             // Get the first shared
             defaultBasket = await db.Baskets
@@ -357,7 +358,7 @@ public class BasketService : IBasketService
 
     public event Action OnBasketChanged;
 
-    private void NotifyStateChanged(int basketId, BasketChangeType changeType, ICollection<int> updatedImageIds = null)
+    private void NotifyStateChanged(int basketId, BasketChangeType changeType, ICollection<int>? updatedImageIds = null)
     {
         OnBasketChanged?.Invoke();
 
@@ -377,7 +378,7 @@ public class BasketService : IBasketService
     private async Task<ICollection<Image>> LoadBasketImages(Basket basket)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        using var db = ImageContext.GetImageContext( scope );
 
         var watch = new Stopwatch("GetSelectedImages");
 

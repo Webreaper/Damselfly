@@ -1,6 +1,5 @@
-﻿using Damselfly.Core.DbModels.Authentication;
-using Damselfly.Core.Models;
-using Microsoft.AspNetCore.Identity;
+﻿using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthenticationWithClientSideBlazor.Server.Controllers;
@@ -9,27 +8,18 @@ namespace AuthenticationWithClientSideBlazor.Server.Controllers;
 [ApiController]
 public class AccountsController : ControllerBase
 {
-    private readonly UserManager<AppIdentityUser> _userManager;
+    private readonly IAuthService _authService;
 
-    public AccountsController(UserManager<AppIdentityUser> userManager)
+    public AccountsController(IAuthService authService)
     {
-        _userManager = userManager;
+        _authService = authService;
     }
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] RegisterModel model)
     {
-        var newUser = new AppIdentityUser { UserName = model.Email, Email = model.Email };
+        var response = await _authService.Register( model );
 
-        var result = await _userManager.CreateAsync(newUser, model.Password);
-
-        if ( !result.Succeeded )
-        {
-            var errors = result.Errors.Select(x => x.Description);
-
-            return Ok(new RegisterResult { Successful = false, Errors = errors });
-        }
-
-        return Ok(new RegisterResult { Successful = true });
+        return Ok(response);
     }
 }

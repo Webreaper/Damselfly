@@ -2,7 +2,7 @@
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
-using Damselfly.ML.Face.Azure;
+using Damselfly.ML.FaceONNX;
 using Damselfly.ML.ObjectDetection;
 using Damselfly.Shared.Utils;
 
@@ -29,11 +29,10 @@ public static class AppInitialiser
         // Start the work processing queue for AI, Thumbs, etc
         services.GetRequiredService<WorkService>().StartService();
 
-        // Start the face service before the thumbnail service
-        services.GetRequiredService<AzureFaceService>().StartService().Wait();
         services.GetRequiredService<MetaDataService>().StartService();
         services.GetRequiredService<IndexingService>().StartService();
         services.GetRequiredService<ImageRecognitionService>().StartService();
+        services.GetRequiredService<FaceONNXService>().StartService();
 
         // ObjectDetector can throw a segmentation fault if the docker container is pinned
         // to a single CPU, so for now, to aid debugging, let's not even try and initialise

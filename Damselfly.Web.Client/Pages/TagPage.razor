@@ -16,6 +16,8 @@
         <MudTable Items="@Tags" FixedHeader="true" RowsPerPage="20" Virtualize="true" Dense="true" Hover="true" Bordered="false" Striped="true"
                   Filter="new Func<Tag, bool>(FilterFunc)" @bind-SelectedItem="selectedTag">
             <ToolBarContent>
+                <NavBack/>
+                <MudSpacer/>
                 <MudText Typo="Typo.h6">Keyword Tags</MudText>
                 <MudSpacer/>
                 <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText"/>

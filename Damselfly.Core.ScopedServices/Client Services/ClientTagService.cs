@@ -65,8 +65,8 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return await httpClient.CustomPostAsJsonAsync<Tag, bool>("/api/tags/togglefave", tag);
     }
 
-    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string> tagsToAdd,
-        ICollection<string> tagsToDelete, int? userId)
+    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string>? tagsToAdd,
+        ICollection<string>? tagsToDelete, int? userId)
     {
         var payload = new TagUpdateRequest
         {

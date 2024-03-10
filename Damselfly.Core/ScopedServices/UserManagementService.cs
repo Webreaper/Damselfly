@@ -57,6 +57,19 @@ public class UserManagementService : IUserMgmtService
         return users;
     }
 
+    /// <summary>
+    ///     Gets the list of users currently registered
+    /// </summary>
+    /// <returns></returns>
+    public async Task<AppIdentityUser> GetUserByName( string userName )
+    {
+        var user = await _userManager.Users
+            .Where( x => x.UserName == userName )
+            .Include( x => x.UserRoles )
+            .ThenInclude( y => y.Role )
+            .FirstOrDefaultAsync();
+        return user;
+    }
 
     /// <summary>
     ///     Gets the list of users currently registered
@@ -107,20 +120,28 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="newRoleSet"></param>
     /// <returns></returns>
-    public async Task<UserResponse> UpdateUserAsync(AppIdentityUser user, ICollection<string> newRoles)
+    public async Task<UserResponse> UpdateUserAsync(string userName, string emailAddress, ICollection<string> newRoles)
     {
-        var result = await _userManager.UpdateAsync(user);
+        var user = await GetUserByName( userName );
 
-        if ( result.Succeeded )
+        if( user != null )
         {
-            var syncResult = await SyncUserRoles(user, newRoles, false);
+            user.Email = emailAddress;
+            var result = await _userManager.UpdateAsync( user );
 
-            if ( syncResult != null )
-                // Non-null result means we did something and it succeeded or failed.
-                result = syncResult;
+            if( result.Succeeded )
+            {
+                var syncResult = await SyncUserRoles( user, newRoles, false );
+
+                if( syncResult != null )
+                    // Non-null result means we did something and it succeeded or failed.
+                    result = syncResult;
+            }
+
+            return new UserResponse( result );
         }
 
-        return new UserResponse( result );
+        return new UserResponse( IdentityResult.Failed() );
     }
 
     /// <summary>
@@ -129,16 +150,20 @@ public class UserManagementService : IUserMgmtService
     /// <param name="user"></param>
     /// <param name="password">Unhashed password</param>
     /// <returns></returns>
-    public async Task<UserResponse> SetUserPasswordAsync(AppIdentityUser user, string password)
+    public async Task<UserResponse> SetUserPasswordAsync(string userName, string password)
     {
+        var user = await GetUserByName( userName );
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
         return new UserResponse( await _userManager.ResetPasswordAsync(user, token, password) );
     }
 
-    public async Task<UserResponse> CreateNewUser(AppIdentityUser newUser, string password,
-        ICollection<string> roles = null)
+    public async Task<UserResponse> CreateNewUser(string userName, string email, string password,
+        ICollection<string>? roles = null)
     {
+
+        var newUser = new AppIdentityUser { UserName = userName, Email = email };
+
         var result = await _userManager.CreateAsync(newUser, password);
 
         if ( result.Succeeded )
