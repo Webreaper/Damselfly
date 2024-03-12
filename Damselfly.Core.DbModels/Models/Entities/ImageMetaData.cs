@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 
 namespace Damselfly.Core.Models;
 
@@ -51,4 +52,28 @@ public class ImageMetaData
     // Date we last performed face/object/image recognition
     // If this is null, AI will be reprocessed
     public DateTime? AILastUpdated { get; set; }
+
+    public void Clear()
+    {
+        this.DateTaken = DateTime.MinValue;
+        this.Height = 0;
+        this.Width = 0;
+        this.Description = null;
+        this.Caption = null;
+        this.DominantColor = null;
+        this.AspectRatio = 1;
+        this.Rating = 0;
+        this.Credit = null;
+        this.ISO = null;
+        this.FNum = null;
+        this.Exposure = null;
+        this.FNum = null;
+        this.FlashFired = false;
+        this.Latitude = null;
+        this.Longitude = null;
+        this.CameraId = 0;
+        this.Camera = null;
+        this.LensId = 0;
+        this.Lens = null;
+    }
 }
