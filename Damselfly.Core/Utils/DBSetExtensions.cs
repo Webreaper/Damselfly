@@ -61,6 +61,6 @@ public static class DbSetExtensions
             dbSet.Update(e);
         }
 
-        return await db.SaveChangesAsync();
+        return await db.SaveChangesAsync("BulkUpdateWithSaveChanges");
     }
 }

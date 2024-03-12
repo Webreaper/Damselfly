@@ -334,7 +334,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                     if ( newPeople.Any() )
                     {
                         await db.People.AddRangeAsync( newPeople );
-                        await db.SaveChangesAsync();
+                        await db.SaveChangesAsync("AddPeople");
 
                         // Add or replace the new people in the cache (this should always add)
                         newPeople.ForEach(x => _peopleCache[x.PersonGuid] = x);
