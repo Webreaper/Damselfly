@@ -71,9 +71,5 @@ public class ImageMetaData
         this.FlashFired = false;
         this.Latitude = null;
         this.Longitude = null;
-        this.CameraId = 0;
-        this.Camera = null;
-        this.LensId = 0;
-        this.Lens = null;
     }
 }
