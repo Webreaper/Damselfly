@@ -185,7 +185,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
         _workService.AddJobSource(this);
     }
-
+    
     /// <summary>
     ///     Read the metadata, and handle any exceptions.
     /// </summary>
@@ -216,6 +216,20 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         return metadata;
     }
 
+    private string? GetXMPFieldValue( Dictionary<string, string> kvps, string prefix )
+    {
+        if( kvps.TryGetValue( prefix, out var result ) && ! string.IsNullOrEmpty(result))
+            return result;
+        
+        var possibilities = Enumerable.Range(1, 5).Select( n => $"{prefix}[{n}]");
+        
+        foreach( var key in possibilities )
+            if( kvps.TryGetValue( key, out var indexed ) && ! string.IsNullOrEmpty(indexed) )
+                return indexed;
+
+        return null;
+    }
+    
     /// <summary>
     ///     Pull out the XMP attributes
     /// </summary>
@@ -227,18 +241,19 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         {
             var nvps = xmpDirectory.XmpMeta.Properties
                 .Where(x => !string.IsNullOrEmpty(x.Path))
-                .ToDictionary(x => x.Path, y => y.Value);
+                .ToDictionary(x => x.Path, y => y.Value, StringComparer.OrdinalIgnoreCase);
 
             if( image.MetaData.DateTaken == DateTime.MinValue )
             {
                 if( nvps.ContainsKey("exif:DateTimeOriginal") && DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
                     image.MetaData.DateTaken = dateTime;
             }
-            if( string.IsNullOrEmpty(image.MetaData.Description) && nvps.ContainsKey("exif:Description"))
-                image.MetaData.Description = nvps["exif:Description"];
-            
-            if( string.IsNullOrEmpty(image.MetaData.Caption) && nvps.ContainsKey("exif:Caption") )
-                image.MetaData.Caption = nvps["exif:Caption"];
+
+            if( string.IsNullOrEmpty(image.MetaData.Description) )
+                image.MetaData.Description = GetXMPFieldValue( nvps, "dc:Description" );
+
+            if( string.IsNullOrEmpty(image.MetaData.Caption) )
+                image.MetaData.Caption = GetXMPFieldValue( nvps, "dc:Caption" );
         }
         catch ( Exception ex )
         {
@@ -359,6 +374,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             if ( metadata != null )
             {
+                // We've read some EXIF data, so clear out the existing metadata to replace it
+                imgMetaData.Clear();
+                
                 metaDataReadSuccess = true;
                 
                 var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();

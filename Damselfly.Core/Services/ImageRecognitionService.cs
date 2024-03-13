@@ -328,17 +328,13 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                         State = Person.PersonState.Unknown,
                         LastUpdated = DateTime.UtcNow, 
                         PersonGuid = x.PersonGuid,
-                        FaceData = new List<PersonFaceData> { new()
-                        {
-                            Score = x.Score, 
-                            Embeddings = string.Join( ",", x.Embeddings)
-                        } },
+                        FaceData = BuildFaceData(x),
                     }).ToList();
 
                     if ( newPeople.Any() )
                     {
                         await db.People.AddRangeAsync( newPeople );
-                        await db.SaveChangesAsync();
+                        await db.SaveChangesAsync("AddPeople");
 
                         // Add or replace the new people in the cache (this should always add)
                         newPeople.ForEach(x => _peopleCache[x.PersonGuid] = x);
@@ -350,6 +346,32 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         {
             Logging.LogError($"Exception in CreateMissingPeople: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Create the face data for an image detect result - being careful
+    /// not to return anything if the detect result didn't actually
+    /// contain any embeddings.
+    /// </summary>
+    /// <param name="detectResult"></param>
+    /// <returns></returns>
+    private List<PersonFaceData> BuildFaceData( ImageDetectResult detectResult )
+    {
+        List<PersonFaceData>? result = new();
+
+        if( detectResult.Embeddings.Length > 0 )
+        {
+            result = new List<PersonFaceData>
+            {
+                new()
+                {
+                    Score = detectResult.Score,
+                    Embeddings = string.Join( ",", detectResult.Embeddings)
+                }
+            };
+        }
+
+        return result;
     }
 
     /// <summary>

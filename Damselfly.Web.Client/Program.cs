@@ -45,7 +45,7 @@ public class Program
 
         // Supply HttpClient instances that include access tokens when making requests to the server project
         builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DamselflyAPI"));
-        builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
+        builder.Services.AddMemoryCache(x => x.SizeLimit = 500);
 
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
