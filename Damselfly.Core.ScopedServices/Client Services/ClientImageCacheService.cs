@@ -171,8 +171,7 @@ public class ClientImageCacheService : IImageCacheService
         if (_memoryCache.TryGetValue<Image>(imageId, out var image))
             return image;
 
-        // This should never happen, if our caching is working. :)
-        _logger.LogWarning($"No image found in client-side cache for ID: {imageId}.");
+        _logger.LogTrace($"No image found in client-side cache for ID: {imageId}.");
 
         try
         {
