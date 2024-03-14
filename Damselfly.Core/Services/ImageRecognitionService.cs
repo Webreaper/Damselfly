@@ -409,24 +409,24 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         
         try
         {
-            var thumbSize = ThumbSize.Large;
-            var medThumb = new FileInfo(_thumbService.GetThumbPath(fileName, thumbSize));
+            var thumbSize = ThumbSize.ExtraLarge;
+            var imgThumb = new FileInfo(_thumbService.GetThumbPath(fileName, thumbSize));
 
             // We need a large thumbnail to do AI processing. Ensure it's been created.
-            if( ! medThumb.Exists )
+            if( ! imgThumb.Exists )
             {
                 await _thumbService.CreateThumb(image.ImageId, thumbSize);
-                if( ! File.Exists( medThumb.FullName ) )
+                if( ! File.Exists( imgThumb.FullName ) )
                 {
                     // If we couldn't create the thumb, bail out.
                     throw new InvalidOperationException(
-                        $"Unable to run AI processing - {thumbSize} thumbnail doesn't exist: {medThumb}");
+                        $"Unable to run AI processing - {thumbSize} thumbnail doesn't exist: {imgThumb}");
                 }
             }
 
             var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
     
-            MetaDataService.GetImageSize(medThumb.FullName, out var thumbWidth, out var thumbHeight);
+            MetaDataService.GetImageSize(imgThumb.FullName, out var thumbWidth, out var thumbHeight);
 
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
@@ -434,11 +434,11 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             if ( enableAIProcessing )
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
 
-            if ( !File.Exists(medThumb.FullName) )
+            if ( !File.Exists(imgThumb.FullName) )
                 // The thumb isn't ready yet. 
                 return;
 
-            using var theImage = SixLabors.ImageSharp.Image.Load<Rgb24>(medThumb.FullName);
+            using var theImage = SixLabors.ImageSharp.Image.Load<Rgb24>(imgThumb.FullName);
 
             if ( _imageClassifier != null && enableAIProcessing )
             {

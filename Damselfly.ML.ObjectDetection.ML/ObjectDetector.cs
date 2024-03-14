@@ -44,19 +44,21 @@ public class ObjectDetector
         {
             if( scorer != null )
             {
-
                 var watch = new Stopwatch( "DetectObjects" );
 
-                var predictions = scorer.Predict( image );
+                // There's a min of 640x640 for the model.
+                if( image.Width > 640 && image.Height > 640 )
+                {
+                    var predictions = scorer.Predict( image );
 
-                watch.Stop();
+                    watch.Stop();
 
-                var objectsFound = predictions.Where( x => x.Score > predictionThreshold )
-                    .Select( x => MakeResult( x ) )
-                    .ToList();
+                    var objectsFound = predictions.Where( x => x.Score > predictionThreshold )
+                        .Select( x => MakeResult( x ) )
+                        .ToList();
 
-                result = objectsFound;
-
+                    result = objectsFound;
+                }
             }
         }
         catch ( Exception ex )
