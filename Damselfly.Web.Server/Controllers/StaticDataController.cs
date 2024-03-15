@@ -2,6 +2,7 @@
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,20 +12,11 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/data")]
-public class StaticDataController : ControllerBase
+public class StaticDataController( ILogger<StaticDataController> _logger, 
+                                MetaDataService _metaDataService,
+                                ICachedDataService _cachedData,
+                                StatisticsService _stats) : ControllerBase
 {
-    private readonly ILogger<StaticDataController> _logger;
-    private readonly MetaDataService _metaDataService;
-    private readonly StatisticsService _stats;
-
-    public StaticDataController(MetaDataService metaDataService, StatisticsService stats,
-        ILogger<StaticDataController> logger)
-    {
-        _metaDataService = metaDataService;
-        _stats = stats;
-        _logger = logger;
-    }
-
     [HttpGet("/api/data/static")]
     public Task<StaticData> GetStaticData()
     {
@@ -53,5 +45,11 @@ public class StaticDataController : ControllerBase
     public async Task<Statistics> GetStatistics()
     {
         return await _stats.GetStatistics();
+    }
+
+    [HttpGet("/api/data/newversion")]
+    public async Task<NewVersionResponse> CheckForNewVersion()
+    {
+        return await _cachedData.CheckForNewVersion();
     }
 }

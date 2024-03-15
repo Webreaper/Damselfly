@@ -25,6 +25,7 @@
         </PackageReference>
         <PackageReference Include="MetadataExtractor" />
         <PackageReference Include="CommandLineParser" />
+        <PackageReference Include="Octokit" />
         <PackageReference Include="WordPressPCL" />
         <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" />
@@ -41,7 +42,6 @@
         <PackageReference Include="EFCore.BulkExtensions" NoWarn="1605" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Services\" />
         <Folder Include="Utils\" />
         <Folder Include="ScopedServices\" />
         <Folder Include="DbAbstractions\" />

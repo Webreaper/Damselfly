@@ -1,7 +1,7 @@
 using System;
 using Damselfly.Core.ScopedServices.Interfaces;
 
-namespace Damselfly.Core.DbModels.Models.API_Models;
+namespace Damselfly.Core.DbModels.Models.APIModels;
 
 public class SearchHint : ISearchHint
 {

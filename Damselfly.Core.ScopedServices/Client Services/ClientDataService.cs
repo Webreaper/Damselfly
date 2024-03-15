@@ -52,4 +52,9 @@ public class ClientDataService : ICachedDataService
     {
         await InitialiseData();
     }
+
+    public async Task<NewVersionResponse> CheckForNewVersion()
+    {
+        return await httpClient.CustomGetFromJsonAsync<NewVersionResponse>("/api/data/newversion");
+    }
 }

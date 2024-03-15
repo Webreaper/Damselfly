@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
-using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;

@@ -1,5 +1,6 @@
 ﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
 using Damselfly.ML.FaceONNX;
@@ -33,7 +34,9 @@ public static class AppInitialiser
         services.GetRequiredService<IndexingService>().StartService();
         services.GetRequiredService<ImageRecognitionService>().StartService();
         services.GetRequiredService<FaceONNXService>().StartService();
-
+        
+        services.GetRequiredService<ICachedDataService>().CheckForNewVersion();
+        
         // ObjectDetector can throw a segmentation fault if the docker container is pinned
         // to a single CPU, so for now, to aid debugging, let's not even try and initialise
         // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
