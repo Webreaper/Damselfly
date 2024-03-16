@@ -525,16 +525,6 @@ f
     height: 60px;
 }
 
-.damselfly-sidebar {
-    order: 1;
-    flex: 0 0 350px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-}
-
 .damselfly-tagview {
     order: 2;
     display: flex;
@@ -1735,14 +1725,6 @@ hr.separator {
     flex-direction: column;
     justify-content: space-around;
     margin: 3px;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-
-    flex: 1;
-    margin-left: 50px;
 }
 
 .login-container {

@@ -7,10 +7,11 @@
 @if( appState.IsWebAssembly )
 {
     <div class="damselfly-statusbarpanel" title="Server link is @Status">
-        <label>
-            <i class="fa-solid fa-circle" style="@TextStyle"></i> @Status
-        </label>
-    </div>
+        <div class="connection-status">
+            <i class="fa-solid fa-circle" style="@TextStyle"></i> 
+            <text>@Status</text>
+        </div>
+</div>
 }
 
 @code

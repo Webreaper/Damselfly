@@ -31,25 +31,33 @@
                     }
                     else
                     {
-                        <div class="damselfly-container">
-                            <div class="damselfly-application">
+                        <div class="container">
                                 @if ( appStatusService.IsMobile )
                                 {
-                                    @Body
-                                    <SideBar/>
+                                    <div class="application mobile-application">
+                                        <MenuBar>
+                                            <MenuContent>
+                                                <SideBar/>
+                                            </MenuContent>
+                                        </MenuBar>
+                                        <div>
+                                            @Body
+                                        </div>
+                                    </div>
                                 }
                                 else
                                 {
-                                    <SplitView>
-                                        <LeftPane>
-                                            <SideBar/>
-                                        </LeftPane>
-                                        <RightPane>
-                                            @Body
-                                        </RightPane>
-                                    </SplitView>
+                                    <div class="application desktop-application">
+                                        <SplitView>
+                                            <LeftPane>
+                                                <SideBar/>
+                                            </LeftPane>
+                                            <RightPane>
+                                                @Body
+                                            </RightPane>
+                                        </SplitView>
+                                    </div>
                                 }
-                            </div>
                             <DetailedErrorBoundary>
                                 <Statusbar/>
                             </DetailedErrorBoundary>
@@ -103,10 +111,15 @@
         {
             try
             {
+                bool oldMobileState = appStatusService.IsMobile;
+                
                 int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
 
                 appStatusService.IsMobile = (innerWidth <= 640);
 
+                if( oldMobileState != appStatusService.IsMobile )
+                    StateHasChanged();
+                
                 await CheckForAIMigration();
             }
             catch( Exception ex )

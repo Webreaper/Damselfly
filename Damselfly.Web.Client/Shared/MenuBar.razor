@@ -5,24 +5,36 @@
 
 
 <div class="statusbar">
-    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
-    <WorkStatus />
-    <ConnectionStatus />
-    @if (appState.IsWebAssembly)
+    <MudIcon Icon="@Icons.Material.Filled.Menu" onclick="@ToggleMenu"/>
+    @if ( appState.IsWebAssembly )
     {
-        <LoginDisplayWasm />
+        <LoginDisplayWasm/>
     }
     else
     {
-        <LoginDisplay />
+        <LoginDisplay/>
     }
-    <Toolbar />
+    <Toolbar/>
 </div>
+
+    @if( ShowMenu )
+    {
+        @MenuContent
+    }
 
 @code
 {
+    [Parameter]
+    public RenderFragment MenuContent { get; set; }
+    
     private string StatusText { get; set; }
+    private bool ShowMenu { get; set; } = false;
 
+    private void ToggleMenu()
+    {
+        ShowMenu = !ShowMenu;
+    }
+        
     private void UpdateStatus(string newText)
     {
         if (StatusText != newText)
