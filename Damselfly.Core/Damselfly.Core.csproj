@@ -37,6 +37,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
         <PackageReference Include="SendGrid" />
         <PackageReference Include="MailKit" />
+        <PackageReference Include="Octokit" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
         <PackageReference Include="CoenM.ImageSharp.ImageHash" />
         <PackageReference Include="EFCore.BulkExtensions" NoWarn="1605" />
@@ -54,8 +55,5 @@
         <ProjectReference Include="..\Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj" />
         <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
         <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Remove="EFCore.BulkExtensions" />
     </ItemGroup>
 </Project>
