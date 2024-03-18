@@ -33,10 +33,6 @@ html, body {
     font-weight: bold;
 }
 
-.search-hints { 
-    max-width: 700px;
-}
-
 .imagegrid-loader {
     width: 24px;
     height: 24px;
@@ -510,13 +506,6 @@ f
     float: left;
 }
 
-.damselfly-imagebrowser {
-    order: 2;
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-}
-
 .damselfly-selectedimages {
     display: flex;
     flex: 1 1 50%;
@@ -644,15 +633,6 @@ f
     color: var(--statusbar-text);
 }
 
-.damselfly-searchbar {
-    display: flex;
-    align-items: baseline;
-    flex: 0 0 auto;
-    flex-flow: row wrap;
-    margin-left: 4px;
-    margin-right: 4px;
-    font-size: 10pt;
-}
 
 /* Mobile adaptive changes. WIP */
 @media only screen and (max-width: 600px) {
@@ -806,14 +786,6 @@ f
     opacity: 50%;
 }
 
-.damselfly-searchhint {
-    flex: 1 1 auto;
-    margin: 3px;
-    display: flex;
-    flex-flow: row;
-    align-items: center;
-}
-
 .damselfly-browsetoollabel {
     margin: 2px;
 }
@@ -856,13 +828,6 @@ f
 }
 
 
-.damselfly-searchfilter {
-    flex: 0 0 auto;
-    display: flex;
-    flex-flow: row;
-    margin-right: 3px;
-    align-items: center;
-}
 
 .damselfly-exportsettings {
     flex: 1;

@@ -1,6 +1,7 @@
 ﻿
 .container {
     display: flex;
+    flex: 0 0;
     flex-direction: column;
     align-items: stretch;
     width: 100vw;
@@ -12,7 +13,7 @@
 
 .application {
     display: flex;
-    flex: 1 1 100%;
+    flex: 0 1;
     align-items: center;
 }
 

@@ -1,9 +1,9 @@
-.statusbar {
-    min-height: 30px;
+.menubar {
     display: flex;
     flex: 0 0 30px;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: stretch;
+    min-height: 30px;
     height: 30px;
     align-items: center;
     padding: 5px;

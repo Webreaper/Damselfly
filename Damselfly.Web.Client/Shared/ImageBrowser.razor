@@ -1,0 +1,19 @@
+<div class="imagebrowser">
+
+    <DetailedErrorBoundary>
+        <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
+    </DetailedErrorBoundary>
+    <DetailedErrorBoundary>
+        <ImageGrid CurrentThumbSize="@thumbSize"/>
+    </DetailedErrorBoundary>
+</div>
+
+@code {
+    private ThumbSize thumbSize { get; set; }
+
+    private void ThumbSizeChanged(ThumbSize newSize)
+    {
+        thumbSize = newSize;
+        StateHasChanged();
+    }
+}

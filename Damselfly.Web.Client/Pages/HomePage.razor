@@ -10,15 +10,7 @@
 @inject IPeopleService peopleService
 @inject ITagSearchService tagService
 
-<div class="damselfly-imagebrowser">
-
-    <DetailedErrorBoundary>
-        <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
-    </DetailedErrorBoundary>
-    <DetailedErrorBoundary>
-        <ImageGrid CurrentThumbSize="@thumbSize"/>
-    </DetailedErrorBoundary>
-</div>
+<ImageBrowser/>
 
 @code
 {
@@ -39,14 +31,6 @@
 
     [Parameter, SupplyParameterFromQuery]
     public string Date { get; set; }
-
-    private ThumbSize thumbSize { get; set; }
-
-    private void ThumbSizeChanged(ThumbSize newSize)
-    {
-        thumbSize = newSize;
-        StateHasChanged();
-    }
 
     private async Task ApplyQueryParams()
     {
@@ -131,13 +115,5 @@
     public void Dispose()
     {
         navigationManager.LocationChanged -= HandleLocationChanged;
-    }
-
-    // TODO: Don't think we need this
-    [JSInvokable]
-    // Debugging assistant to help us differentiate between JS calls and other data loads
-    public void GetUpdateState(string clientVersion)
-    {
-        //Logging.Log($"Checking for update: {clientVersion}");
     }
 }

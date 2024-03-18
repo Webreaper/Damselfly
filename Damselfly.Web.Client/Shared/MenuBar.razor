@@ -2,9 +2,10 @@
 
 @inject IUserStatusService userStatusService
 @inject ApplicationStateService appState
+@inject ClientUIStateService uiState
 
 
-<div class="statusbar">
+<div class="menubar">
     <MudIcon Icon="@Icons.Material.Filled.Menu" onclick="@ToggleMenu"/>
     @if ( appState.IsWebAssembly )
     {
