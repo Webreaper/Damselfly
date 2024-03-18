@@ -1,5 +1,7 @@
 .imagebrowser {
+    flex: 1;
     display: flex;
-    flex: 0 1;
     flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
 }

@@ -1,10 +1,9 @@
 .statusbar {
+    height: 30px;
     min-height: 30px;
     display: flex;
-    flex: 0 0 30px;
     flex-direction: row;
     justify-content: space-between;
-    height: 30px;
     align-items: center;
     padding: 5px;
     background-image: linear-gradient(180deg, var(--statusbar-gradstart), var(--statusbar-gradend));

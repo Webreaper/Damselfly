@@ -218,13 +218,6 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 3px;
 }
 
-.wrapping-table {
-    display: grid;
-    grid-row-gap: 5px;
-    grid-column-gap: 10px;
-    padding: 5px;
-}
-
 app {
     position: relative;
     display: flex;
@@ -633,71 +626,6 @@ f
     color: var(--statusbar-text);
 }
 
-
-/* Mobile adaptive changes. WIP */
-@media only screen and (max-width: 600px) {
-    .damselfly-application {
-        flex-direction: column;
-    }
-
-    .damselfly-imagebrowser {
-        order: 1;
-    }
-
-    .damselfly-imageview {
-        order: 0;
-    }
-
-    .damselfly-sidebar {
-        order: 2;
-    }
-
-    .damselfly-searchbar {
-        flex-flow: column wrap;
-    }
-
-    .wrapping-table-mini img {
-        width: 50px;
-        min-height: 50px;
-    }
-
-    .wrapping-table-small img {
-        width: 50px;
-        max-width: 50px;
-        max-height: 50px;
-        min-height: 50px;
-    }
-
-    .wrapping-table-medium img {
-        height: 80px;
-        min-height: 200px;
-        min-width: 80px;
-    }
-
-    .wrapping-table-large img {
-        height: 150px;
-        min-height: 250px;
-        min-width: 100px;
-    }
-
-    .wrapping-table-x-large img {
-        height: 300px;
-        min-height: 300px;
-        min-width: 100px;
-    }
-}
-
-.damselfly-imagegrid {
-    display: flex;
-    flex: 0 1 auto;
-    justify-content: flex-start;
-    align-content: flex-start;
-    align-items: center;
-    flex-flow: row wrap;
-    overflow-y: auto;
-    max-height: calc(100vh - 70px);
-}
-
 .damselfly-searchmsg {
     display: flex;
     width: 100%;
@@ -1036,40 +964,6 @@ f
 }
 
 
-.wrapping-table-mini img {
-    width: 50px;
-    height: auto;
-    min-height: 50px;
-}
-
-.wrapping-table-small img {
-    width: 100px;
-    height: auto;
-    max-width: 100px;
-    max-height: 100px;
-    min-height: 100px;
-}
-
-.wrapping-table-medium img {
-    width: auto;
-    height: 200px;
-    min-height: 200px;
-    min-width: 100px;
-}
-
-.wrapping-table-large img {
-    width: auto;
-    height: 350px;
-    min-height: 350px;
-    min-width: 100px;
-}
-
-.wrapping-table-x-large img {
-    width: auto;
-    height: 500px;
-    min-height: 500px;
-    min-width: 100px;
-}
 
 .damselfly-taglist {
     flex-direction: column;

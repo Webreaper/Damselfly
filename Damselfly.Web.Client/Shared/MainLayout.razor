@@ -31,32 +31,28 @@
                     }
                     else
                     {
-                        <div class="container">
+                        <div class="damselfly-app">
                                 @if ( uiStateService.IsSmallScreenDevice )
                                 {
-                                    <div class="application mobile-application">
-                                        <MenuBar>
-                                            <MenuContent>
-                                                <SideBar/>
-                                            </MenuContent>
-                                        </MenuBar>
-                                        <div>
-                                            @Body
-                                        </div>
-                                    </div>
+                                    <MenuBar>
+                                        <MenuContent>
+                                            <SideBar/>
+                                        </MenuContent>
+                                    </MenuBar>
+                                    @Body
                                 }
                                 else
                                 {
-                                    <div class="application desktop-application">
-                                        <SplitView>
-                                            <LeftPane>
-                                                <SideBar/>
-                                            </LeftPane>
-                                            <RightPane>
-                                                @Body
-                                            </RightPane>
-                                        </SplitView>
-                                    </div>
+                                    <SplitView>
+                                        <LeftPane>
+                                            <SideBar/>
+                                        </LeftPane>
+                                        <RightPane>
+                                            <div class="rightpane">
+                                                 @Body
+                                            </div>
+                                        </RightPane>
+                                    </SplitView>
                                 }
                             <DetailedErrorBoundary>
                                 <Statusbar/>
