@@ -4,9 +4,8 @@
 @inject AuthenticationStateProvider authProvider
 @inject IConfigService configService
 @inject IUserMgmtService userService
-@inject IJSRuntime jsRuntime
 @inject ILogger<MainLayout> logger
-@inject ApplicationStateService appStatusService
+@inject ClientUIStateService uiStateService
 @inject IDialogService dialogService
 @inject IPeopleService peopleService
 
@@ -14,6 +13,7 @@
 
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small"/>
 <RadzenContextMenu/>
+<UIStateMonitor/>
 
 <DetailedErrorBoundary>
     <ChildContent>
@@ -32,7 +32,7 @@
                     else
                     {
                         <div class="container">
-                                @if ( appStatusService.IsMobile )
+                                @if ( uiStateService.IsSmallScreenDevice )
                                 {
                                     <div class="application mobile-application">
                                         <MenuBar>
@@ -103,6 +103,7 @@
     public void Dispose()
     {
         authProvider.AuthenticationStateChanged -= AuthStateChanged;
+        uiStateService.OnStateChanged -= UIStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -111,15 +112,7 @@
         {
             try
             {
-                bool oldMobileState = appStatusService.IsMobile;
-                
-                int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
-
-                appStatusService.IsMobile = (innerWidth <= 640);
-
-                if( oldMobileState != appStatusService.IsMobile )
-                    StateHasChanged();
-                
+                uiStateService.OnStateChanged += UIStateChanged;
                 await CheckForAIMigration();
             }
             catch( Exception ex )
@@ -129,6 +122,11 @@
         }
     }
 
+    private void UIStateChanged( UIClientState state )
+    {
+        StateHasChanged();
+    }
+    
     protected override async Task OnInitializedAsync()
     {
         authProvider.AuthenticationStateChanged += AuthStateChanged;

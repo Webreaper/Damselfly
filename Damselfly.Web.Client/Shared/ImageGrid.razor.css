@@ -1,0 +1,10 @@
+﻿.imagegrid {
+    display: flex;
+    flex: 0 1 auto;
+    justify-content: flex-start;
+    align-content: flex-start;
+    align-items: center;
+    flex-flow: row wrap;
+    overflow-y: auto;
+    max-height: calc(100vh - 70px);
+}

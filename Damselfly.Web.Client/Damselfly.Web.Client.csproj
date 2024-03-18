@@ -95,6 +95,12 @@
       <Content Update="Shared\ConnectionStatus.razor.css">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </Content>
+      <Content Update="Shared\ImageGrid.razor.css">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </Content>
+      <Content Update="Shared\FolderList.razor.css">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </Content>
     </ItemGroup>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <ReadLinesFromFile File="../VERSION">

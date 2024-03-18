@@ -13,6 +13,7 @@ public static class ServiceRegistrations
     public static IServiceCollection AddDamselflyUIServices(this IServiceCollection services)
     {
         services.AddScoped<ClientConfigService>();
+        services.AddScoped<ClientUIStateService>();
 
         services.AddScoped<NotificationsService>();
 

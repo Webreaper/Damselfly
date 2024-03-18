@@ -60,10 +60,27 @@
     <script>function isDevice() {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent);
 }
+    window.UIStateMonitor = {
+        Init: function (DotNetRef) {
+            function onResize() {
+                DotNetRef.invokeMethodAsync("HandleViewportSizeChange", window.innerWidth, window.innerHeight);
+            }
 
- function getInnerWidth() {
-    return window.innerWidth;
-}
+            window.addEventListener('resize', onResize);
+
+            // Call once to initialise our state
+            var state = {
+                ViewportWidth: window.innerWidth,
+                ViewportHeight: window.innerHeight,
+                UserAgent: navigator.userAgent
+            };
+
+            console.log('Evaluating Host Device: \n User - Agent: ' + state.UserAgent + '\n' +
+                ' Viewport(WxH): ' + state.ViewportWidth + 'x' + state.ViewportHeight);
+
+            DotNetRef.invokeMethodAsync("InitUIState", state);
+        }
+    }
 
 function setStyleSheet(url) {
     var stylesheet = document.getElementById("themeStyleSheet");

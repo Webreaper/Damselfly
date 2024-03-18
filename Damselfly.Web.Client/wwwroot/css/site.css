@@ -280,21 +280,6 @@ app {
 }
 
 
-.folder-entry {
-    animation: fadeIn ease 0.2s;
-    color: var(--folder-entry-text);
-    padding-left: 5px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    overflow-x: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-}
-
-.folder-icon {
-    width: 20px;
-}
 
 .expandable {
 }
@@ -303,29 +288,6 @@ app {
     animation: fadeIn ease 0.2s;
     background: var(--keyword-bg);
     color: var(--keyword-text);
-}
-
-.folder-entry-selected {
-    color: var(--folder-entry-text-selected);
-    background-color: var(--folder-entry-text-selected-bg);
-}
-
-.folder-search {
-    padding: 2px;
-    width: 100%;
-    align-content: center;
-    vertical-align: middle;
-    font-size: 12pt;
-}
-
-.folder-search label {
-    width: 100%;
-}
-
-.folder-icon {
-    padding-right: 5px;
-    vertical-align: middle;
-    font-size: 16px;
 }
 
 .clickable-icon {
@@ -553,22 +515,6 @@ f
     display: flex;
     flex: 1;
     flex-direction: column;
-}
-
-.damselfly-folderlist {
-    flex-direction: column;
-    flex: 0 1 100%;
-    width: 100%;
-    max-width: 100%;
-    order: 1;
-    display: flex;
-}
-
-.folder-scroll-area {
-    flex-direction: column;
-    flex: 1 1 15px;
-    overflow-y: auto;
-    overflow-x: auto;
 }
 
 .damselfly-selectedimages {
