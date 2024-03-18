@@ -6,6 +6,11 @@
     overflow-y: auto;
 }
 
+.damselfly-gridimage {
+    display: flex;
+    padding: 3px;
+}
+
 .wrapping-table {
     display: grid;
     grid-row-gap: 5px;
@@ -50,14 +55,6 @@
 }
 
 @media( max-width: 640px ) {
-    .imagegrid {
-        display: flex;
-        flex: 1 1 auto;
-        justify-content: flex-start;
-        flex-flow: row wrap;
-        overflow-y: auto;
-    }
-
     .wrapping-table-small img {
         width: 50px;
         max-width: 50px;
