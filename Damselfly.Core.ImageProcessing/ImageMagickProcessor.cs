@@ -79,6 +79,12 @@ public class ImageMagickProcessor : IImageProcessor
             var dest = pair.Key;
             var config = pair.Value;
 
+            if( config.cropToRatio )
+            {
+                // Ensure we crop to the ratio passed in.
+                argsList.Add($" -extent {config.width}:{config.height} -gravity center");
+            }
+            
             // File didn't exist, so add it to the command-line. 
             if ( s_useGraphicsMagick )
                 argsList.Add(string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height,

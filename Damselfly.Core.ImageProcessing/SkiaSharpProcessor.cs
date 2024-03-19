@@ -60,8 +60,7 @@ public class SkiaSharpProcessor : IImageProcessor
                 var heighScaleFactor = srcBitmap.Height / (float)config.height; 
                 
                 // If we're allowed to crop, pick the largest scale factor. Otherwise the smallest.
-                var scaleFactor = config.cropToRatio ? Math.Max(widthScaleFactor, heighScaleFactor) :
-                                                            Math.Min(widthScaleFactor, heighScaleFactor);
+                var scaleFactor = Math.Min(widthScaleFactor, heighScaleFactor);
 
                 // Ensure we only ever scale down, never up
                 scaleFactor = Math.Max( 1, scaleFactor);
