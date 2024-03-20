@@ -10,3 +10,42 @@
     display: flex;
     padding: 3px;
 }
+
+.damselfly-moreimages {
+    width: 50px;
+    padding: 20px;
+    margin: 20px;
+}
+
+.damselfly-imageseparator {
+    width: 100%;
+    border: 1px;
+    margin-top: 5px;
+    margin-left: 3px;
+    max-height: 28px;
+    border-top: 1px solid var(--statusbar-topborder);
+    background-image: linear-gradient(90deg, var(--statusbar-gradstart) 0%, var(--statusbar-gradend) 90%);
+    display: flex;
+}
+
+.damselfly-imageseparatortitle {
+    padding: 3px;
+    flex: 1 1 60%;
+    padding-left: 15px;
+    font-size: 14px;
+}
+
+.damselfly-imageseparatorbuttons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 12px;
+}
+
+.damselfly-imageseparatorbutton button {
+    max-height: 22px;
+    height: 22px;
+    margin: 1px;
+}
+
