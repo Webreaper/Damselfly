@@ -72,7 +72,7 @@ else
         }
 
         var aspectStyle = ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.MetaData.AspectRatio:0.##};";
-        ImageStyle = $"height: {size}px; min-height: {size}px; width: auto; {aspectStyle}";
+        ImageStyle = $"height: {size}px; min-height: {size}px; width: auto; min-width: {size}px; {aspectStyle}";
     }
     
     [Parameter]

@@ -81,36 +81,6 @@
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </None>
     </ItemGroup>
-
-    <ItemGroup>
-      <Content Update="Shared\DamselflyLogo.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\VersionChecker.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\SideBar.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\ConnectionStatus.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\ImageGrid.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\FolderList.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\ImageBrowser.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\SearchBar.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-      <Content Update="Shared\GridImage.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </Content>
-    </ItemGroup>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <ReadLinesFromFile File="../VERSION">
             <Output TaskParameter="Lines" PropertyName="VersionNumber" />
