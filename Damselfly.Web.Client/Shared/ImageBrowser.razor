@@ -1,16 +1,16 @@
 <div class="imagebrowser">
     <DetailedErrorBoundary>
-        <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
-        <ImageGrid CurrentThumbSize="@thumbSize"/>
+        <SearchBar OnGridSizeChanged="GridSizeChanged"/>
+        <ImageGrid CurrentGridSize="@gridSize"/>
     </DetailedErrorBoundary>
 </div>
 
 @code {
-    private ThumbSize thumbSize { get; set; }
+    private GridImageSize gridSize { get; set; }
 
-    private void ThumbSizeChanged(ThumbSize newSize)
+    private void GridSizeChanged(GridImageSize newSize)
     {
-        thumbSize = newSize;
+        gridSize = newSize;
         StateHasChanged();
     }
 }

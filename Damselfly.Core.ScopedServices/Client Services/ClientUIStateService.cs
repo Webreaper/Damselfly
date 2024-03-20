@@ -13,8 +13,10 @@ public class ClientUIStateService
     }
     
     private ILogger<ClientUIStateService> _logger;
-    public bool IsSmallScreenDevice { get { return clientState == null ? false : clientState.IsSmallScreenDevice; } }
-    public bool IsWideScreen { get { return clientState == null ? false : clientState.IsWideScreen; } }
+    public bool IsSmallScreenDevice => clientState == null ? false : clientState.IsSmallScreenDevice; 
+    public bool IsWideScreen => clientState == null ? false : clientState.IsWideScreen;
+    public int ScreenWidth => clientState == null ? 0 : clientState.ViewportWidth;
+    
     public UIClientState? ClientState { get { return clientState; } }
     
     public Action<UIClientState>? OnStateChanged { get; set; }

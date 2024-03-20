@@ -54,14 +54,14 @@
             <option value="@GroupingType.Date">Date</option>
             <option value="@GroupingType.Folder">Folder</option>
         </select>
-        <div class="damselfly-browsetool @SelectedStyle(ThumbSize.Small)">
-            <i title="Small Thumbnails" class="fas fa-image" style="font-size:smaller;" @onclick="() => ChangeThumbSize(ThumbSize.Small)"/>
+        <div class="damselfly-browsetool @SelectedStyle(GridImageSize.Small)">
+            <i title="Small Thumbnails" class="fas fa-image" style="font-size:smaller;" @onclick="() => ChangeGridSize(GridImageSize.Small)"/>
         </div>
-        <div class="damselfly-browsetool @SelectedStyle(ThumbSize.Medium)">
-            <i title="Medium Thumbnails" class="fas fa-image" @onclick="() => ChangeThumbSize(ThumbSize.Medium)"/>
+        <div class="damselfly-browsetool @SelectedStyle(GridImageSize.Medium)">
+            <i title="Medium Thumbnails" class="fas fa-image" @onclick="() => ChangeGridSize(GridImageSize.Medium)"/>
         </div>
-        <div class="damselfly-browsetool @SelectedStyle(ThumbSize.Large)">
-            <i title="Large Thumbnails" class="fas fa-image" style="font-size:larger;" @onclick="() => ChangeThumbSize(ThumbSize.Large)"/>
+        <div class="damselfly-browsetool @SelectedStyle(GridImageSize.Large)">
+            <i title="Large Thumbnails" class="fas fa-image" style="font-size:larger;" @onclick="() => ChangeGridSize(GridImageSize.Large)"/>
         </div>
         @if( searchService.SortOrder == SortOrderType.Descending )
         {
@@ -85,9 +85,9 @@
 @code {
 
     [Parameter]
-    public Action<ThumbSize> OnThumbSizeChanged { get; set; }
+    public Action<GridImageSize> OnGridSizeChanged { get; set; }
 
-    ThumbSize CurrentThumbSize = ThumbSize.Small;
+    GridImageSize currentGridSize = GridImageSize.Small;
     bool ShowAdvancedSearch { get; set; } = false;
 
     private GroupingType SelectedGrouping
@@ -96,22 +96,22 @@
         set => ChangeGroupType(value);
     }
 
-    private void ChangeThumbSize(ThumbSize newSize)
+    private void ChangeGridSize(GridImageSize newSize)
     {
-        CurrentThumbSize = newSize;
-        OnThumbSizeChanged?.Invoke(newSize);
+        currentGridSize = newSize;
+        OnGridSizeChanged?.Invoke(newSize);
         StateHasChanged();
     }
 
-    private string SelectedStyle(ThumbSize size)
+    private string SelectedStyle(GridImageSize size)
     {
-        return CurrentThumbSize != size ? "damselfly-browsetool-deselected" : string.Empty;
+        return currentGridSize != size ? "damselfly-browsetool-deselected" : string.Empty;
     }
 
     protected override void OnInitialized()
     {
-        CurrentThumbSize = configService.Get(ConfigSettings.ThumbSize, ThumbSize.Small);
-        OnThumbSizeChanged?.Invoke(CurrentThumbSize);
+        currentGridSize = configService.Get(ConfigSettings.GridImageSize, GridImageSize.Small);
+        OnGridSizeChanged?.Invoke(currentGridSize);
     }
 
     private void ToggleAdvancedSearch()

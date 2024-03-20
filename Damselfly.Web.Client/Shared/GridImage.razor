@@ -7,6 +7,7 @@
 @inject IUserBasketService basketService
 @inject IFileService fileService
 @inject IDownloadService downloadService
+@inject ClientUIStateService uiService
 @inject ILogger<GridImage> logger
 @inject IDialogService DialogService
 @inject IImageCacheService imageCache
@@ -24,7 +25,7 @@ else
 <div class="grid-image" @ondblclick="NavigateToImage">
     @if (!string.IsNullOrEmpty(ImageUrl))
     {
-        <img @key="CurrentImage.ImageId" style="@AspectRatioStyle" class="@ImageClass @FadeClass"
+        <img @key="CurrentImage.ImageId" style="@ImageStyle" class="@ImageClass @FadeClass"
              @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
              @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
         <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
@@ -40,6 +41,40 @@ else
 
 @code
 {
+    private string ImageStyle { get; set; }
+
+    private void GenerateImageStyle()
+    {
+        int size;
+        if( uiService.IsSmallScreenDevice )
+        {
+            const int targetImagesPerRow = 4;
+            const int imageGap = 2;
+            size = GridImageSize switch
+            {
+                GridImageSize.Medium => 150,
+                GridImageSize.Large => 250,
+                GridImageSize.Mini => 50,
+                // Small is the default
+                _ => int.Max( (uiService.ScreenWidth / targetImagesPerRow) - ((targetImagesPerRow -1) * imageGap), 50),
+            };
+        }
+        else
+        {
+            size = GridImageSize switch
+            {
+                GridImageSize.Medium => 250,
+                GridImageSize.Large => 400,
+                GridImageSize.Mini => 65,
+                _ => 120 // Small is the default
+
+            };
+        }
+
+        var aspectStyle = ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.MetaData.AspectRatio:0.##};";
+        ImageStyle = $"height: {size}px; min-height: {size}px; width: auto; {aspectStyle}";
+    }
+    
     [Parameter]
     public NavigationContexts NavContext { get; set; }
 
@@ -49,8 +84,15 @@ else
     [Parameter]
     public bool DisplayFileName { get; set; } = false;
 
-    [Parameter]
-    public ThumbSize ThumbnailSize { get; set; } = ThumbSize.Small;
+    [Parameter] public GridImageSize GridImageSize { get; set; } = GridImageSize.Small;
+    
+    private ThumbSize ThumbnailSize => GridImageSize switch
+    {
+        GridImageSize.Large => ThumbSize.Large,   
+        GridImageSize.Medium => ThumbSize.Medium,   
+        GridImageSize.Mini => ThumbSize.Small,
+        _ => ThumbSize.Small
+    };
 
     public bool InBasket
     {
@@ -65,7 +107,6 @@ else
     private string previewKey => $"Prev{CurrentImage.ImageId}";
     private string ImageSize => CurrentImage.MetaData == null ? "n/a" : $"Size (w x h): {CurrentImage.MetaData.Width} x {CurrentImage.MetaData.Height}";
     private string ImageClass => selectionService.IsSelected(CurrentImage) ? "grid-image-selected" : "grid-image-unselected";
-    private string AspectRatioStyle => ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.MetaData.AspectRatio:0.##};";
     private string FadeClass = string.Empty;
     private int imageId = 0;
 
@@ -90,6 +131,8 @@ else
 
         if( CurrentImage == null || CurrentImage.ImageId != imageId )
             FadeClass = string.Empty;
+
+        GenerateImageStyle();
     }
 
     void ShowContextMenu(MouseEventArgs args)

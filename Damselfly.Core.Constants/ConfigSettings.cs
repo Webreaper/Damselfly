@@ -4,7 +4,7 @@ public class ConfigSettings
 {
     public const bool DefaultEnableRolesAndAuth = true;
 
-    public const string ThumbSize = "ThumbSize";
+    public const string GridImageSize = "GridImageSize";
     public const string RecentTags = "RecentTags";
     public const string LoadedImages = "LoadedImages";
     public const string Theme = "Theme";

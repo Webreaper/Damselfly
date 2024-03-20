@@ -58,8 +58,8 @@
             {
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
-                <div class="damselfly-gridimage @WrapStyle" @onclick="@(e => { ToggleSelected(e, info); })">
-                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search ThumbnailSize=@CurrentThumbSize />
+                <div class="damselfly-gridimage" @onclick="@(e => { ToggleSelected(e, info); })">
+                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search GridImageSize=@CurrentGridSize />
                 </div>
             }
         }
@@ -89,7 +89,7 @@
     private ScrollMonitor ScrollMonitor;
 
     [Parameter]
-    public ThumbSize CurrentThumbSize { get; set; }
+    public GridImageSize CurrentGridSize { get; set; }
 
     public string ResultsMessage { get; set; }
 
@@ -119,7 +119,7 @@
 
     protected override void OnParametersSet()
     {
-        ChangeThumbSize(CurrentThumbSize);
+        ChangeGridImageSize(CurrentGridSize);
         base.OnParametersSet();
     }
 
@@ -170,31 +170,10 @@
         // Logging.Log($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
-
-    string WrapStyle { get; set; } = "wrapping-table-small";
-
-    protected void ChangeThumbSize(ThumbSize newSize)
+    
+    protected void ChangeGridImageSize(GridImageSize newSize)
     {
-        switch (newSize)
-        {
-            case ThumbSize.Medium:
-                WrapStyle = "wrapping-table-medium";
-                break;
-            case ThumbSize.Large:
-                WrapStyle = "wrapping-table-large";
-                break;
-            case ThumbSize.ExtraLarge:
-                WrapStyle = "wrapping-table-x-large";
-                break;
-            case ThumbSize.Small:
-                WrapStyle = "wrapping-table-small";
-                break;
-            default:
-                WrapStyle = "wrapping-table-small";
-                break;
-        }
-
-        configService.Set(ConfigSettings.ThumbSize, newSize.ToString());
+        configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
