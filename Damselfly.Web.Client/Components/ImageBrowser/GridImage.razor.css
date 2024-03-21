@@ -3,6 +3,7 @@
     position: relative;
     font-size: 12px;
     border-radius: 4px;
+    margin: 3px;
     background: var(--grid-image-bg);
     animation: fadeIn ease 1s;
 }
@@ -26,4 +27,14 @@
 
 .grid-image-fadein {
     opacity: 1;
+}
+
+.grid-image-text {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 5%;
+    font-size: 12px;
+    color: #579757;
+    text-overflow: ellipsis;
 }

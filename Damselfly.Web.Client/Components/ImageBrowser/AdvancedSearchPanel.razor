@@ -23,16 +23,8 @@
         </MudDateRangePicker>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudSelect T="int?" Label="Month" @bind-Value="searchService.Month" @bind-Value:after="FilterChanged" 
-                                MultiSelection="false" Clearable="true" 
-                                Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
-            @foreach( var choice in monthChoices )
-            {
-                <MudSelectItem T="int?" Value="@choice.Value">
-                    @choice.Key
-                </MudSelectItem>
-            }
-        </MudSelect>
+        <MultiSelectDropdown Label="Months" SourceData="monthChoices" @bind-SelectedItems="searchService.Months"
+                             GetNameFunc="x => CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x)"/>
     </div>
     <div class="damselfly-dialogctrl">
         <MudSelect T=" int? " Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
@@ -135,6 +127,7 @@
         }
     }
 
+    
     private void ShortCutChanged(ChangeEventArgs e)
     {
         var shortCut = e.Value as string;
@@ -181,11 +174,8 @@
         new KeyValuePair<string, int>("50MB", 50 * 1024)
     };
 
-    private List<KeyValuePair<string, int>> monthChoices => Enumerable.Range(1, 12)
-        .Select(x => new KeyValuePair<string, int>(
-            CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x), x))
-        .ToList();
-
+    private Task<IEnumerable<int>> monthChoices => Task.FromResult<IEnumerable<int>>(Enumerable.Range(1, 12).ToList());
+    
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);

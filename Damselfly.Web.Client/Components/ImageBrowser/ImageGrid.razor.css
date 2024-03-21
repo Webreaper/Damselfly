@@ -1,14 +1,10 @@
 ﻿.imagegrid {
     display: flex;
-    flex: 1 1 auto;
+   /* flex: 1 1 auto; */
     justify-content: flex-start;
+    align-items: flex-start;
     flex-flow: row wrap;
     overflow-y: auto;
-}
-
-.damselfly-gridimage {
-    display: flex;
-    padding: 3px;
 }
 
 .damselfly-moreimages {

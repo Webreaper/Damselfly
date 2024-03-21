@@ -58,9 +58,8 @@
             {
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
-                <div class="damselfly-gridimage" @onclick="@(e => { ToggleSelected(e, info); })">
-                    <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search GridImageSize=@CurrentGridSize />
-                </div>
+                <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search GridImageSize=@CurrentGridSize
+                           OnClick="@(e => { ToggleSelected(e, info); })"/>
             }
         }
 

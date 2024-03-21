@@ -22,18 +22,18 @@
 }
 else
 {
-<div class="grid-image" @ondblclick="NavigateToImage">
-    @if (!string.IsNullOrEmpty(ImageUrl))
-    {
-        <img @key="CurrentImage.ImageId" style="@ImageStyle" class="@ImageClass @FadeClass"
-             @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
-             @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
-        <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
-    }
-</div>
+    <div class="grid-image" @ondblclick="NavigateToImage" @onclick=OnClick>
+        @if (!string.IsNullOrEmpty(ImageUrl))
+        {
+            <img @key="CurrentImage.ImageId" style="@ImageStyle" class="@ImageClass @FadeClass"
+                 @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
+                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+            <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
+        }
+    </div>
     @if( DisplayFileName )
     {
-        <div class="grid-text">
+        <div class="grid-image-text">
             @CurrentImage.FileName
         </div>
     }
@@ -74,6 +74,9 @@ else
         var aspectStyle = ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.MetaData.AspectRatio:0.##};";
         ImageStyle = $"height: {size}px; min-height: {size}px; width: auto; min-width: {size}px; {aspectStyle}";
     }
+    
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
     
     [Parameter]
     public NavigationContexts NavContext { get; set; }

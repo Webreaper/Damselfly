@@ -1,0 +1,76 @@
+@using System.Globalization
+@typeparam T
+
+<MudSelect T=@T SelectedValues="SelectedItems" SelectedValuesChanged="SelectedItemsChanged"
+           Label="@Label" Clearable=true Dense="true" Margin="Margin.Dense" Placeholder="@PlaceHolder"
+               MultiSelection="@MultiSelection" Variant="UIConstants.MudVariant" ToStringFunc="c => GetNameFunc( c )"
+               MultiSelectionTextFunc="SelectionTextFunc">
+    @foreach (var choice in SortedItems)
+    {
+        <MudSelectItem Value="@choice"/>
+    }
+</MudSelect>
+
+@code {
+
+    public enum MultiSelectSortOptions
+    {
+        None,
+        Ascending,
+        Descending
+    }
+    
+    private IEnumerable<T> _sourceData = Enumerable.Empty<T>();
+    private string PlaceHolder => _sourceData.Any() ? string.Empty : "Loading...";
+    private IEnumerable<T> SortedItems => ItemSort switch
+    {
+        MultiSelectSortOptions.Ascending => _sourceData.OrderBy(x => GetNameFunc(x)),
+        MultiSelectSortOptions.Descending => _sourceData.OrderByDescending(x => GetNameFunc(x)),
+        _ => _sourceData
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Evaluate the source data async and store so we can access without async
+        var resolvedSourceData = await SourceData;
+        
+        _sourceData = resolvedSourceData ?? Enumerable.Empty<T>();
+        await base.OnInitializedAsync();
+    }
+
+    private string SelectionTextFunc(List<string> selectedValues)
+    {
+        if (selectedValues.Any())
+        {
+            if ( selectedValues.Count <= 3 )
+                return string.Join( ", ", selectedValues.Take(3));
+
+            return $"{selectedValues.Count} selected";
+        }
+        
+        return string.Empty;
+    }
+    
+    [Parameter, EditorRequired]
+    public Task<IEnumerable<T>?> SourceData { get; set; }
+    
+    [Parameter, EditorRequired]
+    public Func<T, string>? GetNameFunc { get; set; }
+    
+    [Parameter]
+    public string? Label { get; set; }
+    
+    [Parameter]
+    public bool MultiSelection { get; set; } = true;
+    
+    [Parameter]
+    public IEnumerable<T>? SelectedItems { get; set; }
+
+    [Parameter]
+    public MultiSelectSortOptions ItemSort { get; set; } = MultiSelectSortOptions.None;
+    
+    [Parameter]
+    public EventCallback<IEnumerable<T>> SelectedItemsChanged { get; set; }
+}
+
+ 

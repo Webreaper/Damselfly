@@ -176,9 +176,11 @@ public class SearchQueryService
                 // Filter by Minimum rating
                 images = images.Where(x => x.MetaData.Rating >= query.MinRating);
 
-            if ( query.Month.HasValue )
+            if ( query.Months != null && query.Months.Any() )
+            {
                 // Filter by month
-                images = images.Where(x => x.SortDate.Month == query.Month);
+                images = images.Where(x => query.Months.Contains(x.SortDate.Month));
+            }
 
             if ( query.MinSizeKB.HasValue )
             {

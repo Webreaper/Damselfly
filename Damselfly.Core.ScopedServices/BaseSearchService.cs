@@ -190,14 +190,16 @@ public abstract class BaseSearchService
         }
     }
 
-    public int? Month
+    public IEnumerable<int>? Months
     {
-        get => Query.Month;
+        get => Query.Months;
         set
         {
-            if ( Query.Month != value )
+            if ( (value == null && Query.Months != null) || 
+                 (value != null && Query.Months == null) || 
+                 (value != null && Query.Months != null && Query.Months.SequenceEqual( value ) ) )
             {
-                Query.Month = value;
+                Query.Months = value;
                 QueryChanged();
             }
         }
@@ -387,10 +389,10 @@ public abstract class BaseSearchService
             if( !IncludeChildFolders )
                 hints.Add( new SearchHint {Description = "Exclude child folders", Clear = () => IncludeChildFolders = true });
             
-            if( Month.HasValue )
+            if( Months != null && Months.Any())
             {
-                string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(Month.Value);
-                hints.Add( new SearchHint { Description = $"During: {monthName}", Clear = () => Month = null } );
+                var monthText = string.Join( ", ", Months.Order().Select( m => CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m)));
+                hints.Add( new SearchHint { Description = $"During: {monthText}", Clear = () => Months = null } );
             }
 
             if ( CameraId > 0 )

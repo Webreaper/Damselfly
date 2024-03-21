@@ -20,7 +20,7 @@ public interface ISearchService
     int? CameraId { get; set; }
     int? SimilarToId { get; set; }
     int? LensId { get; set; }
-    int? Month { get; set; }
+    IEnumerable<int>? Months { get; set; }
     int? MinRating { get; set; }
     int? MaxSizeKB { get; set; }
     int? MinSizeKB { get; set; }

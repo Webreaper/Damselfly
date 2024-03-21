@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 
@@ -19,7 +20,7 @@ public class SearchQuery
     public int? MinSizeKB { get; set; } = null;
     public int? CameraId { get; set; } = null;
     public int? LensId { get; set; } = null;
-    public int? Month { get; set; } = null;
+    public IEnumerable<int>? Months { get; set; } = null;
     public int? MinRating { get; set; } = null;
     public int? SimilarToId { get; set; } = null;
     public Folder? Folder { get; set; } = null;
@@ -49,7 +50,7 @@ public class SearchQuery
         MinSizeKB = null;
         CameraId = null;
         LensId = null;
-        Month = null;
+        Months = null;
         MinRating = null;
         SimilarToId = null;
         Folder = null;
@@ -64,7 +65,7 @@ public class SearchQuery
     public override string ToString()
     {
         return
-            $"Filter: T={SearchText}, F={Folder?.FolderId}, ChildFolders={IncludeChildFolders}, Tag={Tag?.TagId}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarToId}";
+            $"Filter: T={SearchText}, F={Folder?.FolderId}, ChildFolders={IncludeChildFolders}, Tag={Tag?.TagId}, Months={Months}, Max={MaxDate}, Min={MinDate}, Max={MaxSizeKB}KB, Rating={MinRating}, Min={MinSizeKB}KB, Tags={TagsOnly}, Grouping={Grouping}, Sort={SortOrder}, Face={FaceSearch}, Person={Person?.Name}, SimilarTo={SimilarToId}";
     }
 }
 
@@ -83,7 +84,7 @@ public class SearchQueryDTO
     public int? MinSizeKB { get; set; } = null;
     public int? CameraId { get; set; } = null;
     public int? LensId { get; set; } = null;
-    public int? Month { get; set; } = null;
+    public IEnumerable<int>? Months { get; set; } = null;
     public int? MinRating { get; set; } = null;
     public int? SimilarToId { get; set; }
     public int? FolderId { get; set; }
