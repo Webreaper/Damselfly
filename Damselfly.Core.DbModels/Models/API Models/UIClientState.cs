@@ -6,7 +6,8 @@ public class UIClientState
     public int ViewportHeight { get; set; }
     public string UserAgent { get; set; }
 
-    public bool IsSmallScreenDevice => ViewportWidth < 640; 
+    public bool IsPortrait => ViewportWidth < ViewportHeight;
+    public bool IsSmallScreenDevice => IsPortrait ? ViewportWidth < 640 : ViewportHeight < 640; 
     
     public bool IsWideScreen => ViewportWidth > 1260;
 }

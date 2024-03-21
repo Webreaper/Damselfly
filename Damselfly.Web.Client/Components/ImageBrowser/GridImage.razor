@@ -48,8 +48,9 @@ else
         int size;
         if( uiService.IsSmallScreenDevice )
         {
-            const int targetImagesPerRow = 4;
             const int imageGap = 2;
+            int targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
+            
             size = GridImageSize switch
             {
                 GridImageSize.Medium => 150,

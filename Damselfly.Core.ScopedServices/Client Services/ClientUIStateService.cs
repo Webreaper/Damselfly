@@ -14,6 +14,7 @@ public class ClientUIStateService
     
     private ILogger<ClientUIStateService> _logger;
     public bool IsSmallScreenDevice => clientState == null ? false : clientState.IsSmallScreenDevice; 
+    public bool IsPortraitDevice => clientState == null ? false : clientState.IsPortrait; 
     public bool IsWideScreen => clientState == null ? false : clientState.IsWideScreen;
     public int ScreenWidth => clientState == null ? 0 : clientState.ViewportWidth;
     
