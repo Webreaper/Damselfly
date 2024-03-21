@@ -40,10 +40,17 @@
 
     private string SelectionTextFunc(List<string> selectedValues)
     {
-        if (selectedValues.Any())
+        if( selectedValues.Count == 1 )
         {
-            if ( selectedValues.Count <= 3 )
-                return string.Join( ", ", selectedValues.Take(3));
+            return selectedValues.First();
+        }
+        else if (SelectedItems != null && SelectedItems.Any())
+        {
+            if( GetShortNameFunc != null )
+            {
+                if ( SelectedItems.Count() <= 3 )
+                    return string.Join( ", ", SelectedItems.Take(3).Select(x => GetShortNameFunc(x)));
+            }
 
             return $"{selectedValues.Count} selected";
         }
@@ -56,7 +63,10 @@
     
     [Parameter, EditorRequired]
     public Func<T, string>? GetNameFunc { get; set; }
-    
+
+    [Parameter]
+    public Func<T, string>? GetShortNameFunc { get; set; }
+
     [Parameter]
     public string? Label { get; set; }
     

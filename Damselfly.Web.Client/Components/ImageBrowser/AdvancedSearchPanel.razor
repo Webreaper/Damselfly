@@ -24,7 +24,8 @@
     </div>
     <div class="damselfly-dialogctrl">
         <MultiSelectDropdown Label="Months" SourceData="monthChoices" @bind-SelectedItems="searchService.Months"
-                             GetNameFunc="x => CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x)"/>
+                             GetNameFunc="x => CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x)"
+                             GetShortNameFunc="x => CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(x)"/>
     </div>
     <div class="damselfly-dialogctrl">
         <MudSelect T=" int? " Label="Rating" @bind-Value="searchService.MinRating" Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
