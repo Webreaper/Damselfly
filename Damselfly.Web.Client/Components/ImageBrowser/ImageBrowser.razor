@@ -1,16 +1,27 @@
-<div class="imagebrowser">
-    <DetailedErrorBoundary>
-        <SearchBar OnGridSizeChanged="GridSizeChanged"/>
-        <ImageGrid CurrentGridSize="@gridSize"/>
-    </DetailedErrorBoundary>
-</div>
+@inject ISearchService searchService 
 
+<MudSwipeArea OnSwipe="HandleSwipe" style="display: flex; flex: 1; min-height: 0;">
+    <div class="imagebrowser">
+        <DetailedErrorBoundary>
+            <SearchBar OnGridSizeChanged="GridSizeChanged"/>
+            <ImageGrid CurrentGridSize="@gridSize"/>
+        </DetailedErrorBoundary>
+    </div>
+</MudSwipeArea>
+    
 @code {
     private GridImageSize gridSize { get; set; }
 
+    private void HandleSwipe( SwipeDirection direction )
+    {
+        if( direction == SwipeDirection.TopToBottom )
+            searchService.Refresh();
+    }
+    
     private void GridSizeChanged(GridImageSize newSize)
     {
         gridSize = newSize;
         StateHasChanged();
     }
+
 }

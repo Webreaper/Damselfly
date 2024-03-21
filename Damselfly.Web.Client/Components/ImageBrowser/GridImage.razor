@@ -29,7 +29,7 @@ else
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
                  @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
-        }
+    }
     </div>
     @if( DisplayFileName )
     {

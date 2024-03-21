@@ -432,6 +432,7 @@ public abstract class BaseSearchService
         }
     }
 
+    
     protected void ClearSearchResults()
     {
         _searchResults.Clear();
@@ -456,7 +457,7 @@ public abstract class BaseSearchService
         QueryChanged();
     }
 
-    public void Refresh()
+    public virtual void Refresh()
     {
         QueryChanged();
     }

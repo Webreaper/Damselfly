@@ -725,13 +725,6 @@ f
     padding: 5px;
 }
 
-.damselfly-imageview {
-    display: flex;
-    order: 3;
-    flex: 1;
-    flex-direction: column;
-    align-content: center;
-}
 
 .damselfly-info {
     display: flex;

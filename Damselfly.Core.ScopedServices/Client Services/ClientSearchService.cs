@@ -78,4 +78,10 @@ public class ClientSearchService : BaseSearchService, ISearchService
 
         return response;
     }
+
+    public void Refresh()
+    {
+        base.Refresh();
+        _statusService.UpdateStatus( "Search results refreshed.");
+    }
 }

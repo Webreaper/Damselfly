@@ -60,7 +60,6 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Pages\" />
         <Folder Include="Services\" />
     </ItemGroup>
     <ItemGroup>
@@ -80,6 +79,12 @@
       <None Update="Shared\ImageCanvas.razor.css">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="Pages\ImagePage.razor.css">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </Content>
     </ItemGroup>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <ReadLinesFromFile File="../VERSION">

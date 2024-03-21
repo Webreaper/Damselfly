@@ -71,7 +71,9 @@
             </div>
         </div>
 
-        <ImagePreview @ref="theImagePreview" @key="@ImageID" Editing=Editing Image="@CurrentImage" />
+        <MudSwipeArea OnSwipe="OnSwipe">
+            <ImagePreview @ref="theImagePreview" @key="@ImageID" Editing=Editing Image="@CurrentImage" />
+        </MudSwipeArea>
     }
 </div>
 
@@ -111,6 +113,24 @@
     private bool CanZoomOut => ZoomRange > 1.0 && !ZoomDisabled;
     private bool ZoomDisabled => ShowObjects;
 
+    private void OnSwipe( SwipeDirection direction )
+    {
+        switch( direction )
+        {
+            case SwipeDirection.LeftToRight:
+                Next();
+                break;
+            case SwipeDirection.RightToLeft:
+                Prev();
+                break;
+            case SwipeDirection.TopToBottom:
+                ZoomIn();
+                break;
+            case SwipeDirection.BottomToTop:
+                ZoomOut();
+                break;
+        }
+    }
     protected override void OnInitialized()
     {
         EnableImageEditing = userConfigService.GetBool(ConfigSettings.EnableImageEditing);
