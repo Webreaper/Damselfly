@@ -181,7 +181,8 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             // and the AI hasn't been processed.
             var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
                                                            && x.AILastUpdated == null )
-                .OrderByDescending(x => x.LastUpdated)
+                .OrderByDescending(x => x.DateTaken)
+                .ThenByDescending(x => x.LastUpdated)
                 .Take(maxJobs)
                 .Select(x => x.ImageId)
                 .ToListAsync();
