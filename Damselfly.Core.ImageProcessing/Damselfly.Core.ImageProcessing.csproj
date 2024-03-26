@@ -19,10 +19,4 @@
         <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="SixLabors.Fonts" />
     </ItemGroup>
-    <PropertyGroup>
-        <MagickCopyNativeWindows>true</MagickCopyNativeWindows>
-        <MagickCopyNativeLinux>true</MagickCopyNativeLinux>
-        <MagickCopyNativeLinuxMusl>true</MagickCopyNativeLinuxMusl>
-        <MagickCopyNativeMacOS>true</MagickCopyNativeMacOS>
-    </PropertyGroup>
 </Project>
