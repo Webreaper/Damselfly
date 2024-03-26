@@ -212,6 +212,7 @@
             CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
 
+            // TODO: Fix nullref here
             ImageUrl = CurrentImage.ThumbUrl(ThumbSize.Medium);
             ImageUrlHighRes = CurrentImage.ThumbUrl(ThumbSize.ExtraLarge);
             ;

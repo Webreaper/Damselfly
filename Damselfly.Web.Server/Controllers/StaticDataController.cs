@@ -12,8 +12,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/data")]
-public class StaticDataController( ILogger<StaticDataController> _logger, 
-                                MetaDataService _metaDataService,
+public class StaticDataController( MetaDataService _metaDataService,
                                 ICachedDataService _cachedData,
                                 StatisticsService _stats) : ControllerBase
 {

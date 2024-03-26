@@ -15,6 +15,7 @@
         <None Remove="SixLabors.Fonts" />
     </ItemGroup>
     <ItemGroup>
+        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
         <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="SixLabors.Fonts" />
     </ItemGroup>

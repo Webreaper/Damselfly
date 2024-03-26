@@ -14,9 +14,7 @@ namespace Damselfly.Web.Server.Controllers;
 [ApiController]
 [Route("/api/people")]
 public class PeopleController( ImageRecognitionService _aiService, 
-                                IPeopleService _peopleService,
-                                ILogger<PeopleController> _logger,
-                                ImageCache _imageCache) : ControllerBase
+                                IPeopleService _peopleService) : ControllerBase
 {
     [HttpGet("/api/person/{personId}")]
     public async Task<Person> GetPerson( int personId )
