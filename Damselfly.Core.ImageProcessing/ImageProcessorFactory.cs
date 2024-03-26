@@ -53,13 +53,13 @@ public class ImageProcessorFactory : IImageProcessorFactory
         // As of 12-Aug-2021, it can do thumbs for 100 images in about 33 seconds.
         // Main advantage: it can also handle HEIC
         // Mar 2024 - disable this in preference to Magick.Net
-        //if ( ImageMagickProcessor.SupportedFileExtensions.Any(x => 
-        //        x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) ) return imProcessor;
+        if ( ImageMagickProcessor.SupportedFileExtensions.Any(x => 
+                x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) ) return imProcessor;
 
         // Magick.Net - As of 12-Aug-2024, it can do thumbs for 100 images in about 45 seconds.
-        // Main advantage: it can also handle HEIC, and is native
-        if ( MagickNetProcessor.SupportedFileExtensions.Any(x =>
-                x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) ) return magickNetProcessor;
+        // Disadvantage - it can't handle HEIC on Linux, apparently.
+        //if ( MagickNetProcessor.SupportedFileExtensions.Any(x =>
+        //        x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) ) return magickNetProcessor;
 
         return null;
     }
