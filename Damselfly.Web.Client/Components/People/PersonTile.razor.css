@@ -6,6 +6,7 @@
     align-items: center;
     margin: 4px;
     padding: 3px;
+    animation: fadeIn ease 0.5s;
     background-color: var(--tool-window-bg);
 }
 
@@ -14,6 +15,10 @@
     flex: 1;
     align-items: center;
     margin: 3px;
+}
+
+.persontile-fadein {
+    opacity: 1;
 }
 
 .damselfly-personimg img {

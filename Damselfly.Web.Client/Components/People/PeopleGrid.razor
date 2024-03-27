@@ -63,8 +63,7 @@
 
     private async Task RefreshData()
     {
-        People.Clear();
-        await LoadData();
+        await LoadData(true);
     }
     
     [JSInvokable]
@@ -76,13 +75,19 @@
         await LoadData();
     }
 
-    private async Task LoadData()
+    private async Task LoadData(bool refresh = false)
     {
-        var req = new PeopleRequest { SearchText = SearchText, State = PersonState, Start = People.Count(), Count = peoplePerPage };
+        var req = new PeopleRequest { SearchText = SearchText, 
+                State = PersonState, 
+                Start = refresh ? 0 : People.Count(), 
+                Count = peoplePerPage 
+        };
 
         var newPeople = await faceService.GetPeople(req);
 
         endOfImages = newPeople.Count < peoplePerPage;
+        if( refresh )
+            People.Clear();
         People.AddRange( newPeople);
         StateHasChanged();
     }

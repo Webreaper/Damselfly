@@ -177,7 +177,7 @@ public class ImageController : Controller
         [FromServices] ImageCache imageCache,
         [FromServices] ImageContext db)
     {
-        IActionResult result = Redirect("/no-image.png");
+        IActionResult result = Redirect("/no-person.svg");
 
         try
         {
