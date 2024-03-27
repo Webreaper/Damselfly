@@ -85,6 +85,9 @@
       <Content Update="Pages\ImagePage.razor.css">
         <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </Content>
+      <Content Update="Components\People\PeopleManager.razor.css">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </Content>
     </ItemGroup>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <ReadLinesFromFile File="../VERSION">

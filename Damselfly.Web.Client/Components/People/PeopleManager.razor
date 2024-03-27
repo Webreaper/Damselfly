@@ -1,0 +1,73 @@
+@inject IUserStatusService statusService
+@inject IRescanService rescanService
+@inject ViewDataService ViewDataService
+
+<div class="title-bar">
+    <div class="title-section">
+        <NavBack/>
+        <MudButton @onclick="@ClearFaceThumbs">Refresh Thumbs</MudButton>
+    </div>
+    <div class="title-section">
+        <MudRadioGroup @bind-SelectedOption="filterType">
+            @foreach ( var choice in Enum.GetValues<FilterType>() )
+            {
+                <MudRadio Option="@choice" Color="Color.Primary">
+                    @choice.ToString()
+                </MudRadio>
+            }
+        </MudRadioGroup>
+    </div>
+    <div class="title-section">
+        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText"/>
+    </div>
+</div>
+<div class="damselfly-tagview">
+    <PeopleGrid SearchText="@searchText" PersonState="@searchState" />
+</div>
+
+@code {
+    
+    [Parameter]
+    public string PersonName { get; set; }
+    
+    string searchText;
+    Person.PersonState? searchState => filterType switch {
+        FilterType.Identified => Person.PersonState.Identified,
+        FilterType.Unidentified => Person.PersonState.Unknown,
+        _ => null,
+    };
+
+    FilterType filterType = FilterType.All;
+    
+    private enum FilterType
+    {
+        All,
+        Identified,
+        Unidentified
+    }
+    
+    private void DoSearch(string searchTerm)
+    {
+        if( searchText != searchTerm )
+        {
+            statusService.UpdateStatus($"Searching for {searchTerm}...");
+            searchText = searchTerm;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearFaceThumbs()
+    {
+        statusService.UpdateStatus("Deleting face thumbnails...");
+
+        _ = rescanService.ClearFaceThumbs();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if( firstRender )
+            ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowTags = true });
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}
