@@ -1,0 +1,89 @@
+﻿@inject IPeopleService faceService
+@inject ILogger<PeopleGrid> logger
+@inject IJSRuntime JsRuntime
+@inherits ImageGridBase
+
+<div class="imagegrid" id="scroll-area">
+    @if( People.Any() )
+    {
+        @foreach( var person in People )
+        {
+            <PersonTile Person="person" PersonChanged="@RefreshData"/>
+        }
+
+        if ( !endOfImages )
+        {
+            <div class="damselfly-moreimages" id="list-end">
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
+            </div>
+        }
+        else
+        {
+            <div id="snackbar" class="@toastClass">No more images to show.</div>
+        }
+    }
+    else
+    {
+        <div class="damselfly-searchmsg">
+            No people were found.
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? SearchText { get; set; }
+    
+    [Parameter]
+    public Person.PersonState? PersonState { get; set; }
+
+    const int peoplePerPage = 30;
+    private bool NoImagesSelected => !selectionService.Selection.Any();
+    bool endOfImages = false;
+    string toastClass = string.Empty;
+    private ScrollMonitor ScrollMonitor;
+    
+    private List<Person> People  = new();
+
+    public string ResultsMessage { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await RefreshData();
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task RefreshData()
+    {
+        People.Clear();
+        await LoadData();
+    }
+    
+    [JSInvokable]
+    // Debugging assistant to help us differentiate between JS calls and other data loads
+    public async Task LoadMoreData()
+    {
+        logger.LogTrace("Javscript callback triggered to load more data.");
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var req = new PeopleRequest { SearchText = SearchText, State = PersonState, Start = People.Count(), Count = peoplePerPage };
+
+        var newPeople = await faceService.GetPeople(req);
+
+        endOfImages = newPeople.Count < peoplePerPage;
+        People.AddRange( newPeople);
+        StateHasChanged();
+    }
+}

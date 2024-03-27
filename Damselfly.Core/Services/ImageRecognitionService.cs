@@ -51,6 +51,17 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return _peopleCache.Values.FirstOrDefault(x => x.PersonId == personId);
     }
 
+    public async Task<List<Person>> GetPeople( PeopleRequest req )
+    {
+        return _peopleCache.Values
+            .Where( x => req.SearchText == null || x.Name.Contains( req.SearchText, StringComparison.OrdinalIgnoreCase ))
+            .Where( x => req.State == null || req.State == x.State)
+            .OrderBy( x => x.Name )
+            .Skip(req.Start)
+            .Take(req.Count)
+            .ToList();
+    }
+    
     public async Task<List<string>> GetPeopleNames(string searchText)
     {
         await LoadPersonCache();

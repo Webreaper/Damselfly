@@ -552,8 +552,11 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     {
         var dir = new DirectoryInfo(Path.Combine(_thumbnailRootFolder, "_FaceThumbs"));
 
-        dir.GetFiles().ToList()
-            .ForEach(x => x.SafeDelete());
+        if( dir.Exists )
+        {
+            dir.GetFiles().ToList()
+                .ForEach(x => x.SafeDelete());
+        }
 
         return Task.CompletedTask;
     }
@@ -577,6 +580,19 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             var file = new FileInfo(image.FullPath);
             var thumbPath = new FileInfo(GetThumbPath(file, ThumbSize.Large));
 
+            if( ! thumbPath.Exists )
+            {
+                // There's no thumbnail for this image. Create one.
+                var result = await this.ConvertFile( image, false, ThumbSize.Large);
+
+                if( result.ThumbsGenerated == false )
+                {
+                    Logging.LogWarning($"Unable to generate thumb for {image.FullPath} - so skipping face thumb generation.");
+                    return destFile;
+                }
+            }
+
+            // This should never fail. 
             if ( thumbPath.Exists )
             {
                 destFile = new FileInfo($"{faceDir}/face_{face.PersonId}.jpg");

@@ -9,6 +9,7 @@ public interface IPeopleService
 {
     Task<Person> GetPerson(int personId);
     Task<List<Person>> GetAllPeople();
+    Task<List<Person>> GetPeople(PeopleRequest req);
     Task<List<string>> GetPeopleNames(string searchText);
     Task UpdatePersonName(NameChangeRequest req);
     Task<bool> NeedsAIMigration();

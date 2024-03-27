@@ -1,12 +1,8 @@
-﻿using Damselfly.Core.Constants;
-using Damselfly.Core.Database;
-using Damselfly.Core.DbModels.Models.APIModels;
+﻿using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Damselfly.Web.Server.Controllers;
 
@@ -22,18 +18,24 @@ public class PeopleController( ImageRecognitionService _aiService,
         return await _aiService.GetPerson( personId );
     }
 
-    [HttpGet("/api/people")]
+    [HttpGet("/api/people/all")]
     public async Task<List<Person>> Get()
     {
         var names = await _aiService.GetAllPeople();
         return names;
     }
 
-    [HttpGet("/api/people/{searchText}")]
+    [HttpGet("/api/people/names/{searchText}")]
     public async Task<List<string>> Search(string searchText)
     {
         var names = await _aiService.GetPeopleNames(searchText);
         return names;
+    }
+
+    [HttpPost("/api/people")]
+    public async Task<List<Person>> GetPeople( PeopleRequest req )
+    {
+        return await _aiService.GetPeople( req );
     }
 
     [HttpPut("/api/people/name")]

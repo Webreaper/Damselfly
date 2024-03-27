@@ -21,12 +21,17 @@ public class ClientPeopleService : IPeopleService
 
     public async Task<List<Person>> GetAllPeople()
     {
-        return await httpClient.CustomGetFromJsonAsync<List<Person>>("/api/people");
+        return await httpClient.CustomGetFromJsonAsync<List<Person>>("/api/people/all");
+    }
+
+    public async Task<List<Person>> GetPeople( PeopleRequest req)
+    {
+        return await httpClient.CustomPostAsJsonAsync<PeopleRequest, List<Person>>("/api/people", req);
     }
 
     public async Task<List<string>> GetPeopleNames(string searchText)
     {
-        return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/{searchText}");
+        return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/names/{searchText}");
     }
     
     public async Task UpdatePersonName(NameChangeRequest req)
