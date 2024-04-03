@@ -1,13 +1,13 @@
 @inject ISearchService searchService 
 
-<MudSwipeArea OnSwipe="HandleSwipe" style="display: flex; flex: 1; min-height: 0;">
     <div class="imagebrowser">
         <DetailedErrorBoundary>
-            <SearchBar OnGridSizeChanged="GridSizeChanged"/>
+            <MudSwipeArea OnSwipe="HandleSwipe" style="display: flex; flex: 1; min-height: 0;">
+                <SearchBar OnGridSizeChanged="GridSizeChanged"/>
+            </MudSwipeArea>
             <ImageGrid CurrentGridSize="@gridSize"/>
         </DetailedErrorBoundary>
     </div>
-</MudSwipeArea>
     
 @code {
     private GridImageSize gridSize { get; set; }

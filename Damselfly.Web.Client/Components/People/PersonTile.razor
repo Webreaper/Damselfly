@@ -4,8 +4,9 @@
 @inject IJSRuntime JsRuntime
 @inject IImageCacheService imageCache
 @inject IDialogService dialogService
+@inject ClientUIStateService uiService
 
-<div class="damselfly-persontile">
+<div class="damselfly-persontile" style="@TileStyle">
     <div title="@Person.PersonGuid" class="damselfly-personimg">
         <NavLink href="@PersonLink">
             <img @key="@Person.PersonId" title="@PersonTitle" src="@FaceLink">
@@ -43,6 +44,28 @@
 
     public string FaceLink => $"/face/{Person.PersonId}?nocache={Person.LastUpdated:yyyyMMddHHmmss}";
     public string PersonLink => $"/?personid={Person.PersonId}";
+    public string ImageStyle, TileStyle;
+
+    private void GenerateImageStyle()
+    {
+        int size = 180;
+        if( uiService.IsSmallScreenDevice )
+        {
+            const int imageGap = 10;
+            int targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
+
+            size = int.Max( (uiService.ScreenWidth / targetImagesPerRow) - ((targetImagesPerRow - 1) * imageGap), 50);
+        }
+
+        TileStyle = $"max-width: {size}px; height: auto; max-height: {size}px;";
+    }
+    
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        GenerateImageStyle();
+    }
 
     private async Task UpdateName(string newName)
     {

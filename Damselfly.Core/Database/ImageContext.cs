@@ -50,6 +50,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ConfigSetting> ConfigSettings { get; set; }
     public DbSet<ExifOperation> KeywordOperations { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<UserFolderState> UserFolderStates { get; set; }
 
     public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
     {

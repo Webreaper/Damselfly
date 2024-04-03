@@ -845,7 +845,6 @@ f
 .damselfly-exportview {
     display: flex;
     flex: 1;
-    order: 3;
     flex-flow: column;
     overflow-y: auto;
     height: 100%;
