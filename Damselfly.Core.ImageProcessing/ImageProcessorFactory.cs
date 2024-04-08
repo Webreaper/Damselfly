@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Interfaces;
+using Damselfly.Core.Interfaces;
+using Microsoft.Extensions.Configuration;
 
 namespace Damselfly.Core.ImageProcessing;
 
@@ -8,11 +9,11 @@ public class ImageProcessorFactory : IImageProcessorFactory
     private readonly ImageSharpProcessor isharpProcessor;
     private readonly SkiaSharpProcessor skiaProcessor;
 
-    public ImageProcessorFactory()
+    public ImageProcessorFactory(IConfiguration configuration)
     {
         skiaProcessor = new SkiaSharpProcessor();
         isharpProcessor = new ImageSharpProcessor();
-        imProcessor = new ImageMagickProcessor();
+        imProcessor = new ImageMagickProcessor(configuration);
     }
 
     public void SetContentPath(string path)

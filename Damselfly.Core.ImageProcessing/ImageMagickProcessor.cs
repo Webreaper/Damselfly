@@ -1,15 +1,17 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Damselfly.Core.DbModels.Images;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace Damselfly.Core.ImageProcessing;
 
 public class ImageMagickProcessor : IImageProcessor
 {
-    private const string imageMagickExe = "convert";
+    // private const string imageMagickExe = "convert";
 
     private const string graphicsMagickExe = "gm";
+    private readonly IConfiguration _config;
 
     // SkiaSharp doesn't handle .heic files... yet
     private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr3" };
@@ -17,8 +19,9 @@ public class ImageMagickProcessor : IImageProcessor
     private readonly bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
     private string verString = "(not found)";
 
-    public ImageMagickProcessor()
+    public ImageMagickProcessor(IConfiguration configuration)
     {
+        _config = configuration;
         CheckToolStatus();
     }
 
@@ -54,6 +57,8 @@ public class ImageMagickProcessor : IImageProcessor
     {
         // This processor doesn't support hash creation
         IImageProcessResult result = new ImageProcessResult { ThumbsGenerated = false, ImageHash = string.Empty };
+
+        var imageMagickExe = _config["ImageMagick:ExePath"];
 
         // Some useful unsharp and quality settings, plus by defining the max size of the JPEG, it 
         // makes imagemagic more efficient with its memory allocation, so significantly faster. 
@@ -171,6 +176,7 @@ public class ImageMagickProcessor : IImageProcessor
     /// </summary>
     private void CheckToolStatus()
     {
+        var imageMagickExe = _config["ImageMagick:ExePath"];
         var improcess = new ProcessStarter();
         imAvailable = improcess.StartProcess(imageMagickExe, "--version");
 

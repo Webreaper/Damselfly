@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +13,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using static Damselfly.Core.Models.ExifOperation;
 using Stopwatch = Damselfly.Shared.Utils.Stopwatch;
@@ -36,12 +37,14 @@ public class ExifService : IProcessJobFactory, ITagService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
     private readonly WorkService _workService;
+    private readonly string _exifToolPath;
 
     private readonly List<Tag> faveTags = new();
 
     public ExifService(IStatusService statusService, WorkService workService,
         IndexingService indexingService, ImageCache imageCache,
-        ServerNotifierService notifier, IServiceScopeFactory scopeFactory)
+        ServerNotifierService notifier, IServiceScopeFactory scopeFactory,
+        IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -49,6 +52,7 @@ public class ExifService : IProcessJobFactory, ITagService
         _indexingService = indexingService;
         _workService = workService;
         _notifier = notifier;
+        _exifToolPath = configuration["ExifTool:ExePath"]!;
 
         GetExifToolVersion();
         _ = LoadFavouriteTagsAsync();
@@ -268,7 +272,7 @@ public class ExifService : IProcessJobFactory, ITagService
     private void GetExifToolVersion()
     {
         var process = new ProcessStarter();
-        if ( process.StartProcess("exiftool", "-ver") ) ExifToolVer = $"v{process.OutputText}";
+        if ( process.StartProcess(_exifToolPath, "-ver") ) ExifToolVer = $"v{process.OutputText}";
 
         if ( string.IsNullOrEmpty(ExifToolVer) ) ExifToolVer = "Unavailable - ExifTool Not found";
 
@@ -491,7 +495,7 @@ public class ExifService : IProcessJobFactory, ITagService
             env["LC_ALL"] = "en_US.UTF-8";
 
             var watch = new Stopwatch("RunExifTool");
-            success = process.StartProcess("exiftool", args, env);
+            success = process.StartProcess(_exifToolPath, args, env);
             watch.Stop();
 
             if ( success )

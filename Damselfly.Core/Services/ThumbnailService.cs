@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,6 +12,7 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Stopwatch = Damselfly.Shared.Utils.Stopwatch;
 
@@ -50,7 +51,8 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         IStatusService statusService,
         ImageProcessService imageService,
         IConfigService configService,
-        ImageCache imageCache, WorkService workService)
+        ImageCache imageCache, WorkService workService,
+        IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -58,7 +60,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         _imageCache = imageCache;
         _workService = workService;
         _configService = configService;
-
+        PicturesRoot = configuration["DamselflyConfiguration:SourceDirectory"]!;
+        Synology = configuration["DamselflyConfiguration:Synology"] == "true";
+        SetThumbnailRoot(configuration["DamselflyConfiguration:ThumbPath"]!);
         _workService.AddJobSource(this);
     }
 

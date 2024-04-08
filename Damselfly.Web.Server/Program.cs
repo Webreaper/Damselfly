@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -33,7 +33,8 @@ public class Program
     {
         try
         {
-            Parser.Default.ParseArguments<DamselflyOptions>(args).WithParsed(o => { Startup(o, args); });
+            // Parser.Default.ParseArguments<DamselflyOptions>(args).WithParsed(o => { Startup(o, args); });
+            StartWebServer(args);
         }
         catch ( Exception ex )
         {
@@ -41,66 +42,9 @@ public class Program
         }
     }
 
-    /// <summary>
-    ///     Process the startup args and initialise the logging.
-    /// </summary>
-    /// <param name="o"></param>
-    /// <param name="args"></param>
-    private static void Startup(DamselflyOptions o, string[] args)
+    private static void SetupDbContext(WebApplicationBuilder builder)
     {
-        Logging.Verbose = o.Verbose;
-        Logging.Trace = o.Trace;
-
-        if ( Directory.Exists(o.SourceDirectory) )
-        {
-            if ( !Directory.Exists(o.ConfigPath) )
-                Directory.CreateDirectory(o.ConfigPath);
-
-            if ( o.ReadOnly )
-            {
-                o.NoEnableIndexing = true;
-                o.NoGenerateThumbnails = true;
-            }
-
-            // TODO: Do away with static members here. We should pass this
-            // through to the config service and pick them up via DI
-            IndexingService.EnableIndexing = !o.NoEnableIndexing;
-            IndexingService.RootFolder = o.SourceDirectory;
-            ThumbnailService.PicturesRoot = o.SourceDirectory;
-            ThumbnailService.Synology = o.Synology;
-            ThumbnailService.SetThumbnailRoot(o.ThumbPath);
-
-            var tieredPGO = Environment.GetEnvironmentVariable("DOTNET_TieredPGO") == "1";
-
-            Logging.Log("Startup State:");
-            Logging.Log($" Damselfly Ver: {Assembly.GetExecutingAssembly().GetName().Version}");
-            Logging.Log($" CLR Ver: {Environment.Version}");
-            Logging.Log($" OS: {Environment.OSVersion}");
-            Logging.Log($" CPU Arch: {RuntimeInformation.ProcessArchitecture}");
-            Logging.Log($" Processor Count: {Environment.ProcessorCount}");
-            Logging.Log($" Read-only mode: {o.ReadOnly}");
-            Logging.Log($" Synology = {o.Synology}");
-            Logging.Log($" Indexing = {!o.NoEnableIndexing}");
-            Logging.Log($" ThumbGen = {!o.NoGenerateThumbnails}");
-            Logging.Log($" Images Root set as {o.SourceDirectory}");
-            Logging.Log($" TieredPGO Enabled={tieredPGO}");
-
-            // Make ourselves low-priority.
-            Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Idle;
-
-            StartWebServer(o, args);
-
-            Logging.Log("Shutting down.");
-        }
-        else
-        {
-            Console.WriteLine("Folder {0} did not exist. Exiting.", o.SourceDirectory);
-        }
-    }
-
-    private static void SetupDbContext(WebApplicationBuilder builder, DamselflyOptions cmdLineOptions)
-    {
-        var dbFolder = Path.Combine(cmdLineOptions.ConfigPath, "db");
+        var dbFolder = Path.Combine(builder.Configuration["DamselflyConfiguration:DatabasePath"], "db");
 
         if ( !Directory.Exists(dbFolder) )
         {
@@ -127,18 +71,21 @@ public class Program
     /// </summary>
     /// <param name="listeningPort"></param>
     /// <param name="args"></param>
-    private static void StartWebServer(DamselflyOptions cmdLineOptions, string[] args)
+    private static void StartWebServer(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var logdirectory = builder.Configuration["DamselflyConfiguration:LogPath"];
 
-        var logFolder = Path.Combine(cmdLineOptions.ConfigPath, "logs");
+        var logFolder = Path.Combine(logdirectory, "logs");
+        Logging.Verbose = builder.Configuration["DamselflyConfiguration:Verbose"] == "true";
+        Logging.Trace = builder.Configuration["DamselflyConfiguration:Trace"] == "true";
 
         builder.Host.UseSerilog((hostContext, services, configuration) =>
         {
             Logging.InitLogConfiguration(configuration, logFolder);
         });
 
-        SetupDbContext(builder, cmdLineOptions);
+        SetupDbContext(builder);
 
         SetupIdentity(builder.Services);
 
@@ -168,21 +115,21 @@ public class Program
         // Damselfly Services
         builder.Services.AddImageServices();
         builder.Services.AddHostedBlazorBackEndServices();
-
+        var port = int.Parse(builder.Configuration["DamselflyConfiguration:Port"]);
         if( ! Debugger.IsAttached )
         {
             // Use Kestrel options to set the port. Using .Urls.Add breaks WASM debugging.
             // This line also breaks wasm debugging in Rider.
             // See https://github.com/dotnet/aspnetcore/issues/43703
-            builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(cmdLineOptions.Port); });
+            builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(port); });
         }
 
         var app = builder.Build();
 
         Logging.Logger = app.Services.GetRequiredService<ILogger>();
-        Logging.Logger.Information("=== Damselfly Blazor Server Log Started ===");
+        // ogging.Logger.Information("=== Damselfly Blazor Server Log Started ===");
 
-        InitialiseDB(app, cmdLineOptions);
+        InitialiseDB(app);
 
         // Log ingestion from the client
         app.UseSerilogIngestion();
@@ -190,7 +137,8 @@ public class Program
         var configService = app.Services.GetRequiredService<ConfigService>();
         var logLevel = configService.Get(ConfigSettings.LogLevel, LogEventLevel.Information);
 
-        if( cmdLineOptions.NoGenerateThumbnails )
+
+        if( app.Configuration["DamselflyConfiguration:NoGenerateThumbnails"] == "true" )
             configService.Set( ConfigSettings.EnableBackgroundThumbs, false.ToString() );
 
         Logging.ChangeLogLevel(logLevel);
@@ -216,8 +164,8 @@ public class Program
         app.UseStaticFiles();
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
-            RequestPath = ThumbnailService.RequestRoot
+            FileProvider = new PhysicalFileProvider(app.Configuration["DamselflyConfiguration:SourceDirectory"]),
+            RequestPath = "/download" // ThumbnailService.RequestRoot
         });
 
         app.UseStaticFiles();
@@ -253,7 +201,7 @@ public class Program
         app.Run();
     }
 
-    private static void InitialiseDB( WebApplication app, DamselflyOptions options )
+    private static void InitialiseDB(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -278,7 +226,7 @@ public class Program
 
             db.IncreasePerformance();
 
-            BaseDBModel.ReadOnly = options.ReadOnly;
+            BaseDBModel.ReadOnly = app.Configuration["DamselflyConfiguration:Readonly"] == "true";
         }
     }
 

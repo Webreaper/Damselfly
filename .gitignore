@@ -432,3 +432,4 @@ Damselfly.Desktop/docker_env
 Damselfly.Web.Client/wwwroot/version.js
 Damselfly.Web.Client/wwwroot/desktop/Damselfly-4.0.1-mac.zip
 .DS_Store
+/Damselfly.Web.Server/appsettings.Development.json

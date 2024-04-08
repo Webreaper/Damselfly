@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +11,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
@@ -30,10 +31,12 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     private readonly FolderWatcherService _watcherService;
     private readonly WorkService _workService;
     private bool _fullIndexComplete;
+    public static string RootFolder { get; set; }
+    public static bool EnableIndexing { get; set; } = true;
 
     public IndexingService( IServiceScopeFactory scopeFactory, IStatusService statusService,
         ImageProcessService imageService, ConfigService config, ImageCache imageCache, 
-        FolderWatcherService watcherService, WorkService workService)
+        FolderWatcherService watcherService, WorkService workService, IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -42,13 +45,13 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         _imageCache = imageCache;
         _workService = workService;
         _watcherService = watcherService;
-
+        RootFolder = configuration["DamselflyConfiguration:SourceDirectory"]!;
+        EnableIndexing = configuration["DamselflyConfiguration:EnableIndexing"]! != "true";
         // Slight hack to work around circular dependencies
         _watcherService.LinkIndexingServiceInstance(this);
     }
 
-    public static string RootFolder { get; set; }
-    public static bool EnableIndexing { get; set; } = true;
+    
 
     public JobPriorities Priority => JobPriorities.Indexing;
 
