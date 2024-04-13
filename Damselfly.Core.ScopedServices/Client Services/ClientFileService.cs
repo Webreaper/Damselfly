@@ -1,4 +1,4 @@
-﻿
+
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -20,7 +20,7 @@ public class ClientFileService : IFileService
         _logger = logger;
     }
 
-    public async Task<bool> DeleteImages(MultiImageRequest req)
+    public async Task<bool> DeleteImages(MultiImageRequest req, bool actuallyDeleteImage = false)
     {
         try
         {

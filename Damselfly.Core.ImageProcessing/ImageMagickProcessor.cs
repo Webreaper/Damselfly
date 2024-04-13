@@ -14,9 +14,9 @@ public class ImageMagickProcessor : IImageProcessor
     private readonly IConfiguration _config;
 
     // SkiaSharp doesn't handle .heic files... yet
-    private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr3" };
+    private static readonly string[] _imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr3" };
     private static bool imAvailable;
-    private readonly bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
+    private readonly bool _useGraphicsMagick = false; // GM doesn't support HEIC yet.
     private string verString = "(not found)";
 
     public ImageMagickProcessor(IConfiguration configuration)
@@ -41,7 +41,7 @@ public class ImageMagickProcessor : IImageProcessor
         get
         {
             if ( imAvailable )
-                return s_imageExtensions;
+                return _imageExtensions;
 
             return new string[0];
         }
@@ -63,11 +63,11 @@ public class ImageMagickProcessor : IImageProcessor
         // Some useful unsharp and quality settings, plus by defining the max size of the JPEG, it 
         // makes imagemagic more efficient with its memory allocation, so significantly faster. 
         string args;
-        var exeToUse = s_useGraphicsMagick ? graphicsMagickExe : imageMagickExe;
+        var exeToUse = _useGraphicsMagick ? graphicsMagickExe : imageMagickExe;
         var maxHeight = destFiles.Max(x => x.Value.height);
         var maxWidth = destFiles.Max(x => x.Value.width);
 
-        if ( s_useGraphicsMagick )
+        if ( _useGraphicsMagick )
             args = string.Format(" convert -size {0}x{1} \"{2}\" -quality 90  -unsharp 0.5x0.5+1.25+0.0 ", maxHeight,
                 maxWidth, source.FullName);
         else
@@ -85,7 +85,7 @@ public class ImageMagickProcessor : IImageProcessor
             var config = pair.Value;
 
             // File didn't exist, so add it to the command-line. 
-            if ( s_useGraphicsMagick )
+            if ( _useGraphicsMagick )
                 argsList.Add(string.Format("-thumbnail {0}x{1} -auto-orient -write \"{2}\" ", config.height,
                     config.width, dest.FullName));
             else

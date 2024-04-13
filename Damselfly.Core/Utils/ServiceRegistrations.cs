@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Interfaces;
+using Damselfly.Core.Interfaces;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -111,6 +111,8 @@ public static class ServiceRegistrations
         services.AddScoped<SystemSettingsService>();
         services.AddScoped<ApplicationStateService>();
         services.AddScoped<UserManagementService>();
+        services.AddScoped<AlbumService>();
+        services.AddScoped<ImageService>();
 
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());

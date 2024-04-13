@@ -3,6 +3,7 @@ using System;
 using Damselfly.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Damselfly.Core.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    partial class ImageContextModelSnapshot : ModelSnapshot
+    [Migration("20240408222640_AddAlbums")]
+    partial class AddAlbums
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
@@ -132,21 +135,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "7f8ec30e-c7ab-4d53-ab2a-a1a2a16c4896",
+                            ConcurrencyStamp = "153b5e4f-7aaf-4cf4-9828-bb2d25866051",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "82a093c0-20e3-4958-9140-635fdc5dc5f1",
+                            ConcurrencyStamp = "38d8f057-7fcb-4c67-a980-f0df8f09e5cb",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "aa0989e0-1f13-4bf6-907b-b4810ab3ad74",
+                            ConcurrencyStamp = "9584db4b-125d-4c4f-bbc0-b8c45cdb8feb",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -178,9 +181,6 @@ namespace Damselfly.Core.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("CoverImageId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -201,8 +201,6 @@ namespace Damselfly.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("AlbumId");
-
-                    b.HasIndex("CoverImageId");
 
                     b.ToTable("Album");
                 });
@@ -932,15 +930,6 @@ namespace Damselfly.Core.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Damselfly.Core.DbModels.Models.Entities.Album", b =>
-                {
-                    b.HasOne("Damselfly.Core.Models.Image", "CoverImage")
-                        .WithMany("CoverAlbums")
-                        .HasForeignKey("CoverImageId");
-
-                    b.Navigation("CoverImage");
-                });
-
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
                     b.HasOne("Damselfly.Core.DbModels.Authentication.AppIdentityUser", "User")
@@ -1191,8 +1180,6 @@ namespace Damselfly.Core.Migrations
 
                     b.Navigation("Classification")
                         .IsRequired();
-
-                    b.Navigation("CoverAlbums");
 
                     b.Navigation("Hash")
                         .IsRequired();

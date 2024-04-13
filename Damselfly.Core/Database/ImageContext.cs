@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models.Entities;
 using Damselfly.Core.Models;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -30,6 +31,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     {
     }
 
+    public DbSet<Album> Albums { get; set; }
     public DbSet<Folder> Folders { get; set; }
     public DbSet<Image> Images { get; set; }
     public DbSet<ImageMetaData> ImageMetaData { get; set; }
@@ -159,6 +161,13 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .HasOne(p => p.Person)
             .WithMany(x => x.FaceData)
             .HasForeignKey(p => p.PersonId);
+
+        modelBuilder.Entity<Album>()
+            .HasOne(Album => Album.CoverImage)
+            .WithMany(Image => Image.CoverAlbums);
+
+        modelBuilder.Entity<Album>().HasMany(Image => Image.Images)
+            .WithMany(Album => Album.Albums);
 
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();

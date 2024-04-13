@@ -54,9 +54,9 @@ dotnet_naming_style.notunderscored.capitalization = camel_case
 dotnet_naming_style.notunderscored.required_prefix =
 
 # Define the 'private_fields_notunderscored' naming rule
-dotnet_naming_rule.private_fields_notunderscored.symbols = private_fields
-dotnet_naming_rule.private_fields_notunderscored.style = notunderscored
-dotnet_naming_rule.private_fields_notunderscored.severity = error
+#dotnet_naming_rule.private_fields_notunderscored.symbols = private_fields
+#dotnet_naming_rule.private_fields_notunderscored.style = notunderscored
+#dotnet_naming_rule.private_fields_notunderscored.severity = error
 # End of No underscore prefix on private fields
 
 # ReSharper properties

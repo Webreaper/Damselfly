@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Models.Entities;
 
 namespace Damselfly.Core.Models;
 
@@ -52,6 +53,10 @@ public class Image
 
     // NOTE: setter needed for serialization only
     public virtual List<ImageObject> ImageObjects { get; init; } = new();
+
+    public virtual List<Album> Albums { get; init; } = [];
+
+    public virtual List<Album> CoverAlbums { get; set; }
 
     [NotMapped] public string FullPath => Path.Combine(Folder.Path, FileName);
 

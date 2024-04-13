@@ -1,5 +1,6 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
@@ -17,10 +18,27 @@ namespace Damselfly.Web.Controllers;
 public class ImageController : Controller
 {
     private ILogger<ImageController> _logger;
+    private readonly ImageService _imageService;
 
     public ImageController(ILogger<ImageController> logger)
     {
         _logger = logger;
+    }
+
+    
+    [HttpPost]
+    [Route("upload")]
+    public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest uploadImageRequest)
+    {
+        var watch = new Stopwatch("ControllerPostImage");
+
+        IActionResult result = BadRequest();
+
+        
+
+        watch.Stop();
+
+        return Ok();
     }
 
     [Produces("image/jpeg")]

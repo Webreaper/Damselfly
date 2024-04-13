@@ -25,7 +25,6 @@
     <ItemGroup>
         <Folder Include="Authentication\" />
         <Folder Include="Utils\" />
-        <Folder Include="Models\" />
         <Folder Include="Models\SideCars\" />
         <Folder Include="Images\" />
         <Folder Include="Models\ConfigSettings\" />

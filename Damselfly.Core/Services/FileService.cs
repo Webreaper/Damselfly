@@ -37,8 +37,9 @@ public class FileService : IFileService
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    public async Task<bool> DeleteImages( MultiImageRequest req )
+    public async Task<bool> DeleteImages( MultiImageRequest req, bool actuallyDelete = false )
     {
+
         var trashFolder = _configService.Get( ConfigSettings.TrashcanFolderName, "DamselflyTrashcan" );
 
         // TODO - allow users to configure the delete folder name
@@ -63,6 +64,26 @@ public class FileService : IFileService
                 _logger.LogError( $"Unable to create folder {destfolder}: {ex}" );
                 return false;
             }
+        }
+        if( actuallyDelete )
+        {
+            foreach( var image in images )
+            {
+                if( File.Exists( image.FullPath ) )
+                {
+                    try
+                    {
+                        File.Delete( image.FullPath );
+                        _statusService.UpdateStatus( $"Deleted {image.FileName}" );
+                    }
+                    catch( Exception ex )
+                    {
+                        _logger.LogError( $"Unable to delete file {image.FullPath}: {ex}" );
+                        success = false;
+                    }
+                }
+            }
+            return success;
         }
 
         foreach( var image in images )

@@ -109,6 +109,9 @@ public class Program
                 new[] { "image/svg+xml",  "application/octet-stream" });
         });
 
+        builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+
         // Swagger
         builder.Services.AddSwaggerGen();
 

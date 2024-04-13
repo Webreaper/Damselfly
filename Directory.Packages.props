@@ -4,6 +4,7 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AutoMapper" Version="13.0.1" />
     <PackageVersion Include="Blazored.FluentValidation" Version="2.1.0" />
     <PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
     <PackageVersion Include="BlazorPanzoom" Version="0.2.1" />
@@ -63,6 +64,7 @@
     <PackageVersion Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
     <PackageVersion Include="MudBlazor" Version="6.17.0" />
     <PackageVersion Include="Radzen.Blazor" Version="4.25.12" />
+    <PackageVersion Include="RestSharp" Version="110.2.0" />
     <PackageVersion Include="SendGrid" Version="9.29.2" />
     <PackageVersion Include="Serilog" Version="3.1.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.1" />

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,6 +23,7 @@ public class FolderService : IFolderService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly EventConflator conflator = new( 10 * 1000 );
     private List<Folder> allFolders = new();
+    private readonly ImageContext _context;
 
     public FolderService(IndexingService _indexingService, IServiceScopeFactory scopeFactory,
         ServerNotifierService notifier)
@@ -95,7 +96,6 @@ public class FolderService : IFolderService
         // Update the GUI
         NotifyStateChanged();
     }
-
     /// <summary>
     ///     Bolt some metadata onto the folder object so it can be used by the UI.
     /// </summary>
