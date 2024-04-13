@@ -25,6 +25,7 @@
         </PackageReference>
         <PackageReference Include="MetadataExtractor" />
         <PackageReference Include="CommandLineParser" />
+        <PackageReference Include="RestSharp" />
         <PackageReference Include="WordPressPCL" />
         <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" />
