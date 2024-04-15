@@ -161,6 +161,8 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithMany(x => x.FaceData)
             .HasForeignKey(p => p.PersonId);
 
+        modelBuilder.Entity<UserFolderState>().HasKey(p => new { p.FolderId, p.UserId });
+        
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });

@@ -9,10 +9,9 @@ namespace Damselfly.Core.Models;
 
 public class UserFolderState
 {
-    [Key] public int FolderId { get; set; }
+    public int FolderId { get; set; }
     public virtual Folder? Folder { get; set; }
-
-    [Key] public int UserId { get; set; }
+    public int UserId { get; set; }
 
     public bool Expanded { get; set; } = false;
 }

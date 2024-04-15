@@ -2,9 +2,8 @@
 
     <div class="imagebrowser">
         <DetailedErrorBoundary>
-            <MudSwipeArea OnSwipe="HandleSwipe" style="display: flex; flex: 1; min-height: 0;">
-                <SearchBar OnGridSizeChanged="GridSizeChanged"/>
-            </MudSwipeArea>
+            <MudSwipeArea OnSwipe="HandleSwipe" style="display: flex; flex: 1; min-height: 0;"/>
+            <SearchBar OnGridSizeChanged="GridSizeChanged"/>
             <ImageGrid CurrentGridSize="@gridSize"/>
         </DetailedErrorBoundary>
     </div>
