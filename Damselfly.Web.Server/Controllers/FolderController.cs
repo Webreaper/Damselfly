@@ -47,8 +47,8 @@ public class FolderController : ControllerBase
     }
     
     [HttpPost("/api/folders/state")]
-    public async Task UpdateFolderState(UserFolderState newState)
+    public async Task UpdateFolderState(IEnumerable<UserFolderState> newStates)
     {
-        await _service.SaveFolderState(newState);
+        await _service.SaveFolderStates(newStates);
     }
 }

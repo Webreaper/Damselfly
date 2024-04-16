@@ -11,7 +11,7 @@ public interface IFolderService
 
     Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int? userId);
 
-    Task SaveFolderState(UserFolderState newState);
+    Task SaveFolderStates(IEnumerable<UserFolderState> newStates);
 
     event Action OnChange;
 }

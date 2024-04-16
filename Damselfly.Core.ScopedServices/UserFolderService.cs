@@ -136,7 +136,7 @@ public class UserFolderService : IDisposable, IUserFolderService
         if ( folderStates.TryGetValue(item.FolderId, out var folderState) )
         {
             folderState.Expanded = !folderState.Expanded;
-            _folderService.SaveFolderState(folderState);
+            _folderService.SaveFolderStates([folderState]);
         }
     }
 

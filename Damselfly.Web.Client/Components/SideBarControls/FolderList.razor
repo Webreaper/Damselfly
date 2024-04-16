@@ -8,6 +8,7 @@
 @inject IFileService fileService
 @inject ILogger<FolderList> logger
 @using DialogOptions = MudBlazor.DialogOptions
+@using Microsoft.EntityFrameworkCore.Query
 @implements IDisposable
 
 <ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
@@ -99,6 +100,9 @@
                     <RadzenMenuItem Text="@sortDirection" Value="5" />
                     <RadzenMenuItem Text="@includeChildFolders" Value="6" />
                     <hr class="separator">
+                    <RadzenMenuItem Text="Collapse Sub-Folders" Value="9" />
+                    <RadzenMenuItem Text="Expand Sub-Folders" Value="10" />
+                    <hr class="separator">
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
                         @if (selectionService.Selection.Any())
                         {
@@ -142,7 +146,37 @@
             case 8:
                 await MoveSelectedImagesToFolder(folder, false);
                 break;
+            case 9:
+                await CollapseSubFolders(folder, true);
+                break;
+            case 10:
+                await ExpandSubFolders(folder, true);
+                break;
         }
+    }
+
+    private async Task CollapseSubFolders(Folder folder, bool first = false)
+    {
+        foreach( var child in folder.Subfolders.Where( x => folderService.IsExpanded(x) ) )
+        {
+            folderService.ToggleExpand(child);
+            await CollapseSubFolders(child, false);
+        }
+        
+        if( first )
+            await ProcessUpdatedFilter();
+    }
+
+    private async Task ExpandSubFolders(Folder folder, bool first = false)
+    {
+        foreach( var child in folder.Subfolders.Where( x => !folderService.IsExpanded(x) ) )
+        {
+            folderService.ToggleExpand(child);
+            await ExpandSubFolders(child, false);
+        }
+        
+        if( first )
+            await ProcessUpdatedFilter();
     }
 
     /// <summary>

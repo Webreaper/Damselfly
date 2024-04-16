@@ -128,9 +128,9 @@ public class FolderService : IFolderService
         }
     }
 
-    public async Task SaveFolderState(UserFolderState newState)
+    public async Task SaveFolderStates(IEnumerable<UserFolderState> newStates)
     {
-        await SaveFolderStates( [newState], []);
+        await SaveFolderStates( newStates, []);
     }
 
     private void OnFoldersChanged()
