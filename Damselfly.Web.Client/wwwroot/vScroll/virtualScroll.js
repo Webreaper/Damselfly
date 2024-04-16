@@ -1,6 +1,7 @@
 ﻿window.InfiniteScroll =
     {
-        Init: function (scrollAreaID, endMarkerId, DotNetRef) {
+        Init: function (scrollAreaID, endMarkerId, DotNetRef) 
+        {
             var scrollArea = document.getElementById(scrollAreaID);
 
             if (scrollArea === null) {
@@ -19,6 +20,15 @@
                     bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight));
             }
 
+            const resizeObserver = new ResizeObserver(() => {
+                if (scrollArea.scrollHeight > scrollArea.clientHeight) {
+                    loadIfMoreVisible();
+                }
+            });
+
+            // Observe the document body, or any HTML element whose size you expect to change when a scrollbar might appear.
+            resizeObserver.observe(scrollArea);
+            
             var markerVisibleState = null;
 
             function loadIfMoreVisible() {
