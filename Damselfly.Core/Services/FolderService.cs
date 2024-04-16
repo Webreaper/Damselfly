@@ -119,8 +119,6 @@ public class FolderService : IFolderService
             folder.MetaData = item;
         }
 
-        ;
-
         var parent = folder.Parent;
 
         while ( parent != null )

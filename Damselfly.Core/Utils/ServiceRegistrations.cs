@@ -83,6 +83,9 @@ public static class ServiceRegistrations
         services.AddScoped<WordpressService>();
         services.AddScoped<SystemSettingsService>();
         services.AddScoped<UserManagementService>();
+        services.AddScoped<AlbumService>();
+        services.AddScoped<ImageService>();
+        services.AddScoped<EmailMailGunService>();
 
         services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<SystemSettingsService>());
@@ -92,36 +95,35 @@ public static class ServiceRegistrations
         return services;
     }
 
-    public static IServiceCollection AddBlazorServerScopedServices(this IServiceCollection services)
-    {
-        services.AddScoped<ServerSearchService>();
-        services.AddScoped<SearchQueryService>();
-        services.AddScoped<NavigationService>();
-        services.AddScoped<BasketService>();
-        services.AddScoped<UserFolderService>();
-        services.AddScoped<UserService>();
-        services.AddScoped<SelectionService>();
-        services.AddScoped<UserConfigService>();
-        services.AddScoped<ViewDataService>();
-        services.AddScoped<UserThemeService>();
-        services.AddScoped<UserTagRecentsService>();
-        services.AddScoped<NotificationsService>();
-        services.AddScoped<ServerUserStatusService>();
-        services.AddScoped<WordpressService>();
-        services.AddScoped<SystemSettingsService>();
-        services.AddScoped<ApplicationStateService>();
-        services.AddScoped<UserManagementService>();
-        services.AddScoped<AlbumService>();
-        services.AddScoped<ImageService>();
+    //public static IServiceCollection AddBlazorServerScopedServices(this IServiceCollection services)
+    //{
+    //    services.AddScoped<ServerSearchService>();
+    //    services.AddScoped<SearchQueryService>();
+    //    services.AddScoped<NavigationService>();
+    //    services.AddScoped<BasketService>();
+    //    services.AddScoped<UserFolderService>();
+    //    services.AddScoped<UserService>();
+    //    services.AddScoped<SelectionService>();
+    //    services.AddScoped<UserConfigService>();
+    //    services.AddScoped<ViewDataService>();
+    //    services.AddScoped<UserThemeService>();
+    //    services.AddScoped<UserTagRecentsService>();
+    //    services.AddScoped<NotificationsService>();
+    //    services.AddScoped<ServerUserStatusService>();
+    //    services.AddScoped<WordpressService>();
+    //    services.AddScoped<SystemSettingsService>();
+    //    services.AddScoped<ApplicationStateService>();
+    //    services.AddScoped<UserManagementService>();
 
-        services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
-        services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
-        services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
-        services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());
-        services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
-        services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
-        services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<UserManagementService>());
 
-        return services;
-    }
+    //    services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
+    //    services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
+    //    services.AddScoped<IUserService>(x => x.GetRequiredService<UserService>());
+    //    services.AddScoped<ISearchService>(x => x.GetRequiredService<ServerSearchService>());
+    //    services.AddScoped<IBasketService>(x => x.GetRequiredService<BasketService>());
+    //    services.AddScoped<IUserStatusService>(x => x.GetRequiredService<ServerUserStatusService>());
+    //    services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<UserManagementService>());
+
+    //    return services;
+    //}
 }

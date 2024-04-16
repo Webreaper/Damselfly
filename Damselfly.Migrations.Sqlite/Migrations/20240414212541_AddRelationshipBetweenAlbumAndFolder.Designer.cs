@@ -3,6 +3,7 @@ using System;
 using Damselfly.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Damselfly.Core.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    partial class ImageContextModelSnapshot : ModelSnapshot
+    [Migration("20240414212541_AddRelationshipBetweenAlbumAndFolder")]
+    partial class AddRelationshipBetweenAlbumAndFolder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.2");
@@ -132,21 +135,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "20d5cc14-5769-41ea-aae8-491f03081201",
+                            ConcurrencyStamp = "127a2f82-b5f3-4739-9659-17d5cf31aac8",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "fbc664de-584b-4e35-8ca0-7b7feda069b6",
+                            ConcurrencyStamp = "a79a5b6a-1f9b-4206-84b5-a972365c72da",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "cb9f60f3-dd74-4c9f-aefd-7f6073d25639",
+                            ConcurrencyStamp = "c3a5aae7-317c-4204-9aaf-270ff4200c79",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -196,6 +199,7 @@ namespace Damselfly.Core.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Password")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UrlName")

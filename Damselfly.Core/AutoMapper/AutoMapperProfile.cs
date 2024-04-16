@@ -19,6 +19,8 @@ namespace Damselfly.Core.AutoMapper
             CreateMap<AlbumModel, Album>();
             CreateMap<ImageModel, Image>();
             CreateMap<Image, ImageModel>();
+            CreateMap<ImageMetaData, ImageMetaDataModel>();
+            CreateMap<ImageMetaDataModel, ImageMetaData>();
         }
     }
 }

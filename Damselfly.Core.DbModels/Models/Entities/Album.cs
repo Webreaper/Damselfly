@@ -14,12 +14,14 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public string UrlName { get; set; } 
         public string Description { get; set; }
         public bool IsPublic { get; set; }
-        public string Password { get; set; }
+        public string? Password { get; set; }
         public int? CoverImageId { get; set; }
+        public int FolderId { get; set; }
 
         public virtual List<Image> Images { get; set; } = [];
 
         public virtual Image? CoverImage { get; set; }
+        public virtual Folder Folder { get; set; }
 
     }
 }

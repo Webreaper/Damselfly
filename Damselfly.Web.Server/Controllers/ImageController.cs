@@ -15,30 +15,24 @@ namespace Damselfly.Web.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [Route("images")]
 [ApiController]
-public class ImageController : Controller
+public class ImageController(ImageService imageService, ILogger<ImageController> logger) : Controller
 {
-    private ILogger<ImageController> _logger;
-    private readonly ImageService _imageService;
-
-    public ImageController(ILogger<ImageController> logger)
-    {
-        _logger = logger;
-    }
+    private ILogger<ImageController> _logger = logger;
+    private readonly ImageService _imageService = imageService;
 
     
     [HttpPost]
     [Route("upload")]
     public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest uploadImageRequest)
     {
+        _logger.LogInformation($"Uploading {uploadImageRequest.ImageFiles.Count} image(s)");
         var watch = new Stopwatch("ControllerPostImage");
 
-        IActionResult result = BadRequest();
-
-        
+        var result = await _imageService.CreateImages(uploadImageRequest);
 
         watch.Stop();
 
-        return Ok();
+        return Ok(result);
     }
 
     [Produces("image/jpeg")]

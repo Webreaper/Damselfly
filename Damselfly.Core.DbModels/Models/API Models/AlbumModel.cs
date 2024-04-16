@@ -13,7 +13,9 @@ namespace Damselfly.Core.DbModels.Models.API_Models
         public string UrlName { get; set; }
         public string Description { get; set; }
         public bool IsPublic { get; set; }
-        public string Password { get; set; }
+        public string? Password { get; set; }
         public int? CoverImageId { get; set; }
+
+        public List<ImageModel> Images { get; set; } = new List<ImageModel>();
     }
 }

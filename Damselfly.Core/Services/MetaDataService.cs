@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -613,15 +613,15 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         {
             var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
 
-            if( lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) &&
-                      lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
-            {
-                // If the last-write time is within 30s of now, but it's not a time far in the future
-                // we skip it, as it's possible it might still be mid-copy.
-                // TODO: We need a better way of managing this
-                Logging.LogVerbose($"Skipping metadata scan for {img.FileName} - write time is too recent.");
-                return;
-            }
+            //if( lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) &&
+            //          lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
+            //{
+            //    // If the last-write time is within 30s of now, but it's not a time far in the future
+            //    // we skip it, as it's possible it might still be mid-copy.
+            //    // TODO: We need a better way of managing this
+            //    Logging.LogVerbose($"Skipping metadata scan for {img.FileName} - write time is too recent.");
+            //    return;
+            //}
 
             var imgMetaData = img.MetaData;
 

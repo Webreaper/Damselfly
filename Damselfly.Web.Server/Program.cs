@@ -89,11 +89,16 @@ public class Program
 
         SetupIdentity(builder.Services);
 
+        
+
         // Cache up to 10,000 images. Should be enough given cache expiry.
         builder.Services.AddMemoryCache(x => x.SizeLimit = 5000);
 
         builder.Services.AddControllers()
-            .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
+            .AddJsonOptions(o => { 
+                o.JsonSerializerOptions.AllowTrailingCommas = true;
+                o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+                RestClient.SetJsonOptions(o.JsonSerializerOptions); });
         builder.Services.AddControllersWithViews()
             .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
         builder.Services.AddRazorPages()
@@ -143,6 +148,7 @@ public class Program
 
         if( app.Configuration["DamselflyConfiguration:NoGenerateThumbnails"] == "true" )
             configService.Set( ConfigSettings.EnableBackgroundThumbs, false.ToString() );
+        
 
         Logging.ChangeLogLevel(logLevel);
 
