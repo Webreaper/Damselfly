@@ -241,8 +241,8 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     }
 
     /// <summary>
-    ///     Checks the folder, and any recursive children, to ensure it still exists
-    ///     on the disk. If it doesn't, removes the child folders from the databas.
+    /// Checks the folder, and any recursive children, to ensure it still exists
+    /// on the disk. If it doesn't, removes the child folders from the databas.
     /// </summary>
     /// <param name="db"></param>
     /// <param name="folderToScan"></param>
@@ -279,6 +279,11 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 await db.SaveChangesAsync("DeleteFolders");
                 foldersChanged = true;
             }
+            
+            // Clean up folderstates for users
+            await db.UserFolderStates
+                .Where( x => !db.Folders.Select( f => f.FolderId).Contains(x.FolderId))
+                .ExecuteDeleteAsync();
         }
         catch ( Exception ex )
         {
