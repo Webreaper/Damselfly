@@ -32,7 +32,7 @@ public class ClientFolderService : IFolderService
 
     public async Task SaveFolderState(UserFolderState newState)
     {
-        await httpClient.CustomPostAsJsonAsync($"/api/folders/state/", newState);
+        await httpClient.CustomPostAsJsonAsync($"/api/folders/state", newState);
     }
 
     public event Action? OnChange;

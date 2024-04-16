@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Constants;
+﻿using System.Collections.Specialized;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
@@ -17,7 +18,8 @@ public class UserFolderService : IDisposable, IUserFolderService
     private readonly ISearchService _searchService;
     private readonly IUserService _userService;
     
-    private ICollection<Folder>? folderItems;
+    private ICollection<Folder>? folderItems; // Ordered as returned from the service
+    private Dictionary<int, Folder> folderLookup = new();
     private IDictionary<int, UserFolderState> folderStates;
 
     public UserFolderService(IFolderService folderService, 
@@ -64,19 +66,13 @@ public class UserFolderService : IDisposable, IUserFolderService
         {
             // Load the folders if we haven't already.
             folderItems = await _folderService.GetFolders();
-            folderStates = await _folderService.GetUserFolderStates(_userService.UserId);
-            
-            // Fill in any that don't have a folder state (since we only persist expanded folders)
-            foreach( var folder in folderItems )
+            folderLookup = folderItems.ToDictionary(x => x.FolderId, x => x);
+
+            if( _userService.UserId.HasValue )
             {
-                if( !folderStates.ContainsKey(folder.FolderId))
-                    folderStates.Add( folder.FolderId, new UserFolderState
-                    {
-                        // Default expanded state is true if there are subfolders
-                        Expanded = folder.HasSubFolders,
-                        Folder = folder
-                    });
-            }    
+                var userId = _userService.UserId.Value;
+                folderStates = await _folderService.GetUserFolderStates(userId);
+            }
         }
 
         var rootFolderItem = folderItems.FirstOrDefault();
@@ -125,10 +121,9 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public Task<Folder?> GetFolder(int folderId)
     {
-        Folder? result = null;
-        if ( folderStates.TryGetValue(folderId, out var folderState) )
-            result = folderState.Folder;
-
+        if ( ! folderLookup.TryGetValue(folderId, out var result) )
+            result = null;
+        
         return Task.FromResult( result );
     }
 

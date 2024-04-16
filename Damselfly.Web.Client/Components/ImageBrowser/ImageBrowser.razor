@@ -2,7 +2,6 @@
 
     <div class="imagebrowser">
         <DetailedErrorBoundary>
-            <MudSwipeArea OnSwipe="HandleSwipe" style="display: flex; flex: 1; min-height: 0;"/>
             <SearchBar OnGridSizeChanged="GridSizeChanged"/>
             <ImageGrid CurrentGridSize="@gridSize"/>
         </DetailedErrorBoundary>
@@ -10,12 +9,6 @@
     
 @code {
     private GridImageSize gridSize { get; set; }
-
-    private void HandleSwipe( SwipeDirection direction )
-    {
-        if( direction == SwipeDirection.TopToBottom )
-            searchService.Refresh();
-    }
     
     private void GridSizeChanged(GridImageSize newSize)
     {
