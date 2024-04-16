@@ -38,7 +38,7 @@ public class FolderService : IFolderService
         // Initiate pre-loading the folders.
         _ = LoadFolders();
     }
-
+    
     public event Action OnChange;
 
     public Task<ICollection<Folder>> GetFolders()
@@ -51,14 +51,15 @@ public class FolderService : IFolderService
     {
         using var scope = _scopeFactory.CreateScope();
         await using var db = scope.ServiceProvider.GetService<ImageContext>();
-
+        var result = new Dictionary<int, UserFolderState>();
+        
         var watch = new Stopwatch("GetUserFolderStates");
         
         Logging.Log($"Loading folder states for user {userId}...");
 
         try
         {
-            return await db.UserFolderStates
+            result = await db.UserFolderStates
                                  .Where( x => x.UserId == userId)
                                  .ToDictionaryAsync(x => x.FolderId, x => x);
         }
@@ -69,7 +70,37 @@ public class FolderService : IFolderService
 
         watch.Stop();
 
-        return new Dictionary<int, UserFolderState>();
+        return result;
+    }
+
+    public async Task SaveFolderState(UserFolderState newState)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        await using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var watch = new Stopwatch("SaveUserFolderState");
+        
+        Logging.Log($"Saving folder state for {newState.Folder.Name}, user {newState.UserId}...");
+
+        try
+        {
+            if( newState.Expanded )
+            {
+                db.UserFolderStates.Add( newState);
+                await db.SaveChangesAsync("SaveUserFolderState");
+            }
+            else
+            {
+                // If it's not expanded, delete it
+                db.BulkDelete(db.UserFolderStates, [newState]);
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Error saving folder states: {ex.Message}");
+        }
+
+        watch.Stop();
     }
 
     private void OnFoldersChanged()

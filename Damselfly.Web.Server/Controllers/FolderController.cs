@@ -45,4 +45,10 @@ public class FolderController : ControllerBase
     {
         return await _service.GetUserFolderStates(userId);
     }
+    
+    [HttpPost("/api/folders/state")]
+    public async Task UpdateFolderState(UserFolderState newState)
+    {
+        await _service.SaveFolderState(newState);
+    }
 }

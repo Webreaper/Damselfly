@@ -139,7 +139,10 @@ public class UserFolderService : IDisposable, IUserFolderService
     public void ToggleExpand(Folder item)
     {
         if ( folderStates.TryGetValue(item.FolderId, out var folderState) )
+        {
             folderState.Expanded = !folderState.Expanded;
+            _folderService.SaveFolderState(folderState);
+        }
     }
 
     private void OnFolderChanged()

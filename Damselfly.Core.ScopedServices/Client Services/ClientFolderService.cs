@@ -30,6 +30,11 @@ public class ClientFolderService : IFolderService
         return new Dictionary<int, UserFolderState>();
     }
 
+    public async Task SaveFolderState(UserFolderState newState)
+    {
+        await httpClient.CustomPostAsJsonAsync($"/api/folders/state/", newState);
+    }
+
     public event Action? OnChange;
 
     public async Task<ICollection<Folder>> GetFolders()
