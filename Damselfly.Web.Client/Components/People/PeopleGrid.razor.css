@@ -12,6 +12,17 @@
     padding: 20px;
     margin: 20px;
 }
+.damselfly-searchmsg {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex: 1 1;
+    animation: fadeIn ease 1s;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    margin-top: 25vh;
+}
 
 .damselfly-imageseparator {
     width: 100%;
