@@ -10,6 +10,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 
 namespace Damselfly.Core.Services;
 
@@ -24,7 +25,8 @@ public class FolderService : IFolderService
     private readonly EventConflator conflator = new( 10 * 1000 );
     private List<Folder> allFolders = new();
 
-    public FolderService(IndexingService _indexingService, IServiceScopeFactory scopeFactory,
+    public FolderService(IndexingService _indexingService, 
+        IServiceScopeFactory scopeFactory,
         ServerNotifierService notifier)
     {
         _scopeFactory = scopeFactory;
@@ -43,6 +45,31 @@ public class FolderService : IFolderService
     {
         ICollection<Folder> result = allFolders;
         return Task.FromResult(result);
+    }
+
+    public async Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int? userId)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        await using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var watch = new Stopwatch("GetUserFolderStates");
+        
+        Logging.Log($"Loading folder states for user {userId}...");
+
+        try
+        {
+            return await db.UserFolderStates
+                                 .Where( x => x.UserId == userId)
+                                 .ToDictionaryAsync(x => x.FolderId, x => x);
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Error loading folder states: {ex.Message}");
+        }
+
+        watch.Stop();
+
+        return new Dictionary<int, UserFolderState>();
     }
 
     private void OnFoldersChanged()

@@ -12,21 +12,26 @@ namespace Damselfly.Core.ScopedServices;
 public class UserFolderService : IDisposable, IUserFolderService
 {
     private readonly IConfigService _configService;
-
     private readonly IFolderService _folderService;
     private readonly NotificationsService _notifications;
     private readonly ISearchService _searchService;
+    private readonly IUserService _userService;
+    
     private ICollection<Folder>? folderItems;
-    private IDictionary<int, FolderState> folderStates;
+    private IDictionary<int, UserFolderState> folderStates;
 
-    public UserFolderService(IFolderService folderService, ISearchService searchService, IConfigService configService,
-        NotificationsService notifications)
+    public UserFolderService(IFolderService folderService, 
+                ISearchService searchService, 
+                IConfigService configService,
+                IUserService userService,
+                NotificationsService notifications)
     {
         _folderService = folderService;
         _searchService = searchService;
+        _userService = userService;
         _configService = configService;
         _notifications = notifications;
-
+        
         _folderService.OnChange += OnFolderChanged;
 
         _notifications.SubscribeToNotification(NotificationType.FoldersChanged, OnFolderChanged);
@@ -59,9 +64,19 @@ public class UserFolderService : IDisposable, IUserFolderService
         {
             // Load the folders if we haven't already.
             folderItems = await _folderService.GetFolders();
-            // Default expanded state is true if there are subfolders
-            folderStates = folderItems.ToDictionary(x => x.FolderId,
-                y => new FolderState { Expanded = y.HasSubFolders, Folder = y });
+            folderStates = await _folderService.GetUserFolderStates(_userService.UserId);
+            
+            // Fill in any that don't have a folder state (since we only persist expanded folders)
+            foreach( var folder in folderItems )
+            {
+                if( !folderStates.ContainsKey(folder.FolderId))
+                    folderStates.Add( folder.FolderId, new UserFolderState
+                    {
+                        // Default expanded state is true if there are subfolders
+                        Expanded = folder.HasSubFolders,
+                        Folder = folder
+                    });
+            }    
         }
 
         var rootFolderItem = folderItems.FirstOrDefault();
@@ -148,11 +163,5 @@ public class UserFolderService : IDisposable, IUserFolderService
             descending ? f.Children.OrderBy(sortFunc) : f.Children.OrderByDescending(sortFunc);
 
         return new[] { f }.Concat(sortedChildren.SelectMany(x => SortedChildren(x, sortFunc, descending)));
-    }
-
-    private class FolderState
-    {
-        public Folder Folder { get; set; }
-        public bool Expanded { get; set; }
     }
 }

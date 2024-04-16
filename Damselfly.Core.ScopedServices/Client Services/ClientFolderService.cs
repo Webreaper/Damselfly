@@ -20,6 +20,16 @@ public class ClientFolderService : IFolderService
         OnChange = null;
     }
 
+    public async Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int? userId)
+    {
+        if( userId != null )
+        {
+            return await httpClient.CustomGetFromJsonAsync<Dictionary<int, UserFolderState>>($"/api/folders/states/{userId}");
+        }
+
+        return new Dictionary<int, UserFolderState>();
+    }
+
     public event Action? OnChange;
 
     public async Task<ICollection<Folder>> GetFolders()
