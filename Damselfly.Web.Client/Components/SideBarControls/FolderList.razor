@@ -26,8 +26,7 @@
     </div>
     @if (folderItems == null)
     {
-        <p>Loading...</p>
-        <MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small" />
+        <ProgressSpinner ProgressText="Loading folders..."/>
     }
     else
     {

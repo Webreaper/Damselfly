@@ -13,9 +13,7 @@
 <div class="imagegrid" id="scroll-area">
     @if (!gridImages.Any())
     {
-        <div class="damselfly-searchmsg">
-            <div>@ResultsMessage</div>
-        </div>
+        <ProgressSpinner ProgressText="@ResultsMessage"/>
     }
     else
     {
@@ -66,7 +64,7 @@
         if (!endOfImages)
         {
             <div class="damselfly-moreimages" id="list-end">
-                <MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
+                <ProgressSpinner ProgressText="Loading..."/>
             </div>
         }
         else
