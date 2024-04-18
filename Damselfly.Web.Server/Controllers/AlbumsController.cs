@@ -1,5 +1,6 @@
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models.API_Models;
+using Damselfly.Core.DbModels.Models.Entities;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,22 +36,27 @@ namespace Damselfly.Web.Server.Controllers
         }
 
         [HttpGet]
-        [Route("get/{id}/{password}")]
-        public async Task<IActionResult> GetAlbumWithPassword(int id, string? password)
+        [Route("all")]
+        public async Task<IActionResult> GetAllAlbums()
         {
 
-            var result = await _albumService.GetAlbum(id, password);
+            var result = await _albumService.GetAlbums();
 
             return Ok(result);
         }
 
         [HttpGet]
-        [Route("get/{id}")]
-        public async Task<IActionResult> GetAlbum(int id)
+        [Route("{id}")]
+        public async Task<IActionResult> GetAlbum(string id, [FromQuery] string? password)
         {
-
-            var result = await _albumService.GetAlbum(id, null);
-
+            if (int.TryParse(id, out var numId))
+            {
+                var album = await _albumService.GetAlbum(numId, password);
+                if(album == null) return NotFound();
+                return Ok(album);
+            }
+            var result = await _albumService.GetByName(id, password);
+            if( result == null ) return NotFound();
             return Ok(result);
         }
     }

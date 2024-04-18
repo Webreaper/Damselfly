@@ -169,6 +169,8 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Album>().HasMany(Image => Image.Images)
             .WithMany(Album => Album.Albums);
 
+        modelBuilder.Entity<Album>().Property(x => x.Password).HasDefaultValue(0);
+
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });

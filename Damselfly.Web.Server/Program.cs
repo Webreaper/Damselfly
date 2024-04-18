@@ -132,6 +132,17 @@ public class Program
             builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(port); });
         }
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(
+                "AllowAllOrigins",
+                builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                }
+            );
+        });
+
         var app = builder.Build();
 
         Logging.Logger = app.Services.GetRequiredService<ILogger>();
@@ -181,6 +192,7 @@ public class Program
         app.UseResponseCompression();
         app.UseRouting();
         app.UseAntiforgery();
+        app.UseCors("AllowAllOrigins");
 
         if( Debugger.IsAttached )
         {

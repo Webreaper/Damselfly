@@ -22,7 +22,8 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
 
     
     [HttpPost]
-    [Route("upload")]
+    [ProducesResponseType(typeof(List<ImageModel>), 200)]
+    [Route("/upload")]
     public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest uploadImageRequest)
     {
         _logger.LogInformation($"Uploading {uploadImageRequest.ImageFiles.Count} image(s)");
@@ -33,6 +34,17 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
         watch.Stop();
 
         return Ok(result);
+    }
+
+    [HttpGet]
+    [Route("/imageData/{id}")]
+    [ProducesResponseType(typeof(ImageModel), 200)]
+    public async Task<IActionResult> GetImageData(int id)
+    {
+        var image = await _imageService.GetImageData(id);
+        if ( image == null )
+            return NotFound();
+        return Ok(image);
     }
 
     [Produces("image/jpeg")]

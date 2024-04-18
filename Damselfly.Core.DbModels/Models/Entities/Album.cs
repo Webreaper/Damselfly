@@ -13,6 +13,7 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public string Name { get; set; }
         public string UrlName { get; set; } 
         public string Description { get; set; }
+        public int InvalidPasswordAttempts { get; set; }
         public bool IsPublic { get; set; }
         public string? Password { get; set; }
         public int? CoverImageId { get; set; }

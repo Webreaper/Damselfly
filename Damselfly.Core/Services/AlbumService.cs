@@ -66,15 +66,19 @@ namespace Damselfly.Core.Services
             return false;
         }
 
-        public async Task<AlbumModel> GetAlbum(int id, string? password)
+        public async Task<AlbumModel?> GetAlbum(int id, string? password)
         {
-            var album = await AlbumWithImagesQuery().FirstOrDefaultAsync(a => a.AlbumId == id && password == a.Password);
+            var album = await AlbumWithImagesQuery().FirstOrDefaultAsync(a => a.AlbumId == id);
+            if (album == null) return null;
+            album = await CheckPassword(album, password);
             return _mapper.Map<AlbumModel>(album);
         }
 
-        public async Task<AlbumModel> GetByName(string urlName, string? password)
+        public async Task<AlbumModel?> GetByName(string urlName, string? password)
         {
-            var album = await AlbumWithImagesQuery().FirstOrDefaultAsync(a => a.UrlName == urlName && password == a.Password);
+            var album = await AlbumWithImagesQuery().FirstOrDefaultAsync(a => a.UrlName == urlName);
+            if( album == null ) return null;
+            album = await CheckPassword(album, password);
             return _mapper.Map<AlbumModel>(album);
         }
 
@@ -82,6 +86,31 @@ namespace Damselfly.Core.Services
         {
             var albums = await _context.Albums.ToListAsync();
             return _mapper.Map<List<AlbumModel>>(albums);
+        }
+
+        public async Task<AlbumModel> UnlockAlbum(int id)
+        {
+            var album = await _context.Albums.FirstOrDefaultAsync(a => a.AlbumId == id);
+            if( album == null ) throw new Exception("Album not found");
+            album.InvalidPasswordAttempts = 0;
+            await _context.SaveChangesAsync();
+            return _mapper.Map<AlbumModel>(album);
+        }
+
+        private async Task<Album> CheckPassword(Album album, string? password)
+        {
+            if (album.IsPublic || album.Password == null) return album;
+            if (password == null) return null;
+            if (album.InvalidPasswordAttempts > 4) return null;
+            if (album.Password == password)
+            {
+                album.InvalidPasswordAttempts = 0;
+                await _context.SaveChangesAsync();
+                return album;
+            }
+            album.InvalidPasswordAttempts++;
+            await _context.SaveChangesAsync();
+            return null;
         }
 
         private IQueryable<Album> AlbumWithImagesQuery()

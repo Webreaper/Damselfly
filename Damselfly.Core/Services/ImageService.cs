@@ -2,6 +2,7 @@ using AutoMapper;
 using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -23,20 +24,18 @@ namespace Damselfly.Core.Services
 
         public async Task<List<ImageModel>> CreateImages(UploadImageRequest uploadImageRequest)
         {
-            var album = _context.Albums.FirstOrDefault(a => a.AlbumId == uploadImageRequest.AlbumId);
+            var album = _context.Albums.Include(a => a.Folder).FirstOrDefault(a => a.AlbumId == uploadImageRequest.AlbumId);
             if( album == null )
             {
                 throw new Exception("Album not found");
             }
-            var rootPath = _configuration["DamselflyConfiguration:SourceDirectory"];
-            var filePath = Path.Combine(rootPath, album.Name);
             var images = new List<Image>();
             foreach (var imageFile in uploadImageRequest.ImageFiles)
             {
                 using( var memoryStream = new MemoryStream() )
                 {
                     await imageFile.OpenReadStream().CopyToAsync(memoryStream);
-                    var imagePath = Path.Combine(filePath, imageFile.FileName);
+                    var imagePath = Path.Combine(album.Folder.Path, imageFile.FileName);
                     await File.WriteAllBytesAsync(imagePath, memoryStream.ToArray());
                 }
                 
@@ -59,6 +58,16 @@ namespace Damselfly.Core.Services
             }
             return imageModels;
             
+        }
+
+        public async Task<ImageModel> GetImageData(int id)
+        {
+            var image = await _context.Images.Include(i => i.MetaData).FirstOrDefaultAsync(i => i.ImageId == id);
+            if( image == null )
+            {
+                return null;
+            }
+            return _mapper.Map<ImageModel>(image);
         }
 
     }
