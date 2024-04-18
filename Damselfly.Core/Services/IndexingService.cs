@@ -65,19 +65,23 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 .Take(maxCount)
                 .ToArrayAsync();
 
+            // Filter any that were modified in the last 30 seconds, so we don't spend all
+            // day indexing if lots of files are changing - i.e., conflate subsequent
+            // index calls
             var jobs = folders.Select(x => new IndexProcess
                 {
                     Path = new DirectoryInfo(x.Path),
                     Service = this,
                     Name = "Indexing"
                 })
+                .Where( NotModifiedInLast30s )
                 .ToArray();
 
             return jobs;
         }
+
         // We always perform a full index at startup. This checks the
         // state of the folders/images, and also creates the filewatchers
-
         _fullIndexComplete = true;
         Logging.Log("Performing full index.");
 
@@ -93,6 +97,13 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         };
     }
 
+    private static bool NotModifiedInLast30s( IndexProcess job )
+    {
+        var timeSinceLastWrite = DateTime.UtcNow - job.Path.LastWriteTimeUtc;
+
+        return timeSinceLastWrite.Seconds > 30;
+    }
+    
     public async Task MarkFolderForScan(int folderId)
     {
         await MarkFoldersForScan(new List<int> { folderId });
