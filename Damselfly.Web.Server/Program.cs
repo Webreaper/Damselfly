@@ -24,6 +24,7 @@ using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Tensorflow;
 
 namespace Damselfly.Web;
 
@@ -87,7 +88,7 @@ public class Program
 
         SetupDbContext(builder);
 
-        SetupIdentity(builder.Services);
+        SetupIdentity(builder.Services, builder.Configuration);
 
         
 
@@ -251,7 +252,7 @@ public class Program
         }
     }
 
-    private static void SetupIdentity(IServiceCollection services)
+    private static void SetupIdentity(IServiceCollection services, ConfigurationManager configuration)
     {
         services.AddDefaultIdentity<AppIdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
             .AddRoles<ApplicationRole>()
@@ -260,17 +261,16 @@ public class Program
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.Audience = configuration["Jwt:Firebase:ValidAudience"];
+                options.Authority = configuration["Jwt:Firebase:ValidIssuer"];
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = "https://localhost",
-                    ValidAudience = "https://localhost",
-                    IssuerSigningKey =
-                        new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes("BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama"))
+                    ValidIssuer = configuration["Jwt:Firebase:ValidIssuer"],
+                    ValidAudience = configuration["Jwt:Firebase:ValidAudience"]
                 };
             });
 

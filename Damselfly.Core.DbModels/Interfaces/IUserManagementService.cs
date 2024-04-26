@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.APIModels;
@@ -17,4 +18,5 @@ public interface IUserMgmtService
     Task<UserResponse> CreateNewUser(string userName, string email, string password, ICollection<string>? roles = null);
     Task<ICollection<ApplicationRole>> GetRoles();
     Task AddUserToDefaultRoles(AppIdentityUser user);
+    Task<AppIdentityUser> GetOrCreateUser(ClaimsPrincipal user);
 }

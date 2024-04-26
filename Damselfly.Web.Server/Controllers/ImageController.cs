@@ -1,11 +1,13 @@
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +25,8 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     
     [HttpPost]
     [ProducesResponseType(typeof(List<ImageModel>), 200)]
-    [Route("/upload")]
+    [Route("upload")]
+    [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
     public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest uploadImageRequest)
     {
         _logger.LogInformation($"Uploading {uploadImageRequest.ImageFiles.Count} image(s)");
@@ -37,14 +40,26 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     }
 
     [HttpGet]
-    [Route("/imageData/{id}")]
+    [Route("imageData/{id}")]
     [ProducesResponseType(typeof(ImageModel), 200)]
-    public async Task<IActionResult> GetImageData(int id)
+    public async Task<IActionResult> GetImageData(int id, [FromQuery] string? password)
     {
-        var image = await _imageService.GetImageData(id);
+        var image = await _imageService.GetImageData(id, password);
         if ( image == null )
             return NotFound();
         return Ok(image);
+    }
+
+    [HttpDelete]
+    [Route("{id}")]
+    [ProducesResponseType(typeof(BooleanResultModel), 200)]
+    [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+    public async Task<IActionResult> DeleteImage(int id)
+    {
+        var result = await _imageService.DeleteImage(id);
+        if ( result )
+            return Ok(new BooleanResultModel{ Result = true });
+        return NotFound();
     }
 
     [Produces("image/jpeg")]
@@ -98,7 +113,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     [Produces("image/jpeg")]
     [HttpGet("/thumb/{thumbSize}/{imageId}")]
     public async Task<IActionResult> Thumb(string thumbSize, string imageId, CancellationToken cancel,
-        [FromServices] ImageCache imageCache, [FromServices] ThumbnailService thumbService)
+        [FromServices] ImageCache imageCache, [FromServices] ThumbnailService thumbService, [FromQuery] string? password)
     {
         var watch = new Stopwatch("ControllerGetThumb");
 
@@ -108,7 +123,11 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
             try
             {
                 Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
-
+                var hasPermission = await _imageService.CheckPassword(id, password);
+                if (!hasPermission)
+                {
+                    return Unauthorized();
+                }
                 var image = await imageCache.GetCachedImage(id);
 
                 if ( cancel.IsCancellationRequested )

@@ -1,7 +1,8 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,17 +11,12 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsDownloader)]
 [ApiController]
 [Route("/api/download")]
-public class DownloadController : ControllerBase
+public class DownloadController(IDownloadService service, ILogger<DownloadController> logger, ImageService imageService) : ControllerBase
 {
-    private readonly IDownloadService _downloadService;
+    private readonly IDownloadService _downloadService = service;
+    private readonly ImageService _imageService = imageService;
 
-    private readonly ILogger<DownloadController> _logger;
-
-    public DownloadController(IDownloadService service, ILogger<DownloadController> logger)
-    {
-        _downloadService = service;
-        _logger = logger;
-    }
+    private readonly ILogger<DownloadController> _logger = logger;
 
     [HttpGet("/api/download/desktopapppaths")]
     public async Task<DesktopAppPaths> DesktopAppPaths()
@@ -31,7 +27,15 @@ public class DownloadController : ControllerBase
     [HttpPost("/api/download/images")]
     public async Task<DownloadResponse> GetImagesDownload(DownloadRequest req)
     {
-        var url = await _downloadService.CreateDownloadZipAsync(req.ImageIds, req.Config);
+        var authorizedImages = new List<int>();
+        foreach( var id in req.ImageIds )
+        {
+            if( await _imageService.CheckPassword(id, req.Password) )
+            {
+                authorizedImages.Add(id);
+            }
+        }
+        var url = await _downloadService.CreateDownloadZipAsync(authorizedImages, req.Config);
         return new DownloadResponse { DownloadUrl = url };
     }
 }

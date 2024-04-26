@@ -1,11 +1,11 @@
-﻿using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers;
 
-//[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/users")]
 public class UserManagementController : ControllerBase
@@ -19,36 +19,14 @@ public class UserManagementController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("/api/users/roles")]
-    public async Task<ICollection<ApplicationRole>> GetAllRoles()
+    [HttpPost]
+    [Authorize]
+    [Route("signedIn")]
+    public async Task<IActionResult> SignedIn()
     {
-        return await _service.GetRoles();
+        var user = HttpContext.User;
+        var appUser = await _service.GetOrCreateUser(user);
+        return Ok(new BooleanResultModel { Result = true });
     }
 
-    [HttpGet("/api/users")]
-    public async Task<ICollection<AppIdentityUser>> GetAllUsers()
-    {
-        return await _service.GetUsers();
-    }
-
-    [HttpGet("/api/user/{userId}")]
-    public async Task<AppIdentityUser> GetUser( int userId )
-    {
-        return await _service.GetUser( userId );
-    }
-
-    [HttpPut("/api/users")]
-    public async Task<UserResponse> CreateUser(UserRequest request)
-    {
-        return await _service.CreateNewUser(request.UserName, request.Email, request.Password, request.Roles);
-    }
-
-    [HttpPost("/api/users")]
-    public async Task<UserResponse> UpdateUser(UserRequest request)
-    {
-        if ( request.Roles != null && request.Roles.Any() )
-            return await _service.UpdateUserAsync(request.UserName, request.Email, request.Roles);
-
-        return await _service.SetUserPasswordAsync(request.UserName, request.Password);
-    }
 }

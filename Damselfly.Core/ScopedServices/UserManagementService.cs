@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
@@ -11,6 +12,7 @@ using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 // Avoid namespace clashes with IAuthorizationService extension methods
 
@@ -23,21 +25,25 @@ namespace Damselfly.Core.ScopedServices;
 /// </summary>
 public class UserManagementService : IUserMgmtService
 {
+    
     private readonly ConfigService _configService;
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IStatusService _statusService;
     private readonly UserManager<AppIdentityUser> _userManager;
+    private readonly IConfiguration _config;
 
     public UserManagementService(RoleManager<ApplicationRole> roleManager,
         UserManager<AppIdentityUser> userManager,
         IStatusService statusService,
         ConfigService configService,
-        IAuthorizationService authService)
+        IAuthorizationService authService,
+        IConfiguration config)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _statusService = statusService;
         _configService = configService;
+        _config = config;
     }
 
     public bool RolesEnabled => _configService.GetBool(ConfigSettings.EnablePoliciesAndRoles, true);
@@ -334,5 +340,27 @@ public class UserManagementService : IUserMgmtService
             Logging.Log($"SyncUserRoles: {prefix}{changes}");
 
         return result;
+    }
+
+
+    public async Task<AppIdentityUser> GetOrCreateUser(ClaimsPrincipal user)
+    {
+        var userEmail = user.Claims.FirstOrDefault(x => x.Type == DamselflyContants.EmailClaim)?.Value;
+        var appUser = await _userManager.FindByEmailAsync(userEmail);
+        if (appUser == null)
+        {
+            var adminEmails = _config["AdminEmails"].Split(',');
+            var newUser = new AppIdentityUser
+            {
+                UserName = userEmail,
+                Email = userEmail,
+                
+            };
+            var createResult = await _userManager.CreateAsync(newUser);
+            appUser = await _userManager.FindByEmailAsync(user.Claims.FirstOrDefault(x => x.Type == DamselflyContants.EmailClaim)?.Value);
+            if (adminEmails.Contains(userEmail))
+                await _userManager.AddToRolesAsync(newUser, [RoleDefinitions.s_AdminRole]);
+        }
+        return appUser;
     }
 }

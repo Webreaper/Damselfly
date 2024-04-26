@@ -24,5 +24,6 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public virtual Image? CoverImage { get; set; }
         public virtual Folder Folder { get; set; }
 
+        public const int MaxInvalidPasswordAttempts = 4;
     }
 }

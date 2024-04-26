@@ -18,6 +18,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("api/contact")]
+        [ProducesResponseType(typeof(BooleanResultModel), 200)]
         public async Task<IActionResult> Contact(ContactRequest request)
         {
             if (!ModelState.IsValid)
@@ -30,11 +31,11 @@ namespace Damselfly.Web.Server.Controllers
             // encode input
             var htmlMessage = System.Net.WebUtility.HtmlEncode(request.Message);
             var htmlEmail = System.Net.WebUtility.HtmlEncode(request.Email);
-            var fullHtml = $"<p>From: ${htmlEmail}</p>" +
+            var fullHtml = $"<p>From: {htmlEmail}</p>" +
                 $"<p>{htmlMessage}</p>";
             await _emailService.SendEmailAsync(toEmail, $"Contact Request from {request.Email}", fullHtml);
 
-            return Ok();
+            return Ok(new BooleanResultModel { Result = true});
         }
     }
 }

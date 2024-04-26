@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -160,7 +160,7 @@ public class DownloadService : IDownloadService
         Logging.Log($"Preparing zip file from {filesToZip.Length} files.");
 
         // The actual zip filename
-        var zipfileName = $"DamselflyImages-{DateTime.UtcNow:dd-MMM-yy_hh_mm_ss}.zip";
+        var zipfileName = $"HoneyAndThyme-{DateTime.UtcNow:dd-MMM-yy_hh_mm_ss}.zip";
         // The http path the file
         var virtualZipPath = Path.Combine(s_downloadVPath, zipfileName);
         // The local server filesystem path

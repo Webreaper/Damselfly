@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Damselfly.Core.DbModels.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -9,8 +9,6 @@ public class UserRequest
 {
     public string? UserName { get; set; }
     public string? Email { get; set; }
-    public string? Password { get; set; }
-    public ICollection<string>? Roles { get; set; }
 }
 
 public class UserResponse

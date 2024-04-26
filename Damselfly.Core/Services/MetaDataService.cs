@@ -1003,6 +1003,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             _lensCache = new ConcurrentDictionary<string, Lens>(db.Lenses
                 .AsNoTracking()
+                .ToList()
+                .DistinctBy(x => (x.Make ?? "") + (x.Model ?? ""))
                 .ToDictionary(x => x.Make + x.Model, y => y));
         }
 
@@ -1013,6 +1015,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             _cameraCache = new ConcurrentDictionary<string, Camera>(db.Cameras
                 .AsNoTracking() // We never update, so this is faster
+                .ToList()
+                .DistinctBy(x => x.Make + x.Model)
                 .ToDictionary(x => x.Make + x.Model, y => y));
         }
     }

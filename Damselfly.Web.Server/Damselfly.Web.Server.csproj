@@ -74,7 +74,6 @@
         <Folder Include="wwwroot\" />
         <Folder Include="wwwroot\themes\" />
         <Folder Include="wwwroot\fonts\" />
-        <Folder Include="Areas\" />
         <Folder Include="Models\" />
     </ItemGroup>
 </Project>

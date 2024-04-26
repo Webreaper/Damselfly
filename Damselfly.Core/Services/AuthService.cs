@@ -5,10 +5,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Damselfly.Core.Services;
@@ -17,12 +20,14 @@ public class AuthService : IAuthService
 {
     private readonly UserManager<AppIdentityUser> _userManager;
     private readonly SignInManager<AppIdentityUser> _signInManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AuthService( UserManager<AppIdentityUser> userManager,
-                SignInManager<AppIdentityUser> signInManager)
+                SignInManager<AppIdentityUser> signInManager, IHttpContextAccessor httpContextAccessor)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _httpContextAccessor = httpContextAccessor;
     }
 
 
@@ -83,6 +88,29 @@ public class AuthService : IAuthService
         }
 
         return new RegisterResult { Successful = true };
+    }
+
+    public async Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles)
+    {
+        var user = _httpContextAccessor.HttpContext.User;
+        var userManager = _userManager;
+        var email = user.Claims.FirstOrDefault( u => u.Type == DamselflyContants.EmailClaim );
+        if( email == null )
+        {
+            return false;
+        }
+        var applicationUser = await userManager.FindByEmailAsync(email.Value);
+        if( applicationUser == null )
+        {
+            return false;
+        }
+        if( roles.Length == 0 )
+        {
+            return true;
+        }
+        var userRoles = await userManager.GetRolesAsync(applicationUser);
+        var hasRole = userRoles.Any(r => roles.Contains(r));
+        return hasRole;
     }
 }
 

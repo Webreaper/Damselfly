@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using Blazored.LocalStorage;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -53,5 +53,10 @@ public class ClientAuthService : IAuthService
         await _localStorage.RemoveItemAsync("authToken");
         ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
         _httpClient.AuthHeader = null;
+    }
+
+    public Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles)
+    {
+        throw new NotImplementedException();
     }
 }

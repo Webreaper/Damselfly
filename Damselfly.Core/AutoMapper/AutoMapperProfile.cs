@@ -15,7 +15,8 @@ namespace Damselfly.Core.AutoMapper
 
         public AutoMapperProfile()
         {
-            CreateMap<Album, AlbumModel>();
+            CreateMap<Album, AlbumModel>()
+                .ForMember(am => am.IsLocked, c => c.MapFrom(a => a.InvalidPasswordAttempts > Album.MaxInvalidPasswordAttempts));
             CreateMap<AlbumModel, Album>();
             CreateMap<ImageModel, Image>();
             CreateMap<Image, ImageModel>();

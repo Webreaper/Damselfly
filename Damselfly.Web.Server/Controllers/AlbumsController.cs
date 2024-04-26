@@ -35,6 +35,16 @@ namespace Damselfly.Web.Server.Controllers
             return Ok(result);
         }
 
+        [HttpPost]
+        [Route("unlock")]
+        public async Task<IActionResult> UnlockAlbum(AlbumModel albumModel)
+        {
+            if (albumModel.AlbumId == null) return BadRequest();
+            var result = await _albumService.UnlockAlbum(albumModel.AlbumId.Value);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("all")]
         public async Task<IActionResult> GetAllAlbums()
@@ -58,6 +68,20 @@ namespace Damselfly.Web.Server.Controllers
             var result = await _albumService.GetByName(id, password);
             if( result == null ) return NotFound();
             return Ok(result);
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteAlbum(string id)
+        {
+            if (int.TryParse(id, out var numId))
+            {
+                var result = await _albumService.DeleteAlbum(numId);
+                if (result)
+                    return Ok(new BooleanResultModel { Result = true });
+                return NotFound();
+            }
+            return BadRequest();
         }
     }
 }
