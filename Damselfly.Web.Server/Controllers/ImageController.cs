@@ -81,14 +81,15 @@ public class ImageController : Controller
         IActionResult result = Redirect("/no-image.png");
 
         if ( Enum.TryParse<ThumbSize>(thumbSize, true, out var size) && int.TryParse(imageId, out var id) )
+        {
             try
             {
                 Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
-                var image = await imageCache.GetCachedImage(id);
-
                 if ( cancel.IsCancellationRequested )
                     return result;
+
+                var image = await imageCache.GetCachedImage(id);
 
                 if ( image != null )
                 {
@@ -133,6 +134,7 @@ public class ImageController : Controller
             {
                 Logging.LogError($"Unable to process /thumb/{thumbSize}/{imageId}: {ex.Message}");
             }
+        }
 
         watch.Stop();
 
