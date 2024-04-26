@@ -1,6 +1,8 @@
-﻿using Damselfly.Core.DbModels.Models.APIModels;
+using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers;
@@ -8,6 +10,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/tags")]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class TagController : ControllerBase
 {
     private readonly ILogger<TagController> _logger;

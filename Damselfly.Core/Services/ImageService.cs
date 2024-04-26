@@ -94,6 +94,27 @@ namespace Damselfly.Core.Services
             return true;
         }
 
+        public async Task<bool> CanDownload(int imageId, string password)
+        {
+            var image = await _context.Images.Include(i => i.Albums).FirstOrDefaultAsync(i => i.ImageId == imageId);
+            if( image == null )
+            {
+                return false;
+            }
+            if( image.Albums.Any(a => a.Password != null && a.Password == password && a.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts) )
+            {
+                return true;
+            }
+            var isAdmin = await _authService.CheckCurrentFirebaseUserIsInRole([RoleDefinitions.s_AdminRole]);
+            if( isAdmin )
+            {
+                return true;
+            }
+            var albumIds = image.Albums.Select(a => a.AlbumId).ToList();
+            await _context.Albums.Where(a => albumIds.Contains(a.AlbumId)).ExecuteUpdateAsync(a => a.SetProperty(a => a.InvalidPasswordAttempts, a => a.InvalidPasswordAttempts + 1));
+            return false;
+        }
+
         public async Task<bool> CheckPassword(int imageId, string password)
         {
             var image = await _context.Images.Include(i => i.Albums).FirstOrDefaultAsync(i => i.ImageId == imageId);

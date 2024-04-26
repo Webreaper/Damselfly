@@ -1,7 +1,9 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +13,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsDownloader)]
 [ApiController]
 [Route("/api/export")]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class ExportController : ControllerBase
 {
     private readonly ImageRecognitionService _aiService;

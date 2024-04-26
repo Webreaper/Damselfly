@@ -1,10 +1,12 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +16,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/people")]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class PeopleController( ImageRecognitionService _aiService, 
                                 IPeopleService _peopleService,
                                 ILogger<PeopleController> _logger,

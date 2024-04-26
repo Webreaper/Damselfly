@@ -1,8 +1,10 @@
-﻿using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers;
@@ -10,6 +12,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/config")]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class ConfigController : ControllerBase
 {
     private readonly ConfigService _configService;

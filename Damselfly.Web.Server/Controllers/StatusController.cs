@@ -1,5 +1,7 @@
-﻿using Damselfly.Core.DbModels.Models.APIModels;
+using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Services;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers;
@@ -7,6 +9,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/status")]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class StatusController : ControllerBase
 {
     private readonly ILogger<StatusController> _logger;

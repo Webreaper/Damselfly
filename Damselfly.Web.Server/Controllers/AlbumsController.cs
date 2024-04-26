@@ -1,7 +1,9 @@
 using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.Entities;
 using Damselfly.Core.Services;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +19,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("create")]
+        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
         public async Task<IActionResult> CreateAlbum(AlbumModel albumModel)
         {
 
@@ -27,6 +30,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("update")]
+        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
         public async Task<IActionResult> UpdateAlbum(AlbumModel albumModel)
         {
 
@@ -37,6 +41,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("unlock")]
+        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
         public async Task<IActionResult> UnlockAlbum(AlbumModel albumModel)
         {
             if (albumModel.AlbumId == null) return BadRequest();
@@ -47,6 +52,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpGet]
         [Route("all")]
+        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
         public async Task<IActionResult> GetAllAlbums()
         {
 
@@ -72,6 +78,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpDelete]
         [Route("{id}")]
+        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
         public async Task<IActionResult> DeleteAlbum(string id)
         {
             if (int.TryParse(id, out var numId))

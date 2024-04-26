@@ -30,7 +30,7 @@ public class DownloadController(IDownloadService service, ILogger<DownloadContro
         var authorizedImages = new List<int>();
         foreach( var id in req.ImageIds )
         {
-            if( await _imageService.CheckPassword(id, req.Password) )
+            if( await _imageService.CanDownload(id, req.Password) )
             {
                 authorizedImages.Add(id);
             }

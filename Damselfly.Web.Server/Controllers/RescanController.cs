@@ -1,6 +1,8 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +11,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsEditor)]
 [ApiController]
 [Route("/api/rescan")]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class RescanController : ControllerBase
 {
     private readonly ILogger<RescanController> _logger;

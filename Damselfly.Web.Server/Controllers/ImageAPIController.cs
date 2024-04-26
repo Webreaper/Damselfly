@@ -1,7 +1,9 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Models;
 using Damselfly.Core.Services;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +12,7 @@ namespace Damselfly.Web.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [Route("/api/images")]
 [ApiController]
+[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
 public class ImageAPIController : ControllerBase
 {
     private readonly ILogger<ImageAPIController> _logger;
