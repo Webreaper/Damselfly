@@ -246,7 +246,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     ///     see something like:
     ///     Insert Image: 5
     ///     Update Lens: 3
-    ///     Updae Folder: 6
+    ///     Update Folder: 6
     /// </summary>
     private void LogChangeSummary()
     {

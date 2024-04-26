@@ -74,9 +74,18 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                     Service = this,
                     Name = "Indexing"
                 })
-                .Where( NotModifiedInLast30s )
                 .ToArray();
 
+            if( jobs.Any() )
+            {
+                jobs = jobs.Where( NotModifiedInLast30s ).ToArray();
+
+                if( ! jobs.Any() )
+                    Logging.LogVerbose("Skipping indexing job for folders modified in the last 30 seconds.");
+                else
+                    Logging.LogVerbose("Adding indexing job for folders modified, after 30 seconds.");
+            }
+            
             return jobs;
         }
 

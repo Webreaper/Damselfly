@@ -764,7 +764,6 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                 else
                 {
                     Logging.LogVerbose("Thumbs already exist in all resolutions. Skipping...");
-                    result = new ImageProcessResult { ThumbsGenerated = false };
                 }
             }
             else
@@ -776,6 +775,9 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         {
             Logging.LogTrace("Exception converting thumbnails for {0}: {1}...", imagePath, ex.Message);
         }
+
+        if( result == null )
+            result = new ImageProcessResult { ThumbsGenerated = false };
 
         return result;
     }
