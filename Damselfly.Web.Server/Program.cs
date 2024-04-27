@@ -151,8 +151,8 @@ public class Program
 
         InitialiseDB(app);
 
-        // Log ingestion from the client
-        app.UseSerilogIngestion();
+        //// Log ingestion from the client
+        //app.UseSerilogIngestion();
 
         var configService = app.Services.GetRequiredService<ConfigService>();
         var logLevel = configService.Get(ConfigSettings.LogLevel, LogEventLevel.Information);

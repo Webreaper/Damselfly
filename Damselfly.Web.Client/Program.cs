@@ -1,4 +1,4 @@
-﻿using Blazored.LocalStorage;
+using Blazored.LocalStorage;
 using BlazorPanzoom;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.ScopedServices;
@@ -30,9 +30,9 @@ public class Program
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(levelSwitch)
             .Enrich.WithProperty("InstanceId", Guid.NewGuid().ToString("n"))
-            .WriteTo.BrowserHttp(
-                $"{builder.HostEnvironment.BaseAddress}ingest",
-                controlLevelSwitch: levelSwitch)
+            //.WriteTo.BrowserHttp(
+            //    $"{builder.HostEnvironment.BaseAddress}ingest",
+            //    controlLevelSwitch: levelSwitch)
             .CreateLogger();
 
         builder.Logging.AddProvider(new SerilogLoggerProvider());
