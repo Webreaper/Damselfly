@@ -93,12 +93,16 @@ public class AuthService : IAuthService
     public async Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles)
     {
         var user = _httpContextAccessor.HttpContext.User;
-        var userManager = _userManager;
+        if (user == null)
+        {
+            return false;
+        }
         var email = user.Claims.FirstOrDefault( u => u.Type == DamselflyContants.EmailClaim );
         if( email == null )
         {
             return false;
         }
+        var userManager = _userManager;
         var applicationUser = await userManager.FindByEmailAsync(email.Value);
         if( applicationUser == null )
         {

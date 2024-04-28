@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.ScopedServices;
@@ -48,7 +48,7 @@ public static class ServiceRegistrations
         services.AddScoped<IUserFolderService>(x => x.GetRequiredService<UserFolderService>());
         services.AddScoped<ITagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ITagSearchService>(x => x.GetRequiredService<ClientTagService>());
-        services.AddScoped<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
+        // services.AddScoped<ITaskService>(x => x.GetRequiredService<ClientTaskService>());
         services.AddScoped<IFileService>( x => x.GetRequiredService<ClientFileService>() );
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<ClientTagService>());
         services.AddScoped<ISearchService>(x => x.GetRequiredService<ClientSearchService>());

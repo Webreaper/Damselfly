@@ -6,9 +6,12 @@ using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.DbModels.Models.Entities;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +21,13 @@ using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
 {
-    public class ImageService(ThumbnailService thumbnailService, ImageContext imageContext, FileService fileService, IConfiguration configuration, IMapper mapper, MetaDataService metaDataService, IAuthService authService)
+    public class ImageService(ThumbnailService thumbnailService, 
+        ImageContext imageContext, 
+        FileService fileService, 
+        IConfiguration configuration, 
+        IMapper mapper, 
+        MetaDataService metaDataService, 
+        IAuthService authService)
     {
         private readonly ThumbnailService _thumbnailService = thumbnailService;
         private readonly ImageContext _context = imageContext;
@@ -27,6 +36,7 @@ namespace Damselfly.Core.Services
         private readonly IConfiguration _configuration = configuration;
         private readonly IMapper _mapper = mapper;
         private readonly IAuthService _authService = authService;
+
 
         public async Task<List<ImageModel>> CreateImages(UploadImageRequest uploadImageRequest)
         {
@@ -117,23 +127,39 @@ namespace Damselfly.Core.Services
 
         public async Task<bool> CheckPassword(int imageId, string password)
         {
-            var image = await _context.Images.Include(i => i.Albums).FirstOrDefaultAsync(i => i.ImageId == imageId);
-            if( image == null )
+            try
             {
+                var image = await _context.Images.Include(i => i.Albums).FirstOrDefaultAsync(i => i.ImageId == imageId);
+                Logging.LogTrace("Checking password for image {imageId}", imageId);
+                if( image == null )
+                {
+                    Logging.Log("Image not found for {imageId}", imageId);
+                    return false;
+                }
+                Logging.LogTrace("for posterity");
+                Logging.LogTrace("Image found for {imageId}", imageId);
+                Logging.LogTrace("{albumCount} Albums found for image {imageId}", image.Albums.Count, imageId);
+                Logging.LogTrace("Applicable albums: {applicableAlbums}", image.Albums.Select(a => a.AlbumId));
+                Logging.LogTrace("The password is {password}", image.Albums.First().Password);
+                if( image.Albums.Any(a => (a.IsPublic || a.Password == null || a.Password == password) && a.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts) )
+                {
+                    return true;
+                }
+                Logging.LogTrace("Password check failed for image {imageId}", imageId);
+                var isAdmin = await _authService.CheckCurrentFirebaseUserIsInRole([RoleDefinitions.s_AdminRole]);
+                if( isAdmin )
+                {
+                    return true;
+                }
+                var albumIds = image.Albums.Select(a => a.AlbumId).ToList();
+                await _context.Albums.Where(a => albumIds.Contains(a.AlbumId)).ExecuteUpdateAsync(a => a.SetProperty(a => a.InvalidPasswordAttempts, a => a.InvalidPasswordAttempts + 1));
                 return false;
             }
-            if (image.Albums.Any(a => (a.IsPublic || a.Password == null || a.Password == password) && a.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts))
+            catch( Exception ex )
             {
-                return true;
+                Logging.LogError("Error checking password for image {imageId}, {exception}", imageId, ex.ToString());
+                return false;
             }
-            var isAdmin = await _authService.CheckCurrentFirebaseUserIsInRole([RoleDefinitions.s_AdminRole]);
-            if( isAdmin )
-            {
-                return true;
-            }
-            var albumIds = image.Albums.Select(a => a.AlbumId).ToList();
-            await _context.Albums.Where(a => albumIds.Contains(a.AlbumId)).ExecuteUpdateAsync(a => a.SetProperty(a => a.InvalidPasswordAttempts, a => a.InvalidPasswordAttempts + 1));
-            return false;
         }
 
     }

@@ -1,6 +1,8 @@
 using Damselfly.Core.DbModels.Authentication;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,13 +22,14 @@ public class UserManagementController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [AuthorizeFireBase]
     [Route("signedIn")]
     public async Task<IActionResult> SignedIn()
     {
         var user = HttpContext.User;
         var appUser = await _service.GetOrCreateUser(user);
-        return Ok(new BooleanResultModel { Result = true });
+        
+        return Ok(new SignedInResponse { UserId = appUser.Id, UserName = appUser.UserName });
     }
 
 }

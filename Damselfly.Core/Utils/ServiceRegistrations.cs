@@ -55,7 +55,7 @@ public static class ServiceRegistrations
         services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
         services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
         services.AddSingleton<IThemeService>(x => x.GetRequiredService<ThemeService>());
-        services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
+        // services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
 
         services.AddMLServices();
 

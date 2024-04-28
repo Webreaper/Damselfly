@@ -148,15 +148,20 @@ public class Program
 
         Logging.Logger = app.Services.GetRequiredService<ILogger>();
         // ogging.Logger.Information("=== Damselfly Blazor Server Log Started ===");
-
+        Logging.Log("Starting up Damselfly webserver...");
+        Logging.Log("Log directory: {0}", logFolder);
+        var currentDirectory = Directory.GetCurrentDirectory();
+        Logging.Log("Current directory: {0}", currentDirectory);
         InitialiseDB(app);
 
         //// Log ingestion from the client
         //app.UseSerilogIngestion();
 
         var configService = app.Services.GetRequiredService<ConfigService>();
-        var logLevel = configService.Get(ConfigSettings.LogLevel, LogEventLevel.Information);
-
+        var logLevelString = builder.Configuration["Logging:LogLevel:Default"];  // configService.Get(ConfigSettings.LogLevel, LogEventLevel.Information);
+        var logLevel = LogEventLevel.Information;
+        if( Enum.TryParse<LogEventLevel>(logLevelString, true, out var parsedLevel) )
+            logLevel = parsedLevel;
 
         if( app.Configuration["DamselflyConfiguration:NoGenerateThumbnails"] == "true" )
             configService.Set( ConfigSettings.EnableBackgroundThumbs, false.ToString() );
@@ -217,7 +222,7 @@ public class Program
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);
 
-        Logging.StartupCompleted();
+
         Logging.Log("Starting Damselfly webserver...");
 
         app.Run();

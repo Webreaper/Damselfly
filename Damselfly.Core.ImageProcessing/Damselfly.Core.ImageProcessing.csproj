@@ -18,5 +18,7 @@
     <ItemGroup>
         <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="SixLabors.Fonts" />
+        <PackageReference Include="SkiaSharp" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
     </ItemGroup>
 </Project>

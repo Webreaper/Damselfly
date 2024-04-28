@@ -17,34 +17,42 @@ public static class AppInitialiser
     /// <param name="env"></param>
     public static void SetupServices(this IWebHostEnvironment env, IServiceProvider services)
     {
-        var download = services.GetRequiredService<DownloadService>();
-        var tasks = services.GetRequiredService<TaskService>();
-        var thumbService = services.GetRequiredService<ThumbnailService>();
-        var exifService = services.GetRequiredService<ExifService>();
-        var imageProcService = services.GetRequiredService<ImageProcessService>();
+        try
+        {
+            Logging.Log("Setting up services");
+            var download = services.GetRequiredService<DownloadService>();
+            var tasks = services.GetRequiredService<TaskService>();
+            var thumbService = services.GetRequiredService<ThumbnailService>();
+            var exifService = services.GetRequiredService<ExifService>();
+            var imageProcService = services.GetRequiredService<ImageProcessService>();
 
-        // Prime the cache
-        services.GetRequiredService<ImageCache>().WarmUp().Wait();
+            // Prime the cache
+            services.GetRequiredService<ImageCache>().WarmUp().Wait();
 
-        // Start the work processing queue for AI, Thumbs, etc
-        services.GetRequiredService<WorkService>().StartService();
+            // Start the work processing queue for AI, Thumbs, etc
+            services.GetRequiredService<WorkService>().StartService();
 
-        services.GetRequiredService<MetaDataService>().StartService();
-        services.GetRequiredService<IndexingService>().StartService();
-        services.GetRequiredService<ImageRecognitionService>().StartService();
-        services.GetRequiredService<FaceONNXService>().StartService();
+            services.GetRequiredService<MetaDataService>().StartService();
+            services.GetRequiredService<IndexingService>().StartService();
+            services.GetRequiredService<ImageRecognitionService>().StartService();
+            services.GetRequiredService<FaceONNXService>().StartService();
 
-        // ObjectDetector can throw a segmentation fault if the docker container is pinned
-        // to a single CPU, so for now, to aid debugging, let's not even try and initialise
-        // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
-        if ( !services.GetRequiredService<ConfigService>().GetBool(ConfigSettings.DisableObjectDetector) )
-            services.GetRequiredService<ObjectDetector>().InitScorer();
+            // ObjectDetector can throw a segmentation fault if the docker container is pinned
+            // to a single CPU, so for now, to aid debugging, let's not even try and initialise
+            // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
+            //if( !services.GetRequiredService<ConfigService>().GetBool(ConfigSettings.DisableObjectDetector) )
+            //    services.GetRequiredService<ObjectDetector>().InitScorer();
 
-        // Validation check to ensure at least one user is an Admin
-        // WASM: How, when it's scoped?
-        // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
+            // Validation check to ensure at least one user is an Admin
+            // WASM: How, when it's scoped?
+            // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
 
-        StartTaskScheduler(tasks, download, thumbService, exifService);
+            StartTaskScheduler(tasks, download, thumbService, exifService);
+        }
+        catch (Exception ex)
+        {
+            Logging.Log("Exception in AppInitialiser.SetupServices: {0}, {1}", ex.Message, ex.StackTrace);
+        }
     }
 
 
@@ -57,7 +65,7 @@ public static class AppInitialiser
         ThumbnailService thumbService, ExifService exifService)
     {
         var tasks = new List<ScheduledTask>();
-
+        Logging.Log("Scheduling cleanup thumbs");
         // Clean up old/irrelevant thumbnails once a week
         var thumbCleanupFreq = new TimeSpan(7, 0, 0, 0);
         tasks.Add(new ScheduledTask
@@ -68,7 +76,7 @@ public static class AppInitialiser
             ImmediateStart = false
         });
 
-
+        Logging.Log("Scheduling cleanup downloads");
         // Clean up old download zips from the wwwroot folder
         var downloadCleanupFreq = new TimeSpan(6, 0, 0);
         tasks.Add(new ScheduledTask
@@ -78,7 +86,7 @@ public static class AppInitialiser
             WorkMethod = () => download.CleanUpOldDownloads(downloadCleanupFreq),
             ImmediateStart = false
         });
-
+        Logging.Log("Scheduling cleanup keywords");
         // Purge keyword operation entries that have been processed
         var keywordCleanupFreq = new TimeSpan(24, 0, 0);
         tasks.Add(new ScheduledTask
@@ -88,7 +96,7 @@ public static class AppInitialiser
             WorkMethod = () => { _ = exifService.CleanUpKeywordOperations(keywordCleanupFreq); },
             ImmediateStart = false
         });
-
+        Logging.Log("Scheduling cleanup performance stats");
         // Dump performance stats out to the logfile
         tasks.Add(new ScheduledTask
         {

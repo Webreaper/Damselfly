@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading;
 using Serilog;
@@ -72,18 +72,6 @@ public class Logging
         }
     }
 
-    /// <summary>
-    ///     Once we've successfully started, reduce the console log level
-    ///     to warnings only, so we don't overwhelm the console log.
-    /// </summary>
-    public static void StartupCompleted()
-    {
-        Log("Startup complete. Reducing console logging level to [Warning/Error].");
-
-#if !DEBUG
-            consoleLogLevel.MinimumLevel = LogEventLevel.Warning;
-#endif
-    }
 
     /// <summary>
     ///     Allow runtime toggling of debug logs

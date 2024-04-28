@@ -11,6 +11,7 @@ using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Damselfly.Core.Services;
@@ -34,16 +35,17 @@ public class DownloadService : IDownloadService
     private readonly ImageProcessService _imageProcessingService;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
+    private readonly IConfiguration _config;
 
     public DownloadService(IStatusService statusService, ImageProcessService imageService,
-        IImageCacheService cacheService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory)
+        IImageCacheService cacheService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory, IConfiguration config)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageProcessingService = imageService;
         _cacheService = cacheService;
-
-        SetDownloadPath(env.WebRootPath);
+        var downloadPath = config["DamselflyConfiguration:DownloadPath"];
+        SetDownloadPath(downloadPath);
     }
 
     public async Task<DesktopAppPaths> GetDesktopAppInfo()
@@ -73,8 +75,8 @@ public class DownloadService : IDownloadService
     /// <param name="contentRootPath"></param>
     public void SetDownloadPath(string contentRootPath)
     {
-        desktopPath = new DirectoryInfo(Path.Combine(contentRootPath, s_appVPath));
-        downloadsPath = new DirectoryInfo(Path.Combine(contentRootPath, s_downloadVPath));
+        desktopPath = new DirectoryInfo(contentRootPath); // new DirectoryInfo(Path.Combine(contentRootPath, s_appVPath));
+        downloadsPath = new DirectoryInfo(contentRootPath); // new DirectoryInfo(Path.Combine(contentRootPath, s_downloadVPath));
 
         if ( !downloadsPath.Exists )
         {
@@ -86,9 +88,9 @@ public class DownloadService : IDownloadService
             Logging.Log($"Downloads folder: {downloadsPath}");
         }
 
-        if ( desktopPath.Exists )
-            // Now, see if we have a desktop app
-            CheckDesktopAppPaths(desktopPath);
+        //if ( desktopPath.Exists )
+        //    // Now, see if we have a desktop app
+        //    CheckDesktopAppPaths(desktopPath);
     }
 
     /// <summary>
@@ -261,27 +263,34 @@ public class DownloadService : IDownloadService
     /// <param name="timeSpan"></param>
     public void CleanUpOldDownloads(TimeSpan timeSpan)
     {
-        if ( downloadsPath.Exists )
+        try
         {
-            var threshold = DateTime.UtcNow - timeSpan;
-
-            // Look for files eligible to clean up - they must have been created
-            // before the last cleanup was scheduled.
-            var toDelete = downloadsPath.GetFiles("*.*", SearchOption.AllDirectories)
-                .Where(x => !x.Name.StartsWith('.'))
-                .Where(x => x.CreationTimeUtc < threshold)
-                .ToList();
-
-            if ( toDelete.Any() )
+            if( downloadsPath.Exists )
             {
-                Logging.LogWarning($"Cleaning up {toDelete.Count} download zips older than {threshold}");
+                var threshold = DateTime.UtcNow - timeSpan;
 
-                toDelete.ForEach(x => x.SafeDelete());
+                // Look for files eligible to clean up - they must have been created
+                // before the last cleanup was scheduled.
+                var toDelete = downloadsPath.GetFiles("*.*", SearchOption.AllDirectories)
+                    .Where(x => !x.Name.StartsWith('.'))
+                    .Where(x => x.CreationTimeUtc < threshold)
+                    .ToList();
+
+                if( toDelete.Any() )
+                {
+                    Logging.LogWarning($"Cleaning up {toDelete.Count} download zips older than {threshold}");
+
+                    toDelete.ForEach(x => x.SafeDelete());
+                }
+            }
+            else
+            {
+                Logging.LogWarning($"Downloads path ({downloadsPath}) did not exist.");
             }
         }
-        else
+        catch( Exception ex )
         {
-            Logging.LogWarning($"Downloads path ({downloadsPath}) did not exist.");
+            Logging.LogError($"Error cleaning up downloads: {ex.Message}");
         }
     }
 

@@ -28,12 +28,12 @@
         <PackageReference Include="MetadataExtractor" />
         <PackageReference Include="CommandLineParser" />
         <PackageReference Include="RestSharp" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
         <PackageReference Include="WordPressPCL" />
         <PackageReference Include="SixLabors.ImageSharp" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" />
         <PackageReference Include="font-awesome" />
         <PackageReference Include="SkiaSharp" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
         <PackageReference Include="Microsoft.Extensions.Logging.Console" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />

@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 
@@ -14,7 +14,7 @@ public class SystemConfigSettings
     public bool importSidecarKeywords { get; set; }
     public bool useSmtp { get; set; } = true;
     public bool forceLogin { get; set; }
-    public bool enableAIProcessing { get; set; } = ConfigSettings.DefaultEnableRolesAndAuth;
+    public bool enableAIProcessing { get; set; } = false; // ConfigSettings.DefaultEnableRolesAndAuth;
     public bool disableObjectDetector { get; set; }
     public bool writeAITagsToImages { get; set; }
     public bool allowExternalRegistration { get; set; }

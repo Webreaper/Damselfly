@@ -355,10 +355,18 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     /// <param name="thumbCleanupFreq"></param>
     public void CleanUpThumbnails(TimeSpan thumbCleanupFreq)
     {
-        var root = new DirectoryInfo(PicturesRoot);
-        var thumbRoot = new DirectoryInfo(_thumbnailRootFolder);
+        try
+        {
+            Logging.Log($"Clean up thumb started");
+            var root = new DirectoryInfo(PicturesRoot);
+            var thumbRoot = new DirectoryInfo(_thumbnailRootFolder);
 
-        CleanUpThumbDir(root, thumbRoot);
+            CleanUpThumbDir(root, thumbRoot);
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Exception during thumbnail cleanup: {ex}");
+        }
     }
 
     private void CleanUpThumbDir(DirectoryInfo picsFolder, DirectoryInfo thumbsFolder)

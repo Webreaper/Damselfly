@@ -20,6 +20,7 @@ public class ProcessStarter
     /// <returns>True if execution succeeded</returns>
     public bool StartProcess(string exe, string args, IDictionary<string, string>? envVars = null)
     {
+        Logging.Log("process requested to start: {0} {1}", exe, args);
         var process = new Process();
 
         process.StartInfo.FileName = exe;
@@ -37,10 +38,10 @@ public class ProcessStarter
         {
             var lastOutput = DateTime.UtcNow;
 
-            Logging.Log("  Executing: {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+            Logging.Log("Executing: {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
             var success = process.Start();
-
+            Logging.LogTrace("Process started: {0}", success);
             if ( success )
             {
                 OutputText = process.StandardOutput.ReadToEnd();

@@ -124,7 +124,7 @@ public class ImageMagickProcessor : IImageProcessor
                 Logging.LogVerbose("  Executing: {0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
                 var success = process.Start();
-
+                Logging.LogTrace("Process started: {0}", success);
                 if ( success )
                 {
                     process.BeginErrorReadLine();
@@ -178,8 +178,9 @@ public class ImageMagickProcessor : IImageProcessor
     {
         var imageMagickExe = _config["ImageMagick:ExePath"];
         var improcess = new ProcessStarter();
+        Logging.LogTrace("getting ready to start ImageMagick");
         imAvailable = improcess.StartProcess(imageMagickExe, "--version");
-
+        Logging.LogTrace("im is available: {imAvailable}", imAvailable);
         if ( imAvailable )
         {
             var version = improcess.OutputText?.Split('\n').FirstOrDefault() ?? string.Empty;
@@ -197,7 +198,7 @@ public class ImageMagickProcessor : IImageProcessor
         }
         else
         {
-            Logging.LogError("ImageMagick not found.");
+            Logging.LogError("ImageMagick not found. Which is real weird");
         }
     }
 

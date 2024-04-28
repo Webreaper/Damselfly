@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -171,7 +171,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
-        var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
+        var enableAIProcessing = false; // _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
 
         if( enableAIProcessing )
         {

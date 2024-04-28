@@ -10,16 +10,16 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Damselfly.Web.Server/Damselfly.Web.Server.csproj", "Damselfly.Web.Server/"]
-COPY ["Damselfly.Core.Interfaces/Damselfly.Core.Interfaces.csproj", "Damselfly.Core.Interfaces/"]
 COPY ["Damselfly.Core.Constants/Damselfly.Core.Constants.csproj", "Damselfly.Core.Constants/"]
-COPY ["Damselfly.Core.ScopedServices/Damselfly.Core.ScopedServices.csproj", "Damselfly.Core.ScopedServices/"]
 COPY ["Damselfly.Core.DbModels/Damselfly.Core.DbModels.csproj", "Damselfly.Core.DbModels/"]
 COPY ["Damselfly.Core.Utils/Damselfly.Core.Utils.csproj", "Damselfly.Core.Utils/"]
 COPY ["Damselfly.Shared.Utils/Damselfly.Shared.Utils.csproj", "Damselfly.Shared.Utils/"]
+COPY ["Damselfly.Core.Interfaces/Damselfly.Core.Interfaces.csproj", "Damselfly.Core.Interfaces/"]
 COPY ["Damselfly.Core/Damselfly.Core.csproj", "Damselfly.Core/"]
 COPY ["Damselfly.ML.FaceONNX/Damselfly.ML.FaceONNX.csproj", "Damselfly.ML.FaceONNX/"]
 COPY ["Damselfly.ML.ObjectDetection.ML/Damselfly.ML.ObjectDetection.csproj", "Damselfly.ML.ObjectDetection.ML/"]
 COPY ["Damselfly.ML.ImageClassification/Damselfly.ML.ImageClassification.csproj", "Damselfly.ML.ImageClassification/"]
+COPY ["Damselfly.Core.ScopedServices/Damselfly.Core.ScopedServices.csproj", "Damselfly.Core.ScopedServices/"]
 COPY ["Damselfly.Core.ImageProcessing/Damselfly.Core.ImageProcessing.csproj", "Damselfly.Core.ImageProcessing/"]
 COPY ["Damselfly.Migrations.Sqlite/Damselfly.Migrations.Sqlite.csproj", "Damselfly.Migrations.Sqlite/"]
 RUN dotnet restore "./Damselfly.Web.Server/Damselfly.Web.Server.csproj"
@@ -30,9 +30,6 @@ RUN dotnet build "./Damselfly.Web.Server.csproj" -c $BUILD_CONFIGURATION -o /app
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./Damselfly.Web.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-RUN apt-get update
-RUN apt-get install libfuse2
 
 FROM base AS final
 WORKDIR /app
