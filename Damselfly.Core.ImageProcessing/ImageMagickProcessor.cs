@@ -11,7 +11,7 @@ public class ImageMagickProcessor : IImageProcessor
 
     private const string graphicsMagickExe = "gm";
 
-    private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr3" };
+    private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr2", ".cr3" };
     private static bool imAvailable;
     private readonly bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
     private string verString = "(not found)";
