@@ -35,7 +35,7 @@ namespace Damselfly.Web.Server.CustomAttributes
             var authService = context.HttpContext
                 .RequestServices
                 .GetService(typeof(IAuthService)) as IAuthService;
-           var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole(_roles);
+           var isAuthenticated = _roles.Length == 0 || await authService.CheckCurrentFirebaseUserIsInRole(_roles);
             if( !isAuthenticated )
             {
                 context.Result = new UnauthorizedResult();
