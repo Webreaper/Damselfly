@@ -44,6 +44,16 @@ namespace Damselfly.Core.Services
             return _mapper.Map<AlbumModel>(album);
         }
 
+        public async Task<BooleanResultModel> AddImagesToAlbum(AddExistingImagesToAlbumRequest request)
+        {
+            var album = await _context.Albums.FirstOrDefaultAsync(a => a.AlbumId == request.AlbumId);
+            if (album == null) return new BooleanResultModel { Result = false };
+            var images = await _context.Images.Where(i => request.ImageIds.Contains(i.ImageId)).ToListAsync();
+            album.Images.AddRange(images);
+            await _context.SaveChangesAsync();
+            return new BooleanResultModel { Result = true };
+        }
+
         public async Task<AlbumModel> UpdateAlbum(AlbumModel albumModel )
         {
             albumModel.Images.Clear();
@@ -55,7 +65,7 @@ namespace Damselfly.Core.Services
             return _mapper.Map<AlbumModel>(album);
         }
 
-        public async Task<bool> DeleteAlbum(int id) 
+        public async Task<bool> DeleteAlbum(Guid id) 
         {
             var affectedImages = _context.Images.Where(i => i.Albums.Any(a => a.AlbumId == id));
             var deleteImages = affectedImages.Where(i => i.Albums.Count == 1).ToList(); 
@@ -74,7 +84,7 @@ namespace Damselfly.Core.Services
             return false;
         }
 
-        public async Task<AlbumModel?> GetAlbum(int id, string? password)
+        public async Task<AlbumModel?> GetAlbum(Guid id, string? password)
         {
             var album = await AlbumWithImagesQuery().FirstOrDefaultAsync(a => a.AlbumId == id);
             if (album == null) return null;
@@ -96,7 +106,7 @@ namespace Damselfly.Core.Services
             return _mapper.Map<List<AlbumModel>>(albums);
         }
 
-        public async Task<AlbumModel> UnlockAlbum(int id)
+        public async Task<AlbumModel> UnlockAlbum(Guid id)
         {
             var album = await _context.Albums.FirstOrDefaultAsync(a => a.AlbumId == id);
             if( album == null ) throw new Exception("Album not found");

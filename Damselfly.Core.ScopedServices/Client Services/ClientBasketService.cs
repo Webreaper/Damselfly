@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -44,23 +44,23 @@ public class ClientBasketService : IUserBasketService, IBasketService
         }
     }
     
-    public async Task Clear(int basketId)
+    public async Task Clear(Guid basketId)
     {
         await httpClient.CustomPostAsync($"/api/basket/clear/{basketId}");
     }
 
-    public async Task Delete(int basketId)
+    public async Task Delete(Guid basketId)
     {
         await httpClient.CustomDeleteAsync($"/api/basket/{basketId}");
     }
 
-    public async Task<Basket> GetBasketById(int basketId)
+    public async Task<Basket> GetBasketById(Guid basketId)
     {
         var basket = await httpClient.CustomGetFromJsonAsync<Basket>($"/api/basket/{basketId}");
         return basket;
     }
 
-    public async Task<Basket> SwitchToBasket(int basketId)
+    public async Task<Basket> SwitchToBasket(Guid basketId)
     {
         try
         {
@@ -92,7 +92,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
         return basket;
     }
 
-    public async Task SetImageBasketState(int basketId, bool newState, ICollection<int> images)
+    public async Task SetImageBasketState(Guid basketId, bool newState, ICollection<Guid> images)
     {
         var payload = new BasketStateRequest
         {
@@ -136,13 +136,13 @@ public class ClientBasketService : IUserBasketService, IBasketService
         return await httpClient.CustomGetFromJsonAsync<ICollection<Basket>>($"/api/baskets/{userId}");
     }
 
-    public async Task<int> CopyImages(int sourceBasketId, int destBasketId)
+    public async Task<int> CopyImages(Guid sourceBasketId, Guid destBasketId)
     {
         var req = new BasketCopyRequest { SourceBasketId = sourceBasketId, DestBasketId = destBasketId, Move = false };
         return await httpClient.CustomPostAsJsonAsync<BasketCopyRequest, int>($"/api/basket/copy/", req);
     }
 
-    public async Task<int> CopyImages(int destBasketId)
+    public async Task<int> CopyImages(Guid destBasketId)
     {
         return await CopyImages(CurrentBasket.BasketId, destBasketId);
     }
@@ -152,7 +152,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
         await Clear(CurrentBasket.BasketId);
     }
 
-    public async Task SetImageBasketState(bool newState, ICollection<int> imageIds)
+    public async Task SetImageBasketState(bool newState, ICollection<Guid> imageIds)
     {
         await SetImageBasketState(CurrentBasket.BasketId, newState, imageIds);
     }

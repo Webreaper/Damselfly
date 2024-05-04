@@ -49,7 +49,7 @@ public class BasketService : IBasketService
     ///     Deletes a basket
     /// </summary>
     /// <returns></returns>
-    public async Task Delete(int basketId)
+    public async Task Delete(Guid basketId)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -68,7 +68,7 @@ public class BasketService : IBasketService
     ///     Clears the selection from the basket
     /// </summary>
     /// <returns></returns>
-    public async Task Clear(int basketId)
+    public async Task Clear(Guid basketId)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -76,7 +76,7 @@ public class BasketService : IBasketService
         {
             await db.BatchDelete(db.BasketEntries.Where(x => x.BasketId.Equals(basketId)));
 
-            NotifyStateChanged(basketId, BasketChangeType.ImagesRemoved, new List<int>());
+            NotifyStateChanged(basketId, BasketChangeType.ImagesRemoved, new List<Guid>());
         }
         catch ( Exception ex )
         {
@@ -88,7 +88,7 @@ public class BasketService : IBasketService
     ///     Clears the selection from the basket
     /// </summary>
     /// <returns></returns>
-    public async Task<int> CopyImages(int sourceBasketId, int destBasketId)
+    public async Task<int> CopyImages(Guid sourceBasketId, Guid destBasketId)
     {
         var result = 0;
         using var scope = _scopeFactory.CreateScope();
@@ -163,7 +163,7 @@ public class BasketService : IBasketService
     /// <param name="image"></param>
     /// <param name="newState"></param>
     /// <param name="basket"></param>
-    public async Task SetImageBasketState(int basketId, bool newState, ICollection<int> images)
+    public async Task SetImageBasketState(Guid basketId, bool newState, ICollection<Guid> images)
     {
         try
         {
@@ -275,7 +275,7 @@ public class BasketService : IBasketService
         NotifyStateChanged(basket.BasketId, BasketChangeType.BasketChanged);
     }
 
-    public async Task<Basket> GetBasketById(int basketId)
+    public async Task<Basket> GetBasketById(Guid basketId)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -352,7 +352,7 @@ public class BasketService : IBasketService
 
     public event Action OnBasketChanged;
 
-    private void NotifyStateChanged(int basketId, BasketChangeType changeType, ICollection<int>? updatedImageIds = null)
+    private void NotifyStateChanged(Guid basketId, BasketChangeType changeType, ICollection<Guid>? updatedImageIds = null)
     {
         OnBasketChanged?.Invoke();
 
@@ -403,7 +403,7 @@ public class BasketService : IBasketService
     /// <param name="OnProgress">Callback to give progress information to the UI</param>
     /// <returns>String path to the generated file, which is passed back to the doanload request</returns>
     /// TODO: Maybe move this elsewhere.
-    public async Task<string> DownloadSelection(int basketId, ExportConfig config)
+    public async Task<string> DownloadSelection(Guid basketId, ExportConfig config)
     {
         var basket = await GetBasketById(basketId);
 
@@ -423,7 +423,7 @@ public class BasketService : IBasketService
         return string.Empty;
     }
 
-    public bool IsSelected(int basketId, Image image)
+    public bool IsSelected(Guid basketId, Image image)
     {
         var basket = GetBasketById(basketId).Result;
         return basket.BasketEntries.Any(x => x.ImageId == image.ImageId);

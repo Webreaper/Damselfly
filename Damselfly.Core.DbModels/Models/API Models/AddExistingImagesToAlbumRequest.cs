@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Damselfly.Core.DbModels.Models.API_Models
 {
-    public class UploadImageRequest
+    public class AddExistingImagesToAlbumRequest
     {
-        public required Guid AlbumId { get; set; }
-        public List<IFormFile> ImageFiles { get; set; }
+        public Guid AlbumId { get; set; }
+        public ICollection<Guid> ImageIds { get; set; }
     }
 }

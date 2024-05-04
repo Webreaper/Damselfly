@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,14 +10,14 @@ namespace Damselfly.Core.Models;
 public class ImageTag
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int ImageId { get; set; }
+    
+    public Guid ImageId { get; set; }
 
     public virtual Image Image { get; set; }
 
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int TagId { get; set; }
+    
+    public Guid TagId { get; set; } = new Guid();
 
     public virtual Tag Tag { get; set; }
 

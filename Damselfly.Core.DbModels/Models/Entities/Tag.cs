@@ -20,8 +20,8 @@ public class Tag
     }
 
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int TagId { get; set; }
+
+    public Guid TagId { get; set; } = new Guid();
 
     [Required]
     public string Keyword { get; set; }
@@ -66,7 +66,7 @@ public class Tag
 public class FTSTag
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    
     public int FTSTagId { get; set; }
 
     public string? Keyword { get; set; }

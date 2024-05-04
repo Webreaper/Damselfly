@@ -9,8 +9,8 @@ namespace Damselfly.Core.DbModels.Models.API_Models
 {
     public class ImageMetaDataModel
     {
-        public int MetaDataId { get; set; }
-        public int ImageId { get; set; }
+        public Guid MetaDataId { get; set; }
+        public Guid ImageId { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
         public double AspectRatio { get; set; } = 1;

@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 
 namespace Damselfly.Core.DbModels.Models.APIModels;
 
 public class BasketStateRequest
 {
-    public int BasketId { get; set; }
-    public ICollection<int> ImageIds { get; set; }
+    public Guid BasketId { get; set; }
+    public ICollection<Guid> ImageIds { get; set; }
     public bool NewState { get; set; }
 }

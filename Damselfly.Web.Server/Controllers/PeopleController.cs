@@ -23,7 +23,7 @@ public class PeopleController( ImageRecognitionService _aiService,
                                 ImageCache _imageCache) : ControllerBase
 {
     [HttpGet("/api/person/{personId}")]
-    public async Task<Person> GetPerson( int personId )
+    public async Task<Person> GetPerson( Guid personId )
     {
         return await _aiService.GetPerson( personId );
     }

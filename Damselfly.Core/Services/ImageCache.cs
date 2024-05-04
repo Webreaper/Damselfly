@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -57,11 +57,11 @@ public class ImageCache : IImageCacheService
     /// </summary>
     /// <param name="imgId"></param>
     /// <returns></returns>
-    public async Task<Image> GetCachedImage(int imgId)
+    public async Task<Image> GetCachedImage(System.Guid imgId)
     {
         Image cachedImage;
 
-        var ids = new List<int> { imgId };
+        var ids = new List<System.Guid> { imgId };
         var cachedImages = await EnrichAndCache(ids);
 
         cachedImage = cachedImages.FirstOrDefault();
@@ -78,7 +78,7 @@ public class ImageCache : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds)
+    public async Task<List<Image>> GetCachedImages(ICollection<System.Guid> imgIds)
     {
         var result = new List<Image>();
 
@@ -180,7 +180,7 @@ public class ImageCache : IImageCacheService
     */
 
 
-    private async Task<List<Image>> EnrichAndCache(List<int> imageIds)
+    private async Task<List<Image>> EnrichAndCache(List<System.Guid> imageIds)
     {
         if ( !imageIds.Any() )
             return new List<Image>();
@@ -323,7 +323,7 @@ public class ImageCache : IImageCacheService
     ///     Remove an item from the cache so it'll be reloaded from the DB.
     /// </summary>
     /// <param name="imageId"></param>
-    public void Evict(int imageId)
+    public void Evict(System.Guid imageId)
     {
         Logging.LogVerbose($"Evicting from cache: {imageId}");
         _memoryCache.Remove(imageId);
@@ -335,7 +335,7 @@ public class ImageCache : IImageCacheService
     ///     Remote a set of images from the cache
     /// </summary>
     /// <param name="imageId"></param>
-    public void Evict(List<int> imageId)
+    public void Evict(List<System.Guid> imageId)
     {
         imageId.ForEach(x => Evict(x));
     }

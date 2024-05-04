@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
@@ -13,10 +13,10 @@ public interface ITagService
     Task<ICollection<Tag>> GetFavouriteTags();
     Task<bool> ToggleFavourite(Tag tag);
 
-    Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string>? tagsToAdd, ICollection<string>? tagsToDelete,
+    Task UpdateTagsAsync(ICollection<Guid> imageIds, ICollection<string>? tagsToAdd, ICollection<string>? tagsToDelete,
         int? userId = null);
 
-    Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue,
+    Task SetExifFieldAsync(ICollection<Guid> imageIds, ExifOperation.ExifType exifType, string newValue,
         int? userId = null);
 }
 
@@ -29,5 +29,5 @@ public interface ITagSearchService
 {
     Task<ICollection<Tag>> SearchTags(string filterText);
     Task<ICollection<Tag>> GetAllTags();
-    Task<Tag> GetTag( int tagId );
+    Task<Tag> GetTag( Guid tagId );
 }

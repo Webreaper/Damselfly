@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.DbModels;
@@ -6,7 +7,7 @@ namespace Damselfly.Core.DbModels;
 public class SearchResponse
 {
     public bool MoreDataAvailable { get; set; }
-    public int[] SearchResults { get; set; }
+    public Guid[] SearchResults { get; set; }
 }
 
 public class SearchRequest
@@ -34,7 +35,7 @@ public class SearchRequest
 
 public class ImageRequest
 {
-    public List<int> ImageIds { get; set; }
+    public List<Guid> ImageIds { get; set; }
 }
 
 public class ImageResponse

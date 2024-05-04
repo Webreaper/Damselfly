@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -31,14 +31,14 @@ public class RescanService : IRescanService
         await Task.WhenAll(providers.Select(x => x.MarkAllForScan()));
     }
 
-    public async Task MarkFolderForRescan(RescanTypes rescanType, int folderId)
+    public async Task MarkFolderForRescan(RescanTypes rescanType, Guid folderId)
     {
         var providers = GetService(rescanType);
 
         await Task.WhenAll(providers.Select(x => x.MarkFolderForScan(folderId)));
     }
 
-    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<int> imageIds)
+    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Guid> imageIds)
     {
         var providers = GetService(rescanType);
 

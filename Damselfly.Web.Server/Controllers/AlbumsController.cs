@@ -50,6 +50,16 @@ namespace Damselfly.Web.Server.Controllers
             return Ok(result);
         }
 
+        [HttpPost]
+        [Route("AddExistingImages")]
+        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        public async Task<IActionResult> AddExistingImages(AddExistingImagesToAlbumRequest model)
+        {
+            var result = await _albumService.AddImagesToAlbum(model);
+
+            return Ok(result);
+        }
+
         [HttpGet]
         [Route("all")]
         [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
@@ -65,9 +75,9 @@ namespace Damselfly.Web.Server.Controllers
         [Route("{id}")]
         public async Task<IActionResult> GetAlbum(string id, [FromQuery] string? password)
         {
-            if (int.TryParse(id, out var numId))
+            if (Guid.TryParse(id, out var guidId))
             {
-                var album = await _albumService.GetAlbum(numId, password);
+                var album = await _albumService.GetAlbum(guidId, password);
                 if(album == null) return NotFound();
                 return Ok(album);
             }
@@ -81,9 +91,9 @@ namespace Damselfly.Web.Server.Controllers
         [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
         public async Task<IActionResult> DeleteAlbum(string id)
         {
-            if (int.TryParse(id, out var numId))
+            if (Guid.TryParse(id, out var guidId))
             {
-                var result = await _albumService.DeleteAlbum(numId);
+                var result = await _albumService.DeleteAlbum(guidId);
                 if (result)
                     return Ok(new BooleanResultModel { Result = true });
                 return NotFound();

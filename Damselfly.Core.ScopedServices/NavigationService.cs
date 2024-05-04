@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 
@@ -58,7 +58,7 @@ public class NavigationService
     /// <returns></returns>
     public Task<int> GetNextImage(bool next)
     {
-        var navigationItems = new List<int>();
+        var navigationItems = new List<Guid>();
         int result = -1;
 
         if ( Context == NavigationContexts.Basket )
@@ -82,7 +82,7 @@ public class NavigationService
                 else
                     currentIndex = currentIndex % navigationItems.Count;
 
-                result = navigationItems[currentIndex];
+               //  result = navigationItems[currentIndex];
             }
         }
 

@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -42,7 +42,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>($"/api/tags/search/{filterText}");
     }
 
-    public async Task<Tag> GetTag( int tagId )
+    public async Task<Tag> GetTag( Guid tagId )
     {
         return await httpClient.CustomGetFromJsonAsync<Tag>($"/api/tag/{tagId}");
     }
@@ -65,7 +65,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return await httpClient.CustomPostAsJsonAsync<Tag, bool>("/api/tags/togglefave", tag);
     }
 
-    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string>? tagsToAdd,
+    public async Task UpdateTagsAsync(ICollection<Guid> imageIds, ICollection<string>? tagsToAdd,
         ICollection<string>? tagsToDelete, int? userId)
     {
         var payload = new TagUpdateRequest
@@ -79,7 +79,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         await httpClient.CustomPostAsJsonAsync("/api/tags", payload);
     }
 
-    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue,
+    public async Task SetExifFieldAsync(ICollection<Guid> imageIds, ExifOperation.ExifType exifType, string newValue,
         int? userId = null)
     {
         var payload = new ExifUpdateRequest

@@ -155,7 +155,6 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithOne(x => x.Parent)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
-        modelBuilder.Entity<Folder>().Property(x => x.FolderId).ValueGeneratedOnAdd();
 
 
         // A person has none or many face data points
@@ -163,7 +162,6 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .HasOne(p => p.Person)
             .WithMany(x => x.FaceData)
             .HasForeignKey(p => p.PersonId);
-        modelBuilder.Entity<PersonFaceData>().Property(x => x.FaceDataId).ValueGeneratedOnAdd();
 
 
         modelBuilder.Entity<Album>()
@@ -174,11 +172,9 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithMany(Album => Album.Albums);
 
         modelBuilder.Entity<Album>().Property(x => x.InvalidPasswordAttempts).HasDefaultValue(0);
-        modelBuilder.Entity<Album>().Property(x => x.AlbumId).ValueGeneratedOnAdd();
 
 
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
-        modelBuilder.Entity<ImageTag>().Property(x => x.TagId).ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });
@@ -186,18 +182,14 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Image>().HasIndex(x => x.FileName);
         modelBuilder.Entity<Image>().HasIndex(x => x.FileLastModDate);
         modelBuilder.Entity<Image>().HasIndex(x => x.SortDate);
-        modelBuilder.Entity<Image>().Property(x => x.ImageId).ValueGeneratedOnAdd();
         modelBuilder.Entity<Folder>().HasIndex(x => x.FolderScanDate);
         modelBuilder.Entity<Folder>().HasIndex(x => x.Path);
-        modelBuilder.Entity<Folder>().Property(x => x.FolderId).ValueGeneratedOnAdd();
         modelBuilder.Entity<Person>().HasIndex(x => x.State);
-        modelBuilder.Entity<Person>().Property(x => x.PersonId).ValueGeneratedOnAdd();
         modelBuilder.Entity<Tag>().HasIndex(x => new { x.Keyword }).IsUnique();
 
         modelBuilder.Entity<ImageObject>().HasIndex(x => x.ImageId);
         modelBuilder.Entity<ImageObject>().HasIndex(x => x.PersonId);
         modelBuilder.Entity<ImageObject>().HasIndex(x => new { x.ImageId, x.PersonId});
-        modelBuilder.Entity<ImageObject>().Property(x => x.ImageObjectId).ValueGeneratedOnAdd();
 
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
@@ -205,19 +197,15 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AILastUpdated);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.Rating);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.AspectRatio);
-        modelBuilder.Entity<ImageMetaData>().Property(x => x.MetaDataId).ValueGeneratedOnAdd();
 
         modelBuilder.Entity<ExifOperation>().HasIndex(x => new { x.ImageId, x.Text });
         modelBuilder.Entity<ExifOperation>().HasIndex(x => x.TimeStamp);
-        modelBuilder.Entity<ExifOperation>().Property(x => x.ExifOperationId).ValueGeneratedOnAdd();
 
         modelBuilder.Entity<BasketEntry>().HasIndex(x => new { x.ImageId, x.BasketId }).IsUnique();
-        modelBuilder.Entity<BasketEntry>().Property(x => x.BasketEntryId).ValueGeneratedOnAdd();
 
         modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
         modelBuilder.Entity<Hash>().HasIndex(x => new
             { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });
-        modelBuilder.Entity<Hash>().Property(x => x.HashId).ValueGeneratedOnAdd();
         modelBuilder.Entity<Models.ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
         RoleDefinitions.OnModelCreating(modelBuilder);
@@ -234,7 +222,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     /// <param name="updateField"></param>
     /// <param name="newValue"></param>
     /// <returns></returns>
-    public static async Task<int> UpdateMetadataFields(ImageContext db, int folderId, string updateField,
+    public static async Task<int> UpdateMetadataFields(ImageContext db, Guid folderId, string updateField,
         string newValue)
     {
         var sql =
@@ -249,5 +237,21 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             Logging.LogError($"Exception updating Metadata Field {updateField}: {ex.Message}");
             return 0;
         }
+    }
+}
+
+public static class EfExtensions
+{
+    public static T AttachToOrGet<T>(this DbContext context, Func<T, bool> predicate, Func<T> factory)
+        where T : class, new()
+    {
+        var match = context.Set<T>().Local.FirstOrDefault(predicate);
+        if( match == null )
+        {
+            match = factory();
+            context.Attach(match);
+        }
+
+        return match;
     }
 }

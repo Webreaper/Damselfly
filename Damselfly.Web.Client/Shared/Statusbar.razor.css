@@ -1,9 +1,0 @@
-.damselfly-statusbar {
-    flex: 0 1 30px;
-    align-items: center;
-    min-height: 30px;
-    padding: 5px;
-    background-image: linear-gradient(180deg, var(--statusbar-gradstart), var(--statusbar-gradend));
-    display: flex;
-    flex-direction: row;
-}

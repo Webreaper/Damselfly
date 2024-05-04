@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Humanizer;
@@ -27,14 +28,14 @@ public class ImageObject
     }
 
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int ImageObjectId { get; set; }
+    
+    public Guid ImageObjectId { get; set; } = new Guid();
 
-    [Required] public int ImageId { get; set; }
+    [Required] public Guid ImageId { get; set; }
 
     public virtual Image Image { get; set; }
 
-    [Required] public int TagId { get; set; }
+    [Required] public Guid TagId { get; set; }
 
     public virtual Tag Tag { get; set; }
 
@@ -46,7 +47,7 @@ public class ImageObject
     public int RectWidth { get; set; }
     public int RectHeight { get; set; }
 
-    public int? PersonId { get; set; }
+    public Guid? PersonId { get; set; }
     public virtual Person Person { get; set; }
 
     public bool IsFace => Type == ObjectTypes.Face.ToString();

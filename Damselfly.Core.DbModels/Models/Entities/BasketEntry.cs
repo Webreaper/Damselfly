@@ -12,20 +12,20 @@ namespace Damselfly.Core.Models;
 public class BasketEntry
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int BasketEntryId { get; set; }
+    
+    public Guid BasketEntryId { get; set; } = new Guid();
 
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
 
     [Required]
     public virtual Image Image { get; set; }
 
-    public int ImageId { get; set; }
+    public Guid ImageId { get; set; }
 
     [Required]
     public virtual Basket Basket { get; set; }
 
-    public int BasketId { get; set; }
+    public Guid BasketId { get; set; }
 
     public override string ToString()
     {

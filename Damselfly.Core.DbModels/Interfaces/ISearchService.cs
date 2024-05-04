@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
@@ -9,7 +9,7 @@ namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface ISearchService
 {
-    ICollection<int> SearchResults { get; }
+    ICollection<Guid> SearchResults { get; }
 
     string SearchText { get; set; }
     Folder Folder { get; set; }
@@ -17,9 +17,9 @@ public interface ISearchService
     Tag Tag { get; set; }
     DateTime? MaxDate { get; set; }
     DateTime? MinDate { get; set; }
-    int? CameraId { get; set; }
-    int? SimilarToId { get; set; }
-    int? LensId { get; set; }
+    Guid? CameraId { get; set; }
+    Guid? SimilarToId { get; set; }
+    Guid? LensId { get; set; }
     int? Month { get; set; }
     int? MinRating { get; set; }
     int? MaxSizeKB { get; set; }

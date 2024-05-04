@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -20,7 +20,7 @@ public class ClientDownloadService : IDownloadService
         return await httpClient.CustomGetFromJsonAsync<DesktopAppPaths>("/api/download/desktopapppaths");
     }
 
-    public async Task<string> CreateDownloadZipAsync(ICollection<int> imageIds, ExportConfig config)
+    public async Task<string> CreateDownloadZipAsync(ICollection<Guid> imageIds, ExportConfig config)
     {
         var request = new DownloadRequest { ImageIds = imageIds, Config = config };
 

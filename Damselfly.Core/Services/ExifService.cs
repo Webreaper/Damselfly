@@ -110,7 +110,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task UpdateTagsAsync(ICollection<int> imageIds, ICollection<string>? addTags,
+    public async Task UpdateTagsAsync(ICollection<Guid> imageIds, ICollection<string>? addTags,
         ICollection<string>? removeTags = null, int? userId = null)
     {
         // TODO: Split tags with commas here?
@@ -190,7 +190,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    public async Task SetExifFieldAsync(ICollection<int> imageIds, ExifOperation.ExifType exifType, string newValue,
+    public async Task SetExifFieldAsync(ICollection<Guid> imageIds, ExifOperation.ExifType exifType, string newValue,
         int? userId = null)
     {
         var timestamp = DateTime.UtcNow;
@@ -369,7 +369,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// <param name="tagsToAdd"></param>
     /// <param name="tagsToRemove"></param>
     /// <returns></returns>
-    private async Task<bool> ProcessExifOperations(int imageId, List<ExifOperation> exifOperations)
+    private async Task<bool> ProcessExifOperations(Guid imageId, List<ExifOperation> exifOperations)
     {
         var success = false;
 
@@ -505,7 +505,7 @@ public class ExifService : IProcessJobFactory, ITagService
 
                 // Updating the timestamp on the image to newer than its metadata will
                 // trigger its metadata and tags to be refreshed during the next scan
-                await _indexingService.MarkImagesForScan(new List<int> { image.ImageId });
+                await _indexingService.MarkImagesForScan(new List<Guid> { image.ImageId });
             }
             else
             {
@@ -602,10 +602,10 @@ public class ExifService : IProcessJobFactory, ITagService
     /// </summary>
     /// <param name="tagsToProcess"></param>
     /// <returns></returns>
-    private async Task<IDictionary<int, List<ExifOperation>>> ConflateOperations(List<ExifOperation> opsToProcess)
+    private async Task<IDictionary<Guid, List<ExifOperation>>> ConflateOperations(List<ExifOperation> opsToProcess)
     {
         // The result is the image ID, and a list of conflated ops.
-        var result = new Dictionary<int, List<ExifOperation>>();
+        var result = new Dictionary<Guid, List<ExifOperation>>();
         var discardedOps = new List<ExifOperation>();
 
         // First, conflate the keywords.
@@ -691,7 +691,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// </summary>
     /// <param name="opsToProcess"></param>
     /// <param name="result"></param>
-    private void ConflateRotation(List<ExifOperation> opsToProcess, Dictionary<int, List<ExifOperation>> result, List<ExifOperation> discardedOps )
+    private void ConflateRotation(List<ExifOperation> opsToProcess, Dictionary<Guid, List<ExifOperation>> result, List<ExifOperation> discardedOps )
     {
         var rotateOps = opsToProcess.Where( x => x.Type == ExifOperation.ExifType.Rotate );
 
@@ -723,7 +723,7 @@ public class ExifService : IProcessJobFactory, ITagService
     }
 
     private static void ConflateSingleObjects(List<ExifOperation> opsToProcess,
-        Dictionary<int, List<ExifOperation>> result, List<ExifOperation> discardedOps, ExifOperation.ExifType exifType)
+        Dictionary<Guid, List<ExifOperation>> result, List<ExifOperation> discardedOps, ExifOperation.ExifType exifType)
     {
         // Now the captions. Group by image + list of ops, sorted newest first, and then the
         // one we want is the most recent.
@@ -778,7 +778,7 @@ public class ExifService : IProcessJobFactory, ITagService
 
     public class ExifProcess : IProcessJob
     {
-        public int ImageId { get; set; }
+        public Guid ImageId { get; set; }
         public List<ExifOperation> ExifOps { get; set; }
         public ExifService Service { get; set; }
         public DateTime ProcessSchedule { get; set; }

@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
@@ -17,7 +17,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     private readonly NotificationsService _notifications;
     private readonly ISearchService _searchService;
     private ICollection<Folder>? folderItems;
-    private IDictionary<int, FolderState> folderStates;
+    private IDictionary<Guid, FolderState> folderStates;
 
     public UserFolderService(IFolderService folderService, ISearchService searchService, IConfigService configService,
         NotificationsService notifications)
@@ -108,7 +108,7 @@ public class UserFolderService : IDisposable, IUserFolderService
         return items.Where(x => x.ParentFolders.All(x => IsExpanded(x))).ToList();
     }
 
-    public Task<Folder?> GetFolder(int folderId)
+    public Task<Folder?> GetFolder(Guid folderId)
     {
         Folder? result = null;
         if ( folderStates.TryGetValue(folderId, out var folderState) )

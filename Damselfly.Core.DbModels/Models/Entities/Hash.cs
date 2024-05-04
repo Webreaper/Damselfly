@@ -12,12 +12,12 @@ namespace Damselfly.Core.Models;
 public class Hash
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
-    public int HashId { get; set; }
+    
+    public Guid HashId { get; set; } = new Guid();
 
     [Required] public virtual Image Image { get; set; }
 
-    public int ImageId { get; set; }
+    public Guid ImageId { get; set; }
 
     // The MD5 image hash. 
     public string? MD5ImageHash { get; set; }

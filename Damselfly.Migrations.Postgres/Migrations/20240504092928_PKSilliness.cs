@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Damselfly.Migrations.Postgres.Migrations
 {
     /// <inheritdoc />
-    public partial class SwitchToPostgres : Migration
+    public partial class PKSilliness : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,8 +18,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Cameras",
                 columns: table => new
                 {
-                    CameraId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CameraId = table.Column<Guid>(type: "uuid", nullable: false),
                     Model = table.Column<string>(type: "text", nullable: true),
                     Make = table.Column<string>(type: "text", nullable: true),
                     Serial = table.Column<string>(type: "text", nullable: true)
@@ -64,10 +63,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Folders",
                 columns: table => new
                 {
-                    FolderId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FolderId = table.Column<Guid>(type: "uuid", nullable: false),
                     Path = table.Column<string>(type: "text", nullable: true),
-                    ParentId = table.Column<int>(type: "integer", nullable: true),
+                    ParentId = table.Column<Guid>(type: "uuid", nullable: true),
                     FolderScanDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
@@ -98,8 +96,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Lenses",
                 columns: table => new
                 {
-                    LensId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    LensId = table.Column<Guid>(type: "uuid", nullable: false),
                     Model = table.Column<string>(type: "text", nullable: true),
                     Make = table.Column<string>(type: "text", nullable: true),
                     Serial = table.Column<string>(type: "text", nullable: true)
@@ -113,8 +110,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "People",
                 columns: table => new
                 {
-                    PersonId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     State = table.Column<int>(type: "integer", nullable: false),
                     PersonGuid = table.Column<string>(type: "text", nullable: true),
@@ -144,8 +140,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Tags",
                 columns: table => new
                 {
-                    TagId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TagId = table.Column<Guid>(type: "uuid", nullable: false),
                     Keyword = table.Column<string>(type: "text", nullable: false),
                     TagType = table.Column<int>(type: "integer", nullable: false),
                     Favourite = table.Column<bool>(type: "boolean", nullable: false),
@@ -160,16 +155,15 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Images",
                 columns: table => new
                 {
-                    ImageId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FolderId = table.Column<int>(type: "integer", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FolderId = table.Column<Guid>(type: "uuid", nullable: false),
                     FileName = table.Column<string>(type: "text", nullable: true),
                     FileSizeBytes = table.Column<int>(type: "integer", nullable: false),
                     FileCreationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     FileLastModDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     SortDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ClassificationId = table.Column<int>(type: "integer", nullable: true),
+                    ClassificationId = table.Column<Guid>(type: "uuid", nullable: true),
                     ClassificationScore = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
@@ -187,9 +181,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "FaceData",
                 columns: table => new
                 {
-                    FaceDataId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    PersonId = table.Column<int>(type: "integer", nullable: false),
+                    FaceDataId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     Embeddings = table.Column<string>(type: "text", nullable: false),
                     Score = table.Column<float>(type: "real", nullable: false)
                 },
@@ -261,16 +254,15 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Albums",
                 columns: table => new
                 {
-                    AlbumId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AlbumId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     UrlName = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
-                    InvalidPasswordAttempts = table.Column<int>(type: "integer", nullable: false),
+                    InvalidPasswordAttempts = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     IsPublic = table.Column<bool>(type: "boolean", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: true, defaultValue: "0"),
-                    CoverImageId = table.Column<int>(type: "integer", nullable: true),
-                    FolderId = table.Column<int>(type: "integer", nullable: false)
+                    Password = table.Column<string>(type: "text", nullable: true),
+                    CoverImageId = table.Column<Guid>(type: "uuid", nullable: true),
+                    FolderId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -292,9 +284,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Hashes",
                 columns: table => new
                 {
-                    HashId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
+                    HashId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     MD5ImageHash = table.Column<string>(type: "text", nullable: true),
                     PerceptualHex1 = table.Column<string>(type: "text", nullable: true),
                     PerceptualHex2 = table.Column<string>(type: "text", nullable: true),
@@ -316,7 +307,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "ImageClassifications",
                 columns: table => new
                 {
-                    ClassificationId = table.Column<int>(type: "integer", nullable: false),
+                    ClassificationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Label = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -334,9 +325,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "ImageMetaData",
                 columns: table => new
                 {
-                    MetaDataId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
+                    MetaDataId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     DateTaken = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Width = table.Column<int>(type: "integer", nullable: false),
                     Height = table.Column<int>(type: "integer", nullable: false),
@@ -352,8 +342,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     FlashFired = table.Column<bool>(type: "boolean", nullable: false),
                     Latitude = table.Column<double>(type: "double precision", nullable: true),
                     Longitude = table.Column<double>(type: "double precision", nullable: true),
-                    CameraId = table.Column<int>(type: "integer", nullable: true),
-                    LensId = table.Column<int>(type: "integer", nullable: true),
+                    CameraId = table.Column<Guid>(type: "uuid", nullable: true),
+                    LensId = table.Column<Guid>(type: "uuid", nullable: true),
                     DominantColor = table.Column<string>(type: "text", nullable: true),
                     AverageColor = table.Column<string>(type: "text", nullable: true),
                     LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -385,10 +375,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "ImageObjects",
                 columns: table => new
                 {
-                    ImageObjectId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
-                    TagId = table.Column<int>(type: "integer", nullable: false),
+                    ImageObjectId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TagId = table.Column<Guid>(type: "uuid", nullable: false),
                     Type = table.Column<string>(type: "text", nullable: true),
                     RecogntionSource = table.Column<int>(type: "integer", nullable: false),
                     Score = table.Column<double>(type: "double precision", nullable: false),
@@ -396,7 +385,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     RectY = table.Column<int>(type: "integer", nullable: false),
                     RectWidth = table.Column<int>(type: "integer", nullable: false),
                     RectHeight = table.Column<int>(type: "integer", nullable: false),
-                    PersonId = table.Column<int>(type: "integer", nullable: true)
+                    PersonId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -424,8 +413,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "ImageTags",
                 columns: table => new
                 {
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
-                    TagId = table.Column<int>(type: "integer", nullable: false)
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TagId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -448,9 +437,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Transformations",
                 columns: table => new
                 {
-                    TransformationId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
+                    TransformationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     TransformsJson = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -468,8 +456,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "Baskets",
                 columns: table => new
                 {
-                    BasketId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    BasketId = table.Column<Guid>(type: "uuid", nullable: false),
                     DateAdded = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: true)
@@ -508,9 +495,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "KeywordOperations",
                 columns: table => new
                 {
-                    ExifOperationId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
+                    ExifOperationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
                     Text = table.Column<string>(type: "text", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     Operation = table.Column<int>(type: "integer", nullable: false),
@@ -559,8 +545,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "UserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    ProviderKey = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -610,8 +596,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -629,8 +615,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "AlbumImage",
                 columns: table => new
                 {
-                    AlbumsAlbumId = table.Column<int>(type: "integer", nullable: false),
-                    ImagesImageId = table.Column<int>(type: "integer", nullable: false)
+                    AlbumsAlbumId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ImagesImageId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -653,11 +639,10 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 name: "BasketEntries",
                 columns: table => new
                 {
-                    BasketEntryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    BasketEntryId = table.Column<Guid>(type: "uuid", nullable: false),
                     DateAdded = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ImageId = table.Column<int>(type: "integer", nullable: false),
-                    BasketId = table.Column<int>(type: "integer", nullable: false)
+                    ImageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BasketId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -681,9 +666,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { 1, "64d8cae6-f1c3-4c6e-9db1-43e2636008cb", "User", "USER" },
-                    { 2, "4db4c7ab-b9c5-4fa1-8f63-543ab169870f", "Admin", "ADMIN" },
-                    { 3, "ac8bdaaa-cefe-42f2-b141-7df516aa06da", "ReadOnly", "READONLY" }
+                    { 1, "8d4d0b46-4409-4785-af52-218f2bbc5cdf", "User", "USER" },
+                    { 2, "818d1b3d-effc-49e0-8ccf-34444079c21e", "Admin", "ADMIN" },
+                    { 3, "b6a8ca44-f898-4504-b4bb-1703585dd324", "ReadOnly", "READONLY" }
                 });
 
             migrationBuilder.CreateIndex(

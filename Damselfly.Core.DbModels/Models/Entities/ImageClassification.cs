@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,8 +10,8 @@ namespace Damselfly.Core.Models;
 public class ImageClassification
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
-    public int ClassificationId { get; set; }
+    
+    public Guid ClassificationId { get; set; } = new Guid();
 
     public string? Label { get; set; }
 

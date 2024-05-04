@@ -46,7 +46,7 @@ public class TagController : ControllerBase
     }
 
     [HttpGet("/api/tag/{tagId}")]
-    public async Task<Tag> GetTag( int tagId )
+    public async Task<Tag> GetTag( Guid tagId )
     {
         return await _tagSearch.GetTag( tagId );
     }

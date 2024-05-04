@@ -10,12 +10,12 @@ namespace Damselfly.Core.Models;
 public class Folder
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int FolderId { get; set; }
+    
+    public Guid FolderId { get; set; }
 
     public string? Path { get; set; }
 
-    public int? ParentId { get; set; }
+    public Guid? ParentId { get; set; }
     public virtual Folder? Parent { get; set; }
 
     public DateTime? FolderScanDate { get; set; }

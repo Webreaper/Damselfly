@@ -12,8 +12,8 @@ namespace Damselfly.Core.Models;
 public class Basket
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
-    public int BasketId { get; set; }
+    
+    public Guid BasketId { get; set; } = new Guid();
 
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;
     public string? Name { get; set; }

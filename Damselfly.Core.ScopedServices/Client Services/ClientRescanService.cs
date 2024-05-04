@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -19,13 +19,13 @@ public class ClientRescanService : IRescanService
         await httpClient.CustomPostAsJsonAsync("/api/rescan/clearfaces", true);
     }
 
-    public async Task MarkFolderForRescan(RescanTypes rescanType, int folderId)
+    public async Task MarkFolderForRescan(RescanTypes rescanType, Guid folderId)
     {
         var req = new RescanRequest { ScanType = rescanType, FolderId = folderId };
         await httpClient.CustomPostAsJsonAsync("/api/rescan", req);
     }
 
-    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<int> imageIds)
+    public async Task MarkImagesForRescan(RescanTypes rescanType, ICollection<Guid> imageIds)
     {
         var req = new RescanRequest { ScanType = rescanType, ImageIds = imageIds };
         await httpClient.CustomPostAsJsonAsync("/api/rescan", req);

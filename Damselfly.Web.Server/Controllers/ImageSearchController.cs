@@ -33,7 +33,7 @@ public class ImageSearchController : ControllerBase
         catch ( Exception ex )
         {
             _logger.LogError($"Exception during search query: {ex}");
-            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
+            return new SearchResponse { MoreDataAvailable = false, SearchResults = new Guid[0] };
         }
     }
 }

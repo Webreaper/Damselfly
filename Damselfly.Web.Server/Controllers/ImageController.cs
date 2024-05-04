@@ -42,7 +42,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     [HttpGet]
     [Route("imageData/{id}")]
     [ProducesResponseType(typeof(ImageModel), 200)]
-    public async Task<IActionResult> GetImageData(int id, [FromQuery] string? password)
+    public async Task<IActionResult> GetImageData(Guid id, [FromQuery] string? password)
     {
         var image = await _imageService.GetImageData(id, password);
         if ( image == null )
@@ -54,7 +54,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     [Route("{id}")]
     [ProducesResponseType(typeof(BooleanResultModel), 200)]
     [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
-    public async Task<IActionResult> DeleteImage(int id)
+    public async Task<IActionResult> DeleteImage(Guid id)
     {
         var result = await _imageService.DeleteImage(id);
         if ( result )
@@ -79,7 +79,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
 
         IActionResult result = Redirect("/no-image.png");
 
-        if ( int.TryParse(imageId, out var id) )
+        if ( Guid.TryParse(imageId, out var id) )
             try
             {
                 var image = await imageCache.GetCachedImage(id);
@@ -119,7 +119,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
 
         IActionResult result = Redirect("/no-image.png");
 
-        if ( Enum.TryParse<ThumbSize>(thumbSize, true, out var size) && int.TryParse(imageId, out var id) )
+        if ( Enum.TryParse<ThumbSize>(thumbSize, true, out var size) && Guid.TryParse(imageId, out var id) )
             try
             {
                 Logging.LogTrace($"Controller - Getting Thumb for {imageId}");

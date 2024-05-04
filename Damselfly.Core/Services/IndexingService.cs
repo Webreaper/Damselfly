@@ -98,9 +98,9 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         };
     }
 
-    public async Task MarkFolderForScan(int folderId)
+    public async Task MarkFolderForScan(Guid folderId)
     {
-        await MarkFoldersForScan(new List<int> { folderId });
+        await MarkFoldersForScan(new List<Guid> { folderId });
     }
 
     public async Task MarkAllForScan()
@@ -127,7 +127,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     /// </summary>
     /// <param name="images"></param>
     /// <returns></returns>
-    public async Task MarkImagesForScan(ICollection<int> images)
+    public async Task MarkImagesForScan(ICollection<Guid> images)
     {
         try
         {
@@ -208,7 +208,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                     folder.Name, folderToScan.Images.Count());
             }
 
-            if ( folderToScan.FolderId == 0 )
+            if ( folderToScan.FolderId == Guid.Empty )
             {
                 Logging.Log($"Adding new folder: {folderToScan.Path}");
 
@@ -300,7 +300,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     /// <param name="folderToScan"></param>
     /// <param name="force">Force the folder to be scanned</param>
     /// <returns></returns>
-    private async Task<bool> ScanFolderImages(int folderIdToScan)
+    private async Task<bool> ScanFolderImages(Guid folderIdToScan)
     {
         var imagesWereAddedOrRemoved = false;
         var folderImageCount = 0;
@@ -456,7 +456,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     /// </summary>
     /// <param name="folders"></param>
     /// <returns></returns>
-    public async Task MarkFoldersForScan(List<int> folderIds)
+    public async Task MarkFoldersForScan(List<Guid> folderIds)
     {
         try
         {

@@ -25,7 +25,7 @@ public class ImageAPIController : ControllerBase
     }
 
     [HttpGet("/api/image/{imageId}")]
-    public async Task<Image> Get(int imageId)
+    public async Task<Image> Get(Guid imageId)
     {
         try
         {

@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.DbModels.Models.API_Models;
+using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -15,7 +15,7 @@ public class ClientPeopleService : IPeopleService
         httpClient = client;
     }
 
-    public async Task<Person> GetPerson( int personId )
+    public async Task<Person> GetPerson( Guid personId )
     {
         return await httpClient.CustomGetFromJsonAsync<Person>($"/api/person/{personId}");
     }

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Damselfly.Migrations.Postgres.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    [Migration("20240502224228_SwitchToPostgres")]
-    partial class SwitchToPostgres
+    [Migration("20240504092928_PKSilliness")]
+    partial class PKSilliness
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,11 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("AlbumImage", b =>
                 {
-                    b.Property<int>("AlbumsAlbumId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AlbumsAlbumId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ImagesImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImagesImageId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("AlbumsAlbumId", "ImagesImageId");
 
@@ -144,21 +144,21 @@ namespace Damselfly.Migrations.Postgres.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "64d8cae6-f1c3-4c6e-9db1-43e2636008cb",
+                            ConcurrencyStamp = "8d4d0b46-4409-4785-af52-218f2bbc5cdf",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "4db4c7ab-b9c5-4fa1-8f63-543ab169870f",
+                            ConcurrencyStamp = "818d1b3d-effc-49e0-8ccf-34444079c21e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "ac8bdaaa-cefe-42f2-b141-7df516aa06da",
+                            ConcurrencyStamp = "b6a8ca44-f898-4504-b4bb-1703585dd324",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -186,24 +186,24 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.DbModels.Models.Entities.Album", b =>
                 {
-                    b.Property<int>("AlbumId")
+                    b.Property<Guid>("AlbumId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AlbumId"));
-
-                    b.Property<int?>("CoverImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("CoverImageId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("FolderId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("FolderId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("InvalidPasswordAttempts")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
@@ -213,9 +213,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Password")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
-                        .HasDefaultValue("0");
+                        .HasColumnType("text");
 
                     b.Property<string>("UrlName")
                         .IsRequired()
@@ -232,11 +230,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Basket", b =>
                 {
-                    b.Property<int>("BasketId")
+                    b.Property<Guid>("BasketId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BasketId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("timestamp with time zone");
@@ -256,20 +252,18 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.BasketEntry", b =>
                 {
-                    b.Property<int>("BasketEntryId")
+                    b.Property<Guid>("BasketEntryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BasketEntryId"));
-
-                    b.Property<int>("BasketId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("BasketId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("DateAdded")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("BasketEntryId");
 
@@ -283,11 +277,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Camera", b =>
                 {
-                    b.Property<int>("CameraId")
+                    b.Property<Guid>("CameraId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CameraId"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Make")
                         .HasColumnType("text");
@@ -330,14 +322,12 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.ExifOperation", b =>
                 {
-                    b.Property<int>("ExifOperationId")
+                    b.Property<Guid>("ExifOperationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ExifOperationId"));
-
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Operation")
                         .HasColumnType("integer");
@@ -415,17 +405,15 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Folder", b =>
                 {
-                    b.Property<int>("FolderId")
+                    b.Property<Guid>("FolderId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FolderId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("FolderScanDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("ParentId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Path")
                         .HasColumnType("text");
@@ -443,14 +431,12 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Hash", b =>
                 {
-                    b.Property<int>("HashId")
+                    b.Property<Guid>("HashId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("HashId"));
-
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("MD5ImageHash")
                         .HasColumnType("text");
@@ -481,14 +467,12 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Image", b =>
                 {
-                    b.Property<int>("ImageId")
+                    b.Property<Guid>("ImageId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ImageId"));
-
-                    b.Property<int?>("ClassificationId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ClassificationId")
+                        .HasColumnType("uuid");
 
                     b.Property<double>("ClassificationScore")
                         .HasColumnType("double precision");
@@ -505,8 +489,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<int>("FileSizeBytes")
                         .HasColumnType("integer");
 
-                    b.Property<int>("FolderId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("FolderId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
@@ -534,8 +518,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageClassification", b =>
                 {
-                    b.Property<int>("ClassificationId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ClassificationId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Label")
                         .HasColumnType("text");
@@ -550,11 +534,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageMetaData", b =>
                 {
-                    b.Property<int>("MetaDataId")
+                    b.Property<Guid>("MetaDataId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("MetaDataId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("AILastUpdated")
                         .HasColumnType("timestamp with time zone");
@@ -565,8 +547,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<string>("AverageColor")
                         .HasColumnType("text");
 
-                    b.Property<int?>("CameraId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("CameraId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Caption")
                         .HasColumnType("text");
@@ -601,8 +583,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<string>("ISO")
                         .HasColumnType("text");
 
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
@@ -610,8 +592,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<double?>("Latitude")
                         .HasColumnType("double precision");
 
-                    b.Property<int?>("LensId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("LensId")
+                        .HasColumnType("uuid");
 
                     b.Property<double?>("Longitude")
                         .HasColumnType("double precision");
@@ -649,17 +631,15 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageObject", b =>
                 {
-                    b.Property<int>("ImageObjectId")
+                    b.Property<Guid>("ImageObjectId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ImageObjectId"));
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("PersonId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("PersonId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("RecogntionSource")
                         .HasColumnType("integer");
@@ -679,8 +659,8 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<double>("Score")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Type")
                         .HasColumnType("text");
@@ -700,11 +680,11 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.ImageTag", b =>
                 {
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("TagId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("ImageId", "TagId");
 
@@ -718,11 +698,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Lens", b =>
                 {
-                    b.Property<int>("LensId")
+                    b.Property<Guid>("LensId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LensId"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Make")
                         .HasColumnType("text");
@@ -740,11 +718,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Person", b =>
                 {
-                    b.Property<int>("PersonId")
+                    b.Property<Guid>("PersonId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("PersonId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("LastUpdated")
                         .HasColumnType("timestamp with time zone");
@@ -768,18 +744,16 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.PersonFaceData", b =>
                 {
-                    b.Property<int>("FaceDataId")
+                    b.Property<Guid>("FaceDataId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FaceDataId"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Embeddings")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("PersonId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid");
 
                     b.Property<float>("Score")
                         .HasColumnType("real");
@@ -793,11 +767,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Tag", b =>
                 {
-                    b.Property<int>("TagId")
+                    b.Property<Guid>("TagId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TagId"));
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("Favourite")
                         .HasColumnType("boolean");
@@ -822,14 +794,12 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
             modelBuilder.Entity("Damselfly.Core.Models.Transformations", b =>
                 {
-                    b.Property<int>("TransformationId")
+                    b.Property<Guid>("TransformationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TransformationId"));
-
-                    b.Property<int>("ImageId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ImageId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("TransformsJson")
                         .IsRequired()
@@ -913,10 +883,12 @@ namespace Damselfly.Migrations.Postgres.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("text");
@@ -937,10 +909,12 @@ namespace Damselfly.Migrations.Postgres.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("text");

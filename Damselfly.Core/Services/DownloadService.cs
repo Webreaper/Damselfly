@@ -59,7 +59,7 @@ public class DownloadService : IDownloadService
     /// <param name="imagesToZip"></param>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task<string> CreateDownloadZipAsync(ICollection<int> imagesIdsToZip, ExportConfig config)
+    public async Task<string> CreateDownloadZipAsync(ICollection<Guid> imagesIdsToZip, ExportConfig config)
     {
         var images = await _cacheService.GetCachedImages(imagesIdsToZip);
 

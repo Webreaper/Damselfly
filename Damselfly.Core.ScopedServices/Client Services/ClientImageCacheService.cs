@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Constants;
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.ClientServices;
@@ -34,7 +34,7 @@ public class ClientImageCacheService : IImageCacheService
         _notifications.SubscribeToNotification<string>(NotificationType.CacheEvict, Evict);
     }
 
-    public async Task<Image> GetCachedImage(int imgId)
+    public async Task<Image> GetCachedImage(Guid imgId)
     {
         var list = new[] { imgId };
         var result = await GetCachedImages(list);
@@ -59,7 +59,7 @@ public class ClientImageCacheService : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds)
+    public async Task<List<Image>> GetCachedImages(ICollection<Guid> imgIds)
     {
         var result = new List<Image>();
 
@@ -112,7 +112,7 @@ public class ClientImageCacheService : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    private async Task PreCacheImageList(ICollection<int> imgIds)
+    private async Task PreCacheImageList(ICollection<Guid> imgIds)
     {
         const int chunkSize = DamselflyContants.PageSize;
 
@@ -147,12 +147,12 @@ public class ClientImageCacheService : IImageCacheService
         }
     }
 
-    private async Task<Image> GetImage(int imgId)
+    private async Task<Image> GetImage(Guid imgId)
     {
         return await httpClient.CustomGetFromJsonAsync<Image>($"/api/image/{imgId}");
     }
 
-    private async Task<List<Image>> GetImages(ICollection<int> imgIds)
+    private async Task<List<Image>> GetImages(ICollection<Guid> imgIds)
     {
         if (imgIds.Any())
         {
@@ -166,7 +166,7 @@ public class ClientImageCacheService : IImageCacheService
         return new List<Image>();
     }
 
-    private async Task<Image> LoadAndCacheImage(int imageId)
+    private async Task<Image> LoadAndCacheImage(Guid imageId)
     {
         if (_memoryCache.TryGetValue<Image>(imageId, out var image))
             return image;

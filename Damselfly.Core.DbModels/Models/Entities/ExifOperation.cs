@@ -36,12 +36,12 @@ public class ExifOperation
     }
 
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
-    public int ExifOperationId { get; set; }
+    
+    public Guid ExifOperationId { get; set; } = new Guid();
 
     [Required] public virtual Image Image { get; set; }
 
-    public int ImageId { get; set; }
+    public Guid ImageId { get; set; }
 
     [Required] public string Text { get; set; }
 

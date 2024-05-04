@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,8 +10,8 @@ namespace Damselfly.Core.Models;
 public class Camera
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int CameraId { get; set; }
+    
+    public Guid CameraId { get; set; } = new Guid();
 
     public string? Model { get; set; }
     public string? Make { get; set; }
@@ -23,8 +24,8 @@ public class Camera
 public class Lens
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int LensId { get; set; }
+    
+    public Guid LensId { get; set; } = new Guid();
 
     public string? Model { get; set; }
     public string? Make { get; set; }

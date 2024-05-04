@@ -11,12 +11,12 @@ namespace Damselfly.Core.Models;
 public class ImageMetaData
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int MetaDataId { get; set; }
+    
+    public Guid MetaDataId { get; set; } = new Guid();
 
     [Required] public virtual Image Image { get; set; }
 
-    public int ImageId { get; set; }
+    public Guid ImageId { get; set; }
 
     public DateTime DateTaken { get; set; }
     public int Width { get; set; }
@@ -34,10 +34,10 @@ public class ImageMetaData
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
 
-    public int? CameraId { get; set; }
+    public Guid? CameraId { get; set; }
     public virtual Camera Camera { get; set; }
 
-    public int? LensId { get; set; }
+    public Guid? LensId { get; set; }
     public virtual Lens Lens { get; set; }
 
     public string? DominantColor { get; set; }

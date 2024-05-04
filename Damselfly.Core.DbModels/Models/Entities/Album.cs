@@ -12,16 +12,16 @@ namespace Damselfly.Core.DbModels.Models.Entities
     public class Album
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int AlbumId { get; set; }
+
+        public Guid AlbumId { get; set; } = new Guid();
         public string Name { get; set; }
         public string UrlName { get; set; } 
         public string Description { get; set; }
         public int InvalidPasswordAttempts { get; set; }
         public bool IsPublic { get; set; }
         public string? Password { get; set; }
-        public int? CoverImageId { get; set; }
-        public int FolderId { get; set; }
+        public Guid? CoverImageId { get; set; }
+        public Guid FolderId { get; set; }
 
         public virtual List<Image> Images { get; set; } = [];
 

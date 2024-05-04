@@ -26,7 +26,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpDelete("/api/basket/{basketId}")]
-    public async Task DeleteBasket(int basketId)
+    public async Task DeleteBasket(Guid basketId)
     {
         await _service.Delete(basketId);
     }
@@ -50,7 +50,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet("/api/basket/entries/{basketId}")]
-    public async Task<ICollection<BasketEntry>> GetBasketEntries(int basketId)
+    public async Task<ICollection<BasketEntry>> GetBasketEntries(Guid basketId)
     {
         var basket = await _service.GetBasketById(basketId);
 
@@ -60,13 +60,13 @@ public class BasketController : ControllerBase
     }
 
     [HttpPost("/api/basket/clear/{basketId}")]
-    public async Task ClearBasket(int basketId)
+    public async Task ClearBasket(Guid basketId)
     {
         await _service.Clear(basketId);
     }
 
     [HttpGet("/api/basket/{basketId}")]
-    public async Task<Basket> GetBasketById(int basketId)
+    public async Task<Basket> GetBasketById(Guid basketId)
     {
         var basket = await _service.GetBasketById(basketId);
 

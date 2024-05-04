@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Utils;
 
@@ -17,11 +17,11 @@ public class SearchQuery
     public bool IncludeChildFolders { get; set; } = true;
     public int? MaxSizeKB { get; set; } = null;
     public int? MinSizeKB { get; set; } = null;
-    public int? CameraId { get; set; } = null;
-    public int? LensId { get; set; } = null;
+    public Guid? CameraId { get; set; } = null;
+    public Guid? LensId { get; set; } = null;
     public int? Month { get; set; } = null;
     public int? MinRating { get; set; } = null;
-    public int? SimilarToId { get; set; } = null;
+    public Guid? SimilarToId { get; set; } = null;
     public Folder? Folder { get; set; } = null;
     public Tag? Tag { get; set; } = null;
     public Person? Person { get; set; } = null;
@@ -86,9 +86,9 @@ public class SearchQueryDTO
     public int? Month { get; set; } = null;
     public int? MinRating { get; set; } = null;
     public int? SimilarToId { get; set; }
-    public int? FolderId { get; set; }
-    public int? TagId { get; set; }
-    public int? PersonId { get; set; }
+    public Guid? FolderId { get; set; }
+    public Guid? TagId { get; set; }
+    public Guid? PersonId { get; set; }
     public DateTime? MaxDate { get; set; } = null;
     public DateTime? MinDate { get; set; } = null;
     public FaceSearchType? FaceSearch { get; set; } = null;

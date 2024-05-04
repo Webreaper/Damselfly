@@ -27,7 +27,7 @@ public class DownloadController(IDownloadService service, ILogger<DownloadContro
     [HttpPost("/api/download/images")]
     public async Task<DownloadResponse> GetImagesDownload(DownloadRequest req)
     {
-        var authorizedImages = new List<int>();
+        var authorizedImages = new List<Guid>();
         foreach( var id in req.ImageIds )
         {
             if( await _imageService.CanDownload(id, req.Password) )

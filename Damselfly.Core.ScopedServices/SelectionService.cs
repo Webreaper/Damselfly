@@ -1,4 +1,4 @@
-﻿using Damselfly.Core.Models;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.ScopedServices;
@@ -10,7 +10,7 @@ public class SelectionService
     private readonly IUserService _userService;
 
     // Maintain a look up of all selected images, by ID
-    private readonly IDictionary<int, Image> selectedImages = new Dictionary<int, Image>();
+    private readonly IDictionary<Guid, Image> selectedImages = new Dictionary<Guid, Image>();
 
     // TODO: Remember last selected image and use it for range selections etc?
 

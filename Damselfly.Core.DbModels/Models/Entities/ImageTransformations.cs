@@ -12,12 +12,12 @@ namespace Damselfly.Core.Models;
 public class Transformations
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
-    public int TransformationId { get; set; }
+    
+    public Guid TransformationId { get; set; } = new Guid();
 
     [Required] public virtual Image Image { get; set; }
 
-    public int ImageId { get; set; }
+    public Guid ImageId { get; set; }
 
     public string TransformsJson { get; set; }
 }

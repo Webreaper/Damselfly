@@ -11,10 +11,10 @@ namespace Damselfly.Core.Models;
 public class PersonFaceData
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int FaceDataId { get; set; }
     
-    public int PersonId { get; set; }
+    public Guid FaceDataId { get; set; } = new Guid();
+
+    public Guid PersonId { get; set; }
     public virtual Person Person { get; set; }
 
     // This is the set of face properties, stored as a comma-separated list of floats.

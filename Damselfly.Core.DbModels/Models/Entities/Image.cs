@@ -18,10 +18,10 @@ namespace Damselfly.Core.Models;
 public class Image
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int ImageId { get; set; }
+    
+    public Guid ImageId { get; set; } = new Guid();
 
-    public int FolderId { get; set; }
+    public Guid FolderId { get; set; }
     public virtual Folder Folder { get; set; }
 
     // Image File metadata
@@ -49,7 +49,7 @@ public class Image
     public virtual List<ImageTag> ImageTags { get; init; } = new();
 
     // Machine learning fields
-    public int? ClassificationId { get; set; }
+    public Guid? ClassificationId { get; set; }
     public virtual ImageClassification Classification { get; set; }
     public double ClassificationScore { get; set; }
 

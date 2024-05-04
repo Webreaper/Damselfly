@@ -45,7 +45,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return _peopleCache.Values.OrderBy(x => x?.Name).ToList();
     }
 
-    public async Task<Person> GetPerson( int personId )
+    public async Task<Person> GetPerson( Guid personId )
     {
         await LoadPersonCache();
 
@@ -68,7 +68,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return names;
     }
 
-    private async Task MergeWithName(ImageContext db, int personId, string name)
+    private async Task MergeWithName(ImageContext db, Guid personId, string name)
     {
         var transaction = await db.Database.BeginTransactionAsync();
 
@@ -78,9 +78,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             
             var newPersonId = matchingPeople.Where( x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                                             .Select( x => x.PersonId )
-                                            .SingleOrDefault(-1);
+                                            .SingleOrDefault(Guid.Empty);
 
-            if( newPersonId != -1 )
+            if( newPersonId != Guid.Empty )
             {
                 // Update personID in image objects to the new person ID
                 await db.ImageObjects.Where( x => x.PersonId == personId )
@@ -198,7 +198,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         return new AIProcess[0];
     }
 
-    public async Task MarkFolderForScan(int folderId)
+    public async Task MarkFolderForScan(Guid folderId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -226,7 +226,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         _workService.FlagNewJobs(this);
     }
 
-    public async Task MarkImagesForScan(ICollection<int> images)
+    public async Task MarkImagesForScan(ICollection<Guid> images)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -239,7 +239,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         _statusService.UpdateStatus($"{msgText} flagged for AI reprocessing.");
     }
 
-    private int GetPersonIDFromCache(Guid? PersonGuid)
+    private Guid GetPersonIDFromCache(Guid? PersonGuid)
     {
         if ( PersonGuid.HasValue )
         {
@@ -250,7 +250,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                 return person.PersonId;
         }
 
-        return 0;
+        return Guid.Empty;
     }
 
     /// <summary>
@@ -380,7 +380,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
     /// </summary>
     /// <param name="objects"></param>
     /// <returns></returns>
-    private async Task<IDictionary<string, int>> CreateNewTags(IList<ImageDetectResult> objects)
+    private async Task<IDictionary<string, Guid>> CreateNewTags(IList<ImageDetectResult> objects)
     {
         var allLabels = objects.Select(x => x.Tag).Distinct().ToList();
         var tags = await _metdataService.CreateTagsFromStrings(allLabels);
@@ -519,7 +519,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                         RectY = x.Rect.Top,
                         RectHeight = x.Rect.Height,
                         RectWidth = x.Rect.Width,
-                        TagId = x.IsFace ? 0 : newTags[x.Tag],
+                        TagId = x.IsFace ? Guid.Empty : newTags[x.Tag],
                         Type = ImageObject.ObjectTypes.Object.ToString(),
                         Score = x.Score
                     }).ToList();
@@ -651,7 +651,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
     /// </summary>
     /// <param name="imageId"></param>
     /// <returns></returns>
-    private async Task DetectObjects(int imageId)
+    private async Task DetectObjects(Guid imageId)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -756,7 +756,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
     }
     public class AIProcess : IProcessJob
     {
-        public int ImageId { get; set; }
+        public Guid ImageId { get; set; }
         public ImageRecognitionService Service { get; set; }
         public string Name => "AI processing";
         public string Description => $"{Name} for ID: {ImageId}";

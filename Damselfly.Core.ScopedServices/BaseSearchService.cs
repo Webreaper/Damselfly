@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models.API_Models;
@@ -20,7 +20,7 @@ namespace Damselfly.Core.ScopedServices;
 public abstract class BaseSearchService
 {
     protected readonly ILogger<BaseSearchService> _logger;
-    protected readonly List<int> _searchResults = new();
+    protected readonly List<Guid> _searchResults = new();
     private readonly ICachedDataService _service;
     private readonly IImageCacheService _imageCache;
 
@@ -33,7 +33,7 @@ public abstract class BaseSearchService
         _logger = logger;
     }
 
-    public ICollection<int> SearchResults => _searchResults;
+    public ICollection<Guid> SearchResults => _searchResults;
 
     public string SearchText
     {
@@ -165,7 +165,7 @@ public abstract class BaseSearchService
         }
     }
 
-    public int? CameraId
+    public Guid? CameraId
     {
         get => Query.CameraId;
         set
@@ -178,7 +178,7 @@ public abstract class BaseSearchService
         }
     }
 
-    public int? LensId
+    public Guid? LensId
     {
         get => Query.LensId;
         set
@@ -230,7 +230,7 @@ public abstract class BaseSearchService
         }
     }
 
-    public int? SimilarToId
+    public Guid? SimilarToId
     {
         get => Query.SimilarToId;
         set
@@ -394,14 +394,14 @@ public abstract class BaseSearchService
                 hints.Add( new SearchHint { Description = $"During: {monthName}", Clear = () => Month = null } );
             }
 
-            if ( CameraId > 0 )
+            if ( CameraId != Guid.Empty )
             {
                 var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
                 if ( cam != null )
                     hints.Add( new SearchHint{ Description = $"Camera: {cam.Model}", Clear = () => CameraId = null});
             }
 
-            if ( LensId > 0 )
+            if ( LensId != Guid.Empty )
             {
                 var lens = _service.Lenses.FirstOrDefault(x => x.LensId == LensId);
                 if ( lens != null )

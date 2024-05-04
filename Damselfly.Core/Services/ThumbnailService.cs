@@ -118,7 +118,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         }
     }
 
-    private async Task DeleteFolderThumbnails( int folderId )
+    private async Task DeleteFolderThumbnails( Guid folderId )
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -130,7 +130,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         DeleteThumbnails( files );
     }
 
-    private async Task DeleteThumbnails( IEnumerable<int> imageIds)
+    private async Task DeleteThumbnails( IEnumerable<Guid> imageIds)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -153,7 +153,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         _statusService.UpdateStatus($"All {updated} images flagged for thumbnail re-generation.");
     }
 
-    public async Task MarkFolderForScan(int folderId)
+    public async Task MarkFolderForScan(Guid folderId)
     {
         using var scope = _scopeFactory.CreateScope();
 
@@ -169,7 +169,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             _statusService.UpdateStatus($"{updated} images in folder flagged for thumbnail re-generation.");
     }
 
-    public async Task MarkImagesForScan(ICollection<int> imageIds)
+    public async Task MarkImagesForScan(ICollection<Guid> imageIds)
     {
         using var scope = _scopeFactory.CreateScope();
         
@@ -495,13 +495,13 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     /// <param name="sourceImage"></param>
     /// <param name="forceRegeneration"></param>
     /// <returns></returns>
-    public async Task<IImageProcessResult> CreateThumb(int imageId, ThumbSize size = ThumbSize.Unknown)
+    public async Task<IImageProcessResult> CreateThumb(Guid imageId, ThumbSize size = ThumbSize.Unknown)
     {
         using var scope = _scopeFactory.CreateScope();
 
         var image = await _imageCache.GetCachedImage(imageId);
 
-        db.Attach(image);
+        image = db.AttachToOrGet(x => x.ImageId == image.ImageId , () => image);
 
         // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
         image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
@@ -538,7 +538,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
             }
             else
             {
-                db.Attach(hash);
+                hash = db.AttachToOrGet(x => x.HashId == hash.HashId, () => hash);
                 db.Hashes.Update(hash);
             }
 
@@ -774,7 +774,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
 
     public class ThumbProcess : IProcessJob
     {
-        public int ImageId { get; set; }
+        public Guid ImageId { get; set; }
         public ThumbnailService Service { get; set; }
         public bool CanProcess => true;
         public string Name => "Thumbnail Generation";

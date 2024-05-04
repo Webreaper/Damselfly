@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
@@ -32,7 +33,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
 
         if ( first < SearchResults.Count() && first + count < SearchResults.Count() )
             // Data already loaded. Nothing to do.
-            return new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
+            return new SearchResponse { MoreDataAvailable = false, SearchResults = new Guid[0] };
 
         // Calculate how many results we have already
         if ( SearchResults.Count > first )
@@ -45,7 +46,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
         if ( count == 0 )
             // If we have exactly the right number of results,
             // assume there's more to come
-            return new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
+            return new SearchResponse { MoreDataAvailable = true, SearchResults = new Guid[0] };
 
         var request = new SearchRequest(Query, first, count);
 

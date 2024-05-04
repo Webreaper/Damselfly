@@ -17,8 +17,8 @@ public class Person
     }
 
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public int PersonId { get; set; }
+    
+    public Guid PersonId { get; set; } = new Guid();
 
     [Required] public string Name { get; set; } = "Unknown";
 

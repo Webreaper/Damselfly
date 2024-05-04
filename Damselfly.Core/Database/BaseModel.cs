@@ -438,7 +438,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     /// <param name="resultSet"></param>
     /// <param name="rootId"></param>
     /// <returns></returns>
-    public Task<IQueryable<T>> GetChildFolderIds<T>( DbSet<T> resultSet, int rootId ) where T : class
+    public Task<IQueryable<T>> GetChildFolderIds<T>( DbSet<T> resultSet, Guid rootId ) where T : class
     {
         string sql = @"with recursive children(folderId, parentId) as (  
                                 select p.FolderID, p.ParentID                    

@@ -54,21 +54,21 @@ public class SearchQueryService
     {
         // Assume there is more data available - unless the search
         // returns less than we asked for (see below).
-        var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
+        var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new Guid[0] };
 
         using var scope = _scopeFactory.CreateScope();
 
         var watch = new Stopwatch("ImagesLoadData");
-        var results = new List<int>();
+        var results = new List<Guid>();
         
         Image similarImage = null;
-        int similarId = 0;
+        //int similarId = 0;
 
-        if (query.SimilarToId != null)
-        {
-            similarId = query.SimilarToId.Value;
-            similarImage = await _imageCache.GetCachedImage(similarId);
-        }
+        //if (query.SimilarToId != null)
+        //{
+        //    similarId = query.SimilarToId.Value;
+        //    similarImage = await _imageCache.GetCachedImage(similarId);
+        //}
 
         try
         {
@@ -114,7 +114,7 @@ public class SearchQueryService
                     var hash4A = $"{similarHash.PerceptualHex4.Substring(0, 2)}%";
                     var hash4B = $"%{similarHash.PerceptualHex4.Substring(2, 2)}";
 
-                    images = images.Where(x => x.ImageId != similarId &&
+                    images = images.Where(x =>
                                             (
                                                 EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
                                                 EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
@@ -140,11 +140,11 @@ public class SearchQueryService
                 images = images.Union(fileImages);
             }
 
-            if ( query.Person?.PersonId >= 0 )
+            if ( query.Person?.PersonId != null )
                 // Filter by personID
                 images = images.Where(x => x.ImageObjects.Any(p => p.PersonId == query.Person.PersonId));
 
-            if ( query.Folder?.FolderId >= 0 )
+            if ( query.Folder?.FolderId != null )
             {
                 IEnumerable<Folder> descendants;
 
