@@ -19,6 +19,8 @@ public static class AppInitialiser
     {
         try
         {
+            return;
+            // TODO, schedule this to run in a background thread
             Logging.Log("Setting up services");
             var download = services.GetRequiredService<DownloadService>();
             var tasks = services.GetRequiredService<TaskService>();

@@ -30,11 +30,12 @@ namespace Damselfly.Core.Services;
 
 public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanProvider
 {
-    private static readonly DateTime NoMetadataDate = new DateTime(1970,01,01,00,00,00);
+    private static readonly DateTime NoMetadataDate = new DateTime(1970,01,01,00,00,00).ToUniversalTime();
     private readonly ConfigService _configService;
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ImageContext db;
 
     private readonly IStatusService _statusService;
     private readonly WorkService _workService;
@@ -47,7 +48,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     private IDictionary<string, Tag> _tagCache;
 
     public MetaDataService(IServiceScopeFactory scopeFactory, IStatusService statusService, ExifService exifService,
-        ConfigService config, ImageCache imageCache, WorkService workService)
+        ConfigService config, ImageCache imageCache, WorkService workService, ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -55,6 +56,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         _exifService = exifService;
         _imageCache = imageCache;
         _workService = workService;
+        db = imageContext;
     }
 
     public ICollection<Camera> Cameras
@@ -74,7 +76,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxJobs)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Find all images where there's either no metadata, or where the image or sidecar file 
         // was updated more recently than the image metadata
@@ -95,7 +96,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     public async Task MarkFolderForScan(int folderId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         //var queryable = db.ImageMetaData.Where(img => img.Image.FolderId == folder.FolderId);
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
@@ -112,7 +112,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     public async Task MarkAllForScan()
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var updated =
             await db.BatchUpdate(db.ImageMetaData, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
@@ -125,7 +124,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     public async Task MarkImagesForScan(ICollection<int> images)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var queryable = db.ImageMetaData.Where(i => images.Contains(i.ImageId));
 
@@ -246,7 +244,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             if( image.MetaData.DateTaken == DateTime.MinValue )
             {
                 if( nvps.ContainsKey("exif:DateTimeOriginal") && DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
-                    image.MetaData.DateTaken = dateTime;
+                    image.MetaData.DateTaken = dateTime.ToUniversalTime();
             }
 
             if( string.IsNullOrEmpty(image.MetaData.Description) )
@@ -598,7 +596,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var writeSideCarTagsToImages = _configService.GetBool(ConfigSettings.ImportSidecarKeywords);
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var updateTimeStamp = DateTime.UtcNow;
         var imageKeywords = new List<string>();
@@ -627,7 +624,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             if ( imgMetaData == null )
             {
-                imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img };
+                imgMetaData = new ImageMetaData { ImageId = img.ImageId, Image = img, DateTaken = DateTime.UtcNow, LastUpdated = DateTime.UtcNow };
                 img.MetaData = imgMetaData;
                 db.ImageMetaData.Add(imgMetaData);
             }
@@ -637,7 +634,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             }
 
             // Update the timestamp regardless of whether we succeeded to read the metadata
-            imgMetaData.LastUpdated = updateTimeStamp;
+            imgMetaData.LastUpdated = updateTimeStamp.ToUniversalTime();
 
             // Scan the image from the 
             if ( GetImageMetaData(ref imgMetaData, out var exifKeywords, out xmpFaces) )
@@ -655,9 +652,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                 // if one was found in the metadata
                 if ( imgMetaData.DateTaken > DateTime.MinValue )
                     // Don't update the date to date taken if the one there isn't valid
-                    img.SortDate = imgMetaData.DateTaken;
+                    img.SortDate = imgMetaData.DateTaken.ToUniversalTime();
 
-                img.LastUpdated = updateTimeStamp;
+                img.LastUpdated = updateTimeStamp.ToUniversalTime();
                 db.Images.Update(img);
             }
             else
@@ -718,7 +715,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                     .ToList();
 
                 using var scope = _scopeFactory.CreateScope();
-                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 var peopleLookup = db.People.Where(x => names.Contains(x.Name))
                     .ToDictionary(x => x.Name, y => y.PersonId);
@@ -778,7 +774,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         }
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
         using var transaction = await db.Database.BeginTransactionAsync();
 
         try
@@ -999,7 +994,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         if ( _lensCache == null )
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             _lensCache = new ConcurrentDictionary<string, Lens>(db.Lenses
                 .AsNoTracking()
@@ -1011,7 +1005,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         if ( _cameraCache == null )
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             _cameraCache = new ConcurrentDictionary<string, Camera>(db.Cameras
                 .AsNoTracking() // We never update, so this is faster
@@ -1040,7 +1033,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             cam = new Camera { Make = make, Model = model, Serial = serial };
 
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             db.Cameras.Add(cam);
             db.SaveChanges("SaveCamera");
@@ -1070,7 +1062,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             lens = new Lens { Make = make, Model = model, Serial = serial };
 
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             db.Lenses.Add(lens);
             db.SaveChanges("SaveLens");
@@ -1094,7 +1085,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                 var watch = new Stopwatch("LoadTagCache");
 
                 using var scope = _scopeFactory.CreateScope();
-                using var db = scope.ServiceProvider.GetService<ImageContext>();
 
                 // Pre-cache tags from DB.
                 _tagCache = new ConcurrentDictionary<string, Tag>(db.Tags
@@ -1141,7 +1131,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var watch = new Stopwatch("CreateTagsFromStrings");
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Find the tags that aren't already in the cache
         var newTags = tags.Distinct().Where(x => !_tagCache.ContainsKey(x))

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -15,11 +15,13 @@ public class StatisticsService
 {
     private readonly ILogger<StatisticsService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ImageContext db;
 
-    public StatisticsService(IServiceScopeFactory scopeFactory, ILogger<StatisticsService> logger)
+    public StatisticsService(IServiceScopeFactory scopeFactory, ILogger<StatisticsService> logger, ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        db = imageContext;
     }
 
     private static string ArchString => $"{Environment.OSVersion} ({RuntimeInformation.ProcessArchitecture})";
@@ -27,7 +29,6 @@ public class StatisticsService
     public async Task<Statistics> GetStatistics()
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var stats = new Statistics
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,17 +29,20 @@ public class BasketService : IBasketService
     private readonly ServerNotifierService _notifier;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
+    private readonly ImageContext db;
 
     public BasketService(IServiceScopeFactory scopeFactory,
         IStatusService statusService,
         DownloadService downloadService,
-        ImageCache imageCache, ServerNotifierService notifier)
+        ImageCache imageCache, ServerNotifierService notifier,
+        ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
         _imageCache = imageCache;
         _downloadService = downloadService;
         _notifier = notifier;
+        db = imageContext;
     }
 
     /// <summary>
@@ -49,7 +52,6 @@ public class BasketService : IBasketService
     public async Task Delete(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         var existingBasket = db.Baskets.Where(x => x.BasketId == basketId).FirstOrDefault();
 
@@ -69,7 +71,6 @@ public class BasketService : IBasketService
     public async Task Clear(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         try
         {
@@ -91,7 +92,6 @@ public class BasketService : IBasketService
     {
         var result = 0;
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         try
         {
@@ -131,7 +131,6 @@ public class BasketService : IBasketService
     public async Task<ICollection<Basket>> GetUserBaskets(int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         var myBaskets = await db.Baskets.Where(x => x.UserId == null || x.UserId == userId)
             .OrderBy(x => x.UserId == null ? 1 : 0)
@@ -169,7 +168,6 @@ public class BasketService : IBasketService
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = ImageContext.GetImageContext( scope );
             var change = newState ? BasketChangeType.ImagesAdded : BasketChangeType.ImagesRemoved;
 
             var changed = false;
@@ -248,7 +246,6 @@ public class BasketService : IBasketService
     public async Task<Basket> Create(string name, int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         var existing = db.Baskets.FirstOrDefault(x => x.Name == name);
 
@@ -270,7 +267,6 @@ public class BasketService : IBasketService
     public async Task Save(Basket basket)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         db.Baskets.Update(basket);
         await db.SaveChangesAsync("EditBasket");
@@ -282,7 +278,6 @@ public class BasketService : IBasketService
     public async Task<Basket> GetBasketById(int basketId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         var newBasket = await db.Baskets.Where(x => x.BasketId.Equals(basketId))
             .Include(x => x.BasketEntries)
@@ -325,7 +320,6 @@ public class BasketService : IBasketService
         else
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = ImageContext.GetImageContext( scope );
 
             // Get the first shared
             defaultBasket = await db.Baskets
@@ -378,7 +372,6 @@ public class BasketService : IBasketService
     private async Task<ICollection<Image>> LoadBasketImages(Basket basket)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         var watch = new Stopwatch("GetSelectedImages");
 

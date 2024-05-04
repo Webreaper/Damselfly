@@ -23,38 +23,20 @@ public static class ServiceRegistrations
 
     public static IServiceCollection AddSingletonBackEndServices(this IServiceCollection services)
     {
-        services.AddSingleton<StatisticsService>();
-        services.AddSingleton<ConfigService>();
-        services.AddSingleton<ObjectDetector>();
-        services.AddSingleton<FolderWatcherService>();
-        services.AddSingleton<IndexingService>();
-        services.AddSingleton<MetaDataService>();
-        services.AddSingleton<ThumbnailService>();
-        services.AddSingleton<ExifService>();
-        services.AddSingleton<FolderService>();
-        services.AddSingleton<ThemeService>();
-        services.AddSingleton<ImageRecognitionService>();
-        services.AddSingleton<ImageCache>();
-        services.AddSingleton<WorkService>();
-        services.AddSingleton<CachedDataService>();
-        services.AddSingleton<TaskService>();
-        services.AddSingleton<RescanService>();
-        services.AddSingleton<ServerNotifierService>();
-        services.AddSingleton<ServerStatusService>();
-        services.AddSingleton<DownloadService>();
+        
 
-        services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
-        services.AddSingleton<IConfigService>(x => x.GetRequiredService<ConfigService>());
-        services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
-        services.AddSingleton<IPeopleService>(x => x.GetRequiredService<ImageRecognitionService>());
-        services.AddSingleton<IRescanService>(x => x.GetRequiredService<RescanService>());
-        services.AddSingleton<ITagSearchService>(x => x.GetRequiredService<MetaDataService>());
-        services.AddSingleton<IImageCacheService>(x => x.GetRequiredService<ImageCache>());
-        services.AddSingleton<ITagService>(x => x.GetRequiredService<ExifService>());
-        services.AddSingleton<IFolderService>(x => x.GetRequiredService<FolderService>());
-        services.AddSingleton<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
-        services.AddSingleton<IWorkService>(x => x.GetRequiredService<WorkService>());
-        services.AddSingleton<IThemeService>(x => x.GetRequiredService<ThemeService>());
+        services.AddScoped<IDownloadService>(x => x.GetRequiredService<DownloadService>());
+        services.AddScoped<IConfigService>(x => x.GetRequiredService<ConfigService>());
+        services.AddScoped<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
+        services.AddScoped<IPeopleService>(x => x.GetRequiredService<ImageRecognitionService>());
+        services.AddScoped<IRescanService>(x => x.GetRequiredService<RescanService>());
+        services.AddScoped<ITagSearchService>(x => x.GetRequiredService<MetaDataService>());
+        services.AddScoped<IImageCacheService>(x => x.GetRequiredService<ImageCache>());
+        services.AddScoped<ITagService>(x => x.GetRequiredService<ExifService>());
+        services.AddScoped<IFolderService>(x => x.GetRequiredService<FolderService>());
+        services.AddScoped<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
+        services.AddScoped<IWorkService>(x => x.GetRequiredService<WorkService>());
+        services.AddScoped<IThemeService>(x => x.GetRequiredService<ThemeService>());
         // services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
 
         services.AddMLServices();
@@ -66,17 +48,16 @@ public static class ServiceRegistrations
     {
         services.AddSingletonBackEndServices();
 
-        services.AddSingleton<ServerNotifierService>();
-        services.AddSingleton<SearchQueryService>();
-        services.AddSingleton<RescanService>();
-        services.AddSingleton<FolderService>();
-        services.AddSingleton<FileService>();
-        services.AddSingleton<ServerStatusService>();
-        services.AddSingleton<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
-        services.AddSingleton<IFileService>( x => x.GetRequiredService<FileService>() );
+        // services.AddSingleton<ServerNotifierService>();
+        services.AddScoped<SearchQueryService>();
+        services.AddScoped<RescanService>();
+        services.AddScoped<FileService>();
+        services.AddScoped<ServerStatusService>();
+        services.AddScoped<IStatusService>(x => x.GetRequiredService<ServerStatusService>());
+        services.AddScoped<IFileService>( x => x.GetRequiredService<FileService>() );
 
-        services.AddSingleton<DownloadService>();
-        services.AddSingleton<IDownloadService>(x => x.GetRequiredService<DownloadService>());
+        //services.AddSingleton<DownloadService>();
+        services.AddScoped<IDownloadService>(x => x.GetRequiredService<DownloadService>());
 
         services.AddScoped<BasketService>();
         services.AddScoped<UserTagRecentsService>();
@@ -86,8 +67,27 @@ public static class ServiceRegistrations
         services.AddScoped<AlbumService>();
         services.AddScoped<ImageService>();
         services.AddScoped<EmailMailGunService>();
+        services.AddScoped<ThumbnailService>();
+        services.AddScoped<IndexingService>();
+        services.AddScoped<ExifService>();
+        services.AddScoped<StatisticsService>();
+        services.AddScoped<MetaDataService>();
+        services.AddScoped<FolderService>();
+        services.AddSingleton<ConfigService>();
+        services.AddScoped<ObjectDetector>();
+        services.AddScoped<FolderWatcherService>();
+        services.AddScoped<ThemeService>();
+        services.AddScoped<ImageRecognitionService>();
+        services.AddScoped<ImageCache>();
+        services.AddScoped<WorkService>();
+        services.AddScoped<CachedDataService>();
+        services.AddScoped<TaskService>();
+        services.AddScoped<RescanService>();
+        services.AddScoped<ServerNotifierService>();
+        services.AddScoped<ServerStatusService>();
+        services.AddScoped<DownloadService>();
 
-        services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
+        // services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<SystemSettingsService>());
         services.AddScoped<IRecentTagService>(x => x.GetRequiredService<UserTagRecentsService>());
         services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<UserManagementService>());

@@ -37,7 +37,6 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
         <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -60,9 +59,7 @@
         <ProjectReference Include="..\Damselfly.Core.ImageProcessing\Damselfly.Core.ImageProcessing.csproj">
             <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
-        <ProjectReference Include="..\Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-        </ProjectReference>
+        <ProjectReference Include="..\Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Content Remove="wwwroot\" />

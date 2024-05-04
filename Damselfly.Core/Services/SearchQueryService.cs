@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,13 +19,15 @@ public class SearchQueryService
     private readonly IConfigService _configService;
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ImageContext db;
 
     public SearchQueryService(IServiceScopeFactory scopeFactory, ImageCache cache,
-        IConfigService configService)
+        IConfigService configService, ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
         _configService = configService;
         _imageCache = cache;
+        db = imageContext;
     }
 
     /// <summary>
@@ -55,7 +57,6 @@ public class SearchQueryService
         var response = new SearchResponse { MoreDataAvailable = true, SearchResults = new int[0] };
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var watch = new Stopwatch("ImagesLoadData");
         var results = new List<int>();
@@ -305,7 +306,6 @@ public class SearchQueryService
         request.Query.CopyPropertiesTo(query);
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // WASM TODO Should make this better
         if ( request.Query.FolderId.HasValue )

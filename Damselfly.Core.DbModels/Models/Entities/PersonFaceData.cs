@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Damselfly.Core.Models;
 
@@ -9,7 +10,9 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class PersonFaceData
 {
-    [Key] public int FaceDataId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int FaceDataId { get; set; }
     
     public int PersonId { get; set; }
     public virtual Person Person { get; set; }

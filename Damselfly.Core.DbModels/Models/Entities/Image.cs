@@ -17,7 +17,9 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class Image
 {
-    [Key] public int ImageId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int ImageId { get; set; }
 
     public int FolderId { get; set; }
     public virtual Folder Folder { get; set; }

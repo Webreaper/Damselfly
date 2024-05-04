@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Damselfly.Core.Models;
 
@@ -7,7 +8,9 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class ImageClassification
 {
-    [Key] public int ClassificationId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
+    public int ClassificationId { get; set; }
 
     public string? Label { get; set; }
 

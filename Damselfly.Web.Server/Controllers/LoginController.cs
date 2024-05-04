@@ -25,11 +25,11 @@ public class LoginController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginModel login)
     {
         return BadRequest();
-        var result = await _authService.Login( login );
+        //var result = await _authService.Login( login );
 
-        if( result.Successful )
-            return Ok( result );
-        else
-            return BadRequest( result );
+        //if( result.Successful )
+        //    return Ok( result );
+        //else
+        //    return BadRequest( result );
     }
 }

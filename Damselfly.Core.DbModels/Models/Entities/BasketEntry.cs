@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Damselfly.Core.Models;
 
@@ -11,6 +12,7 @@ namespace Damselfly.Core.Models;
 public class BasketEntry
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int BasketEntryId { get; set; }
 
     public DateTime DateAdded { get; set; } = DateTime.UtcNow;

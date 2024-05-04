@@ -47,6 +47,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4">
       <PrivateAssets>all</PrivateAssets>
@@ -64,6 +65,7 @@
     <PackageVersion Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
     <PackageVersion Include="MudBlazor" Version="6.19.1" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
     <PackageVersion Include="Radzen.Blazor" Version="4.29.8" />
     <PackageVersion Include="RestSharp" Version="110.2.0" />
     <PackageVersion Include="SendGrid" Version="9.29.3" />

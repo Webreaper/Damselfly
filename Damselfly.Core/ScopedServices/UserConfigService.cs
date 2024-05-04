@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,10 +16,12 @@ public class UserConfigService : BaseConfigService, IDisposable
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IUserService _userService;
+    private readonly ImageContext db;
 
     public UserConfigService(IUserService userService, IServiceScopeFactory scopeFactory,
-        ILogger<IConfigService> logger) : base(logger)
+        ILogger<IConfigService> logger, ImageContext imageContext) : base(logger)
     {
+        db = imageContext;
         _scopeFactory = scopeFactory;
         _userService = userService;
         _userService.OnUserIdChanged += UserChanged;
@@ -50,7 +52,6 @@ public class UserConfigService : BaseConfigService, IDisposable
     protected override async Task PersistSetting(ConfigSetRequest setRequest)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
 
         var existing = await db.ConfigSettings
             .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)

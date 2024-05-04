@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Damselfly.Core.Models;
@@ -19,6 +20,7 @@ public class Tag
     }
 
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public int TagId { get; set; }
 
     [Required]
@@ -63,7 +65,9 @@ public class Tag
 /// </summary>
 public class FTSTag
 {
-    [Key] public int FTSTagId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int FTSTagId { get; set; }
 
     public string? Keyword { get; set; }
 }

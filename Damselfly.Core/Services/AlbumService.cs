@@ -40,7 +40,7 @@ namespace Damselfly.Core.Services
             _context.Folders.Add(folder);
             _context.Albums.Add(album);
             await _context.SaveChangesAsync();
-            _indexingService.IndexFolder(newDirectory, parentFolder);
+            await _indexingService.IndexFolder(newDirectory, parentFolder);
             return _mapper.Map<AlbumModel>(album);
         }
 

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Humanizer;
 
 namespace Damselfly.Core.Models;
@@ -25,7 +26,9 @@ public class ImageObject
         FaceONNX = 6
     }
 
-    [Key] public int ImageObjectId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int ImageObjectId { get; set; }
 
     [Required] public int ImageId { get; set; }
 

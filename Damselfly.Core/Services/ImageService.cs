@@ -55,7 +55,7 @@ namespace Damselfly.Core.Services
                     await File.WriteAllBytesAsync(imagePath, memoryStream.ToArray());
                 }
                 
-                var image = new Image { FileName = imageFile.FileName, SortDate = DateTime.Now, FolderId = album.FolderId };
+                var image = new Image { FileName = imageFile.FileName, SortDate = DateTime.UtcNow, FolderId = album.FolderId, FileCreationDate = DateTime.UtcNow, FileLastModDate = DateTime.UtcNow };
                 album.Images.Add(image);
                 //image.Albums.Add(album);
                 _context.Images.Add(image);

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Damselfly.Core.DbModels.Authentication;
 
 namespace Damselfly.Core.Models;
@@ -34,7 +35,9 @@ public class ExifOperation
         Remove
     }
 
-    [Key] public int ExifOperationId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
+    public int ExifOperationId { get; set; }
 
     [Required] public virtual Image Image { get; set; }
 

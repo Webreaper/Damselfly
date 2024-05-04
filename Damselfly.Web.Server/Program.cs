@@ -5,7 +5,6 @@ using System.Text;
 using CommandLine;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
-using Damselfly.Core.DBAbstractions;
 using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.ImageProcessing;
@@ -45,24 +44,20 @@ public class Program
 
     private static void SetupDbContext(WebApplicationBuilder builder)
     {
-        var dbFolder = Path.Combine(builder.Configuration["DamselflyConfiguration:DatabasePath"], "db");
 
-        if ( !Directory.Exists(dbFolder) )
-        {
-            Logging.Log(" Created DB folder: {0}", dbFolder);
-            Directory.CreateDirectory(dbFolder);
-        }
-
-        var dbPath = Path.Combine(dbFolder, "damselfly.db");
-
-        var connectionString = $"Data Source={dbPath}";
+        var connectionString = builder.Configuration["DamselflyConfiguration:ConnectionString"];
 
         // Add services to the container.
-        builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
-            b => {
-                b.MigrationsAssembly("Damselfly.Migrations.Sqlite");
-                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
-            }));
+        builder.Services.AddDbContext<ImageContext>(options => {
+            options.UseNpgsql(connectionString,
+                       b =>
+                       {
+                           b.MigrationsAssembly("Damselfly.Migrations.Postgres");
+                           b.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+                       });
+            
+        }, ServiceLifetime.Transient);
+
     }
 
     /// <summary>
@@ -237,7 +232,7 @@ public class Program
         {
             try
             {
-                Logging.Log( "Running Sqlite DB migrations..." );
+                Logging.Log( "Running DB migrations..." );
                 db.Database.Migrate();
             }
             catch( Exception ex )
@@ -251,9 +246,9 @@ public class Program
                 db.Database.EnsureCreated();
             }
 
-            db.IncreasePerformance();
+            //db.IncreasePerformance();
 
-            BaseDBModel.ReadOnly = app.Configuration["DamselflyConfiguration:Readonly"] == "true";
+            //BaseDBModel.ReadOnly = app.Configuration["DamselflyConfiguration:Readonly"] == "true";
         }
     }
 

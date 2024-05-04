@@ -212,48 +212,48 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
         }
     }
 
-    [Produces("image/jpeg")]
-    [HttpGet("/face/{faceId}")]
-    public async Task<IActionResult> Face(string faceId, CancellationToken cancel,
-        [FromServices] ImageProcessService imageProcessor,
-        [FromServices] ThumbnailService thumbService,
-        [FromServices] ImageCache imageCache,
-        [FromServices] ImageContext db)
-    {
-        IActionResult result = Redirect("/no-image.png");
+    //[Produces("image/jpeg")]
+    //[HttpGet("/face/{faceId}")]
+    //public async Task<IActionResult> Face(string faceId, CancellationToken cancel,
+    //    [FromServices] ImageProcessService imageProcessor,
+    //    [FromServices] ThumbnailService thumbService,
+    //    [FromServices] ImageCache imageCache,
+    //    [FromServices] ImageContext db)
+    //{
+    //    IActionResult result = Redirect("/no-image.png");
 
-        try
-        {
-            var query = db.ImageObjects.AsQueryable();
+    //    try
+    //    {
+    //        var query = db.ImageObjects.AsQueryable();
 
-            // TODO Massively optimise this - if the file already exists we don't need the DB
-            if ( int.TryParse(faceId, out var personId) )
-                query = query.Where(x => x.Person.PersonId == personId);
-            else
-                query = query.Where(x => x.Person.PersonGuid == faceId);
+    //        // TODO Massively optimise this - if the file already exists we don't need the DB
+    //        if ( int.TryParse(faceId, out var personId) )
+    //            query = query.Where(x => x.Person.PersonId == personId);
+    //        else
+    //            query = query.Where(x => x.Person.PersonGuid == faceId);
 
-            // Sort by largest face picture, then by most recent date taken
-            var face = await query
-                .OrderByDescending(x => x.RectWidth)
-                .ThenByDescending(x => x.RectHeight)
-                .ThenByDescending(x => x.Image.SortDate)
-                .FirstOrDefaultAsync();
+    //        // Sort by largest face picture, then by most recent date taken
+    //        var face = await query
+    //            .OrderByDescending(x => x.RectWidth)
+    //            .ThenByDescending(x => x.RectHeight)
+    //            .ThenByDescending(x => x.Image.SortDate)
+    //            .FirstOrDefaultAsync();
 
-            if ( cancel.IsCancellationRequested )
-                return result;
+    //        if ( cancel.IsCancellationRequested )
+    //            return result;
 
-            if ( face != null )
-            {
-                var thumbPath = await thumbService.GenerateFaceThumb(face);
+    //        if ( face != null )
+    //        {
+    //            var thumbPath = await thumbService.GenerateFaceThumb(face);
 
-                if ( thumbPath != null && thumbPath.Exists ) result = PhysicalFile(thumbPath.FullName, "image/jpeg");
-            }
-        }
-        catch ( Exception ex )
-        {
-            Logging.LogError($"Unable to load face thumbnail for {faceId}: {ex.Message}");
-        }
+    //            if ( thumbPath != null && thumbPath.Exists ) result = PhysicalFile(thumbPath.FullName, "image/jpeg");
+    //        }
+    //    }
+    //    catch ( Exception ex )
+    //    {
+    //        Logging.LogError($"Unable to load face thumbnail for {faceId}: {ex.Message}");
+    //    }
 
-        return result;
-    }
+    //    return result;
+    //}
 }

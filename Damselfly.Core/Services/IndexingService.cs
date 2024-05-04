@@ -30,13 +30,15 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     private readonly IStatusService _statusService;
     private readonly FolderWatcherService _watcherService;
     private readonly WorkService _workService;
+    private readonly ImageContext db;
     private bool _fullIndexComplete;
     public static string RootFolder { get; set; }
     public static bool EnableIndexing { get; set; } = true;
 
     public IndexingService( IServiceScopeFactory scopeFactory, IStatusService statusService,
         ImageProcessService imageService, ConfigService config, ImageCache imageCache, 
-        FolderWatcherService watcherService, WorkService workService, IConfiguration configuration)
+        FolderWatcherService watcherService, WorkService workService, IConfiguration configuration,
+        ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -49,6 +51,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         EnableIndexing = configuration["DamselflyConfiguration:EnableIndexing"]! != "true";
         // Slight hack to work around circular dependencies
         _watcherService.LinkIndexingServiceInstance(this);
+        db = imageContext;
     }
 
     
@@ -60,7 +63,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         if ( _fullIndexComplete )
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             // Now, see if there's any folders that have a null scan date.
             var folders = await db.Folders.Where(x => x.FolderScanDate == null)
@@ -106,7 +108,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var updated = await db.BatchUpdate(db.Folders, p => p.SetProperty(x => x.FolderScanDate, x => null));
 
@@ -131,7 +132,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var folders = await db.Images.Where(x => images.Contains(x.ImageId))
                 .Select(x => x.Folder.FolderId)
@@ -190,7 +190,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             // Load the existing folder and its images from the DB
             folderToScan = await db.Folders
@@ -215,7 +214,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
                 if ( parent != null )
                     folderToScan.ParentId = parent.FolderId;
-
                 // New folder, add it. 
                 db.Folders.Add(folderToScan);
                 await db.SaveChangesAsync("AddFolders");
@@ -308,7 +306,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         var folderImageCount = 0;
 
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // Get the folder with the image list from the DB. 
         var dbFolder = await db.Folders.Where(x => x.FolderId == folderIdToScan)
@@ -430,6 +427,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
         // Flag/update the folder to say we've processed it
         dbFolder.FolderScanDate = DateTime.UtcNow;
+        dbFolder.Images.Clear();
         db.Folders.Update(dbFolder);
 
         await db.SaveChangesAsync("FolderScan");
@@ -463,7 +461,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var queryable = db.Folders.Where(f => folderIds.Contains(f.FolderId));
             await db.BatchUpdate(queryable, p => p.SetProperty(x => x.FolderScanDate, x => null));

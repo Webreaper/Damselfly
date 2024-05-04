@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Damselfly.Core.Models;
 
@@ -15,7 +16,9 @@ public class Person
         Identified = 1
     }
 
-    [Key] public int PersonId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int PersonId { get; set; }
 
     [Required] public string Name { get; set; } = "Unknown";
 

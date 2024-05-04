@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Damselfly.Core.Utils;
 
@@ -10,7 +11,9 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class Hash
 {
-    [Key] public int HashId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)] 
+    public int HashId { get; set; }
 
     [Required] public virtual Image Image { get; set; }
 

@@ -21,7 +21,7 @@ COPY ["Damselfly.ML.ObjectDetection.ML/Damselfly.ML.ObjectDetection.csproj", "Da
 COPY ["Damselfly.ML.ImageClassification/Damselfly.ML.ImageClassification.csproj", "Damselfly.ML.ImageClassification/"]
 COPY ["Damselfly.Core.ScopedServices/Damselfly.Core.ScopedServices.csproj", "Damselfly.Core.ScopedServices/"]
 COPY ["Damselfly.Core.ImageProcessing/Damselfly.Core.ImageProcessing.csproj", "Damselfly.Core.ImageProcessing/"]
-COPY ["Damselfly.Migrations.Sqlite/Damselfly.Migrations.Sqlite.csproj", "Damselfly.Migrations.Sqlite/"]
+COPY ["Damselfly.Migrations.Postgres/Damselfly.Migrations.Porstgres.csproj", "Damselfly.Migrations.Postgres/"]
 RUN dotnet restore "./Damselfly.Web.Server/Damselfly.Web.Server.csproj"
 COPY . .
 WORKDIR "/src/Damselfly.Web.Server"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +9,9 @@ namespace Damselfly.Core.Models;
 
 public class Folder
 {
-    [Key] public int FolderId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int FolderId { get; set; }
 
     public string? Path { get; set; }
 

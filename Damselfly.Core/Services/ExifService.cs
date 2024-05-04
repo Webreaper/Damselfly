@@ -57,7 +57,7 @@ public class ExifService : IProcessJobFactory, ITagService
         GetExifToolVersion();
         _ = LoadFavouriteTagsAsync();
 
-        _workService.AddJobSource(this);
+        // _workService.AddJobSource(this);
     }
 
     public static string ExifToolVer { get; private set; }
@@ -271,6 +271,7 @@ public class ExifService : IProcessJobFactory, ITagService
     /// </summary>
     private void GetExifToolVersion()
     {
+        if( ExifToolVer != null ) return;
         var process = new ProcessStarter();
         if ( process.StartProcess(_exifToolPath, "-ver") ) ExifToolVer = $"v{process.OutputText}";
 

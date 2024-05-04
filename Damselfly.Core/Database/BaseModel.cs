@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -382,54 +382,54 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     ///     Enable SQLite performance improvements
     /// </summary>
     /// <param name="db"></param>
-    public void IncreasePerformance()
-    {
-        // Increase the timeout from the default (which I think is 30s)
-        // To help concurrency.
-        Database.SetCommandTimeout(60);
-        // Enable journal mode - this will also improve
-        // concurrent acces
-        ExecutePragma(this, "PRAGMA journal_mode=WAL;");
-        // Turn off Synchronous mode. This means that writes aren't
-        // sync'd to disk every single time. 
-        ExecutePragma(this, "PRAGMA synchronous=OFF;");
-        // Increate the cache page size TODO: check this value
-        ExecutePragma(this, "PRAGMA cache_size=10000;");
-        // Use a shared cache - good for multi-threaded access
-        ExecutePragma(this, "PRAGMA cache=shared;");
-        // Allow reading from the cache. Means we might get stale
-        // data, but in most cases that's fine and concurrency will
-        // be improved. 
-        ExecutePragma(this, "PRAGMA read_uncommitted=true;");
-        // Store temporary tables in memory
-        ExecutePragma(this, "PRAGMA temp_store=MEMORY;");
+    //public void IncreasePerformance()
+    //{
+    //    // Increase the timeout from the default (which I think is 30s)
+    //    // To help concurrency.
+    //    Database.SetCommandTimeout(60);
+    //    // Enable journal mode - this will also improve
+    //    // concurrent acces
+    //    ExecutePragma(this, "PRAGMA journal_mode=WAL;");
+    //    // Turn off Synchronous mode. This means that writes aren't
+    //    // sync'd to disk every single time. 
+    //    ExecutePragma(this, "PRAGMA synchronous=OFF;");
+    //    // Increate the cache page size TODO: check this value
+    //    ExecutePragma(this, "PRAGMA cache_size=10000;");
+    //    // Use a shared cache - good for multi-threaded access
+    //    ExecutePragma(this, "PRAGMA cache=shared;");
+    //    // Allow reading from the cache. Means we might get stale
+    //    // data, but in most cases that's fine and concurrency will
+    //    // be improved. 
+    //    ExecutePragma(this, "PRAGMA read_uncommitted=true;");
+    //    // Store temporary tables in memory
+    //    ExecutePragma(this, "PRAGMA temp_store=MEMORY;");
 
-        // Massive hack....
-        Logging.LogTrace("Deleting corrupt ImageMetaData entries");
-        Database.ExecuteSqlRaw("delete from imagemetadata where Lastupdated = 1998;");
+    //    // Massive hack....
+    //    Logging.LogTrace("Deleting corrupt ImageMetaData entries");
+    //    Database.ExecuteSqlRaw("delete from imagemetadata where Lastupdated = 1998;");
 
-        OptimiseDB();
+    //    OptimiseDB();
 
-        RebuildFreeText().Wait();
-    }
+    //    RebuildFreeText().Wait();
+    //}
 
-    private void OptimiseDB()
-    {
-        if( DBNeedsCleaning() )
-        {
-            Logging.Log("Running Sqlite DB optimisation...");
-            Database.ExecuteSqlRaw("VACUUM;");
-            Logging.Log("DB optimisation complete.");
-        }
-    }
+    //private void OptimiseDB()
+    //{
+    //    if( DBNeedsCleaning() )
+    //    {
+    //        Logging.Log("Running Sqlite DB optimisation...");
+    //        Database.ExecuteSqlRaw("VACUUM;");
+    //        Logging.Log("DB optimisation complete.");
+    //    }
+    //}
 
-    /// <summary>
-    ///     If the DB supports it, and write-caching is enabled, flush.
-    /// </summary>
-    public void FlushDBWriteCache()
-    {
-        ExecutePragma(this, "PRAGMA schema.wal_checkpoint;");
-    }
+    ///// <summary>
+    /////     If the DB supports it, and write-caching is enabled, flush.
+    ///// </summary>
+    //public void FlushDBWriteCache()
+    //{
+    //    ExecutePragma(this, "PRAGMA schema.wal_checkpoint;");
+    //}
 
     /// <summary>
     /// Use SQLite recursion to find all the child folders under a particular parent.

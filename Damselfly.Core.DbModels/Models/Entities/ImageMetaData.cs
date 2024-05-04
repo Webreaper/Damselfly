@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 
 namespace Damselfly.Core.Models;
@@ -9,7 +10,9 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class ImageMetaData
 {
-    [Key] public int MetaDataId { get; set; }
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public int MetaDataId { get; set; }
 
     [Required] public virtual Image Image { get; set; }
 

@@ -1,43 +1,40 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core", "Damselfly.Core\Damselfly.Core.csproj", "{00C83C17-A311-445F-95A2-046F56D23904}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core", "Damselfly.Core\Damselfly.Core.csproj", "{00C83C17-A311-445F-95A2-046F56D23904}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Constants", "Damselfly.Core.Constants\Damselfly.Core.Constants.csproj", "{199CAF9F-166F-4779-9AE1-05FDBB31A174}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core.Constants", "Damselfly.Core.Constants\Damselfly.Core.Constants.csproj", "{199CAF9F-166F-4779-9AE1-05FDBB31A174}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.DbModels", "Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj", "{D9F9EE11-44CA-481A-9994-CBBE476EB3C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core.DbModels", "Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj", "{D9F9EE11-44CA-481A-9994-CBBE476EB3C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.ImageProcessing", "Damselfly.Core.ImageProcessing\Damselfly.Core.ImageProcessing.csproj", "{8017C059-4642-42DB-8C94-9A3C1326DE17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core.ImageProcessing", "Damselfly.Core.ImageProcessing\Damselfly.Core.ImageProcessing.csproj", "{8017C059-4642-42DB-8C94-9A3C1326DE17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Interfaces", "Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj", "{3E301113-3B11-4C73-B1A7-7AC35B1590A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core.Interfaces", "Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj", "{3E301113-3B11-4C73-B1A7-7AC35B1590A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.ScopedServices", "Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj", "{1C63291D-C3B8-45F2-BF8F-58CBF2AC1F1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core.ScopedServices", "Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj", "{1C63291D-C3B8-45F2-BF8F-58CBF2AC1F1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Utils", "Damselfly.Core.Utils\Damselfly.Core.Utils.csproj", "{ADFF7F5A-6963-4ECD-890E-F03B03B6551F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Core.Utils", "Damselfly.Core.Utils\Damselfly.Core.Utils.csproj", "{ADFF7F5A-6963-4ECD-890E-F03B03B6551F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj", "{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.ML.ImageClassification", "Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{A40A832A-5736-442A-88D4-5DDE71964193}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassification", "Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{A40A832A-5736-442A-88D4-5DDE71964193}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.ML.ObjectDetection", "Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{C2504134-A19E-428F-8681-927152563DBB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{C2504134-A19E-428F-8681-927152563DBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Web.Client", "Damselfly.Web.Client\Damselfly.Web.Client.csproj", "{C10B9995-46DF-4188-B2BC-7BF20EB9F466}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Client", "Damselfly.Web.Client\Damselfly.Web.Client.csproj", "{C10B9995-46DF-4188-B2BC-7BF20EB9F466}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Web.Server", "Damselfly.Web.Server\Damselfly.Web.Server.csproj", "{CC90115D-4146-47D4-8B26-D773FAA51437}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Server", "Damselfly.Web.Server\Damselfly.Web.Server.csproj", "{CC90115D-4146-47D4-8B26-D773FAA51437}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Shared.Utils", "Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj", "{091549AC-51FC-4F7B-B1DB-92982866D9F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Shared.Utils", "Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj", "{091549AC-51FC-4F7B-B1DB-92982866D9F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.ML.FaceONNX", "Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj", "{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.FaceONNX", "Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj", "{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Damselfly.Migrations.Postgres", "Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj", "{AD7873FA-9CD2-4DC5-8E61-11006FF80EE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{00C83C17-A311-445F-95A2-046F56D23904}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -68,10 +65,6 @@ Global
 		{ADFF7F5A-6963-4ECD-890E-F03B03B6551F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADFF7F5A-6963-4ECD-890E-F03B03B6551F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADFF7F5A-6963-4ECD-890E-F03B03B6551F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A40A832A-5736-442A-88D4-5DDE71964193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A40A832A-5736-442A-88D4-5DDE71964193}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A40A832A-5736-442A-88D4-5DDE71964193}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -96,7 +89,15 @@ Global
 		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C44B29B5-C9A3-44FC-8D38-0933EBCCB061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD7873FA-9CD2-4DC5-8E61-11006FF80EE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD7873FA-9CD2-4DC5-8E61-11006FF80EE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD7873FA-9CD2-4DC5-8E61-11006FF80EE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD7873FA-9CD2-4DC5-8E61-11006FF80EE4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D071C5C4-14E7-4913-B9DE-76B89CA52AE1}
 	EndGlobalSection
 EndGlobal
