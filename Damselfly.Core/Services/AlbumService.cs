@@ -48,8 +48,9 @@ namespace Damselfly.Core.Services
         {
             var album = await _context.Albums.FirstOrDefaultAsync(a => a.AlbumId == request.AlbumId);
             if (album == null) return new BooleanResultModel { Result = false };
-            var images = await _context.Images.Where(i => request.ImageIds.Contains(i.ImageId)).ToListAsync();
+            var images = await _context.Images.Where(i => request.ImageIds.Contains(i.ImageId) && !i.Albums.Contains(album)).ToListAsync();
             album.Images.AddRange(images);
+            _context.Update(album);
             await _context.SaveChangesAsync();
             return new BooleanResultModel { Result = true };
         }
@@ -67,7 +68,7 @@ namespace Damselfly.Core.Services
 
         public async Task<bool> DeleteAlbum(Guid id) 
         {
-            var affectedImages = _context.Images.Where(i => i.Albums.Any(a => a.AlbumId == id));
+            var affectedImages = _context.Images.Include(i => i.Albums).Where(i => i.Albums.Any(a => a.AlbumId == id));
             var deleteImages = affectedImages.Where(i => i.Albums.Count == 1).ToList(); 
             var updateImages = affectedImages.Where(i => i.Albums.Count > 1).ToList();
             foreach(var image in updateImages)

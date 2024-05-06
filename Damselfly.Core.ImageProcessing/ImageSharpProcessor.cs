@@ -209,6 +209,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
     {
         try
         {
+            if( fontCollection != null ) return;
             fontCollection = new FontCollection();
 
             var fontPath = Path.Combine(folder, "arial.ttf");

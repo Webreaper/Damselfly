@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Damselfly.Core.Services;
@@ -22,13 +23,13 @@ namespace Damselfly.Core.Services;
 public class AuthService : IAuthService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    private readonly ImageContext _dbContext;
 
-    public AuthService( IHttpContextAccessor httpContextAccessor, ImageContext dbContext)
+    public AuthService( IHttpContextAccessor httpContextAccessor, IServiceScopeFactory scopeFactory)
     {
         _httpContextAccessor = httpContextAccessor;
-        _dbContext = dbContext;
+        _scopeFactory = scopeFactory;
     }
 
 
@@ -105,8 +106,10 @@ public class AuthService : IAuthService
         {
             return false;
         }
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetRequiredService<ImageContext>();
         //var userManager = _userManager;
-        var applicationUser = await _dbContext.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.NormalizedEmail == email.Value.ToUpper());
+        var applicationUser = await db.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.NormalizedEmail == email.Value.ToUpper());
         // var applicationUser = await userManager.FindByEmailAsync(email.Value);
         if( applicationUser == null )
         {
