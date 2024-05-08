@@ -11,7 +11,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/work")]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class WorkController : ControllerBase
 {
     private readonly ILogger<WorkController> _logger;

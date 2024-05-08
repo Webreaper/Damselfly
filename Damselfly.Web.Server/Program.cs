@@ -24,6 +24,9 @@ using Serilog.Events;
 using ILogger = Serilog.ILogger;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Tensorflow;
+using System.Net;
+using Damselfly.Web.Server.CustomAttributes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Damselfly.Web;
 
@@ -273,10 +276,13 @@ public class Program
                     ValidAudience = configuration["Jwt:Firebase:ValidAudience"]
                 };
             });
-
-        services.AddAuthorization(config => config.SetupPolicies(services));
+        var serviceProvider = services.BuildServiceProvider();
+        var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+        services.AddAuthorization(config => config.AddPolicy(PolicyDefinitions.s_FireBaseAdmin, policy => policy.Requirements.Add(new AuthorizeFireBase(httpContextAccessor))));
+        // services.AddAuthorization(config => config.SetupPolicies(services));
 
         //services.AddSingleton<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IAuthorizationRequirement, AuthorizeFireBase>();
     }
 }

@@ -12,7 +12,7 @@ namespace Damselfly.Web.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [Route("/api/images")]
 [ApiController]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class ImageAPIController : ControllerBase
 {
     private readonly ILogger<ImageAPIController> _logger;

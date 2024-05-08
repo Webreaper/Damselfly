@@ -28,7 +28,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpGet]
         [Route("Admin")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public IActionResult Admin()
         {
             var user = HttpContext.User;

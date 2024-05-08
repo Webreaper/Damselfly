@@ -19,7 +19,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("create")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public async Task<IActionResult> CreateAlbum(AlbumModel albumModel)
         {
 
@@ -30,7 +30,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("update")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public async Task<IActionResult> UpdateAlbum(AlbumModel albumModel)
         {
 
@@ -41,7 +41,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("unlock")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public async Task<IActionResult> UnlockAlbum(AlbumModel albumModel)
         {
             if (albumModel.AlbumId == null) return BadRequest();
@@ -52,7 +52,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpPost]
         [Route("AddExistingImages")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public async Task<IActionResult> AddExistingImages(AddExistingImagesToAlbumRequest model)
         {
             var result = await _albumService.AddImagesToAlbum(model);
@@ -62,7 +62,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpGet]
         [Route("all")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public async Task<IActionResult> GetAllAlbums()
         {
 
@@ -88,7 +88,7 @@ namespace Damselfly.Web.Server.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
         public async Task<IActionResult> DeleteAlbum(string id)
         {
             if (Guid.TryParse(id, out var guidId))

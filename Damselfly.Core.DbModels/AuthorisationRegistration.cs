@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
@@ -65,6 +66,8 @@ public static class AuthorisationRegistration
                 RoleDefinitions.s_AdminRole,
                 RoleDefinitions.s_UserRole,
                 RoleDefinitions.s_ReadOnlyRole));
+
+            
         }
         else
         {

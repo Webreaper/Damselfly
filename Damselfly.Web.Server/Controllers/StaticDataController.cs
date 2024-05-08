@@ -13,7 +13,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/data")]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class StaticDataController : ControllerBase
 {
     private readonly ILogger<StaticDataController> _logger;

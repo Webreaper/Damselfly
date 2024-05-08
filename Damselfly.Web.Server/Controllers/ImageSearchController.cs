@@ -11,7 +11,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/search")]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class ImageSearchController : ControllerBase
 {
     private readonly ILogger<ImageSearchController> _logger;

@@ -16,7 +16,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/people")]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class PeopleController( ImageRecognitionService _aiService, 
                                 IPeopleService _peopleService,
                                 ILogger<PeopleController> _logger,

@@ -26,7 +26,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     [HttpPost]
     [ProducesResponseType(typeof(List<ImageModel>), 200)]
     [Route("upload")]
-    [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+    [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
     public async Task<IActionResult> UploadImage([FromForm] UploadImageRequest uploadImageRequest)
     {
         _logger.LogInformation($"Uploading {uploadImageRequest.ImageFiles.Count} image(s)");
@@ -53,7 +53,7 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
     [HttpDelete]
     [Route("{id}")]
     [ProducesResponseType(typeof(BooleanResultModel), 200)]
-    [AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+    [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
     public async Task<IActionResult> DeleteImage(Guid id)
     {
         var result = await _imageService.DeleteImage(id);

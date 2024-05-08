@@ -13,7 +13,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsDownloader)]
 [ApiController]
 [Route("/api/export")]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class ExportController : ControllerBase
 {
     private readonly ImageRecognitionService _aiService;

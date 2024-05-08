@@ -22,7 +22,7 @@ public class UserManagementController : ControllerBase
     }
 
     [HttpPost]
-    [AuthorizeFireBase]
+    [Authorize]
     [Route("signedIn")]
     public async Task<IActionResult> SignedIn()
     {

@@ -19,25 +19,24 @@ public static class AppInitialiser
     {
         try
         {
-            return;
-            // TODO, schedule this to run in a background thread
+            // return;
             Logging.Log("Setting up services");
-            var download = services.GetRequiredService<DownloadService>();
+            var download = services.GetService<DownloadService>();
             var tasks = services.GetRequiredService<TaskService>();
             var thumbService = services.GetRequiredService<ThumbnailService>();
             var exifService = services.GetRequiredService<ExifService>();
             var imageProcService = services.GetRequiredService<ImageProcessService>();
 
             // Prime the cache
-            services.GetRequiredService<ImageCache>().WarmUp().Wait();
+            //services.GetRequiredService<ImageCache>().WarmUp().Wait();
 
-            // Start the work processing queue for AI, Thumbs, etc
-            services.GetRequiredService<WorkService>().StartService();
+            //// Start the work processing queue for AI, Thumbs, etc
+            //services.GetRequiredService<WorkService>().StartService();
 
-            services.GetRequiredService<MetaDataService>().StartService();
-            services.GetRequiredService<IndexingService>().StartService();
-            services.GetRequiredService<ImageRecognitionService>().StartService();
-            services.GetRequiredService<FaceONNXService>().StartService();
+            //services.GetRequiredService<MetaDataService>().StartService();
+            //services.GetRequiredService<IndexingService>().StartService();
+            //services.GetRequiredService<ImageRecognitionService>().StartService();
+            //services.GetRequiredService<FaceONNXService>().StartService();
 
             // ObjectDetector can throw a segmentation fault if the docker container is pinned
             // to a single CPU, so for now, to aid debugging, let's not even try and initialise
@@ -49,7 +48,7 @@ public static class AppInitialiser
             // WASM: How, when it's scoped?
             // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
 
-            StartTaskScheduler(tasks, download, thumbService, exifService);
+            //StartTaskScheduler(tasks, download, thumbService, exifService);
         }
         catch (Exception ex)
         {
@@ -67,16 +66,16 @@ public static class AppInitialiser
         ThumbnailService thumbService, ExifService exifService)
     {
         var tasks = new List<ScheduledTask>();
-        Logging.Log("Scheduling cleanup thumbs");
-        // Clean up old/irrelevant thumbnails once a week
-        var thumbCleanupFreq = new TimeSpan(7, 0, 0, 0);
-        tasks.Add(new ScheduledTask
-        {
-            Type = TaskType.CleanupThumbs,
-            ExecutionFrequency = thumbCleanupFreq,
-            WorkMethod = () => thumbService.CleanUpThumbnails(thumbCleanupFreq),
-            ImmediateStart = false
-        });
+        //Logging.Log("Scheduling cleanup thumbs");
+        //// Clean up old/irrelevant thumbnails once a week
+        //var thumbCleanupFreq = new TimeSpan(7, 0, 0, 0);
+        //tasks.Add(new ScheduledTask
+        //{
+        //    Type = TaskType.CleanupThumbs,
+        //    ExecutionFrequency = thumbCleanupFreq,
+        //    WorkMethod = () => thumbService.CleanUpThumbnails(thumbCleanupFreq),
+        //    ImmediateStart = false
+        //});
 
         Logging.Log("Scheduling cleanup downloads");
         // Clean up old download zips from the wwwroot folder
@@ -88,29 +87,29 @@ public static class AppInitialiser
             WorkMethod = () => download.CleanUpOldDownloads(downloadCleanupFreq),
             ImmediateStart = false
         });
-        Logging.Log("Scheduling cleanup keywords");
-        // Purge keyword operation entries that have been processed
-        var keywordCleanupFreq = new TimeSpan(24, 0, 0);
-        tasks.Add(new ScheduledTask
-        {
-            Type = TaskType.CleanupKeywordOps,
-            ExecutionFrequency = new TimeSpan(12, 0, 0),
-            WorkMethod = () => { _ = exifService.CleanUpKeywordOperations(keywordCleanupFreq); },
-            ImmediateStart = false
-        });
-        Logging.Log("Scheduling cleanup performance stats");
-        // Dump performance stats out to the logfile
-        tasks.Add(new ScheduledTask
-        {
-            Type = TaskType.DumpPerformance,
-            ExecutionFrequency = new TimeSpan(24, 0, 0),
-            WorkMethod = () =>
-            {
-                Action<string> logFunc = Logging.Verbose ? s => Logging.LogVerbose(s) : s => Logging.Log(s);
-                Stopwatch.WriteTotals(logFunc);
-            },
-            ImmediateStart = false
-        });
+        //Logging.Log("Scheduling cleanup keywords");
+        //// Purge keyword operation entries that have been processed
+        //var keywordCleanupFreq = new TimeSpan(24, 0, 0);
+        //tasks.Add(new ScheduledTask
+        //{
+        //    Type = TaskType.CleanupKeywordOps,
+        //    ExecutionFrequency = new TimeSpan(12, 0, 0),
+        //    WorkMethod = () => { _ = exifService.CleanUpKeywordOperations(keywordCleanupFreq); },
+        //    ImmediateStart = false
+        //});
+        //Logging.Log("Scheduling cleanup performance stats");
+        //// Dump performance stats out to the logfile
+        //tasks.Add(new ScheduledTask
+        //{
+        //    Type = TaskType.DumpPerformance,
+        //    ExecutionFrequency = new TimeSpan(24, 0, 0),
+        //    WorkMethod = () =>
+        //    {
+        //        Action<string> logFunc = Logging.Verbose ? s => Logging.LogVerbose(s) : s => Logging.Log(s);
+        //        Stopwatch.WriteTotals(logFunc);
+        //    },
+        //    ImmediateStart = false
+        //});
 
 #if false
             // Disabled for now, don't think it's really required.

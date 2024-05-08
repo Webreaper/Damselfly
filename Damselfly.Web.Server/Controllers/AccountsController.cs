@@ -1,14 +1,16 @@
+using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Web.Server.CustomAttributes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthenticationWithClientSideBlazor.Server.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class AccountsController : ControllerBase
 {
     private readonly IAuthService _authService;

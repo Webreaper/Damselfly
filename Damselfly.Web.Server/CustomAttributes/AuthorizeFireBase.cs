@@ -10,19 +10,10 @@ using System.Security.Claims;
 
 namespace Damselfly.Web.Server.CustomAttributes
 {
-    public class AuthorizeFireBase : Attribute, IAuthorizationFilter
+    public class AuthorizeFireBase(IHttpContextAccessor httpContextAccessor) : AuthorizationHandler<AuthorizeFireBase>, IAuthorizationRequirement
     {
-        private readonly string[] _roles;
 
-        public AuthorizeFireBase(params string[] roles)
-        {
-            _roles = roles;
-        }
-
-        public AuthorizeFireBase()
-        {
-            _roles = Array.Empty<string>();
-        }
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async void OnAuthorization(AuthorizationFilterContext context)
         {
@@ -35,13 +26,32 @@ namespace Damselfly.Web.Server.CustomAttributes
             var authService = context.HttpContext
                 .RequestServices
                 .GetService(typeof(IAuthService)) as IAuthService;
-           var isAuthenticated = _roles.Length == 0 || await authService.CheckCurrentFirebaseUserIsInRole(_roles);
+           var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole([]);
             if( !isAuthenticated )
             {
                 context.Result = new UnauthorizedResult();
                 return;
             }
             return;
+        }
+
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AuthorizeFireBase requirement)
+        {
+            
+            var user = context.User;
+            if( !user.Identity.IsAuthenticated )
+            {
+                context.Fail();
+            }
+            var authService = _httpContextAccessor.HttpContext
+                .RequestServices
+                .GetService(typeof(IAuthService)) as IAuthService;
+            var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole([]);
+            if( !isAuthenticated )
+            {
+                context.Fail();
+            }
+            context.Succeed(requirement);
         }
     }
 }

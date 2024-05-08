@@ -1,4 +1,4 @@
-﻿namespace Damselfly.Core.Constants;
+namespace Damselfly.Core.Constants;
 
 public class PolicyDefinitions
 {
@@ -7,4 +7,5 @@ public class PolicyDefinitions
     public const string s_IsAdmin = "IsAdmin";
     public const string s_IsAdminOrNoUsers = "IsAdminOrNoUsers";
     public const string s_IsLoggedIn = "IsLoggedIn";
+    public const string s_FireBaseAdmin = "FireBaseAdmin";
 }

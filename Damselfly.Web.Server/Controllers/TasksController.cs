@@ -12,7 +12,7 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsEditor)]
 [ApiController]
 [Route("/api/tasks")]
-[AuthorizeFireBase(RoleDefinitions.s_AdminRole)]
+[Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class TasksController : ControllerBase
 {
     private readonly ILogger<TasksController> _logger;
