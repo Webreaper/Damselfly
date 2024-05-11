@@ -19,7 +19,7 @@ public static class AppInitialiser
     {
         try
         {
-            // return;
+            return;
             Logging.Log("Setting up services");
             var download = services.GetService<DownloadService>();
             var tasks = services.GetRequiredService<TaskService>();

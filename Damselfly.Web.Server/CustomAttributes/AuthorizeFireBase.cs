@@ -10,29 +10,27 @@ using System.Security.Claims;
 
 namespace Damselfly.Web.Server.CustomAttributes
 {
-    public class AuthorizeFireBase(IHttpContextAccessor httpContextAccessor) : AuthorizationHandler<AuthorizeFireBase>, IAuthorizationRequirement
+    public class AuthorizeFireBase(IHttpContextAccessor httpContextAccessor) : AuthorizationHandler<AuthorizeFireBase>, IAuthorizationRequirement, IAuthorizationHandler
     {
 
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-        public async void OnAuthorization(AuthorizationFilterContext context)
+        public override async Task HandleAsync(AuthorizationHandlerContext context)
         {
-            var user = context.HttpContext.User;
+            
+            var user = context.User;
             if( !user.Identity.IsAuthenticated )
             {
-                context.Result = new UnauthorizedResult();
-                return;
+                context.Fail();
             }
-            var authService = context.HttpContext
+            var authService = _httpContextAccessor.HttpContext
                 .RequestServices
                 .GetService(typeof(IAuthService)) as IAuthService;
-           var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole([]);
+            var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole([]);
             if( !isAuthenticated )
             {
-                context.Result = new UnauthorizedResult();
-                return;
+                context.Fail();
             }
-            return;
         }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AuthorizeFireBase requirement)

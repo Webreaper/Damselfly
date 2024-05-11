@@ -16,6 +16,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="AutoMapper" />
+        <PackageReference Include="Hangfire.AspNetCore" />
+        <PackageReference Include="Hangfire.MemoryStorage" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
         <PackageReference Include="Microsoft.Extensions.Identity.Core" />
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />

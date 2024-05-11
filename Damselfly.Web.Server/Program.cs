@@ -27,11 +27,14 @@ using Tensorflow;
 using System.Net;
 using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
+using Hangfire;
+using Hangfire.MemoryStorage;
 
 namespace Damselfly.Web;
 
 public class Program
 {
+    private static BackgroundJobServer backgroundJobServer;
     public static void Main(string[] args)
     {
         try
@@ -114,7 +117,13 @@ public class Program
         });
 
         builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
+        
+        builder.Services.AddHangfire(config =>
+        {
+            config.UseSerilogLogProvider();
+            config.UseMemoryStorage();
+        });
+        // builder.Services.AddHangfireServer();
 
         // Swagger
         builder.Services.AddSwaggerGen();
@@ -130,16 +139,30 @@ public class Program
             // See https://github.com/dotnet/aspnetcore/issues/43703
             builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(port); });
         }
-
+        var allowedOrigins = builder.Configuration["DamselflyConfiguration:AllowedOrigins"]?.Split(",");
+        const string allowAllorigins = "AllowAllOrigins";
+        const string allowSpecificOrigins = "AllowSpecificOrigins";
         builder.Services.AddCors(options =>
         {
             options.AddPolicy(
-                "AllowAllOrigins",
+                allowAllorigins,
                 builder =>
                 {
-                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                    builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
                 }
             );
+            options.AddPolicy(
+                allowSpecificOrigins,
+                builder =>
+                {
+                    builder
+                    .WithOrigins(allowedOrigins)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+                });
         });
 
         var app = builder.Build();
@@ -196,7 +219,11 @@ public class Program
         app.UseResponseCompression();
         app.UseRouting();
         app.UseAntiforgery();
-        app.UseCors("AllowAllOrigins");
+#if DEBUG
+        app.UseCors(allowAllorigins);
+#else
+        app.UseCors(allowSpecificOrigins);
+#endif
 
         if( Debugger.IsAttached )
         {
@@ -220,10 +247,16 @@ public class Program
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);
 
+        app.UseHangfireServer();
 
+
+        // BackgroundJob.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
+        // BackgroundJob.Enqueue<DownloadService>(x => x.CleanUpOldDownloads(TimeSpan.FromHours(6)));
+        RecurringJob.AddOrUpdate<DownloadService>("CleanupDownloads", d => d.CleanUpOldDownloads(TimeSpan.FromHours(6)), "0 */6 * * *");
         Logging.Log("Starting Damselfly webserver...");
 
         app.Run();
+        
     }
 
     private static void InitialiseDB(WebApplication app)
