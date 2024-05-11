@@ -15,24 +15,6 @@ namespace Damselfly.Web.Server.CustomAttributes
 
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-        public override async Task HandleAsync(AuthorizationHandlerContext context)
-        {
-            
-            var user = context.User;
-            if( !user.Identity.IsAuthenticated )
-            {
-                context.Fail();
-            }
-            var authService = _httpContextAccessor.HttpContext
-                .RequestServices
-                .GetService(typeof(IAuthService)) as IAuthService;
-            var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole([]);
-            if( !isAuthenticated )
-            {
-                context.Fail();
-            }
-        }
-
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, AuthorizeFireBase requirement)
         {
             
@@ -44,7 +26,7 @@ namespace Damselfly.Web.Server.CustomAttributes
             var authService = _httpContextAccessor.HttpContext
                 .RequestServices
                 .GetService(typeof(IAuthService)) as IAuthService;
-            var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole([]);
+            var isAuthenticated = await authService.CheckCurrentFirebaseUserIsInRole(["Admin"]);
             if( !isAuthenticated )
             {
                 context.Fail();
