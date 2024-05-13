@@ -55,8 +55,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="8.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.JSInterop" Version="8.0.4" />
     <PackageVersion Include="Microsoft.ML" Version="3.0.1" />
@@ -67,7 +69,9 @@
     <PackageVersion Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
     <PackageVersion Include="MudBlazor" Version="6.19.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+    <PackageVersion Include="PayPal" Version="1.9.1" />
     <PackageVersion Include="Radzen.Blazor" Version="4.29.8" />
     <PackageVersion Include="RestSharp" Version="110.2.0" />
     <PackageVersion Include="SendGrid" Version="9.29.3" />

@@ -29,6 +29,7 @@ using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Damselfly.PaymentProcessing;
 
 namespace Damselfly.Web;
 
@@ -130,6 +131,7 @@ public class Program
 
         // Damselfly Services
         builder.Services.AddImageServices();
+        builder.Services.AddPaymentServices();
         builder.Services.AddHostedBlazorBackEndServices();
         var port = int.Parse(builder.Configuration["DamselflyConfiguration:Port"]);
         if( ! Debugger.IsAttached )

@@ -62,6 +62,7 @@
             <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Migrations.Postgres\Damselfly.Migrations.Postgres.csproj" />
+        <ProjectReference Include="..\Damselfly.PaymentProcessing\Damselfly.PaymentProcessing.csproj" />
     </ItemGroup>
     <ItemGroup>
         <Content Remove="wwwroot\" />
