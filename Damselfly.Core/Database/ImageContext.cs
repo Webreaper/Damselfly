@@ -150,6 +150,9 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithOne( transform => transform.Image )
             .HasForeignKey<Transformations>( i => i.ImageId );
 
+        modelBuilder.Entity<Image>()
+            .HasMany(Image => Image.AlbumImages);
+
         modelBuilder.Entity<Folder>()
             .HasMany(x => x.Children)
             .WithOne(x => x.Parent)
@@ -168,8 +171,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .HasOne(Album => Album.CoverImage)
             .WithMany(Image => Image.CoverAlbums);
 
-        modelBuilder.Entity<Album>().HasMany(Image => Image.Images)
-            .WithMany(Album => Album.Albums);
+        modelBuilder.Entity<Album>().HasMany(Album => Album.AlbumImages);
 
         modelBuilder.Entity<Album>().Property(x => x.InvalidPasswordAttempts).HasDefaultValue(0);
 
@@ -207,6 +209,10 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Hash>().HasIndex(x => new
             { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });
         modelBuilder.Entity<Models.ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
+
+        modelBuilder.Entity<AlbumImage>()
+            .Property(AlbumImage => AlbumImage.AlbumImageId)
+            .HasDefaultValueSql("gen_random_uuid()");
 
         RoleDefinitions.OnModelCreating(modelBuilder);
     }

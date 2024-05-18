@@ -56,7 +56,7 @@ public class Image
     // NOTE: setter needed for serialization only
     public virtual List<ImageObject> ImageObjects { get; init; } = new();
 
-    public virtual List<Album> Albums { get; init; } = [];
+    public virtual List<AlbumImage> AlbumImages { get; init; } = [];
 
     public virtual List<Album> CoverAlbums { get; set; }
 

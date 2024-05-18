@@ -499,20 +499,37 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     {
         using var scope = _scopeFactory.CreateScope();
 
-        var image = await _imageCache.GetCachedImage(imageId);
+        var image = await db.Images.Include(i => i.MetaData).Include(i => i.Folder).FirstOrDefaultAsync(i => i.ImageId == imageId); // await _imageCache.GetCachedImage(imageId);
 
-        image = db.AttachToOrGet(x => x.ImageId == image.ImageId , () => image);
+        // image = db.AttachToOrGet(x => x.ImageId == imageId , () => image);
 
         // Mark the image as done, so that if anything goes wrong it won't go into an infinite loop spiral
+        // image.MetaData = db.AttachToOrGet(x => x.MetaDataId == image.MetaData.MetaDataId, () => image.MetaData);
         image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
 
         var result = await ConvertFile(image, false, size);
-
-        db.ImageMetaData.Update(image.MetaData);
+        
+        db.Images.Update(image);
         await db.SaveChangesAsync("UpdateThumbTimeStamp");
 
         _imageCache.Evict(image.ImageId);
 
+        return result;
+    }
+
+    public async Task<IImageProcessResult> CreateThumb(Image image, ThumbSize size)
+    {
+        // image.Albums.Clear();
+        if (image.MetaData == null)
+        {
+            image.MetaData = await db.ImageMetaData.FirstOrDefaultAsync(x => x.ImageId == image.ImageId);
+        }
+        image.MetaData.ThumbLastUpdated = DateTime.UtcNow;
+
+        var result = await ConvertFile(image, false, size);
+        
+        db.ImageMetaData.Update(image.MetaData);
+        await db.SaveChangesAsync("UpdateThumbTimeStamp");
         return result;
     }
 
