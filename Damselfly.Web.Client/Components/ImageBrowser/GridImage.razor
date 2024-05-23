@@ -240,7 +240,7 @@ else
     private async Task ShowRescanDialog()
     {
         var parameters = new DialogParameters { { "images", ContextSelection } };
-        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, BackdropClick = false };
         var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }

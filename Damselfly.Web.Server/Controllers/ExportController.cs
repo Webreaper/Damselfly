@@ -57,7 +57,7 @@ public class ExportController : ControllerBase
     {
         try
         {
-            if ( db.DownloadConfigs.Any(x => x.Name.Equals(config.Name)) )
+            if ( db.DownloadConfigs.Any(x => x.Name != null && x.Name.Equals(config.Name)) )
                 throw new ArgumentException($"Config {config.Name} already exists!");
 
             db.DownloadConfigs.Add(config);

@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <MudSwipeArea OnSwipe="OnSwipe">
+        <MudSwipeArea OnSwipeEnd="OnSwipe">
             <ImagePreview @ref="theImagePreview" @key="@ImageID" Editing=Editing Image="@CurrentImage" />
         </MudSwipeArea>
     }
@@ -113,9 +113,9 @@
     private bool CanZoomOut => ZoomRange > 1.0 && !ZoomDisabled;
     private bool ZoomDisabled => ShowObjects;
 
-    private void OnSwipe( SwipeDirection direction )
+    private void OnSwipe( SwipeEventArgs args)
     {
-        switch( direction )
+        switch( args.SwipeDirection )
         {
             case SwipeDirection.LeftToRight:
                 Next();

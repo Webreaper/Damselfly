@@ -12,6 +12,7 @@
 @implements IDisposable
 
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small"/>
+<MudPopoverProvider/>
 <RadzenContextMenu/>
 <UIStateMonitor/>
 
@@ -90,7 +91,7 @@
         if( await peopleService.NeedsAIMigration() )
         {
             var parameters = new DialogParameters();
-            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, DisableBackdropClick = true };
+            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, BackdropClick = false };
             var dialog = dialogService.Show<AIMigrationDialog>("AI Migration", parameters, options);
             var result = await dialog.Result;
         }

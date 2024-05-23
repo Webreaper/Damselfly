@@ -51,7 +51,7 @@
             </p>
             <div class="damselfly-configsetting">
                 <div class="damselfly-configfield">
-                    <MudSwitch @bind-Checked="settingsModel.enableBackgroundThumbs" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                    <MudSwitch @bind-Value="settingsModel.enableBackgroundThumbs" UncheckedColor=Color.Tertiary Color="Color.Primary"
                                Label="Enable Background Thumbnail Generation"/>
                 </div>
             </div>
@@ -59,7 +59,7 @@
             {
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudSwitch @bind-Checked="settingsModel.enableImageEditing" UnCheckedColor=Color.Tertiary Color="Color.Primary"
+                        <MudSwitch @bind-Value="settingsModel.enableImageEditing" UncheckedColor=Color.Tertiary Color="Color.Primary"
                                    Label="Enable Image Editing (Experimental)"/>
                     </div>
                 </div>
@@ -79,24 +79,24 @@
                 <h2>SideCar Processing</h2>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudCheckBox @bind-Checked="@settingsModel.importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing"/>
+                        <MudCheckBox @bind-Value="@settingsModel.importSidecarKeywords" Label="Write Sidecar (XMP/ON1) keywords to image files during indexing"/>
                     </div>
                 </div>
 
                 <h2>Security</h2>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudCheckBox @bind-Checked="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)"/>
+                        <MudCheckBox @bind-Value="@settingsModel.enableAuthAndRoles" Label="Enable Authentication, user IDs and roles (requires restart)"/>
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudCheckBox @bind-Checked="@settingsModel.allowExternalRegistration" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Enable public registration page"/>
+                        <MudCheckBox @bind-Value="@settingsModel.allowExternalRegistration" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Enable public registration page"/>
                     </div>
                 </div>
                 <div class="damselfly-configsetting">
                     <div class="damselfly-configfield">
-                        <MudCheckBox @bind-Checked="@settingsModel.forceLogin" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly"/>
+                        <MudCheckBox @bind-Value="@settingsModel.forceLogin" Disabled="@(!settingsModel.enableAuthAndRoles)" Label="Force users to login before accessing Damselfly"/>
                     </div>
                 </div>
 
@@ -131,19 +131,19 @@
 
             <div class="damselfly-configsetting">
                 <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.enableAIProcessing" Label="Scan images locally for objects/faces using AI (this will use a lot of CPU)"/>
+                    <MudCheckBox @bind-Value="@settingsModel.enableAIProcessing" Label="Scan images locally for objects/faces using AI (this will use a lot of CPU)"/>
                 </div>
             </div>
 
             <div class="damselfly-configsetting">
                 <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.disableObjectDetector" Label="Disable object detection scanner"/>
+                    <MudCheckBox @bind-Value="@settingsModel.disableObjectDetector" Label="Disable object detection scanner"/>
                 </div>
             </div>
 
             <div class="damselfly-configsetting">
                 <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.writeAITagsToImages" Label="Write recognised item keywords to image EXIF metadata"/>
+                    <MudCheckBox @bind-Value="@settingsModel.writeAITagsToImages" Label="Write recognised item keywords to image EXIF metadata"/>
                 </div>
             </div>
 
@@ -164,7 +164,7 @@
 
             <div class="damselfly-configsetting">
                 <div class="damselfly-configfield">
-                    <MudCheckBox @bind-Checked="@settingsModel.cpuSettings.EnableAltCPULevel"
+                    <MudCheckBox @bind-Value="@settingsModel.cpuSettings.EnableAltCPULevel"
                                  Label="Adjust CPU usage limits during these times."/>
                     <div class="damselfly-configsetting">
                         <MudTimePicker @bind-Time="settingsModel.cpuSettings.AltTimeStart" Disabled="@(!settingsModel.cpuSettings.EnableAltCPULevel)"
@@ -213,9 +213,9 @@
             <h2>Email Settings for Password Reminders, etc.</h2>
 
             <p>Reminder emails can be sent using SMTP or SendGrid (you can sign up for a free SendGrid account <a href="https://signup.sendgrid.com/" target="_blank">here).</a></p>
-            <MudRadioGroup @bind-SelectedOption="@settingsModel.useSmtp">
-                <MudRadio Option="@true">SMTP</MudRadio>
-                <MudRadio Option="@false">SendGrid</MudRadio>
+            <MudRadioGroup @bind-Value="@settingsModel.useSmtp">
+                <MudRadio Value="@true">SMTP</MudRadio>
+                <MudRadio Value="@false">SendGrid</MudRadio>
             </MudRadioGroup>
 
 

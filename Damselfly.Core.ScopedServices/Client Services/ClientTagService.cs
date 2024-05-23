@@ -37,7 +37,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return _recentTags;
     }
 
-    public async Task<ICollection<Tag>> SearchTags(string filterText)
+    public async Task<ICollection<Tag>> SearchTags(string filterText, CancellationToken token)
     {
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>($"/api/tags/search/{filterText}");
     }

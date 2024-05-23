@@ -8,10 +8,10 @@
         <MudButton @onclick="@ClearFaceThumbs">Refresh Thumbs</MudButton>
     </div>
     <div class="title-section">
-        <MudRadioGroup @bind-SelectedOption="filterType">
+        <MudRadioGroup @bind-Value="filterType">
             @foreach ( var choice in Enum.GetValues<FilterType>() )
             {
-                <MudRadio Option="@choice" Color="Color.Primary">
+                <MudRadio Value="@choice" Color="Color.Primary">
                     @choice.ToString()
                 </MudRadio>
             }

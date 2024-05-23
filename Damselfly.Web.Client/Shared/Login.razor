@@ -20,7 +20,7 @@
             <ValidationMessage For="@(() => loginModel.Password)" />
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@loginModel.RememberMe" Label="Remember Me" />
+            <MudCheckBox @bind-Value="@loginModel.RememberMe" Label="Remember Me" />
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
     </EditForm>

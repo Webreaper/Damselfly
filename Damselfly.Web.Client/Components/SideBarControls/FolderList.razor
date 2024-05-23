@@ -261,7 +261,7 @@
         if (folder != null)
             parameters = new DialogParameters { { "folder", folder }, { "count", folder.MetaData.ImageCount } };
 
-        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, DisableBackdropClick = true };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, BackdropClick = false };
         var dialog = DialogService.Show<RescanDialog>
     ("Re-scan Images", parameters, options);
         var result = await dialog.Result;

@@ -69,11 +69,11 @@ public class RestClient
         return ex;
     }
 
-    public async Task<T?> CustomGetFromJsonAsync<T>(string? requestUri)
+    public async Task<T?> CustomGetFromJsonAsync<T>(string? requestUri, CancellationToken token = default( CancellationToken))
     {
         try
         {
-            return await _restClient.GetFromJsonAsync<T>(requestUri, JsonOptions);
+            return await _restClient.GetFromJsonAsync<T>(requestUri, JsonOptions, token);
         }
         catch ( Exception ex )
         {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -150,8 +151,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     ///     Search for a set of tags - used for autocomplete.
     /// </summary>
     /// <param name="text"></param>
+    /// <param name="token"></param>
     /// <returns></returns>
-    public Task<ICollection<Tag>> SearchTags(string text)
+    public Task<ICollection<Tag>> SearchTags(string text, CancellationToken token = default(CancellationToken))
     {
         var results = new List<Tag>();
         var searchText = text.Trim();

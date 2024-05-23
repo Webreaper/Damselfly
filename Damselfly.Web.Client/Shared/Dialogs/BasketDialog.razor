@@ -15,7 +15,7 @@
             <MudTextField @bind-Value="@model.BasketName" For="@(() => model.BasketName)" Label="Basket Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
             @if( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles) )
             {
-                <MudCheckBox @bind-Checked="@model.IsPublic" Label="Share this basket with other users"/>
+                <MudCheckBox @bind-Value="@model.IsPublic" Label="Share this basket with other users"/>
             }
             @if( !string.IsNullOrEmpty(errorMsg) )
             {

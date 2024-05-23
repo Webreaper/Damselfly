@@ -48,9 +48,9 @@
         }
     }
 
-    private async Task<IEnumerable<string>> SearchTags(string text)
+    private async Task<IEnumerable<string>> SearchTags(string text, CancellationToken token)
     {
-        var results = await tagSearchService.SearchTags(text);
+        var results = await tagSearchService.SearchTags(text, token);
         return results.Select(x => x.Keyword);
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Models;
 
@@ -27,7 +28,7 @@ public interface IRecentTagService
 
 public interface ITagSearchService
 {
-    Task<ICollection<Tag>> SearchTags(string filterText);
+    Task<ICollection<Tag>> SearchTags(string filterText, CancellationToken token = default(CancellationToken));
     Task<ICollection<Tag>> GetAllTags();
     Task<Tag> GetTag( int tagId );
 }

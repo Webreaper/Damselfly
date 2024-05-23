@@ -33,7 +33,7 @@
                     </MudSelectItem>
                 }
             </MudSelect>
-            <MudCheckBox @bind-Checked="@Config.KeepFolders" Label="Export with folder structure"/>
+            <MudCheckBox @bind-Value="@Config.KeepFolders" Label="Export with folder structure"/>
             <MudTextField @bind-Value="@Config.WatermarkText" For="@(() => Config.WatermarkText)" Label="Watermark Text" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
         </EditForm>
     </DialogContent>

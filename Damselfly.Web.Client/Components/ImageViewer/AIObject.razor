@@ -112,7 +112,7 @@
         }
     }
 
-    private async Task<IEnumerable<string>> SearchNames(string text)
+    private async Task<IEnumerable<string>> SearchNames(string text, CancellationToken token)
     {
         var list = await peopleService.GetPeopleNames(text.Trim());
         return list;

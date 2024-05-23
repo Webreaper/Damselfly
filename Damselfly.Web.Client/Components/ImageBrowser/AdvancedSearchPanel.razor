@@ -9,7 +9,7 @@
                             @bind-DateRange="DateRange" Variant="UIConstants.MudVariant"
                             Color="Color.Tertiary">
             <PickerActions>
-                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.Clear())">Clear</MudButton>
+                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.ClearAsync())">Clear</MudButton>
                 <select class="mr-auto align-self-start" @onchange="ShortCutChanged">
                     <option>Quick Dates</option>
                     @foreach( var choice in DateRanges )
@@ -17,8 +17,8 @@
                         <option value="@choice.Key">@choice.Key</option>
                     }
                 </select>
-                <MudButton OnClick="@(() => _picker.Close(false))">Cancel</MudButton>
-                <MudButton Color="Color.Primary" OnClick="@(() => _picker.Close())">Ok</MudButton>
+                <MudButton OnClick="@(() => _picker.CloseAsync(false))">Cancel</MudButton>
+                <MudButton Color="Color.Primary" OnClick="@(() => _picker.CloseAsync())">Ok</MudButton>
             </PickerActions>
         </MudDateRangePicker>
     </div>
@@ -98,13 +98,13 @@
         </MudSelect>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.TagsOnly" Label="Exclude filenames/folders"/>
+        <MudCheckBox @bind-Value="@searchService.TagsOnly" Label="Exclude filenames/folders"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.IncludeAITags" Label="Include AI tags"/>
+        <MudCheckBox @bind-Value="@searchService.IncludeAITags" Label="Include AI tags"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudCheckBox @bind-Checked="@searchService.UntaggedImages" Label="Images without keywords"/>
+        <MudCheckBox @bind-Value="@searchService.UntaggedImages" Label="Images without keywords"/>
     </div>
 </div>
 
