@@ -11,5 +11,5 @@ public interface IUserFolderService
     Task<List<Folder>> GetFilteredFolders(string filterTerm);
     Task<Folder?> GetFolder(int folderId);
     void ToggleExpand(Folder item);
-    bool IsExpanded(Folder item);
+    bool IsExpanded(Folder? item);
 }

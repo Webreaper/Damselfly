@@ -46,9 +46,9 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public event Action OnFoldersChanged;
 
-    public bool IsExpanded(Folder folder)
+    public bool IsExpanded(Folder? folder)
     {
-        if ( folderStates.TryGetValue(folder.FolderId, out var folderState) )
+        if (folder != null &&  folderStates.TryGetValue(folder.FolderId, out var folderState) )
             return folderState.Expanded;
 
         return false;
