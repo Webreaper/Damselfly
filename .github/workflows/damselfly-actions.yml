@@ -116,7 +116,7 @@ jobs:
         run: echo "::set-output name=version::$(cat VERSION)"
 
       - name: Download Server Build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Server-Dist
           path: server
@@ -132,7 +132,7 @@ jobs:
              echo "Server artifacts:"
              ls server
       - name: Download Desktop Builds into wwwroot folder
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
@@ -177,14 +177,14 @@ jobs:
 
       - name: Download Desktop Artifacts
         if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Desktop-Dist
           path: Damselfly.Web.Client/wwwroot/desktop
 
       - name: Download Server Artifacts
         if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: Server-Dist
           path: server
