@@ -10,11 +10,6 @@
 @implements IDisposable
 
 <div class="damselfly-taglist">
-    @if( ShowAddKeywords )
-    {
-        <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled"/>
-    }
-
     @if( ShowFavourites )
     {
         <div class="damselfly-keywordlist">
@@ -118,6 +113,11 @@
                 <div>No Images Selected</div>
             }
         </div>
+    }
+
+    @if( ShowAddKeywords )
+    {
+        <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled"/>
     }
 </div>
 
