@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.DbModels.Models.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.Core.Services
 {
@@ -28,7 +29,8 @@ namespace Damselfly.Core.Services
         IAuthService authService,
         ImageService imageService,
         EmailMailGunService emailService,
-        NotificationService notificationService)
+        NotificationService notificationService,
+        ILogger<AlbumService> logger)
     {
         private readonly IMapper _mapper = mapper;
         private readonly ImageContext _context = imageContext;
@@ -39,6 +41,7 @@ namespace Damselfly.Core.Services
         private readonly ImageService _imageService = imageService;
         private readonly EmailMailGunService _emailService = emailService;
         private readonly NotificationService _notificationService = notificationService;
+        private readonly ILogger<AlbumService> _logger = logger;
 
         public async Task<AlbumModel> CreateAlbum(AlbumModel albumModel)
         {
@@ -164,6 +167,7 @@ namespace Damselfly.Core.Services
             }
             catch(Exception ex)
             {
+                _logger.LogError(ex, $"Error scanning album {albumId}");
                 await _notificationService.SendNotification("Album scan error", $"Error scanning album {albumId}");
                 return false;
             }

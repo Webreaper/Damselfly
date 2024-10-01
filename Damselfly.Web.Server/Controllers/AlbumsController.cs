@@ -104,7 +104,7 @@ namespace Damselfly.Web.Server.Controllers
         [HttpPost]
         [Route("QueueScan")]
         [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
-        public async Task<IActionResult> QueueScan(AlbumModel albumModel)
+        public IActionResult QueueScan(AlbumModel albumModel)
         {
             if( albumModel.AlbumId == null ) return BadRequest("AlbumId is required");
             var result = AlbumService.QueueAlbumScan(albumModel.AlbumId.Value);
