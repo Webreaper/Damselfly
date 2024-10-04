@@ -43,7 +43,7 @@ jobs:
       - name: Upload desktop builds for Docker build
         uses: actions/upload-artifact@v4
         with:
-          name: Desktop-Dist
+          name: Desktop-Dist-${{ matrix.target }}
           path: Damselfly.Web.Client/wwwroot/desktop/*.*
           retention-days: 5
 
@@ -133,7 +133,7 @@ jobs:
       - name: Download Desktop Builds into wwwroot folder
         uses: actions/download-artifact@v4
         with:
-          name: Desktop-Dist
+          name: Desktop-Dist-${{ matrix.target }}
           path: publish/wwwroot/desktop
       
       - name: Validate Desktop artifacts
