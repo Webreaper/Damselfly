@@ -41,7 +41,7 @@ jobs:
         run: sh scripts/makedesktop.sh ${{ matrix.target }}
 
       - name: Upload desktop builds for Docker build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Desktop-Dist
           path: Damselfly.Web.Client/wwwroot/desktop/*.*
@@ -84,7 +84,7 @@ jobs:
         run: sh scripts/makeserver.sh ${{ matrix.target }} 
 
       - name: Upload server builds to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Server-Dist
           path: server/*.zip     
@@ -116,7 +116,7 @@ jobs:
         run: echo "::set-output name=version::$(cat VERSION)"
 
       - name: Download Server Build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: Server-Dist
           path: server
@@ -132,7 +132,7 @@ jobs:
              echo "Server artifacts:"
              ls server
       - name: Download Desktop Builds into wwwroot folder
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: Desktop-Dist
           path: publish/wwwroot/desktop
@@ -177,14 +177,14 @@ jobs:
 
       - name: Download Desktop Artifacts
         if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Desktop-Dist
           path: Damselfly.Web.Client/wwwroot/desktop
 
       - name: Download Server Artifacts
         if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: Server-Dist
           path: server
