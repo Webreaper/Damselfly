@@ -52,7 +52,10 @@ jobs:
     strategy: 
       matrix: 
 # FIX Package restore for MacOS
-        target: [windows, linux]
+        target: [
+          # windows, FIX for windows too 
+          linux
+          ]
         include: 
           - target: windows
             os: ubuntu-latest
