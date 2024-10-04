@@ -256,6 +256,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
             if( string.IsNullOrEmpty(image.MetaData.Caption) )
                 image.MetaData.Caption = GetXMPFieldValue( nvps, "dc:Caption" );
+
+            if( image.MetaData.Rating == 0 )
+            {
+                var value = GetXMPFieldValue( nvps, "xmp:Rating" );
+                if( value != null )
+                    image.MetaData.Rating = Convert.ToInt16((value));
+            }
         }
         catch ( Exception ex )
         {
