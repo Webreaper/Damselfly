@@ -16,7 +16,7 @@ namespace Damselfly.ML.FaceONNX;
 public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
 {
     private FaceDetector _faceDetector;
-    private FaceLandmarksExtractor _faceLandmarksExtractor;
+    private Face68LandmarksExtractor _faceLandmarksExtractor;
     private FaceEmbedder _faceEmbedder;
     private readonly Embeddings _embeddings = new();
     
@@ -39,7 +39,7 @@ public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
             // using var options = useGPU ? SessionOptions.MakeSessionOptionWithCudaProvider(gpuId) : new SessionOptions();
 
             _faceDetector = new FaceDetector();
-            _faceLandmarksExtractor = new FaceLandmarksExtractor();
+            _faceLandmarksExtractor = new Face68LandmarksExtractor();
             _faceEmbedder = new FaceEmbedder();
         }
         catch ( Exception ex )
@@ -113,10 +113,10 @@ public class FaceONNXService( ILogger<FaceONNXService> _logger): IDisposable
             {
                 // landmarks
                 var points = _faceLandmarksExtractor.Forward(array, face.Box);
-                var angle = points.GetRotationAngle();
+                var angle = points.RotationAngle;
 
                 // alignment
-                var aligned = FaceLandmarksExtractor.Align(array, face.Box, angle);
+                var aligned = FaceProcessingExtensions.Align(array, face.Box, angle);
                 yield return new FaceONNXFace
                 {
                     Embeddings = _faceEmbedder.Forward(aligned),
