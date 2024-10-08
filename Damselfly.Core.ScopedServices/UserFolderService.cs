@@ -20,7 +20,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     
     private ICollection<Folder>? folderItems; // Ordered as returned from the service
     private Dictionary<int, Folder> folderLookup = new();
-    private IDictionary<int, UserFolderState>? folderStates;
+    private Dictionary<int, UserFolderState> folderStates = new();
 
     public UserFolderService(IFolderService folderService, 
                 ISearchService searchService, 
@@ -48,9 +48,6 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public bool IsExpanded(Folder? folder)
     {
-        if( folderStates == null )
-            return true;
-        
         if (folder != null &&  folderStates.TryGetValue(folder.FolderId, out var folderState) )
             return folderState.Expanded;
 
