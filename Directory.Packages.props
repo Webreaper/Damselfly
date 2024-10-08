@@ -21,8 +21,8 @@
     <PackageVersion Include="font-awesome" Version="4.7.0" />
     <PackageVersion Include="Humanizer" Version="2.14.1" />
     <PackageVersion Include="Magick.NET-Q16-AnyCPU" Version="13.6.0" />
-    <PackageVersion Include="MailKit" Version="4.5.0" />
-    <PackageVersion Include="Octokit" Version="11.0.1" />
+    <PackageVersion Include="MailKit" Version="4.8.0" />
+    <PackageVersion Include="Octokit" Version="13.0.1" />
     <PackageVersion Include="MetadataExtractor" Version="2.9.0-rc1" />
     <PackageVersion Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="8.0.0-preview.6.23329.11" />
     <PackageVersion Include="Microsoft.AspNetCore.Authorization" Version="8.0.8" />
@@ -77,7 +77,7 @@
     <PackageVersion Include="SixLabors.Fonts" Version="2.0.4" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.5" />
     <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
-    <PackageVersion Include="SkiaSharp" Version="2.88.8" />
+    <PackageVersion Include="SkiaSharp" Version="3.0.0-preview.4.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
     <PackageVersion Include="SkiaSharp.Views.Blazor" Version="2.88.8" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
