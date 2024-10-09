@@ -77,7 +77,7 @@
     <PackageVersion Include="SixLabors.Fonts" Version="2.0.4" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.5" />
     <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
-    <PackageVersion Include="SkiaSharp" Version="3.0.0-preview.4.1" />
+    <PackageVersion Include="SkiaSharp" Version="2.88.8" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
     <PackageVersion Include="SkiaSharp.Views.Blazor" Version="2.88.8" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
