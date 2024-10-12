@@ -209,18 +209,14 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-
         app.UseBlazorFrameworkFiles();
-        
-        // TODO: Do we need this if we serve all the images via the controller?
-        app.UseStaticFiles();
+        app.MapStaticAssets();
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
             RequestPath = ThumbnailService.RequestRoot
         });
 
-        app.UseStaticFiles();
         app.UseResponseCompression();
         app.UseRouting();
         app.UseAntiforgery();

@@ -6,47 +6,49 @@
 
 @implements IDisposable
 
-<div class="image-canvas">
-    <div class="tool-palette">
-        <MudText>Zoom:</MudText>
-        <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudText>Lighten:</MudText>
-        <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudText>Darken:</MudText>
-        <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+<DetailedErrorBoundary>
+    <div class="image-canvas">
+        <div class="tool-palette">
+            <MudText>Zoom:</MudText>
+            <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudText>Lighten:</MudText>
+            <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudText>Darken:</MudText>
+            <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
 
-        <MudSelect @bind-Value="mode" @bind-Value:after="Repaint">
-            <MudSelectItem Value="SKBlendMode.Clear">None</MudSelectItem>
-            <MudSelectItem Value="SKBlendMode.Color">Col</MudSelectItem>
-            <MudSelectItem Value="SKBlendMode.Hue">Hue</MudSelectItem>
-            <MudSelectItem Value="SKBlendMode.Saturation">Sat</MudSelectItem>
-        </MudSelect>
-        <MudText>Hue:</MudText>
-        <MudSlider @bind-Value="hue" Min="0" Max="360" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudText>Sat:</MudText>
-        <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudText>Lum:</MudText>
-        <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudSelect @bind-Value="mode" @bind-Value:after="Repaint">
+                <MudSelectItem Value="SKBlendMode.Clear">None</MudSelectItem>
+                <MudSelectItem Value="SKBlendMode.Color">Col</MudSelectItem>
+                <MudSelectItem Value="SKBlendMode.Hue">Hue</MudSelectItem>
+                <MudSelectItem Value="SKBlendMode.Saturation">Sat</MudSelectItem>
+            </MudSelect>
+            <MudText>Hue:</MudText>
+            <MudSlider @bind-Value="hue" Min="0" Max="360" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudText>Sat:</MudText>
+            <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudText>Lum:</MudText>
+            <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
 
-        <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
-        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
-        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
-        <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
-    </div>
-    @if (sourceBitmap == null)
-    {
-        <div class="loading">
-            <ProgressSpinner ProgressText="Loading image..."/>
+            <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
+            <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
+            <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
+            <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
         </div>
-    }
-    else
-    {
-        <SKGLView @ref="glViewRef" @key="Image?.ImageId" OnPaintSurface="OnPaintSurface" 
-                  EnableRenderLoop="@isDragging" IgnorePixelScaling="false" class="@Class"
-                  @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" @onmousemove="@OnMouseMove" 
-                  @onmousewheel="@OnMouseWheel" />
-    }
-</div>
+        @if (sourceBitmap == null)
+        {
+            <div class="loading">
+                <ProgressSpinner ProgressText="Loading image..."/>
+            </div>
+        }
+        else
+        {
+            <SKGLView @ref="glViewRef" @key="Image?.ImageId" OnPaintSurface="OnPaintSurface" 
+                      EnableRenderLoop="@isDragging" IgnorePixelScaling="false" class="@Class"
+                      @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" @onmousemove="@OnMouseMove" 
+                      @onmousewheel="@OnMouseWheel" />
+        }
+    </div>
+</DetailedErrorBoundary>
 
 @code {
     [Parameter]
