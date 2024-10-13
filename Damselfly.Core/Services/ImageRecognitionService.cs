@@ -512,7 +512,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                 var objwatch = new Stopwatch("DetectObjects");
 
                 // First, look for Objects
-                var objects = await _objectDetector.DetectObjects(theImage);
+                var objects = await _objectDetector.DetectObjects(theImage, imgThumb.FullName);
 
                 objwatch.Stop();
 

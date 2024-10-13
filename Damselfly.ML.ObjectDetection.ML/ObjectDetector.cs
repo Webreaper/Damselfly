@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Damselfly.Core.Utils;
 using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using SkiaSharp;
 using YoloDotNet;
@@ -41,9 +43,16 @@ public class ObjectDetector
     /// </summary>
     /// <param name="imageFile"></param>
     /// <returns></returns>
-    public Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> image)
+    public Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> imageSharpImage, string fullpath)
     {
         IList<ImageDetectResult>? result = null;
+        
+        //byte[] pixelBytes = new byte[imageSharpImage.Width * imageSharpImage.Height * Unsafe.SizeOf<Rgba32>()];
+        //imageSharpImage.CopyPixelDataTo((pixelBytes));
+        //var image = SKImage.FromEncodedData(pixelBytes);
+        
+        var image = SKImage.FromEncodedData(fullpath);
+        
         try
         {
             if( scorer != null )
@@ -55,38 +64,45 @@ public class ObjectDetector
                 {
                     using var yolo = new Yolo(new YoloOptions()
                     {
-                        OnnxModel = "./Models/yolov11ns.onnx",
+                        OnnxModel = "/Users/markotway/LocalCloud/Development/Damselfly/Damselfly.ML.ObjectDetection.ML/Models/yolo11n.onnx",
                         ModelVersion = ModelVersion.V11,
                         Cuda = false,
                         PrimeGpu = false,
                         ModelType = ModelType.ObjectDetection,
                     });
 
-                    List<LabelModel> labels = new();
-
                     switch ( yolo.OnnxModel.ModelType )
                     {
                         case ModelType.Classification:
                         {
                             var detections = yolo.RunClassification(image, 1);
-                            labels = detections.Select(x => new LabelModel { Name = x.Label }).ToList();
                             break;
                         }
                         case ModelType.ObjectDetection:
                         {
                             var detections = yolo.RunObjectDetection(image);
-                            labels = detections.Select(x => x.Label).ToList();
+                            result = detections.Where( x => x.Confidence > predictionThreshold )
+                                .Select(x =>
+                                    new ImageDetectResult
+                                    {
+                                        Rect = new Rectangle
+                                        {
+                                            X = (int)x.BoundingBox.Left,
+                                            Y = (int)x.BoundingBox.Top,
+                                            Width = (int)x.BoundingBox.Width,
+                                            Height = (int)x.BoundingBox.Height
+                                        },
+                                        Tag = x.Label.Name,
+                                        Service = "YoloDotNet",
+                                        ServiceModel = "ONNX/Yolo"
+                                        }
+                                    )
+                                .ToList();
                             break;
-                        }
+                    }
                     }
 
                     watch.Stop();
-
-                    var objectsFound = predictions.Where( x => x.Score > predictionThreshold )
-                        .Select( x => MakeResult( x ) )
-                        .ToList();
-
-                    result = objectsFound;
                 }
             }
         }
@@ -100,24 +116,7 @@ public class ObjectDetector
 
         return Task.FromResult( result );
     }
-
-    private ImageDetectResult MakeResult(YoloPrediction prediction)
-    {
-        return new ImageDetectResult
-        {
-            Rect = new Rectangle
-            {
-                X = (int)prediction.Rectangle.X,
-                Y = (int)prediction.Rectangle.Y,
-                Width = (int)prediction.Rectangle.Width,
-                Height = (int)prediction.Rectangle.Height
-            },
-            Tag = prediction.Label.Name,
-            Service = "ML.Net",
-            ServiceModel = "ONNX/Yolo"
-        };
-    }
-
+    
     private void DrawRectangles(Image img, List<YoloPrediction> predictions)
     {
         /*

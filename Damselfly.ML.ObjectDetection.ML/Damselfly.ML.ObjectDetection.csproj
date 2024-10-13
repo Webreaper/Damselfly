@@ -18,6 +18,9 @@
         <None Remove="ObjectDetection\Yolov5Net.Scorer\" />
         <None Remove="Models\" />
         <None Remove="SixLabors.ImageSharp" />
+        <None Update="Models\yolo11n.onnx">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="ObjectDetection\" />
