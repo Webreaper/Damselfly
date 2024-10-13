@@ -7,6 +7,10 @@ using Damselfly.Core.Utils.ML;
 using Damselfly.Shared.Utils;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
+using SkiaSharp;
+using YoloDotNet;
+using YoloDotNet.Enums;
+using YoloDotNet.Models;
 using Yolov5Net.Scorer;
 using Yolov5Net.Scorer.Models;
 using Rectangle = System.Drawing.Rectangle;
@@ -49,7 +53,32 @@ public class ObjectDetector
                 // There's a min of 640x640 for the model.
                 if( image.Width > 640 && image.Height > 640 )
                 {
-                    var predictions = scorer.Predict( image );
+                    using var yolo = new Yolo(new YoloOptions()
+                    {
+                        OnnxModel = "./Models/yolov11ns.onnx",
+                        ModelVersion = ModelVersion.V11,
+                        Cuda = false,
+                        PrimeGpu = false,
+                        ModelType = ModelType.ObjectDetection,
+                    });
+
+                    List<LabelModel> labels = new();
+
+                    switch ( yolo.OnnxModel.ModelType )
+                    {
+                        case ModelType.Classification:
+                        {
+                            var detections = yolo.RunClassification(image, 1);
+                            labels = detections.Select(x => new LabelModel { Name = x.Label }).ToList();
+                            break;
+                        }
+                        case ModelType.ObjectDetection:
+                        {
+                            var detections = yolo.RunObjectDetection(image);
+                            labels = detections.Select(x => x.Label).ToList();
+                            break;
+                        }
+                    }
 
                     watch.Stop();
 

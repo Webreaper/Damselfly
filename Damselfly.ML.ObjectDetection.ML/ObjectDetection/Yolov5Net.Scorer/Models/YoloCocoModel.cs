@@ -115,7 +115,7 @@ public class YoloCocoModel : YoloModel
 
 
     //public override string Weights { get; } = "assets/weights/yolov2-coco-9.onnx";
-    public override string ModelPath { get; } = "./Models/yolov5s.onnx";
+    public override string ModelPath { get; } = "./Models/yolov11ns.onnx";
 
     public override string[] OutputNames { get; } = { "561" };
 

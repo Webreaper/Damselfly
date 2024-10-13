@@ -11,6 +11,7 @@
         <PackageReference Include="Microsoft.ML.OnnxRuntime" />
         <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" />
         <PackageReference Include="SixLabors.ImageSharp" />
+        <PackageReference Include="YoloDotNet" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="ObjectDetection\" />

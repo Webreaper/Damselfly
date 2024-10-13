@@ -15,7 +15,7 @@ namespace Damselfly.Core.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0-rc.2.24474.1");
 
             modelBuilder.Entity("Damselfly.Core.DbModels.Authentication.AppIdentityUser", b =>
                 {
@@ -117,21 +117,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "aee24b9f-6c28-4d03-ae64-d029f2e7046d",
+                            ConcurrencyStamp = "86fbaf98-ef71-40fd-a386-a382266193af",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "e6fcb7e7-c604-46fc-86cc-66e50e08feff",
+                            ConcurrencyStamp = "b1ada73b-051d-4cf7-9cf7-612368004319",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "63ffbaf6-171d-4457-8a3e-490a96b67733",
+                            ConcurrencyStamp = "95a267fc-0628-4cd9-a9b4-9e9d631284b1",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -1065,17 +1065,6 @@ namespace Damselfly.Core.Migrations
                         .IsRequired();
 
                     b.Navigation("Image");
-                });
-
-            modelBuilder.Entity("Damselfly.Core.Models.UserFolderState", b =>
-                {
-                    b.HasOne("Damselfly.Core.Models.Folder", "Folder")
-                        .WithMany()
-                        .HasForeignKey("FolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Folder");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
