@@ -78,6 +78,8 @@ public class ObjectDetector
                     throw new FileNotFoundException("Model not found for object detection!");
             }
 
+            Logging.Log($"Found YoloDotNet model in {modelPath}");
+
             _yoloModel = new Yolo(new YoloOptions()
             {
                 OnnxModel = modelPath,
