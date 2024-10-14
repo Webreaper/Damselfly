@@ -24,15 +24,9 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="ObjectDetection\" />
-        <Folder Include="ObjectDetection\Yolov5Net.Scorer\" />
         <Folder Include="Models\" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Update="Models\yolov5s.onnx">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 </Project>

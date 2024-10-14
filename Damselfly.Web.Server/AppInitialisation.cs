@@ -37,12 +37,6 @@ public static class AppInitialiser
         
         services.GetRequiredService<ICachedDataService>().CheckForNewVersion();
         
-        // ObjectDetector can throw a segmentation fault if the docker container is pinned
-        // to a single CPU, so for now, to aid debugging, let's not even try and initialise
-        // it if AI is disabled. See https://github.com/Webreaper/Damselfly/issues/334
-        if ( !services.GetRequiredService<ConfigService>().GetBool(ConfigSettings.DisableObjectDetector) )
-            services.GetRequiredService<ObjectDetector>().InitScorer();
-
         // Validation check to ensure at least one user is an Admin
         // WASM: How, when it's scoped?
         // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();

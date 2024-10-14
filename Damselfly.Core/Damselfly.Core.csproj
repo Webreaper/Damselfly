@@ -53,7 +53,6 @@
         <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
         <ProjectReference Include="..\Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj" />
         <ProjectReference Include="..\Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
-        <ProjectReference Include="..\Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj" />
         <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
         <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
     </ItemGroup>

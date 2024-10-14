@@ -19,8 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Core.Utils", "Dam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Migrations.Sqlite", "Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj", "{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ImageClassification", "Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj", "{A40A832A-5736-442A-88D4-5DDE71964193}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.ML.ObjectDetection", "Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj", "{C2504134-A19E-428F-8681-927152563DBB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Damselfly.Web.Client", "Damselfly.Web.Client\Damselfly.Web.Client.csproj", "{C10B9995-46DF-4188-B2BC-7BF20EB9F466}"
@@ -72,10 +70,6 @@ Global
 		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C7D7016-9D01-41A5-8B6B-906CE6C016B4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A40A832A-5736-442A-88D4-5DDE71964193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A40A832A-5736-442A-88D4-5DDE71964193}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A40A832A-5736-442A-88D4-5DDE71964193}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A40A832A-5736-442A-88D4-5DDE71964193}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C2504134-A19E-428F-8681-927152563DBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C2504134-A19E-428F-8681-927152563DBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2504134-A19E-428F-8681-927152563DBB}.Release|Any CPU.ActiveCfg = Release|Any CPU

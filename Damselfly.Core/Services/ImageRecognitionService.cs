@@ -28,8 +28,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
     IStatusService _statusService, ObjectDetector _objectDetector,
     MetaDataService _metdataService, FaceONNXService _faceOnnxService,
     ThumbnailService _thumbService, ConfigService _configService,
-    ImageClassifier _imageClassifier, ImageCache _imageCache,
-    WorkService _workService, ExifService _exifService,
+    ImageCache _imageCache, WorkService _workService, ExifService _exifService,
     ILogger<ImageRecognitionService> _logger) : IPeopleService, IProcessJobFactory, IRescanProvider
 {
     // WASM: This should be a MemoryCache
@@ -451,12 +450,12 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
             using var theImage = SixLabors.ImageSharp.Image.Load<Rgb24>(imgThumb.FullName);
 
-            if ( _imageClassifier != null && enableAIProcessing )
+            if ( _objectDetector != null && enableAIProcessing )
             {
                 var colorWatch = new Stopwatch("DetectDominantColours");
 
-                var dominant = _imageClassifier.DetectDominantColour(theImage);
-                var average = _imageClassifier.DetectAverageColor(theImage);
+                var dominant = _objectDetector.DetectDominantColour(theImage);
+                var average = _objectDetector.DetectAverageColor(theImage);
 
                 colorWatch.Stop();
 
@@ -477,7 +476,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                 if( faces.Any() )
                 {
-                    Logging.Log($" FaceONNX found {faces.Count()} faces in {fileName}...");
+                    Logging.Log($" Face Detection found {faces.Count()} faces in {fileName}...");
 
                     var newTags = await CreateNewTags(faces);
 
@@ -518,7 +517,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                 if ( objects.Any() )
                 {
-                    Logging.Log($" Yolo found {objects.Count()} objects in {fileName}...");
+                    Logging.Log($" Object detection found {objects.Count()} objects in {fileName}...");
 
                     var newTags = await CreateNewTags(objects);
 
