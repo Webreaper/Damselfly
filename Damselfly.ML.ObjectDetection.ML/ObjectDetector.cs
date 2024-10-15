@@ -62,17 +62,25 @@ public class ObjectDetector
         return System.Drawing.Color.FromArgb(avgRed, avgGreen, avgBlue);
     }
 
-    private Yolo? _yoloModel;
+    private Dictionary<ModelType, Yolo> _yoloModels = new();
     
-    private Yolo GetYoloModel()
+    private Yolo GetYoloModel(ModelType modelType)
     {
-        if( _yoloModel == null )
+        
+        if( ! _yoloModels.TryGetValue(modelType, out var yolo))
         {
-            string modelPath = "./Models/yolo11n.onnx";
+            string modelFile = modelType switch
+            {
+                ModelType.ObjectDetection => "yolo11n.onnx",
+                ModelType.Classification => "yolo11n-cls.onnx",
+                _ => throw new NotImplementedException($"Unknown model type: {modelType}")
+            };
+            
+            string modelPath = $"./Models/{modelFile}";
 
             if( ! File.Exists(modelPath) )
             {
-                modelPath = "../Damselfly.ML.ObjectDetection.ML/Models/yolo11n.onnx";
+                modelPath = $"../Damselfly.ML.ObjectDetection.ML/Models/{modelFile}";
 
                 if( ! File.Exists(modelPath) )
                     throw new FileNotFoundException("Model not found for object detection!");
@@ -80,76 +88,85 @@ public class ObjectDetector
 
             Logging.Log($"Found YoloDotNet model in {modelPath}");
 
-            _yoloModel = new Yolo(new YoloOptions()
+            yolo = new Yolo(new YoloOptions()
             {
                 OnnxModel = modelPath,
                 ModelVersion = ModelVersion.V11,
                 Cuda = false,
                 PrimeGpu = false,
-                ModelType = ModelType.ObjectDetection,
+                ModelType = modelType,
             });
+            
+            _yoloModels.Add(modelType, yolo);
         }
 
-        return _yoloModel;
+        return yolo;
+    }
+    
+    public static SKImage CreateSkImageFromImageSharp(Image<Rgb24> imageSharpImage)
+    {
+        byte[] buffer = new byte[imageSharpImage.Width * imageSharpImage.Height * 4];
+
+        int pixel = 0;
+        // First, convert from an image, to an array of RGB float values. 
+        imageSharpImage.ProcessPixelRows(pixelAccessor =>
+        {
+            for ( var y = 0; y < pixelAccessor.Height; y++ )
+            {
+                var row = pixelAccessor.GetRowSpan(y);
+                for(var x = 0; x < pixelAccessor.Width; x++ )
+                { 
+                    buffer[pixel * 4 + 0] = row[x].R;
+                    buffer[pixel * 4 + 1] = row[x].G;
+                    buffer[pixel * 4 + 2] = row[x].B;
+                    buffer[pixel * 4 + 3] = 255; // Alpha
+                    pixel++;
+                }
+            }
+        });
+        var image = SKImage.FromPixelCopy(new SKImageInfo(imageSharpImage.Width, imageSharpImage.Height, SKColorType.Rgb888x), buffer);
+
+        return image;
     }
     
     /// <summary>
     ///     Given an image, detect objects in it using the Yolo v5 model.
     /// </summary>
-    /// <param name="imageFile"></param>
+    /// <param name="imageSharpImage"></param>
     /// <returns></returns>
-    public Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> imageSharpImage, string fullpath)
+    public Task<IList<ImageDetectResult>> DetectObjects(Image<Rgb24> imageSharpImage)
     {
         IList<ImageDetectResult>? result = null;
 
-        // Do something better here when we get an answer to:
-        // https://stackoverflow.com/questions/79085360/how-to-convert-an-imagesharp-image-to-a-skiasharp-skimage
-        
-        var image = SKImage.FromEncodedData(fullpath);
+        var image = CreateSkImageFromImageSharp(imageSharpImage);
         
         try
         {
             var watch = new Stopwatch( "DetectObjects" );
 
             // There's a min of 640x640 for the model.
-            if( image.Width > 640 && image.Height > 640 )
+            if( image is { Width: > 640, Height: > 640 } )
             {
-                var yolo = GetYoloModel();
+                var yolo = GetYoloModel(ModelType.ObjectDetection);
                 
-                switch ( yolo.OnnxModel.ModelType )
-                {
-                    case ModelType.Classification:
-                    {
-                        var detections = yolo.RunClassification(image, 1);
-                        var imageClassification = detections.OrderDescending()
-                            .Select( x => x.Label)
-                            .FirstOrDefault();
-                            
-                        break;
-                    }
-                    case ModelType.ObjectDetection:
-                    {
-                        var detections = yolo.RunObjectDetection(image);
-                        result = detections.Where( x => x.Confidence > predictionThreshold )
-                            .Select(x =>
-                                new ImageDetectResult
-                                {
-                                    Rect = new Rectangle
-                                    {
-                                        X = x.BoundingBox.Left,
-                                        Y = x.BoundingBox.Top,
-                                        Width = x.BoundingBox.Width,
-                                        Height = x.BoundingBox.Height
-                                    },
-                                    Tag = x.Label.Name,
-                                    Service = "YoloDotNet",
-                                    ServiceModel = "ONNX/Yolo"
-                                    }
-                                )
-                            .ToList();
-                        break;
-                    }
-                }
+                var detections = yolo.RunObjectDetection(image);
+                result = detections.Where( x => x.Confidence > predictionThreshold )
+                    .Select(x =>
+                        new ImageDetectResult
+                        {
+                            Rect = new Rectangle
+                            {
+                                X = x.BoundingBox.Left,
+                                Y = x.BoundingBox.Top,
+                                Width = x.BoundingBox.Width,
+                                Height = x.BoundingBox.Height
+                            },
+                            Tag = x.Label.Name,
+                            Service = "YoloDotNet",
+                            ServiceModel = "Yolo11"
+                            }
+                        )
+                    .ToList();
 
                 watch.Stop();
             }
@@ -163,5 +180,42 @@ public class ObjectDetector
             result = new List<ImageDetectResult>();
 
         return Task.FromResult( result );
+    }
+
+
+    /// <summary>
+    ///     Given an image, detect objects in it using the Yolo v5 model.
+    /// </summary>
+    /// <param name="imageSharpImage"></param>
+    /// <returns></returns>
+    public Task<string?> ClassifyImage(Image<Rgb24> imageSharpImage)
+    {
+        string? classification = null;
+        
+        var image = CreateSkImageFromImageSharp(imageSharpImage);
+        
+        try
+        {
+            var watch = new Stopwatch( "ClassifyImage" );
+
+            // There's a min of 640x640 for the model.
+            if( image is { Width: > 640, Height: > 640 } )
+            {
+                var yolo = GetYoloModel(ModelType.Classification);
+                
+                var detections = yolo.RunClassification(image, 1);
+                classification = detections.OrderDescending()
+                    .Select( x => x.Label)
+                    .FirstOrDefault();
+
+                watch.Stop();
+            }
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Error during image classification: {ex.Message}");
+        }
+        
+        return Task.FromResult( classification );
     }
 }

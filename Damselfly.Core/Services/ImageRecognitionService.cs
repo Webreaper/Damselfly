@@ -440,6 +440,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
+            string? classification = null;
 
             if ( enableAIProcessing )
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
@@ -511,7 +512,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                 var objwatch = new Stopwatch("DetectObjects");
 
                 // First, look for Objects
-                var objects = await _objectDetector.DetectObjects(theImage, imgThumb.FullName);
+                var objects = await _objectDetector.DetectObjects(theImage);
 
                 objwatch.Stop();
 

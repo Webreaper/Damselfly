@@ -21,6 +21,9 @@
         <None Update="Models\yolo11n.onnx">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="Models\yolo11n-cls.onnx">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="ObjectDetection\" />
