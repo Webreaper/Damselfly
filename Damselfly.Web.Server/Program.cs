@@ -210,7 +210,6 @@ public class Program
 
         app.UseHttpsRedirection();
         app.UseBlazorFrameworkFiles();
-        app.MapStaticAssets();
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(ThumbnailService.PicturesRoot),
