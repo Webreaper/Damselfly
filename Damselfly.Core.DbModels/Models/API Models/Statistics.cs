@@ -11,7 +11,7 @@ public class Statistics
     public int PendingKeywordOps { get; set; }
     public int PendingKeywordImages { get; set; }
     public long TotalImagesSizeBytes { get; set; }
-    public int ObjectsRecognised { get; set; }
+    public int ObjectsRecognized { get; set; }
     public int PeopleFound { get; set; }
     public int PeopleIdentified { get; set; }
     public string OperatingSystem { get; set; }

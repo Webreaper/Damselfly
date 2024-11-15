@@ -38,7 +38,7 @@ public class StatisticsService
             TotalImagesSizeBytes = await db.Images.SumAsync(x => (long)x.FileSizeBytes),
             PeopleFound = await db.People.CountAsync(),
             PeopleIdentified = await db.People.Where(x => x.Name != "Unknown").CountAsync(),
-            ObjectsRecognised = await db.ImageObjects.CountAsync(),
+            ObjectsRecognized = await db.ImageObjects.CountAsync(),
             PendingAIScans = await db.ImageMetaData.Where(x => !x.AILastUpdated.HasValue).CountAsync(),
             PendingThumbs = await db.ImageMetaData.Where(x => !x.ThumbLastUpdated.HasValue).CountAsync(),
             PendingImages = await db.Images.Where(x => x.MetaData == null || x.LastUpdated > x.MetaData.LastUpdated)
