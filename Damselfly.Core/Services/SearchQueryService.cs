@@ -245,6 +245,7 @@ public class SearchQueryService
             }
 
             results = await images
+                .AsSplitQuery()
                 .Select(x => x.ImageId)
                 .Skip(first)
                 .Take(count)
