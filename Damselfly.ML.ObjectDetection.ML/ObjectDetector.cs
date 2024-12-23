@@ -91,7 +91,6 @@ public class ObjectDetector
             yolo = new Yolo(new YoloOptions()
             {
                 OnnxModel = modelPath,
-                ModelVersion = ModelVersion.V11,
                 Cuda = false,
                 PrimeGpu = false,
                 ModelType = modelType,
