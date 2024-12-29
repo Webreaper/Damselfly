@@ -6,11 +6,11 @@
         <div class="toolwindow-visibletoggle">
             @if( Collapsed )
             {
-                <i class="fas fa-chevron-down" @onclick="@(() => ExpandDisplay())"/>
+                <i class="fas fa-chevron-down" @onclick="ExpandDisplay"/>
             }
             else
             {
-                <i class="fas fa-chevron-up" @onclick="@(() => CollapseDisplay())"/>
+                <i class="fas fa-chevron-up" @onclick="CollapseDisplay"/>
             }
         </div>
     </div>
@@ -32,26 +32,28 @@
 
     private string ConfigName => $"{Title}Visible";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var visible = configService.Get(ConfigName, "True");
 
         if( visible == "False" )
-            CollapseDisplay();
+            await CollapseDisplay();
+
+        await base.OnInitializedAsync();
     }
 
-    private void ExpandDisplay()
+    private async Task ExpandDisplay()
     {
         Collapsed = false;
         DisplayClass = string.Empty;
-        configService.Set(ConfigName, "True");
+        await configService.SetForUser(ConfigName, "True");
     }
 
-    private void CollapseDisplay()
+    private async Task CollapseDisplay()
     {
         Collapsed = true;
         DisplayClass = "toolbar-hidden";
-        configService.SetForUser(ConfigName, "False");
+        await configService.SetForUser(ConfigName, "False");
     }
 
 }

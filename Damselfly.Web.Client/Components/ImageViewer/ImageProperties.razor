@@ -121,16 +121,16 @@ else
     public string RatingTitle => CurrentImage.MetaData?.Rating == 0 ? "Unrated" : $"Rating: {CurrentImage.MetaData?.Rating} stars";
     private bool Expanded { get; set; }
 
-    private void ExpandDisplay()
+    private async Task ExpandDisplay()
     {
         Expanded = true;
-        configService.SetForUser("ShowExtendedProps", Expanded.ToString());
+        await configService.SetForUser("ShowExtendedProps", Expanded.ToString());
     }
 
-    private void CollapseDisplay()
+    private async Task CollapseDisplay()
     {
         Expanded = false;
-        configService.SetForUser("ShowExtendedProps", Expanded.ToString());
+        await configService.SetForUser("ShowExtendedProps", Expanded.ToString());
     }
 
     public bool InBasket

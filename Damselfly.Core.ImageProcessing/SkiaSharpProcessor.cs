@@ -44,7 +44,7 @@ public class SkiaSharpProcessor : IImageProcessor
 
             // Dropping this from High to Low doesn't have that much of an effect
             // in terms of image quality.
-            var quality = SKFilterQuality.Medium;
+            var quality = SKSamplingOptions.Default;
             var srcBitmap = sourceBitmap;
 
             foreach ( var pair in destFiles.OrderByDescending(x => x.Value.width) )
@@ -123,7 +123,7 @@ public class SkiaSharpProcessor : IImageProcessor
     /// <param name="y"></param>
     /// <param name="width"></param>
     /// <param name="height"></param>
-    /// <param name="dest"></param>
+    /// <param name="destStream"></param>
     /// <returns></returns>
     public Task CropImage(FileInfo source, int x, int y, int width, int height, Stream destStream)
     {
@@ -187,7 +187,7 @@ public class SkiaSharpProcessor : IImageProcessor
     ///     duplicate images. Note that this ignores EXIF metadata, so the hash will
     ///     find duplicate images even if the metadata is different.
     /// </summary>
-    /// <param name="source"></param>
+    /// <param name="sourceBitmap"></param>
     /// <returns>String hash of the image data</returns>
     public static string? GetHash(SKBitmap sourceBitmap)
     {

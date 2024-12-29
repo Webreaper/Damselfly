@@ -45,7 +45,7 @@ public abstract class BaseConfigService
         _cache.Clear();
     }
 
-    protected bool SetSetting(ConfigSetting setting)
+    protected async Task<bool> SetSetting(ConfigSetting setting)
     {
         if( setting == null )
             throw new ArgumentException( $"Invalid setting passed to SetSetting" );
@@ -62,7 +62,7 @@ public abstract class BaseConfigService
             _cache[setting.Name] = setting;
 
         var saveReq = new ConfigSetRequest { Name = setting.Name, NewValue = setting.Value, UserId = setting.UserId };
-        _ = PersistSetting(saveReq);
+        await PersistSetting(saveReq);
 
         return true;
     }

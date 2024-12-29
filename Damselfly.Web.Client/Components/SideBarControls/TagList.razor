@@ -372,10 +372,10 @@
             new() { Text = $"Find photos containing {tag.Name}", Value = 0 }
         };
 
-        contextMenuService.Open(args, menuList, async args =>
+        contextMenuService.Open(args, menuList, async a =>
         {
             contextMenuService.Close();
-            switch ( args.Value )
+            switch ( a.Value )
             {
                 case 0:
                     NavigationManager.NavigateTo($"/?personid={tag.PersonId}");

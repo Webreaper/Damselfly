@@ -132,7 +132,7 @@
     private bool CanZoomOut => ZoomRange > 1.0 && !ZoomDisabled;
     private bool ZoomDisabled => ShowObjects;
 
-    private void OnSwipe( SwipeEventArgs args)
+    private async Task OnSwipe( SwipeEventArgs args)
     {
         switch( args.SwipeDirection )
         {
@@ -143,10 +143,10 @@
                 Prev();
                 break;
             case SwipeDirection.TopToBottom:
-                ZoomIn();
+                await ZoomIn();
                 break;
             case SwipeDirection.BottomToTop:
-                ZoomOut();
+                await ZoomOut();
                 break;
         }
     }

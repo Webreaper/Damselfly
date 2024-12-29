@@ -26,7 +26,7 @@
 
     [Parameter] public Action<T> ItemRemoved { get; init; } = null;
 
-    [Parameter] public Func<T, string> ToStrFunc { get; init; } = x => x.ToString();
+    [Parameter] public Func<T, string> ToStrFunc { get; init; } = x => x?.ToString();
 
     [Parameter] public string RemoveLabel { get; init; } = "Remove";
 

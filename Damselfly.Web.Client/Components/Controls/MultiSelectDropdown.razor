@@ -61,7 +61,7 @@
 
     [ Parameter] [ EditorRequired] public Task<IEnumerable<T>?> SourceData { get; set; }
 
-    [ Parameter] [ EditorRequired] public Func<T, string>? GetNameFunc { get; set; }
+    [ Parameter] [ EditorRequired] public Func<T?, string>? GetNameFunc { get; set; }
 
     [Parameter] public Func<T, string>? GetShortNameFunc { get; set; }
 

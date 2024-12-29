@@ -201,8 +201,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
-
         if( UserID is null || UserID == 0 )
         {
             AddingNewUser = true;
@@ -215,6 +213,7 @@
 
         model.Username = User.UserName;
         model.Email = User.Email;
-    }
 
+        await base.OnInitializedAsync();
+    }
 }

@@ -40,7 +40,7 @@
     {
         logger.LogInformation($"Switching to basket: {selectedBasketId}");
         var newBasket = await basketService.SwitchToBasket(selectedBasketId);
-        userConfigService.SetForUser(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
+        await userConfigService.SetForUser(ConfigSettings.SelectedBasketId, newBasket.BasketId.ToString());
         StateHasChanged();
     }
 

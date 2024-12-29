@@ -28,31 +28,31 @@
         Collapsed = configService.GetBool(ConfigSettings.SideBarCollapsed);
     }
 
-    void OnResize(RadzenSplitterResizeEventArgs args)
+    async Task OnResize(RadzenSplitterResizeEventArgs args)
     {
         if( args.PaneIndex == 0 )
         {
             var newSize = $"{(int)args.NewSize}%";
-            configService.SetForUser(ConfigSettings.SideBarWidth, newSize);
-            configService.SetForUser(ConfigSettings.SideBarCollapsed, "false");
+            await configService.SetForUser(ConfigSettings.SideBarWidth, newSize);
+            await configService.SetForUser(ConfigSettings.SideBarCollapsed, "false");
         }
     }
 
-    void OnCollapse(RadzenSplitterEventArgs args)
+    async Task OnCollapse(RadzenSplitterEventArgs args)
     {
         if( args.PaneIndex == 0 )
         {
             Collapsed = true;
-            configService.Set(ConfigSettings.SideBarCollapsed, Collapsed.ToString());
+            await configService.SetForUser(ConfigSettings.SideBarCollapsed, Collapsed.ToString());
         }
     }
 
-    void OnExpand(RadzenSplitterEventArgs args)
+    async Task OnExpand(RadzenSplitterEventArgs args)
     {
         if( args.PaneIndex == 0 )
         {
             Collapsed = false;
-            configService.Set("SideBarCollapsed", Collapsed.ToString());
+            await configService.SetForUser(ConfigSettings.SideBarCollapsed, Collapsed.ToString());
         }
     }
 

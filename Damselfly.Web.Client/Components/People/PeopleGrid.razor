@@ -4,9 +4,9 @@
 @inherits ImageGridBase
 
 <div class="imagegrid" id="scroll-area">
-    @if( People.Any() )
+    @if( people.Any() )
     {
-        @foreach( var person in People )
+        @foreach( var person in people )
         {
             <PersonTile Person="person" PersonChanged="@RefreshData"/>
         }
@@ -39,9 +39,8 @@
     private bool NoImagesSelected => !selectionService.Selection.Any();
     bool endOfImages = false;
     string toastClass = string.Empty;
-    private ScrollMonitor ScrollMonitor;
 
-    private List<Person> People  = new();
+    private List<Person> people  = new();
 
     public string ResultsMessage { get; set; }
 
@@ -79,7 +78,7 @@
         {
             SearchText = SearchText,
             State = PersonState,
-            Start = refresh ? 0 : People.Count(),
+            Start = refresh ? 0 : people.Count(),
             Count = peoplePerPage
         };
 
@@ -87,8 +86,8 @@
 
         endOfImages = newPeople.Count < peoplePerPage;
         if( refresh )
-            People.Clear();
-        People.AddRange( newPeople);
+            people.Clear();
+        people.AddRange( newPeople);
         StateHasChanged();
     }
 

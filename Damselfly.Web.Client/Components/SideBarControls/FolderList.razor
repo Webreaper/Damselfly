@@ -216,7 +216,7 @@
     {
         var newState = !FlatView;
 
-        configService.SetForUser(ConfigSettings.FlatView, newState.ToString());
+        await configService.SetForUser(ConfigSettings.FlatView, newState.ToString());
 
         await ProcessUpdatedFilter();
     }
@@ -228,28 +228,26 @@
         if ( SortMode == "Date" )
             newMode = "Name";
 
-        configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
+        await configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
 
         await ProcessUpdatedFilter();
     }
 
-    private Task ToggleIncludeChildFolder()
+    private async Task ToggleIncludeChildFolder()
     {
         var newState = !IncludeChildFolders;
 
         searchService.IncludeChildFolders = newState;
         StateHasChanged();
 
-        configService.SetForUser(ConfigSettings.IncludeChildFolders, newState.ToString());
-
-        return Task.CompletedTask;
+        await configService.SetForUser(ConfigSettings.IncludeChildFolders, newState.ToString());
     }
 
     private async Task ToggleSortAscendingView()
     {
         var newState = !Ascending;
 
-        configService.SetForUser(ConfigSettings.FolderSortAscending, newState.ToString());
+        await configService.SetForUser(ConfigSettings.FolderSortAscending, newState.ToString());
 
         await ProcessUpdatedFilter();
     }

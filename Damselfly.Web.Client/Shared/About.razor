@@ -56,6 +56,6 @@
 </div>
 
 @code {
-    public string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+    public string Version => Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString();
     private string mastodonUrl => "https://fosstodon.org/@damselfly";
 }

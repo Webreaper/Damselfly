@@ -45,10 +45,10 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         await httpClient.CustomPostAsJsonAsync("/api/config/settings", settings);
     }
 
-    public void SetForUser(string name, string value)
+    public async Task SetForUser(string name, string value)
     {
         var newSetting = new ConfigSetting { Name = name, Value = value, UserId = _userId };
-        SetSetting(newSetting);
+        await SetSetting(newSetting);
     }
 
     private async void AuthStateChanged(Task<AuthenticationState> authStateTask)

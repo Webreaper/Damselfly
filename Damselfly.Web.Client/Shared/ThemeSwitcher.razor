@@ -20,9 +20,10 @@
     private ThemeConfig? currentConfig;
     private bool themeSet = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         themeService.OnChangeTheme += ThemeChanged;
+        base.OnInitialized();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -47,11 +48,8 @@
         themeService.OnChangeTheme -= ThemeChanged;
     }
 
-    private static MudColor? CreateMudColor(string value)
+    private static MudColor CreateMudColor(string value)
     {
-        if( string.IsNullOrEmpty(value) )
-            return null;
-
         return new MudColor(value);
     }
 
@@ -92,7 +90,7 @@
         _ = SwitchTheme(newTheme);
     }
 
-    private async Task SwitchTheme(ThemeConfig newTheme)
+    private async Task SwitchTheme(ThemeConfig? newTheme)
     {
         if( newTheme != null )
         {

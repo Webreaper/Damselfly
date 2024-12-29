@@ -57,7 +57,7 @@
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
                 <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search GridImageSize=@CurrentGridSize
-                           OnClick="@(e => { ToggleSelected(e, info); })"/>
+                           OnClick="@(async e => { await ToggleSelected(e, info); })"/>
             }
         }
 
