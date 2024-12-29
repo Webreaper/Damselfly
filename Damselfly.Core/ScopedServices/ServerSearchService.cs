@@ -20,7 +20,8 @@ public class ServerSearchService : BaseSearchService, ISearchService
 {
     private readonly SearchQueryService _queryService;
 
-    public ServerSearchService(ICachedDataService dataService, IImageCacheService imageCache, SearchQueryService queryService,
+    public ServerSearchService(ICachedDataService dataService, IImageCacheService imageCache,
+        SearchQueryService queryService,
         ILogger<BaseSearchService> logger) : base(dataService, imageCache, logger)
     {
         _queryService = queryService;
@@ -28,7 +29,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
 
     protected override async Task<SearchResponse> GetQueryImagesAsync( int count = DamselflyContants.PageSize)
     {
-        int first = _searchResults.Count;
+        var first = _searchResults.Count;
 
         if ( first < SearchResults.Count() && first + count < SearchResults.Count() )
             // Data already loaded. Nothing to do.

@@ -59,11 +59,11 @@ public class SearchQueryService
 
         var watch = new Stopwatch("ImagesLoadData");
         var results = new List<int>();
-        
-        Image similarImage = null;
-        int similarId = 0;
 
-        if (query.SimilarToId != null)
+        Image similarImage = null;
+        var similarId = 0;
+
+        if ( query.SimilarToId != null )
         {
             similarId = query.SimilarToId.Value;
             similarImage = await _imageCache.GetCachedImage(similarId);
@@ -86,7 +86,7 @@ public class SearchQueryService
             }
 
             // TODO: UI should make these two mutually exclusive
-            if (query.UntaggedImages)
+            if ( query.UntaggedImages )
             {
                 images = images.Where(x => !x.ImageTags.Any() && ! x.ImageObjects.Any());
             }
@@ -98,11 +98,11 @@ public class SearchQueryService
                 images = tagImages.Union(objImages);
             }
 
-            if (similarImage != null && similarImage.Hash != null)
+            if ( similarImage != null && similarImage.Hash != null )
             {
                 var similarHash = similarImage.Hash;
 
-                if (similarHash.HasPerceptualHash())
+                if ( similarHash.HasPerceptualHash() )
                 {
                     var hash1A = $"{similarHash.PerceptualHex1.Substring(0, 2)}%";
                     var hash1B = $"%{similarHash.PerceptualHex1.Substring(2, 2)}";
@@ -114,16 +114,16 @@ public class SearchQueryService
                     var hash4B = $"%{similarHash.PerceptualHex4.Substring(2, 2)}";
 
                     images = images.Where(x => x.ImageId != similarId &&
-                                            (
-                                                EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex2, hash2A) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex2, hash2B) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex3, hash3A) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex3, hash3B) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex4, hash4A) ||
-                                                EF.Functions.Like(x.Hash.PerceptualHex4, hash4B)
-                                            ));
+                                               (
+                                                   EF.Functions.Like(x.Hash.PerceptualHex1, hash1A) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex1, hash1B) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex2, hash2A) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex2, hash2B) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex3, hash3A) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex3, hash3B) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex4, hash4A) ||
+                                                   EF.Functions.Like(x.Hash.PerceptualHex4, hash4B)
+                                               ));
                 }
             }
 
@@ -148,13 +148,9 @@ public class SearchQueryService
                 IEnumerable<Folder> descendants;
 
                 if( query.IncludeChildFolders )
-                {
                     descendants = await db.GetChildFolderIds( db.Folders, query.Folder.FolderId );
-                }
                 else
-                {
                     descendants = query.Folder.Subfolders.ToList();
-                }
 
                 // Filter by folderID
                 images = images.Where(x => descendants.Select(x => x.FolderId).Contains(x.FolderId));
@@ -164,8 +160,10 @@ public class SearchQueryService
             {
                 var minDate = query.MinDate.HasValue ? query.MinDate.Value : DateTime.MinValue;
                 // Ensure the end date is always inclusive, so set the time to 23:59:59
-                var maxDate = query.MaxDate.HasValue ? query.MaxDate.Value.AddDays(1).AddSeconds(-1) : DateTime.MaxValue;
-                
+                var maxDate = query.MaxDate.HasValue
+                    ? query.MaxDate.Value.AddDays(1).AddSeconds(-1)
+                    : DateTime.MaxValue;
+
                 // Always filter by date - because if there's no filter
                 // set then they'll be set to min/max date.
                 images = images.Where(x => x.SortDate >= minDate &&
@@ -176,9 +174,9 @@ public class SearchQueryService
                 // Filter by Minimum rating
                 images = images.Where(x => x.MetaData.Rating >= query.MinRating);
 
-            if ( query.Month.HasValue )
+            if ( query.Months != null && query.Months.Any() )
                 // Filter by month
-                images = images.Where(x => x.SortDate.Month == query.Month);
+                images = images.Where(x => query.Months.Contains(x.SortDate.Month));
 
             if ( query.MinSizeKB.HasValue )
             {
@@ -243,6 +241,7 @@ public class SearchQueryService
             }
 
             results = await images
+                .AsSplitQuery()
                 .Select(x => x.ImageId)
                 .Skip(first)
                 .Take(count)

@@ -37,7 +37,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
         return _recentTags;
     }
 
-    public async Task<ICollection<Tag>> SearchTags(string filterText)
+    public async Task<ICollection<Tag>> SearchTags(string filterText, CancellationToken token)
     {
         return await httpClient.CustomGetFromJsonAsync<List<Tag>>($"/api/tags/search/{filterText}");
     }
@@ -54,7 +54,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
-        if (_favouriteTags == null)
+        if ( _favouriteTags == null )
             _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
 
         return _favouriteTags;
@@ -104,5 +104,4 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
         OnFavouritesChanged?.Invoke();
     }
-
 }

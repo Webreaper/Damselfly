@@ -4,6 +4,7 @@
 <Login/>
 
 @code {
+
     protected override void OnInitialized()
     {
         viewService.SetSideBarState(new ViewDataService.SideBarState { ShowBasket = true, ShowFolderList = true });
@@ -11,4 +12,5 @@
 
         base.OnInitialized();
     }
+
 }

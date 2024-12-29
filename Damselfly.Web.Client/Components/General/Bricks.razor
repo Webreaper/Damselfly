@@ -22,17 +22,17 @@
 
 @code {
 
-    [Parameter]
-    public IEnumerable<T> Items { get; init; }
+    [Parameter] public IEnumerable<T> Items { get; init; }
 
-    [Parameter]
-    public Action<T> ItemRemoved { get; init; } = null;
+    [Parameter] public Action<T> ItemRemoved { get; init; } = null;
 
-    [Parameter]
-    public Func<T, string> ToStrFunc { get; init; } = x => x.ToString();
+    [Parameter] public Func<T, string> ToStrFunc { get; init; } = x => x?.ToString();
 
-    [Parameter]
-    public string RemoveLabel { get; init; } = "Remove";
-    
-    private string RemoveText(T x) => $"{RemoveLabel} {ToStrFunc(x)}";
+    [Parameter] public string RemoveLabel { get; init; } = "Remove";
+
+    private string RemoveText(T x)
+    {
+        return $"{RemoveLabel} {ToStrFunc(x)}";
+    }
+
 }

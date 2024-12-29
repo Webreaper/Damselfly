@@ -1,0 +1,26 @@
+@inject ICachedDataService cachedData
+
+@if( needsUpgrade )
+{
+    <div class="new-version">
+        <NavLink href="@newVersionState.ReleaseUrl" target="_blank">
+            v<text>@newVersionState.NewVersion</text> of Damselfly is available
+        </NavLink>
+    </div>
+}
+
+@code {
+    private NewVersionResponse newVersionState;
+    bool needsUpgrade = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        newVersionState = await cachedData.CheckForNewVersion();
+        var checkResult = newVersionState.UpgradeAvailable();
+        if( checkResult.HasValue )
+            needsUpgrade = checkResult.Value;
+
+        await base.OnInitializedAsync();
+    }
+
+}

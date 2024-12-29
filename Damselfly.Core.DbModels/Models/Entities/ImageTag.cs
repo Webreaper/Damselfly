@@ -7,13 +7,11 @@ namespace Damselfly.Core.Models;
 /// </summary>
 public class ImageTag
 {
-    [Key]
-    public int ImageId { get; set; }
+    [Key] public int ImageId { get; set; }
 
     public virtual Image Image { get; set; }
 
-    [Key]
-    public int TagId { get; set; }
+    [Key] public int TagId { get; set; }
 
     public virtual Tag Tag { get; set; }
 

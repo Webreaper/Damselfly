@@ -6,15 +6,15 @@ using Damselfly.Core.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using SkiaSharp;
-using Tensorflow.Util;
 
 namespace Damselfly.Core.ImageProcessing;
 
 public class SkiaSharpProcessor : IImageProcessor
 {
     // SkiaSharp doesn't handle .heic files... yet
+    // delegate CR2 files to ImageMagick for now
     private static readonly string[] s_imageExtensions =
-        { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng", ".cr2", ".orf", ".nef" };
+        { ".jpg", ".jpeg", ".png", /*".heic", */".webp", ".bmp", ".dng", /*".cr2",*/ ".orf", ".nef" };
 
     public static ICollection<string> SupportedFileExtensions => s_imageExtensions;
 
@@ -44,7 +44,7 @@ public class SkiaSharpProcessor : IImageProcessor
 
             // Dropping this from High to Low doesn't have that much of an effect
             // in terms of image quality.
-            var quality = SKFilterQuality.Medium;
+            var quality = SKSamplingOptions.Default;
             var srcBitmap = sourceBitmap;
 
             foreach ( var pair in destFiles.OrderByDescending(x => x.Value.width) )
@@ -57,15 +57,14 @@ public class SkiaSharpProcessor : IImageProcessor
                 // The thumbnail being generated is the smaller than the
                 // source. Calculate the scale factor by which we need to reduce
                 var widthScaleFactor = srcBitmap.Width / (float)config.width;
-                var heighScaleFactor = srcBitmap.Height / (float)config.height; 
-                
+                var heighScaleFactor = srcBitmap.Height / (float)config.height;
+
                 // If we're allowed to crop, pick the largest scale factor. Otherwise the smallest.
-                var scaleFactor = config.cropToRatio ? Math.Max(widthScaleFactor, heighScaleFactor) :
-                                                            Math.Min(widthScaleFactor, heighScaleFactor);
+                var scaleFactor = Math.Min(widthScaleFactor, heighScaleFactor);
 
                 // Ensure we only ever scale down, never up
                 scaleFactor = Math.Max( 1, scaleFactor);
-                
+
                 using var scaledImage = new SKBitmap((int)(srcBitmap.Width / scaleFactor),
                     (int)(srcBitmap.Height / scaleFactor));
                 srcBitmap.ScalePixels(scaledImage.PeekPixels(), quality);
@@ -124,7 +123,7 @@ public class SkiaSharpProcessor : IImageProcessor
     /// <param name="y"></param>
     /// <param name="width"></param>
     /// <param name="height"></param>
-    /// <param name="dest"></param>
+    /// <param name="destStream"></param>
     /// <returns></returns>
     public Task CropImage(FileInfo source, int x, int y, int width, int height, Stream destStream)
     {
@@ -188,7 +187,7 @@ public class SkiaSharpProcessor : IImageProcessor
     ///     duplicate images. Note that this ignores EXIF metadata, so the hash will
     ///     find duplicate images even if the metadata is different.
     /// </summary>
-    /// <param name="source"></param>
+    /// <param name="sourceBitmap"></param>
     /// <returns>String hash of the image data</returns>
     public static string? GetHash(SKBitmap sourceBitmap)
     {

@@ -15,7 +15,7 @@ public static class ServiceRegistrations
 {
     public static IServiceCollection AddMLServices(this IServiceCollection services)
     {
-        services.AddSingleton<ImageClassifier>();
+        services.AddSingleton<ObjectDetector>();
         services.AddSingleton<FaceONNXService>();
 
         return services;
@@ -25,7 +25,6 @@ public static class ServiceRegistrations
     {
         services.AddSingleton<StatisticsService>();
         services.AddSingleton<ConfigService>();
-        services.AddSingleton<ObjectDetector>();
         services.AddSingleton<FolderWatcherService>();
         services.AddSingleton<IndexingService>();
         services.AddSingleton<MetaDataService>();

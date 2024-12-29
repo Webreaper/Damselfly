@@ -149,7 +149,7 @@ public class ImageCache : IImageCacheService
     public async Task<Image> GetCachedImage(Image img)
     {
         Image cachedImage;
-        
+
         if ( !_memoryCache.TryGetValue(img.ImageId, out cachedImage) )
         {
             Logging.LogVerbose($"Cache miss for image {img.ImageId}");
@@ -201,7 +201,7 @@ public class ImageCache : IImageCacheService
             .Where(x => imageIds.Contains(x.ImageId))
             .Include(x => x.Folder)
             .Include(x => x.MetaData)
-            .Include(x=> x.Transforms)
+            .Include(x => x.Transforms)
             .Include(x => x.Hash)
             .Include(x => x.MetaData.Camera)
             .Include(x => x.MetaData.Lens)
@@ -212,6 +212,7 @@ public class ImageCache : IImageCacheService
             .ThenInclude(x => x.Tag)
             .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
             .ThenInclude(x => x.Person)
+            .AsSplitQuery()
             .ToListAsync();
 
         foreach ( var enrichedImage in images ) _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
@@ -228,7 +229,7 @@ public class ImageCache : IImageCacheService
     {
         var enrichedImage = await GetImage(image);
 
-        if ( enrichedImage != null ) 
+        if ( enrichedImage != null )
             _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
 
         return enrichedImage;
@@ -343,11 +344,9 @@ public class ImageCache : IImageCacheService
     public Task ClearCache()
     {
         var memCache = _memoryCache as MemoryCache;
-        if (memCache is not null)
-        {
+        if ( memCache is not null )
             // Force the cache to compact 100% of the memory
             memCache.Compact(1.0);
-        }
 
         return Task.CompletedTask;
     }

@@ -51,10 +51,7 @@ public class RestClient
 
     private Exception GetRestException(Exception ex, string requestUrl)
     {
-        if(ex is HttpRequestException )
-        {
-            _logger.LogWarning( $"HTTP Exception: {ex.Message} ({requestUrl})" );
-        }
+        if( ex is HttpRequestException ) _logger.LogWarning( $"HTTP Exception: {ex.Message} ({requestUrl})" );
         if( ex is JsonException )
         {
             if ( ex.Message.Contains("'<' is an invalid start of a value") )
@@ -69,11 +66,11 @@ public class RestClient
         return ex;
     }
 
-    public async Task<T?> CustomGetFromJsonAsync<T>(string? requestUri)
+    public async Task<T?> CustomGetFromJsonAsync<T>(string? requestUri, CancellationToken token = default)
     {
         try
         {
-            return await _restClient.GetFromJsonAsync<T>(requestUri, JsonOptions);
+            return await _restClient.GetFromJsonAsync<T>(requestUri, JsonOptions, token);
         }
         catch ( Exception ex )
         {

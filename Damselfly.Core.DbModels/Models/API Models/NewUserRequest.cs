@@ -18,8 +18,8 @@ public class UserResponse
     public bool Succeeded { get; init; }
     public ICollection<string> Errors { get; init; }
 
-    public UserResponse()   {
-
+    public UserResponse()
+    {
     }
 
     public UserResponse( IdentityResult result )

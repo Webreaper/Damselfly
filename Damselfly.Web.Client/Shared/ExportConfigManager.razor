@@ -27,11 +27,9 @@
 {
     readonly List<ExportConfig> configs = new();
 
-    [Parameter]
-    public ExportConfig? CurrentConfig { get; set; }
+    [Parameter] public ExportConfig? CurrentConfig { get; set; }
 
-    [Parameter]
-    public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
+    [Parameter] public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
 
     async Task ConfigChanged(ChangeEventArgs e)
     {

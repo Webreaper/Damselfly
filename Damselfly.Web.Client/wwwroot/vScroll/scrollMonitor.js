@@ -3,13 +3,11 @@
         Init: function (scrollAreaID, DotNetRef, initialScrollPos) {
             var scrollArea = document.getElementById(scrollAreaID);
 
-            function onScroll()
-            {
+            function onScroll() {
                 DotNetRef.invokeMethodAsync("HandleScroll", scrollArea.scrollTop);
             }
 
-            if (scrollArea !== null)
-            {
+            if (scrollArea !== null) {
                 scrollArea.addEventListener('scroll', onScroll);
                 window.addEventListener('resize', onScroll);
 

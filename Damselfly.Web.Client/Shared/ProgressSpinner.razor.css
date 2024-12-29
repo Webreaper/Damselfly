@@ -1,0 +1,12 @@
+﻿.progress-spinner {
+    display: flex;
+    flex-direction: column;
+    row-gap: 15px;
+    align-items: center;
+    justify-content: space-around;
+    align-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    animation: fadeIn ease 1s;
+}

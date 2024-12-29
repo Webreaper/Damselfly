@@ -1,4 +1,4 @@
-namespace Damselfly.Core.DbModels.Models.API_Models;
+namespace Damselfly.Core.DbModels.Models.APIModels;
 
 public class AIMigrationRequest
 {

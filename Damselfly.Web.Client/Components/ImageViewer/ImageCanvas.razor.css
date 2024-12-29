@@ -1,0 +1,28 @@
+
+.image-canvas {
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 200px);
+    height: 100%;
+}
+
+.tool-palette {
+    display: flex;
+    column-gap: 10px;
+    flex-direction: row;
+    min-width: 200px;
+    height: 30px;
+}
+
+.cropping {
+    cursor: crosshair;
+}
+
+.loading {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    padding-top: 30px;
+    justify-content: center;
+}

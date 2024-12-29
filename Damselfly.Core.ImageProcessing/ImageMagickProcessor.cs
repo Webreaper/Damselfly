@@ -11,8 +11,9 @@ public class ImageMagickProcessor : IImageProcessor
 
     private const string graphicsMagickExe = "gm";
 
-    // SkiaSharp doesn't handle .heic files... yet
-    private static readonly string[] s_imageExtensions = { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr3" };
+    private static readonly string[] s_imageExtensions =
+        { ".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp", ".arw", ".cr2", ".cr3" };
+
     private static bool imAvailable;
     private readonly bool s_useGraphicsMagick = false; // GM doesn't support HEIC yet.
     private string verString = "(not found)";
@@ -78,6 +79,10 @@ public class ImageMagickProcessor : IImageProcessor
         {
             var dest = pair.Key;
             var config = pair.Value;
+
+            if( config.cropToRatio )
+                // Ensure we crop to the ratio passed in.
+                argsList.Add($" -extent {config.width}:{config.height} -gravity center");
 
             // File didn't exist, so add it to the command-line. 
             if ( s_useGraphicsMagick )

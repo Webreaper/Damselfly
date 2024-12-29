@@ -14,10 +14,9 @@ public class Embeddings
 
     public Embeddings()
     {
-        
     }
 
-/// <summary>
+    /// <summary>
     /// Initializes the embeddings database.
     /// </summary>
     /// <param name="vectors">Vectors</param>
@@ -25,7 +24,7 @@ public class Embeddings
     public Embeddings(Dictionary<string, List<float[]>> vectorLookups)
     {
         Clear();
-        
+
         foreach( var pair in vectorLookups )
             VectorLookup[pair.Key] = pair.Value;
     }
@@ -33,7 +32,7 @@ public class Embeddings
     private float[] GetVectorFromString( string s )
     {
         return s.Split(",", StringSplitOptions.TrimEntries)
-                .Select( fl => (float)Convert.ToDouble(fl)).ToArray();
+            .Select( fl => (float)Convert.ToDouble(fl)).ToArray();
     }
 
     /// <summary>
@@ -44,7 +43,7 @@ public class Embeddings
     public void Add(string label, IEnumerable<string> embeddings)
     {
         var vectors = embeddings.Select( x => GetVectorFromString(x)).ToList();
-        
+
         if( VectorLookup.TryGetValue(label, out var existingList) )
         {
             existingList.AddRange( vectors );
@@ -78,13 +77,7 @@ public class Embeddings
     /// <summary>
     /// Returns embeddings database count.
     /// </summary>
-    public int Count
-    {
-        get
-        {
-            return VectorLookup.Count;
-        }
-    }
+    public int Count => VectorLookup.Count;
 
 
     /// <summary>
@@ -98,18 +91,16 @@ public class Embeddings
         string? closest = null;
 
         // do job
-        foreach(var face in VectorLookup)
-        {
+        foreach( var face in VectorLookup )
             // There may be many sets of data for each unique person
-            foreach( var faceData in face.Value )
-            {
-                var d = faceData.Euclidean(vector);
+        foreach( var faceData in face.Value )
+        {
+            var d = faceData.Euclidean(vector);
 
-                if ( d < min )
-                {
-                    closest = face.Key;
-                    min = d;
-                }
+            if ( d < min )
+            {
+                closest = face.Key;
+                min = d;
             }
         }
 
@@ -128,23 +119,20 @@ public class Embeddings
         string? closest = null;
 
         // do job
-        foreach( var face in VectorLookup)
-        {
+        foreach( var face in VectorLookup )
             // There may be many sets of data for each unique person
-            foreach( var faceData in face.Value )
-            {
-                var d = faceData.Cosine(vector);
+        foreach( var faceData in face.Value )
+        {
+            var d = faceData.Cosine(vector);
 
-                if ( d > max )
-                {
-                    closest = face.Key;
-                    max = d;
-                }
+            if ( d > max )
+            {
+                closest = face.Key;
+                max = d;
             }
         }
 
         // result
         return (closest, max);
     }
-
 }

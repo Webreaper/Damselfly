@@ -1,0 +1,41 @@
+﻿
+.damselfly-persontile {
+    display: flex;
+    flex: 0 0 180px;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 4px;
+    padding: 3px;
+    animation: fadeIn ease 0.5s;
+    background-color: var(--tool-window-bg);
+}
+
+.damselfly-personimg {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    margin: 3px;
+}
+
+.persontile-fadein {
+    opacity: 1;
+}
+
+.damselfly-personimg img {
+    height: 130px;
+    width: 130px;
+}
+
+.damselfly-personfield {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    margin-bottom: 6px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+
+.damselfly-persontile {
+    margin: 10px;
+}

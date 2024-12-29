@@ -15,7 +15,7 @@
             <MudTextField @bind-Value="@model.BasketName" For="@(() => model.BasketName)" Label="Basket Name" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
             @if( configService.GetBool(ConfigSettings.EnablePoliciesAndRoles) )
             {
-                <MudCheckBox @bind-Checked="@model.IsPublic" Label="Share this basket with other users"/>
+                <MudCheckBox @bind-Value="@model.IsPublic" Label="Share this basket with other users"/>
             }
             @if( !string.IsNullOrEmpty(errorMsg) )
             {
@@ -44,19 +44,15 @@
 
 @code {
 
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public Basket Basket { get; set; } = new();
+    [Parameter] public Basket Basket { get; set; } = new();
 
-    [Parameter]
-    public string Mode { get; set; }
+    [Parameter] public string Mode { get; set; }
 
     public class BasketForm
     {
-        [Required]
-        public string BasketName { get; set; }
+        [Required] public string BasketName { get; set; }
 
         public bool IsPublic { get; set; }
     }
@@ -77,7 +73,7 @@
         else
             statusService.UpdateStatus($"Basket '{model.BasketName}' was deleted.");
 
-    // Force it to reload a new basket
+        // Force it to reload a new basket
         await basketService.SwitchToDefaultBasket(userService.UserId);
 
         MudDialog.Close(DialogResult.Ok(true));
@@ -151,7 +147,7 @@
         }
         else
         {
-    // Always shared/public if roles are disabled
+            // Always shared/public if roles are disabled
             model.IsPublic = true;
         }
     }

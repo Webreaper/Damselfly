@@ -24,11 +24,9 @@ public class Folder
     [JsonIgnore] // This JsonIgnore prevents circular references when serializing the Image entity
     public virtual List<Image> Images { get; } = new();
 
-    [NotMapped] 
-    public string Name => System.IO.Path.GetFileName(Path);
+    [NotMapped] public string Name => System.IO.Path.GetFileName(Path);
 
-    [NotMapped] 
-    public FolderMetadata MetaData { get; set; }
+    [NotMapped] public FolderMetadata MetaData { get; set; }
 
     [NotMapped]
     public IEnumerable<Folder> Subfolders
@@ -56,8 +54,7 @@ public class Folder
         }
     }
 
-    [NotMapped] 
-    public bool HasSubFolders => Children != null && Children.Any();
+    [NotMapped] public bool HasSubFolders => Children != null && Children.Any();
 
     public override string ToString()
     {

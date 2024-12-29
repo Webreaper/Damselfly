@@ -7,34 +7,35 @@
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
+    <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' "/>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-      <WarningLevel>4</WarningLevel>
+        <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
-        <PackageReference Include="Microsoft.Extensions.Identity.Core" />
-        <PackageReference Include="Serilog" />
-        <PackageReference Include="Serilog.AspNetCore" />
-        <PackageReference Include="Serilog.AspNetCore.Ingestion" />
-        <PackageReference Include="Swashbuckle.AspNetCore" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational"/>
+        <PackageReference Include="Microsoft.Extensions.Identity.Core"/>
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Serilog.AspNetCore"/>
+        <PackageReference Include="Serilog.AspNetCore.Ingestion"/>
+        <PackageReference Include="Swashbuckle.AspNetCore"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="AspNetCore.RouteAnalyzer" />
-        <None Remove="Swashbuckle.AspNetCore" />
-        <None Remove="Areas\" />
-        <None Remove="Models\" />
-        <None Remove="Serilog" />
-        <None Remove="Serilog.AspNetCore" />
-        <None Remove="Serilog.AspNetCore.Ingestion" />
+        <None Remove="AspNetCore.RouteAnalyzer"/>
+        <None Remove="Swashbuckle.AspNetCore"/>
+        <None Remove="Areas\"/>
+        <None Remove="Models\"/>
+        <None Remove="Serilog"/>
+        <None Remove="Serilog.AspNetCore"/>
+        <None Remove="Serilog.AspNetCore.Ingestion"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
-        <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI"/>
+        <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -65,15 +66,15 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <Content Remove="wwwroot\" />
-        <Content Remove="wwwroot\themes\" />
-        <Content Remove="wwwroot\fonts\" />
+        <Content Remove="wwwroot\"/>
+        <Content Remove="wwwroot\themes\"/>
+        <Content Remove="wwwroot\fonts\"/>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="wwwroot\" />
-        <Folder Include="wwwroot\themes\" />
-        <Folder Include="wwwroot\fonts\" />
-        <Folder Include="Areas\" />
-        <Folder Include="Models\" />
+        <Folder Include="wwwroot\"/>
+        <Folder Include="wwwroot\themes\"/>
+        <Folder Include="wwwroot\fonts\"/>
+        <Folder Include="Areas\"/>
+        <Folder Include="Models\"/>
     </ItemGroup>
 </Project>

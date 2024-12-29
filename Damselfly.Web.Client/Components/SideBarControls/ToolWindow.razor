@@ -1,0 +1,59 @@
+﻿@inject IUserConfigService configService
+
+<div class="toolwindow">
+    <div class="toolwindow-titlebar">
+        <div class="toolwindow-title">@Title</div>
+        <div class="toolwindow-visibletoggle">
+            @if( Collapsed )
+            {
+                <i class="fas fa-chevron-down" @onclick="ExpandDisplay"/>
+            }
+            else
+            {
+                <i class="fas fa-chevron-up" @onclick="CollapseDisplay"/>
+            }
+        </div>
+    </div>
+    <div class="toolwindow-content @DisplayClass">
+        <DetailedErrorBoundary>
+            @ChildContent
+        </DetailedErrorBoundary>
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public string Title { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    public string DisplayClass { get; set; } = string.Empty;
+    public bool Collapsed { get; set; } = false;
+
+    private string ConfigName => $"{Title}Visible";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var visible = configService.Get(ConfigName, "True");
+
+        if( visible == "False" )
+            await CollapseDisplay();
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ExpandDisplay()
+    {
+        Collapsed = false;
+        DisplayClass = string.Empty;
+        await configService.SetForUser(ConfigName, "True");
+    }
+
+    private async Task CollapseDisplay()
+    {
+        Collapsed = true;
+        DisplayClass = "toolbar-hidden";
+        await configService.SetForUser(ConfigName, "False");
+    }
+
+}

@@ -1,0 +1,11 @@
+.menubar {
+    display: flex;
+    flex: 0 0 30px;
+    flex-direction: row;
+    justify-content: stretch;
+    min-height: 30px;
+    height: 30px;
+    align-items: center;
+    padding: 5px;
+    background-image: linear-gradient(180deg, var(--statusbar-gradstart), var(--statusbar-gradend));
+} 

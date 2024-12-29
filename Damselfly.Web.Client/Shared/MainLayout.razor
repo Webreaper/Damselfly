@@ -4,16 +4,17 @@
 @inject AuthenticationStateProvider authProvider
 @inject IConfigService configService
 @inject IUserMgmtService userService
-@inject IJSRuntime jsRuntime
 @inject ILogger<MainLayout> logger
-@inject ApplicationStateService appStatusService
+@inject ClientUIStateService uiStateService
 @inject IDialogService dialogService
 @inject IPeopleService peopleService
 
 @implements IDisposable
 
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small"/>
+<MudPopoverProvider/>
 <RadzenContextMenu/>
+<UIStateMonitor/>
 
 <DetailedErrorBoundary>
     <ChildContent>
@@ -31,25 +32,29 @@
                     }
                     else
                     {
-                        <div class="damselfly-container">
-                            <div class="damselfly-application">
-                                @if ( appStatusService.IsMobile )
-                                {
-                                    @Body
-                                    <SideBar/>
-                                }
-                                else
-                                {
-                                    <SplitView>
-                                        <LeftPane>
-                                            <SideBar/>
-                                        </LeftPane>
-                                        <RightPane>
+                        <div class="damselfly-app">
+                            @if ( uiStateService.IsSmallScreenDevice )
+                            {
+                                <MenuBar>
+                                    <MenuContent>
+                                        <SideBar/>
+                                    </MenuContent>
+                                </MenuBar>
+                                @Body
+                            }
+                            else
+                            {
+                                <SplitView>
+                                    <LeftPane>
+                                        <SideBar/>
+                                    </LeftPane>
+                                    <RightPane>
+                                        <div class="rightpane">
                                             @Body
-                                        </RightPane>
-                                    </SplitView>
-                                }
-                            </div>
+                                        </div>
+                                    </RightPane>
+                                </SplitView>
+                            }
                             <DetailedErrorBoundary>
                                 <Statusbar/>
                             </DetailedErrorBoundary>
@@ -86,7 +91,7 @@
         if( await peopleService.NeedsAIMigration() )
         {
             var parameters = new DialogParameters();
-            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, DisableBackdropClick = true };
+            var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, BackdropClick = false };
             var dialog = dialogService.Show<AIMigrationDialog>("AI Migration", parameters, options);
             var result = await dialog.Result;
         }
@@ -95,6 +100,7 @@
     public void Dispose()
     {
         authProvider.AuthenticationStateChanged -= AuthStateChanged;
+        uiStateService.OnStateChanged -= UIStateChanged;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -103,10 +109,7 @@
         {
             try
             {
-                int innerWidth = await jsRuntime.InvokeAsync<int>("getInnerWidth");
-
-                appStatusService.IsMobile = (innerWidth <= 640);
-
+                uiStateService.OnStateChanged += UIStateChanged;
                 await CheckForAIMigration();
             }
             catch( Exception ex )
@@ -114,6 +117,11 @@
                 logger.LogWarning("Unable to execute getInnerWidth to establish if running on Mobile");
             }
         }
+    }
+
+    private void UIStateChanged( UIClientState state )
+    {
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()

@@ -161,7 +161,6 @@ public class UserManagementService : IUserMgmtService
     public async Task<UserResponse> CreateNewUser(string userName, string email, string password,
         ICollection<string>? roles = null)
     {
-
         var newUser = new AppIdentityUser { UserName = userName, Email = email };
 
         var result = await _userManager.CreateAsync(newUser, password);
@@ -183,7 +182,7 @@ public class UserManagementService : IUserMgmtService
     {
         // http://localhost:6363/Identity/Account/ResetPassword?user=12345&code=2134234
         throw new NotImplementedException();
-        /* Something like.... 
+        /* Something like....
         var user = await UserManager.FindByNameAsync(model.Email);
         if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
         {
@@ -300,10 +299,8 @@ public class UserManagementService : IUserMgmtService
             prefix = $"User {user.UserName} ";
             result = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
 
-            if (result.Succeeded)
-            {
+            if ( result.Succeeded )
                 errorMsg = $"role removal failed: {result.Errors}";
-            }
             else
                 changes = $"removed from {string.Join(", ", rolesToRemove.Select(x => "'x'"))} roles";
         }
@@ -315,10 +312,8 @@ public class UserManagementService : IUserMgmtService
 
             if ( !string.IsNullOrEmpty(changes) ) changes += " and ";
 
-            if (!result.Succeeded)
-            {
+            if ( !result.Succeeded )
                 errorMsg = $"role addition failed: {result.Errors}";
-            }
             else
                 changes += $"added to {string.Join(", ", rolesToAdd.Select(x => $"'{x}'"))} roles";
         }
@@ -327,8 +322,8 @@ public class UserManagementService : IUserMgmtService
             changes += ". ";
 
         _statusService.UpdateStatus($"{prefix}{changes}{errorMsg}");
-        
-        if( ! string.IsNullOrEmpty( errorMsg ))
+
+        if( ! string.IsNullOrEmpty( errorMsg ) )
             Logging.LogError($"SyncUserRoles: {prefix}{changes}{errorMsg}");
         else
             Logging.Log($"SyncUserRoles: {prefix}{changes}");

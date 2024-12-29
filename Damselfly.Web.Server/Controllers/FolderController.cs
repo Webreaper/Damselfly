@@ -1,5 +1,6 @@
 ﻿using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
+using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ namespace Damselfly.Web.Server.Controllers;
 public class FolderController : ControllerBase
 {
     private readonly ILogger<FolderController> _logger;
-    private readonly FolderService _service;
+    private readonly IFolderService _service;
 
     public FolderController(FolderService service, ILogger<FolderController> logger)
     {
@@ -25,7 +26,7 @@ public class FolderController : ControllerBase
     {
         var folders = await _service.GetFolders();
 
-        foreach (var folder in folders)
+        foreach ( var folder in folders )
         {
             folder.Images.Clear();
 
@@ -37,5 +38,17 @@ public class FolderController : ControllerBase
         }
 
         return folders;
+    }
+
+    [HttpGet("/api/folders/states/{userId}")]
+    public async Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int userId)
+    {
+        return await _service.GetUserFolderStates(userId);
+    }
+
+    [HttpPost("/api/folders/state")]
+    public async Task UpdateFolderState(IEnumerable<UserFolderState> newStates)
+    {
+        await _service.SaveFolderStates(newStates);
     }
 }

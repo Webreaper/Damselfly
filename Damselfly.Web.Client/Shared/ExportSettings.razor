@@ -82,7 +82,7 @@
     {
         var images = basketService.CurrentBasket.BasketEntries.Select(x => x.ImageId).ToList();
 
-    // TODO: How to handle long zip times. Progress meter etc?
+        // TODO: How to handle long zip times. Progress meter etc?
         var zipPath = await downloadService.CreateDownloadZipAsync(images, selectedConfig);
         await JsRuntime.InvokeAsync<string>("downloadFile", zipPath);
     }

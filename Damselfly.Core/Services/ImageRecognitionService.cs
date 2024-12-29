@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
-using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
@@ -25,17 +24,22 @@ using Image = Damselfly.Core.Models.Image;
 
 namespace Damselfly.Core.Services;
 
-public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
-    IStatusService _statusService, ObjectDetector _objectDetector,
-    MetaDataService _metdataService, FaceONNXService _faceOnnxService,
-    ThumbnailService _thumbService, ConfigService _configService,
-    ImageClassifier _imageClassifier, ImageCache _imageCache,
-    WorkService _workService, ExifService _exifService,
+public class ImageRecognitionService(
+    IServiceScopeFactory _scopeFactory,
+    IStatusService _statusService,
+    ObjectDetector _objectDetector,
+    MetaDataService _metdataService,
+    FaceONNXService _faceOnnxService,
+    ThumbnailService _thumbService,
+    ConfigService _configService,
+    ImageCache _imageCache,
+    WorkService _workService,
+    ExifService _exifService,
     ILogger<ImageRecognitionService> _logger) : IPeopleService, IProcessJobFactory, IRescanProvider
 {
     // WASM: This should be a MemoryCache
     private readonly IDictionary<string, Person> _peopleCache = new ConcurrentDictionary<string, Person>();
-    
+
     public static bool EnableImageRecognition { get; set; } = true;
 
     public async Task<List<Person>> GetAllPeople()
@@ -50,6 +54,18 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         await LoadPersonCache();
 
         return _peopleCache.Values.FirstOrDefault(x => x.PersonId == personId);
+    }
+
+    public async Task<List<Person>> GetPeople( PeopleRequest req )
+    {
+        return _peopleCache.Values
+            .Where( x =>
+                req.SearchText == null || x.Name.Contains( req.SearchText, StringComparison.OrdinalIgnoreCase ))
+            .Where( x => req.State == null || req.State == x.State)
+            .OrderBy( x => x.Name )
+            .Skip(req.Start)
+            .Take(req.Count)
+            .ToList();
     }
 
     public async Task<List<string>> GetPeopleNames(string searchText)
@@ -75,17 +91,17 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         try
         {
             var matchingPeople = await GetAllPeople();
-            
+
             var newPersonId = matchingPeople.Where( x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-                                            .Select( x => x.PersonId )
-                                            .SingleOrDefault(-1);
+                .Select( x => x.PersonId )
+                .SingleOrDefault(-1);
 
             if( newPersonId != -1 )
             {
                 // Update personID in image objects to the new person ID
                 await db.ImageObjects.Where( x => x.PersonId == personId )
                     .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
-                
+
                 // Update personID in FaceData
                 await db.FaceData.Where( x => x.PersonId == personId )
                     .ExecuteUpdateAsync( x => x.SetProperty( p => p.PersonId, newPersonId));
@@ -93,7 +109,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                 // Delete old personID
                 await db.People.Where( x => x.PersonId == personId )
                     .ExecuteDeleteAsync();
-                
+
                 await transaction.CommitAsync();
             }
         }
@@ -112,7 +128,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         ImageObject imageObject = null;
         if( req.ImageObjectId != null )
             imageObject = db.ImageObjects.FirstOrDefault( x => x.ImageObjectId == req.ImageObjectId);
-        
+
         if( req.PersonId == null )
         {
             // It's a new person. Create it and associate it with the image object
@@ -122,10 +138,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                 State = Person.PersonState.Identified,
                 LastUpdated = DateTime.UtcNow
             };
-            
+
             db.ImageObjects.Update(imageObject);
             await db.SaveChangesAsync("SetName");
-            
         }
         else if( req.Merge )
         {
@@ -133,10 +148,10 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             await MergeWithName(db, req.PersonId.Value, req.NewName);
         }
         else
-        { 
+        {
             // Update the person with the new details
             await db.People.Where( x => x.PersonId == req.PersonId)
-                    .ExecuteUpdateAsync( setter => setter
+                .ExecuteUpdateAsync( setter => setter
                     .SetProperty(p => p.Name, v => req.NewName)
                     .SetProperty(p => p.State, v => Person.PersonState.Identified)
                     .SetProperty(p => p.LastUpdated, v => DateTime.UtcNow));
@@ -144,9 +159,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
         // Add/update the cache and embeddings
         await LoadPersonCache(true);
-        
+
         _imageCache.Evict(imageObject.ImageId);
-        
+
         // TODO - if we've changed a person's name, we should find all of the images that reference that 
         // person, and evict them from the cache. But this could be exceptionally memory intensive.
     }
@@ -182,7 +197,8 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             // and the AI hasn't been processed.
             var images = await db.ImageMetaData.Where(x => x.LastUpdated >= x.Image.LastUpdated
                                                            && x.AILastUpdated == null )
-                .OrderByDescending(x => x.LastUpdated)
+                .OrderByDescending(x => x.DateTaken)
+                .ThenByDescending(x => x.LastUpdated)
                 .Take(maxJobs)
                 .Select(x => x.ImageId)
                 .ToListAsync();
@@ -269,7 +285,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                 using var scope = _scopeFactory.CreateScope();
                 using var db = scope.ServiceProvider.GetService<ImageContext>();
-                
+
                 var identifiedPeople = await db.People.Where(x => !string.IsNullOrEmpty(x.PersonGuid))
                     .Include(x => x.FaceData)
                     .Where( x => x.FaceData.Count > 0)
@@ -281,12 +297,12 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                     // Populate the people cache
                     foreach( var person in identifiedPeople )
                         _peopleCache[person.PersonGuid] = person;
-                    
+
                     // Now populate the embeddings lookup
                     var embeddings = identifiedPeople.ToDictionary(
                         x => x.PersonGuid,
                         x => x.FaceData.Select( e => e.Embeddings));
-                    
+
                     _faceOnnxService.LoadFaceEmbeddings(embeddings);
 
                     Logging.LogTrace("Pre-loaded cach with {0} people.", _peopleCache.Count());
@@ -326,9 +342,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                     {
                         Name = "Unknown",
                         State = Person.PersonState.Unknown,
-                        LastUpdated = DateTime.UtcNow, 
+                        LastUpdated = DateTime.UtcNow,
                         PersonGuid = x.PersonGuid,
-                        FaceData = BuildFaceData(x),
+                        FaceData = BuildFaceData(x)
                     }).ToList();
 
                     if ( newPeople.Any() )
@@ -360,7 +376,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         List<PersonFaceData>? result = new();
 
         if( detectResult.Embeddings.Length > 0 )
-        {
             result = new List<PersonFaceData>
             {
                 new()
@@ -369,7 +384,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                     Embeddings = string.Join( ",", detectResult.Embeddings)
                 }
             };
-        }
 
         return result;
     }
@@ -406,7 +420,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             _logger.LogWarning($"Skipping AI detection for image {image.FullPath} - dimensions metadata was zero!!");
             return;
         }
-        
+
         try
         {
             var thumbSize = ThumbSize.ExtraLarge;
@@ -417,19 +431,18 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             {
                 await _thumbService.CreateThumb(image.ImageId, thumbSize);
                 if( ! File.Exists( imgThumb.FullName ) )
-                {
                     // If we couldn't create the thumb, bail out.
                     throw new InvalidOperationException(
                         $"Unable to run AI processing - {thumbSize} thumbnail doesn't exist: {imgThumb}");
-                }
             }
 
             var enableAIProcessing = _configService.GetBool(ConfigSettings.EnableAIProcessing, true);
-    
+
             MetaDataService.GetImageSize(imgThumb.FullName, out var thumbWidth, out var thumbHeight);
 
             var foundObjects = new List<ImageObject>();
             var foundFaces = new List<ImageObject>();
+            string? classification = null;
 
             if ( enableAIProcessing )
                 Logging.Log($"Processing AI image detection for {fileName.Name}...");
@@ -440,12 +453,12 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
             using var theImage = SixLabors.ImageSharp.Image.Load<Rgb24>(imgThumb.FullName);
 
-            if ( _imageClassifier != null && enableAIProcessing )
+            if ( _objectDetector != null && enableAIProcessing )
             {
                 var colorWatch = new Stopwatch("DetectDominantColours");
 
-                var dominant = _imageClassifier.DetectDominantColour(theImage);
-                var average = _imageClassifier.DetectAverageColor(theImage);
+                var dominant = _objectDetector.DetectDominantColour(theImage);
+                var average = _objectDetector.DetectAverageColor(theImage);
 
                 colorWatch.Stop();
 
@@ -456,7 +469,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                     $"Image {image.FullPath} has dominant colour {dominant.ToHex()}, average {average.ToHex()}");
             }
 
-            if( enableAIProcessing && _faceOnnxService != null)
+            if( enableAIProcessing && _faceOnnxService != null )
             {
                 var facewatch = new Stopwatch("FaceONNXDetect");
 
@@ -466,7 +479,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                 if( faces.Any() )
                 {
-                    Logging.Log($" FaceONNX found {faces.Count()} faces in {fileName}...");
+                    Logging.Log($" Face Detection found {faces.Count()} faces in {fileName}...");
 
                     var newTags = await CreateNewTags(faces);
 
@@ -491,10 +504,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                     ScaleObjectRects(image, newFaces, thumbWidth, thumbHeight);
                     foundFaces.AddRange(newFaces);
-
                 }
             }
-            
+
             // For the object detector, we need a successfully loaded bitmap
             if ( enableAIProcessing )
             {
@@ -507,7 +519,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
                 if ( objects.Any() )
                 {
-                    Logging.Log($" Yolo found {objects.Count()} objects in {fileName}...");
+                    Logging.Log($" Object detection found {objects.Count()} objects in {fileName}...");
 
                     var newTags = await CreateNewTags(objects);
 
@@ -523,7 +535,7 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                         Type = ImageObject.ObjectTypes.Object.ToString(),
                         Score = x.Score
                     }).ToList();
-                    
+
                     ScaleObjectRects(image, newObjects, thumbWidth, thumbHeight);
                     foundObjects.AddRange(newObjects);
                 }
@@ -689,9 +701,9 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         {
             ImageObject.RecognitionType.Emgu, ImageObject.RecognitionType.Accord, ImageObject.RecognitionType.Azure
         };
-        
+
         // If we have any faces that were recognised by EMGU, Accord, or Azure, we need to rescan them
-        var needsMigration = await db.ImageObjects.AnyAsync( x => x.Type == "Face" && 
+        var needsMigration = await db.ImageObjects.AnyAsync( x => x.Type == "Face" &&
                                                                   deprecatedTypes.Contains( x.RecogntionSource));
         return needsMigration;
     }
@@ -728,18 +740,20 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             }
 
             _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
-            
+
             // Delete all existing people
             var peopleDeleted = await db.People.ExecuteDeleteAsync();
 
             _statusService.UpdateStatus("AI Migration: obsolete Image Objects DB...");
 
             // Now, delete all existing face imageObjects
-            int deletedObjects = await db.ImageObjects.Where( x => x.Type == "Face"
-                                  && x.RecogntionSource != ImageObject.RecognitionType.FaceONNX)
-                                 .ExecuteDeleteAsync();
-            
-            var msg = $"Deleted {peopleDeleted} people & {deletedObjects} objects, and updated {imagesUpdated} images for AI scanning.";
+            var deletedObjects = await db.ImageObjects.Where( x => x.Type == "Face"
+                                                                   && x.RecogntionSource !=
+                                                                   ImageObject.RecognitionType.FaceONNX)
+                .ExecuteDeleteAsync();
+
+            var msg =
+                $"Deleted {peopleDeleted} people & {deletedObjects} objects, and updated {imagesUpdated} images for AI scanning.";
             _statusService.UpdateStatus(msg);
             _logger.LogInformation(msg);
 
@@ -752,8 +766,8 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         {
             await trans.RollbackAsync();
         }
-        
     }
+
     public class AIProcess : IProcessJob
     {
         public int ImageId { get; set; }

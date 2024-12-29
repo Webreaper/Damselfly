@@ -2,21 +2,27 @@
 
 @inject IUserStatusService userStatusService
 @inject ApplicationStateService appState
+@inject ClientUIStateService uiState
 
+<div class="statusbar">
+    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText"/>
+    <WorkStatus/>
 
-<div class="damselfly-statusbar">
-    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText" />
-    <WorkStatus />
-    <ConnectionStatus />
-    @if (appState.IsWebAssembly)
+    @if( ! uiState.IsSmallScreenDevice )
     {
-        <LoginDisplayWasm />
+        <ConnectionStatus/>
+
+        @if ( appState.IsWebAssembly )
+        {
+            <LoginDisplayWasm/>
+        }
+        else
+        {
+            <LoginDisplay/>
+        }
+
+        <Toolbar/>
     }
-    else
-    {
-        <LoginDisplay />
-    }
-    <Toolbar />
 </div>
 
 @code
@@ -25,7 +31,7 @@
 
     private void UpdateStatus(string newText)
     {
-        if (StatusText != newText)
+        if ( StatusText != newText )
         {
             StatusText = newText;
             StateHasChanged();
@@ -34,7 +40,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             userStatusService.OnStatusChanged += UpdateStatus;
         }

@@ -85,10 +85,10 @@ public class ImageController : Controller
             {
                 Logging.LogTrace($"Controller - Getting Thumb for {imageId}");
 
-                var image = await imageCache.GetCachedImage(id);
-
                 if ( cancel.IsCancellationRequested )
                     return result;
+
+                var image = await imageCache.GetCachedImage(id);
 
                 if ( image != null )
                 {
@@ -177,7 +177,7 @@ public class ImageController : Controller
         [FromServices] ImageCache imageCache,
         [FromServices] ImageContext db)
     {
-        IActionResult result = Redirect("/no-image.png");
+        IActionResult result = Redirect("/no-person.svg");
 
         try
         {

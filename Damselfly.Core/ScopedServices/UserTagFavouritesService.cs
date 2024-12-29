@@ -16,7 +16,8 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
     private readonly List<string> recentTags = new();
     private readonly ILogger<UserTagRecentsService> _logger;
 
-    public UserTagRecentsService(ExifService exifService, IConfigService configService, ILogger<UserTagRecentsService> logger)
+    public UserTagRecentsService(ExifService exifService, IConfigService configService,
+        ILogger<UserTagRecentsService> logger)
     {
         _configService = configService;
         _exifService = exifService;
@@ -26,12 +27,10 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
 
         var recents = configService.Get(ConfigSettings.RecentTags);
 
-        if (!string.IsNullOrEmpty(recents))
-        {
+        if ( !string.IsNullOrEmpty(recents) )
             recentTags.AddRange(recents.Split(",")
-                                       .Select(x => x.Trim())
-                                       .ToList());
-        }
+                .Select(x => x.Trim())
+                .ToList());
     }
 
     public void Dispose()

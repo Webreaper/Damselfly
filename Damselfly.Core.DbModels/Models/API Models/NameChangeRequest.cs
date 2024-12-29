@@ -1,4 +1,5 @@
 using System;
+
 namespace Damselfly.Core.DbModels.Models.APIModels;
 
 public class NameChangeRequest
@@ -8,4 +9,3 @@ public class NameChangeRequest
     public string NewName { get; set; }
     public bool Merge { get; set; }
 }
-

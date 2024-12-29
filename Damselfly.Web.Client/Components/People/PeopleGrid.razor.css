@@ -1,0 +1,59 @@
+﻿.imagegrid {
+    display: flex;
+    /* flex: 1 1 auto; */
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-flow: row wrap;
+    overflow-y: auto;
+}
+
+.damselfly-moreimages {
+    width: 50px;
+    padding: 20px;
+    margin: 20px;
+}
+
+.damselfly-searchmsg {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex: 1 1;
+    animation: fadeIn ease 1s;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    margin-top: 25vh;
+}
+
+.damselfly-imageseparator {
+    width: 100%;
+    border: 1px;
+    margin-top: 5px;
+    margin-left: 3px;
+    max-height: 28px;
+    border-top: 1px solid var(--statusbar-topborder);
+    background-image: linear-gradient(90deg, var(--statusbar-gradstart) 0%, var(--statusbar-gradend) 90%);
+    display: flex;
+}
+
+.damselfly-imageseparatortitle {
+    padding: 3px;
+    flex: 1 1 60%;
+    padding-left: 15px;
+    font-size: 14px;
+}
+
+.damselfly-imageseparatorbuttons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 12px;
+}
+
+.damselfly-imageseparatorbutton button {
+    max-height: 22px;
+    height: 22px;
+    margin: 1px;
+}
+

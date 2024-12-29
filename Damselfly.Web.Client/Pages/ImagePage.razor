@@ -16,7 +16,7 @@
 @implements ICropHelper
 
 <div class="damselfly-imageview" @ref="ImageView" id="test-container-keydown" style="outline: none;" tabindex="0" @onkeydown="OnKeyDown">
-    @if (CurrentImage == null)
+    @if ( CurrentImage == null )
     {
         <div class="col">
             <p>
@@ -28,18 +28,18 @@
     {
         <div class="damselfly-imagetools">
             <div class="damselfly-imagetitlenav">
-                <NavBack />
+                <NavBack/>
             </div>
             <div class="damselfly-imagebuttons">
-                <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image" />
-                <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces" />
+                <ToolbarButton IconStyle="fa-chevron-left" OnClickCallback="@Prev" Enabled="@PrevEnabled" title="Previous Image"/>
+                <ToolbarButton IconStyle="fa-object-ungroup" OnClickCallback="@ToggleShowObjects" Selected="@ShowObjects" title="Show AI Objects/Faces"/>
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                    <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image" />
+                    <ToolbarButton IconStyle="fa-download" OnClickCallback="@DownloadImage" title="Download Image"/>
                 </AuthorizeView>
                 <AuthorizeView Policy="@PolicyDefinitions.s_IsEditor">
-                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata" />
+                    <ToolbarButton IconStyle="fa-sync-alt" OnClickCallback="@RefreshImage" title="Re-scan Image Metadata"/>
                 </AuthorizeView>
-                <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image" />
+                <ToolbarButton IconStyle="fa-chevron-right" OnClickCallback="@Next" Enabled="@NextEnabled" title="Next Image"/>
 
                 <!--ToolbarButton IconStyle="fa-facebook" title="Share on Facebook" onclick="
                 window.open(
@@ -50,14 +50,14 @@
                 <ToolbarButton IconStyle="fa-crop" Enabled="false" title="Crop/Select Image" /-->
                 &nbsp; &nbsp;
 
-                <ToolbarButton IconStyle="fa-search-minus" OnClickCallback="@ZoomOut" Enabled="@CanZoomOut" title="Zoom Out" />
-                <input type="range" min="1" max="8" step="0.2" @bind-value="ZoomRange" @bind-value:event="oninput" title="@ZoomTitle" class="zoom-slider" disabled="@ZoomDisabled" />
-                <ToolbarButton IconStyle="fa-search-plus" OnClickCallback="@ZoomIn" Enabled="@CanZoomIn" title="Zoom In" />
-                <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" Enabled="@(!ZoomDisabled)" />
-                @if(EnableImageEditing)
-                { 
-                    <ToolbarButton IconStyle="fa-edit" OnClickCallback="@BeginEdit" title="Edit Image" Enabled="@(!Editing)" />
-                    @if (Editing)
+                <ToolbarButton IconStyle="fa-search-minus" OnClickCallback="@ZoomOut" Enabled="@CanZoomOut" title="Zoom Out"/>
+                <input type="range" min="1" max="8" step="0.2" @bind-value="ZoomRange" @bind-value:event="oninput" title="@ZoomTitle" class="zoom-slider" disabled="@ZoomDisabled"/>
+                <ToolbarButton IconStyle="fa-search-plus" OnClickCallback="@ZoomIn" Enabled="@CanZoomIn" title="Zoom In"/>
+                <ToolbarButton IconStyle="fa-expand" OnClickCallback="@ResetZoom" title="Reset Zoom" Enabled="@(!ZoomDisabled)"/>
+                @if( EnableImageEditing )
+                {
+                    <ToolbarButton IconStyle="fa-edit" OnClickCallback="@BeginEdit" title="Edit Image" Enabled="@(!Editing)"/>
+                    @if ( Editing )
                     {
                         <MudButton Color="Color.Primary" OnClick="@SaveEdits">Save</MudButton>
                         <MudButton Color="Color.Secondary" OnClick="@CancelEdit">Cancel</MudButton>
@@ -71,14 +71,15 @@
             </div>
         </div>
 
-        <ImagePreview @ref="theImagePreview" @key="@ImageID" Editing=Editing Image="@CurrentImage" />
+        <MudSwipeArea OnSwipeEnd="OnSwipe">
+            <ImagePreview @ref="theImagePreview" @key="@ImageID" Editing=Editing Image="@CurrentImage"/>
+        </MudSwipeArea>
     }
 </div>
 
 @code {
 
-    [Parameter]
-    public string ImageID { get; set; }
+    [Parameter] public string ImageID { get; set; }
 
     private Image CurrentImage;
     private int? nextImage;
@@ -103,13 +104,52 @@
     private string PrevImageIDUrl => $"/image/{prevImage}";
     private string NextImageIDUrl => $"/image/{nextImage}";
 
-    private async Task ZoomIn() => await theImagePreview!.ZoomIn();
-    private async Task ZoomOut() => await theImagePreview!.ZoomOut();
-    private async Task ResetZoom() => await theImagePreview!.ResetZoom();
-    private double ZoomRange { get { return theImagePreview == null ? 0 : theImagePreview.ZoomRangeValue; } set { if (theImagePreview != null) theImagePreview.ZoomRangeValue = value; } }
+    private async Task ZoomIn()
+    {
+        await theImagePreview!.ZoomIn();
+    }
+
+    private async Task ZoomOut()
+    {
+        await theImagePreview!.ZoomOut();
+    }
+
+    private async Task ResetZoom()
+    {
+        await theImagePreview!.ResetZoom();
+    }
+
+    private double ZoomRange
+    {
+        get => theImagePreview == null ? 0 : theImagePreview.ZoomRangeValue;
+        set
+        {
+            if ( theImagePreview != null ) theImagePreview.ZoomRangeValue = value;
+        }
+    }
+
     private bool CanZoomIn => ZoomRange < 5.0 && !ZoomDisabled;
     private bool CanZoomOut => ZoomRange > 1.0 && !ZoomDisabled;
     private bool ZoomDisabled => ShowObjects;
+
+    private async Task OnSwipe( SwipeEventArgs args)
+    {
+        switch( args.SwipeDirection )
+        {
+            case SwipeDirection.LeftToRight:
+                Next();
+                break;
+            case SwipeDirection.RightToLeft:
+                Prev();
+                break;
+            case SwipeDirection.TopToBottom:
+                await ZoomIn();
+                break;
+            case SwipeDirection.BottomToTop:
+                await ZoomOut();
+                break;
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -152,7 +192,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             ViewDataService.SetSideBarState(new ViewDataService.SideBarState { ShowImageProps = true, ShowTags = true, ShowMap = true });
 
@@ -187,11 +227,12 @@
 
     protected async Task SetUpNavigation()
     {
-        if (int.TryParse(ImageID, out var imageId))
+        if ( int.TryParse(ImageID, out var imageId) )
         {
             CurrentImage = await imageCache.GetCachedImage(imageId);
             navContext.CurrentImage = CurrentImage;
 
+            // TODO: Fix nullref here
             ImageUrl = CurrentImage.ThumbUrl(ThumbSize.Medium);
             ImageUrlHighRes = CurrentImage.ThumbUrl(ThumbSize.ExtraLarge);
             ;
@@ -205,13 +246,13 @@
 
     private void Next()
     {
-        if (nextImage >= 0 && nextImage != CurrentImage.ImageId)
+        if ( nextImage >= 0 && nextImage != CurrentImage.ImageId )
             NavigationManager.NavigateTo($"/image/{nextImage}");
     }
 
     private void Prev()
     {
-        if (prevImage >= 0 && prevImage != CurrentImage.ImageId)
+        if ( prevImage >= 0 && prevImage != CurrentImage.ImageId )
             NavigationManager.NavigateTo($"/image/{prevImage}");
     }
 
@@ -226,7 +267,7 @@
         {
             await JsRuntime.InvokeAsync<string>("downloadFile", CurrentImage.DownloadImageUrl);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError("Exception: " + ex.Message);
         }
@@ -234,33 +275,34 @@
 
     async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "ArrowRight")
+        if ( e.Key == "ArrowRight" )
         {
             Next();
         }
-        else if (e.Key == "ArrowLeft")
+        else if ( e.Key == "ArrowLeft" )
         {
             Prev();
         }
-        else if (e.Key == "Escape")
+        else if ( e.Key == "Escape" )
         {
-            if (theImagePreview.ZoomRangeValue > 2.0)
+            if ( theImagePreview.ZoomRangeValue > 2.0 )
                 await theImagePreview.ResetZoom();
             else
                 NavigationManager.NavigateTo("/");
         }
-        else if (e.Key == "ArrowUp")
+        else if ( e.Key == "ArrowUp" )
         {
             await theImagePreview.ZoomIn();
         }
-        else if (e.Key == "ArrowDown")
+        else if ( e.Key == "ArrowDown" )
         {
             await theImagePreview.ZoomOut();
         }
-        else if (e.Key == " ")
+        else if ( e.Key == " " )
         {
-            bool currentState = basketService.IsInCurrentBasket(CurrentImage);
+            var currentState = basketService.IsInCurrentBasket(CurrentImage);
             await basketService.SetImageBasketState(!currentState, new[] { CurrentImage.ImageId });
         }
     }
+
 }

@@ -1,0 +1,60 @@
+﻿@implements IDisposable
+
+@inject IUserStatusService userStatusService
+@inject ApplicationStateService appState
+@inject ClientUIStateService uiState
+
+
+<div class="menubar">
+    <MudIcon Icon="@Icons.Material.Filled.Menu" onclick="@ToggleMenu"/>
+    @if ( appState.IsWebAssembly )
+    {
+        <LoginDisplayWasm/>
+    }
+    else
+    {
+        <LoginDisplay/>
+    }
+    <Toolbar/>
+</div>
+
+@if( ShowMenu )
+{
+    @MenuContent
+}
+
+@code
+{
+    [Parameter] public RenderFragment MenuContent { get; set; }
+
+    private string StatusText { get; set; }
+    private bool ShowMenu { get; set; } = false;
+
+    private void ToggleMenu()
+    {
+        ShowMenu = !ShowMenu;
+    }
+
+    private void UpdateStatus(string newText)
+    {
+        if ( StatusText != newText )
+        {
+            StatusText = newText;
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if ( firstRender )
+        {
+            userStatusService.OnStatusChanged += UpdateStatus;
+        }
+    }
+
+    public void Dispose()
+    {
+        userStatusService.OnStatusChanged -= UpdateStatus;
+    }
+
+}

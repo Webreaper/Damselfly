@@ -1,0 +1,6 @@
+﻿.connection-status {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    column-gap: 5px;
+}

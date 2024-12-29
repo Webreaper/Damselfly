@@ -141,6 +141,7 @@ do this for you) where the server will re-index them to pick up your changes.
 * ZZZ Project's [Entity Framework Extensions](https://entityframework-extensions.net) for their excellent EFCore extensions.
 * [MudBlazor](https://mudblazor.com/) for their excellent Blazor component library
 * [FaceONNX](https://github.com/FaceONNX/FaceONNX) for their excellent face detection and recognition library
+* [YoloDotNet](https://github.com/NickSwardh/YoloDotNet) and Nick Swardh for their object recognition and classification library
 * [Font Awesome](https://fontawesome.com/) for their Awesome icons
 * Chris Sainty for [Blazored](https://github.com/Blazored) Modal and Typeahead, and all his excellent info on Blazor
 * [Serilog.Net](https://serilog.net/) for logging

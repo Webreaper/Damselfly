@@ -13,6 +13,7 @@ public static class ServiceRegistrations
     public static IServiceCollection AddDamselflyUIServices(this IServiceCollection services)
     {
         services.AddScoped<ClientConfigService>();
+        services.AddScoped<ClientUIStateService>();
 
         services.AddScoped<NotificationsService>();
 
@@ -65,7 +66,7 @@ public static class ServiceRegistrations
         services.AddScoped<IBasketService>(x => x.GetRequiredService<ClientBasketService>());
         services.AddScoped<IDownloadService>(x => x.GetRequiredService<ClientDownloadService>());
         services.AddScoped<IUserMgmtService>(x => x.GetRequiredService<ClientUserMgmtService>());
-        
+
         return services;
     }
 }

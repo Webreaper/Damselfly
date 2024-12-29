@@ -13,4 +13,3 @@ public class ImageMoveRequest : MultiImageRequest
     public Folder Destination { get; set; }
     public bool Move { get; set; }
 }
-

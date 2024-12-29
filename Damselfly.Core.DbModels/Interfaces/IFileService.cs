@@ -8,4 +8,3 @@ public interface IFileService
     public Task<bool> MoveImages( ImageMoveRequest req );
     public Task<bool> DeleteImages( MultiImageRequest req );
 }
-

@@ -23,7 +23,7 @@ public abstract class BaseConfigService
     protected abstract Task<List<ConfigSetting>> LoadAllSettings();
     protected abstract Task PersistSetting(ConfigSetRequest setRequest);
 
-    public async Task InitialiseCache()
+    public virtual async Task InitialiseCache()
     {
         _logger.LogInformation("Preloading config cache with all settings...");
 
@@ -45,7 +45,7 @@ public abstract class BaseConfigService
         _cache.Clear();
     }
 
-    protected bool SetSetting(ConfigSetting setting)
+    protected async Task<bool> SetSetting(ConfigSetting setting)
     {
         if( setting == null )
             throw new ArgumentException( $"Invalid setting passed to SetSetting" );
@@ -62,7 +62,7 @@ public abstract class BaseConfigService
             _cache[setting.Name] = setting;
 
         var saveReq = new ConfigSetRequest { Name = setting.Name, NewValue = setting.Value, UserId = setting.UserId };
-        _ = PersistSetting(saveReq);
+        await PersistSetting(saveReq);
 
         return true;
     }

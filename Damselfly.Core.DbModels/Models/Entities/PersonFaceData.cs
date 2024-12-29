@@ -10,13 +10,13 @@ namespace Damselfly.Core.Models;
 public class PersonFaceData
 {
     [Key] public int FaceDataId { get; set; }
-    
+
     public int PersonId { get; set; }
     public virtual Person Person { get; set; }
 
     // This is the set of face properties, stored as a comma-separated list of floats.
     public string Embeddings { get; set; }
-    
+
     public float Score { get; set; }
 
     public override string ToString()

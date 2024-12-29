@@ -45,7 +45,8 @@ public class ClientImageCacheService : IImageCacheService
     {
         var cacheStats = _memoryCache.GetCurrentStatistics();
         if( cacheStats is not null )
-            _logger.LogInformation($"CacheStats {context}: Entries: {cacheStats.CurrentEntryCount}, Hits: {cacheStats.TotalHits}, Misses: {cacheStats.TotalMisses})");
+            _logger.LogInformation(
+                $"CacheStats {context}: Entries: {cacheStats.CurrentEntryCount}, Hits: {cacheStats.TotalHits}, Misses: {cacheStats.TotalMisses})");
         else
             _logger.LogInformation($"CacheStats {context}: Not found");
     }
@@ -154,10 +155,11 @@ public class ClientImageCacheService : IImageCacheService
 
     private async Task<List<Image>> GetImages(ICollection<int> imgIds)
     {
-        if (imgIds.Any())
+        if ( imgIds.Any() )
         {
             var req = new ImageRequest { ImageIds = imgIds.ToList() };
-            var response = await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
+            var response =
+                await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
 
             if( response != null )
                 return response.Images;
@@ -168,7 +170,7 @@ public class ClientImageCacheService : IImageCacheService
 
     private async Task<Image> LoadAndCacheImage(int imageId)
     {
-        if (_memoryCache.TryGetValue<Image>(imageId, out var image))
+        if ( _memoryCache.TryGetValue<Image>(imageId, out var image) )
             return image;
 
         _logger.LogTrace($"No image found in client-side cache for ID: {imageId}.");
@@ -193,11 +195,9 @@ public class ClientImageCacheService : IImageCacheService
     public Task ClearCache()
     {
         var memCache = _memoryCache as MemoryCache;
-        if (memCache is not null)
-        {
+        if ( memCache is not null )
             // Force the cache to compact 100% of the memory
             memCache.Compact(1.0);
-        }
 
         return Task.CompletedTask;
     }

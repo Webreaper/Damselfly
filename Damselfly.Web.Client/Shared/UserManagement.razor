@@ -46,7 +46,7 @@
             var dialog = DialogService.Show<UserDialog>("Edit User", parameters);
             var result = await dialog.Result;
 
-            if (!result.Canceled)
+            if ( !result.Canceled )
             {
                 await LoadUsers();
             }

@@ -1,0 +1,29 @@
+﻿.searchbar {
+    display: flex;
+    align-items: baseline;
+    flex: 0 1;
+    flex-flow: row wrap;
+    margin-left: 4px;
+    margin-right: 4px;
+    font-size: 10pt;
+}
+
+.searchfilter {
+    flex: 0 0 auto;
+    display: flex;
+    flex-flow: row;
+    margin-right: 3px;
+    align-items: center;
+}
+
+.searchhint {
+    flex: 1 1 auto;
+    margin: 3px;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+}
+
+.search-hints {
+    max-width: 700px;
+}

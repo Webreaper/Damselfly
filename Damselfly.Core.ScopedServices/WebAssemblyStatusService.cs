@@ -9,6 +9,5 @@ public class ApplicationStateService
         IsWebAssembly = jsRuntime is IJSInProcessRuntime;
     }
 
-    public bool IsMobile { get; set; }
     public bool IsWebAssembly { get; }
 }

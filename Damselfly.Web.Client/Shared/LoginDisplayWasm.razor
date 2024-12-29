@@ -24,6 +24,7 @@
 }
 
 @code{
+
     private string IdentityToolTip(AuthenticationState state)
     {
         var adminRole = state.User.IsInRole(RoleDefinitions.s_AdminRole) ? " (Admin)" : string.Empty;
@@ -42,4 +43,4 @@
         Navigation.NavigateTo("Login");
     }
 
-    }
+}

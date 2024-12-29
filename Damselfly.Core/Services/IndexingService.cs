@@ -32,7 +32,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     private bool _fullIndexComplete;
 
     public IndexingService( IServiceScopeFactory scopeFactory, IStatusService statusService,
-        ImageProcessService imageService, ConfigService config, ImageCache imageCache, 
+        ImageProcessService imageService, ConfigService config, ImageCache imageCache,
         FolderWatcherService watcherService, WorkService workService)
     {
         _scopeFactory = scopeFactory;
@@ -65,6 +65,9 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 .Take(maxCount)
                 .ToArrayAsync();
 
+            // Filter any that were modified in the last 30 seconds, so we don't spend all
+            // day indexing if lots of files are changing - i.e., conflate subsequent
+            // index calls
             var jobs = folders.Select(x => new IndexProcess
                 {
                     Path = new DirectoryInfo(x.Path),
@@ -73,11 +76,21 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 })
                 .ToArray();
 
+            if( jobs.Any() )
+            {
+                jobs = jobs.Where( NotModifiedInLast30s ).ToArray();
+
+                if( ! jobs.Any() )
+                    Logging.LogVerbose("Skipping indexing job for folders modified in the last 30 seconds.");
+                else
+                    Logging.LogVerbose("Adding indexing job for folders modified, after 30 seconds.");
+            }
+
             return jobs;
         }
+
         // We always perform a full index at startup. This checks the
         // state of the folders/images, and also creates the filewatchers
-
         _fullIndexComplete = true;
         Logging.Log("Performing full index.");
 
@@ -91,6 +104,13 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 IsFullIndex = true
             }
         };
+    }
+
+    private static bool NotModifiedInLast30s( IndexProcess job )
+    {
+        var timeSinceLastWrite = DateTime.UtcNow - job.Path.LastWriteTimeUtc;
+
+        return timeSinceLastWrite.Seconds > 30;
     }
 
     public async Task MarkFolderForScan(int folderId)
@@ -149,10 +169,8 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         var trashFolder = _configService.Get( ConfigSettings.TrashcanFolderName );
 
         if( !string.IsNullOrEmpty( trashFolder ) )
-        {
             if( dir.Name == trashFolder )
                 return false;
-        }
 
         return dir.IsMonitoredFolder();
     }
@@ -236,13 +254,13 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         }
 
         // Scan subdirs recursively.
-        foreach ( var sub in subFolders ) 
+        foreach ( var sub in subFolders )
             await IndexFolder(sub, folderToScan);
     }
 
     /// <summary>
-    ///     Checks the folder, and any recursive children, to ensure it still exists
-    ///     on the disk. If it doesn't, removes the child folders from the databas.
+    /// Checks the folder, and any recursive children, to ensure it still exists
+    /// on the disk. If it doesn't, removes the child folders from the databas.
     /// </summary>
     /// <param name="db"></param>
     /// <param name="folderToScan"></param>
@@ -279,6 +297,11 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 await db.SaveChangesAsync("DeleteFolders");
                 foldersChanged = true;
             }
+
+            // Clean up folderstates for users
+            await db.UserFolderStates
+                .Where( x => !db.Folders.Select( f => f.FolderId).Contains(x.FolderId))
+                .ExecuteDeleteAsync();
         }
         catch ( Exception ex )
         {

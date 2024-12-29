@@ -1,4 +1,3 @@
-
 namespace Damselfly.Core.DbModels.Models.TransformationModels;
 
 public class MonoTransform : ITransform

@@ -5,9 +5,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -16,35 +16,35 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <PackageReference Include="FluentValidation" />
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
+        <PackageReference Include="FluentValidation"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authorization"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Authentication\" />
-        <Folder Include="Utils\" />
-        <Folder Include="Models\" />
-        <Folder Include="Models\SideCars\" />
-        <Folder Include="Images\" />
-        <Folder Include="Models\ConfigSettings\" />
-        <Folder Include="Models\TransformationModels\" />
+        <Folder Include="Authentication\"/>
+        <Folder Include="Utils\"/>
+        <Folder Include="Models\"/>
+        <Folder Include="Models\SideCars\"/>
+        <Folder Include="Images\"/>
+        <Folder Include="Models\ConfigSettings\"/>
+        <Folder Include="Models\TransformationModels\"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-        <None Remove="Models\" />
-        <None Remove="Models\SideCars\" />
-        <None Remove="FluentValidation" />
-        <None Remove="Images\" />
-        <None Remove="Microsoft.AspNetCore.Authorization" />
-        <None Remove="Models\API Models\" />
-        <None Remove="Models\ConfigSettings\" />
-        <None Remove="Models\TransformationModels\" />
+        <None Remove="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
+        <None Remove="Models\"/>
+        <None Remove="Models\SideCars\"/>
+        <None Remove="FluentValidation"/>
+        <None Remove="Images\"/>
+        <None Remove="Microsoft.AspNetCore.Authorization"/>
+        <None Remove="Models\API Models\"/>
+        <None Remove="Models\ConfigSettings\"/>
+        <None Remove="Models\TransformationModels\"/>
     </ItemGroup>
 </Project>

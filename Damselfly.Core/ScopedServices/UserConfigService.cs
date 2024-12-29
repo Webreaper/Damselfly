@@ -50,7 +50,7 @@ public class UserConfigService : BaseConfigService, IDisposable
     protected override async Task PersistSetting(ConfigSetRequest setRequest)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
+        await using var db = ImageContext.GetImageContext( scope );
 
         var existing = await db.ConfigSettings
             .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)

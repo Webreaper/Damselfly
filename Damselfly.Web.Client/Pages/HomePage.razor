@@ -10,43 +10,33 @@
 @inject IPeopleService peopleService
 @inject ITagSearchService tagService
 
-<div class="damselfly-imagebrowser">
-
-    <DetailedErrorBoundary>
-        <SearchBar OnThumbSizeChanged="ThumbSizeChanged"/>
-    </DetailedErrorBoundary>
-    <DetailedErrorBoundary>
-        <ImageGrid CurrentThumbSize="@thumbSize"/>
-    </DetailedErrorBoundary>
-</div>
+<ImageBrowser/>
 
 @code
 {
-    [Parameter, SupplyParameterFromQuery]
+    [ Parameter]
+    [ SupplyParameterFromQuery]
     public string S { get; set; }
 
-    [Parameter, SupplyParameterFromQuery]
+    [ Parameter]
+    [ SupplyParameterFromQuery]
     public int FolderId { get; set; }
 
-    [Parameter, SupplyParameterFromQuery]
+    [ Parameter]
+    [ SupplyParameterFromQuery]
     public int TagId { get; set; }
 
-    [Parameter, SupplyParameterFromQuery]
+    [ Parameter]
+    [ SupplyParameterFromQuery]
     public string Tag { get; set; }
 
-    [Parameter, SupplyParameterFromQuery]
+    [ Parameter]
+    [ SupplyParameterFromQuery]
     public int PersonId { get; set; }
 
-    [Parameter, SupplyParameterFromQuery]
+    [ Parameter]
+    [ SupplyParameterFromQuery]
     public string Date { get; set; }
-
-    private ThumbSize thumbSize { get; set; }
-
-    private void ThumbSizeChanged(ThumbSize newSize)
-    {
-        thumbSize = newSize;
-        StateHasChanged();
-    }
 
     private async Task ApplyQueryParams()
     {
@@ -55,9 +45,9 @@
             searchService.SearchText = S;
         }
 
-        if( ! string.IsNullOrEmpty( Date ))
+        if( ! string.IsNullOrEmpty( Date ) )
         {
-            if( DateTime.TryParse( Date, out var parsedDate))
+            if( DateTime.TryParse( Date, out var parsedDate) )
             {
                 var start = parsedDate;
                 var end = parsedDate.AddHours(24);
@@ -131,13 +121,5 @@
     public void Dispose()
     {
         navigationManager.LocationChanged -= HandleLocationChanged;
-    }
-
-    // TODO: Don't think we need this
-    [JSInvokable]
-    // Debugging assistant to help us differentiate between JS calls and other data loads
-    public void GetUpdateState(string clientVersion)
-    {
-        //Logging.Log($"Checking for update: {clientVersion}");
     }
 }

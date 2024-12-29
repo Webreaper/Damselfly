@@ -7,12 +7,14 @@ public class ImageProcessorFactory : IImageProcessorFactory
     private readonly ImageMagickProcessor imProcessor;
     private readonly ImageSharpProcessor isharpProcessor;
     private readonly SkiaSharpProcessor skiaProcessor;
+    private readonly MagickNetProcessor magickNetProcessor;
 
     public ImageProcessorFactory()
     {
         skiaProcessor = new SkiaSharpProcessor();
         isharpProcessor = new ImageSharpProcessor();
         imProcessor = new ImageMagickProcessor();
+        magickNetProcessor = new MagickNetProcessor();
     }
 
     public void SetContentPath(string path)
@@ -50,8 +52,14 @@ public class ImageProcessorFactory : IImageProcessorFactory
         // ImageMagick last, because of the complexities of spawning a child process.
         // As of 12-Aug-2021, it can do thumbs for 100 images in about 33 seconds.
         // Main advantage: it can also handle HEIC
+        // Mar 2024 - disable this in preference to Magick.Net
         if ( ImageMagickProcessor.SupportedFileExtensions.Any(x =>
                 x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) ) return imProcessor;
+
+        // Magick.Net - As of 12-Aug-2024, it can do thumbs for 100 images in about 45 seconds.
+        // Disadvantage - it can't handle HEIC on Linux, apparently.
+        //if ( MagickNetProcessor.SupportedFileExtensions.Any(x =>
+        //        x.Equals(fileExtension, StringComparison.OrdinalIgnoreCase)) ) return magickNetProcessor;
 
         return null;
     }

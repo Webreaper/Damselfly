@@ -64,10 +64,10 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
         var load = new Stopwatch("ImageSharpLoad");
 
         var largest = destFiles.Values
-                               .OrderByDescending( x => x.width )
-                               .First();
+            .OrderByDescending( x => x.width )
+            .First();
 
-        DecoderOptions options = new() { TargetSize = new(  width: largest.width, height: largest.height ) };
+        DecoderOptions options = new() { TargetSize = new Size(  largest.width, largest.height ) };
 
         // Image.Load(string path) is a shortcut for our default type. 
         // Other pixel formats use Image.Load<TPixel>(string path))
@@ -164,7 +164,7 @@ public class ImageSharpProcessor : IImageProcessor, IHashProvider
     {
         Logging.Log($" Running image transform for Watermark: {config.WatermarkText}");
 
-        DecoderOptions options = new() { TargetSize = new( width: config.MaxImageSize, height: config.MaxImageSize ) };
+        DecoderOptions options = new() { TargetSize = new Size( config.MaxImageSize, config.MaxImageSize ) };
 
         using var img = await Image.LoadAsync(options, input);
 

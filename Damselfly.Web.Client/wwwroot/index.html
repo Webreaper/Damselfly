@@ -2,67 +2,85 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
-    <base href="/" />
-    <link href="Damselfly.Web.Client.styles.css" rel="stylesheet" />
-    <link href="manifest.json" rel="manifest" />
-    <link href="font-awesome/css/all.min.css" rel="stylesheet" />
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <base href="/"/>
+    <link href="Damselfly.Web.Client.styles.css" rel="stylesheet"/>
+    <link href="manifest.json" rel="manifest"/>
+    <link href="font-awesome/css/all.min.css" rel="stylesheet"/>
     <link href="_content/Radzen.Blazor/css/default.css" rel="stylesheet">
-    <link href="Cropper/cropper.css" rel="stylesheet" />
-    <link href="googlefonts/googlefonts.css" rel="stylesheet" />
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet" />
-    <link href="css/snackbar.css" rel="stylesheet" />
-    <link href="themes/green.css" id="themeStyleSheet" rel="stylesheet" />
-    <link href="css/site.css" rel="stylesheet" />
+    <link href="Cropper/cropper.css" rel="stylesheet"/>
+    <link href="googlefonts/googlefonts.css" rel="stylesheet"/>
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet"/>
+    <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet"/>
+    <link href="css/snackbar.css" rel="stylesheet"/>
+    <link href="themes/green.css" id="themeStyleSheet" rel="stylesheet"/>
+    <link href="css/site.css" rel="stylesheet"/>
     <title>Damselfly</title>
 </head>
 
 <body>
-    <!--
-    <App @rendermode="@RenderMode.WebAssembly" />
-    -->
-    <div id="app">
-        <img class="damselfly-loading-logo" src="damselfly-logo.png" title="Damselfly" />
-        <p style="font-size: 14pt; text-align:center">
-            Please Wait - Damselfly is loading: <span class="loading-progress-text"></span>....
-        </p>
-        <div class="loading-bar">
-            <div class="loading-bar-progress"></div>
-        </div>
+<!--
+<App @rendermode="@RenderMode.WebAssembly" />
+-->
+<div id="app">
+    <img class="damselfly-loading-logo" src="damselfly-logo.png" title="Damselfly"/>
+    <p style="font-size: 14pt; text-align:center">
+        Please Wait - Damselfly is loading: <span class="loading-progress-text"></span>....
+    </p>
+    <div class="loading-bar">
+        <div class="loading-bar-progress"></div>
     </div>
+</div>
 
-    <div id="blazor-error-ui">
-        <i class="fa-solid fa-triangle-exclamation" style="color:darkorange"></i> An unexpected error has occurred starting
-        Damselfly.
-        <a class="reload" href="">Click here to Reload</a>
-        <a class="dismiss"><i class="fa-solid fa-circle-xmark" title="Dismiss"></i></a>
-    </div>
+<div id="blazor-error-ui">
+    <i class="fa-solid fa-triangle-exclamation" style="color:darkorange"></i> An unexpected error has occurred starting
+    Damselfly.
+    <a class="reload" href="">Click here to Reload</a>
+    <a class="dismiss"><i class="fa-solid fa-circle-xmark" title="Dismiss"></i></a>
+</div>
 
-    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
-    <script>navigator.serviceWorker.register('version.js');</script>
-    <script src="version.js"></script>
-    <script src="objectrects/objectrects.js"></script>
-    <script src="vScroll/virtualScroll.js"></script>
-    <script src="vScroll/scrollMonitor.js"></script>
-    <script src="Cropper/cropper.js"></script>
-    <script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
-    <script src="Cropper/damselflyCrop.js"></script>
-    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
-    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
-    <script src="desktop-interop/electron-interop.js"></script>
-    <script src="_content/BlazorPanzoom/panzoom.min.js"></script>
-    <script src="_content/BlazorPanzoom/blazorpanzoom.js"></script>
+<script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+<script src="_framework/blazor.webassembly.js"></script>
+<script>navigator.serviceWorker.register('service-worker.js');</script>
+<script>navigator.serviceWorker.register('version.js');</script>
+<script src="version.js"></script>
+<script src="objectrects/objectrects.js"></script>
+<script src="vScroll/virtualScroll.js"></script>
+<script src="vScroll/scrollMonitor.js"></script>
+<script src="Cropper/cropper.js"></script>
+<script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+<script src="Cropper/damselflyCrop.js"></script>
+<script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+<script src="_content/MudBlazor/MudBlazor.min.js"></script>
+<script src="desktop-interop/electron-interop.js"></script>
+<script src="_content/BlazorPanzoom/panzoom.min.js"></script>
+<script src="_content/BlazorPanzoom/blazorpanzoom.js"></script>
 
-    <script>function isDevice() {
+<script>function isDevice() {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent);
 }
 
- function getInnerWidth() {
-    return window.innerWidth;
+window.UIStateMonitor = {
+    Init: function (DotNetRef) {
+        function onResize() {
+            DotNetRef.invokeMethodAsync("HandleViewportSizeChange", window.innerWidth, window.innerHeight);
+        }
+
+        window.addEventListener('resize', onResize);
+
+        // Call once to initialise our state
+        var state = {
+            ViewportWidth: window.innerWidth,
+            ViewportHeight: window.innerHeight,
+            UserAgent: navigator.userAgent
+        };
+
+        console.log('Evaluating Host Device: \n User - Agent: ' + state.UserAgent + '\n' +
+            ' Viewport(WxH): ' + state.ViewportWidth + 'x' + state.ViewportHeight);
+
+        DotNetRef.invokeMethodAsync("InitUIState", state);
+    }
 }
 
 function setStyleSheet(url) {
@@ -74,7 +92,7 @@ window.setSelection = (element, start, end) => {
     return element.setSelectionRange(start, end);
 }
 
-function getClientVersion(){
+function getClientVersion() {
     return CACHE_VERSION;
 }
 

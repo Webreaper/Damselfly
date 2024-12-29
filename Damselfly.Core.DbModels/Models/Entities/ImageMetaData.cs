@@ -55,21 +55,21 @@ public class ImageMetaData
 
     public void Clear()
     {
-        this.DateTaken = DateTime.MinValue;
-        this.Height = 0;
-        this.Width = 0;
-        this.Description = null;
-        this.Caption = null;
-        this.DominantColor = null;
-        this.AspectRatio = 1;
-        this.Rating = 0;
-        this.Credit = null;
-        this.ISO = null;
-        this.FNum = null;
-        this.Exposure = null;
-        this.FNum = null;
-        this.FlashFired = false;
-        this.Latitude = null;
-        this.Longitude = null;
+        DateTaken = DateTime.MinValue;
+        Height = 0;
+        Width = 0;
+        Description = null;
+        Caption = null;
+        DominantColor = null;
+        AspectRatio = 1;
+        Rating = 0;
+        Credit = null;
+        ISO = null;
+        FNum = null;
+        Exposure = null;
+        FNum = null;
+        FlashFired = false;
+        Latitude = null;
+        Longitude = null;
     }
 }

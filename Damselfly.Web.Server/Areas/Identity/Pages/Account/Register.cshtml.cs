@@ -92,7 +92,7 @@ public class RegisterModel : PageModel
                 return LocalRedirect(returnUrl);
             }
 
-            foreach ( var error in result.Errors ) 
+            foreach ( var error in result.Errors )
                 ModelState.AddModelError(string.Empty, error);
         }
 

@@ -8,4 +8,3 @@ public class Lighten : ITransform
 
     public double LighteningFactor { get; set; }
 }
-

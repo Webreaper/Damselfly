@@ -6,15 +6,16 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-      <LangVersion>default</LangVersion>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-      <LangVersion>default</LangVersion>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
@@ -23,39 +24,36 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="MetadataExtractor" />
-        <PackageReference Include="CommandLineParser" />
-        <PackageReference Include="WordPressPCL" />
-        <PackageReference Include="SixLabors.ImageSharp" />
-        <PackageReference Include="SixLabors.ImageSharp.Drawing" />
-        <PackageReference Include="font-awesome" />
-        <PackageReference Include="SkiaSharp" />
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
-        <PackageReference Include="SendGrid" />
-        <PackageReference Include="MailKit" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
-        <PackageReference Include="CoenM.ImageSharp.ImageHash" />
-        <PackageReference Include="EFCore.BulkExtensions" NoWarn="1605" />
+        <PackageReference Include="MetadataExtractor"/>
+        <PackageReference Include="CommandLineParser"/>
+        <PackageReference Include="Octokit"/>
+        <PackageReference Include="WordPressPCL"/>
+        <PackageReference Include="SixLabors.ImageSharp"/>
+        <PackageReference Include="SixLabors.ImageSharp.Drawing"/>
+        <PackageReference Include="font-awesome"/>
+        <PackageReference Include="SkiaSharp"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.UI"/>
+        <PackageReference Include="SendGrid"/>
+        <PackageReference Include="MailKit"/>
+        <PackageReference Include="Octokit"/>
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore"/>
+        <PackageReference Include="CoenM.ImageSharp.ImageHash"/>
+        <PackageReference Include="EFCore.BulkExtensions" NoWarn="1605"/>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Services\" />
-        <Folder Include="Utils\" />
-        <Folder Include="ScopedServices\" />
-        <Folder Include="DbAbstractions\" />
+        <Folder Include="Utils\"/>
+        <Folder Include="ScopedServices\"/>
+        <Folder Include="DbAbstractions\"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
-        <ProjectReference Include="..\Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj" />
-        <ProjectReference Include="..\Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj" />
-        <ProjectReference Include="..\Damselfly.ML.ImageClassification\Damselfly.ML.ImageClassification.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj" />
-        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Remove="EFCore.BulkExtensions" />
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
+        <ProjectReference Include="..\Damselfly.ML.FaceONNX\Damselfly.ML.FaceONNX.csproj"/>
+        <ProjectReference Include="..\Damselfly.ML.ObjectDetection.ML\Damselfly.ML.ObjectDetection.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.ScopedServices\Damselfly.Core.ScopedServices.csproj"/>
+        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj"/>
     </ItemGroup>
 </Project>

@@ -1,0 +1,58 @@
+﻿@inject NavigationManager Navigation
+@inject NotificationsService notifications
+@inject ApplicationStateService appState
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IDisposable
+
+@if( appState.IsWebAssembly )
+{
+    <div class="damselfly-statusbarpanel" title="Server link is @Status">
+        <div class="connection-status">
+            <i class="fa-solid fa-circle" style="@TextStyle"></i>
+            <text>@Status</text>
+        </div>
+    </div>
+}
+
+@code
+{
+    private string Status { get; set; }
+    private string TextStyle { get; set; }
+
+    private void ConnectedStateChanged()
+    {
+        var state = notifications.ConnectionState;
+
+        Status = state.ToString();
+        TextStyle = state switch
+        {
+            HubConnectionState.Connected => "color:green;",
+            HubConnectionState.Reconnecting => "color:darkorange;",
+            HubConnectionState.Connecting => "color:darkorange;",
+            HubConnectionState.Disconnected => "color:darkred;",
+            _ => "color:darkred;"
+        } + " text-shadow: 1px 1px 1px #666;";
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        notifications.OnConnectionChanged += ConnectedStateChanged;
+
+        await base.OnInitializedAsync();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if( firstRender )
+        {
+            ConnectedStateChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        notifications.OnConnectionChanged -= ConnectedStateChanged;
+    }
+}

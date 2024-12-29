@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
@@ -15,6 +16,6 @@ public interface IConfigService
 
 public interface IUserConfigService : IConfigService
 {
-    void SetForUser(string name, string value);
+    Task SetForUser(string name, string value);
     event Action<ICollection<ConfigSetting>> OnSettingsLoaded;
 }

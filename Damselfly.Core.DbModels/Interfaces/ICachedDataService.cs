@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Damselfly.Core.DbModels.Models;
+using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
@@ -14,4 +15,5 @@ public interface ICachedDataService
     Task InitialiseData();
     Task<Statistics> GetStatistics();
     Task ClearCache();
+    Task<NewVersionResponse> CheckForNewVersion();
 }

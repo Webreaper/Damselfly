@@ -20,6 +20,20 @@ public class ClientFolderService : IFolderService
         OnChange = null;
     }
 
+    public async Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int? userId)
+    {
+        if( userId != null )
+            return await httpClient.CustomGetFromJsonAsync<Dictionary<int, UserFolderState>>(
+                $"/api/folders/states/{userId}");
+
+        return new Dictionary<int, UserFolderState>();
+    }
+
+    public async Task SaveFolderStates(IEnumerable<UserFolderState> newStates)
+    {
+        await httpClient.CustomPostAsJsonAsync($"/api/folders/state", newStates);
+    }
+
     public event Action? OnChange;
 
     public async Task<ICollection<Folder>> GetFolders()
@@ -29,10 +43,8 @@ public class ClientFolderService : IFolderService
         var folderMap = folders.ToDictionary(x => x.FolderId, x => x);
 
         foreach( var folder in folders )
-        {
-            if( folder.ParentId != null && folderMap.TryGetValue( folder.ParentId.Value, out var parent ))
+            if( folder.ParentId != null && folderMap.TryGetValue( folder.ParentId.Value, out var parent ) )
                 parent.Children.Add(folder);
-        }
 
         return folders;
     }

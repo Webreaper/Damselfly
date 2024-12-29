@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 
 namespace Damselfly.Core.Services;
 
@@ -24,7 +26,8 @@ public class FolderService : IFolderService
     private readonly EventConflator conflator = new( 10 * 1000 );
     private List<Folder> allFolders = new();
 
-    public FolderService(IndexingService _indexingService, IServiceScopeFactory scopeFactory,
+    public FolderService(IndexingService _indexingService,
+        IServiceScopeFactory scopeFactory,
         ServerNotifierService notifier)
     {
         _scopeFactory = scopeFactory;
@@ -43,6 +46,88 @@ public class FolderService : IFolderService
     {
         ICollection<Folder> result = allFolders;
         return Task.FromResult(result);
+    }
+
+    public async Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int? userId)
+    {
+        var result = new Dictionary<int, UserFolderState>();
+
+        if( !userId.HasValue )
+            return result;
+
+        using var scope = _scopeFactory.CreateScope();
+        await using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+        var watch = new Stopwatch("GetUserFolderStates");
+
+        Logging.Log($"Loading folder states for user {userId}...");
+
+        try
+        {
+            result = await db.UserFolderStates
+                .Where( x => x.UserId == userId)
+                .ToDictionaryAsync(x => x.FolderId, x => x);
+        }
+        catch ( Exception ex )
+        {
+            Logging.LogError($"Error loading folder states: {ex.Message}");
+        }
+
+        List<UserFolderState> toCreate = new();
+
+        // Fill in any that don't have a folder state (since we only persist expanded folders)
+        // TODO: Only store state for folders with subfolders? But how?
+        foreach( var folder in allFolders )
+            if( !result.ContainsKey(folder.FolderId) )
+            {
+                var newState = new UserFolderState
+                {
+                    // Default expanded state is true if there are subfolders
+                    Expanded = folder.HasSubFolders,
+                    FolderId = folder.FolderId,
+                    UserId = userId.Value
+                };
+
+                toCreate.Add( newState);
+                result.Add( folder.FolderId, newState);
+            }
+
+        // Save the new one
+        await SaveFolderStates([], toCreate);
+
+        watch.Stop();
+
+        return result;
+    }
+
+    private async Task SaveFolderStates(IEnumerable<UserFolderState> updatedStates,
+        IEnumerable<UserFolderState> newStates)
+    {
+        if( updatedStates.Any() || newStates.Any() )
+        {
+            using var scope = _scopeFactory.CreateScope();
+            await using var db = scope.ServiceProvider.GetService<ImageContext>();
+
+            var watch = new Stopwatch("SaveUserFolderState");
+
+            try
+            {
+                db.UserFolderStates.AddRange( newStates);
+                db.UserFolderStates.UpdateRange( updatedStates);
+                await db.SaveChangesAsync("SaveUserFolderState");
+            }
+            catch ( Exception ex )
+            {
+                Logging.LogError($"Error saving folder states: {ex.Message}");
+            }
+
+            watch.Stop();
+        }
+    }
+
+    public async Task SaveFolderStates(IEnumerable<UserFolderState> newStates)
+    {
+        await SaveFolderStates( newStates, []);
     }
 
     private void OnFoldersChanged()

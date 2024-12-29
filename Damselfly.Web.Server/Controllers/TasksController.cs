@@ -24,7 +24,8 @@ public class TasksController : ControllerBase
     [HttpGet("/api/tasks")]
     public async Task<List<ScheduledTask>> GetTasks()
     {
-        try {
+        try
+        {
             return await _service.GetTasksAsync();
         }
         catch( Exception ex )

@@ -5,29 +5,29 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Serilog" />
-        <PackageReference Include="Serilog.Sinks.File" />
-        <PackageReference Include="Serilog.Sinks.Console" />
-        <PackageReference Include="Humanizer" />
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Serilog.Sinks.File"/>
+        <PackageReference Include="Serilog.Sinks.Console"/>
+        <PackageReference Include="Humanizer"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Utils\" />
-        <Folder Include="ML\" />
+        <Folder Include="Utils\"/>
+        <Folder Include="ML\"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Humanizer" />
-        <None Remove="Microsoft.EntityFrameworkCore.Tools" />
-        <None Remove="System.Drawing.Common" />
-        <None Remove="Classes\" />
-        <None Remove="Microsoft.AspNetCore.Components.Authorization" />
+        <None Remove="Humanizer"/>
+        <None Remove="Microsoft.EntityFrameworkCore.Tools"/>
+        <None Remove="System.Drawing.Common"/>
+        <None Remove="Classes\"/>
+        <None Remove="Microsoft.AspNetCore.Components.Authorization"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj" />
+        <ProjectReference Include="..\Damselfly.Shared.Utils\Damselfly.Shared.Utils.csproj"/>
     </ItemGroup>
 </Project>

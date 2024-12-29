@@ -59,7 +59,7 @@ public class NavigationService
     public Task<int> GetNextImage(bool next)
     {
         var navigationItems = new List<int>();
-        int result = -1;
+        var result = -1;
 
         if ( Context == NavigationContexts.Basket )
             navigationItems.AddRange(_basketService.BasketImages.Select(x => x.ImageId));

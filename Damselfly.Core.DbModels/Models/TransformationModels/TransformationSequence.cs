@@ -6,4 +6,3 @@ public class TransformationSequence
 {
     public ICollection<ITransform> Transforms { get; set; }
 }
-

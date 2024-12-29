@@ -14,31 +14,33 @@
         <ExternalConsole>true</ExternalConsole>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Identity" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
-        <PackageReference Include="Microsoft.Extensions.Http" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
-        <PackageReference Include="MudBlazor" />
-        <PackageReference Include="Radzen.Blazor" />
-        <PackageReference Include="Blazored.FluentValidation" />
-        <PackageReference Include="FluentValidation" />
-        <PackageReference Include="Humanizer" />
-        <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
-        <PackageReference Include="Serilog.Sinks.BrowserConsole" />
-        <PackageReference Include="Syncfusion.Blazor.Maps" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
-        <PackageReference Include="Serilog" />
-        <PackageReference Include="Blazored.LocalStorage" />
-        <PackageReference Include="Serilog.Sinks.BrowserHttp" />
-        <PackageReference Include="Serilog.Extensions.Logging" />
-        <PackageReference Include="BlazorPanzoom" />
-        <PackageReference Include="SkiaSharp.Views.Blazor" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"/>
+        <PackageReference Include="Microsoft.Extensions.Http"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web"/>
+        <PackageReference Include="MudBlazor"/>
+        <PackageReference Include="Radzen.Blazor"/>
+        <PackageReference Include="Blazored.FluentValidation"/>
+        <PackageReference Include="FluentValidation"/>
+        <PackageReference Include="Humanizer"/>
+        <PackageReference Include="Microsoft.AspNetCore.WebUtilities"/>
+        <PackageReference Include="Serilog.Sinks.BrowserConsole"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.macOS"/>
+        <PackageReference Include="Syncfusion.Blazor.Maps"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client"/>
+        <PackageReference Include="Serilog"/>
+        <PackageReference Include="Blazored.LocalStorage"/>
+        <PackageReference Include="Serilog.Sinks.BrowserHttp"/>
+        <PackageReference Include="Serilog.Extensions.Logging"/>
+        <PackageReference Include="BlazorPanzoom"/>
+        <PackageReference Include="SkiaSharp.Views.Blazor"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -60,31 +62,39 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Pages\" />
-        <Folder Include="Services\" />
+        <Folder Include="Services\"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Extensions\" />
-        <None Remove="Microsoft.AspNetCore.WebUtilities" />
-        <None Remove="Syncfusion.Blazor.Maps" />
-        <None Remove="Microsoft.AspNetCore.SignalR.Client" />
-        <None Remove="Serilog" />
-        <None Remove="Blazored.LocalStorage" />
-        <None Remove="Services\" />
-        <None Remove="Serilog.Sinks.BrowserHttp" />
-        <None Remove="Serilog.Extensions.Logging" />
-        <None Remove="BlazorPanzoom" />
+        <None Remove="Extensions\"/>
+        <None Remove="Microsoft.AspNetCore.WebUtilities"/>
+        <None Remove="Syncfusion.Blazor.Maps"/>
+        <None Remove="Microsoft.AspNetCore.SignalR.Client"/>
+        <None Remove="Serilog"/>
+        <None Remove="Blazored.LocalStorage"/>
+        <None Remove="Services\"/>
+        <None Remove="Serilog.Sinks.BrowserHttp"/>
+        <None Remove="Serilog.Extensions.Logging"/>
+        <None Remove="BlazorPanzoom"/>
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Shared\ImageCanvas.razor.css">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      </None>
+        <None Update="Shared\ImageCanvas.razor.css">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Update="Pages\ImagePage.razor.css">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </Content>
+        <Content Update="Components\People\PeopleManager.razor.css">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </Content>
     </ItemGroup>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <ReadLinesFromFile File="../VERSION">
-            <Output TaskParameter="Lines" PropertyName="VersionNumber" />
+            <Output TaskParameter="Lines" PropertyName="VersionNumber"/>
         </ReadLinesFromFile>
-        <Exec Command="echo %22const CACHE_VERSION='$(VersionNumber)-$(CurrentDate)'%22 &gt; wwwroot/version.js" />
+        <Exec Command="echo %22const CACHE_VERSION='$(VersionNumber)-$(CurrentDate)'%22 &gt; wwwroot/version.js"/>
     </Target>
 </Project>

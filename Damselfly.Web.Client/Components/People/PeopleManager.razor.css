@@ -1,0 +1,16 @@
+.title-bar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 15px;
+    justify-content: space-between;
+}
+
+.title-section {
+    display: flex;
+    flex-direction: row;
+    column-gap: 20px;
+    align-items: center;
+    margin-left: 5px;
+    margin-right: 5px;
+}

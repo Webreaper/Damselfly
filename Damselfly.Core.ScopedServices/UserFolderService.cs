@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Constants;
+﻿using System.Collections.Specialized;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Shared.Utils;
@@ -12,18 +13,24 @@ namespace Damselfly.Core.ScopedServices;
 public class UserFolderService : IDisposable, IUserFolderService
 {
     private readonly IConfigService _configService;
-
     private readonly IFolderService _folderService;
     private readonly NotificationsService _notifications;
     private readonly ISearchService _searchService;
-    private ICollection<Folder>? folderItems;
-    private IDictionary<int, FolderState> folderStates;
+    private readonly IUserService _userService;
 
-    public UserFolderService(IFolderService folderService, ISearchService searchService, IConfigService configService,
+    private ICollection<Folder>? folderItems; // Ordered as returned from the service
+    private Dictionary<int, Folder> folderLookup = new();
+    private Dictionary<int, UserFolderState> folderStates = new();
+
+    public UserFolderService(IFolderService folderService,
+        ISearchService searchService,
+        IConfigService configService,
+        IUserService userService,
         NotificationsService notifications)
     {
         _folderService = folderService;
         _searchService = searchService;
+        _userService = userService;
         _configService = configService;
         _notifications = notifications;
 
@@ -39,9 +46,9 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public event Action OnFoldersChanged;
 
-    public bool IsExpanded(Folder folder)
+    public bool IsExpanded(Folder? folder)
     {
-        if ( folderStates.TryGetValue(folder.FolderId, out var folderState) )
+        if ( folder != null &&  folderStates.TryGetValue(folder.FolderId, out var folderState) )
             return folderState.Expanded;
 
         return false;
@@ -59,9 +66,13 @@ public class UserFolderService : IDisposable, IUserFolderService
         {
             // Load the folders if we haven't already.
             folderItems = await _folderService.GetFolders();
-            // Default expanded state is true if there are subfolders
-            folderStates = folderItems.ToDictionary(x => x.FolderId,
-                y => new FolderState { Expanded = y.HasSubFolders, Folder = y });
+            folderLookup = folderItems.ToDictionary(x => x.FolderId, x => x);
+
+            if( _userService.UserId != null )
+            {
+                var userId = _userService.UserId.Value;
+                folderStates = await _folderService.GetUserFolderStates(userId);
+            }
         }
 
         var rootFolderItem = folderItems.FirstOrDefault();
@@ -110,9 +121,8 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public Task<Folder?> GetFolder(int folderId)
     {
-        Folder? result = null;
-        if ( folderStates.TryGetValue(folderId, out var folderState) )
-            result = folderState.Folder;
+        if ( ! folderLookup.TryGetValue(folderId, out var result) )
+            result = null;
 
         return Task.FromResult( result );
     }
@@ -124,7 +134,10 @@ public class UserFolderService : IDisposable, IUserFolderService
     public void ToggleExpand(Folder item)
     {
         if ( folderStates.TryGetValue(item.FolderId, out var folderState) )
+        {
             folderState.Expanded = !folderState.Expanded;
+            _folderService.SaveFolderStates([folderState]);
+        }
     }
 
     private void OnFolderChanged()
@@ -148,11 +161,5 @@ public class UserFolderService : IDisposable, IUserFolderService
             descending ? f.Children.OrderBy(sortFunc) : f.Children.OrderByDescending(sortFunc);
 
         return new[] { f }.Concat(sortedChildren.SelectMany(x => SortedChildren(x, sortFunc, descending)));
-    }
-
-    private class FolderState
-    {
-        public Folder Folder { get; set; }
-        public bool Expanded { get; set; }
     }
 }

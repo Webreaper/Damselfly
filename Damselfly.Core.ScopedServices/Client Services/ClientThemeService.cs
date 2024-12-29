@@ -98,7 +98,7 @@ public class ClientThemeService : IThemeService, IDisposable
 
     public async Task SetTheme(string themeName)
     {
-        _configService.SetForUser(ConfigSettings.Theme, themeName);
+        await _configService.SetForUser(ConfigSettings.Theme, themeName);
 
         await ApplyTheme(themeName);
     }

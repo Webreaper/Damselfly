@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 
 namespace Damselfly.Web.Server;
 
-
 public class DamselflyOptions
 {
     /// <summary>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -22,6 +23,7 @@ using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Xmp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SixLabors.ImageSharp.Formats.Png.Chunks;
 using Directory = MetadataExtractor.Directory;
 using Stopwatch = Damselfly.Shared.Utils.Stopwatch;
 using Tag = Damselfly.Core.Models.Tag;
@@ -30,7 +32,7 @@ namespace Damselfly.Core.Services;
 
 public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanProvider
 {
-    private static readonly DateTime NoMetadataDate = new DateTime(1970,01,01,00,00,00);
+    private static readonly DateTime NoMetadataDate = new ( 1970, 01, 01, 00, 00, 00 );
     private readonly ConfigService _configService;
     private readonly ExifService _exifService;
     private readonly ImageCache _imageCache;
@@ -101,7 +103,8 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         //int updated = await db.BatchUpdate(queryable, x => new ImageMetaData { LastUpdated = NoMetadataDate });
 
         var updated =
-            await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd HH:mm:ss}'");
+            await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated",
+                $"'{NoMetadataDate:yyyy-MM-dd HH:mm:ss}'");
 
         if ( updated != 0 )
             _statusService.UpdateStatus($"{updated} images in folder flagged for Metadata scanning.");
@@ -125,7 +128,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     public async Task MarkImagesForScan(ICollection<int> images)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        await using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var queryable = db.ImageMetaData.Where(i => images.Contains(i.ImageId));
 
@@ -150,8 +153,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     ///     Search for a set of tags - used for autocomplete.
     /// </summary>
     /// <param name="text"></param>
+    /// <param name="token"></param>
     /// <returns></returns>
-    public Task<ICollection<Tag>> SearchTags(string text)
+    public Task<ICollection<Tag>> SearchTags(string text, CancellationToken token = default)
     {
         var results = new List<Tag>();
         var searchText = text.Trim();
@@ -165,7 +169,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                 .Where(x => x.Keyword.Contains(searchText, StringComparison.OrdinalIgnoreCase)
                             && !x.Keyword.Equals(searchText, StringComparison.OrdinalIgnoreCase))
                 // The closer to the start of the text, the earlier in the list
-                .OrderBy( x => x.Keyword.IndexOf( text, StringComparison.OrdinalIgnoreCase ) ) 
+                .OrderBy( x => x.Keyword.IndexOf( text, StringComparison.OrdinalIgnoreCase ) )
                 .OrderBy(x => x.Favourite ? 0 : 1) // Favourites first
                 .ThenBy(x => x.Keyword) // Then order alphabetically
                 .Take(30); // Don't go mad with the number we return
@@ -185,7 +189,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
         _workService.AddJobSource(this);
     }
-    
+
     /// <summary>
     ///     Read the metadata, and handle any exceptions.
     /// </summary>
@@ -218,18 +222,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
 
     private string? GetXMPFieldValue( Dictionary<string, string> kvps, string prefix )
     {
-        if( kvps.TryGetValue( prefix, out var result ) && ! string.IsNullOrEmpty(result))
+        if( kvps.TryGetValue( prefix, out var result ) && ! string.IsNullOrEmpty(result) )
             return result;
-        
+
         var possibilities = Enumerable.Range(1, 5).Select( n => $"{prefix}[{n}]");
-        
+
         foreach( var key in possibilities )
             if( kvps.TryGetValue( key, out var indexed ) && ! string.IsNullOrEmpty(indexed) )
                 return indexed;
 
         return null;
     }
-    
+
     /// <summary>
     ///     Pull out the XMP attributes
     /// </summary>
@@ -244,16 +248,22 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                 .ToDictionary(x => x.Path, y => y.Value, StringComparer.OrdinalIgnoreCase);
 
             if( image.MetaData.DateTaken == DateTime.MinValue )
-            {
-                if( nvps.ContainsKey("exif:DateTimeOriginal") && DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
+                if( nvps.ContainsKey("exif:DateTimeOriginal") &&
+                    DateTime.TryParse(nvps["exif:DateTimeOriginal"], out var dateTime) )
                     image.MetaData.DateTaken = dateTime;
-            }
 
             if( string.IsNullOrEmpty(image.MetaData.Description) )
                 image.MetaData.Description = GetXMPFieldValue( nvps, "dc:Description" );
 
             if( string.IsNullOrEmpty(image.MetaData.Caption) )
                 image.MetaData.Caption = GetXMPFieldValue( nvps, "dc:Caption" );
+
+            if( image.MetaData.Rating == 0 )
+            {
+                var value = GetXMPFieldValue( nvps, "xmp:Rating" );
+                if( value != null )
+                    image.MetaData.Rating = Convert.ToInt16(value);
+            }
         }
         catch ( Exception ex )
         {
@@ -261,7 +271,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         }
     }
 
-    
+
     /// <summary>
     ///     Pull out the XMP face area so we can convert it to a real face in the DB
     /// </summary>
@@ -376,9 +386,9 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             {
                 // We've read some EXIF data, so clear out the existing metadata to replace it
                 imgMetaData.Clear();
-                
+
                 metaDataReadSuccess = true;
-                
+
                 var subIfdDirectory = metadata.OfType<ExifSubIfdDirectory>().FirstOrDefault();
 
                 if ( subIfdDirectory != null )
@@ -392,7 +402,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                     if ( imgMetaData.DateTaken == DateTime.MinValue )
                         imgMetaData.DateTaken =
                             subIfdDirectory.SafeGetExifDateTime(ExifDirectoryBase.TagDateTime);
-                    
+
                     imgMetaData.Height = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageHeight);
                     imgMetaData.Width = subIfdDirectory.SafeGetExifInt(ExifDirectoryBase.TagExifImageWidth);
 
@@ -541,6 +551,18 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                         imgMetaData.Height = pngDirectory.SafeGetExifInt(PngDirectory.TagImageHeight);
                 }
 
+                // Try and pull out the stable diffusion prompts from PNGs
+                var promptDir = metadata.OfType<PngDirectory>().FirstOrDefault(x => x.Name == "PNG-tEXt");
+                if ( promptDir != null )
+                    if( string.IsNullOrEmpty(imgMetaData.Caption) )
+                    {
+                        var promptTag = promptDir.Tags.FirstOrDefault(x =>
+                            x.Description != null && x.Description.StartsWith("prompt:"));
+
+                        if( promptTag != null )
+                            imgMetaData.Caption = promptTag.Description;
+                    }
+
                 var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
 
                 if ( xmpDirectory != null && xmpDirectory.XmpMeta != null )
@@ -562,7 +584,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             if( string.IsNullOrEmpty( imgMetaData.Caption ) ) imgMetaData.Caption = string.Empty;
             if( string.IsNullOrEmpty( imgMetaData.Credit ) ) imgMetaData.Credit = string.Empty;
             if( string.IsNullOrEmpty( imgMetaData.Description ) ) imgMetaData.Description = string.Empty;
-            
+
             DumpMetaData( image, metadata);
         }
         catch ( Exception ex )
@@ -608,13 +630,13 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var img = await _imageCache.GetCachedImage(imageId);
 
         db.Attach(img);
-        
+
         try
         {
             var lastWriteTime = File.GetLastWriteTimeUtc(img.FullPath);
 
             if( lastWriteTime < DateTime.UtcNow.AddMinutes( 1 ) &&
-                      lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
+                lastWriteTime > DateTime.UtcNow.AddSeconds(-10) )
             {
                 // If the last-write time is within 30s of now, but it's not a time far in the future
                 // we skip it, as it's possible it might still be mid-copy.
@@ -811,7 +833,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             {
                 var addWatch = new Stopwatch("AddTagsInsert");
                 await db.BulkInsert(db.ImageTags, toAdd);
-                
+
                 addWatch.Stop();
             }
 
@@ -966,7 +988,7 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
             }
             else
             {
-                foreach ( var tag in dir.Tags ) 
+                foreach ( var tag in dir.Tags )
                     Logging.Log($"  Tag: {tag.Name} = {tag.Description}");
             }
         }

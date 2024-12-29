@@ -2,7 +2,6 @@
 
 namespace Damselfly.Core.Utils.ML;
 
-
 public class ImageDetectResult
 {
     public Rectangle Rect { get; set; }

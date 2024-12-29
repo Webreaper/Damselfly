@@ -1,0 +1,375 @@
+﻿@inject ISearchService searchService
+@inject IUserFolderService folderService
+@inject ContextMenuService contextMenuService
+@inject SelectionService selectionService
+@inject IUserStatusService statusService
+@inject IUserConfigService configService
+@inject IDialogService DialogService
+@inject IFileService fileService
+@inject ILogger<FolderList> logger
+@using DialogOptions = MudBlazor.DialogOptions
+@using Microsoft.EntityFrameworkCore.Query
+@implements IDisposable
+
+<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos"/>
+
+<div class="folderlist">
+    <div class="damselfly-browsetools">
+        <div class="damselfly-browsetool">
+            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()"/>
+            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()"/>
+            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()"/>
+        </div>
+        <div class="damselfly-browsetool">
+            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm"/>
+        </div>
+    </div>
+    @if ( folderItems == null )
+    {
+        <ProgressSpinner ProgressText="Loading folders..."/>
+    }
+    else
+    {
+        <div class="folder-entry @FolderStyle(-1)" @onclick="@(() => ResetFilterFolder())"
+             @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
+            <i class="fa fa-folder-open folder-icon"/> All Folders
+        </div>
+        <div class="folder-scroll-area" id="folderscrollarea">
+            <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
+                <div class="folder-entry @FolderStyle(context.FolderId) expandable"
+                     @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
+                    <i style="@IndentMargin(context)" class="folder-icon fa @FolderIcon(context)" @onclick="@(() => ToggleExpand(context))"/>
+                    <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
+                        @FolderDisplayName(context)
+                    </span>
+                </div>
+            </Virtualize>
+        </div>
+    }
+</div>
+
+@code {
+    public string FilterTerm { get; private set; }
+
+    private Virtualize<Folder> folderContainer;
+    private List<Folder> folderItems;
+    Folder SelectedItem { get; set; }
+    bool FlatView => configService.GetBool(ConfigSettings.FlatView, true);
+    bool Ascending => configService.GetBool(ConfigSettings.FolderSortAscending);
+    bool IncludeChildFolders => configService.GetBool(ConfigSettings.IncludeChildFolders, true);
+    string SortMode => configService.Get(ConfigSettings.FolderSortMode, "Date");
+    string SortClass => SortMode == "Date" ? Ascending ? "fa-sort-amount-down" : "fa-sort-amount-up" : Ascending ? "fa-arrow-down-a-z" : "fa-arrow-up-a-z";
+    string SortModeClass => SortMode == "Date" ? "fa-calendar" : "fa-folder-closed";
+    string FlatTreeClass => FlatView ? "fa-list" : "fa-folder-tree";
+
+    void ShowContextMenu(MouseEventArgs args, Folder folder)
+    {
+        var refreshText = "Refresh Folder";
+        var selectText = "Select Folder";
+        var viewText = FlatView ? "Tree View" : "Flat View";
+        var sortDirection = "Sort Ascending";
+        var includeChildFolders = "Show sub-folder Images";
+        var sortText = "Sort by Date";
+
+        if ( SortMode == "Date" )
+            sortText = "Sort by Name";
+
+        if ( Ascending )
+            sortDirection = "Sort Descending";
+
+        if ( IncludeChildFolders )
+            includeChildFolders = "Hide sub-folder Images";
+
+        if ( folder == null )
+        {
+            refreshText = "Refresh All Folders";
+            selectText = "Clear Folder Selection";
+        }
+
+        Action<MenuItemEventArgs> OnMenuItemClick = async (x) => await MenuSelected(x, folder);
+
+        contextMenuService.Open(args, ds =>
+            @<CascadingAuthenticationState>
+                <RadzenMenu Click="OnMenuItemClick">
+                    <RadzenMenuItem Text="@selectText" Value="0"/>
+                    <RadzenMenuItem Text="@refreshText" Value="1"/>
+                    <hr class="separator">
+                    <RadzenMenuItem Text="@viewText" Value="3"/>
+                    <RadzenMenuItem Text="@sortText" Value="4"/>
+                    <RadzenMenuItem Text="@sortDirection" Value="5"/>
+                    <RadzenMenuItem Text="@includeChildFolders" Value="6"/>
+                    <hr class="separator">
+                    <RadzenMenuItem Text="Collapse Sub-Folders" Value="9"/>
+                    <RadzenMenuItem Text="Expand Sub-Folders" Value="10"/>
+                    <hr class="separator">
+                    <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
+                        @if ( selectionService.Selection.Any() )
+                        {
+                            <RadzenMenuItem Text="Move Selected Images Here" Value="7"/>
+                            <RadzenMenuItem Text="Copy Selected Images Here" Value="8"/>
+                        }
+                    </AuthorizeView>
+                </RadzenMenu>
+            </CascadingAuthenticationState>);
+    }
+
+    private async Task MenuSelected(MenuItemEventArgs args, Folder folder)
+    {
+        contextMenuService.Close();
+        switch ( args.Value )
+        {
+            case 0:
+                if ( folder == null )
+                    ResetFilterFolder();
+                else
+                    SetFilterFolder(folder);
+                break;
+            case 1:
+                await ShowRescanDialog(folder);
+                break;
+            case 3:
+                await ToggleFlatView();
+                break;
+            case 4:
+                await ToggleSortMode();
+                break;
+            case 5:
+                await ToggleSortAscendingView();
+                break;
+            case 6:
+                await ToggleIncludeChildFolder();
+                break;
+            case 7:
+                await MoveSelectedImagesToFolder(folder, true);
+                break;
+            case 8:
+                await MoveSelectedImagesToFolder(folder, false);
+                break;
+            case 9:
+                await CollapseSubFolders(folder, true);
+                break;
+            case 10:
+                await ExpandSubFolders(folder, true);
+                break;
+        }
+    }
+
+    private async Task CollapseSubFolders(Folder folder, bool first = false)
+    {
+        foreach( var child in folder.Subfolders.Where( x => folderService.IsExpanded(x) ) )
+        {
+            folderService.ToggleExpand(child);
+            await CollapseSubFolders(child, false);
+        }
+
+        if( first )
+            await ProcessUpdatedFilter();
+    }
+
+    private async Task ExpandSubFolders(Folder folder, bool first = false)
+    {
+        foreach( var child in folder.Subfolders.Where( x => !folderService.IsExpanded(x) ) )
+        {
+            folderService.ToggleExpand(child);
+            await ExpandSubFolders(child, false);
+        }
+
+        if( first )
+            await ProcessUpdatedFilter();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <param name="move">True if the files are to be moved. False for them to be copied</param>
+    /// <returns></returns>
+    private async Task MoveSelectedImagesToFolder(Folder folder, bool move)
+    {
+        var req = new ImageMoveRequest
+        {
+            Destination = folder,
+            ImageIDs = selectionService.Selection.Select( x => x.ImageId ).ToArray(),
+            Move = move
+        };
+
+        if ( await fileService.MoveImages(req) )
+        {
+            statusService.UpdateStatus($"Files moved to {folder.Path} successfully.");
+        }
+    }
+
+    private string FolderDisplayName(Folder folder)
+    {
+        var display = folder.MetaData.DisplayName;
+
+        if ( FlatView )
+        {
+            if ( display.Length < 10 && folder.Parent != null )
+                display = folder.Parent.MetaData.DisplayName + $" {Path.DirectorySeparatorChar} " + display;
+        }
+
+        return $"{display} ({folder.MetaData.TotalImages:n0})";
+    }
+
+    private async Task ToggleFlatView()
+    {
+        var newState = !FlatView;
+
+        await configService.SetForUser(ConfigSettings.FlatView, newState.ToString());
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ToggleSortMode()
+    {
+        var newMode = "Date";
+
+        if ( SortMode == "Date" )
+            newMode = "Name";
+
+        await configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ToggleIncludeChildFolder()
+    {
+        var newState = !IncludeChildFolders;
+
+        searchService.IncludeChildFolders = newState;
+        StateHasChanged();
+
+        await configService.SetForUser(ConfigSettings.IncludeChildFolders, newState.ToString());
+    }
+
+    private async Task ToggleSortAscendingView()
+    {
+        var newState = !Ascending;
+
+        await configService.SetForUser(ConfigSettings.FolderSortAscending, newState.ToString());
+
+        await ProcessUpdatedFilter();
+    }
+
+    private async Task ShowRescanDialog(Folder folder)
+    {
+        var parameters = new DialogParameters { { "allimages", true } };
+
+        if ( folder != null )
+            parameters = new DialogParameters { { "folder", folder }, { "count", folder.MetaData.ImageCount } };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, BackdropClick = false };
+        var dialog = DialogService.Show<RescanDialog>
+            ("Re-scan Images", parameters, options);
+        var result = await dialog.Result;
+    }
+
+    protected void SelectionChanged(Folder f)
+    {
+        //Logging.Log($"Selected folder {f.FolderId}");
+    }
+
+    string FolderIcon(Folder folder)
+    {
+        if ( !FlatView )
+        {
+            if ( folderService.IsExpanded(folder) )
+                return "fa-folder-open";
+            if ( folder.HasSubFolders )
+                return "fa-folder-plus";
+        }
+
+        return "fa-folder";
+    }
+
+    string IndentMargin(Folder folder)
+    {
+        if ( FlatView )
+            return string.Empty;
+
+        return $"margin-left:{folder.MetaData.Depth * 10}px;";
+    }
+
+    string FolderStyle(int folderId)
+    {
+        if ( folderId == -1 && searchService.Folder == null )
+            return "folder-entry-selected";
+
+        if ( searchService.Folder?.FolderId == folderId )
+            return "folder-entry-selected";
+
+        return string.Empty;
+    }
+
+    private void DoFilter(string searchTerm)
+    {
+        if ( FilterTerm != searchTerm )
+        {
+            FilterTerm = searchTerm;
+            OnFoldersChanged();
+        }
+    }
+
+    void ResetFilterFolder()
+    {
+        searchService.Folder = null;
+        StateHasChanged();
+    }
+
+    void SetFilterFolder(Folder folder)
+    {
+        searchService.Folder = folder;
+        StateHasChanged();
+    }
+
+    protected async Task ToggleExpand(Folder item)
+    {
+        if ( item.HasSubFolders )
+        {
+            folderService.ToggleExpand(item);
+
+            await ProcessUpdatedFilter();
+        }
+    }
+
+    protected async Task ProcessUpdatedFilter()
+    {
+        var folders = await folderService.GetFilteredFolders(FilterTerm);
+
+        logger.LogInformation($"Retrieved {folders.Count} folders");
+        folderItems = folders.ToList();
+
+        StateHasChanged();
+    }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if ( firstRender )
+        {
+            folderService.OnFoldersChanged += OnFoldersChanged;
+            searchService.OnSearchQueryChanged += OnSearchChanged;
+
+            // Kick off the data load
+            await ProcessUpdatedFilter();
+        }
+    }
+
+    public void Dispose()
+    {
+        folderService.OnFoldersChanged -= OnFoldersChanged;
+        searchService.OnSearchQueryChanged -= OnSearchChanged;
+    }
+
+    private void OnFoldersChanged()
+    {
+        // Be careful of threading - we may get called from anywhere
+        _ = InvokeAsync(ProcessUpdatedFilter);
+    }
+
+    private void OnSearchChanged()
+    {
+        StateHasChanged();
+    }
+
+}

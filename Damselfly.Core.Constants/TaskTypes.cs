@@ -1,4 +1,5 @@
 using System;
+
 namespace Damselfly.Core.Constants;
 
 public enum TaskType

@@ -17,16 +17,16 @@
             <MudText>Re-scan @ImageText:</MudText>
         }
         <div>
-            <MudCheckBox @bind-Checked="@ReIndex" Label="Re-index image files"/>
+            <MudCheckBox @bind-Value="@ReIndex" Label="Re-index image files"/>
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@RescanMetadata" Label="Re-scan metadata"/>
+            <MudCheckBox @bind-Value="@RescanMetadata" Label="Re-scan metadata"/>
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@RegenThumbs" Label="Re-generate thumbnails"/>
+            <MudCheckBox @bind-Value="@RegenThumbs" Label="Re-generate thumbnails"/>
         </div>
         <div>
-            <MudCheckBox @bind-Checked="@RescanAI" Label="Re-scan for AI objects"/>
+            <MudCheckBox @bind-Value="@RescanAI" Label="Re-scan for AI objects"/>
         </div>
     </DialogContent>
     <DialogActions>
@@ -37,20 +37,15 @@
 
 @code {
 
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public ICollection<Image> Images { get; set; }
+    [Parameter] public ICollection<Image> Images { get; set; }
 
-    [Parameter]
-    public Folder Folder { get; set; }
+    [Parameter] public Folder Folder { get; set; }
 
-    [Parameter]
-    public bool AllImages { get; set; }
+    [Parameter] public bool AllImages { get; set; }
 
-    [Parameter]
-    public int Count { get; set; }
+    [Parameter] public int Count { get; set; }
 
     private string ImageText => Count > 1 ? $"{Count} images" : "1 image";
 

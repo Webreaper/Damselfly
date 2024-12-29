@@ -1,0 +1,38 @@
+@inject IJSRuntime jsRuntime
+@inject ClientUIStateService uiService
+@inject ILogger<UIStateMonitor> logger
+
+@code {
+    private EventConflator conflator = new( 100 );
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if ( firstRender )
+        {
+            try
+            {
+                await jsRuntime.InvokeVoidAsync("UIStateMonitor.Init", DotNetObjectReference.Create(this));
+            }
+            catch ( Exception ex )
+            {
+                logger.LogError("Unable to initialise Viewport Monitor: {ex}", ex);
+            }
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    [JSInvokable]
+    public void InitUIState(UIClientState state)
+    {
+        uiService.InitialiseState(state);
+        logger.LogInformation($"UI State initialised: {state}");
+    }
+
+    [JSInvokable]
+    public void HandleViewportSizeChange(int newWidth, int newHeight)
+    {
+        conflator.HandleEvent(x => { uiService.ResolutionChanged(newWidth, newHeight); });
+    }
+
+}

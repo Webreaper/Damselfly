@@ -15,7 +15,7 @@ namespace Damselfly.Core.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.1");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.0-rc.2.24474.1");
 
             modelBuilder.Entity("Damselfly.Core.DbModels.Authentication.AppIdentityUser", b =>
                 {
@@ -117,21 +117,21 @@ namespace Damselfly.Core.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "5e13db05-33d5-4bbf-9895-dd549bb226c8",
+                            ConcurrencyStamp = "86fbaf98-ef71-40fd-a386-a382266193af",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "76c5bfbd-d4de-446e-a4df-61ffb12b77a8",
+                            ConcurrencyStamp = "b1ada73b-051d-4cf7-9cf7-612368004319",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "9903a239-ff78-4d1d-8802-3db63529f39d",
+                            ConcurrencyStamp = "95a267fc-0628-4cd9-a9b4-9e9d631284b1",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -734,6 +734,22 @@ namespace Damselfly.Core.Migrations
                         .IsUnique();
 
                     b.ToTable("Transformations");
+                });
+
+            modelBuilder.Entity("Damselfly.Core.Models.UserFolderState", b =>
+                {
+                    b.Property<int>("FolderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Expanded")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("FolderId", "UserId");
+
+                    b.ToTable("UserFolderStates");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>

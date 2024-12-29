@@ -46,7 +46,7 @@ public class EventConflator
     /// <param name="state"></param>
     private void TimerCallback(object? state)
     {
-        ClearTimer();  
+        ClearTimer();
         theCallback(state);
     }
 
