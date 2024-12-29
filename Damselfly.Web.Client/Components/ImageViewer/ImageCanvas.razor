@@ -16,6 +16,8 @@
             <MudText>Darken:</MudText>
             <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
 
+        </div>
+        <div class="tool-palette">
             <MudSelect @bind-Value="mode" @bind-Value:after="Repaint">
                 <MudSelectItem Value="SKBlendMode.Clear">None</MudSelectItem>
                 <MudSelectItem Value="SKBlendMode.Color">Col</MudSelectItem>
@@ -28,11 +30,10 @@
             <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
             <MudText>Lum:</MudText>
             <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-
-            <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
-            <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
-            <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
-            <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
+        <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
+        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
+        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
+        <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
         </div>
         @if (sourceBitmap == null)
         {
@@ -216,9 +217,9 @@
 
     private void OnMouseWheel(WheelEventArgs e)
     {
-        zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 2.0f));
+        zoomAmount = Math.Max( 0.0f, zoomAmount + (float)(e.DeltaY / 1.2f));
         zoomAmount = Math.Min( maxZoom, zoomAmount );
-
+        Console.WriteLine( $"Zoom: {zoomAmount}");
         if ( zoomAmount != 0 )
             zoomOffset = GetCoords(e);
         Repaint();
@@ -400,19 +401,21 @@
 
             var zoomViewPort = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
 
-            if( zoomAmount > 0 )
+            //if( zoomAmount > 0 )
             {
                 try
                 {
                     // Calculate the zoomed image size 
                     var hZoom = paintBitmap.Width * (zoomAmount * 0.01f);
                     var vZoom = paintBitmap.Height * (zoomAmount * 0.01f);
-
+                    
                     // Increase the viewport to represent the zoom, then constrain to the 
                     // canvas intersect, and then shrink back down again. This will crop
                     // the zoomed viewpoint to match the canvas surface.
-                    zoomViewPort.Inflate(-hZoom, -vZoom);
-                    zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
+                    zoomViewPort.Inflate(-hZoom, -vZoom); 
+                    
+                    if( zoomAmount > 0)
+                        zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
 
                     // TODO - need to scale this to match the zoom level
                     var translateX = Math.Max( 0, Math.Min(zoomViewPort.Width, zoomOffset.X));

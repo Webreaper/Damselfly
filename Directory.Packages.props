@@ -78,11 +78,11 @@
     <PackageVersion Include="SixLabors.Fonts" Version="2.0.4" />
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.5" />
     <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
-    <PackageVersion Include="SkiaSharp" Version="2.88.8" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="2.88.8" />
-    <PackageVersion Include="SkiaSharp.Views.Blazor" Version="2.88.8" />
+    <PackageVersion Include="SkiaSharp" Version="3.116.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.116.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.116.1" />
+    <PackageVersion Include="SkiaSharp.Views.Blazor" Version="3.116.1" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
     <PackageVersion Include="Syncfusion.Blazor.Maps" Version="25.1.40" />
     <PackageVersion Include="WordPressPCL" Version="2.1.0" />
