@@ -11,16 +11,17 @@
         <MudText Typo="Typo.h6">Add Name </MudText>
     </TitleContent>
     <DialogContent>
-        <MudAutocomplete T="string" Placeholder="Add Name" SearchFunc="SearchNames"
-                         @bind-Value="@TypeAheadName" @bind-Value:after="CheckForMerge"
-                         ShowProgressIndicator="true" MinCharacters="2" OnBlur="CheckForMerge"
-                         CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
-                         Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
-                         Variant="UIConstants.MudVariant" AutoFocus="true"/>
+        <MudTextField @bind-Value="@NewName" Immediate="true" DebounceInterval="250" OnBlur="CheckForMerge"/>
+        @if( ! string.IsNullOrEmpty(NewName) )
+        {
+            <PeopleGrid SearchText="@NewName" ExcludeSelectedPersonId="@theObject.PersonId" PersonState="Person.PersonState.Identified"
+                        OnPersonClicked="SelectPerson" Small="true" Disabled="true" ShowNotFoundMessage="false"/>
+        }
+        
         @if( showDupeMessage )
         {
             <div class="merge-message">
-                There is already an entry for '@TypeAheadName'. By selecting that Name, you will
+                There is already an entry for '@NewName'. By selecting that Name, you will
                 merge/add this face to that person.
             </div>
         }
@@ -31,14 +32,14 @@
         {
             <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit"
                        OnClick="Merge">
-                Merge with @TypeAheadName
+                Merge with @NewName
             </MudButton>
         }
         else
         {
             <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit"
                        OnClick="Save">
-                Save as @TypeAheadName
+                Save as @NewName
             </MudButton>
         }
     </DialogActions>
@@ -50,32 +51,35 @@
 
     [Parameter] public ImageObject theObject { get; set; }
 
-    private string TypeAheadName { get; set; }
+    private string NewName { get; set; }
     private bool showDupeMessage = false;
 
     protected override void OnInitialized()
     {
         if( theObject.Person != null && theObject.Person.Name != null )
         {
-            TypeAheadName = theObject.Person.Name;
+            NewName = theObject.Person.Name;
         }
     }
 
-    private async Task<IEnumerable<string>> SearchNames(string text, CancellationToken _)
+    private async Task SelectPerson( Person person )
     {
-        var list = await peopleService.GetPeopleNames(text.Trim());
-        return list;
-    }
+        NewName = person.Name;
 
+        await CheckForMerge();
+    }
+    
     private async Task CheckForMerge()
     {
-        if( TypeAheadName != "Unknown" )
+        if( NewName != "Unknown" )
         {
-            var allNames = await peopleService.GetPeopleNames(TypeAheadName);
+            var req = new PeopleRequest { SearchText = NewName, State = Person.PersonState.Identified, Count = 100, Start = 0 };
+            var matches = await peopleService.GetPeople(req);
 
             // First, check if the name is the same as somebody else in the system. 
-            var showDupe = allNames.Contains(TypeAheadName, StringComparer.OrdinalIgnoreCase);
-
+            var match = matches.FirstOrDefault(x => x.Name.Equals(NewName, StringComparison.OrdinalIgnoreCase) && x.PersonId != theObject.PersonId);
+            var showDupe = match != null;
+            
             if( showDupeMessage != showDupe )
             {
                 showDupeMessage = showDupe;
@@ -86,20 +90,20 @@
 
     private async Task Save()
     {
-        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName };
+        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = NewName };
         await peopleService.UpdatePersonName(req);
 
-        statusService.UpdateStatus($"Name saved as '{TypeAheadName}'");
+        statusService.UpdateStatus($"Name saved as '{NewName}'");
 
         MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task Merge()
     {
-        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName, Merge = true };
+        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = NewName, Merge = true };
         await peopleService.UpdatePersonName(req);
 
-        statusService.UpdateStatus($"Face merged with '{TypeAheadName}'");
+        statusService.UpdateStatus($"Face merged with '{NewName}'");
 
         MudDialog.Close(DialogResult.Ok(true));
     }

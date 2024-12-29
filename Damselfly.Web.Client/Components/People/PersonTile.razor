@@ -7,10 +7,8 @@
 @inject ClientUIStateService uiService
 
 <div class="damselfly-persontile" style="@TileStyle">
-    <div title="@Person.PersonGuid" class="damselfly-personimg">
-        <NavLink href="@PersonLink">
-            <img @key="@Person.PersonId" title="@PersonTitle" src="@FaceLink">
-        </NavLink>
+    <div title="@Person.PersonGuid" class="damselfly-personimg" @onclick="PersonClicked">
+        <img @key="@Person.PersonId" title="@PersonTitle" src="@FaceLink">
     </div>
     @if( processingUpdate )
     {
@@ -21,7 +19,15 @@
     else
     {
         <div class="damselfly-personfield">
-            <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Margin="Margin.Dense" Variant="UIConstants.MudVariant"/>
+            @if( Disabled )
+            {
+                @Name
+            }
+            else
+            {
+                <MudTextField @key="@Person.PersonId" @bind-Value="@Name" ReadOnly="false" Margin="Margin.Dense" 
+                              Variant="UIConstants.MudVariant"/>
+            }
         </div>
     }
 </div>
@@ -30,9 +36,15 @@
     private string PersonTitle => $"{Person.Name}\nState: {Person.State}\nFace Data Sets: {Person.FaceData.Count}";
     private bool processingUpdate = false;
 
+    [Parameter] public bool Disabled { get; set; }
+    
+    [Parameter] public bool Small { get; set; } = false;
+    
     [Parameter] public Person Person { get; set; }
 
     [Parameter] public EventCallback PersonChanged { get; set; }
+    
+    [Parameter] public EventCallback<Person> OnPersonClicked { get; set; }
 
     public string Name
     {
@@ -41,21 +53,32 @@
     }
 
     public string FaceLink => $"/face/{Person.PersonId}?nocache={Person.LastUpdated:yyyyMMddHHmmss}";
-    public string PersonLink => $"/?personid={Person.PersonId}";
-    public string ImageStyle, TileStyle;
+    public string TileStyle;
 
+    private async Task PersonClicked()
+    {
+        await OnPersonClicked.InvokeAsync(Person);
+    }
+    
     private void GenerateImageStyle()
     {
+        var fontSize = "13pt";
         var size = 180;
         if( uiService.IsSmallScreenDevice )
         {
-            const int imageGap = 10;
+            const int imageGap = 5;
             var targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
 
             size = int.Max( uiService.ScreenWidth / targetImagesPerRow - (targetImagesPerRow - 1) * imageGap, 50);
+            fontSize = "9pt";
+        }
+        else if( Small )
+        {
+            size = 90;
+            fontSize = "9pt";
         }
 
-        TileStyle = $"max-width: {size}px; height: auto; max-height: {size}px;";
+        TileStyle = $"max-width: {size}px; height: auto; max-height: {size+20}px;font-size: {fontSize};";
     }
 
     protected override void OnParametersSet()

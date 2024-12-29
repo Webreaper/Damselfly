@@ -8,7 +8,8 @@
     {
         @foreach( var person in people )
         {
-            <PersonTile Person="person" PersonChanged="@RefreshData"/>
+            <PersonTile Person="person" PersonChanged="@RefreshData" Small="@Small" 
+                        Disabled="@Disabled" OnPersonClicked="PersonClicked"/>
         }
 
         if ( !endOfImages )
@@ -24,9 +25,12 @@
     }
     else
     {
-        <div class="damselfly-searchmsg">
-            No people were found.
-        </div>
+        @if( ShowNotFoundMessage )
+        {
+            <div class="damselfly-searchmsg">
+                No people were found.
+            </div>
+        }
     }
 </div>
 
@@ -34,6 +38,16 @@
     [Parameter] public string? SearchText { get; set; }
 
     [Parameter] public Person.PersonState? PersonState { get; set; }
+    
+    [Parameter] public bool Small { get; set; }
+    
+    [Parameter] public EventCallback<Person> OnPersonClicked { get; set; }
+    
+    [Parameter] public bool Disabled { get; set; }
+    
+    [Parameter] public int? ExcludeSelectedPersonId { get; set;  }
+
+    [Parameter] public bool ShowNotFoundMessage { get; set; } = true;
 
     const int peoplePerPage = 30;
     private bool NoImagesSelected => !selectionService.Selection.Any();
@@ -44,6 +58,11 @@
 
     public string ResultsMessage { get; set; }
 
+    private async Task PersonClicked( Person person )
+    {
+        await OnPersonClicked.InvokeAsync(person);
+    }
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if ( firstRender )
@@ -83,7 +102,10 @@
         };
 
         var newPeople = await faceService.GetPeople(req);
-
+        
+        if( ExcludeSelectedPersonId != null )
+            newPeople = newPeople.Where( x => x.PersonId != ExcludeSelectedPersonId.Value).ToList();
+        
         endOfImages = newPeople.Count < peoplePerPage;
         if( refresh )
             people.Clear();

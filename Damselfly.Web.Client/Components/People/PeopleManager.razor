@@ -1,6 +1,7 @@
 @inject IUserStatusService statusService
 @inject IRescanService rescanService
 @inject ViewDataService ViewDataService
+@inject NavigationManager navManager
 
 <div class="title-bar">
     <div class="title-section">
@@ -22,7 +23,7 @@
     </div>
 </div>
 <div class="damselfly-tagview">
-    <PeopleGrid SearchText="@searchText" PersonState="@searchState"/>
+    <PeopleGrid SearchText="@searchText" PersonState="@searchState" OnPersonClicked="PersonClicked"/>
 </div>
 
 @code {
@@ -47,6 +48,11 @@
         Unidentified
     }
 
+    private void PersonClicked( Person person )
+    {
+        if( person != null)
+            navManager.NavigateTo($"/?personid={person.PersonId}");
+    }
     private void DoSearch(string searchTerm)
     {
         if( searchText != searchTerm )

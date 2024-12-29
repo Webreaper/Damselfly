@@ -4,10 +4,15 @@
     flex: 0 0 180px;
     flex-direction: column;
     align-items: stretch;
-    margin: 4px;
     padding: 3px;
     animation: fadeIn ease 0.5s;
     background-color: var(--tool-window-bg);
+    margin: 10px;
+}
+
+.damselfly-personimg img {
+    height: 100%;
+    width: 100%;
 }
 
 .damselfly-personimg {
@@ -21,11 +26,6 @@
     opacity: 1;
 }
 
-.damselfly-personimg img {
-    height: 130px;
-    width: 130px;
-}
-
 .damselfly-personfield {
     display: flex;
     flex: 1;
@@ -33,9 +33,7 @@
     margin-bottom: 6px;
     padding-left: 5px;
     padding-right: 5px;
+    white-space: nowrap;
 }
 
 
-.damselfly-persontile {
-    margin: 10px;
-}
