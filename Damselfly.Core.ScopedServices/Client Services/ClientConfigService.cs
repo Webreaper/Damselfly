@@ -55,9 +55,15 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
     {
         var authState = await authStateTask;
         _userId = authState.GetUserIdFromPrincipal();
-        await InitialiseCache();
+        await base.InitialiseCache();
     }
 
+    public override async Task InitialiseCache()
+    {
+        var state = await _authProvider.GetAuthenticationStateAsync();
+        _userId = state.GetUserIdFromPrincipal();
+        await base.InitialiseCache();
+    }
     private void SystemSettingsChanged()
     {
         // Another user changed the system settings - so refresh
