@@ -23,6 +23,7 @@ using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.Xmp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SixLabors.ImageSharp.Formats.Png.Chunks;
 using Directory = MetadataExtractor.Directory;
 using Stopwatch = Damselfly.Shared.Utils.Stopwatch;
 using Tag = Damselfly.Core.Models.Tag;
@@ -547,6 +548,19 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
                         imgMetaData.Width = pngDirectory.SafeGetExifInt(PngDirectory.TagImageWidth);
                     if ( imgMetaData.Height == 0 )
                         imgMetaData.Height = pngDirectory.SafeGetExifInt(PngDirectory.TagImageHeight);
+                }
+
+                // Try and pull out the stable diffusion prompts from PNGs
+                var promptDir = metadata.OfType<PngDirectory>().FirstOrDefault(x => x.Name == "PNG-tEXt");
+                if ( promptDir != null )
+                {
+                    if( string.IsNullOrEmpty(imgMetaData.Caption) )
+                    {
+                        var promptTag = promptDir.Tags.FirstOrDefault(x => x.Description != null && x.Description.StartsWith("prompt:"));
+
+                        if( promptTag != null )
+                            imgMetaData.Caption = promptTag.Description;
+                    }
                 }
 
                 var xmpDirectory = metadata.OfType<XmpDirectory>().FirstOrDefault();
