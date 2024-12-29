@@ -6,7 +6,7 @@
                 <i class="@StarStyle(star, true)" @onclick="() => ValueChanged(star)" title="@star stars"/>
             </Authorized>
             <NotAuthorized>
-                <i class="@StarStyle(star, false)" title="@star stars" />
+                <i class="@StarStyle(star, false)" title="@star stars"/>
             </NotAuthorized>
         </AuthorizeView>
     }
@@ -14,14 +14,11 @@
 
 @code {
 
-    [Parameter]
-    public int Rating { get; set; }
+    [Parameter] public int Rating { get; set; }
 
-    [Parameter]
-    public EventCallback<int> RatingChanged { get; set; }
+    [Parameter] public EventCallback<int> RatingChanged { get; set; }
 
-    [Parameter]
-    public bool Editable { get; set; }
+    [Parameter] public bool Editable { get; set; }
 
     private string StarStyle(int star, bool canEdit)
     {

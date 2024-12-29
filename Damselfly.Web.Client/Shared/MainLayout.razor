@@ -33,28 +33,28 @@
                     else
                     {
                         <div class="damselfly-app">
-                                @if ( uiStateService.IsSmallScreenDevice )
-                                {
-                                    <MenuBar>
-                                        <MenuContent>
-                                            <SideBar/>
-                                        </MenuContent>
-                                    </MenuBar>
-                                    @Body
-                                }
-                                else
-                                {
-                                    <SplitView>
-                                        <LeftPane>
-                                            <SideBar/>
-                                        </LeftPane>
-                                        <RightPane>
-                                            <div class="rightpane">
-                                                 @Body
-                                            </div>
-                                        </RightPane>
-                                    </SplitView>
-                                }
+                            @if ( uiStateService.IsSmallScreenDevice )
+                            {
+                                <MenuBar>
+                                    <MenuContent>
+                                        <SideBar/>
+                                    </MenuContent>
+                                </MenuBar>
+                                @Body
+                            }
+                            else
+                            {
+                                <SplitView>
+                                    <LeftPane>
+                                        <SideBar/>
+                                    </LeftPane>
+                                    <RightPane>
+                                        <div class="rightpane">
+                                            @Body
+                                        </div>
+                                    </RightPane>
+                                </SplitView>
+                            }
                             <DetailedErrorBoundary>
                                 <Statusbar/>
                             </DetailedErrorBoundary>
@@ -123,7 +123,7 @@
     {
         StateHasChanged();
     }
-    
+
     protected override async Task OnInitializedAsync()
     {
         authProvider.AuthenticationStateChanged += AuthStateChanged;

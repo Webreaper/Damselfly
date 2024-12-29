@@ -10,7 +10,7 @@ namespace Damselfly.Core.Utils;
 /// <typeparam name="T"></typeparam>
 /// <typeparam name="K"></typeparam>
 public class UniqueConcurrentPriorityQueue<T, K> where K : notnull
-                                                 where T : class
+    where T : class
 {
     private readonly Func<T, K> _keyFunc;
     private readonly PriorityQueue<T, int> _queue = new();

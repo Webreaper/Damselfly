@@ -3,11 +3,10 @@
     {
         <MudText Typo="Typo.body2" Align="Align.Center">@ProgressText</MudText>
     }
-    
+
     <MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"/>
 </div>
 
 @code {
-    [Parameter]
-    public string ProgressText { get; set; }
+    [Parameter] public string ProgressText { get; set; }
 }

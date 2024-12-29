@@ -34,9 +34,9 @@ public static class AppInitialiser
         services.GetRequiredService<IndexingService>().StartService();
         services.GetRequiredService<ImageRecognitionService>().StartService();
         services.GetRequiredService<FaceONNXService>().StartService();
-        
+
         services.GetRequiredService<ICachedDataService>().CheckForNewVersion();
-        
+
         // Validation check to ensure at least one user is an Admin
         // WASM: How, when it's scoped?
         // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();

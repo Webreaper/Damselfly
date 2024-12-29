@@ -8,8 +8,8 @@
     overflow-x: hidden;
 }
 
-@media( max-width: 640px) {
-    .sidebar { 
+@media ( max-width: 640px) {
+    .sidebar {
         width: 350px;
         position: sticky;
         top: 0;

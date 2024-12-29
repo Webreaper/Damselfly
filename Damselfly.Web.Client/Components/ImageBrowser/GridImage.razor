@@ -23,13 +23,13 @@
 else
 {
     <div class="grid-image" @ondblclick="NavigateToImage" @onclick=OnClick>
-        @if (!string.IsNullOrEmpty(ImageUrl))
+        @if ( !string.IsNullOrEmpty(ImageUrl) )
         {
             <img @key="CurrentImage.ImageId" style="@ImageStyle" class="@ImageClass @FadeClass"
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
                  @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
-    }
+        }
     </div>
     @if( DisplayFileName )
     {
@@ -49,15 +49,15 @@ else
         if( uiService.IsSmallScreenDevice )
         {
             const int imageGap = 2;
-            int targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
-            
+            var targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
+
             size = GridImageSize switch
             {
                 GridImageSize.Medium => 150,
                 GridImageSize.Large => 250,
                 GridImageSize.Mini => 50,
                 // Small is the default
-                _ => int.Max( (uiService.ScreenWidth / targetImagesPerRow) - ((targetImagesPerRow -1) * imageGap), 50),
+                _ => int.Max( uiService.ScreenWidth / targetImagesPerRow - (targetImagesPerRow - 1) * imageGap, 50)
             };
         }
         else
@@ -68,32 +68,27 @@ else
                 GridImageSize.Large => 400,
                 GridImageSize.Mini => 65,
                 _ => 120 // Small is the default
-
             };
         }
 
         var aspectStyle = ThumbnailSize == ThumbSize.Small || CurrentImage.MetaData == null ? string.Empty : $"aspect-ratio:{CurrentImage.MetaData.AspectRatio:0.##};";
         ImageStyle = $"height: {size}px; min-height: {size}px; width: auto; min-width: {size}px; {aspectStyle}";
     }
-    
-    [Parameter]
-    public EventCallback<MouseEventArgs> OnClick { get; set; }
-    
-    [Parameter]
-    public NavigationContexts NavContext { get; set; }
 
-    [Parameter]
-    public Image CurrentImage { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-    [Parameter]
-    public bool DisplayFileName { get; set; } = false;
+    [Parameter] public NavigationContexts NavContext { get; set; }
+
+    [Parameter] public Image CurrentImage { get; set; }
+
+    [Parameter] public bool DisplayFileName { get; set; } = false;
 
     [Parameter] public GridImageSize GridImageSize { get; set; } = GridImageSize.Small;
-    
+
     private ThumbSize ThumbnailSize => GridImageSize switch
     {
-        GridImageSize.Large => ThumbSize.Large,   
-        GridImageSize.Medium => ThumbSize.Medium,   
+        GridImageSize.Large => ThumbSize.Large,
+        GridImageSize.Medium => ThumbSize.Medium,
         GridImageSize.Mini => ThumbSize.Small,
         _ => ThumbSize.Small
     };
@@ -118,7 +113,7 @@ else
     {
         await basketService.SetImageBasketState(newState, new[] { CurrentImage.ImageId });
 
-    // Notify the image list that the selection has changed
+        // Notify the image list that the selection has changed
         StateHasChanged();
     }
 
@@ -146,36 +141,36 @@ else
         contextMenuService.Open(args, ds =>
             @<CascadingAuthenticationState>
                 <RadzenMenu Click="OnMenuItemClick">
-                    <RadzenMenuItem Text="View Image" Value="0" />
+                    <RadzenMenuItem Text="View Image" Value="0"/>
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                        <RadzenMenuItem Text="Download" Value="1" />
+                        <RadzenMenuItem Text="Download" Value="1"/>
                     </AuthorizeView>
-                    @if (CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash())
+                    @if ( CurrentImage.Hash != null && CurrentImage.Hash.HasPerceptualHash() )
                     {
-                        <RadzenMenuItem Text="Find Similar Images" Value="6" />
+                        <RadzenMenuItem Text="Find Similar Images" Value="6"/>
                     }
-                    <RadzenMenuItem Text="View Folder" Value="7" />
-                    <RadzenMenuItem Text="View Images From This Day" Value="8" />
+                    <RadzenMenuItem Text="View Folder" Value="7"/>
+                    <RadzenMenuItem Text="View Images From This Day" Value="8"/>
                     <hr class="separator">
-                    @if (InBasket)
+                    @if ( InBasket )
                     {
-                        <RadzenMenuItem Text="Remove from basket" Value="2" />
+                        <RadzenMenuItem Text="Remove from basket" Value="2"/>
                     }
                     else
                     {
-                        <RadzenMenuItem Text="Add to basket" Value="3" />
+                        <RadzenMenuItem Text="Add to basket" Value="3"/>
                     }
-                    @if (FileExporter != null && FileExporter.IsDesktopHosted)
+                    @if ( FileExporter != null && FileExporter.IsDesktopHosted )
                     {
                         <AuthorizeView Policy="@PolicyDefinitions.s_IsDownloader">
-                            <RadzenMenuItem Text="Save Locally" Value="4" />
+                            <RadzenMenuItem Text="Save Locally" Value="4"/>
                         </AuthorizeView>
                     }
 
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
-                        <RadzenMenuItem Text="Refresh" Value="5" />
+                        <RadzenMenuItem Text="Refresh" Value="5"/>
                         <hr class="separator">
-                        <RadzenMenuItem Text="Delete from Disk" Value="9" />
+                        <RadzenMenuItem Text="Delete from Disk" Value="9"/>
                     </AuthorizeView>
                 </RadzenMenu>
             </CascadingAuthenticationState>);
@@ -189,6 +184,7 @@ else
             {
                 return selectionService.Selection;
             }
+
             return new List<Image> { CurrentImage };
         }
     }

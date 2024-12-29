@@ -15,24 +15,24 @@ of the visible image is updated which should update it instantly.
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
 
-<LocalFileExporter @ref="FileExporter" />
+<LocalFileExporter @ref="FileExporter"/>
 
 <div class="damselfly-imagepreview">
     <div class="damselfly-imagedisplay img-zoom-container" tabindex="0"
          @oncontextmenu="@(args => ShowContextMenu(args))" @oncontextmenu:preventDefault="true">
-        
-        @if (EnableImageEditing && Editing)
+
+        @if ( EnableImageEditing && Editing )
         {
             <ImageCanvas Image="@Image" Class="image-fill"/>
         }
         else
         {
             <div class="objects-box" id="objectBox">
-                @if (ShowObjects)
+                @if ( ShowObjects )
                 {
-                    @foreach (var obj in Objects)
+                    @foreach ( var obj in Objects )
                     {
-                        <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged" />
+                        <AIObject theObject="@obj" OnObjectChanged="ImageObjectChanged"/>
                     }
                 }
             </div>
@@ -42,7 +42,7 @@ of the visible image is updated which should update it instantly.
             </Panzoom>
         }
     </div>
-    <Toast Text="@ToastText" />
+    <Toast Text="@ToastText"/>
 </div>
 
 
@@ -51,17 +51,13 @@ of the visible image is updated which should update it instantly.
 
 @code
 {
-    [Parameter]
-    public required Image Image { get; set; }
+    [Parameter] public required Image Image { get; set; }
 
-    [Parameter]
-    public bool ShowObjects { get; set; }
+    [Parameter] public bool ShowObjects { get; set; }
 
-    [Parameter]
-    public bool Editing { get; set; }
+    [Parameter] public bool Editing { get; set; }
 
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
 
     private string ToastText;
     private LocalFileExporter FileExporter;
@@ -77,15 +73,15 @@ of the visible image is updated which should update it instantly.
     private bool EnableImageEditing = false;
 
     // TODO: This will change to ZoomWithWheel - but only when that can be changed dynamically.
-    private BlazorPanzoom.WheelMode WheelMode => ShowObjects ? BlazorPanzoom.WheelMode.None : BlazorPanzoom.WheelMode.None;
+    private WheelMode WheelMode => ShowObjects ? WheelMode.None : WheelMode.None;
 
-    private readonly PanzoomOptions PanZoomOptions = new PanzoomOptions
+    private readonly PanzoomOptions PanZoomOptions = new()
     {
         MinScale = 1,
         MaxScale = 8,
         Step = 0.2,
         PanOnlyWhenZoomed = true,
-        Cursor = Cursor.AllScroll,
+        Cursor = Cursor.AllScroll
         //Contain = Contain.Outside
     };
 
@@ -117,7 +113,7 @@ of the visible image is updated which should update it instantly.
     {
         Task.Run(async () =>
         {
-            this.Image = await imageCacheService.GetCachedImage(imgObject.ImageId);
+            Image = await imageCacheService.GetCachedImage(imgObject.ImageId);
             StateHasChanged();
         });
     }
@@ -128,7 +124,7 @@ of the visible image is updated which should update it instantly.
     void ShowContextMenu(MouseEventArgs args)
     {
         var menuItems = new List<ContextMenuItem>
-{
+        {
             new() { Text = "View Folder", Value = 4 },
             new() { Text = "View Images From This Day", Value = 5 },
             new() { Text = ShowObjectsMenuText, Value = 0 },
@@ -136,13 +132,13 @@ of the visible image is updated which should update it instantly.
             new() { Text = "Refresh", Value = 2 }
         };
 
-        if (FileExporter.IsDesktopHosted)
+        if ( FileExporter.IsDesktopHosted )
             menuItems.Insert(3, new ContextMenuItem { Text = "Save Locally", Value = 3 });
 
         contextMenuService.Open(args, menuItems, async args =>
         {
             contextMenuService.Close();
-            switch (args.Value)
+            switch ( args.Value )
             {
                 case 0:
                     SetShowObjects(!ShowObjects);
@@ -202,7 +198,7 @@ of the visible image is updated which should update it instantly.
             var downloadFile = Image.DownloadImageUrl;
             await JsRuntime.InvokeAsync<string>("downloadFile", downloadFile);
         }
-        catch (Exception ex)
+        catch ( Exception ex )
         {
             Logging.LogError("Exception: " + ex.Message);
         }
@@ -215,32 +211,32 @@ of the visible image is updated which should update it instantly.
 
     private void SetShowObjects(bool newState)
     {
-        if (newState == ShowObjects)
+        if ( newState == ShowObjects )
             return;
 
-        if (ZoomRangeValue != 1.0)
+        if ( ZoomRangeValue != 1.0 )
             _ = ResetZoom();
 
         ShowObjects = newState;
         userConfigService.SetForUser(ConfigSettings.ShowObjects, ShowObjects.ToString());
         StateHasChanged();
 
-        if (ShowObjects)
+        if ( ShowObjects )
             DoObjectBox();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
-            if (ShowObjects)
+            if ( ShowObjects )
                 DoObjectBox();
         }
     }
 
     private async Task ChangeImage()
     {
-        if (currentImageId != Image.ImageId)
+        if ( currentImageId != Image.ImageId )
         {
             currentImageId = Image.ImageId;
             HiResImageLoaded = false;
@@ -286,7 +282,7 @@ of the visible image is updated which should update it instantly.
 
     public async Task ZoomIn()
     {
-        if (ShowObjects)
+        if ( ShowObjects )
         {
             ShowObjects = false;
             StateHasChanged();
@@ -298,13 +294,13 @@ of the visible image is updated which should update it instantly.
 
     public async Task ZoomOut()
     {
-        if (ShowObjects)
+        if ( ShowObjects )
         {
             ShowObjects = false;
             StateHasChanged();
         }
 
-        if (ZoomRangeValue > 1.0)
+        if ( ZoomRangeValue > 1.0 )
         {
             await _panzoom.ZoomOutAsync();
             await UpdateSlider();
@@ -313,7 +309,7 @@ of the visible image is updated which should update it instantly.
 
     public async Task ResetZoom()
     {
-        if (_panzoom != null)
+        if ( _panzoom != null )
         {
             await _panzoom.ResetAsync();
             await UpdateSlider();
@@ -323,7 +319,7 @@ of the visible image is updated which should update it instantly.
     public async Task UpdateSlider()
     {
         var scale = await _panzoom.GetScaleAsync();
-        if (scale != _rangeValue)
+        if ( scale != _rangeValue )
         {
             _rangeValue = scale;
             StateHasChanged();

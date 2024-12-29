@@ -4,11 +4,9 @@
 
 @code {
 
-    [Parameter]
-    public int DisplayIntervalSecs { get; set; } = 5;
+    [Parameter] public int DisplayIntervalSecs { get; set; } = 5;
 
-    [Parameter]
-    public string StatusText { get; set; }
+    [Parameter] public string StatusText { get; set; }
 
     private Timer? searchTimer;
 
@@ -23,7 +21,7 @@
     {
         KillTimer();
 
-        if( ! string.IsNullOrEmpty( value ))
+        if( ! string.IsNullOrEmpty( value ) )
             searchTimer = new Timer(TimerCallback, null, DisplayIntervalSecs * 1000, Timeout.Infinite);
 
         StateHasChanged();

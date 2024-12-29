@@ -123,23 +123,17 @@
 
 @code {
 
-    [Parameter]
-    public bool ShowFavourites { get; set; }
+    [Parameter] public bool ShowFavourites { get; set; }
 
-    [Parameter]
-    public bool ShowAddKeywords { get; set; }
+    [Parameter] public bool ShowAddKeywords { get; set; }
 
-    [Parameter]
-    public bool ShowImageKeywords { get; set; }
+    [Parameter] public bool ShowImageKeywords { get; set; }
 
-    [Parameter]
-    public Image[] CurrentImages { get; set; }
+    [Parameter] public Image[] CurrentImages { get; set; }
 
-    [Parameter]
-    public bool TrackSelection { get; set; }
+    [Parameter] public bool TrackSelection { get; set; }
 
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationStateTask { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
 
     private class AITag
     {
@@ -209,6 +203,7 @@
                         .OrderBy(x => x.Keyword)
                         .ToList();
                 }
+
                 if( tagLists.Count() == 1 )
                 {
                     return tagLists.FirstOrDefault()
@@ -258,7 +253,7 @@
     {
         navContext.OnChange += NavigationChanged;
 
-        if (TrackSelection)
+        if ( TrackSelection )
         {
             selectionService.OnSelectionChanged += SelectionChanged;
             tagService.OnFavouritesChanged += FavouritesChanged;
@@ -369,18 +364,18 @@
 
     private void ShowAIContextMenu(MouseEventArgs args, AITag tag)
     {
-        if (tag.PersonId == null)
+        if ( tag.PersonId == null )
             return;
 
         var menuList = new List<ContextMenuItem>
         {
-            new() { Text = $"Find photos containing {tag.Name}", Value = 0 },
+            new() { Text = $"Find photos containing {tag.Name}", Value = 0 }
         };
 
         contextMenuService.Open(args, menuList, async args =>
         {
             contextMenuService.Close();
-            switch (args.Value)
+            switch ( args.Value )
             {
                 case 0:
                     NavigationManager.NavigateTo($"/?personid={tag.PersonId}");
@@ -388,4 +383,5 @@
             }
         });
     }
+
 }

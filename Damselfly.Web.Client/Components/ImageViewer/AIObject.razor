@@ -1,4 +1,4 @@
-﻿    @inject IPeopleService peopleService
+﻿@inject IPeopleService peopleService
 @inject IUserStatusService statusService
 @inject ContextMenuService contextMenuService
 @inject NavigationManager NavigationManager
@@ -6,9 +6,8 @@
 @inject IDialogService DialogService
 
 
-
 <div class="object" title="@ObjectName" style="@ObjectStylePos" id="@theObject.PersonId">
-    @if (Editing)
+    @if ( Editing )
     {
         <div class="object-editor">
             <MudAutocomplete T="string" Placeholder="Add Name" SearchFunc="SearchNames"
@@ -16,7 +15,7 @@
                              CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
                              Variant="UIConstants.MudVariant" @onblur="LostFocus"
-                             class="tag-autocomplete" PopoverClass="tag-autocomplete-popover" />
+                             class="tag-autocomplete" PopoverClass="tag-autocomplete-popover"/>
         </div>
     }
     else
@@ -37,8 +36,8 @@
 
     private string TypeAheadName
     {
-        get { return nameText; }
-        set { nameText = value; }
+        get => nameText;
+        set => nameText = value;
     }
 
     public string ObjectName => theObject.ToString();
@@ -68,7 +67,7 @@
 
         var menuList = new List<ContextMenuItem>
         {
-            new() { Text = $"Find more photos containing this person", Value = 0 },
+            new() { Text = $"Find more photos containing this person", Value = 0 }
         };
 
         contextMenuService.Open(args, menuList, args =>
@@ -117,4 +116,5 @@
         var list = await peopleService.GetPeopleNames(text.Trim());
         return list;
     }
+
 }

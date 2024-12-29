@@ -18,7 +18,7 @@ public class MagickNetProcessor : IImageProcessor
 
         return formats;
     }
-    
+
     /// <summary>
     /// Convert the files to thumbnails using Magick.Net
     /// </summary>
@@ -35,9 +35,9 @@ public class MagickNetProcessor : IImageProcessor
 
         await image.ReadAsync(source.FullName);
         image.AutoOrient();
-        
+
         load.Stop();
-        
+
         var thumbs = new Stopwatch("MagickNetThumbs");
 
         foreach ( var pair in destFiles )
@@ -45,21 +45,21 @@ public class MagickNetProcessor : IImageProcessor
             var dest = pair.Key;
             var config = pair.Value;
 
-            var targetRatio = (decimal)config.width / (decimal)config.height; 
-            var currentRatio = (decimal)image.Width/(decimal)image.Height;
+            var targetRatio = (decimal)config.width / (decimal)config.height;
+            var currentRatio = (decimal)image.Width / (decimal)image.Height;
 
-            bool widthIsLongest = currentRatio > targetRatio;
+            var widthIsLongest = currentRatio > targetRatio;
 
             var intermediateSize = widthIsLongest
                 ? new MagickGeometry { Width = (int)(config.height * currentRatio), Height = config.height }
                 : new MagickGeometry { Width = config.width, Height = (int)(config.width / currentRatio) };
-            
+
             Logging.LogTrace("Generating thumbnail for {0}: {1}x{2}", source.Name, config.width, config.height);
 
             image.Resize(intermediateSize);
             intermediateSize.IgnoreAspectRatio = false;
 
-            if( currentRatio != targetRatio && config.cropToRatio)
+            if( currentRatio != targetRatio && config.cropToRatio )
             {
                 var size = new MagickGeometry(config.width, config.height);
 
@@ -72,8 +72,8 @@ public class MagickNetProcessor : IImageProcessor
         }
 
         thumbs.Stop();
-        
-        return result;    
+
+        return result;
     }
 
     public Task TransformDownloadImage(string input, Stream output, IExportSettings config)

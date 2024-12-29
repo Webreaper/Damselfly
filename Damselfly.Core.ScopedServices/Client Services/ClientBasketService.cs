@@ -34,16 +34,17 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public Basket CurrentBasket { get; private set; }
 
-    public ICollection<Image> BasketImages {
+    public ICollection<Image> BasketImages
+    {
         get
         {
-            if (CurrentBasket != null)
+            if ( CurrentBasket != null )
                 return CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
 
             return new List<Image>();
         }
     }
-    
+
     public async Task Clear(int basketId)
     {
         await httpClient.CustomPostAsync($"/api/basket/clear/{basketId}");
@@ -159,7 +160,8 @@ public class ClientBasketService : IUserBasketService, IBasketService
 
     public bool IsInCurrentBasket(Image image)
     {
-        try {
+        try
+        {
             // TODO: Figure out how there can be an image in this collection that's null
             return BasketImages.Any(x => x is not null && x.ImageId == image.ImageId);
         }

@@ -12,9 +12,10 @@ using Octokit;
 
 namespace Damselfly.Core.ScopedServices;
 
-public class CachedDataService( MetaDataService _metaDataService,  
-                                    StatisticsService _stats,
-                                    ILogger<CachedDataService> _logger) : ICachedDataService
+public class CachedDataService(
+    MetaDataService _metaDataService,
+    StatisticsService _stats,
+    ILogger<CachedDataService> _logger) : ICachedDataService
 {
     public string ImagesRootFolder => IndexingService.RootFolder;
 
@@ -40,8 +41,9 @@ public class CachedDataService( MetaDataService _metaDataService,
         // No-op
         return Task.CompletedTask;
     }
+
     private NewVersionResponse? newVersionState;
-    
+
     /// <summary>
     /// Checks for a new version
     /// </summary>
@@ -54,7 +56,7 @@ public class CachedDataService( MetaDataService _metaDataService,
             {
                 CurrentVersion = Assembly.GetExecutingAssembly().GetName().Version
             };
-            
+
             try
             {
                 var client = new GitHubClient(new ProductHeaderValue("Damselfly"));

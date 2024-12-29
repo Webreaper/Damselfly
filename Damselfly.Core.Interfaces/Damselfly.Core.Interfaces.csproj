@@ -11,6 +11,6 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj"/>
     </ItemGroup>
 </Project>

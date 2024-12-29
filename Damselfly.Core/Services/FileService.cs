@@ -17,9 +17,9 @@ public class FileService : IFileService
     private readonly IConfigService _configService;
     private readonly ICachedDataService _cachedDataService;
 
-    public FileService( IStatusService statusService, IImageCacheService imageCacheService, 
-                        ICachedDataService cachedDataService, IConfigService configService,
-                        ILogger<FileService> logger )
+    public FileService( IStatusService statusService, IImageCacheService imageCacheService,
+        ICachedDataService cachedDataService, IConfigService configService,
+        ILogger<FileService> logger )
     {
         _statusService = statusService;
         _imageCache = imageCacheService;
@@ -47,7 +47,6 @@ public class FileService : IFileService
         var images = await _imageCache.GetCachedImages( req.ImageIDs );
 
         if( !Directory.Exists( destfolder ) )
-        {
             try
             {
                 // Store the setting
@@ -63,17 +62,14 @@ public class FileService : IFileService
                 _logger.LogError( $"Unable to create folder {destfolder}: {ex}" );
                 return false;
             }
-        }
 
         foreach( var image in images )
         {
             var dest = Path.Combine( destfolder, image.FileName );
 
             if( File.Exists( dest ) )
-            {
                 // If there's a collision, create a unique filename
                 dest = GetUniqueFilename( dest );
-            }
 
             if( !SafeCopyOrMove( image, dest, true ) )
                 success = false;
@@ -90,12 +86,12 @@ public class FileService : IFileService
     /// <returns>A filename like C:\temp\myfile_633822247336197902.tmp</returns>
     public string GetUniqueFilename( string filename )
     {
-        string basename = Path.Combine( Path.GetDirectoryName( filename ),
-                                       Path.GetFileNameWithoutExtension( filename ) );
-        string uniquefilename = string.Format( "{0}_{1}{2}",
-                                                basename,
-                                                DateTime.Now.Ticks,
-                                                Path.GetExtension( filename ) );
+        var basename = Path.Combine( Path.GetDirectoryName( filename ),
+            Path.GetFileNameWithoutExtension( filename ) );
+        var uniquefilename = string.Format( "{0}_{1}{2}",
+            basename,
+            DateTime.Now.Ticks,
+            Path.GetExtension( filename ) );
         return uniquefilename;
     }
 
@@ -125,7 +121,6 @@ public class FileService : IFileService
         var source = image.FullPath;
 
         if( File.Exists(source) && !File.Exists( destFilename ) )
-        {
             try
             {
                 // Note, we *never* overwrite.
@@ -146,9 +141,7 @@ public class FileService : IFileService
             {
                 _logger.LogError($"Unable to move file to {destFilename}: {ex}");
             }
-        }
 
         return false;
     }
 }
-

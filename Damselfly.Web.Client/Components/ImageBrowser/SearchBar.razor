@@ -37,15 +37,15 @@
         @if( searchService.SearchHints.Any() )
         {
             <div class="search-hints">
-                <Bricks Items="@searchService.SearchHints" ToStrFunc="x => x.Description" 
+                <Bricks Items="@searchService.SearchHints" ToStrFunc="x => x.Description"
                         RemoveLabel="Clear filter" ItemRemoved="x => x.Clear()"/>
             </div>
         }
         else
         {
-            <label class="damselfly-browsetoollabel" >No filter.</label>
+            <label class="damselfly-browsetoollabel">No filter.</label>
         }
-        
+
     </div>
 
     <div class="damselfly-browsetools">
@@ -84,8 +84,7 @@
 
 @code {
 
-    [Parameter]
-    public Action<GridImageSize> OnGridSizeChanged { get; set; }
+    [Parameter] public Action<GridImageSize> OnGridSizeChanged { get; set; }
 
     GridImageSize currentGridSize = GridImageSize.Small;
     bool ShowAdvancedSearch { get; set; } = false;

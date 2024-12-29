@@ -9,8 +9,9 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/people")]
-public class PeopleController( ImageRecognitionService _aiService, 
-                                IPeopleService _peopleService) : ControllerBase
+public class PeopleController(
+    ImageRecognitionService _aiService,
+    IPeopleService _peopleService) : ControllerBase
 {
     [HttpGet("/api/person/{personId}")]
     public async Task<Person> GetPerson( int personId )
@@ -49,7 +50,7 @@ public class PeopleController( ImageRecognitionService _aiService,
     {
         return await _peopleService.NeedsAIMigration();
     }
-    
+
     [HttpPost("/api/people/runaimigration")]
     public async Task RunAIMigration( AIMigrationRequest req )
     {

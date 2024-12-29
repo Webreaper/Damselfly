@@ -2,7 +2,7 @@
 .image-canvas {
     display: flex;
     flex-direction: column;
-    width: calc( 100% - 200px);
+    width: calc(100% - 200px);
     height: 100%;
 }
 

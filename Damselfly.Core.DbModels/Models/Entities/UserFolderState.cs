@@ -1,5 +1,4 @@
-﻿
-namespace Damselfly.Core.Models;
+﻿namespace Damselfly.Core.Models;
 
 public class UserFolderState
 {

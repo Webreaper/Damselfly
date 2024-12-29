@@ -5,19 +5,18 @@
     <div class="imagefield">
         <label class="imagefield-label" title="@Tooltip">
             @FieldName:
-            @if (string.IsNullOrEmpty(Href))
+            @if ( string.IsNullOrEmpty(Href) )
             {
-                @if (editing)
+                @if ( editing )
                 {
-                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus" />
+                    <input @ref="inputField" class="imagefield-edit" placeholder="@FieldValue" value="@FieldValue" @onchange="ValueChanged" @onblur="LostFocus"/>
                 }
                 else
                 {
-                    @if (Editable && allowedToEdit)
+                    @if ( Editable && allowedToEdit )
                     {
                         <span class="imagefield-val" @onclick="EditField">@FieldValue</span>
                         <i class="fas fa-edit" title="@EditTooltip" @onclick="EditField"/>
-                        
                     }
                     else
                     {
@@ -38,26 +37,19 @@
 
 @code {
 
-    [Parameter]
-    public string FieldName { get; set; }
+    [Parameter] public string FieldName { get; set; }
 
-    [Parameter]
-    public string Title { get; set; }
+    [Parameter] public string Title { get; set; }
 
-    [Parameter]
-    public bool Editable { get; set; }
+    [Parameter] public bool Editable { get; set; }
 
-    [Parameter]
-    public string Href { get; set; }
+    [Parameter] public string Href { get; set; }
 
-    [Parameter]
-    public string FieldValue { get; set; }
+    [Parameter] public string FieldValue { get; set; }
 
-    [Parameter]
-    public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
+    [Parameter] public EventCallback<ChangeEventArgs> OnValueChanged { get; set; }
 
-    [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
 
     private bool allowedToEdit = false;
     private bool editing = false;

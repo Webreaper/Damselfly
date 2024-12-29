@@ -114,7 +114,8 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
-            b => {
+            b =>
+            {
                 b.MigrationsAssembly("Damselfly.Migrations.Sqlite");
                 b.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
             }));
@@ -170,12 +171,10 @@ public class Program
         builder.Services.AddHostedBlazorBackEndServices();
 
         if( ! Debugger.IsAttached )
-        {
             // Use Kestrel options to set the port. Using .Urls.Add breaks WASM debugging.
             // This line also breaks wasm debugging in Rider.
             // See https://github.com/dotnet/aspnetcore/issues/43703
             builder.WebHost.UseKestrel(serverOptions => { serverOptions.ListenAnyIP(cmdLineOptions.Port); });
-        }
 
         var app = builder.Build();
 
@@ -224,14 +223,12 @@ public class Program
         if( Debugger.IsAttached )
         {
             app.UseSwagger();
-            app.UseSwaggerUI( c =>
-            {
-                c.SwaggerEndpoint( "/swagger/v1/swagger.json", "Damselfly API" );
-            } );
+            app.UseSwaggerUI( c => { c.SwaggerEndpoint( "/swagger/v1/swagger.json", "Damselfly API" ); } );
         }
 
         // Map the signalR notifications endpoints
-        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowStatefulReconnects = true );
+        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}",
+            options => options.AllowStatefulReconnects = true );
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -239,7 +236,7 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
         app.MapFallbackToFile("index.html");
-        
+
         // Start up all the Damselfly Services
         app.Environment.SetupServices(app.Services);
 

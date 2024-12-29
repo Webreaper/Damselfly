@@ -34,26 +34,26 @@
             {
                 var imageUrl = new Uri(baseUrl, image.DownloadImageUrl);
 
-    // Image folder is fully qualified, so we need to make it relative to the pictures folder
-    // The electron container will use its local settings to create the full path of where
-    // the image will be written locally on the client-side
+                // Image folder is fully qualified, so we need to make it relative to the pictures folder
+                // The electron container will use its local settings to create the full path of where
+                // the image will be written locally on the client-side
                 var localPath = image.FullPath.MakePathRelativeTo(staticDataService.ImagesRootFolder);
 
                 statusService.UpdateStatus($"Writing {image.FileName} to {localPath}...");
 
-    // Now, shell out to Javascript, which will trigger the download in the Electron container
+                // Now, shell out to Javascript, which will trigger the download in the Electron container
                 await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
 
-    // TODO: Get the sidecar file - something like this, but we need a URL for the
-    // sidecar file, or at least a way to bundle the two together in the controller
-    // and stream to the client.
-    //
-    //var sideCar = image.GetSideCar();
-    //if( sideCar != null )
-    //{
-    //    string sidecarlocalPath = sideCar.Filename.FullName.MakePathRelativeTo(IndexingService.RootFolder);
-    //    await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
-    //}
+                // TODO: Get the sidecar file - something like this, but we need a URL for the
+                // sidecar file, or at least a way to bundle the two together in the controller
+                // and stream to the client.
+                //
+                //var sideCar = image.GetSideCar();
+                //if( sideCar != null )
+                //{
+                //    string sidecarlocalPath = sideCar.Filename.FullName.MakePathRelativeTo(IndexingService.RootFolder);
+                //    await JsRuntime.InvokeAsync<string>("writeFileLocally", imageUrl, localPath);
+                //}
             }
 
             statusService.UpdateStatus("Local image download started.");
@@ -71,9 +71,10 @@
     {
         if( firstRender )
         {
-    // Probe for a js function which indicates we're in the electron container
+            // Probe for a js function which indicates we're in the electron container
             DesktopVersion = await JsRuntime.InvokeAsync<string>("getDesktopVersion");
             NotifyStateChanged();
         }
     }
-    } 
+
+}

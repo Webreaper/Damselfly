@@ -10,11 +10,11 @@
     <div class="image-canvas">
         <div class="tool-palette">
             <MudText>Zoom:</MudText>
-            <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudSlider @bind-Value="zoomAmount" Min="0" Max="@maxZoom" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true"/>
             <MudText>Lighten:</MudText>
-            <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step=1 @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudSlider @bind-Value="lightenFactor" Min="-255" Max="255" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true"/>
             <MudText>Darken:</MudText>
-            <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudSlider @bind-Value="contrast" Min="-0.25f" Max="0.25f" Step="0.01f" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true"/>
 
         </div>
         <div class="tool-palette">
@@ -25,17 +25,17 @@
                 <MudSelectItem Value="SKBlendMode.Saturation">Sat</MudSelectItem>
             </MudSelect>
             <MudText>Hue:</MudText>
-            <MudSlider @bind-Value="hue" Min="0" Max="360" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudSlider @bind-Value="hue" Min="0" Max="360" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true"/>
             <MudText>Sat:</MudText>
-            <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
+            <MudSlider @bind-Value="saturation" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true"/>
             <MudText>Lum:</MudText>
-            <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true" />
-        <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
-        <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)" />
-        <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)" />
-        <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono" />
+            <MudSlider @bind-Value="luminosity" Min="0" Max="100" Step="1" @bind-Value:after="Repaint" Style="width: 200px;" ValueLabel="true"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Crop" Color="@CropColour" OnClick="DoCrop" Title="@CropTooltip"/>
+            <MudIconButton Icon="@Icons.Material.Filled.RotateLeft" OnClick="() => DoRotate(-90)"/>
+            <MudIconButton Icon="@Icons.Material.Filled.RotateRight" OnClick="() => DoRotate(90)"/>
+            <MudIconButton Icon="@Icons.Material.Filled.MonochromePhotos" OnClick="DoMono"/>
         </div>
-        @if (sourceBitmap == null)
+        @if ( sourceBitmap == null )
         {
             <div class="loading">
                 <ProgressSpinner ProgressText="Loading image..."/>
@@ -43,20 +43,18 @@
         }
         else
         {
-            <SKGLView @ref="glViewRef" @key="Image?.ImageId" OnPaintSurface="OnPaintSurface" 
+            <SKGLView @ref="glViewRef" @key="Image?.ImageId" OnPaintSurface="OnPaintSurface"
                       EnableRenderLoop="@isDragging" IgnorePixelScaling="false" class="@Class"
-                      @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" @onmousemove="@OnMouseMove" 
-                      @onmousewheel="@OnMouseWheel" />
+                      @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" @onmousemove="@OnMouseMove"
+                      @onmousewheel="@OnMouseWheel"/>
         }
     </div>
 </DetailedErrorBoundary>
 
 @code {
-    [Parameter]
-    public Image? Image { get; set; }
+    [Parameter] public Image? Image { get; set; }
 
-    [Parameter]
-    public string Class { get; set; }
+    [Parameter] public string Class { get; set; }
 
     private Color CropColour => isCropping ? Color.Primary : Color.Tertiary;
     private string CropTooltip => isCropping ? "Click to apply crop" : "Click to start crop mode";
@@ -80,17 +78,17 @@
     private bool isDragging;
     private bool isCropping;
 
-    private SKRect paintArea = new SKRect(0, 0, 0, 0);
+    private SKRect paintArea = new ( 0, 0, 0, 0 );
     private float paintScale = 0f;
     private float lastDpi = 1.0f;
     private float zoomAmount = 0.0f;
-    private SKPoint zoomOffset = new SKPoint();
+    private SKPoint zoomOffset = new ();
 
     private List<ITransform> transformations = new();
 
     private void Repaint()
     {
-        if (glViewRef != null)
+        if ( glViewRef != null )
             glViewRef.Invalidate();
     }
 
@@ -124,20 +122,20 @@
 
     private SKRect? GetDragRect()
     {
-        if (dragStart.HasValue && dragEnd.HasValue)
+        if ( dragStart.HasValue && dragEnd.HasValue )
         {
-            SKRect rect = new SKRect(dragStart.Value.X * lastDpi,
-                                     dragStart.Value.Y * lastDpi,
-                                     dragEnd.Value.X * lastDpi,
-                                     dragEnd.Value.Y * lastDpi);
+            var rect = new SKRect(dragStart.Value.X * lastDpi,
+                dragStart.Value.Y * lastDpi,
+                dragEnd.Value.X * lastDpi,
+                dragEnd.Value.Y * lastDpi);
 
-            if (rect.Left > rect.Right)
+            if ( rect.Left > rect.Right )
             {
                 // Swap
                 (rect.Left, rect.Right) = (rect.Right, rect.Left);
             }
 
-            if (rect.Top > rect.Bottom)
+            if ( rect.Top > rect.Bottom )
             {
                 // Swap
                 (rect.Top, rect.Bottom) = (rect.Bottom, rect.Top);
@@ -151,7 +149,7 @@
 
     private void DoMono()
     {
-        if (transformations.Any(x => x is MonoTransform))
+        if ( transformations.Any(x => x is MonoTransform) )
             transformations.Add(new MonoTransform());
         else
             transformations = transformations.Where(x => !(x is MonoTransform)).ToList();
@@ -160,13 +158,13 @@
 
     private void DoCrop()
     {
-        if (isCropping)
+        if ( isCropping )
         {
             isCropping = false;
 
             var rect = GetDragRect();
 
-            if (rect.HasValue)
+            if ( rect.HasValue )
             {
                 var crop = new CropTransform
                 {
@@ -199,10 +197,10 @@
 
     private void GetSurfaceDPI()
     {
-        var obj = typeof(SKGLView).GetField("dpi", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var obj = typeof( SKGLView ).GetField("dpi", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
         double dpi = 1;
-        if (obj != null)
+        if ( obj != null )
             dpi = (double)obj.GetValue(glViewRef)!;
 
         lastDpi = (float)dpi;
@@ -227,22 +225,21 @@
 
     private void OnMouseMove(MouseEventArgs e)
     {
-        if (isDragging)
+        if ( isDragging )
         {
-            if (isCropping)
+            if ( isCropping )
                 dragEnd = GetCoords(e);
             else
                 zoomOffset = GetCoords(e);
             Repaint();
         }
-
     }
 
     private void OnMouseDown(MouseEventArgs e)
     {
-        if (e.Button == 0)
+        if ( e.Button == 0 )
         {
-            if (isCropping)
+            if ( isCropping )
                 dragStart = GetCoords(e);
 
             isDragging = true;
@@ -251,11 +248,11 @@
 
     private void OnMouseUp(MouseEventArgs e)
     {
-        if (dragStart.HasValue)
+        if ( dragStart.HasValue )
         {
             var mouseUp = GetCoords(e);
 
-            if (dragStart == mouseUp)
+            if ( dragStart == mouseUp )
                 ClearDrag();
         }
 
@@ -345,9 +342,9 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (Image != null)
+        if ( Image != null )
         {
-            if (Image.ImageId != currentImageId)
+            if ( Image.ImageId != currentImageId )
             {
                 currentImageId = Image.ImageId;
                 loadCancellationSource.TryReset();
@@ -363,13 +360,13 @@
         }
 
         StateHasChanged();
-        
+
         await base.OnParametersSetAsync();
     }
 
     public void Dispose()
     {
-        if (sourceBitmap != null)
+        if ( sourceBitmap != null )
         {
             sourceBitmap.Dispose();
             sourceBitmap = null;
@@ -388,15 +385,15 @@
 
         var canvasRect = new SKRectI( 0, 0, e.BackendRenderTarget.Width, e.BackendRenderTarget.Height);
 
-        if (sourceBitmap != null)
+        if ( sourceBitmap != null )
         {
-            SKBitmap paintBitmap = sourceBitmap;
+            var paintBitmap = sourceBitmap;
 
             // Always apply any user crops first
             SKBitmap? zoomedBmp = null;
             var croppedBmp = ApplyCrop(sourceBitmap);
 
-            if (croppedBmp != null)
+            if ( croppedBmp != null )
                 paintBitmap = croppedBmp;
 
             var zoomViewPort = new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height);
@@ -408,25 +405,25 @@
                     // Calculate the zoomed image size 
                     var hZoom = paintBitmap.Width * (zoomAmount * 0.01f);
                     var vZoom = paintBitmap.Height * (zoomAmount * 0.01f);
-                    
+
                     // Increase the viewport to represent the zoom, then constrain to the 
                     // canvas intersect, and then shrink back down again. This will crop
                     // the zoomed viewpoint to match the canvas surface.
-                    zoomViewPort.Inflate(-hZoom, -vZoom); 
-                    
-                    if( zoomAmount > 0)
+                    zoomViewPort.Inflate(-hZoom, -vZoom);
+
+                    if( zoomAmount > 0 )
                         zoomViewPort = zoomViewPort.AspectFit(canvasRect.Size);
 
                     // TODO - need to scale this to match the zoom level
                     var translateX = Math.Max( 0, Math.Min(zoomViewPort.Width, zoomOffset.X));
                     var translateY = Math.Max( 0, Math.Min(zoomViewPort.Height, zoomOffset.Y));
                     var viewportOffSet = new SKPoint(translateX,  translateY);
-                    
+
                     // Offset based on the mouse drag etc
                     zoomViewPort.Offset(viewportOffSet);
 
                     zoomViewPort.Intersect(new SKRect(0, 0, paintBitmap.Width, paintBitmap.Height));
-                        
+
                     var intRect = SKRectI.Round(zoomViewPort);
                     if( intRect.Height > 0 && intRect.Width > 0 )
                     {
@@ -457,7 +454,7 @@
 
             if( rect.Width < 0 || rect.Height < 0 )
                 throw new InvalidOperationException("Whoa");
-            
+
             // Paint the actual bitmap
             canvas.DrawBitmap(paintBitmap, rect, filters);
 
@@ -465,14 +462,14 @@
             if( hue != 0 || saturation != 0 || luminosity != 0 )
             {
                 // Now mask to do the H/S/L
-                using SKPaint paint = new SKPaint();
+                using var paint = new SKPaint();
                 paint.Color = SKColor.FromHsl(hue, saturation, luminosity);
                 paint.BlendMode = mode;
                 canvas.DrawRect(rect, paint);
             }
 
             using var textPaint = new SKPaint();
-            
+
             textPaint.IsAntialias = true;
             textPaint.StrokeWidth = 10f;
             textPaint.StrokeCap = SKStrokeCap.Round;
@@ -481,14 +478,14 @@
             textPaint.Color = new SKColor(200, 200, 200);
 
             var dragRect = DrawDragRect(canvas);
- 
-            if( isCropping && dragRect.HasValue)
+
+            if( isCropping && dragRect.HasValue )
                 canvas.DrawText($"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)", canvasRect.Width / 2, canvasRect.Height / 2, textPaint);
 
-            if (System.Diagnostics.Debugger.IsAttached)
+            if ( System.Diagnostics.Debugger.IsAttached )
                 canvas.DrawText($"{Image.FileName} - {canvasRect} R:{rotation} Z: {zoomAmount} Offset: {zoomOffset} H: {hue} S: {saturation} L: {luminosity}", canvasRect.Width / 2, canvasRect.Height - 10f, textPaint);
 
-            if (croppedBmp != null)
+            if ( croppedBmp != null )
                 croppedBmp.Dispose();
             if( zoomedBmp != null )
                 zoomedBmp.Dispose();
@@ -502,12 +499,12 @@
         // See if we have a crop transformation
         var crop = transformations.Where(x => x is CropTransform).Cast<CropTransform>().FirstOrDefault();
 
-        if (crop != null)
+        if ( crop != null )
         {
             var cropRect = new SKRectI(crop.Left,
-                                       crop.Top,
-                                       crop.Left + crop.Width,
-                                       crop.Top + crop.Height);
+                crop.Top,
+                crop.Left + crop.Width,
+                crop.Top + crop.Height);
 
             croppedBmp = new SKBitmap(crop.Width, crop.Height);
 
@@ -523,16 +520,16 @@
 
         // Tempr
         return filters;
-        
-        if (transformations.Any(x => x is MonoTransform))
+
+        if ( transformations.Any(x => x is MonoTransform) )
         {
             filters.ColorFilter = blackAndWhite;
         }
-        else if (contrast != 0)
+        else if ( contrast != 0 )
         {
             filters.ColorFilter = SKColorFilter.CreateHighContrast(false, SKHighContrastConfigInvertStyle.NoInvert, contrast);
         }
-        else if (saturation != 1)
+        else if ( saturation != 1 )
         {
             // 1.2 => 0
             // 1 => 0
@@ -540,13 +537,14 @@
             // 0.5 => 0.5
             var invert = saturation < 1 ? 1 - saturation : 0;
             filters.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-                    {
-                    saturation, invert, invert, 0, 0,
-                    invert, saturation, invert, 0, 0,
-                    invert, invert, saturation, 0, 0,
-                    0, 0, 0, 1, 0 });
+            {
+                saturation, invert, invert, 0, 0,
+                invert, saturation, invert, 0, 0,
+                invert, invert, saturation, 0, 0,
+                0, 0, 0, 1, 0
+            });
         }
-        else if (lightenFactor != 0)
+        else if ( lightenFactor != 0 )
         {
             var color = lightenFactor > 0 ? SKColors.White : SKColors.Black;
             var factor = (byte)Math.Abs(lightenFactor);
@@ -558,7 +556,7 @@
 
     private void DrawRect(SKRect? rect, SKCanvas canvas)
     {
-        if (rect.HasValue)
+        if ( rect.HasValue )
         {
             var smaller = rect.Value;
             smaller.Inflate( -2, -2 );
@@ -567,7 +565,7 @@
                 Style = SKPaintStyle.Stroke,
                 StrokeCap = SKStrokeCap.Round,
                 StrokeWidth = 3f,
-                Color = SKColor.Parse("#ff5555"),
+                Color = SKColor.Parse("#ff5555")
             };
 
             canvas.DrawRect(smaller, redBorder);
@@ -577,8 +575,8 @@
     private SKRect? DrawDragRect(SKCanvas canvas)
     {
         var dragRect = GetDragRect();
-        
-        if (dragRect.HasValue)
+
+        if ( dragRect.HasValue )
         {
             using var dragBorder = new SKPaint
             {
@@ -599,27 +597,27 @@
     // From https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/color-filters
 
     private SKColorFilter blackAndWhite =
-    SKColorFilter.CreateColorMatrix(new float[]
-            {
-                    0.21f, 0.72f, 0.07f, 0, 0,
-                    0.21f, 0.72f, 0.07f, 0, 0,
-                    0.21f, 0.72f, 0.07f, 0, 0,
-                    0,     0,     0,     1, 0
-                });
+        SKColorFilter.CreateColorMatrix(new float[]
+        {
+            0.21f, 0.72f, 0.07f, 0, 0,
+            0.21f, 0.72f, 0.07f, 0, 0,
+            0.21f, 0.72f, 0.07f, 0, 0,
+            0,     0,     0,     1, 0
+        });
 
     public static SKBitmap Rotate(SKBitmap bitmap, double angle)
     {
-        double radians = Math.PI * angle / 180;
-        float sine = (float)Math.Abs(Math.Sin(radians));
-        float cosine = (float)Math.Abs(Math.Cos(radians));
-        int originalWidth = bitmap.Width;
-        int originalHeight = bitmap.Height;
-        int rotatedWidth = (int)(cosine * originalWidth + sine * originalHeight);
-        int rotatedHeight = (int)(cosine * originalHeight + sine * originalWidth);
+        var radians = Math.PI * angle / 180;
+        var sine = (float)Math.Abs(Math.Sin(radians));
+        var cosine = (float)Math.Abs(Math.Cos(radians));
+        var originalWidth = bitmap.Width;
+        var originalHeight = bitmap.Height;
+        var rotatedWidth = (int)(cosine * originalWidth + sine * originalHeight);
+        var rotatedHeight = (int)(cosine * originalHeight + sine * originalWidth);
 
         var rotatedBitmap = new SKBitmap(bitmap.Height, bitmap.Width);
 
-        using (var surface = new SKCanvas(rotatedBitmap))
+        using ( var surface = new SKCanvas(rotatedBitmap) )
         {
             surface.Clear();
             surface.Translate(rotatedWidth / 2, rotatedHeight / 2);
@@ -627,6 +625,7 @@
             surface.Translate(-originalWidth / 2, -originalHeight / 2);
             surface.DrawBitmap(bitmap, new SKPoint());
         }
+
         return rotatedBitmap;
     }
 
@@ -640,22 +639,23 @@
     /// <returns></returns>
     private static SKRect GetRenderRect(SKBitmap sourceRect, SKSize destSize)
     {
-        float srcAspectRatio = sourceRect.Width / (float)sourceRect.Height;
-        float renderHeight = destSize.Height;
-        float renderWidth = renderHeight * srcAspectRatio;
-        float scaleFactor = 1.0f;
+        var srcAspectRatio = sourceRect.Width / (float)sourceRect.Height;
+        var renderHeight = destSize.Height;
+        var renderWidth = renderHeight * srcAspectRatio;
+        var scaleFactor = 1.0f;
 
-        if (renderHeight > destSize.Height)
+        if ( renderHeight > destSize.Height )
             scaleFactor = destSize.Height / renderHeight;
-        else if (renderWidth > destSize.Width)
+        else if ( renderWidth > destSize.Width )
             scaleFactor = destSize.Width / renderWidth;
 
         renderWidth *= scaleFactor;
         renderHeight *= scaleFactor;
 
         var origin = new SKPoint((destSize.Width - renderWidth) / 2.0f,
-                                 (destSize.Height - renderHeight) / 2.0f);
+            (destSize.Height - renderHeight) / 2.0f);
 
         return new SKRect(origin.X, origin.Y, renderWidth + origin.X, renderHeight + origin.Y);
     }
+
 }

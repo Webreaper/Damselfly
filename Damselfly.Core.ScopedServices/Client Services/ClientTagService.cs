@@ -54,7 +54,7 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
     public async Task<ICollection<Tag>> GetFavouriteTags()
     {
-        if (_favouriteTags == null)
+        if ( _favouriteTags == null )
             _favouriteTags = await httpClient.CustomGetFromJsonAsync<List<Tag>>("/api/tags/favourites");
 
         return _favouriteTags;
@@ -104,5 +104,4 @@ public class ClientTagService : ITagService, IRecentTagService, ITagSearchServic
 
         OnFavouritesChanged?.Invoke();
     }
-
 }

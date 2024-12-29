@@ -12,11 +12,11 @@ public class ImageContextFactory : IDesignTimeDbContextFactory<ImageContext>
         var optionsBuilder = new DbContextOptionsBuilder<ImageContext>();
 
         optionsBuilder.UseSqlite(
-            b => {
+            b =>
+            {
                 b.MigrationsAssembly( "Damselfly.Migrations.Sqlite" );
                 b.UseQuerySplittingBehavior( QuerySplittingBehavior.SingleQuery );
             } );
         return new ImageContext( optionsBuilder.Options );
     }
 }
-

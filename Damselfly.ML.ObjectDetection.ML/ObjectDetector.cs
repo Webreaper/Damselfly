@@ -63,20 +63,19 @@ public class ObjectDetector
     }
 
     private Dictionary<ModelType, Yolo> _yoloModels = new();
-    
+
     private Yolo GetYoloModel(ModelType modelType)
     {
-        
-        if( ! _yoloModels.TryGetValue(modelType, out var yolo))
+        if( ! _yoloModels.TryGetValue(modelType, out var yolo) )
         {
-            string modelFile = modelType switch
+            var modelFile = modelType switch
             {
                 ModelType.ObjectDetection => "yolo11n.onnx",
                 ModelType.Classification => "yolo11n-cls.onnx",
                 _ => throw new NotImplementedException($"Unknown model type: {modelType}")
             };
-            
-            string modelPath = $"./Models/{modelFile}";
+
+            var modelPath = $"./Models/{modelFile}";
 
             if( ! File.Exists(modelPath) )
             {
@@ -93,28 +92,28 @@ public class ObjectDetector
                 OnnxModel = modelPath,
                 Cuda = false,
                 PrimeGpu = false,
-                ModelType = modelType,
+                ModelType = modelType
             });
-            
+
             _yoloModels.Add(modelType, yolo);
         }
 
         return yolo;
     }
-    
+
     public static SKImage CreateSkImageFromImageSharp(Image<Rgb24> imageSharpImage)
     {
-        byte[] buffer = new byte[imageSharpImage.Width * imageSharpImage.Height * 4];
+        var buffer = new byte[imageSharpImage.Width * imageSharpImage.Height * 4];
 
-        int pixel = 0;
+        var pixel = 0;
         // First, convert from an image, to an array of RGB float values. 
         imageSharpImage.ProcessPixelRows(pixelAccessor =>
         {
             for ( var y = 0; y < pixelAccessor.Height; y++ )
             {
                 var row = pixelAccessor.GetRowSpan(y);
-                for(var x = 0; x < pixelAccessor.Width; x++ )
-                { 
+                for( var x = 0; x < pixelAccessor.Width; x++ )
+                {
                     buffer[pixel * 4 + 0] = row[x].R;
                     buffer[pixel * 4 + 1] = row[x].G;
                     buffer[pixel * 4 + 2] = row[x].B;
@@ -123,11 +122,12 @@ public class ObjectDetector
                 }
             }
         });
-        var image = SKImage.FromPixelCopy(new SKImageInfo(imageSharpImage.Width, imageSharpImage.Height, SKColorType.Rgb888x), buffer);
+        var image = SKImage.FromPixelCopy(
+            new SKImageInfo(imageSharpImage.Width, imageSharpImage.Height, SKColorType.Rgb888x), buffer);
 
         return image;
     }
-    
+
     /// <summary>
     ///     Given an image, detect objects in it using the Yolo v5 model.
     /// </summary>
@@ -138,7 +138,7 @@ public class ObjectDetector
         IList<ImageDetectResult>? result = null;
 
         var image = CreateSkImageFromImageSharp(imageSharpImage);
-        
+
         try
         {
             var watch = new Stopwatch( "DetectObjects" );
@@ -147,7 +147,7 @@ public class ObjectDetector
             if( image is { Width: > 640, Height: > 640 } )
             {
                 var yolo = GetYoloModel(ModelType.ObjectDetection);
-                
+
                 var detections = yolo.RunObjectDetection(image);
                 result = detections.Where( x => x.Confidence > predictionThreshold )
                     .Select(x =>
@@ -163,8 +163,8 @@ public class ObjectDetector
                             Tag = x.Label.Name,
                             Service = "YoloDotNet",
                             ServiceModel = "Yolo11"
-                            }
-                        )
+                        }
+                    )
                     .ToList();
 
                 watch.Stop();
@@ -190,9 +190,9 @@ public class ObjectDetector
     public Task<string?> ClassifyImage(Image<Rgb24> imageSharpImage)
     {
         string? classification = null;
-        
+
         var image = CreateSkImageFromImageSharp(imageSharpImage);
-        
+
         try
         {
             var watch = new Stopwatch( "ClassifyImage" );
@@ -201,7 +201,7 @@ public class ObjectDetector
             if( image is { Width: > 640, Height: > 640 } )
             {
                 var yolo = GetYoloModel(ModelType.Classification);
-                
+
                 var detections = yolo.RunClassification(image, 1);
                 classification = detections.OrderDescending()
                     .Select( x => x.Label)
@@ -214,7 +214,7 @@ public class ObjectDetector
         {
             Logging.LogError($"Error during image classification: {ex.Message}");
         }
-        
+
         return Task.FromResult( classification );
     }
 }

@@ -17,23 +17,23 @@ public class UserFolderService : IDisposable, IUserFolderService
     private readonly NotificationsService _notifications;
     private readonly ISearchService _searchService;
     private readonly IUserService _userService;
-    
+
     private ICollection<Folder>? folderItems; // Ordered as returned from the service
     private Dictionary<int, Folder> folderLookup = new();
     private Dictionary<int, UserFolderState> folderStates = new();
 
-    public UserFolderService(IFolderService folderService, 
-                ISearchService searchService, 
-                IConfigService configService,
-                IUserService userService,
-                NotificationsService notifications)
+    public UserFolderService(IFolderService folderService,
+        ISearchService searchService,
+        IConfigService configService,
+        IUserService userService,
+        NotificationsService notifications)
     {
         _folderService = folderService;
         _searchService = searchService;
         _userService = userService;
         _configService = configService;
         _notifications = notifications;
-        
+
         _folderService.OnChange += OnFolderChanged;
 
         _notifications.SubscribeToNotification(NotificationType.FoldersChanged, OnFolderChanged);
@@ -48,7 +48,7 @@ public class UserFolderService : IDisposable, IUserFolderService
 
     public bool IsExpanded(Folder? folder)
     {
-        if (folder != null &&  folderStates.TryGetValue(folder.FolderId, out var folderState) )
+        if ( folder != null &&  folderStates.TryGetValue(folder.FolderId, out var folderState) )
             return folderState.Expanded;
 
         return false;
@@ -123,7 +123,7 @@ public class UserFolderService : IDisposable, IUserFolderService
     {
         if ( ! folderLookup.TryGetValue(folderId, out var result) )
             result = null;
-        
+
         return Task.FromResult( result );
     }
 

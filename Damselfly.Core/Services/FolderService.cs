@@ -26,7 +26,7 @@ public class FolderService : IFolderService
     private readonly EventConflator conflator = new( 10 * 1000 );
     private List<Folder> allFolders = new();
 
-    public FolderService(IndexingService _indexingService, 
+    public FolderService(IndexingService _indexingService,
         IServiceScopeFactory scopeFactory,
         ServerNotifierService notifier)
     {
@@ -39,7 +39,7 @@ public class FolderService : IFolderService
         // Initiate pre-loading the folders.
         _ = LoadFolders();
     }
-    
+
     public event Action OnChange;
 
     public Task<ICollection<Folder>> GetFolders()
@@ -74,11 +74,10 @@ public class FolderService : IFolderService
         }
 
         List<UserFolderState> toCreate = new();
-        
+
         // Fill in any that don't have a folder state (since we only persist expanded folders)
         // TODO: Only store state for folders with subfolders? But how?
         foreach( var folder in allFolders )
-        {
             if( !result.ContainsKey(folder.FolderId) )
             {
                 var newState = new UserFolderState
@@ -88,11 +87,10 @@ public class FolderService : IFolderService
                     FolderId = folder.FolderId,
                     UserId = userId.Value
                 };
-                
+
                 toCreate.Add( newState);
                 result.Add( folder.FolderId, newState);
             }
-        }
 
         // Save the new one
         await SaveFolderStates([], toCreate);
@@ -114,7 +112,6 @@ public class FolderService : IFolderService
 
             try
             {
-
                 db.UserFolderStates.AddRange( newStates);
                 db.UserFolderStates.UpdateRange( updatedStates);
                 await db.SaveChangesAsync("SaveUserFolderState");

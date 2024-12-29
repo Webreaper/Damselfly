@@ -5,23 +5,17 @@
 
 @code {
 
-    [Parameter]
-    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
 
-    [Parameter]
-    public bool Selected { get; set; } = true;
+    [Parameter] public bool Selected { get; set; } = true;
 
-    [Parameter]
-    public string IconStyle { get; set; }
+    [Parameter] public string IconStyle { get; set; }
 
-    [Parameter]
-    public string StyleGroup { get; set; } = "fas";
+    [Parameter] public string StyleGroup { get; set; } = "fas";
 
-    [Parameter]
-    public bool Enabled { get; set; } = true;
+    [Parameter] public bool Enabled { get; set; } = true;
 
-    [Parameter]
-    public string title { get; set; }
+    [Parameter] public string title { get; set; }
 
     private string IconEnabledStyle => Selected ? "fas" : "far";
     private string TextColour => Selected ? " var( --keyword-text )" : " var( --body-text )";

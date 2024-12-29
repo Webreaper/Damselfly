@@ -20,15 +20,13 @@ public class NotificationsService : IAsyncDisposable
         _logger = logger;
         _appState = appState;
 
-        if (_appState.IsWebAssembly )
+        if ( _appState.IsWebAssembly )
         {
             var hubUrl = $"{navManager.BaseUri}{NotificationHub.NotificationRoot}";
             _logger.LogInformation($"Setting up notifications listener on {hubUrl}...");
 
             hubConnection = new HubConnectionBuilder()
-                .WithUrl(hubUrl, options => { 
-                    options.UseStatefulReconnect = true; 
-                } )
+                .WithUrl(hubUrl, options => { options.UseStatefulReconnect = true; } )
                 .WithAutomaticReconnect(new RetryPolicy())
                 .Build();
 

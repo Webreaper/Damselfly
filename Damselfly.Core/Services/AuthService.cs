@@ -19,7 +19,7 @@ public class AuthService : IAuthService
     private readonly SignInManager<AppIdentityUser> _signInManager;
 
     public AuthService( UserManager<AppIdentityUser> userManager,
-                SignInManager<AppIdentityUser> signInManager)
+        SignInManager<AppIdentityUser> signInManager)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -41,15 +41,16 @@ public class AuthService : IAuthService
         var roles = await _signInManager.UserManager.GetRolesAsync( user );
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, login.Email),
-            new Claim(ClaimTypes.Name, user.UserName)
+            new ( ClaimTypes.NameIdentifier, user.Id.ToString() ),
+            new ( ClaimTypes.Email, login.Email ),
+            new ( ClaimTypes.Name, user.UserName )
         };
 
         foreach( var role in roles )
             claims.Add( new Claim( ClaimTypes.Role, role ) );
 
-        var key = new SymmetricSecurityKey( Encoding.UTF8.GetBytes( "BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama" ) );
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes( "BlahSomeKeyBlahFlibbertyGibbertNonsenseBananarama" ) );
         var creds = new SigningCredentials( key, SecurityAlgorithms.HmacSha256 );
         var expiry = DateTime.Now.AddDays( Convert.ToInt32( 1 ) );
 
@@ -85,4 +86,3 @@ public class AuthService : IAuthService
         return new RegisterResult { Successful = true };
     }
 }
-

@@ -8,11 +8,11 @@ html, body {
     color: var(--body-text) !important;
     height: 100%;
     margin: 0;
-    padding: 0; 
+    padding: 0;
 }
 
 ::selection {
-    color: var( --body-text );
+    color: var(--body-text);
     background: var(--statusbar-gradstart);
 }
 
@@ -180,11 +180,11 @@ div::-webkit-scrollbar-thumb {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: var( --body-text ) !important;
+    color: var(--body-text) !important;
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6 {
-    color: var( --body-text ) !important;
+    color: var(--body-text) !important;
 }
 
 .damselfly-pagetitlebar {
@@ -267,7 +267,6 @@ app {
     height: 200px;
     overflow-y: scroll;
 }
-
 
 
 .expandable {
@@ -388,8 +387,9 @@ app {
 }
 
 .themeswitcher-fade {
-    animation: fadeIn ease 2s; 
+    animation: fadeIn ease 2s;
 }
+
 .content {
     padding-top: 1.1rem;
 }
@@ -701,7 +701,6 @@ f
 }
 
 
-
 .damselfly-exportsettings {
     flex: 1;
     display: flex;
@@ -899,7 +898,6 @@ f
     display: flex;
     flex-direction: column;
 }
-
 
 
 .damselfly-taglist {
@@ -1630,7 +1628,7 @@ hr.separator {
 
 #blazor-error-ui p {
     font-size: 1.2em;
-    border-radius: 10px;    
+    border-radius: 10px;
     color: var(--primary);
 }
 
@@ -1655,4 +1653,5 @@ hr.separator {
 .tag-autocomplete-popover .mud-typography-body1 {
     font-size: 0.8rem;
 }
+
 /* elements in the control list */

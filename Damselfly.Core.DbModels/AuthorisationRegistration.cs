@@ -12,13 +12,14 @@ namespace Damselfly.Core.DbModels;
 
 public static class AuthorisationRegistration
 {
-    private static bool IsAdminOrNoUsers( AuthorizationHandlerContext context, UserManager<AppIdentityUser> userManager )
+    private static bool IsAdminOrNoUsers( AuthorizationHandlerContext context,
+        UserManager<AppIdentityUser> userManager )
     {
-        if (context.User != null && context.User.IsInRole(RoleDefinitions.s_AdminRole) )
+        if ( context.User != null && context.User.IsInRole(RoleDefinitions.s_AdminRole) )
             return true;
 
         // No logged in users. See if there are any users. If not, we allow it
-        if (userManager != null && !userManager.Users.Any())
+        if ( userManager != null && !userManager.Users.Any() )
             return true;
 
         return false;
@@ -36,7 +37,7 @@ public static class AuthorisationRegistration
         var userManager = serviceProvider.GetService<UserManager<AppIdentityUser>>();
         var logger = serviceProvider.GetService<ILogger<AuthorizationOptions>>();
         var enablePolicies = configService!.GetBool(ConfigSettings.EnablePoliciesAndRoles,
-                                ConfigSettings.DefaultEnableRolesAndAuth);
+            ConfigSettings.DefaultEnableRolesAndAuth);
 
 
         if ( enablePolicies )
@@ -52,13 +53,13 @@ public static class AuthorisationRegistration
 
             // Users and Admins can edit content (keywords)
             config.AddPolicy(PolicyDefinitions.s_IsEditor, policy => policy.RequireRole(
-                      RoleDefinitions.s_AdminRole,
-                      RoleDefinitions.s_UserRole));
+                RoleDefinitions.s_AdminRole,
+                RoleDefinitions.s_UserRole));
 
             // Special role for the user Admin page - only accessible if the current user
             // is an admin or there are no users defined at all.
             config.AddPolicy(PolicyDefinitions.s_IsAdminOrNoUsers, policy => policy.RequireAssertion(
-                            context => IsAdminOrNoUsers( context, userManager )));
+                context => IsAdminOrNoUsers( context, userManager )));
 
             // Admins, Users and ReadOnly users can download
             config.AddPolicy(PolicyDefinitions.s_IsDownloader, policy => policy.RequireRole(

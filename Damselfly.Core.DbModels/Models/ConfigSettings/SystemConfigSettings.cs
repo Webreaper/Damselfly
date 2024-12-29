@@ -22,7 +22,7 @@ public class SystemConfigSettings
     public bool enableImageEditing { get; set; } = false;
     public bool enableBackgroundThumbs { get; set; } = false;
     public int similarityThreshold { get; set; } = 75;
-    
+
     public void Save(IConfigService configService)
     {
         configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
@@ -31,7 +31,7 @@ public class SystemConfigSettings
         configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
         configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
         configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
-        
+
         configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
         configService.Set(ConfigSettings.EnableAIProcessing, enableAIProcessing.ToString());
         configService.Set(ConfigSettings.DisableObjectDetector, disableObjectDetector.ToString());

@@ -95,7 +95,6 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
                 await SaveChangesAsync();
 
                 Logging.LogWarning( $"EF Core bulkExtensions failed. Standard insert used (Msg: {ex.Message})" );
-
             }
             catch( Exception ex2 )
             {
@@ -141,7 +140,6 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
                 await SaveChangesAsync();
 
                 Logging.LogWarning( $"EF Core bulkExtensions failed. Standard update used (Msg: {ex.Message})" );
-
             }
             catch( Exception ex2 )
             {
@@ -440,7 +438,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     /// <returns></returns>
     public Task<IQueryable<T>> GetChildFolderIds<T>( DbSet<T> resultSet, int rootId ) where T : class
     {
-        string sql = @"with recursive children(folderId, parentId) as (  
+        var sql = @"with recursive children(folderId, parentId) as (  
                                 select p.FolderID, p.ParentID                    
                                     from Folders p where FolderID = {0}     
                                 union all 
@@ -449,7 +447,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
                                         join children c on c.FolderID = f.ParentId )
                                select r.* from folders r 
                                     join children x on r.FolderID = x.FolderID;";
-    
+
         return Task.FromResult( resultSet.FromSqlRaw( sql, rootId ) );
     }
 

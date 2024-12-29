@@ -32,7 +32,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     private bool _fullIndexComplete;
 
     public IndexingService( IServiceScopeFactory scopeFactory, IStatusService statusService,
-        ImageProcessService imageService, ConfigService config, ImageCache imageCache, 
+        ImageProcessService imageService, ConfigService config, ImageCache imageCache,
         FolderWatcherService watcherService, WorkService workService)
     {
         _scopeFactory = scopeFactory;
@@ -85,7 +85,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 else
                     Logging.LogVerbose("Adding indexing job for folders modified, after 30 seconds.");
             }
-            
+
             return jobs;
         }
 
@@ -112,7 +112,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
         return timeSinceLastWrite.Seconds > 30;
     }
-    
+
     public async Task MarkFolderForScan(int folderId)
     {
         await MarkFoldersForScan(new List<int> { folderId });
@@ -169,10 +169,8 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         var trashFolder = _configService.Get( ConfigSettings.TrashcanFolderName );
 
         if( !string.IsNullOrEmpty( trashFolder ) )
-        {
             if( dir.Name == trashFolder )
                 return false;
-        }
 
         return dir.IsMonitoredFolder();
     }
@@ -256,7 +254,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
         }
 
         // Scan subdirs recursively.
-        foreach ( var sub in subFolders ) 
+        foreach ( var sub in subFolders )
             await IndexFolder(sub, folderToScan);
     }
 
@@ -299,7 +297,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
                 await db.SaveChangesAsync("DeleteFolders");
                 foldersChanged = true;
             }
-            
+
             // Clean up folderstates for users
             await db.UserFolderStates
                 .Where( x => !db.Folders.Select( f => f.FolderId).Contains(x.FolderId))

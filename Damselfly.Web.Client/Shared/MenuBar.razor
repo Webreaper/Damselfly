@@ -18,16 +18,15 @@
     <Toolbar/>
 </div>
 
-    @if( ShowMenu )
-    {
-        @MenuContent
-    }
+@if( ShowMenu )
+{
+    @MenuContent
+}
 
 @code
 {
-    [Parameter]
-    public RenderFragment MenuContent { get; set; }
-    
+    [Parameter] public RenderFragment MenuContent { get; set; }
+
     private string StatusText { get; set; }
     private bool ShowMenu { get; set; } = false;
 
@@ -35,10 +34,10 @@
     {
         ShowMenu = !ShowMenu;
     }
-        
+
     private void UpdateStatus(string newText)
     {
-        if (StatusText != newText)
+        if ( StatusText != newText )
         {
             StatusText = newText;
             StateHasChanged();
@@ -47,7 +46,7 @@
 
     protected override void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             userStatusService.OnStatusChanged += UpdateStatus;
         }

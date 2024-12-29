@@ -51,7 +51,7 @@
             </p>
             <div class="damselfly-configsetting">
                 <div class="damselfly-configfield">
-                    <MudSwitch @bind-Value="settingsModel.enableBackgroundThumbs" UncheckedColor=Color.Tertiary Color="Color.Primary"
+                    <MudSwitch @bind-Value="settingsModel.enableBackgroundThumbs" UncheckedColor="Color.Tertiary" Color="Color.Primary"
                                Label="Enable Background Thumbnail Generation"/>
                 </div>
             </div>
@@ -326,7 +326,7 @@
     {
         if ( firstRender )
         {
-            bool isAdmin = await userService.PolicyApplies(PolicyDefinitions.s_IsAdmin);
+            var isAdmin = await userService.PolicyApplies(PolicyDefinitions.s_IsAdmin);
 
             var allUsers = await userMgmtService.GetUsers();
 

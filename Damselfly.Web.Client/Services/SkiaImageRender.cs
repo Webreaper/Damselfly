@@ -1,4 +1,3 @@
-
 using System.Net;
 
 namespace Damselfly.Web.Client.Services;
@@ -34,13 +33,9 @@ public static class SkiaImageRender
         finally
         {
             // Don't forget to close your response.
-            if( response != null )
-            {
-                response.Close();
-            }
+            if( response != null ) response.Close();
         }
 
         return null;
     }
 }
-

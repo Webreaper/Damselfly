@@ -14,7 +14,7 @@
         if ( !endOfImages )
         {
             <div class="damselfly-moreimages" id="list-end">
-               <ProgressSpinner ProgressText="Loading people..."/>
+                <ProgressSpinner ProgressText="Loading people..."/>
             </div>
         }
         else
@@ -31,25 +31,23 @@
 </div>
 
 @code {
-    [Parameter]
-    public string? SearchText { get; set; }
-    
-    [Parameter]
-    public Person.PersonState? PersonState { get; set; }
+    [Parameter] public string? SearchText { get; set; }
+
+    [Parameter] public Person.PersonState? PersonState { get; set; }
 
     const int peoplePerPage = 30;
     private bool NoImagesSelected => !selectionService.Selection.Any();
     bool endOfImages = false;
     string toastClass = string.Empty;
     private ScrollMonitor ScrollMonitor;
-    
+
     private List<Person> People  = new();
 
     public string ResultsMessage { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
         }
@@ -65,7 +63,7 @@
     {
         await LoadData(true);
     }
-    
+
     [JSInvokable]
     // Debugging assistant to help us differentiate between JS calls and other data loads
     public async Task LoadMoreData()
@@ -77,10 +75,12 @@
 
     private async Task LoadData(bool refresh = false)
     {
-        var req = new PeopleRequest { SearchText = SearchText, 
-                State = PersonState, 
-                Start = refresh ? 0 : People.Count(), 
-                Count = peoplePerPage 
+        var req = new PeopleRequest
+        {
+            SearchText = SearchText,
+            State = PersonState,
+            Start = refresh ? 0 : People.Count(),
+            Count = peoplePerPage
         };
 
         var newPeople = await faceService.GetPeople(req);
@@ -91,4 +91,5 @@
         People.AddRange( newPeople);
         StateHasChanged();
     }
+
 }

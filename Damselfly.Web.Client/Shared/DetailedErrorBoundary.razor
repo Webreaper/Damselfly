@@ -1,11 +1,11 @@
 ﻿@inject NavigationManager navManager
 @inherits ErrorBoundary
 
-@if (CurrentException is null)
+@if ( CurrentException is null )
 {
     @ChildContent
 }
-else if (ErrorContent is not null)
+else if ( ErrorContent is not null )
 {
     @ErrorContent(CurrentException)
 }
@@ -18,12 +18,12 @@ else
     </div>
 }
 
-@if (Open)
+@if ( Open )
 {
     <div class="damselfly-error-popup">
         <h2>Error Details:</h2>
         <div class="error-stacktrace">
-            @foreach (var exception in receivedExceptions)
+            @foreach ( var exception in receivedExceptions )
             {
                 @exception
             }

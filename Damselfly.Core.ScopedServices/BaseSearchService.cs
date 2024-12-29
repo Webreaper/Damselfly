@@ -25,7 +25,8 @@ public abstract class BaseSearchService
 
     protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = DamselflyContants.PageSize);
 
-    public BaseSearchService(ICachedDataService dataService, IImageCacheService imageCache, ILogger<BaseSearchService> logger)
+    public BaseSearchService(ICachedDataService dataService, IImageCacheService imageCache,
+        ILogger<BaseSearchService> logger)
     {
         _service = dataService;
         _imageCache = imageCache;
@@ -124,7 +125,7 @@ public abstract class BaseSearchService
             }
         }
     }
-    
+
     public bool IncludeAITags
     {
         get => Query.IncludeAITags;
@@ -195,8 +196,8 @@ public abstract class BaseSearchService
         get => Query.Months;
         set
         {
-            if ( (value == null && Query.Months != null) || 
-                 (value != null && Query.Months == null) || 
+            if ( (value == null && Query.Months != null) ||
+                 (value != null && Query.Months == null) ||
                  (value != null && Query.Months != null && Query.Months.SequenceEqual( value ) ) )
             {
                 Query.Months = value;
@@ -320,12 +321,12 @@ public abstract class BaseSearchService
             if( !string.IsNullOrEmpty( SearchText) )
             {
                 var text = (TagsOnly ? "Text (tags only): " : "Text: ") + SearchText;
-                hints.Add( new SearchHint{ Description = text, Clear = () => SearchText = String.Empty });
+                hints.Add( new SearchHint { Description = text, Clear = () => SearchText = string.Empty });
             }
 
             if( Folder != null )
                 hints.Add( new SearchHint { Description = $"Folder: {Folder.Name}", Clear = () => Folder = null });
-            
+
             if( Person != null )
                 hints.Add( new SearchHint { Description = $"Person: {Person.Name}", Clear = () => Person = null });
 
@@ -333,16 +334,18 @@ public abstract class BaseSearchService
                 hints.Add( new SearchHint { Description = $"Tag: {Tag.Keyword}", Clear = () => Tag = null });
 
             if( MinRating != null )
-                hints.Add( new SearchHint { Description = $"Rating: at least {MinRating} stars", Clear = () => MinRating = null });
-            
-            if (SimilarToId != null)
+                hints.Add( new SearchHint
+                    { Description = $"Rating: at least {MinRating} stars", Clear = () => MinRating = null });
+
+            if ( SimilarToId != null )
             {
                 var image = _imageCache.GetCachedImage(SimilarToId.Value).Result;
                 if( image is not null )
-                    hints.Add( new SearchHint { Description = $"Looks Like: {image.FileName}", Clear = () => SimilarToId = null } );
+                    hints.Add( new SearchHint
+                        { Description = $"Looks Like: {image.FileName}", Clear = () => SimilarToId = null } );
             }
 
-            string dateString = string.Empty;
+            var dateString = string.Empty;
             if( MaxSizeKB.HasValue && MinSizeKB.HasValue )
             {
                 dateString = $"Between {MinSizeKB.Value}KB and {MaxSizeKB.Value}KB";
@@ -355,9 +358,11 @@ public abstract class BaseSearchService
                 if( MinSizeKB.HasValue )
                     dateString = $"At least: {MinSizeKB.Value}KB";
             }
-            
+
             if( ! string.IsNullOrEmpty(dateString) )
-                hints.Add( new SearchHint { Description = dateString, Clear = () =>
+                hints.Add( new SearchHint
+                {
+                    Description = dateString, Clear = () =>
                     {
                         MinSizeKB = null;
                         MaxSizeKB = null;
@@ -377,21 +382,26 @@ public abstract class BaseSearchService
             }
 
             if ( !string.IsNullOrEmpty(dateRange) )
-                hints.Add( new SearchHint {Description = $"Date: {dateRange}", Clear = () =>
+                hints.Add( new SearchHint
                 {
-                    MinDate = null;
-                    MaxDate = null; } 
+                    Description = $"Date: {dateRange}", Clear = () =>
+                    {
+                        MinDate = null;
+                        MaxDate = null;
+                    }
                 });
 
             if ( UntaggedImages )
-                hints.Add( new SearchHint {Description = "Untagged Images", Clear = () => UntaggedImages = false });
-            
+                hints.Add( new SearchHint { Description = "Untagged Images", Clear = () => UntaggedImages = false });
+
             if( !IncludeChildFolders )
-                hints.Add( new SearchHint {Description = "Exclude child folders", Clear = () => IncludeChildFolders = true });
-            
-            if( Months != null && Months.Any())
+                hints.Add( new SearchHint
+                    { Description = "Exclude child folders", Clear = () => IncludeChildFolders = true });
+
+            if( Months != null && Months.Any() )
             {
-                var monthText = string.Join( ", ", Months.Order().Select( m => CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m)));
+                var monthText = string.Join( ", ",
+                    Months.Order().Select( m => CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m)));
                 hints.Add( new SearchHint { Description = $"During: {monthText}", Clear = () => Months = null } );
             }
 
@@ -399,26 +409,26 @@ public abstract class BaseSearchService
             {
                 var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
                 if ( cam != null )
-                    hints.Add( new SearchHint{ Description = $"Camera: {cam.Model}", Clear = () => CameraId = null});
+                    hints.Add( new SearchHint { Description = $"Camera: {cam.Model}", Clear = () => CameraId = null });
             }
 
             if ( LensId > 0 )
             {
                 var lens = _service.Lenses.FirstOrDefault(x => x.LensId == LensId);
                 if ( lens != null )
-                    hints.Add( new SearchHint{ Description = $"Lens: {lens.Model}", Clear = () => LensId = null});
+                    hints.Add( new SearchHint { Description = $"Lens: {lens.Model}", Clear = () => LensId = null });
             }
-            
+
             if ( FaceSearch.HasValue )
-                hints.Add( new SearchHint{ Description = FaceSearch.Humanize(), Clear = () => FaceSearch = null});
+                hints.Add( new SearchHint { Description = FaceSearch.Humanize(), Clear = () => FaceSearch = null });
 
             if ( Orientation.HasValue )
-                hints.Add( new SearchHint{ Description = Orientation.Humanize(), Clear = () => Orientation = null});
+                hints.Add( new SearchHint { Description = Orientation.Humanize(), Clear = () => Orientation = null });
 
             return hints;
-        }    
+        }
     }
-    
+
     public string SearchBreadcrumbs
     {
         get
@@ -432,7 +442,7 @@ public abstract class BaseSearchService
         }
     }
 
-    
+
     protected void ClearSearchResults()
     {
         _searchResults.Clear();

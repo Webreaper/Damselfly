@@ -12,10 +12,10 @@
     height: 30px;
     line-height: 30px;
     border-radius: 10px;
-    background: rgba( 50, 50, 50, 0.8);
+    background: rgba(50, 50, 50, 0.8);
     color: white;
     animation: slowFade ease 3s;
-    box-shadow: 0 0 5px rgb( 50, 50, 50);
+    box-shadow: 0 0 5px rgb(50, 50, 50);
 }
 
 .toast-panel-hide {

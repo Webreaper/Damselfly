@@ -29,24 +29,26 @@
         <MudButton OnClick="Cancel">Cancel</MudButton>
         @if( showDupeMessage )
         {
-            <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" 
-                        OnClick="Merge">Merge with @TypeAheadName</MudButton>
+            <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit"
+                       OnClick="Merge">
+                Merge with @TypeAheadName
+            </MudButton>
         }
         else
         {
-            <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit" 
-                        OnClick="Save">Save as @TypeAheadName</MudButton>
+            <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit"
+                       OnClick="Save">
+                Save as @TypeAheadName
+            </MudButton>
         }
     </DialogActions>
 </MudDialog>
 
 @code {
 
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public ImageObject theObject { get; set; }
+    [Parameter] public ImageObject theObject { get; set; }
 
     private string TypeAheadName { get; set; }
     private bool showDupeMessage = false;
@@ -81,6 +83,7 @@
             }
         }
     }
+
     private async Task Save()
     {
         var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName };
@@ -93,15 +96,17 @@
 
     private async Task Merge()
     {
-        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName, Merge = true};
+        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = TypeAheadName, Merge = true };
         await peopleService.UpdatePersonName(req);
 
         statusService.UpdateStatus($"Face merged with '{TypeAheadName}'");
 
         MudDialog.Close(DialogResult.Ok(true));
     }
+
     private void Cancel()
     {
         MudDialog.Close(DialogResult.Cancel());
     }
+
 }

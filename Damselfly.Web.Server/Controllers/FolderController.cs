@@ -26,7 +26,7 @@ public class FolderController : ControllerBase
     {
         var folders = await _service.GetFolders();
 
-        foreach (var folder in folders)
+        foreach ( var folder in folders )
         {
             folder.Images.Clear();
 
@@ -39,13 +39,13 @@ public class FolderController : ControllerBase
 
         return folders;
     }
-    
+
     [HttpGet("/api/folders/states/{userId}")]
     public async Task<Dictionary<int, UserFolderState>> GetUserFolderStates(int userId)
     {
         return await _service.GetUserFolderStates(userId);
     }
-    
+
     [HttpPost("/api/folders/state")]
     public async Task UpdateFolderState(IEnumerable<UserFolderState> newStates)
     {

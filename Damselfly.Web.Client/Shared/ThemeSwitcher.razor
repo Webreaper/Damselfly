@@ -13,9 +13,8 @@
 }
 
 @code {
-    [Parameter]
-    public RenderFragment ChildContent { get; set; }
-    
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
     private long cacheBuster = 1;
     private MudTheme? mudTheme;
     private ThemeConfig? currentConfig;
@@ -91,8 +90,8 @@
     private void ThemeChanged( ThemeConfig newTheme )
     {
         _ = SwitchTheme(newTheme);
-    }   
-    
+    }
+
     private async Task SwitchTheme(ThemeConfig newTheme)
     {
         if( newTheme != null )
@@ -100,7 +99,7 @@
             // Apply the new stylesheet to Damselfly
             var themeCSS = $"{newTheme.Path}?j={cacheBuster++}";
             await JsRuntime.InvokeAsync<string>("setStyleSheet", themeCSS);
-            
+
             mudTheme = CreateMudTheme(newTheme);
             themeSet = true;
             StateHasChanged();

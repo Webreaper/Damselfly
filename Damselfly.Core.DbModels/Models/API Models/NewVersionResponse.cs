@@ -8,6 +8,7 @@ public class NewVersionResponse
     public Version? NewVersion { get; set; }
     public string? NewReleaseName { get; set; }
     public string? ReleaseUrl { get; set; }
+
     public bool? UpgradeAvailable()
     {
         if( NewVersion != null )
@@ -15,5 +16,4 @@ public class NewVersionResponse
 
         return null;
     }
-
 }

@@ -4,12 +4,9 @@
 
 @code{
 
-        [Parameter]
-        [EditorRequired]
-        public required string ScrollElementId { get; set; }
+    [Parameter] [EditorRequired] public required string ScrollElementId { get; set; }
 
-        [Parameter]
-        public required string ScrollConfigName { get; set; }
+    [Parameter] public required string ScrollConfigName { get; set; }
 
     private EventConflator conflator = new();
 

@@ -19,7 +19,8 @@
         var checkResult = newVersionState.UpgradeAvailable();
         if( checkResult.HasValue )
             needsUpgrade = checkResult.Value;
-        
+
         await base.OnInitializedAsync();
     }
+
 }

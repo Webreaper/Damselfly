@@ -6,18 +6,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
+        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="SixLabors.ImageSharp" />
-        <None Remove="SixLabors.Fonts" />
+        <None Remove="SixLabors.ImageSharp"/>
+        <None Remove="SixLabors.Fonts"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Magick.NET-Q16-AnyCPU" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
-        <PackageReference Include="SixLabors.ImageSharp" />
-        <PackageReference Include="SixLabors.Fonts" />
+        <PackageReference Include="Magick.NET-Q16-AnyCPU"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational"/>
+        <PackageReference Include="SixLabors.ImageSharp"/>
+        <PackageReference Include="SixLabors.Fonts"/>
     </ItemGroup>
 </Project>

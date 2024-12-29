@@ -1,15 +1,15 @@
 @inject ISearchService searchService 
 
-    <div class="imagebrowser">
-        <DetailedErrorBoundary>
-            <SearchBar OnGridSizeChanged="GridSizeChanged"/>
-            <ImageGrid CurrentGridSize="@gridSize"/>
-        </DetailedErrorBoundary>
-    </div>
-    
+<div class="imagebrowser">
+    <DetailedErrorBoundary>
+        <SearchBar OnGridSizeChanged="GridSizeChanged"/>
+        <ImageGrid CurrentGridSize="@gridSize"/>
+    </DetailedErrorBoundary>
+</div>
+
 @code {
     private GridImageSize gridSize { get; set; }
-    
+
     private void GridSizeChanged(GridImageSize newSize)
     {
         gridSize = newSize;

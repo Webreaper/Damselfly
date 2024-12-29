@@ -157,19 +157,17 @@ public class FolderWatcherService
         var folder = file.Directory.FullName;
 
         if( changeType != WatcherChangeTypes.Deleted )
-        {
             // This check isn't relevant for deleted files, which don't have valid attributes
             // If it's hidden, ignore it
             if( file.IsHidden() )
                 return;
-        }
 
         // Ignore non images, and hidden files/folders.
         if( file.IsDirectory() || _imageProcessService.IsImageFileType(file) || file.IsSidecarFileType() )
         {
             // We prioritise deletes, because they're quicker to process, and it's
             // more important to remove them from folders as soon as possible.
-            int priority = changeType switch
+            var priority = changeType switch
             {
                 WatcherChangeTypes.Deleted => 0,
                 WatcherChangeTypes.Changed => 1,
@@ -180,7 +178,6 @@ public class FolderWatcherService
                 Logging.Log( $"FileWatcher: adding to queue: {folder} {changeType}" );
             else
                 Logging.Log( $"FileWatcher: folder was not added to the queue: {folder} {changeType}" );
-
         }
     }
 

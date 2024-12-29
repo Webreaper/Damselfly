@@ -29,12 +29,10 @@
 @code {
     private string PersonTitle => $"{Person.Name}\nState: {Person.State}\nFace Data Sets: {Person.FaceData.Count}";
     private bool processingUpdate = false;
-    
-    [Parameter]
-    public Person Person { get; set; }
-    
-    [Parameter]
-    public EventCallback PersonChanged { get; set; }
+
+    [Parameter] public Person Person { get; set; }
+
+    [Parameter] public EventCallback PersonChanged { get; set; }
 
     public string Name
     {
@@ -48,18 +46,18 @@
 
     private void GenerateImageStyle()
     {
-        int size = 180;
+        var size = 180;
         if( uiService.IsSmallScreenDevice )
         {
             const int imageGap = 10;
-            int targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
+            var targetImagesPerRow = uiService.IsPortraitDevice ? 4 : 6;
 
-            size = int.Max( (uiService.ScreenWidth / targetImagesPerRow) - ((targetImagesPerRow - 1) * imageGap), 50);
+            size = int.Max( uiService.ScreenWidth / targetImagesPerRow - (targetImagesPerRow - 1) * imageGap, 50);
         }
 
         TileStyle = $"max-width: {size}px; height: auto; max-height: {size}px;";
     }
-    
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -73,10 +71,10 @@
         {
             processingUpdate = true;
             StateHasChanged();
-            
+
             var allNames = await peopleService.GetPeopleNames(newName);
-            bool canRename = true;
-            bool merge = false;
+            var canRename = true;
+            var merge = false;
 
             // If the new name already exists for another person, then we're going to merge 
             // them together to form a single person. 
@@ -84,10 +82,10 @@
             {
                 canRename = false;
 
-                bool? result = await dialogService.ShowMessageBox(
+                var result = await dialogService.ShowMessageBox(
                     $"Merge with existing {newName}?",
                     $"A person with the name '{newName}' exists already. Would you like to merge the two?",
-                    yesText: "Merge", cancelText: "Cancel");
+                    "Merge", cancelText: "Cancel");
 
                 if( result != null && result.Value )
                 {

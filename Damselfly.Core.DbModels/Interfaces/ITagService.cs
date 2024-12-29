@@ -28,7 +28,7 @@ public interface IRecentTagService
 
 public interface ITagSearchService
 {
-    Task<ICollection<Tag>> SearchTags(string filterText, CancellationToken token = default(CancellationToken));
+    Task<ICollection<Tag>> SearchTags(string filterText, CancellationToken token = default);
     Task<ICollection<Tag>> GetAllTags();
     Task<Tag> GetTag( int tagId );
 }

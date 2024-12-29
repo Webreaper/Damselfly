@@ -39,7 +39,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<Transformations> Transformations { get; set; }
     public DbSet<ImageObject> ImageObjects { get; set; }
     public DbSet<Person> People { get; set; }
-    public DbSet<Models.ImageClassification> ImageClassifications { get; set; }
+    public DbSet<ImageClassification> ImageClassifications { get; set; }
     public DbSet<PersonFaceData> FaceData { get; set; }
     public DbSet<Camera> Cameras { get; set; }
     public DbSet<Basket> Baskets { get; set; }
@@ -59,22 +59,20 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
 
     protected override bool DBNeedsCleaning()
     {
-        bool needsUpdate = false; 
+        var needsUpdate = false;
         const string settingName = "LastVacuum";
 
         var lastClean = ConfigSettings.FirstOrDefault(x => x.Name == settingName );
 
         if( lastClean != null )
         {
-            if (DateTime.TryParseExact(lastClean.Value, "dd-MMM-yyyy",
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    DateTimeStyles.None, out var theDate))
+            if ( DateTime.TryParseExact(lastClean.Value, "dd-MMM-yyyy",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var theDate) )
             {
-                if (theDate < DateTime.UtcNow.AddDays(-7))
-                {
+                if ( theDate < DateTime.UtcNow.AddDays(-7) )
                     // It hasn't been done in the last 7 days, we need to vacuum
                     needsUpdate = true;
-                }
                 else
                     Logging.Log($"Skipping Sqlite DB optimisation (last run {lastClean.Value})...");
             }
@@ -133,7 +131,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Image>()
             .HasOne(img => img.Classification)
             .WithOne()
-            .HasForeignKey<Models.ImageClassification>(i => i.ClassificationId);
+            .HasForeignKey<ImageClassification>(i => i.ClassificationId);
 
         modelBuilder.Entity<BasketEntry>()
             .HasOne(a => a.Image)
@@ -154,7 +152,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .WithOne(x => x.Parent)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
-        
+
         // A person has none or many face data points
         modelBuilder.Entity<PersonFaceData>()
             .HasOne(p => p.Person)
@@ -162,7 +160,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
             .HasForeignKey(p => p.PersonId);
 
         modelBuilder.Entity<UserFolderState>().HasKey(p => new { p.FolderId, p.UserId });
-        
+
         modelBuilder.Entity<ImageTag>().HasIndex(x => new { x.ImageId, x.TagId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(p => new { p.FileName, p.FolderId }).IsUnique();
         modelBuilder.Entity<Image>().HasIndex(x => new { x.FolderId });
@@ -177,8 +175,8 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
 
         modelBuilder.Entity<ImageObject>().HasIndex(x => x.ImageId);
         modelBuilder.Entity<ImageObject>().HasIndex(x => x.PersonId);
-        modelBuilder.Entity<ImageObject>().HasIndex(x => new { x.ImageId, x.PersonId});
-        
+        modelBuilder.Entity<ImageObject>().HasIndex(x => new { x.ImageId, x.PersonId });
+
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ImageId);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.DateTaken);
         modelBuilder.Entity<ImageMetaData>().HasIndex(x => x.ThumbLastUpdated);
@@ -191,7 +189,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<Hash>().HasIndex(x => x.MD5ImageHash);
         modelBuilder.Entity<Hash>().HasIndex(x => new
             { x.PerceptualHex1, x.PerceptualHex2, x.PerceptualHex3, x.PerceptualHex4 });
-        modelBuilder.Entity<Models.ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
+        modelBuilder.Entity<ImageClassification>().HasIndex(x => new { x.Label }).IsUnique();
 
         RoleDefinitions.OnModelCreating(modelBuilder);
     }

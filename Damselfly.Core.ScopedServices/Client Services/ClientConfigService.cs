@@ -64,6 +64,7 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         _userId = state.GetUserIdFromPrincipal();
         await base.InitialiseCache();
     }
+
     private void SystemSettingsChanged()
     {
         // Another user changed the system settings - so refresh

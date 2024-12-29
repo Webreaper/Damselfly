@@ -9,4 +9,3 @@ public class BasketCopyRequest
     public int DestBasketId { get; set; }
     public bool Move { get; set; }
 }
-

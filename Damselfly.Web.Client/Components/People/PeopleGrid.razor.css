@@ -1,6 +1,6 @@
 ﻿.imagegrid {
     display: flex;
-   /* flex: 1 1 auto; */
+    /* flex: 1 1 auto; */
     justify-content: flex-start;
     align-items: flex-start;
     flex-flow: row wrap;
@@ -12,6 +12,7 @@
     padding: 20px;
     margin: 20px;
 }
+
 .damselfly-searchmsg {
     display: flex;
     width: 100%;

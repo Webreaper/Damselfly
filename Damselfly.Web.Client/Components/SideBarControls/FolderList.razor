@@ -11,20 +11,20 @@
 @using Microsoft.EntityFrameworkCore.Query
 @implements IDisposable
 
-<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos" />
+<ScrollMonitor ScrollElementId="folderscrollarea" ScrollConfigName="FolderScrollPos"/>
 
 <div class="folderlist">
     <div class="damselfly-browsetools">
         <div class="damselfly-browsetool">
-            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()" />
-            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()" />
-            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()" />
+            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()"/>
+            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()"/>
+            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()"/>
         </div>
         <div class="damselfly-browsetool">
-            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm" />
+            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm"/>
         </div>
     </div>
-    @if (folderItems == null)
+    @if ( folderItems == null )
     {
         <ProgressSpinner ProgressText="Loading folders..."/>
     }
@@ -32,13 +32,13 @@
     {
         <div class="folder-entry @FolderStyle(-1)" @onclick="@(() => ResetFilterFolder())"
              @oncontextmenu=@(args => ShowContextMenu(args, null)) @oncontextmenu:preventDefault="true">
-            <i class="fa fa-folder-open folder-icon" /> All Folders
+            <i class="fa fa-folder-open folder-icon"/> All Folders
         </div>
         <div class="folder-scroll-area" id="folderscrollarea">
             <Virtualize @ref="folderContainer" Items="@folderItems" ItemSize="15">
                 <div class="folder-entry @FolderStyle(context.FolderId) expandable"
                      @oncontextmenu=@(args => ShowContextMenu(args, context)) @oncontextmenu:preventDefault="true">
-                    <i style="@IndentMargin(context)" class="folder-icon fa @FolderIcon(context)" @onclick="@(() => ToggleExpand(context))" />
+                    <i style="@IndentMargin(context)" class="folder-icon fa @FolderIcon(context)" @onclick="@(() => ToggleExpand(context))"/>
                     <span @onclick="@(() => SetFilterFolder(context))" title="@context.Path">
                         @FolderDisplayName(context)
                     </span>
@@ -71,16 +71,16 @@
         var includeChildFolders = "Show sub-folder Images";
         var sortText = "Sort by Date";
 
-        if (SortMode == "Date")
+        if ( SortMode == "Date" )
             sortText = "Sort by Name";
 
-        if (Ascending)
+        if ( Ascending )
             sortDirection = "Sort Descending";
 
-        if (IncludeChildFolders)
+        if ( IncludeChildFolders )
             includeChildFolders = "Hide sub-folder Images";
 
-        if (folder == null)
+        if ( folder == null )
         {
             refreshText = "Refresh All Folders";
             selectText = "Clear Folder Selection";
@@ -91,22 +91,22 @@
         contextMenuService.Open(args, ds =>
             @<CascadingAuthenticationState>
                 <RadzenMenu Click="OnMenuItemClick">
-                    <RadzenMenuItem Text="@selectText" Value="0" />
-                    <RadzenMenuItem Text="@refreshText" Value="1" />
+                    <RadzenMenuItem Text="@selectText" Value="0"/>
+                    <RadzenMenuItem Text="@refreshText" Value="1"/>
                     <hr class="separator">
-                    <RadzenMenuItem Text="@viewText" Value="3" />
-                    <RadzenMenuItem Text="@sortText" Value="4" />
-                    <RadzenMenuItem Text="@sortDirection" Value="5" />
-                    <RadzenMenuItem Text="@includeChildFolders" Value="6" />
+                    <RadzenMenuItem Text="@viewText" Value="3"/>
+                    <RadzenMenuItem Text="@sortText" Value="4"/>
+                    <RadzenMenuItem Text="@sortDirection" Value="5"/>
+                    <RadzenMenuItem Text="@includeChildFolders" Value="6"/>
                     <hr class="separator">
-                    <RadzenMenuItem Text="Collapse Sub-Folders" Value="9" />
-                    <RadzenMenuItem Text="Expand Sub-Folders" Value="10" />
+                    <RadzenMenuItem Text="Collapse Sub-Folders" Value="9"/>
+                    <RadzenMenuItem Text="Expand Sub-Folders" Value="10"/>
                     <hr class="separator">
                     <AuthorizeView Policy="@PolicyDefinitions.s_IsAdmin">
-                        @if (selectionService.Selection.Any())
+                        @if ( selectionService.Selection.Any() )
                         {
-                            <RadzenMenuItem Text="Move Selected Images Here" Value="7" />
-                            <RadzenMenuItem Text="Copy Selected Images Here" Value="8" />
+                            <RadzenMenuItem Text="Move Selected Images Here" Value="7"/>
+                            <RadzenMenuItem Text="Copy Selected Images Here" Value="8"/>
                         }
                     </AuthorizeView>
                 </RadzenMenu>
@@ -116,10 +116,10 @@
     private async Task MenuSelected(MenuItemEventArgs args, Folder folder)
     {
         contextMenuService.Close();
-        switch (args.Value)
+        switch ( args.Value )
         {
             case 0:
-                if (folder == null)
+                if ( folder == null )
                     ResetFilterFolder();
                 else
                     SetFilterFolder(folder);
@@ -161,7 +161,7 @@
             folderService.ToggleExpand(child);
             await CollapseSubFolders(child, false);
         }
-        
+
         if( first )
             await ProcessUpdatedFilter();
     }
@@ -173,7 +173,7 @@
             folderService.ToggleExpand(child);
             await ExpandSubFolders(child, false);
         }
-        
+
         if( first )
             await ProcessUpdatedFilter();
     }
@@ -193,7 +193,7 @@
             Move = move
         };
 
-        if (await fileService.MoveImages(req))
+        if ( await fileService.MoveImages(req) )
         {
             statusService.UpdateStatus($"Files moved to {folder.Path} successfully.");
         }
@@ -201,12 +201,12 @@
 
     private string FolderDisplayName(Folder folder)
     {
-        string display = folder.MetaData.DisplayName;
+        var display = folder.MetaData.DisplayName;
 
-        if (FlatView)
+        if ( FlatView )
         {
-            if (display.Length < 10 && folder.Parent != null)
-                display = folder.Parent.MetaData.DisplayName + $" {System.IO.Path.DirectorySeparatorChar} " + display;
+            if ( display.Length < 10 && folder.Parent != null )
+                display = folder.Parent.MetaData.DisplayName + $" {Path.DirectorySeparatorChar} " + display;
         }
 
         return $"{display} ({folder.MetaData.TotalImages:n0})";
@@ -225,7 +225,7 @@
     {
         var newMode = "Date";
 
-        if (SortMode == "Date")
+        if ( SortMode == "Date" )
             newMode = "Name";
 
         configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
@@ -258,12 +258,12 @@
     {
         var parameters = new DialogParameters { { "allimages", true } };
 
-        if (folder != null)
+        if ( folder != null )
             parameters = new DialogParameters { { "folder", folder }, { "count", folder.MetaData.ImageCount } };
 
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, BackdropClick = false };
         var dialog = DialogService.Show<RescanDialog>
-    ("Re-scan Images", parameters, options);
+            ("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
 
@@ -274,19 +274,20 @@
 
     string FolderIcon(Folder folder)
     {
-        if (!FlatView)
+        if ( !FlatView )
         {
-            if (folderService.IsExpanded(folder))
+            if ( folderService.IsExpanded(folder) )
                 return "fa-folder-open";
-            if (folder.HasSubFolders)
+            if ( folder.HasSubFolders )
                 return "fa-folder-plus";
         }
+
         return "fa-folder";
     }
 
     string IndentMargin(Folder folder)
     {
-        if (FlatView)
+        if ( FlatView )
             return string.Empty;
 
         return $"margin-left:{folder.MetaData.Depth * 10}px;";
@@ -294,10 +295,10 @@
 
     string FolderStyle(int folderId)
     {
-        if (folderId == -1 && searchService.Folder == null)
+        if ( folderId == -1 && searchService.Folder == null )
             return "folder-entry-selected";
 
-        if (searchService.Folder?.FolderId == folderId)
+        if ( searchService.Folder?.FolderId == folderId )
             return "folder-entry-selected";
 
         return string.Empty;
@@ -305,7 +306,7 @@
 
     private void DoFilter(string searchTerm)
     {
-        if (FilterTerm != searchTerm)
+        if ( FilterTerm != searchTerm )
         {
             FilterTerm = searchTerm;
             OnFoldersChanged();
@@ -326,7 +327,7 @@
 
     protected async Task ToggleExpand(Folder item)
     {
-        if (item.HasSubFolders)
+        if ( item.HasSubFolders )
         {
             folderService.ToggleExpand(item);
 
@@ -346,7 +347,7 @@
 
     protected override async void OnAfterRender(bool firstRender)
     {
-        if (firstRender)
+        if ( firstRender )
         {
             folderService.OnFoldersChanged += OnFoldersChanged;
             searchService.OnSearchQueryChanged += OnSearchChanged;
@@ -373,4 +374,4 @@
         StateHasChanged();
     }
 
-    }
+}

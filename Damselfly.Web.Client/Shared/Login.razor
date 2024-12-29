@@ -2,31 +2,31 @@
 @inject NavigationManager NavigationManager
 
 <div class="damselfly-login-form">
-    <img src="damselfly-logo.png" title="Damselfly" class="damselfly-login-logo" />
+    <img src="damselfly-logo.png" title="Damselfly" class="damselfly-login-logo"/>
     <h2>Log in to Damselfly</h2>
 
     <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
 
         <div class="form-group">
             <label for="email">Email address</label>
-            <MudTextField @bind-Value="@loginModel.Email" InputType="InputType.Email" For="@(() => loginModel.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            <ValidationMessage For="@(() => loginModel.Email)" />
+            <MudTextField @bind-Value="@loginModel.Email" InputType="InputType.Email" For="@(() => loginModel.Email)" Label="Email" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            <ValidationMessage For="@(() => loginModel.Email)"/>
         </div>
         <div class="form-group">
             <label for="password">Password</label>
-            <MudTextField @bind-Value="@loginModel.Password" InputType="InputType.Password" For="@(() => loginModel.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr" />
-            <ValidationMessage For="@(() => loginModel.Password)" />
+            <MudTextField @bind-Value="@loginModel.Password" InputType="InputType.Password" For="@(() => loginModel.Password)" Label="Password" ReadOnly="false" Variant="Variant.Filled" UserAttributes="@MudNoAutofill.noAutoFillAttr"/>
+            <ValidationMessage For="@(() => loginModel.Password)"/>
         </div>
         <div>
-            <MudCheckBox @bind-Value="@loginModel.RememberMe" Label="Remember Me" />
+            <MudCheckBox @bind-Value="@loginModel.RememberMe" Label="Remember Me"/>
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
     </EditForm>
 </div>
 
-@if (ShowErrors)
+@if ( ShowErrors )
 {
     <div class="alert alert-danger" role="alert">
         <p>@Error</p>
@@ -45,7 +45,7 @@
 
         var result = await AuthService.Login(loginModel);
 
-        if (result.Successful)
+        if ( result.Successful )
         {
             NavigationManager.NavigateTo("/");
         }

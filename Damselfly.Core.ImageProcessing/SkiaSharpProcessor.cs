@@ -57,14 +57,14 @@ public class SkiaSharpProcessor : IImageProcessor
                 // The thumbnail being generated is the smaller than the
                 // source. Calculate the scale factor by which we need to reduce
                 var widthScaleFactor = srcBitmap.Width / (float)config.width;
-                var heighScaleFactor = srcBitmap.Height / (float)config.height; 
-                
+                var heighScaleFactor = srcBitmap.Height / (float)config.height;
+
                 // If we're allowed to crop, pick the largest scale factor. Otherwise the smallest.
                 var scaleFactor = Math.Min(widthScaleFactor, heighScaleFactor);
 
                 // Ensure we only ever scale down, never up
                 scaleFactor = Math.Max( 1, scaleFactor);
-                
+
                 using var scaledImage = new SKBitmap((int)(srcBitmap.Width / scaleFactor),
                     (int)(srcBitmap.Height / scaleFactor));
                 srcBitmap.ScalePixels(scaledImage.PeekPixels(), quality);

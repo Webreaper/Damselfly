@@ -60,8 +60,7 @@ else
 
 @code {
 
-    [Parameter]
-    public bool ShowTags { get; set; } = true;
+    [Parameter] public bool ShowTags { get; set; } = true;
 
     public bool BasketHasImages => gridImages.Any();
     public bool ImagesSelected => selectionService.Selection.Any();

@@ -27,6 +27,7 @@
     z-index: 60;
     text-shadow: -2px -2px 0 rgb(255, 255, 255, 0.5), 2px -2px 0 rgb(255, 255, 255, 0.5), -2px 2px 0 rgb(255, 255, 255, 0.5), 2px 2px 0 rgb(255, 255, 255, 0.5);
 }
+
 .object-editor {
     flex: 1;
     margin: 5px;

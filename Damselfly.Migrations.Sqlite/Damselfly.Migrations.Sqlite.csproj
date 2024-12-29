@@ -6,22 +6,22 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Migrations\" />
+        <Folder Include="Migrations\"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+        <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="EFCore.BulkExtensions" />
+        <PackageReference Include="EFCore.BulkExtensions"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Microsoft.EntityFrameworkCore.Tools" />
-        <None Remove="Z.EntityFramework.Extensions.EFCore" />
+        <None Remove="Microsoft.EntityFrameworkCore.Tools"/>
+        <None Remove="Z.EntityFramework.Extensions.EFCore"/>
     </ItemGroup>
 </Project>

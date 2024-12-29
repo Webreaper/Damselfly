@@ -12,9 +12,10 @@ namespace Damselfly.Web.Server.Controllers;
 //[Authorize(Policy = PolicyDefinitions.s_IsLoggedIn)]
 [ApiController]
 [Route("/api/data")]
-public class StaticDataController( MetaDataService _metaDataService,
-                                ICachedDataService _cachedData,
-                                StatisticsService _stats) : ControllerBase
+public class StaticDataController(
+    MetaDataService _metaDataService,
+    ICachedDataService _cachedData,
+    StatisticsService _stats) : ControllerBase
 {
     [HttpGet("/api/data/static")]
     public Task<StaticData> GetStaticData()
@@ -29,14 +30,14 @@ public class StaticDataController( MetaDataService _metaDataService,
     [HttpGet("/api/data/cameras")]
     public Task<ICollection<Camera>> GetCameras()
     {
-        ICollection<Camera> result = _metaDataService.Cameras;
+        var result = _metaDataService.Cameras;
         return Task.FromResult(result);
     }
 
     [HttpGet("/api/data/lenses")]
     public Task<ICollection<Lens>> GetLenses()
     {
-        ICollection<Lens> result = _metaDataService.Lenses;
+        var result = _metaDataService.Lenses;
         return Task.FromResult(result);
     }
 

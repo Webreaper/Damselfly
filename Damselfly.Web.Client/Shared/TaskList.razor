@@ -60,13 +60,14 @@
         {
             return DateTime.UtcNow.ToHumanReadableString(task.LastStarted);
         }
+
         return task.LastStarted.ToHumanReadableString(task.LastCompleted);
     }
 
     // TODO: Move to AfterRender
     protected override async Task OnInitializedAsync()
     {
-    // TODO: Called twice?
+        // TODO: Called twice?
         tasks = await taskScheduler.GetTasksAsync();
     }
 

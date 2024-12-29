@@ -20,8 +20,7 @@ public class ScheduledTask
 
     public List<TaskType> ExclusiveToTasks { get; } = new();
 
-    [JsonIgnore]
-    public Action WorkMethod { get; set; }
+    [JsonIgnore] public Action WorkMethod { get; set; }
 
     public override string ToString()
     {

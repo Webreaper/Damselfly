@@ -22,30 +22,31 @@
     </div>
 </div>
 <div class="damselfly-tagview">
-    <PeopleGrid SearchText="@searchText" PersonState="@searchState" />
+    <PeopleGrid SearchText="@searchText" PersonState="@searchState"/>
 </div>
 
 @code {
-    
-    [Parameter]
-    public string PersonName { get; set; }
-    
+
+    [Parameter] public string PersonName { get; set; }
+
     string searchText;
-    Person.PersonState? searchState => filterType switch {
+
+    Person.PersonState? searchState => filterType switch
+    {
         FilterType.Identified => Person.PersonState.Identified,
         FilterType.Unidentified => Person.PersonState.Unknown,
-        _ => null,
+        _ => null
     };
 
     FilterType filterType = FilterType.All;
-    
+
     private enum FilterType
     {
         All,
         Identified,
         Unidentified
     }
-    
+
     private void DoSearch(string searchTerm)
     {
         if( searchText != searchTerm )
@@ -70,4 +71,5 @@
 
         await base.OnAfterRenderAsync(firstRender);
     }
+
 }

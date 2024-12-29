@@ -128,7 +128,7 @@
         }
     }
 
-    
+
     private void ShortCutChanged(ChangeEventArgs e)
     {
         var shortCut = e.Value as string;
@@ -176,7 +176,7 @@
     };
 
     private Task<IEnumerable<int>> monthChoices => Task.FromResult<IEnumerable<int>>(Enumerable.Range(1, 12).ToList());
-    
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
@@ -195,7 +195,7 @@
     private void OnSearchChanged()
     {
         filterRange = new DateRange(searchService.MinDate, searchService.MaxDate);
-        
+
         StateHasChanged();
     }
 

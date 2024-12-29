@@ -34,11 +34,9 @@
 
 @code {
 
-    [CascadingParameter]
-    MudDialogInstance MudDialog { get; set; }
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
 
-    [Parameter]
-    public int? UserID { get; set; }
+    [Parameter] public int? UserID { get; set; }
 
     AppIdentityUser User;
     bool AddingNewUser { get; set; }
@@ -46,12 +44,9 @@
 
     public class UserForm
     {
-        [Required]
-        public string Username { get; set; }
+        [Required] public string Username { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+        [Required] [EmailAddress] public string Email { get; set; }
 
         public string Password { get; set; }
         public string Password2 { get; set; }

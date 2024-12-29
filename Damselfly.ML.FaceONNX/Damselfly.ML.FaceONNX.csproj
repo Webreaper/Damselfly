@@ -6,15 +6,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="FaceONNX" />
-        <PackageReference Include="FluentValidation" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed" />
-        <PackageReference Include="SixLabors.ImageSharp" />
+        <PackageReference Include="FaceONNX"/>
+        <PackageReference Include="FluentValidation"/>
+        <PackageReference Include="Microsoft.ML.OnnxRuntime"/>
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed"/>
+        <PackageReference Include="SixLabors.ImageSharp"/>
     </ItemGroup>
 </Project>

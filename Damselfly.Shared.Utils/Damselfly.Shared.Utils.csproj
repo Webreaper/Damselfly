@@ -6,16 +6,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <SupportedPlatform Include="browser" />
+        <SupportedPlatform Include="browser"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Humanizer" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" />
+        <PackageReference Include="Humanizer"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Core"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Microsoft.AspNetCore.SignalR.Common" />
-        <None Remove="Microsoft.AspNetCore.SignalR.Client" />
-        <None Remove="Microsoft.AspNetCore.SignalR.Core" />
+        <None Remove="Microsoft.AspNetCore.SignalR.Common"/>
+        <None Remove="Microsoft.AspNetCore.SignalR.Client"/>
+        <None Remove="Microsoft.AspNetCore.SignalR.Core"/>
     </ItemGroup>
 </Project>

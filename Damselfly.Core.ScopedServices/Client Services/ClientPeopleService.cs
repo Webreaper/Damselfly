@@ -33,7 +33,7 @@ public class ClientPeopleService : IPeopleService
     {
         return await httpClient.CustomGetFromJsonAsync<List<string>>($"/api/people/names/{searchText}");
     }
-    
+
     public async Task UpdatePersonName(NameChangeRequest req)
     {
         await httpClient.CustomPutAsJsonAsync($"/api/people/name", req);

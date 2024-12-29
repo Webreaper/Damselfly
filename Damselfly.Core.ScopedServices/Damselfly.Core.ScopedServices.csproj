@@ -6,25 +6,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj" />
-        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj" />
+        <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj"/>
+        <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj"/>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="API Services\" />
-        <Folder Include="Interfaces\" />
+        <Folder Include="API Services\"/>
+        <Folder Include="Interfaces\"/>
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Microsoft.AspNetCore.SignalR.Client" />
-        <None Remove="Microsoft.AspNetCore.Components" />
-        <None Remove="Microsoft.JSInterop" />
-        <None Remove="Blazored.LocalStorage" />
-        <None Remove="Microsoft.AspNetCore.Components.Authorization" />
+        <None Remove="Microsoft.AspNetCore.SignalR.Client"/>
+        <None Remove="Microsoft.AspNetCore.Components"/>
+        <None Remove="Microsoft.JSInterop"/>
+        <None Remove="Blazored.LocalStorage"/>
+        <None Remove="Microsoft.AspNetCore.Components.Authorization"/>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
-        <PackageReference Include="Microsoft.AspNetCore.Components" />
-        <PackageReference Include="Microsoft.JSInterop" />
-        <PackageReference Include="Blazored.LocalStorage" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components"/>
+        <PackageReference Include="Microsoft.JSInterop"/>
+        <PackageReference Include="Blazored.LocalStorage"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization"/>
     </ItemGroup>
 </Project>

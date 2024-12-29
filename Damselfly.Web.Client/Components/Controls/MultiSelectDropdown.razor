@@ -1,11 +1,11 @@
 @using System.Globalization
 @typeparam T
 
-<MudSelect T=@T SelectedValues="SelectedItems" SelectedValuesChanged="SelectedItemsChanged"
-           Label="@Label" Clearable=true Dense="true" Margin="Margin.Dense" Placeholder="@PlaceHolder"
-               MultiSelection="@MultiSelection" Variant="UIConstants.MudVariant" ToStringFunc="c => GetNameFunc( c )"
-               MultiSelectionTextFunc="SelectionTextFunc">
-    @foreach (var choice in SortedItems)
+<MudSelect T="@T" SelectedValues="SelectedItems" SelectedValuesChanged="SelectedItemsChanged"
+           Label="@Label" Clearable="true" Dense="true" Margin="Margin.Dense" Placeholder="@PlaceHolder"
+           MultiSelection="@MultiSelection" Variant="UIConstants.MudVariant" ToStringFunc="c => GetNameFunc( c )"
+           MultiSelectionTextFunc="SelectionTextFunc">
+    @foreach ( var choice in SortedItems )
     {
         <MudSelectItem Value="@choice"/>
     }
@@ -19,9 +19,10 @@
         Ascending,
         Descending
     }
-    
+
     private IEnumerable<T> _sourceData = Enumerable.Empty<T>();
     private string PlaceHolder => _sourceData.Any() ? string.Empty : "Loading...";
+
     private IEnumerable<T> SortedItems => ItemSort switch
     {
         MultiSelectSortOptions.Ascending => _sourceData.OrderBy(x => GetNameFunc(x)),
@@ -33,7 +34,7 @@
     {
         // Evaluate the source data async and store so we can access without async
         var resolvedSourceData = await SourceData;
-        
+
         _sourceData = resolvedSourceData ?? Enumerable.Empty<T>();
         await base.OnInitializedAsync();
     }
@@ -44,7 +45,7 @@
         {
             return selectedValues.First();
         }
-        else if (SelectedItems != null && SelectedItems.Any())
+        else if ( SelectedItems != null && SelectedItems.Any() )
         {
             if( GetShortNameFunc != null )
             {
@@ -54,33 +55,23 @@
 
             return $"{selectedValues.Count} selected";
         }
-        
+
         return string.Empty;
     }
-    
-    [Parameter, EditorRequired]
-    public Task<IEnumerable<T>?> SourceData { get; set; }
-    
-    [Parameter, EditorRequired]
-    public Func<T, string>? GetNameFunc { get; set; }
 
-    [Parameter]
-    public Func<T, string>? GetShortNameFunc { get; set; }
+    [ Parameter] [ EditorRequired] public Task<IEnumerable<T>?> SourceData { get; set; }
 
-    [Parameter]
-    public string? Label { get; set; }
-    
-    [Parameter]
-    public bool MultiSelection { get; set; } = true;
-    
-    [Parameter]
-    public IEnumerable<T>? SelectedItems { get; set; }
+    [ Parameter] [ EditorRequired] public Func<T, string>? GetNameFunc { get; set; }
 
-    [Parameter]
-    public MultiSelectSortOptions ItemSort { get; set; } = MultiSelectSortOptions.None;
-    
-    [Parameter]
-    public EventCallback<IEnumerable<T>> SelectedItemsChanged { get; set; }
+    [Parameter] public Func<T, string>? GetShortNameFunc { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public bool MultiSelection { get; set; } = true;
+
+    [Parameter] public IEnumerable<T>? SelectedItems { get; set; }
+
+    [Parameter] public MultiSelectSortOptions ItemSort { get; set; } = MultiSelectSortOptions.None;
+
+    [Parameter] public EventCallback<IEnumerable<T>> SelectedItemsChanged { get; set; }
 }
-
- 
