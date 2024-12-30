@@ -6,34 +6,41 @@
         <MudText Typo="Typo.h6">Add Name </MudText>
     </TitleContent>
     <DialogContent>
-        <MudTextField @bind-Value="@NewName" Immediate="true" DebounceInterval="250" OnBlur="CheckForMerge"/>
-        @if( ! string.IsNullOrEmpty(NewName) )
+        @if( saving )
         {
-            <PeopleGrid SearchText="@NewName" ExcludeSelectedPersonId="@theObject.PersonId" PersonState="Person.PersonState.Identified"
-                        OnPersonClicked="SelectPerson" Small="true" Disabled="true" ShowNotFoundMessage="false"/>
+            <ProgressSpinner ProgressText="Updating name...."/>
         }
-        
-        @if( showDupeMessage )
+        else
         {
-            <div class="merge-message">
-                There is already an entry for '@NewName'. By selecting that Name, you will
-                merge/add this face to that person.
-            </div>
+            <MudTextField @bind-Value="@NewName" Immediate="true" DebounceInterval="250" OnBlur="CheckForMerge"/>
+            @if( ! string.IsNullOrEmpty(NewName) )
+            {
+                <PeopleGrid SearchText="@NewName" ExcludeSelectedPersonId="@theObject.PersonId" PersonState="Person.PersonState.Identified"
+                            OnPersonClicked="SelectPerson" Small="true" Disabled="true" ShowNotFoundMessage="false"/>
+            }
+
+            @if( showDupeMessage )
+            {
+                <div class="merge-message">
+                    There is already an entry for '@NewName'. By selecting that Name, you will
+                    merge/add this face to that person.
+                </div>
+            }
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton OnClick="Cancel" Disabled="@saving">Cancel</MudButton>
         @if( showDupeMessage )
         {
             <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit"
-                       OnClick="Merge">
+                       OnClick="Merge" Disabled="@saving">
                 Merge with @NewName
             </MudButton>
         }
         else
         {
             <MudButton Color="Color.Primary" ButtonType="MudBlazor.ButtonType.Submit"
-                       OnClick="Save">
+                       OnClick="Save" Disabled="@saving">
                 Save as @NewName
             </MudButton>
         }
@@ -48,6 +55,7 @@
 
     private string NewName { get; set; }
     private bool showDupeMessage = false;
+    private bool saving = false;
 
     protected override void OnInitialized()
     {
@@ -83,24 +91,31 @@
         }
     }
 
-    private async Task Save()
+    private async Task Save( bool merge = false)
     {
-        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = NewName };
-        await peopleService.UpdatePersonName(req);
+        try
+        {
+            saving = true;
+            StateHasChanged();
+            var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = NewName, Merge = merge};
+            await peopleService.UpdatePersonName(req);
 
-        statusService.UpdateStatus($"Name saved as '{NewName}'");
+            if(merge)
+                statusService.UpdateStatus($"Face merged with '{NewName}'");
+            else
+                statusService.UpdateStatus($"Name saved as '{NewName}'");
+        }
+        finally
+        {
+            saving = false;
+        }
 
         MudDialog.Close(DialogResult.Ok(true));
     }
 
     private async Task Merge()
     {
-        var req = new NameChangeRequest { ImageObjectId = theObject.ImageObjectId, PersonId = theObject.PersonId, NewName = NewName, Merge = true };
-        await peopleService.UpdatePersonName(req);
-
-        statusService.UpdateStatus($"Face merged with '{NewName}'");
-
-        MudDialog.Close(DialogResult.Ok(true));
+        await Save(true);
     }
 
     private void Cancel()

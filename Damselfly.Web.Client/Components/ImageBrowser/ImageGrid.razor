@@ -257,18 +257,19 @@
             ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
             StateHasChanged();
 
-            var images = await imageCache.GetCachedImages(searchService.SearchResults);
-
-            if ( images != null )
+            foreach( var set in searchService.SearchResults.Chunk(25) )
             {
-                var newImages = images;
-                var toAdd = newImages.ExceptBy(gridImages.Select(x => x.ImageId), x => x.ImageId).ToList();
+                var toAdd = set.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
+                
+                var images = await imageCache.GetCachedImages(toAdd);
 
-                if ( toAdd.Any() )
-                    gridImages.AddRange(toAdd);
+                if(images.Any())
+                {
+                    gridImages.AddRange(images);
+                    configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
+                    StateHasChanged();
+                }
             }
-
-            configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
         }
         else
         {
@@ -277,8 +278,6 @@
 
         // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvaiable;
-
-        StateHasChanged();
     }
 
 }
