@@ -91,7 +91,12 @@
         }
     }
 
-    private async Task Save( bool merge = false)
+    private async Task Save()
+    {
+        await UpdateName();
+    }
+
+    private async Task UpdateName( bool merge = false)
     {
         try
         {
@@ -115,7 +120,7 @@
 
     private async Task Merge()
     {
-        await Save(true);
+        await UpdateName(true);
     }
 
     private void Cancel()
