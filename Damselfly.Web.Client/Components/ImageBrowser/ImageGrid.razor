@@ -236,7 +236,7 @@
         // If we've tried to load data and there isn't any more, show the toast.
         toastClass = endOfImages ? "show" : string.Empty;
 
-        _ = AddImagesToGrid(response.MoreDataAvailable);
+        _ = AddImagesToGrid(response);
     }
 
     protected void SearchQueryChanged()
@@ -261,13 +261,13 @@
         await searchService.LoadMore();
     }
 
-    private async Task AddImagesToGrid(bool moreDataAvaiable)
+    private async Task AddImagesToGrid(SearchResponse response)
     {
         NoResultsFound = true;
         
         if ( searchService.SearchResults.Any() )
         {
-            ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
+            ResultsMessage = $"Found {response.SearchResults.Count()} images...";
             NoResultsFound = false;
 
             foreach( var set in searchService.SearchResults.Chunk(25) )
@@ -287,7 +287,7 @@
         }
 
         // Flag the 'more' div if we loaded at least as many as we requested.
-        endOfImages = !moreDataAvaiable;
+        endOfImages = !response.MoreDataAvailable;
         StateHasChanged();
     }
 
