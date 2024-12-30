@@ -22,7 +22,7 @@
         }
         else
         {
-            <ProgressSpinner ProgressText="@ResultsMessage"/>
+            <ProgressSpinner ProgressText="Loading images..."/>
         }
     }
     else
@@ -97,7 +97,6 @@
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
-    private string ResultsMessage { get; set; }
     private bool NoResultsFound { get; set; } = true;
 
     async Task AddGroupToBasket(ImageGrouping grouping)
@@ -235,8 +234,8 @@
     {
         // If we've tried to load data and there isn't any more, show the toast.
         toastClass = endOfImages ? "show" : string.Empty;
-
-        _ = AddImagesToGrid(response);
+        
+        _ = AddImagesToGrid(response.MoreDataAvailable);
     }
 
     protected void SearchQueryChanged()
@@ -261,13 +260,12 @@
         await searchService.LoadMore();
     }
 
-    private async Task AddImagesToGrid(SearchResponse response)
+    private async Task AddImagesToGrid(bool moreDataAvailable)
     {
         NoResultsFound = true;
         
         if ( searchService.SearchResults.Any() )
         {
-            ResultsMessage = $"Found {response.SearchResults.Count()} images...";
             NoResultsFound = false;
 
             foreach( var set in searchService.SearchResults.Chunk(25) )
@@ -287,7 +285,7 @@
         }
 
         // Flag the 'more' div if we loaded at least as many as we requested.
-        endOfImages = !response.MoreDataAvailable;
+        endOfImages = !moreDataAvailable;
         StateHasChanged();
     }
 

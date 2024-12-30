@@ -295,6 +295,9 @@ public class SearchQueryService
         // Set the results on the service property
         response.SearchResults = enrichedImages.Select(x => x.ImageId).ToArray();
 
+        if( System.Diagnostics.Debugger.IsAttached )
+            await Task.Delay( 2 * 1000 );
+
         return response;
     }
 
