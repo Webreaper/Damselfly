@@ -94,10 +94,19 @@
     bool endOfImages = false;
     string toastClass = string.Empty;
     private ScrollMonitor ScrollMonitor;
+    CancellationTokenSource cancelTokenSource = new();
+    CancellationToken? token = null;
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
     private bool NoResultsFound { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        token = cancelTokenSource.Token;
+        
+        base.OnInitialized();
+    }
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
@@ -199,7 +208,7 @@
             if ( initialLoadCount > searchService.SearchResults.Count )
                 await searchService.LoadMore(initialLoadCount);
             else
-                await AddImagesToGrid(true);
+                await AddImagesToGrid(true, cancelTokenSource.Token);
 
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
         }
@@ -235,7 +244,12 @@
         // If we've tried to load data and there isn't any more, show the toast.
         toastClass = endOfImages ? "show" : string.Empty;
         
-        _ = AddImagesToGrid(response.MoreDataAvailable);
+        // Cancel the old request, and start a new one
+        cancelTokenSource.Cancel();
+        cancelTokenSource.Dispose();
+        cancelTokenSource = new CancellationTokenSource();
+        
+        _ = AddImagesToGrid(response.MoreDataAvailable, cancelTokenSource.Token);
     }
 
     protected void SearchQueryChanged()
@@ -260,7 +274,7 @@
         await searchService.LoadMore();
     }
 
-    private async Task AddImagesToGrid(bool moreDataAvailable)
+    private async Task AddImagesToGrid(bool moreDataAvailable, CancellationToken token)
     {
         NoResultsFound = true;
         
@@ -268,8 +282,17 @@
         {
             NoResultsFound = false;
 
-            foreach( var set in searchService.SearchResults.Chunk(25) )
+            // Be careful, as searchResults could change underneath us....
+            var chunks = searchService.SearchResults
+                                               .Chunk(25)
+                                               .ToList();
+            
+            foreach( var set in chunks )
             {
+                // Another refresh, hot on our heels, is cancelling this one
+                if( token.IsCancellationRequested )
+                    return;
+
                 StateHasChanged();
 
                 var toAdd = set.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
