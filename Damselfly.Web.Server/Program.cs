@@ -116,6 +116,7 @@ public class Program
         // Add services to the container.
         builder.Services.AddDbContext<ImageContext>(options =>
         {
+            // TODO: Need to resolve the issue that causes this warning to fire (and migrations to fail)
             options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
             options.UseSqlite(connectionString,
                 b =>
