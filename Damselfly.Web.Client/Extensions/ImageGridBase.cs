@@ -39,11 +39,7 @@ public class ImageGridBase : ComponentBase
             var last = selectionInfo.index;
 
             if ( first > last )
-            {
-                var temp = last;
-                last = first;
-                first = temp;
-            }
+                (last, first) = (first, last);
 
             _logger.LogTrace(
                 $"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");

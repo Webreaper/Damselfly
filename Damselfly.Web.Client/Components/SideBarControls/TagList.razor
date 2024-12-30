@@ -335,9 +335,9 @@
             if( await userService.PolicyApplies(PolicyDefinitions.s_IsEditor) )
             {
                 if( favourite )
-                    menuList.Insert(0, new ContextMenuItem { Text = "Add Tag to Selection", Value = 2 });
+                    menuList.Insert(1, new ContextMenuItem { Text = "Add Tag to Selection", Value = 2 });
                 else
-                    menuList.Insert(0, new ContextMenuItem { Text = "Remove Tag from Selection", Value = 3 });
+                    menuList.Insert(1, new ContextMenuItem { Text = "Remove Tag from Selection", Value = 3 });
             }
         }
 
