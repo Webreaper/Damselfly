@@ -24,6 +24,7 @@ using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Damselfly.Web;
 
@@ -113,12 +114,16 @@ public class Program
         var connectionString = $"Data Source={dbPath}";
 
         // Add services to the container.
-        builder.Services.AddDbContext<ImageContext>(options => options.UseSqlite(connectionString,
-            b =>
-            {
-                b.MigrationsAssembly("Damselfly.Migrations.Sqlite");
-                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
-            }));
+        builder.Services.AddDbContext<ImageContext>(options =>
+        {
+            options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+            options.UseSqlite(connectionString,
+                b =>
+                {
+                    b.MigrationsAssembly("Damselfly.Migrations.Sqlite");
+                    b.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
+                });
+        });
     }
 
     /// <summary>
