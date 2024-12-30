@@ -433,10 +433,10 @@ public abstract class BaseSearchService
     {
         get
         {
-            var hints = new List<string>();
+            var hints = SearchHints;
 
             if( hints.Any() )
-                return string.Join(", ", hints);
+                return string.Join(", ", hints.Select( x => x.Description));
 
             return "No Filter";
         }

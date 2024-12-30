@@ -13,6 +13,15 @@
     margin: 20px;
 }
 
+.no-results {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
+}
+
 .damselfly-searchmsg {
     display: flex;
     width: 100%;

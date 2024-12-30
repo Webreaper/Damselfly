@@ -13,7 +13,17 @@
 <div class="imagegrid" id="scroll-area">
     @if ( !gridImages.Any() )
     {
-        <ProgressSpinner ProgressText="@ResultsMessage"/>
+        @if( NoResultsFound )
+        {
+            <div class="no-results">
+                <text>No images were found that match the filter:</text>
+                <text>@searchService.SearchBreadcrumbs</text>
+            </div>
+        }
+        else
+        {
+            <ProgressSpinner ProgressText="@ResultsMessage"/>
+        }
     }
     else
     {
@@ -87,7 +97,8 @@
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
-    public string ResultsMessage { get; set; }
+    private string ResultsMessage { get; set; }
+    private bool NoResultsFound { get; set; } = true;
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
@@ -252,13 +263,17 @@
 
     private async Task AddImagesToGrid(bool moreDataAvaiable)
     {
+        NoResultsFound = true;
+        
         if ( searchService.SearchResults.Any() )
         {
             ResultsMessage = $"Loading {searchService.SearchResults.Count()} images...";
-            StateHasChanged();
+            NoResultsFound = false;
 
             foreach( var set in searchService.SearchResults.Chunk(25) )
             {
+                StateHasChanged();
+
                 var toAdd = set.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
                 
                 var images = await imageCache.GetCachedImages(toAdd);
@@ -267,17 +282,13 @@
                 {
                     gridImages.AddRange(images);
                     configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
-                    StateHasChanged();
                 }
             }
-        }
-        else
-        {
-            ResultsMessage = $"No images were found that match the filter:\n{searchService.SearchBreadcrumbs}";
         }
 
         // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvaiable;
+        StateHasChanged();
     }
 
 }
