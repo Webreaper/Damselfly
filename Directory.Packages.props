@@ -10,12 +10,6 @@
     <PackageVersion Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="EFCore.BulkExtensions" Version="8.1.2" />
-    <PackageVersion Include="Emgu.CV" Version="4.5.1.4349" />
-    <PackageVersion Include="Emgu.CV.Bitmap" Version="4.5.1.4349" />
-    <PackageVersion Include="Emgu.CV.runtime.linux-arm" Version="4.5.1.4349" />
-    <PackageVersion Include="Emgu.CV.runtime.macos" Version="4.5.1.4349" />
-    <PackageVersion Include="Emgu.CV.runtime.ubuntu.20.04-x64" Version="4.5.1.4349" />
-    <PackageVersion Include="Emgu.CV.runtime.windows" Version="4.5.1.4349" />
     <PackageVersion Include="FaceONNX" Version="4.0.3.2" />
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
     <PackageVersion Include="font-awesome" Version="4.7.0" />

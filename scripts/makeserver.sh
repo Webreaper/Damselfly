@@ -30,11 +30,11 @@ zipname="${serverdist}/damselfly-server-${PLATFORM}-${version}.zip"
 project='Damselfly.Web.Server'
 outputdir="$project/bin/Release/net${dotnetversion}/${runtime}/publish"
 
-#  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-
 echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
-dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
+# dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
+#  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release /p:Version=$version 
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."
@@ -44,18 +44,6 @@ fi
 echo "*** ${project} build succeeded. Packaging..."
 
 if [ -d "$outputdir" ]; then
-  # Hack to get the libcvextern.so into the linux build. 
-  case $PLATFORM in
-    linux)
-      runtime='linux-x64'
-      emguVer='4.5.1.4349'
-      wget https://www.nuget.org/api/v2/package/Emgu.CV.runtime.ubuntu.20.04-x64/$emguVer
-      unzip -j "$emguVer" "runtimes/ubuntu.20.04-x64/native/libcvextern.so" -d "$outputdir"
-      chmod 777 "$outputdir/libcvextern.so"
-      ls "$outputdir"
-      ;;
-  esac
-
   echo "*** Contents of ${outputdir}:"
 
   ls -l $outputdir
