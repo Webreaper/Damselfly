@@ -51,9 +51,11 @@ public abstract class BaseConfigService
             throw new ArgumentException( $"Invalid setting passed to SetSetting" );
 
         if ( _cache.TryGetValue(setting.Name, out var existingValue) )
+        {
             // Existing cache value is the same, so do nothing
-            if ( existingValue.Equals(setting.Value) )
+            if ( !string.IsNullOrEmpty(existingValue.Value) && existingValue.Value.Equals(setting.Value) )
                 return false;
+        }
 
         // Update the cache
         if ( setting.Value == null )
