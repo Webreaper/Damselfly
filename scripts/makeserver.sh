@@ -44,10 +44,6 @@ fi
 echo "*** ${project} build succeeded. Packaging..."
 
 if [ -d "$outputdir" ]; then
-  # Remove these, which are getting incorrectly bundled
-  # See https://github.com/Webreaper/Damselfly/issues/546
-  rm onnxruntime_providers*.dll
-
   echo "*** Contents of ${outputdir}:"
 
   ls -l $outputdir
@@ -56,7 +52,18 @@ if [ -d "$outputdir" ]; then
   mkdir $serverdist
 
   cd $outputdir
+
+  # Hack to get the libcvextern.so into the linux build. 
+  case $PLATFORM in
+    linux | max | m1)
+      # Remove these, which are getting incorrectly bundled
+      # See https://github.com/Webreaper/Damselfly/issues/546
+      echo "Removing invalid windows ONNX provider DLLs..."
+      rm -v ${outputdir}/onnxruntime_providers*.dll
+  esac
+
   zip $zipname . -rx "*.pdb" 
+
   echo "*** Build complete."
 else
   echo "*** ERROR: Output folder ${outputdir} did not exist."
