@@ -59,7 +59,7 @@ if [ -d "$outputdir" ]; then
       # Remove these, which are getting incorrectly bundled
       # See https://github.com/Webreaper/Damselfly/issues/546
       echo "Removing invalid windows ONNX provider DLLs..."
-      rm -v ${outputdir}/onnxruntime_providers*.dll
+      rm -v onnxruntime_providers*.dll
   esac
 
   zip $zipname . -rx "*.pdb" 
