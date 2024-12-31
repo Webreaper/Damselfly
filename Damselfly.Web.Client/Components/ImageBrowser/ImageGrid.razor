@@ -99,7 +99,7 @@
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
-    private bool NoResultsFound { get; set; } = true;
+    private bool NoResultsFound { get; set; } = false;
 
     protected override void OnInitialized()
     {
@@ -244,16 +244,22 @@
         // If we've tried to load data and there isn't any more, show the toast.
         toastClass = endOfImages ? "show" : string.Empty;
         
+        _ = AddImagesToGrid(response.MoreDataAvailable, cancelTokenSource.Token);
+    }
+
+    private void ResetSearch()
+    {
         // Cancel the old request, and start a new one
         cancelTokenSource.Cancel();
         cancelTokenSource.Dispose();
         cancelTokenSource = new CancellationTokenSource();
-        
-        _ = AddImagesToGrid(response.MoreDataAvailable, cancelTokenSource.Token);
     }
 
-    protected void SearchQueryChanged()
+    private void SearchQueryChanged()
     {
+        // Abort any in-progress search results from being rendered
+        ResetSearch();
+        
         selectionService.ClearSelection();
         gridImages.Clear();
         endOfImages = false;
@@ -289,15 +295,14 @@
             
             foreach( var set in chunks )
             {
-                // Another refresh, hot on our heels, is cancelling this one
-                if( token.IsCancellationRequested )
-                    return;
-
                 StateHasChanged();
 
                 var toAdd = set.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
-                
                 var images = await imageCache.GetCachedImages(toAdd);
+
+                // Check if we had a cancellation request while we pulled back the images. If so, abort
+                if( token.IsCancellationRequested )
+                    return;
 
                 if(images.Any())
                 {
