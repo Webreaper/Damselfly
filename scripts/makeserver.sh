@@ -55,7 +55,7 @@ if [ -d "$outputdir" ]; then
 
   # Hack to get the libcvextern.so into the linux build. 
   case $PLATFORM in
-    linux | max | m1)
+    linux | mac | m1)
       # Remove these, which are getting incorrectly bundled
       # See https://github.com/Webreaper/Damselfly/issues/546
       echo "Removing invalid windows ONNX provider DLLs..."
