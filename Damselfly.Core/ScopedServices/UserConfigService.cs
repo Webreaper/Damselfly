@@ -53,8 +53,7 @@ public class UserConfigService : BaseConfigService, IDisposable
         await using var db = ImageContext.GetImageContext( scope );
 
         var existing = await db.ConfigSettings
-            .Where(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId);
 
         if ( string.IsNullOrEmpty(setRequest.NewValue) )
         {
