@@ -34,7 +34,7 @@ echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
 # dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 #  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-dotnet publish $project -r $runtime -f net${dotnetversion} -c Release /p:Version=$version 
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release  --self-contained true /p:Version=$version 
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."
@@ -44,6 +44,10 @@ fi
 echo "*** ${project} build succeeded. Packaging..."
 
 if [ -d "$outputdir" ]; then
+  # Remove these, which are getting incorrectly bundled
+  # See https://github.com/Webreaper/Damselfly/issues/546
+  rm onnxruntime_providers*.dll
+
   echo "*** Contents of ${outputdir}:"
 
   ls -l $outputdir
