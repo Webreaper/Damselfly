@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=webreaper/damselfly-base:2.0.0
+ARG BASE_IMAGE=webreaper/damselfly-base:2.0.1
 
 FROM $BASE_IMAGE as final
 
