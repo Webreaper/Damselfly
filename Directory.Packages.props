@@ -59,25 +59,25 @@
     <PackageVersion Include="Microsoft.ML.TensorFlow" Version="3.0.1" />
     <PackageVersion Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
     <PackageVersion Include="MudBlazor" Version="7.15.0" />
-    <PackageVersion Include="Radzen.Blazor" Version="5.7.1" />
+    <PackageVersion Include="Radzen.Blazor" Version="5.7.2" />
     <PackageVersion Include="SendGrid" Version="9.29.3" />
-    <PackageVersion Include="Serilog" Version="3.1.1" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageVersion Include="Serilog" Version="4.2.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageVersion Include="Serilog.AspNetCore.Ingestion" Version="1.0.0-dev-00032" />
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
-    <PackageVersion Include="Serilog.Sinks.BrowserConsole" Version="2.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Include="Serilog.Sinks.BrowserConsole" Version="8.0.0" />
     <PackageVersion Include="Serilog.Sinks.BrowserHttp" Version="1.0.0-dev-00032" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageVersion Include="Serilog.Sinks.File" Version="5.0.1-dev-00947" />
-    <PackageVersion Include="SixLabors.Fonts" Version="2.0.4" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.5" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageVersion Include="SixLabors.Fonts" Version="2.0.7" />
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.6" />
     <PackageVersion Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     <PackageVersion Include="SkiaSharp" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.NativeAssets.macOS" Version="3.116.1" />
     <PackageVersion Include="SkiaSharp.Views.Blazor" Version="3.116.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <PackageVersion Include="Syncfusion.Blazor.Maps" Version="25.1.40" />
     <PackageVersion Include="WordPressPCL" Version="2.1.0" />
     <PackageVersion Include="YoloDotNet" Version="2.2.0" />
