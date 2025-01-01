@@ -12,7 +12,7 @@
         }
         else
         {
-            <MudTextField @bind-Value="@NewName" Immediate="true" DebounceInterval="250" OnBlur="CheckForMerge"/>
+            <MudTextField @bind-Value="@NewName" Immediate="true" AutoFocus="true" DebounceInterval="250" OnBlur="CheckForMerge"/>
             @if( ! string.IsNullOrEmpty(NewName) )
             {
                 <PeopleGrid SearchText="@NewName" ExcludeSelectedPersonId="@theObject.PersonId" PersonState="Person.PersonState.Identified"
