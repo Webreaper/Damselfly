@@ -36,7 +36,7 @@ public class AsyncEventConflator : IDisposable
         {
             if (_cancellationTokenSource != null)
             {
-                _cancellationTokenSource?.Cancel();
+                await _cancellationTokenSource.CancelAsync();
                 _cancellationTokenSource?.Dispose();
             }
             
