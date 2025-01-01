@@ -360,9 +360,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
         var watch = new Stopwatch("ScanFolderFiles");
 
-        // Select just imagefiles, and most-recent first
-        folderImageCount = allImageFiles.Count();
-
         int newImages = 0, updatedImages = 0;
         foreach ( var file in allImageFiles )
             try

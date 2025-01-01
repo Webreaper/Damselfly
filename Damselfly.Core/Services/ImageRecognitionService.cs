@@ -123,7 +123,7 @@ public class ImageRecognitionService(
     public async Task UpdatePersonName(NameChangeRequest req)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        await using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         ImageObject imageObject = null;
         if( req.ImageObjectId != null )

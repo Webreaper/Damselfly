@@ -2,10 +2,11 @@
     <div class="SearchFieldIcon" title="@placeholder">
         <i class="fa @IconClass"/>
     </div>
-    <input class="SearchField" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" @bind-value="ProxyValue" @bind-value:event="oninput"/>
+    <input class="SearchField" autocomplete="off" placeholder="@placeholder" id="@id" for="searchBox" 
+                    @bind-value="TextValue" @bind-value:after="TextChanged" @bind-value:event="oninput"/>
     @if( CanClear )
     {
-        <div class="SearchFieldClear" title="Clear Filter" @onclick="@(() => ClearText())">
+        <div class="SearchFieldClear" title="Clear Filter" @onclick="@ClearText">
             <i class="fa fa-times"/>
         </div>
     }
@@ -15,53 +16,37 @@
 
     [Parameter] public string IconClass { get; set; }
 
-    [Parameter] public Action<string> OnKeyPressed { get; set; }
-
-    [Parameter] public Action<string> OnValueChanged { get; set; }
-
     [Parameter] public string placeholder { get; set; }
+    
+    [Parameter] public string TextValue { get; set; }
 
     [Parameter] public string id { get; set; }
-
-    [Parameter]
-    public string TextValue
-    {
-        set => HandleChange(value);
-    }
+    
+    [Parameter] public EventCallback<string> TextValueChanged { get; set; }
 
     private bool CanClear { get; set; }
-    private EventConflator conflator = new();
-    private string tempValue;
+    private AsyncEventConflator conflator = new();
+    private string oldValue;
 
-    private void ClearText()
+    private async Task ClearText()
     {
-        HandleChange(string.Empty);
+        TextValue = string.Empty;
+        await TextChanged();
     }
 
-    // Used as a proxy to the underlying input box
-    private string ProxyValue
+    private async Task TextChanged()
     {
-        get => tempValue; // TODO - don't think we need this
-        set => HandleChange(value);
-    }
-
-    private void HandleChange(string newValue)
-    {
-        if( tempValue != newValue )
+        if( oldValue != TextValue )
         {
-            if( OnKeyPressed != null )
-                OnKeyPressed(newValue);
-
-            tempValue = newValue;
-            conflator.HandleEvent(SearchCallback);
-            CanClear = !string.IsNullOrEmpty(newValue);
+            oldValue = TextValue;
+            CanClear = !string.IsNullOrEmpty(TextValue);
+            await conflator.ConflateAsync(_ => ChangeCallback());
         }
     }
 
-    private void SearchCallback(object? state)
+    private async Task ChangeCallback()
     {
-        if( OnValueChanged != null )
-            OnValueChanged(tempValue);
+        StateHasChanged();
+        await TextValueChanged.InvokeAsync(TextValue);
     }
-
 }

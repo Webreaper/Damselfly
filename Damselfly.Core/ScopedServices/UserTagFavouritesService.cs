@@ -76,7 +76,7 @@ public class UserTagRecentsService : IRecentTagService, IDisposable
                 recentTags.Clear();
                 recentTags.AddRange( newRecent );
 
-                _configService.Set( ConfigSettings.RecentTags, string.Join( ",", recentTags ) );
+                await _configService.Set( ConfigSettings.RecentTags, string.Join( ",", recentTags ) );
                 NotifyRecentsChanged();
             }
         }

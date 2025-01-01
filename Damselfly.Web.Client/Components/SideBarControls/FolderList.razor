@@ -21,7 +21,7 @@
             <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()"/>
         </div>
         <div class="damselfly-browsetool">
-            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" OnValueChanged="@DoFilter" TextValue="@FilterTerm"/>
+            <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" @bind-TextValue="@FilterTerm" @bind-TextValue:after="ProcessUpdatedFilter"/>
         </div>
     </div>
     @if ( folderItems == null )
@@ -49,7 +49,7 @@
 </div>
 
 @code {
-    public string FilterTerm { get; private set; }
+    private string FilterTerm { get; set; }
 
     private Virtualize<Folder> folderContainer;
     private List<Folder> folderItems;
@@ -300,15 +300,6 @@
             return "folder-entry-selected";
 
         return string.Empty;
-    }
-
-    private void DoFilter(string searchTerm)
-    {
-        if ( FilterTerm != searchTerm )
-        {
-            FilterTerm = searchTerm;
-            OnFoldersChanged();
-        }
     }
 
     void ResetFilterFolder()

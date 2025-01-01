@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Constants;
+﻿using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.DbModels.Models;
@@ -20,12 +21,12 @@ public class SmtpSettings
         SenderName = configService.Get(ConfigSettings.SmtpSenderName);
     }
 
-    public void Save(IConfigService configService)
+    public async Task Save(IConfigService configService)
     {
-        configService.Set(ConfigSettings.SmtpServer, MailServer);
-        configService.Set(ConfigSettings.SmtpPort, MailPort.ToString());
-        configService.Set(ConfigSettings.SmtpPassword, Password);
-        configService.Set(ConfigSettings.SmtpSenderEmail, Sender);
-        configService.Set(ConfigSettings.SmtpSenderName, SenderName);
+        await configService.Set(ConfigSettings.SmtpServer, MailServer);
+        await configService.Set(ConfigSettings.SmtpPort, MailPort.ToString());
+        await configService.Set(ConfigSettings.SmtpPassword, Password);
+        await configService.Set(ConfigSettings.SmtpSenderEmail, Sender);
+        await configService.Set(ConfigSettings.SmtpSenderName, SenderName);
     }
 }

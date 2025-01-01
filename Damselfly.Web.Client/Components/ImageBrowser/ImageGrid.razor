@@ -132,10 +132,10 @@
         selectionService.DeselectImages(grouping.Images);
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        ChangeGridImageSize(CurrentGridSize);
-        base.OnParametersSet();
+        await ChangeGridImageSize(CurrentGridSize);
+        await base.OnParametersSetAsync();
     }
 
     private List<ImageGrouping> GroupedImages
@@ -187,9 +187,9 @@
         StateHasChanged();
     }
 
-    protected void ChangeGridImageSize(GridImageSize newSize)
+    private async Task ChangeGridImageSize(GridImageSize newSize)
     {
-        configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
+        await configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -307,7 +307,7 @@
                 if(images.Any())
                 {
                     gridImages.AddRange(images);
-                    configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
+                    await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
                 }
             }
         }

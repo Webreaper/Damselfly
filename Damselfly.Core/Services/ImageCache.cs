@@ -129,7 +129,7 @@ public class ImageCache : IImageCacheService
             Logging.Log($"Warming up image cache with up to {warmupCount} most recent images.");
 
             using var scope = _scopeFactory.CreateScope();
-            using var db = scope.ServiceProvider.GetService<ImageContext>();
+            await using var db = scope.ServiceProvider.GetService<ImageContext>();
 
             var warmupIds = await db.Images.OrderByDescending(x => x.SortDate)
                 .Take(warmupCount)

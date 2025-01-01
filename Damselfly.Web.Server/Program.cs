@@ -34,7 +34,7 @@ public class Program
     {
         try
         {
-            Parser.Default.ParseArguments<DamselflyOptions>(args).WithParsed(o => { Startup(o, args); });
+            Parser.Default.ParseArguments<DamselflyOptions>(args).WithParsedAsync(async o => { await Startup(o, args); });
         }
         catch ( Exception ex )
         {
@@ -47,7 +47,7 @@ public class Program
     /// </summary>
     /// <param name="o"></param>
     /// <param name="args"></param>
-    private static void Startup(DamselflyOptions o, string[] args)
+    private static async Task Startup(DamselflyOptions o, string[] args)
     {
         Logging.Verbose = o.Verbose;
         Logging.Trace = o.Trace;
@@ -89,7 +89,7 @@ public class Program
             // Make ourselves low-priority.
             Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Idle;
 
-            StartWebServer(o, args);
+            await StartWebServer(o, args);
 
             Logging.Log("Shutting down.");
         }
@@ -132,9 +132,7 @@ public class Program
     ///     the webserver, which is a blocking call (since it's the dispatcher
     ///     thread) until the app exits.
     /// </summary>
-    /// <param name="listeningPort"></param>
-    /// <param name="args"></param>
-    private static void StartWebServer(DamselflyOptions cmdLineOptions, string[] args)
+    private static async Task StartWebServer(DamselflyOptions cmdLineOptions, string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -196,7 +194,7 @@ public class Program
         var logLevel = configService.Get(ConfigSettings.LogLevel, LogEventLevel.Information);
 
         if( cmdLineOptions.NoGenerateThumbnails )
-            configService.Set( ConfigSettings.EnableBackgroundThumbs, false.ToString() );
+            await configService.Set( ConfigSettings.EnableBackgroundThumbs, false.ToString() );
 
         Logging.ChangeLogLevel(logLevel);
 

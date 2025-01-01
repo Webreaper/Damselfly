@@ -3,7 +3,7 @@
 @inject ILogger<UIStateMonitor> logger
 
 @code {
-    private EventConflator conflator = new( 100 );
+    private AsyncEventConflator conflator = new( 250 );
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -30,9 +30,9 @@
     }
 
     [JSInvokable]
-    public void HandleViewportSizeChange(int newWidth, int newHeight)
+    public async Task HandleViewportSizeChange(int newWidth, int newHeight)
     {
-        conflator.HandleEvent(x => { uiService.ResolutionChanged(newWidth, newHeight); });
+        await conflator.ConflateAsync(_ => uiService.ResolutionChanged(newWidth, newHeight));
     }
 
 }

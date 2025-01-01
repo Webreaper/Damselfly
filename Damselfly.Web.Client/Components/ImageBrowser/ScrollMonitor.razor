@@ -8,14 +8,14 @@
 
     [Parameter] public required string ScrollConfigName { get; set; }
 
-    private EventConflator conflator = new();
+    private AsyncEventConflator conflator = new();
 
     public event Action<int> OnScrollPositionChanged;
 
-    private void SaveScrollState(int scrollTop)
+    private async Task SaveScrollState(int scrollTop)
     {
         logger.LogTrace($"Saving scroll position to {scrollTop}");
-        configService.SetForUser(ScrollConfigName, scrollTop.ToString());
+        await configService.SetForUser(ScrollConfigName, scrollTop.ToString());
 
         OnScrollPositionChanged?.Invoke(scrollTop);
     }
@@ -43,9 +43,9 @@
 
     [JSInvokable]
     // Debugging method to help us differentiate between JS calls and other data loads
-    public void HandleScroll(double scrollTop)
+    public async Task HandleScroll(double scrollTop)
     {
-        conflator.HandleEvent(x => { SaveScrollState((int)scrollTop); });
+        await conflator.ConflateAsync(_ => SaveScrollState((int)scrollTop));
     }
 
 }

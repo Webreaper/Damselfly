@@ -34,7 +34,7 @@ public abstract class BaseConfigService
         if ( allSettings.Any() )
         {
             allSettings.ForEach(x => _cache[x.Name] = x);
-            _logger.LogInformation($"Loaded {allSettings.Count()} settings into config cache.");
+            _logger.LogInformation("Loaded {C} settings into config cache", allSettings.Count);
         }
 
         OnSettingsLoaded?.Invoke(allSettings);
@@ -69,7 +69,7 @@ public abstract class BaseConfigService
         return true;
     }
 
-    private ConfigSetting GetSetting(string name)
+    private ConfigSetting? GetSetting(string name)
     {
         if ( _cache.TryGetValue(name, out var value) )
             return value;
@@ -77,9 +77,9 @@ public abstract class BaseConfigService
         return null;
     }
 
-    public void Set(string name, string value)
+    public async Task Set(string name, string value)
     {
-        SetSetting(new ConfigSetting { Name = name, Value = value });
+        await SetSetting(new ConfigSetting { Name = name, Value = value });
     }
 
     public string Get(string name, string? defaultIfNotExists = null)

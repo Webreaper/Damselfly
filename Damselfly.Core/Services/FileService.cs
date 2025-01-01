@@ -50,7 +50,7 @@ public class FileService : IFileService
             try
             {
                 // Store the setting
-                _configService.Set( ConfigSettings.TrashcanFolderName, trashFolder );
+                await _configService.Set( ConfigSettings.TrashcanFolderName, trashFolder );
 
                 var dir = Directory.CreateDirectory( destfolder );
                 // Hide this here?

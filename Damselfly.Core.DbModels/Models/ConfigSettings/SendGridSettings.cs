@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Constants;
+﻿using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 
 namespace Damselfly.Core.DbModels.Models;
@@ -14,9 +15,9 @@ public class SendGridSettings
         SendGridFromAddress = configService.Get(ConfigSettings.SendGridFromAddress);
     }
 
-    public void Save(IConfigService configService)
+    public async Task Save(IConfigService configService)
     {
-        configService.Set(ConfigSettings.SendGridKey, SendGridKey);
-        configService.Set(ConfigSettings.SendGridFromAddress, SendGridFromAddress);
+        await configService.Set(ConfigSettings.SendGridKey, SendGridKey);
+        await configService.Set(ConfigSettings.SendGridFromAddress, SendGridFromAddress);
     }
 }

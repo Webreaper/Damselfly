@@ -24,7 +24,7 @@ public class UserConfigService : BaseConfigService, IDisposable
         _userService = userService;
         _userService.OnUserIdChanged += UserChanged;
 
-        _ = InitialiseCache();
+        _ = base.InitialiseCache();
     }
 
     public void Dispose()

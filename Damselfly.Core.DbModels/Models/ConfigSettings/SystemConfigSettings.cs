@@ -1,4 +1,5 @@
-﻿using Damselfly.Core.Constants;
+﻿using System.Threading.Tasks;
+using Damselfly.Core.Constants;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 
@@ -23,35 +24,35 @@ public class SystemConfigSettings
     public bool enableBackgroundThumbs { get; set; } = false;
     public int similarityThreshold { get; set; } = 75;
 
-    public void Save(IConfigService configService)
+    public async Task Save(IConfigService configService)
     {
-        configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
-        configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
+        await configService.Set(ConfigSettings.ImportSidecarKeywords, importSidecarKeywords.ToString());
+        await configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
 
-        configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
-        configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
-        configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
+        await configService.Set(ConfigSettings.WordpressURL, wpSettings.URL);
+        await configService.Set(ConfigSettings.WordpressUser, wpSettings.UserName);
+        await configService.Set(ConfigSettings.WordpressPassword, wpSettings.Password);
 
-        configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
-        configService.Set(ConfigSettings.EnableAIProcessing, enableAIProcessing.ToString());
-        configService.Set(ConfigSettings.DisableObjectDetector, disableObjectDetector.ToString());
-        configService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString());
-        configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
+        await configService.Set(ConfigSettings.WriteAITagsToImages, writeAITagsToImages.ToString());
+        await configService.Set(ConfigSettings.EnableAIProcessing, enableAIProcessing.ToString());
+        await configService.Set(ConfigSettings.DisableObjectDetector, disableObjectDetector.ToString());
+        await configService.Set(ConfigSettings.SimilarityThreshold, similarityThreshold.ToString());
+        await configService.Set(ConfigSettings.UseSmtp, useSmtp.ToString());
 
-        configService.Set(ConfigSettings.EnablePoliciesAndRoles, enableAuthAndRoles.ToString());
-        configService.Set(ConfigSettings.EnableImageEditing, enableImageEditing.ToString());
-        configService.Set( ConfigSettings.EnableBackgroundThumbs, enableBackgroundThumbs.ToString() );
-        configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
+        await configService.Set(ConfigSettings.EnablePoliciesAndRoles, enableAuthAndRoles.ToString());
+        await configService.Set(ConfigSettings.EnableImageEditing, enableImageEditing.ToString());
+        await configService.Set( ConfigSettings.EnableBackgroundThumbs, enableBackgroundThumbs.ToString() );
+        await configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
 
-        smtpSettings.Save(configService);
-        sendGridSettings.Save(configService);
-        cpuSettings.Save(configService);
+        await smtpSettings.Save(configService);
+        await sendGridSettings.Save(configService);
+        await cpuSettings.Save(configService);
 
         // If roles are disabled, disable forced Login
         var forceLoginProxy = enableAuthAndRoles && forceLogin;
         var extRegistrationProxy = enableAuthAndRoles && allowExternalRegistration;
-        configService.Set(ConfigSettings.ForceLogin, forceLoginProxy.ToString());
-        configService.Set(ConfigSettings.AllowExternalRegistration, extRegistrationProxy.ToString());
+        await configService.Set(ConfigSettings.ForceLogin, forceLoginProxy.ToString());
+        await configService.Set(ConfigSettings.AllowExternalRegistration, extRegistrationProxy.ToString());
     }
 
     public void Load(IConfigService configService)

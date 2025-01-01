@@ -63,7 +63,7 @@ public class ExifService : IProcessJobFactory, ITagService
     public async Task<ICollection<IProcessJob>> GetPendingJobs(int maxCount)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetService<ImageContext>();
+        await using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         // We skip any operations where the timestamp is more recent than 30s
         var timeThreshold = DateTime.UtcNow.AddSeconds(-1 * 30);

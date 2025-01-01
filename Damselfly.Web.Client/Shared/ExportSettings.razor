@@ -31,7 +31,7 @@
                 {
                     <button @onclick="@ExportBasketToLocalFileSystem" class="btn btn-primary">Save Locally</button>
                 }
-                <button @onclick="@Export" class="btn btn-primary">Download as Zip</button>
+                <button @onclick="ProcessExport" class="btn btn-primary">Download as Zip</button>
             </div>
         </div>
     }
@@ -42,11 +42,11 @@
 </div>
 
 @code {
-    private LocalFileExporter FileExporter;
+    private LocalFileExporter? FileExporter;
     public ExportType[] exportTypes { get; private set; } = new ExportType[0];
     public ExportSize[] exportSizes { get; private set; } = new ExportSize[0];
 
-    private ExportConfig selectedConfig;
+    private ExportConfig? selectedConfig;
     public string StatusMessage { get; set; }
 
     private void ConfigChanged(ChangeEventArgs args)
@@ -61,6 +61,8 @@
 
     private async Task ExportBasketToLocalFileSystem()
     {
+        ArgumentNullException.ThrowIfNull(FileExporter);
+        
         var images = basketService.CurrentBasket.BasketEntries.Select(x => x.Image).ToList();
 
         await FileExporter.ExportImagesToLocalFilesystem(images);
@@ -71,11 +73,6 @@
         await exportService.Save(selectedConfig);
         StatusMessage = $"Saved Config for '{selectedConfig.Name}'";
         StateHasChanged();
-    }
-
-    private void Export()
-    {
-        InvokeAsync(() => { _ = ProcessExport(); });
     }
 
     private async Task ProcessExport()

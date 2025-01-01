@@ -20,7 +20,7 @@
                 <MudSpacer/>
                 <MudText Typo="Typo.h6">Keyword Tags</MudText>
                 <MudSpacer/>
-                <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText"/>
+                <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" @bind-TextValue="@searchText"/>
             </ToolBarContent>
             <HeaderContent>
                 <MudTh>
@@ -75,14 +75,7 @@
         Tags = results.ToList();
         StateHasChanged();
     }
-
-    private void DoSearch(string searchTerm)
-    {
-        searchText = searchTerm;
-        StateHasChanged();
-    }
-
-
+    
     private bool FilterFunc(Tag tag)
     {
         if( string.IsNullOrEmpty(searchText) )

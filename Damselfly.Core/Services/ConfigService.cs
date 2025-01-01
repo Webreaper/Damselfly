@@ -6,6 +6,7 @@ using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace Damselfly.Core.Services;
 public class ConfigService : BaseConfigService, IConfigService
 {
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly AsyncEventConflator conflator = new(2000);
 
     public ConfigService(IServiceScopeFactory scopeFactory, ILogger<IConfigService> logger) : base(logger)
     {
@@ -42,7 +44,7 @@ public class ConfigService : BaseConfigService, IConfigService
     // Used By the Controller
     public async Task SetSetting(ConfigSetRequest setRequest)
     {
-        await PersistSetting(setRequest);
+        await conflator.ConflateAsync( _ => PersistSetting(setRequest));
     }
 
     // Used by the controller

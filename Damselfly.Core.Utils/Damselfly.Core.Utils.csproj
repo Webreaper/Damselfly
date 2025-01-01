@@ -17,7 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Utils\"/>
         <Folder Include="ML\"/>
     </ItemGroup>
     <ItemGroup>

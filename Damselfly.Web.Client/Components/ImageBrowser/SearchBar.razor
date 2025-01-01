@@ -9,7 +9,8 @@
 
 <div class="searchbar">
     <div class="searchfilter">
-        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" OnValueChanged="@DoSearch" TextValue="@searchService.SearchText"/>
+        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Enter a search term" 
+                          @bind-TextValue="@searchService.SearchText" />
     </div>
     <div class="searchhint">
         <button class="btn btn-primary damselfly-searchtools" title="Refresh Search" @onclick="@(() => searchService.Refresh())">
@@ -160,12 +161,7 @@
     {
         StateHasChanged();
     }
-
-    private void DoSearch(string searchTerm)
-    {
-        searchService.SearchText = searchTerm;
-    }
-
+    
     private void ChangeGroupType(GroupingType newType)
     {
         searchService.Grouping = newType;

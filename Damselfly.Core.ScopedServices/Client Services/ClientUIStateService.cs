@@ -31,7 +31,7 @@ public class ClientUIStateService
         OnStateChanged?.Invoke(clientState);
     }
 
-    public void ResolutionChanged(int newWidth, int newHeight)
+    public Task ResolutionChanged(int newWidth, int newHeight)
     {
         if ( clientState != null )
         {
@@ -48,5 +48,7 @@ public class ClientUIStateService
                 OnStateChanged?.Invoke(clientState);
             }
         }
+
+        return Task.CompletedTask;
     }
 }

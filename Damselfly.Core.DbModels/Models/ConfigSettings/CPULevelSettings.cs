@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
@@ -36,19 +37,19 @@ public class CPULevelSettings
         }
     }
 
-    public void Save(IConfigService configService)
+    public async Task Save(IConfigService configService)
     {
         // CPU Usage settings
-        configService.Set(ConfigSettings.AltCPULimitEnabled, EnableAltCPULevel.ToString());
-        configService.Set(ConfigSettings.CPULimit, CPULevel.ToString());
-        configService.Set(ConfigSettings.AltCPULimit, CPULevelAlt.ToString());
+        await configService.Set(ConfigSettings.AltCPULimitEnabled, EnableAltCPULevel.ToString());
+        await configService.Set(ConfigSettings.CPULimit, CPULevel.ToString());
+        await configService.Set(ConfigSettings.AltCPULimit, CPULevelAlt.ToString());
 
         string? cpuTimeRangeSettings = null;
 
         if ( EnableAltCPULevel )
             cpuTimeRangeSettings = $"{AltTimeStart.LocalTimeSpanToUTC()}-{AltTimeEnd.LocalTimeSpanToUTC()}";
 
-        configService.Set(ConfigSettings.AltCPULimitTimes, cpuTimeRangeSettings);
+        await configService.Set(ConfigSettings.AltCPULimitTimes, cpuTimeRangeSettings);
     }
 
     /// <summary>

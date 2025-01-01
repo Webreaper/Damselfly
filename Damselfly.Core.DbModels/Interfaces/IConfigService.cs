@@ -6,8 +6,7 @@ using Damselfly.Core.Models;
 namespace Damselfly.Core.ScopedServices.Interfaces;
 
 public interface IConfigService
-{
-    void Set(string name, string value);
+{   Task Set(string name, string value);
     string Get(string name, string? defaultIfNotExists = null);
     EnumType Get<EnumType>(string name, EnumType defaultIfNotExists = default) where EnumType : struct;
     bool GetBool(string name, bool defaultIfNotExists = default);

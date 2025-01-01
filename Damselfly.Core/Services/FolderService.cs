@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -23,7 +24,7 @@ public class FolderService : IFolderService
 {
     private readonly ServerNotifierService _notifier;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly EventConflator conflator = new( 10 * 1000 );
+    private readonly AsyncEventConflator conflator = new( 10 * 1000 );
     private List<Folder> allFolders = new();
 
     public FolderService(IndexingService _indexingService,
@@ -37,7 +38,7 @@ public class FolderService : IFolderService
         _indexingService.OnFoldersChanged += OnFoldersChanged;
 
         // Initiate pre-loading the folders.
-        _ = LoadFolders();
+        OnFoldersChanged();
     }
 
     public event Action OnChange;
@@ -132,14 +133,9 @@ public class FolderService : IFolderService
 
     private void OnFoldersChanged()
     {
-        conflator.HandleEvent(ConflatedCallback);
+        _ = conflator.ConflateAsync(LoadFolders);
     }
-
-    private void ConflatedCallback(object state)
-    {
-        _ = LoadFolders();
-    }
-
+    
     private void NotifyStateChanged()
     {
         Logging.Log($"Folders changed: {allFolders.Count}");
@@ -154,11 +150,14 @@ public class FolderService : IFolderService
     ///     which has a summary of the number of images in each folder
     ///     and the most recent modified date of any image in the folder.
     /// </summary>
-    public async Task LoadFolders()
+    public async Task LoadFolders(CancellationToken token)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
+        if( token.IsCancellationRequested )
+            return;
+        
         var watch = new Stopwatch("GetFolders");
 
         Logging.Log("Loading folder data...");

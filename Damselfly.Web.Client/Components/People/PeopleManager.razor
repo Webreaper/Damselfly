@@ -19,7 +19,7 @@
         </MudRadioGroup>
     </div>
     <div class="title-section">
-        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" OnValueChanged="@DoSearch" TextValue="@searchText"/>
+        <ConflatedTextBox IconClass="fa-search" id="searchBox" placeholder="Search" @bind-TextValue="@searchText"  @bind-TextValue:after="SearchTextChanged"/>
     </div>
 </div>
 <div class="damselfly-tagview">
@@ -53,14 +53,10 @@
         if( person != null)
             navManager.NavigateTo($"/?personid={person.PersonId}");
     }
-    private void DoSearch(string searchTerm)
+
+    private void SearchTextChanged()
     {
-        if( searchText != searchTerm )
-        {
-            statusService.UpdateStatus($"Searching for {searchTerm}...");
-            searchText = searchTerm;
-            StateHasChanged();
-        }
+        statusService.UpdateStatus($"Searching for {searchText}...");
     }
 
     private void ClearFaceThumbs()

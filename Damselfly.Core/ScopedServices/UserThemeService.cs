@@ -29,7 +29,7 @@ public class UserThemeService
             if ( newTheme is not null )
             {
                 CurrentTheme = newTheme;
-                _configService.Set(ConfigSettings.Theme, value);
+                _ = _configService.Set(ConfigSettings.Theme, value);
                 OnChangeTheme?.Invoke(CurrentTheme);
             }
         }
