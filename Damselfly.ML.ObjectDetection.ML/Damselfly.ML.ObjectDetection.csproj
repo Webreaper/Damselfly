@@ -32,26 +32,4 @@
     <ItemGroup>
         <ProjectReference Include="..\Damselfly.Core.Utils\Damselfly.Core.Utils.csproj"/>
     </ItemGroup>
-
-    <PropertyGroup>
-        <IsWindows Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">true</IsWindows>
-    </PropertyGroup>
-
-    <!-- Remove once ONNX team fix the bug -->
-    <Target Name="CustomAfterBuild" AfterTargets="AfterBuild" Condition="('$(IsWindows)'!='true')">
-        <Message Importance="High" Text="Delete unnecessary ONNX DLLs from build" />
-        <ItemGroup>
-            <FilesToDeleteInBuild Include="$(TargetDir)onnxruntime*.dll"/>
-        </ItemGroup>
-        <Delete Files="@(FilesToDeleteInBuild)" />
-    </Target>
-
-    <!-- Remove once ONNX team fix the bug -->
-    <Target Name="CustomAfterPublish" AfterTargets="AfterPublish" Condition="('$(IsWindows)'!='true')">
-        <Message Importance="High" Text="Delete unnecessary ONNX DLLs from publish" />
-        <ItemGroup>
-            <FilesToDeleteInPublish Include="$(PublishDir)onnxruntime*.dll"/>
-        </ItemGroup>
-        <Delete Files="@(FilesToDeleteInPublish)" />
-    </Target>
 </Project>

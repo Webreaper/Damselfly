@@ -442,25 +442,29 @@ public class SkiaSharpProcessor : IImageProcessor
 
         if ( !string.IsNullOrEmpty(config.WatermarkText) )
         {
-            using var font = SKTypeface.FromFamilyName("Arial");
-            using var brush = new SKPaint
+            using var tf = SKTypeface.FromFamilyName("Arial");
+            SKFont font = new SKFont(tf, 64.0f);
+            SKPaint brush = new SKPaint
             {
-                Typeface = font,
-                TextSize = 64.0f,
                 IsAntialias = true,
                 Color = new SKColor(255, 255, 255, 255)
             };
 
-            var textWidth = brush.MeasureText(config.WatermarkText);
-            var textTargetWidth = targetWidth / 6f;
-            var fontScale = textTargetWidth / textWidth;
+            using( brush )
+            {
+                var textWidth = font.MeasureText(config.WatermarkText, brush);
+                var textTargetWidth = targetWidth / 6f;
+                var fontScale = textTargetWidth / textWidth;
 
-            brush.TextSize *= fontScale;
+                font.Size *= fontScale;
 
-            // Offset by text width + 10%
-            var rightOffSet = textTargetWidth * 1.1f;
+                // Offset by text width + 10%
+                var rightOffSet = textTargetWidth * 1.1f;
 
-            canvas.DrawText(config.WatermarkText, targetWidth - rightOffSet, targetHeight - brush.TextSize, brush);
+                SKPoint skPoint = new SKPoint(targetWidth - rightOffSet, targetHeight - font.Size);
+
+                canvas.DrawText(config.WatermarkText, skPoint, font, brush);
+            }
         }
 
         canvas.Flush();
