@@ -97,14 +97,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [linux, mac, windows]
+        target: [linux]
         include: 
-          - target: windows
-            os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-          - target: mac
-            os: macos-latest
     steps:        
       - name: Clone Repository (latest)
         uses: actions/checkout@v3
@@ -132,22 +128,36 @@ jobs:
              cd publish
              unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
              cd ..
+             
       - name: Validate Server artifacts
         run: |
              echo "Server artifacts:"
              ls server
-      - name: Download Desktop Builds into wwwroot folder
+
+      - name: Download Mac Desktop Builds into wwwroot folder
         uses: actions/download-artifact@v4
         with:
-          name: Desktop-Dist-${{ matrix.target }}
+          name: Desktop-Dist-universal
+          path: publish/wwwroot/desktop
+
+      - name: Download Windows Desktop Builds into wwwroot folder
+        uses: actions/download-artifact@v4
+        with:
+          name: Desktop-Dist-windows
           path: publish/wwwroot/desktop
       
+      - name: Download Windows Desktop Builds into wwwroot folder
+        uses: actions/download-artifact@v4
+        with:
+          name: Desktop-Dist-linux
+          path: publish/wwwroot/desktop
+
       - name: Validate Desktop artifacts
         run: |
              echo "Desktop artifacts:"
              ls publish/wwwroot/desktop
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
