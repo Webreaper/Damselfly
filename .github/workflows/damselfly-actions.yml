@@ -16,10 +16,13 @@ jobs:
         include: 
           - target: windows
             os: windows-latest
+            upload: windows
           - target: linux
             os: ubuntu-latest
+            upload: linux
           - target: universal
             os: macos-latest
+            upload: mac
 
     steps:
       - name: Clone Repository (latest)
@@ -43,7 +46,7 @@ jobs:
       - name: Upload desktop builds for Docker build
         uses: actions/upload-artifact@v4
         with:
-          name: Desktop-Dist-${{ matrix.target }}
+          name: Desktop-Dist-${{ matrix.upload }}
           path: Damselfly.Web.Client/wwwroot/desktop/*.*
           retention-days: 5
 
@@ -94,13 +97,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [linux, universal, windows]
+        target: [linux, mac, windows]
         include: 
           - target: windows
             os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-          - target: universal
+          - target: mac
             os: macos-latest
     steps:        
       - name: Clone Repository (latest)
