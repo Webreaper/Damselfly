@@ -94,11 +94,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [linux]
+        target: [windows, linux, mac]
         include: 
+          - target: windows
+            os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-
+          - target: mac
+            os: macos-latest
     steps:        
       - name: Clone Repository (latest)
         uses: actions/checkout@v3
