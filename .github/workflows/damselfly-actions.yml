@@ -51,13 +51,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [windows, linux, mac]
+        target: [linux, universal, windows]
         include: 
           - target: windows
             os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-          - target: mac
+          - target: universal
             os: macos-latest
 
     steps:
@@ -94,13 +94,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [windows, linux, mac]
+        target: [linux, universal, windows]
         include: 
           - target: windows
             os: ubuntu-latest
           - target: linux
             os: ubuntu-latest
-          - target: mac
+          - target: universal
             os: macos-latest
     steps:        
       - name: Clone Repository (latest)
