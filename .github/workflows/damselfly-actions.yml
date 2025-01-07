@@ -128,7 +128,7 @@ jobs:
              cd publish
              unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
              cd ..
-             
+
       - name: Validate Server artifacts
         run: |
              echo "Server artifacts:"
@@ -137,7 +137,7 @@ jobs:
       - name: Download Mac Desktop Builds into wwwroot folder
         uses: actions/download-artifact@v4
         with:
-          name: Desktop-Dist-universal
+          name: Desktop-Dist-mac
           path: publish/wwwroot/desktop
 
       - name: Download Windows Desktop Builds into wwwroot folder
