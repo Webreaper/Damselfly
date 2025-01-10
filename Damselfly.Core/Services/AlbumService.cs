@@ -18,6 +18,7 @@ using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.DbModels.Models.Enums;
 using Microsoft.Extensions.Logging;
+using System.Security.AccessControl;
 
 namespace Damselfly.Core.Services
 {
@@ -51,6 +52,7 @@ namespace Damselfly.Core.Services
             var parentFolder = await _context.Folders.FirstOrDefaultAsync(f => f.ParentId == null);
             var folder = new Folder { Path = folderPath, ParentId = parentFolder!.FolderId };
             var newDirectory = Directory.CreateDirectory(folderPath);
+            await UpdateDirectoryPermissions(newDirectory);
             album.Folder = folder;
             _context.Folders.Add(folder);
             _context.Albums.Add(album);
@@ -205,6 +207,33 @@ namespace Damselfly.Core.Services
         private IQueryable<Album> AlbumWithImagesQuery()
         {
             return _context.Albums.Include(a => a.AlbumImages).ThenInclude(ai => ai.Image).ThenInclude(i => i.MetaData);
+        }
+
+        private static async Task UpdateDirectoryPermissions(DirectoryInfo directory)
+        {
+            if( OperatingSystem.IsLinux() )
+            {
+                var process = new System.Diagnostics.Process
+                {
+                    StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "chmod",
+                        Arguments = "766 " + directory.FullName,
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    }
+                };
+                process.Start();
+                await process.WaitForExitAsync();
+                return;
+            }
+            if( OperatingSystem.IsWindows() )
+            {
+                directory.SetAccessControl(new DirectorySecurity(directory.FullName, AccessControlSections.All));
+                return;
+            }
+            throw new NotImplementedException("Unable to detect operating system");
         }
     }
 }
