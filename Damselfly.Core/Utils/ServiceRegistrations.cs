@@ -59,6 +59,7 @@ public static class ServiceRegistrations
         //services.AddSingleton<DownloadService>();
         services.AddScoped<IDownloadService>(x => x.GetRequiredService<DownloadService>());
 
+        services.AddScoped<NotificationService>();
         services.AddScoped<BasketService>();
         services.AddScoped<UserTagRecentsService>();
         services.AddScoped<WordpressService>();
@@ -86,6 +87,7 @@ public static class ServiceRegistrations
         services.AddScoped<ServerNotifierService>();
         services.AddScoped<ServerStatusService>();
         services.AddScoped<DownloadService>();
+
 
         // services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());
         services.AddScoped<ISystemSettingsService>(x => x.GetRequiredService<SystemSettingsService>());

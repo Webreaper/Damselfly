@@ -4,6 +4,7 @@ using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.DbModels.Models.Entities;
+using Damselfly.Core.DbModels.Models.Enums;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
@@ -59,11 +60,7 @@ namespace Damselfly.Core.Services
                             await File.WriteAllBytesAsync(imagePath, memoryStream.ToArray());
                         }
                         var fileInfo = new FileInfo(imagePath);
-                        var image = new Image { FileName = imageFile.FileName, SortDate = DateTime.UtcNow, FolderId = album.FolderId, FileCreationDate = DateTime.UtcNow, FileLastModDate = DateTime.UtcNow, FileSizeBytes = (int)fileInfo.Length };
-                        album.Images.Add(image);
-                        //image.Albums.Add(album);
-                        _context.Images.Add(image);
-                        _context.Albums.Update(album);
+                        var image = await AddFileImageToAlbum(album, fileInfo);
                         images.Add(image);
                     }
                     catch( Exception ex )
@@ -75,17 +72,7 @@ namespace Damselfly.Core.Services
                 await _context.SaveChangesAsync();
                 foreach( var image in images )
                 {
-                    try
-                    {
-                        await _metaDataService.ScanMetaData(image.ImageId);
-                        await _thumbnailService.CreateThumb(image.ImageId, Constants.ThumbSize.Large);
-                        await _thumbnailService.CreateThumb(image.ImageId, Constants.ThumbSize.Medium);
-                        await _thumbnailService.CreateThumb(image.ImageId, Constants.ThumbSize.Small);
-                    }
-                    catch( Exception ex )
-                    {
-                        Logging.LogError("Error creating thumbs for image {imageId}, {exception}", image.ImageId, ex.ToString());
-                    }
+                    await ProcessImageData(image);
                 }
                 var imageIds = images.Select(i => i.ImageId).ToList();
                 var dbImages = await _context.Images.Include(i => i.MetaData).Where(i => imageIds.Contains(i.ImageId)).ToListAsync();
@@ -98,6 +85,63 @@ namespace Damselfly.Core.Services
             
         }
 
+        public async Task<ImageScanResultEnum> ProcessAlbumImageFromFolder(FileInfo fileInfo, Album album)
+        {
+            try
+            {
+                var dbImage = await _context.Images.Include(i => i.MetaData).FirstOrDefaultAsync(i => i.FileName == fileInfo.Name && i.FolderId == album.FolderId);
+                if( dbImage != null )
+                {
+                    if (dbImage.MetaData == null)
+                    {
+                        await ProcessImageData(dbImage);
+                    }
+                    return ImageScanResultEnum.Preexisting;
+                }
+
+                var image = await AddFileImageToAlbum(album, fileInfo);
+                if (image == null)
+                {
+                    return ImageScanResultEnum.Error;
+                }
+                await ProcessImageData(image);
+                return ImageScanResultEnum.New;
+
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError("Error processing album image from folder {fileName}, {exception}", fileInfo.Name, ex.ToString());
+                return ImageScanResultEnum.Error;
+            }
+        }
+
+        private async Task<Image> AddFileImageToAlbum(Album album, FileInfo fileInfo)
+        {
+            var image = new Image { FileName = fileInfo.Name, SortDate = DateTime.UtcNow, FolderId = album.FolderId, FileCreationDate = DateTime.UtcNow, FileLastModDate = DateTime.UtcNow, FileSizeBytes = (int)fileInfo.Length };
+            var newAblumImage = new AlbumImage { AlbumId = album.AlbumId, Image = image };
+            album.AlbumImages.Add(newAblumImage);
+            _context.Images.Add(image);
+            _context.Albums.Update(album);
+            await _context.SaveChangesAsync();
+            return image;
+        }
+
+        private async Task ProcessImageData(Image image)
+        {
+
+            try
+            {
+                await _metaDataService.ScanMetaData(image.ImageId);
+                await _thumbnailService.CreateThumb(image, Constants.ThumbSize.Large);
+                await _thumbnailService.CreateThumb(image, Constants.ThumbSize.Medium);
+                await _thumbnailService.CreateThumb(image, Constants.ThumbSize.Small);
+            }
+            catch( Exception ex )
+            {
+                Logging.LogError("Error creating thumbs for image {imageId}, {exception}", image.ImageId, ex.ToString());
+            }
+        }
+
         private async Task AttemptCleanUpForFailedUpload(IFormFile file, Guid albumId)
         {
             try
@@ -108,7 +152,7 @@ namespace Damselfly.Core.Services
                     return;
                 }
                 var imagePath = Path.Combine(album.Folder.Path, file.FileName);
-                var applicabaleImage = await _context.Images.FirstOrDefaultAsync(i => i.FileName == file.FileName && i.Albums.Any(a => a.AlbumId == albumId));
+                var applicabaleImage = await _context.Images.FirstOrDefaultAsync(i => i.FileName == file.FileName && i.AlbumImages.Any(a => a.AlbumId == albumId));
                 if( applicabaleImage != null )
                 {
                     _context.Images.Remove(applicabaleImage);
@@ -151,12 +195,12 @@ namespace Damselfly.Core.Services
 
         public async Task<bool> CanDownload(Guid imageId, string password)
         {
-            var image = await _context.Images.Include(i => i.Albums).FirstOrDefaultAsync(i => i.ImageId == imageId);
+            var image = await _context.Images.Include(i => i.AlbumImages).ThenInclude(ai => ai.Album).FirstOrDefaultAsync(i => i.ImageId == imageId);
             if( image == null )
             {
                 return false;
             }
-            if( image.Albums.Any(a => a.Password != null && a.Password == password && a.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts) )
+            if( image.AlbumImages.Any(a => a.Album.Password != null && a.Album.Password == password && a.Album.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts) )
             {
                 return true;
             }
@@ -165,7 +209,7 @@ namespace Damselfly.Core.Services
             {
                 return true;
             }
-            var albumIds = image.Albums.Select(a => a.AlbumId).ToList();
+            var albumIds = image.AlbumImages.Select(a => a.AlbumId).ToList();
             await _context.Albums.Where(a => albumIds.Contains(a.AlbumId)).ExecuteUpdateAsync(a => a.SetProperty(a => a.InvalidPasswordAttempts, a => a.InvalidPasswordAttempts + 1));
             return false;
         }
@@ -174,19 +218,15 @@ namespace Damselfly.Core.Services
         {
             try
             {
-                var image = await _context.Images.Include(i => i.Albums).FirstOrDefaultAsync(i => i.ImageId == imageId);
+                var image = await _context.Images.Include(i => i.AlbumImages).ThenInclude(ai => ai.Album).FirstOrDefaultAsync(i => i.ImageId == imageId);
                 Logging.LogTrace("Checking password for image {imageId}", imageId);
                 if( image == null )
                 {
                     Logging.Log("Image not found for {imageId}", imageId);
                     return false;
                 }
-                Logging.LogTrace("for posterity");
-                Logging.LogTrace("Image found for {imageId}", imageId);
-                Logging.LogTrace("{albumCount} Albums found for image {imageId}", image.Albums.Count, imageId);
-                Logging.LogTrace("Applicable albums: {applicableAlbums}", image.Albums.Select(a => a.AlbumId));
-                Logging.LogTrace("The password is {password}", image.Albums.First().Password);
-                if( image.Albums.Any(a => (a.IsPublic || a.Password == null || a.Password == "" || a.Password == password) && a.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts) )
+                
+                if( image.AlbumImages.Any(a => (a.Album.IsPublic || a.Album.Password == null || a.Album.Password == "" || a.Album.Password == password) && a.Album.InvalidPasswordAttempts < Album.MaxInvalidPasswordAttempts) )
                 {
                     return true;
                 }
@@ -196,7 +236,7 @@ namespace Damselfly.Core.Services
                 {
                     return true;
                 }
-                var albumIds = image.Albums.Select(a => a.AlbumId).ToList();
+                var albumIds = image.AlbumImages.Select(a => a.AlbumId).ToList();
                 await _context.Albums.Where(a => albumIds.Contains(a.AlbumId)).ExecuteUpdateAsync(a => a.SetProperty(a => a.InvalidPasswordAttempts, a => a.InvalidPasswordAttempts + 1));
                 return false;
             }

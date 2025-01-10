@@ -19,7 +19,7 @@ namespace Damselfly.Web.Controllers;
 [ApiController]
 public class ImageController(ImageService imageService, ILogger<ImageController> logger) : Controller
 {
-    private ILogger<ImageController> _logger = logger;
+    private readonly ILogger<ImageController> _logger = logger;
     private readonly ImageService _imageService = imageService;
 
     
