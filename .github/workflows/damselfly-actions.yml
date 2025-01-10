@@ -146,7 +146,7 @@ jobs:
           name: Desktop-Dist-windows
           path: publish/wwwroot/desktop
       
-      - name: Download Windows Desktop Builds into wwwroot folder
+      - name: Download Linux Desktop Builds into wwwroot folder
         uses: actions/download-artifact@v4
         with:
           name: Desktop-Dist-linux
