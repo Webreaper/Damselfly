@@ -9,5 +9,6 @@ namespace Damselfly.PaymentProcessing.Models
     public class CaptureOrderResponse
     {
         public bool WasSuccessful { get; set; }
+        public object ProcessorData { get; set; }
     }
 }

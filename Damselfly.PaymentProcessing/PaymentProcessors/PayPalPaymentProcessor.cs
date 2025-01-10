@@ -52,7 +52,7 @@ namespace Damselfly.PaymentProcessing.PaymentProcessors
             var request = new RestRequest("/v2/checkout/orders", Method.Post);
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("Prefer", "return=representation");
-            request.AddHeader("PayPal-Request-Id", "2601a2e1-e543-4646-bfbc-84b937f804fa");
+            request.AddHeader("PayPal-Request-Id", Guid.NewGuid().ToString());
             request.AddHeader("Authorization", $"Bearer {accessToken.AccessToken}");
             var order = new OrderRequest { 
                 Intent = "CAPTURE", 
@@ -96,14 +96,15 @@ namespace Damselfly.PaymentProcessing.PaymentProcessors
         {
             _logger.LogInformation("Capturing Paypal order {orderId}", orderId);
             var accessToken = await GenerateAccessToken();
-            var request = new RestRequest("/v2/checkout/orders/{orderId}/capture", Method.Post);
+            var request = new RestRequest($"/v2/checkout/orders/{orderId}/capture", Method.Post);
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("Prefer", "return=representation");
             request.AddHeader("PayPal-Request-Id", Guid.NewGuid().ToString());
             request.AddHeader("Authorization", $"Bearer {accessToken.AccessToken}");
             var response = await _restClient.ExecuteAsync(request);
             _logger.LogInformation("Paypal order {orderId} captured with response {response}", orderId, response.Content);
-            return new CaptureOrderResponse{ WasSuccessful = response.IsSuccessful};
+            var paypalData = JsonConvert.DeserializeObject(response.Content);
+            return new CaptureOrderResponse{ WasSuccessful = response.IsSuccessful, ProcessorData = paypalData };
         }
 
         public bool CanHandle(PaymentProcessorEnum paymentProcessor)
