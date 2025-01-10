@@ -183,7 +183,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
-          tag_name: ${{ steps.getversion.outputs.version }}
+          tag_name: 
           release_name: Release v${{ steps.getversion.outputs.version }}
           body: |
             Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
@@ -204,24 +204,19 @@ jobs:
           name: Server-Dist
           path: server
 
-      - name: Upload Server Artifacts
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: server/*.zip 
-          asset_name: Server-Dist.zip
-          asset_content_type: application/zip
-
-      - name: Upload Desktop Artifacts
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: Damselfly.Web.Client/wwwroot/desktop/*.*
-          asset_name: Desktop-Dist.zip
-          asset_content_type: application/zip
+          name: Release v${{ steps.getversion.outputs.version }}
+          tag_name: ${{ steps.getversion.outputs.version }}
+          make_latest: true
+          body: |
+            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
+          files: |
+            server/Server-Dist-linux.zip
+            Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-linux.zip
+            server/Server-Dist-max.zip
+            Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-mac.zip
+            server/Server-Dist-windows.zip
+            Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-windows.zip
+    
