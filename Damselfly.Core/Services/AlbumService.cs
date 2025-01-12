@@ -190,7 +190,8 @@ namespace Damselfly.Core.Services
             if (album.Password == password)
             {
                 await _context.Albums
-                .ExecuteUpdateAsync(a => a.SetProperty(x => x.InvalidPasswordAttempts, 0));
+                    .Where(x => x.AlbumId == album.AlbumId)
+                    .ExecuteUpdateAsync(a => a.SetProperty(x => x.InvalidPasswordAttempts, 0));
                 return album;
             }
             var isAdmin = await _authService.CheckCurrentFirebaseUserIsInRole([RoleDefinitions.s_AdminRole]);
@@ -200,6 +201,7 @@ namespace Damselfly.Core.Services
             }
             album.InvalidPasswordAttempts++;
             await _context.Albums
+                .Where(x => x.AlbumId == album.AlbumId)
                 .ExecuteUpdateAsync(a => a.SetProperty(x => x.InvalidPasswordAttempts, album.InvalidPasswordAttempts));
             return null;
         }

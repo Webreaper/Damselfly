@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.Models.PayPal
 {
-    public class Paypal
+    public class Name
     {
-        [JsonProperty("experience_context")]
-        public ExperienceContext ExperienceContext { get; set; }
+        [JsonProperty("given_name")]
+        public string GivenName { get; set; }
+
+        [JsonProperty("surname")]
+        public string Surname { get; set; }
     }
 }

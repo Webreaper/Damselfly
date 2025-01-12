@@ -1,3 +1,4 @@
+using Damselfly.Core.DbModels.Models.Enums;
 using Damselfly.PaymentProcessing.Models;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Damselfly.PaymentProcessing.PaymentProcessors
     public interface IPaymentProcessor
     {
         bool CanHandle(PaymentProcessorEnum paymentProcessor);
-        Task<CreateOrderResponse> CreateOrder(decimal amount);
-        Task<CaptureOrderResponse> CaptureOrder(string orderId);
+        Task<CreateOrderResponse> CreateOrder(CreateOrderRequest orderRequest);
+        Task<CaptureOrderResponse> CaptureOrder(CaptureOrderRequest captureRequest);
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.Models.PayPal
 {
-    internal class Amount
+    public class Amount
     {
         [JsonProperty("currency_code")]
         public string CurrencyCode { get; set; }

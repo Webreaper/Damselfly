@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Damselfly.PaymentProcessing.Models
+namespace Damselfly.Core.DbModels.Models.API_Models
 {
-    public class CaptureRequest
+    public class CreatePhotoShootPaymentRequest
     {
-        public PaymentProcessorEnum PaymentProcessor { get; set; }
-        public string PaymentProcessorTransactionId { get; set; }
         public Guid PhotoShootId { get; set; }
+        public decimal Amount { get; set; }
+        public PaymentProcessorEnum PaymentProcessorEnum { get; set; }
         public string Description { get; set; }
     }
 }

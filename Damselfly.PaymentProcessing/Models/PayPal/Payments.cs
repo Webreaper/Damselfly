@@ -3,13 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.Models.PayPal
 {
-    public class Paypal
+    public class Payments
     {
-        [JsonProperty("experience_context")]
-        public ExperienceContext ExperienceContext { get; set; }
+        [JsonProperty("captures")]
+        public List<Capture> Captures { get; set; }
     }
 }

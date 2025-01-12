@@ -14,7 +14,8 @@ namespace Damselfly.PaymentProcessing
         {
             return services.AddScoped<PayPalPaymentProcessor>()
                 .AddScoped<IPaymentProcessorFactory, PaymentProcessorFactory>()
-                .AddScoped<PaymentService>();
+                .AddScoped<PaymentService>()
+                .AddScoped<ExternalPaymentProcessor>();
         }
     }
 }

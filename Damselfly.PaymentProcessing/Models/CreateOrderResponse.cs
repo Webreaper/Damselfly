@@ -9,5 +9,6 @@ namespace Damselfly.PaymentProcessing.Models
     public class CreateOrderResponse
     {
         public string OrderId { get; set; }
+        public bool IsSuccess { get; set; }
     }
 }

@@ -59,4 +59,9 @@ public class ClientAuthService : IAuthService
     {
         throw new NotImplementedException();
     }
+
+    public Task<string> GetCurrentUserEmail()
+    {
+        throw new NotImplementedException();
+    }
 }

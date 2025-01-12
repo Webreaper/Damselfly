@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.Models
 {
-    public class CaptureRequest
+    public class CaptureOrderRequest
     {
+        public string InvoiceId { get; set; }
+        public string PaymentProcessorOrderId { get; set; }
         public PaymentProcessorEnum PaymentProcessor { get; set; }
-        public string PaymentProcessorTransactionId { get; set; }
-        public Guid PhotoShootId { get; set; }
-        public string Description { get; set; }
+        public decimal Amount { get; set; }
     }
 }

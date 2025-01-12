@@ -96,20 +96,15 @@ public class AuthService : IAuthService
 
     public async Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles)
     {
-        var user = _httpContextAccessor.HttpContext.User;
-        if (user == null)
-        {
-            return false;
-        }
-        var email = user.Claims.FirstOrDefault( u => u.Type == DamselflyContants.EmailClaim );
-        if( email == null )
+        var email = await GetCurrentUserEmail();
+        if (email == null)
         {
             return false;
         }
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetRequiredService<ImageContext>();
         //var userManager = _userManager;
-        var applicationUser = await db.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.NormalizedEmail == email.Value.ToUpper());
+        var applicationUser = await db.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.NormalizedEmail == email.ToUpper());
         // var applicationUser = await userManager.FindByEmailAsync(email.Value);
         if( applicationUser == null )
         {
@@ -126,6 +121,17 @@ public class AuthService : IAuthService
             return userRole.RoleId == roleId;
         }));
         return hasRole;
+    }
+
+    public async Task<string> GetCurrentUserEmail()
+    {
+        var user = _httpContextAccessor.HttpContext.User;
+        if( user == null )
+        {
+            return null;
+        }
+        var email = user.Claims.FirstOrDefault(u => u.Type == DamselflyContants.EmailClaim);
+        return email == null ? null : email.Value;
     }
 }
 

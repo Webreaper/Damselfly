@@ -1,3 +1,4 @@
+using Damselfly.Core.DbModels.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace Damselfly.PaymentProcessing.Models
     {
         public PaymentProcessorEnum PaymentProcessor { get; set; }
         public decimal Amount { get; set; }
+        public Guid PhotoShootId { get; set; }
     }
 }

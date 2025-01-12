@@ -23,6 +23,12 @@ namespace Damselfly.Core.AutoMapper
             CreateMap<Image, ImageModel>();
             CreateMap<ImageMetaData, ImageMetaDataModel>();
             CreateMap<ImageMetaDataModel, ImageMetaData>();
+            CreateMap<PhotoShoot, PhotoShootModel>();
+            CreateMap<PhotoShootModel, PhotoShoot>();
+            CreateMap<Product, ProductModel>();
+            CreateMap<ProductModel, Product>();
+            CreateMap<PaymentTransaction, PaymentTransactionModel>();
+            CreateMap<PaymentTransactionModel, PaymentTransaction>();
         }
     }
 }

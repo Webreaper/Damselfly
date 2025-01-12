@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.Models.PayPal
 {
-    internal class Link
+    public class Link
     {
         [JsonProperty("href")]
         public string Href { get; set; }

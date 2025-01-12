@@ -3,6 +3,7 @@ using System;
 using Damselfly.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Damselfly.Migrations.Postgres.Migrations
 {
     [DbContext(typeof(ImageContext))]
-    partial class ImageContextModelSnapshot : ModelSnapshot
+    [Migration("20250112024135_PaymentProcessing")]
+    partial class PaymentProcessing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,21 +129,21 @@ namespace Damselfly.Migrations.Postgres.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "c1dcd130-ec1e-4a9f-a260-b25648844c5b",
+                            ConcurrencyStamp = "333cc2ea-0fb5-43a6-9cc5-4cb60aaddd4a",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "c121f30b-684a-4717-b289-9faf45bc53e0",
+                            ConcurrencyStamp = "82ed408c-697e-44c0-8192-3c346ec968fe",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = 3,
-                            ConcurrencyStamp = "2720a019-ba06-47e9-b812-82efc9ebc346",
+                            ConcurrencyStamp = "fc46228b-3980-4872-9359-6b863ee585d6",
                             Name = "ReadOnly",
                             NormalizedName = "READONLY"
                         });
@@ -297,9 +300,6 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
                     b.Property<string>("NameOfShoot")
                         .HasColumnType("text");
-
-                    b.Property<bool>("PicturesDelivered")
-                        .HasColumnType("boolean");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");

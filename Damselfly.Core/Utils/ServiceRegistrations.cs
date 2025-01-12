@@ -87,6 +87,9 @@ public static class ServiceRegistrations
         services.AddScoped<ServerNotifierService>();
         services.AddScoped<ServerStatusService>();
         services.AddScoped<DownloadService>();
+        services.AddScoped<PhotoShootService>();
+        services.AddScoped<ProductService>();
+        services.AddScoped<PaymentTransactionService>();
 
 
         // services.AddScoped<IWordpressService>(x => x.GetRequiredService<WordpressService>());

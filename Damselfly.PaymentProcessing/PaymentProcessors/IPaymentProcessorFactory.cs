@@ -1,3 +1,4 @@
+using Damselfly.Core.DbModels.Models.Enums;
 using Damselfly.PaymentProcessing.Models;
 using System;
 using System.Collections.Generic;

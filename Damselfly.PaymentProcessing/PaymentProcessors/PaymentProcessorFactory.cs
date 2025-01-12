@@ -1,3 +1,4 @@
+using Damselfly.Core.DbModels.Models.Enums;
 using Damselfly.PaymentProcessing.Models;
 using System;
 using System.Collections.Generic;
@@ -7,12 +8,14 @@ using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.PaymentProcessors
 {
-    public class PaymentProcessorFactory(PayPalPaymentProcessor payPalPaymentProcessor): IPaymentProcessorFactory
+    public class PaymentProcessorFactory(PayPalPaymentProcessor payPalPaymentProcessor, 
+        ExternalPaymentProcessor externalPaymentProcessor): IPaymentProcessorFactory
     {
         
         private List<IPaymentProcessor> _paymentProcessors = new() 
         { 
             payPalPaymentProcessor,
+            externalPaymentProcessor,
         };
         
         public IPaymentProcessor CreatePaymentProcessor(PaymentProcessorEnum paymentProcessorName)

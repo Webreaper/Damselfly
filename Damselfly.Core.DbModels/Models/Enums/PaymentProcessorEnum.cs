@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Damselfly.PaymentProcessing.Models
+namespace Damselfly.Core.DbModels.Models.Enums
 {
     public enum PaymentProcessorEnum
     {
         Paypal,
+        External,
     }
 }

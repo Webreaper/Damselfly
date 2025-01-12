@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Damselfly.PaymentProcessing.Models.PayPal
 {
-    internal class ExperienceContext
+    public class ExperienceContext
     {
         [JsonProperty("payment_method_preference")]
         public string PaymentMethodPreference { get; set; }

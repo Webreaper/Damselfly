@@ -1,24 +1,27 @@
 using Damselfly.PaymentProcessing.Models;
 using Damselfly.PaymentProcessing.PaymentProcessors;
+using Microsoft.Extensions.Logging;
 
 namespace Damselfly.PaymentProcessing
 {
-    public class PaymentService(IPaymentProcessorFactory paymentProcessorFactory)
+    public class PaymentService(
+        IPaymentProcessorFactory paymentProcessorFactory,
+        ILogger<PaymentService> logger)
     {
         private readonly IPaymentProcessorFactory _paymentProcessorFactory = paymentProcessorFactory;
+        private readonly ILogger<PaymentService> _logger = logger;
 
-        public async Task<CreateOrderResponse> CreateOrder(PaymentRequest paymentRequest)
+        public async Task<CreateOrderResponse> CreateOrder(CreateOrderRequest orderRequest)
         {
-            var paymentProcessor = _paymentProcessorFactory.CreatePaymentProcessor(paymentRequest.PaymentProcessor);
-            var order = await paymentProcessor.CreateOrder(paymentRequest.Amount);
+            var paymentProcessor = _paymentProcessorFactory.CreatePaymentProcessor(orderRequest.PaymentProcessorEnum);
+            var order = await paymentProcessor.CreateOrder(orderRequest);
             return order;
         }
 
-        public async Task<CaptureOrderResponse> CaptureOrder(CaptureRequest captureRequest)
+        public async Task<CaptureOrderResponse> CaptureOrder(CaptureOrderRequest captureRequest)
         {
             var paymentProcessor = _paymentProcessorFactory.CreatePaymentProcessor(captureRequest.PaymentProcessor);
-            var wasSuccesful = await paymentProcessor.CaptureOrder(captureRequest.PaymentProcessorTransactionId);
-            return wasSuccesful;
+            return await paymentProcessor.CaptureOrder(captureRequest);
         }
     }
 }

@@ -53,6 +53,12 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ExifOperation> KeywordOperations { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
+    #region Invoicing Objects
+    public DbSet<Product> Products { get; set; }
+    public DbSet<PhotoShoot> PhotoShoots { get; set; }
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+    #endregion
+
     public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
     {
         return await base.ImageSearch(Images, query, IncludeAITags);
