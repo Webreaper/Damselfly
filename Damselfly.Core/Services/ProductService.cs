@@ -96,7 +96,7 @@ namespace Damselfly.Core.Services
             }
             _logger.LogInformation("Getting Products by request of {userEmail}", currentUserEmail);
 
-            var products = await _imageContext.Products.Where(x => !x.IsDeleted).ToListAsync();
+            var products = await _imageContext.Products.Where(x => !x.IsDeleted).OrderBy(x => x.Price).ToListAsync();
 
             return products.Select(_mapper.Map<ProductModel>).ToList();
         }

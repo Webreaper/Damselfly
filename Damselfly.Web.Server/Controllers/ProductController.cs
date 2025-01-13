@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Damselfly.Web.Server.Controllers
 {
-    [Authorize(Policy = PolicyDefinitions.s_IsAdmin)]
+    [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
     [ApiController]
     [Route("/api/[controller]")]
     public class ProductController(ProductService productService) : Controller
