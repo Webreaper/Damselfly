@@ -44,7 +44,7 @@
         <PackageReference Include="EFCore.BulkExtensions" NoWarn="1605" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Utils\" />
+        <Folder Include="EmailTemplates\" />
         <Folder Include="ScopedServices\" />
         <Folder Include="DbAbstractions\" />
     </ItemGroup>

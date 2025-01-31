@@ -3,8 +3,8 @@ using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.Entities;
-using Damselfly.Core.DbModels.Models.Enums;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
 using Damselfly.PaymentProcessing;
 using Damselfly.PaymentProcessing.Models;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,6 @@ using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Damselfly.Core.Services
@@ -51,7 +50,10 @@ namespace Damselfly.Core.Services
                 
             if (photoShoot.ResponsiblePartyEmailAddress != null)
             {
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photo shoot confirmed with Honey + Thyme", "Congrats your appointment has been confirmed");
+                var emailBody = EmailContent.FormatEmail("Appointment Created",
+                    ["Hello!", $"Your photo shoot appointment for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)} has been created. Your appointment will not be considered confirmed until your deposit is paid."],
+                    "https://honeyandthymephotography.com", "Pay Deposit");
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photo shoot confirmed with Honey + Thyme", emailBody);
             }
 
             return _mapper.Map<PhotoShootModel>(dbPhotoShoot);
@@ -90,7 +92,9 @@ namespace Damselfly.Core.Services
             
             if (photoShoot.ResponsiblePartyEmailAddress != null )
             {
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Cancelation Confirmed", "Your appointment has been cancelled");
+                var emailBody = EmailContent.FormatEmail("Appointment cancelation",
+                    ["Hello!", $"Your photo shoot appointment for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)} has been cancelled."]);
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Cancelation Confirmed", emailBody);
             }
 
             return true;
@@ -243,11 +247,15 @@ namespace Damselfly.Core.Services
                 // email recipet
                 if( photoShoot.ResponsiblePartyEmailAddress != null )
                 {
-                    await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Honey+Thyme Reciept", "This is your reciept");
+                    var emailBody = EmailContent.FormatEmail("Payment Recieved",
+                        ["Hello!", $"Your payment of {capture.PaymentTotal} has been recieved for your photo shoot appointment for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)}."]);
+                    await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Honey+Thyme Reciept", emailBody);
                 }
 
                 var adminEmail = _configuration["ContactForm:ToAddress"];
-                await _emailService.SendEmailAsync(adminEmail, $"Payment Recieved For {photoShoot.ResponsiblePartyName} {photoShoot.NameOfShoot}", "Someone paid");
+                var adminEmailBody = EmailContent.FormatEmail("Payment Recieved",
+                    ["Hello!", $"A payment of {capture.PaymentTotal} has been recieved for the photo shoot appointment for {photoShoot.ResponsiblePartyName} {photoShoot.NameOfShoot}."]);
+                await _emailService.SendEmailAsync(adminEmail, $"Payment Recieved For {photoShoot.ResponsiblePartyName} {photoShoot.NameOfShoot}", adminEmailBody);
 
                 return new PhotoShootPaymentCaptureResponse
                 {
@@ -275,6 +283,13 @@ namespace Damselfly.Core.Services
             var totalPaid = photoShoot.PaymentTransactions.Sum(x => x.Amount);
             ret.PaymentRemaining = photoShoot.Price - totalPaid - photoShoot.Discount;
             return ret;
+        }
+
+        private string GetLocalTimeStringFromUtc(DateTime dateTime)
+        {
+            var localTimeZoneName = _configuration["DamselflyConfiguration:Timezone"];
+            var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById(localTimeZoneName);
+            return TimeZoneInfo.ConvertTimeFromUtc(dateTime, localTimeZone).ToString("MM/dd/yyyy hh:mm tt");
         }
     }
 }
