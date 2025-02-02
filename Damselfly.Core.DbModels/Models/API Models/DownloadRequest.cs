@@ -9,9 +9,10 @@ public class DownloadRequest
     public ICollection<Guid> ImageIds { get; set; }
     public ExportConfig Config { get; set; }
     public string? Password { get; set; }
+    public string ConnectionId { get; set; }
 }
 
 public class DownloadResponse
 {
-    public string DownloadUrl { get; set; }
+    public bool StartedSuccessfully { get; set; }
 }

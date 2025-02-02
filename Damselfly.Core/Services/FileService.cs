@@ -12,16 +12,14 @@ namespace Damselfly.Core.Services;
 public class FileService : IFileService
 {
     private readonly ILogger<FileService> _logger;
-    private readonly IStatusService _statusService;
     private readonly IImageCacheService _imageCache;
     private readonly IConfigService _configService;
     private readonly ICachedDataService _cachedDataService;
 
-    public FileService( IStatusService statusService, IImageCacheService imageCacheService, 
+    public FileService( IImageCacheService imageCacheService, 
                         ICachedDataService cachedDataService, IConfigService configService,
                         ILogger<FileService> logger )
     {
-        _statusService = statusService;
         _imageCache = imageCacheService;
         _cachedDataService = cachedDataService;
         _configService = configService;
@@ -74,7 +72,6 @@ public class FileService : IFileService
                     try
                     {
                         File.Delete( image.FullPath );
-                        _statusService.UpdateStatus( $"Deleted {image.FileName}" );
                     }
                     catch( Exception ex )
                     {
@@ -153,12 +150,10 @@ public class FileService : IFileService
                 if( move )
                 {
                     File.Move(source, destFilename, false);
-                    _statusService.UpdateStatus($"Moved {image.FileName} to {destFilename}");
                 }
                 else
                 {
                     File.Copy(source, destFilename, false);
-                    _statusService.UpdateStatus($"Copied {image.FileName} to {destFilename}");
                 }
 
                 return true;

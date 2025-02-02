@@ -35,7 +35,7 @@ public class DownloadController(IDownloadService service, ILogger<DownloadContro
                 authorizedImages.Add(id);
             }
         }
-        var url = await _downloadService.CreateDownloadZipAsync(authorizedImages, req.Config);
-        return new DownloadResponse { DownloadUrl = url };
+        _ = Task.Run(() =>_downloadService.CreateDownloadZipAsync(authorizedImages, req.Config, req.ConnectionId));
+        return new DownloadResponse { StartedSuccessfully = true };
     }
 }

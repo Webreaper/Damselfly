@@ -1,20 +1,20 @@
-﻿namespace Damselfly.Core.Constants;
+namespace Damselfly.Core.Constants;
 
 public enum ExportType
 {
-    Download = 1,
-    Email = 2,
-    Wordpress = 3,
-    Facebook = 4,
-    Twitter = 5,
-    Instagram = 6
+    Download = 0,
+    Email = 1,
+    Wordpress = 2,
+    Facebook = 3,
+    Twitter = 4,
+    Instagram = 5
 }
 
 public enum ExportSize
 {
-    FullRes = 1,
-    Large = 2,
-    Medium = 3,
-    Small = 4,
-    ExtraLarge = 5
+    FullRes = 0,
+    Large = 1,
+    Medium = 2,
+    Small = 3,
+    ExtraLarge = 4
 }

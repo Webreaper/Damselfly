@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Database;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +17,6 @@ public class FolderWatcherService
     private static readonly UniqueConcurrentPriorityQueue<string, string> folderQueue = new( x => x );
     private readonly ImageProcessService _imageProcessService;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
 
     private readonly IDictionary<string, FileSystemWatcher> _watchers =
         new Dictionary<string, FileSystemWatcher>(StringComparer.OrdinalIgnoreCase);
@@ -29,11 +26,9 @@ public class FolderWatcherService
     private Task _queueTask;
 
     public FolderWatcherService(IServiceScopeFactory scopeFactory,
-        IStatusService statusService,
         ImageProcessService imageService)
     {
         _scopeFactory = scopeFactory;
-        _statusService = statusService;
         _imageProcessService = imageService;
 
         // Start a thread which will periodically drain the queue
@@ -128,9 +123,6 @@ public class FolderWatcherService
                 if ( ex.Message.Contains("process limit on the number of open file descriptors has been reached") )
                 {
                     _fileWatchersDisabled = true;
-
-                    _statusService.UpdateStatus(
-                        "OS inotify/file watcher limit reached. See the installation guide on how to increase this.");
 
                     Logging.LogError(
                         @"OS inotify/ file-watcher limit reached. Damselfly cannot monitor any more folders for changes.");

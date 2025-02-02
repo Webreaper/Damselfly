@@ -36,7 +36,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     private readonly ImageCache _imageCache;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    private readonly IStatusService _statusService;
     private readonly WorkService _workService;
     private static IDictionary<string, Camera> _cameraCache;
 
@@ -46,11 +45,10 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
     // from the DB.
     private IDictionary<string, Tag> _tagCache;
 
-    public MetaDataService(IServiceScopeFactory scopeFactory, IStatusService statusService, ExifService exifService,
+    public MetaDataService(IServiceScopeFactory scopeFactory, ExifService exifService,
         ConfigService config, ImageCache imageCache, WorkService workService, ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
-        _statusService = statusService;
         _configService = config;
         _exifService = exifService;
         _imageCache = imageCache;
@@ -102,9 +100,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var updated =
             await ImageContext.UpdateMetadataFields(db, folderId, "LastUpdated", $"'{NoMetadataDate:yyyy-MM-dd HH:mm:ss}'");
 
-        if ( updated != 0 )
-            _statusService.UpdateStatus($"{updated} images in folder flagged for Metadata scanning.");
-
         _workService.FlagNewJobs(this);
     }
 
@@ -114,8 +109,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         using var db = scope.ServiceProvider.GetService<ImageContext>();
         var updated =
             await db.BatchUpdate(db.ImageMetaData, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
-
-        _statusService.UpdateStatus($"All {updated} images flagged for Metadata scanning.");
 
         _workService.FlagNewJobs(this);
     }
@@ -129,7 +122,6 @@ public class MetaDataService : IProcessJobFactory, ITagSearchService, IRescanPro
         var rows = await db.BatchUpdate(queryable, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
 
         var msgText = rows == 1 ? "Image" : $"{rows} images";
-        _statusService.UpdateStatus($"{msgText} flagged for Metadata scanning.");
     }
 
     /// <summary>
