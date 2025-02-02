@@ -21,7 +21,7 @@ namespace Damselfly.Core.Services
             var homeAssistantToken = _configuration["HomeAssistant:Token"];
             var options = new RestClientOptions(homeAssistantUrl)
             {
-                MaxTimeout = -1,
+                Timeout = new TimeSpan(0, 0, 30),
             };
             var client = new RestClient(options);
             var request = new RestRequest($"/api/services/notify/{recipient}", Method.Post);

@@ -25,7 +25,7 @@ namespace Damselfly.PaymentProcessing.PaymentProcessors
         {
             _configuration = configuration;
             _logger = logger;
-            _restClient = new RestClient(new RestClientOptions(BaseUrl) { MaxTimeout = 30000 });
+            _restClient = new RestClient(new RestClientOptions(BaseUrl) { Timeout = new TimeSpan(0, 3, 0) });
         }
 
         private async Task<Token> GenerateAccessToken()

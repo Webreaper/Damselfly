@@ -17,7 +17,7 @@ namespace Damselfly.Core.Services
         {
             var options = new RestClientOptions("https://api.mailgun.net")
             {
-                MaxTimeout = 30000,
+                Timeout = new TimeSpan(0, 0, 30),
             };
             var apiKey = _configuration["MailGun:ApiKey"];
             var domain = _configuration["MailGun:Domain"];
