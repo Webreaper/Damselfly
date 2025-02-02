@@ -62,53 +62,53 @@ public class ImageController(ImageService imageService, ILogger<ImageController>
         return NotFound();
     }
 
-    [Produces("image/jpeg")]
-    [HttpGet("/dlimage/{imageId}")]
-    public async Task<IActionResult> Image(string imageId, CancellationToken cancel,
-        [FromServices] ImageCache imageCache)
-    {
-        return await Image(imageId, cancel, imageCache, true);
-    }
+    //[Produces("image/jpeg")]
+    //[HttpGet("/dlimage/{imageId}")]
+    //public async Task<IActionResult> Image(string imageId, CancellationToken cancel,
+    //    [FromServices] ImageCache imageCache)
+    //{
+    //    return await Image(imageId, cancel, imageCache, true);
+    //}
 
-    [Produces("image/jpeg")]
-    [HttpGet("/rawimage/{imageId}")]
-    public async Task<IActionResult> Image(string imageId, CancellationToken cancel,
-        [FromServices] ImageCache imageCache, bool isDownload = false)
-    {
-        var watch = new Stopwatch("ControllerGetImage");
+    //[Produces("image/jpeg")]
+    //[HttpGet("/rawimage/{imageId}")]
+    //public async Task<IActionResult> Image(string imageId, CancellationToken cancel,
+    //    [FromServices] ImageCache imageCache, bool isDownload = false)
+    //{
+    //    var watch = new Stopwatch("ControllerGetImage");
 
-        IActionResult result = Redirect("/no-image.png");
+    //    IActionResult result = Redirect("/no-image.png");
 
-        if ( Guid.TryParse(imageId, out var id) )
-            try
-            {
-                var image = await imageCache.GetCachedImage(id);
+    //    if ( Guid.TryParse(imageId, out var id) )
+    //        try
+    //        {
+    //            var image = await imageCache.GetCachedImage(id);
 
-                if ( cancel.IsCancellationRequested )
-                    return result;
+    //            if ( cancel.IsCancellationRequested )
+    //                return result;
 
-                if ( image != null )
-                {
-                    string? downloadFilename = null;
+    //            if ( image != null )
+    //            {
+    //                string? downloadFilename = null;
 
-                    if ( isDownload )
-                        downloadFilename = image.FileName;
+    //                if ( isDownload )
+    //                    downloadFilename = image.FileName;
 
-                    if ( cancel.IsCancellationRequested )
-                        return result;
+    //                if ( cancel.IsCancellationRequested )
+    //                    return result;
 
-                    result = PhysicalFile(image.FullPath, "image/jpeg", downloadFilename);
-                }
-            }
-            catch ( Exception ex )
-            {
-                Logging.LogError($"No thumb available for /rawmage/{imageId}: ", ex.Message);
-            }
+    //                result = PhysicalFile(image.FullPath, "image/jpeg", downloadFilename);
+    //            }
+    //        }
+    //        catch ( Exception ex )
+    //        {
+    //            Logging.LogError($"No thumb available for /rawmage/{imageId}: ", ex.Message);
+    //        }
 
-        watch.Stop();
+    //    watch.Stop();
 
-        return result;
-    }
+    //    return result;
+    //}
 
     [Produces("image/jpeg")]
     [HttpGet("/thumb/{thumbSize}/{imageId}")]

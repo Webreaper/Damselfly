@@ -10,7 +10,9 @@ using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
+using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,9 +38,10 @@ public class DownloadService : IDownloadService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IStatusService _statusService;
     private readonly IConfiguration _config;
+    private readonly IHubContext<ImageDownloadHub> _imageDownloadHubContext;
 
     public DownloadService(IStatusService statusService, ImageProcessService imageService,
-        IImageCacheService cacheService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory, IConfiguration config)
+        IImageCacheService cacheService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory, IConfiguration config, IHubContext<ImageDownloadHub> imageDownloadHubContext)
     {
         _scopeFactory = scopeFactory;
         _statusService = statusService;
@@ -46,6 +49,8 @@ public class DownloadService : IDownloadService
         _cacheService = cacheService;
         var downloadPath = config["DamselflyConfiguration:DownloadPath"];
         SetDownloadPath(downloadPath);
+        _imageDownloadHubContext = imageDownloadHubContext;
+        _config = config;
     }
 
     public async Task<DesktopAppPaths> GetDesktopAppInfo()
@@ -59,13 +64,13 @@ public class DownloadService : IDownloadService
     /// <param name="imagesToZip"></param>
     /// <param name="config"></param>
     /// <returns></returns>
-    public async Task<string> CreateDownloadZipAsync(ICollection<Guid> imagesIdsToZip, ExportConfig config)
+    public async Task<string> CreateDownloadZipAsync(ICollection<Guid> imagesIdsToZip, ExportConfig config, string? hubConnectionId = null)
     {
         var images = await _cacheService.GetCachedImages(imagesIdsToZip);
 
         var imagePaths = images.Select(x => new FileInfo(x.FullPath)).ToArray();
 
-        return await CreateDownloadZipAsync(imagePaths, config);
+        return await CreateDownloadZipAsync(imagePaths, config, hubConnectionId);
     }
 
     /// <summary>
@@ -157,7 +162,7 @@ public class DownloadService : IDownloadService
     /// <param name="OnProgress">Callback to report progress.</param>
     /// <returns></returns>
     // TODO: If only one file selected, download directly instead of zipping
-    public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config)
+    public async Task<string> CreateDownloadZipAsync(FileInfo[] filesToZip, ExportConfig config, string? hubConnectionId = null)
     {
         Logging.Log($"Preparing zip file from {filesToZip.Length} files.");
 
@@ -239,14 +244,17 @@ public class DownloadService : IDownloadService
                     }
 
                     var percentComplete = count++ * 100 / total;
-
+                    if( hubConnectionId != null )
+                        await _imageDownloadHubContext.Clients.Client(hubConnectionId).SendAsync("ReceiveImageDownloadProgress", new { PercentComplete = percentComplete, Url = "" });
                     _statusService.UpdateStatus($"Zipping image {imagePath.Name}... ({percentComplete}% complete)");
                 }
 
                 _statusService.UpdateStatus(s_completionMsg);
             }
-
-            return Path.DirectorySeparatorChar + virtualZipPath;
+            var url = Path.DirectorySeparatorChar + virtualZipPath;
+            if( hubConnectionId != null )
+                await _imageDownloadHubContext.Clients.Client(hubConnectionId).SendAsync("ReceiveImageDownloadProgress", new { PercentComplete = 100, Url = url });
+            return url;
         }
         catch ( Exception ex )
         {

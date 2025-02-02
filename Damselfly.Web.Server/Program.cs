@@ -235,13 +235,13 @@ public class Program
         }
 
         // Map the signalR notifications endpoints
-        app.MapHub<NotificationHub>($"/{NotificationHub.NotificationRoot}", options => options.AllowStatefulReconnects = true );
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapRazorPages();
         app.MapControllers();
+        app.MapHub<ImageDownloadHub>("/imageDownloadHub");
         app.MapFallbackToFile("index.html");
         
         // Start up all the Damselfly Services

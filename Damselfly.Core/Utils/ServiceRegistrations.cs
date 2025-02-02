@@ -60,10 +60,10 @@ public static class ServiceRegistrations
         services.AddScoped<IDownloadService>(x => x.GetRequiredService<DownloadService>());
 
         services.AddScoped<NotificationService>();
-        services.AddScoped<BasketService>();
-        services.AddScoped<UserTagRecentsService>();
-        services.AddScoped<WordpressService>();
-        services.AddScoped<SystemSettingsService>();
+        // services.AddScoped<BasketService>();
+        // services.AddScoped<UserTagRecentsService>();
+        // services.AddScoped<WordpressService>();
+        // services.AddScoped<SystemSettingsService>();
         services.AddScoped<UserManagementService>();
         services.AddScoped<AlbumService>();
         services.AddScoped<ImageService>();
