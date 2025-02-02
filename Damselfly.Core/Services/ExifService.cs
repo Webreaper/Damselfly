@@ -32,26 +32,22 @@ public class ExifService : IProcessJobFactory, ITagService
 {
     private readonly ImageCache _imageCache;
     private readonly IndexingService _indexingService;
-    private readonly ServerNotifierService _notifier;
 
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
     private readonly WorkService _workService;
     private readonly string _exifToolPath;
 
     private readonly List<Tag> faveTags = new();
 
-    public ExifService(IStatusService statusService, WorkService workService,
+    public ExifService(WorkService workService,
         IndexingService indexingService, ImageCache imageCache,
-        ServerNotifierService notifier, IServiceScopeFactory scopeFactory,
+        IServiceScopeFactory scopeFactory,
         IConfiguration configuration)
     {
         _scopeFactory = scopeFactory;
-        _statusService = statusService;
         _imageCache = imageCache;
         _indexingService = indexingService;
         _workService = workService;
-        _notifier = notifier;
         _exifToolPath = configuration["ExifTool:ExePath"]!;
 
         GetExifToolVersion();
@@ -168,15 +164,11 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.UpdateStatus($"Saved tags ({changeDesc}) for {imageIds.Count()} images.");
         }
         catch ( Exception ex )
         {
             Logging.LogError($"Exception inserting keyword operations: {ex.Message}");
         }
-
-        if ( userId != -1 )
-            NotifyUserTagsAdded(addTags);
 
         // Trigger the work service to look for new jobs
         _workService.FlagNewJobs(this);
@@ -220,7 +212,6 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, keywordOps);
 
-            _statusService.UpdateStatus($"Saved {exifType} ({changeDesc}) for {imageIds.Count()} images.");
         }
         catch ( Exception ex )
         {
@@ -250,20 +241,6 @@ public class ExifService : IProcessJobFactory, ITagService
         await LoadFavouriteTagsAsync();
 
         return tag.Favourite;
-    }
-
-    private void NotifyFavouritesChanged()
-    {
-        OnFavouritesChanged?.Invoke();
-
-        _ = _notifier.NotifyClients(NotificationType.FavouritesAndRecentsChanged);
-    }
-
-    private void NotifyUserTagsAdded(ICollection<string> tagsAdded)
-    {
-        OnUserTagsAdded?.Invoke(tagsAdded);
-
-        _ = _notifier.NotifyClients(NotificationType.FavouritesAndRecentsChanged, tagsAdded);
     }
 
     /// <summary>
@@ -351,7 +328,6 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             await db.BulkInsert(db.KeywordOperations, ops);
 
-            _statusService.UpdateStatus($"Saved tags ({changeDesc}) for {images.Count()} images.");
         }
         catch ( Exception ex )
         {
@@ -525,9 +501,6 @@ public class ExifService : IProcessJobFactory, ITagService
             .Select(x => $"{x.Key}: {x.Count()}")
             .ToList());
 
-        _statusService.UpdateStatus($"EXIF data written for {image.FileName} (ID: {image.ImageId}). {totals}");
-
-        NotifyFavouritesChanged();
 
         return success;
     }
@@ -771,8 +744,6 @@ public class ExifService : IProcessJobFactory, ITagService
         {
             faveTags.Clear();
             faveTags.AddRange(faves);
-
-            NotifyFavouritesChanged();
         }
     }
 

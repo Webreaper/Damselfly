@@ -26,7 +26,7 @@ using Image = Damselfly.Core.Models.Image;
 namespace Damselfly.Core.Services;
 
 public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
-    IStatusService _statusService, ObjectDetector _objectDetector,
+    ObjectDetector _objectDetector,
     MetaDataService _metdataService, FaceONNXService _faceOnnxService,
     ThumbnailService _thumbService, ConfigService _configService,
     ImageClassifier _imageClassifier, ImageCache _imageCache,
@@ -208,9 +208,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
         var updated = await ImageContext.UpdateMetadataFields(db, folderId, "AILastUpdated", "null");
 
-        if ( updated != 0 )
-            _statusService.UpdateStatus($"{updated} images in folder flagged for AI reprocessing.");
-
         _workService.FlagNewJobs(this);
     }
 
@@ -221,7 +218,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
         var updated = await db.BatchUpdate(db.ImageMetaData, i => i.SetProperty(x => x.AILastUpdated, x => null));
 
-        _statusService.UpdateStatus($"All {updated} images flagged for AI reprocessing.");
 
         _workService.FlagNewJobs(this);
     }
@@ -236,7 +232,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
         var rows = await db.BatchUpdate(queryable, i => i.SetProperty(x => x.AILastUpdated, x => null));
 
         var msgText = rows == 1 ? "Image" : $"{rows} images";
-        _statusService.UpdateStatus($"{msgText} flagged for AI reprocessing.");
     }
 
     private Guid GetPersonIDFromCache(Guid? PersonGuid)
@@ -709,8 +704,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
 
             if( req.MigrateImagesWithFaces )
             {
-                _statusService.UpdateStatus("AI Migration: marking images with faces for AI Rescan...");
-
                 // Find all the images with imageObjects of type face, and set their AILastUpdated to null
                 imagesUpdated = await db.ImageMetaData
                     .Where( x => x.Image.ImageObjects.Any( io => io.Type == "Face"))
@@ -719,7 +712,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
             }
             else if( req.MigrateAllImages )
             {
-                _statusService.UpdateStatus("AI Migration: marking all images for AI Rescan...");
 
                 // Set AILastUpdate = null for all images in the DB
                 imagesUpdated = await db.ImageMetaData
@@ -727,12 +719,10 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                         x.SetProperty( p => p.AILastUpdated, v => null));
             }
 
-            _statusService.UpdateStatus("AI Migration: deleting all people from DB...");
             
             // Delete all existing people
             var peopleDeleted = await db.People.ExecuteDeleteAsync();
 
-            _statusService.UpdateStatus("AI Migration: obsolete Image Objects DB...");
 
             // Now, delete all existing face imageObjects
             int deletedObjects = await db.ImageObjects.Where( x => x.Type == "Face"
@@ -740,7 +730,6 @@ public class ImageRecognitionService(IServiceScopeFactory _scopeFactory,
                                  .ExecuteDeleteAsync();
             
             var msg = $"Deleted {peopleDeleted} people & {deletedObjects} objects, and updated {imagesUpdated} images for AI scanning.";
-            _statusService.UpdateStatus(msg);
             _logger.LogInformation(msg);
 
             await LoadPersonCache(true);

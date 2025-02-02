@@ -36,15 +36,13 @@ public class DownloadService : IDownloadService
     private readonly DesktopAppPaths _desktopAppInfo = new();
     private readonly ImageProcessService _imageProcessingService;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
     private readonly IConfiguration _config;
     private readonly IHubContext<ImageDownloadHub> _imageDownloadHubContext;
 
-    public DownloadService(IStatusService statusService, ImageProcessService imageService,
+    public DownloadService(ImageProcessService imageService,
         IImageCacheService cacheService, IWebHostEnvironment env, IServiceScopeFactory scopeFactory, IConfiguration config, IHubContext<ImageDownloadHub> imageDownloadHubContext)
     {
         _scopeFactory = scopeFactory;
-        _statusService = statusService;
         _imageProcessingService = imageService;
         _cacheService = cacheService;
         var downloadPath = config["DamselflyConfiguration:DownloadPath"];
@@ -184,7 +182,6 @@ public class DownloadService : IDownloadService
                 File.Delete(serverZipPath);
 
             Logging.Log($" Opening zip archive: {serverZipPath}");
-            _statusService.UpdateStatus($"Preparing to zip {filesToZip.Count()} images...");
 
             using ( var zip = ZipFile.Open(serverZipPath, ZipArchiveMode.Create) )
             {
@@ -246,10 +243,8 @@ public class DownloadService : IDownloadService
                     var percentComplete = count++ * 100 / total;
                     if( hubConnectionId != null )
                         await _imageDownloadHubContext.Clients.Client(hubConnectionId).SendAsync("ReceiveImageDownloadProgress", new { PercentComplete = percentComplete, Url = "" });
-                    _statusService.UpdateStatus($"Zipping image {imagePath.Name}... ({percentComplete}% complete)");
                 }
 
-                _statusService.UpdateStatus(s_completionMsg);
             }
             var url = Path.DirectorySeparatorChar + virtualZipPath;
             if( hubConnectionId != null )

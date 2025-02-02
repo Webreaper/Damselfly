@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
@@ -51,13 +51,11 @@ public class WorkService : IWorkService
     }
 
     private ServiceStatus Status { get; } = new();
-    private readonly ServerNotifierService _notifier;
 
     public event Action<ServiceStatus> OnStatusChanged;
 
-    public WorkService(ConfigService configService, ServerNotifierService notifier)
+    public WorkService(ConfigService configService)
     {
-        _notifier = notifier;
         _cpuSettings.Load(configService);
     }
 
@@ -89,7 +87,6 @@ public class WorkService : IWorkService
             Status.CPULevel = newCPULevel;
 
             OnStatusChanged?.Invoke(Status);
-            _ = _notifier.NotifyClients(NotificationType.WorkStatusChanged, Status);
         }
     }
 

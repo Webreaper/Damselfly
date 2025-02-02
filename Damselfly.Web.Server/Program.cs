@@ -1,19 +1,11 @@
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using CommandLine;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
-using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.ImageProcessing;
-using Damselfly.Core.Models;
-using Damselfly.Core.ScopedServices.ClientServices;
 using Damselfly.Core.Services;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
-using Damselfly.Web.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
@@ -23,8 +15,6 @@ using Serilog;
 using Serilog.Events;
 using ILogger = Serilog.ILogger;
 using Damselfly.Core.ScopedServices.Interfaces;
-using Tensorflow;
-using System.Net;
 using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Hangfire;
@@ -100,11 +90,7 @@ public class Program
             .AddJsonOptions(o => { 
                 o.JsonSerializerOptions.AllowTrailingCommas = true;
                 o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-                RestClient.SetJsonOptions(o.JsonSerializerOptions); });
-        builder.Services.AddControllersWithViews()
-            .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
-        builder.Services.AddRazorPages()
-            .AddJsonOptions(o => { RestClient.SetJsonOptions(o.JsonSerializerOptions); });
+             });
 
         // Server to client notifications
         builder.Services.AddSignalR();

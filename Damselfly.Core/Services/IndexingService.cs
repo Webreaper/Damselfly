@@ -27,7 +27,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessService;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
     private readonly FolderWatcherService _watcherService;
     private readonly WorkService _workService;
 
@@ -35,13 +34,12 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
     public static string RootFolder { get; set; }
     public static bool EnableIndexing { get; set; } = true;
 
-    public IndexingService( IServiceScopeFactory scopeFactory, IStatusService statusService,
+    public IndexingService( IServiceScopeFactory scopeFactory,
         ImageProcessService imageService, ConfigService config, ImageCache imageCache, 
         FolderWatcherService watcherService, WorkService workService, IConfiguration configuration,
         ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
-        _statusService = statusService;
         _configService = config;
         _imageProcessService = imageService;
         _imageCache = imageCache;
@@ -109,8 +107,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
             using var scope = _scopeFactory.CreateScope();
             using var db = scope.ServiceProvider.GetRequiredService<ImageContext>();
             var updated = await db.BatchUpdate(db.Folders, p => p.SetProperty(x => x.FolderScanDate, x => null));
-
-            _statusService.UpdateStatus($"All {updated} folders flagged for re-indexing.");
 
             _workService.FlagNewJobs(this);
         }
@@ -433,9 +429,7 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
 
         watch.Stop();
 
-        _statusService.UpdateStatus(
-            $"Indexed folder {dbFolder.Name}: processed {dbFolder.Images.Count()} images ({newImages} new, {updatedImages} updated, {imagesToDelete.Count} removed) in {watch.HumanElapsedTime}.");
-
+       
         // Do this after we scan for images, because we only load folders if they have images.
         if ( imagesWereAddedOrRemoved )
             NotifyFolderChanged();
@@ -463,11 +457,6 @@ public class IndexingService : IProcessJobFactory, IRescanProvider
             using var db = scope.ServiceProvider.GetRequiredService<ImageContext>();
             var queryable = db.Folders.Where(f => folderIds.Contains(f.FolderId));
             await db.BatchUpdate(queryable, p => p.SetProperty(x => x.FolderScanDate, x => null));
-
-            if ( folderIds.Count() == 1 )
-                _statusService.UpdateStatus("Folder flagged for re-indexing.");
-            else
-                _statusService.UpdateStatus($"{folderIds.Count()} folders flagged for re-indexing.");
 
             _workService.FlagNewJobs(this);
         }

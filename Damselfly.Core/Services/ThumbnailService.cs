@@ -43,13 +43,11 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
     private readonly ImageCache _imageCache;
     private readonly ImageProcessService _imageProcessingService;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IStatusService _statusService;
     private readonly IConfigService _configService;
     // private readonly WorkService _workService;
     private readonly ImageContext db;
 
     public ThumbnailService(IServiceScopeFactory scopeFactory,
-        IStatusService statusService,
         ImageProcessService imageService,
         IConfigService configService,
         ImageCache imageCache, 
@@ -58,7 +56,6 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         ImageContext imageContext)
     {
         _scopeFactory = scopeFactory;
-        _statusService = statusService;
         _imageProcessingService = imageService;
         _imageCache = imageCache;
         // _workService = workService;
@@ -149,8 +146,6 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         // TODO: Abstract this once EFCore Bulkextensions work in efcore 6
         var updated =
             await db.Database.ExecuteSqlInterpolatedAsync($"Update imagemetadata Set ThumbLastUpdated = null");
-
-        _statusService.UpdateStatus($"All {updated} images flagged for thumbnail re-generation.");
     }
 
     public async Task MarkFolderForScan(Guid folderId)
@@ -165,8 +160,6 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         if( !BackgroundThumbnailProcessingEnabled )
             await DeleteFolderThumbnails( folderId );
 
-        if ( updated != 0 )
-            _statusService.UpdateStatus($"{updated} images in folder flagged for thumbnail re-generation.");
     }
 
     public async Task MarkImagesForScan(ICollection<Guid> imageIds)
@@ -190,8 +183,6 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         }
 
         var msgText = imageIds.Count == 1 ? "Image" : $"{imageIds.Count} images";
-        _statusService.UpdateStatus($"{msgText} flagged for thumbnail re-generation.");
-
         // _workService.FlagNewJobs(this);
     }
 
@@ -456,10 +447,6 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
                 updateWatch.Stop();
 
                 watch.Stop();
-
-                if ( imagesToScan.Length > 1 )
-                    _statusService.UpdateStatus(
-                        $"Completed thumbnail generation batch ({imagesToScan.Length} images in {watch.HumanElapsedTime}).");
 
                 Action<string> logFunc = Logging.Verbose ? s => Logging.LogVerbose(s) : s => Logging.Log(s);
                 Stopwatch.WriteTotals(logFunc);

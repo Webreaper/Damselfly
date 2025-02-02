@@ -28,20 +28,17 @@ public class UserManagementService : IUserMgmtService
     
     private readonly ConfigService _configService;
     private readonly RoleManager<ApplicationRole> _roleManager;
-    private readonly IStatusService _statusService;
     private readonly UserManager<AppIdentityUser> _userManager;
     private readonly IConfiguration _config;
 
     public UserManagementService(RoleManager<ApplicationRole> roleManager,
         UserManager<AppIdentityUser> userManager,
-        IStatusService statusService,
         ConfigService configService,
         IAuthorizationService authService,
         IConfiguration config)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _statusService = statusService;
         _configService = configService;
         _config = config;
     }
@@ -331,8 +328,6 @@ public class UserManagementService : IUserMgmtService
 
         if ( !string.IsNullOrEmpty(changes) )
             changes += ". ";
-
-        _statusService.UpdateStatus($"{prefix}{changes}{errorMsg}");
         
         if( ! string.IsNullOrEmpty( errorMsg ))
             Logging.LogError($"SyncUserRoles: {prefix}{changes}{errorMsg}");

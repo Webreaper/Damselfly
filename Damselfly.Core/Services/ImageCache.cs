@@ -39,13 +39,11 @@ public class ImageCache : IImageCacheService
 {
     private readonly MemoryCacheEntryOptions _cacheOptions;
     private readonly IMemoryCache _memoryCache;
-    private readonly ServerNotifierService _notifier;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public ImageCache(IMemoryCache memoryCache, IServiceScopeFactory scopeFactory, ServerNotifierService notifier)
+    public ImageCache(IMemoryCache memoryCache, IServiceScopeFactory scopeFactory)
     {
         _scopeFactory = scopeFactory;
-        _notifier = notifier;
         _memoryCache = memoryCache;
         _cacheOptions = new MemoryCacheEntryOptions()
             .SetSize(1)
@@ -327,8 +325,6 @@ public class ImageCache : IImageCacheService
     {
         Logging.LogVerbose($"Evicting from cache: {imageId}");
         _memoryCache.Remove(imageId);
-
-        _ = _notifier.NotifyClients<string>(NotificationType.CacheEvict, imageId.ToString());
     }
 
     /// <summary>
