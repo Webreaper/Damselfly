@@ -67,15 +67,13 @@ public class Program
     private static void StartWebServer(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        var logdirectory = builder.Configuration["DamselflyConfiguration:LogPath"];
-
-        var logFolder = Path.Combine(logdirectory, "logs");
+        
         Logging.Verbose = builder.Configuration["DamselflyConfiguration:Verbose"] == "true";
         Logging.Trace = builder.Configuration["DamselflyConfiguration:Trace"] == "true";
 
         builder.Host.UseSerilog((hostContext, services, configuration) =>
         {
-            Logging.InitLogConfiguration(configuration, logFolder);
+            Logging.InitLogConfiguration(configuration, builder.Configuration);
         });
 
         SetupDbContext(builder);
@@ -158,7 +156,7 @@ public class Program
         Logging.Logger = app.Services.GetRequiredService<ILogger>();
         // ogging.Logger.Information("=== Damselfly Blazor Server Log Started ===");
         Logging.Log("Starting up Damselfly webserver...");
-        Logging.Log("Log directory: {0}", logFolder);
+
         var currentDirectory = Directory.GetCurrentDirectory();
         Logging.Log("Current directory: {0}", currentDirectory);
         InitialiseDB(app);

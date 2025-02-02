@@ -154,6 +154,8 @@ namespace Damselfly.Core.Services
                     ProcessorEnum = photoShootPayment.PaymentProcessorEnum,
                 };
             }
+
+            _logger.LogInformation("Creating payment with amount {amount} for photoshoot {phtooshootId}", photoShootPayment.Amount, photoShootPayment.PhotoShootId);
             var photoShoot = await _imageContext.PhotoShoots.FindAsync(photoShootPayment.PhotoShootId);
             if( photoShoot == null )
             {
@@ -186,6 +188,7 @@ namespace Damselfly.Core.Services
                 ProcessorOrderId = order.OrderId,
                 InvoiceId = invoiceId,
             };
+            _logger.LogInformation("Creating payment for photoshoot {photoshootId} IsSuccess {isSuccess}", photoShootPayment.PhotoShootId, result.IsSuccess);
             return result;
         }
 
@@ -196,7 +199,7 @@ namespace Damselfly.Core.Services
             {
                 return false;
             }
-
+            _logger.LogInformation("Doing fraud check for {ip}", userIp);
             var cacheKey = $"FraudCheck-{userIp}";
             var cacheValue = await _cacheService.GetAsync(cacheKey);
             FraudCheckModel fraudCheckModel;
@@ -221,14 +224,16 @@ namespace Damselfly.Core.Services
 
             if( fraudCheckModel.Country != "US" )
             {
+                _logger.LogWarning("Country of origin is not US for {ip}", userIp);
                 return false;
             }
 
             if( fraudCheckModel.AttemptCount > 5 )
             {
+                _logger.LogWarning("IP address has attempted to make payment to many times for {ip}", userIp);
                 return false;
             }
-
+            _logger.LogInformation("No issues detected for {ip}", userIp);
             return true;
         }
 
@@ -236,10 +241,12 @@ namespace Damselfly.Core.Services
         {
             try
             {
+                _logger.LogInformation("Capturing payment for photoshoot {photoShootId} with externalOrderId {externalOrderId}", photoShootCaptureRequest.PhotoShootId, photoShootCaptureRequest.ExternalOrderId);
                 var photoShoot = await _imageContext.PhotoShoots.FindAsync(photoShootCaptureRequest.PhotoShootId);
 
                 if(photoShoot == null)
                 {
+                    _logger.LogWarning("No photoshoot found with id {photoshootId}", photoShootCaptureRequest.PhotoShootId);
                     return new PhotoShootPaymentCaptureResponse
                     {
                         IsSuccess = false,
@@ -260,6 +267,8 @@ namespace Damselfly.Core.Services
 
                 if( capture.ErrorDuringCharge )
                 {
+                    _logger.LogWarning("There was an unrecoverable problem capturing payment for photoshoot {phtoshootId} with externalOrderId {externalOrderId}", 
+                        photoShootCaptureRequest.PhotoShootId, photoShootCaptureRequest.ExternalOrderId);
                     return new PhotoShootPaymentCaptureResponse
                     {
                         IsSuccess = false,
@@ -270,6 +279,8 @@ namespace Damselfly.Core.Services
 
                 if( !capture.WasSuccessful )
                 {
+                    _logger.LogWarning("There was a problem capturing payment for photoshoot {phtoshootId} with externalOrderId {externalOrderId}, but the user should try again",
+                        photoShootCaptureRequest.PhotoShootId, photoShootCaptureRequest.ExternalOrderId);
                     return new PhotoShootPaymentCaptureResponse
                     {
                         IsSuccess = false,
@@ -278,6 +289,8 @@ namespace Damselfly.Core.Services
                     };
                 }
 
+                _logger.LogInformation("Capturing payment for photoshoot {phtoshootId} with externalOrderId {externalOrderId} was succesful",
+                        photoShootCaptureRequest.PhotoShootId, photoShootCaptureRequest.ExternalOrderId);
                 // record transaction
                 var paymentTransaction = new PaymentTransaction
                 {
@@ -302,7 +315,8 @@ namespace Damselfly.Core.Services
                     await _imageContext.SaveChangesAsync();
                 }
 
-
+                _logger.LogInformation("Payment for photoshoot {phtoshootId} with externalOrderId {externalOrderId} was saved to the database, sending applicable emails",
+                        photoShootCaptureRequest.PhotoShootId, photoShootCaptureRequest.ExternalOrderId);
                 // email recipet
                 if( photoShoot.ResponsiblePartyEmailAddress != null )
                 {

@@ -4,12 +4,15 @@ using System.Threading;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
+using Serilog.Sinks.Grafana.Loki;
+using Microsoft.Extensions.Configuration;
+using Serilog.Configuration;
 
 namespace Damselfly.Core.Utils;
 
 public class Logging
 {
-    private const string template = "[{Timestamp:HH:mm:ss.fff}-{ThreadID}-{Level:u3}] {Message:lj}{NewLine}{Exception}";
+    private const string template = "[{Timestamp:HH:mm:ss.fff}-{TraceId}-{Level:u3}] {Message:lj}{NewLine}{Exception}";
 
     private static readonly LoggingLevelSwitch consoleLogLevel = new();
     private static readonly LoggingLevelSwitch logLevel = new();
@@ -31,11 +34,14 @@ public class Logging
     ///     Initialise logging and add the thread enricher.
     /// </summary>
     /// <returns></returns>
-    public static void InitLogConfiguration(LoggerConfiguration config, string logFolder)
+    public static void InitLogConfiguration(LoggerConfiguration logConfig, IConfigurationManager configManager)
     {
         try
         {
+            var logFolder = configManager["DamselflyConfiguration:LogPath"];
+            logFolder = Path.Combine(logFolder, "logs");
             LogFolder = logFolder;
+            var lokiUrl = configManager["DamselflyConfiguration:LokiUrl"];
 
             if ( !Directory.Exists(logFolder) )
             {
@@ -53,8 +59,11 @@ public class Logging
                 logLevel.MinimumLevel = LogEventLevel.Debug;
 
             var logFilePattern = Path.Combine(logFolder, "Damselfly-.log");
-
-            config.Enrich.With(new ThreadIDEnricher())
+            var appLabel = "Damselfly";
+#if DEBUG  
+            appLabel += "-DEBUG";
+#endif
+            logConfig.Enrich.With([new TraceIdEnricher()])
                 .WriteTo.Console(outputTemplate: template,
                     levelSwitch: consoleLogLevel)
                 .WriteTo.File(logFilePattern,
@@ -63,8 +72,12 @@ public class Logging
                     fileSizeLimitBytes: 104857600,
                     retainedFileCountLimit: 10,
                     levelSwitch: logLevel)
+                .WriteTo.GrafanaLoki(lokiUrl,
+                    restrictedToMinimumLevel: LogEventLevel.Information, 
+                    labels: [new LokiLabel { Key = "app", Value = appLabel }])
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning);
+                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+                ;
         }
         catch ( Exception ex )
         {
@@ -112,18 +125,11 @@ public class Logging
         Logger?.Information(fmt, args);
     }
 
-    /// <summary>
-    ///     Small Log event enricher to add the thread name to the log entries
-    /// </summary>
-    public class ThreadIDEnricher : ILogEventEnricher
+    public class TraceIdEnricher : ILogEventEnricher
     {
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
-            var thread = Thread.CurrentThread.Name;
-            if ( string.IsNullOrEmpty(thread) )
-                thread = Thread.CurrentThread.ManagedThreadId.ToString("D4");
-
-            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("ThreadID", thread));
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty("TraceId", logEvent.TraceId));
         }
     }
 }
