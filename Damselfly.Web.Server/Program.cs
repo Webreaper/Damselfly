@@ -238,9 +238,8 @@ public class Program
         app.UseHangfireServer();
 
 
-        // BackgroundJob.Enqueue(() => Console.WriteLine("Hello world from Hangfire!"));
-        // BackgroundJob.Enqueue<DownloadService>(x => x.CleanUpOldDownloads(TimeSpan.FromHours(6)));
         RecurringJob.AddOrUpdate<DownloadService>("CleanupDownloads", d => d.CleanUpOldDownloads(TimeSpan.FromHours(6)), "0 */6 * * *");
+        RecurringJob.AddOrUpdate<PhotoShootService>("SendReminderEmails", d=> d.SendReminderEmails(), "0 9 * * *");
         Logging.Log("Starting Damselfly webserver...");
 
         app.Run();

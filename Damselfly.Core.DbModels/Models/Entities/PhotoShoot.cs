@@ -23,6 +23,7 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public bool IsDeleted { get; set; }
         public bool IsConfirmed { get; set; }
         public bool PicturesDelivered { get; set; }
+        public bool ReminderSent { get; set; }
 
         public Guid? AlbumId { get; set; }
         public Album? Album { get; set; }

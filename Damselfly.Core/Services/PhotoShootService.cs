@@ -277,6 +277,37 @@ namespace Damselfly.Core.Services
 
         }
 
+        public async Task SendReminderEmails()
+        {
+            var localTimeNow = GetLocalDateTimeFromUtc(DateTime.UtcNow);
+            var startOfDay = localTimeNow.Date;
+            var endOfDay = startOfDay.AddDays(1);
+            var photoShoots = await _imageContext.PhotoShoots
+                .Where(x => x.DateTimeUtc >= startOfDay.ToUniversalTime() && x.DateTimeUtc < endOfDay)
+                .Where(x => !x.ReminderSent)
+                .Where(x => x.IsConfirmed)
+                .Where(x => x.PaymentTransactions.Sum(x => x.Amount) < x.Price)
+                .ToListAsync();
+            foreach( var photoShoot in photoShoots )
+            {
+                if (string.IsNullOrWhiteSpace( photoShoot.ResponsiblePartyEmailAddress)) continue;
+                var reminderText = $"This is a reminder that your photo shoot appointment for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)} is today! Look forward to seeing you soon!";
+                var reminderSubject = "Photo shoot reminder with Honey + Thyme";
+                if (photoShoot.DateTimeUtc < DateTime.UtcNow )
+                {
+                    reminderText = $"It was a pleasure to be your photographer today! Your photos should be ready in a few days, please take a moment to pay your balance at your earliest convience. Photos cannot be delivered to you prior to payment without prior disucssion.";
+                    reminderSubject = "Photo shoot payment reminder with Honey + Thyme";
+                }
+                var emailBody = EmailContent.FormatEmail("Payment Reminder",
+                    ["Hello!", reminderText],
+                    "https://honeyandthymephotography.com", "Pay Balance");
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, reminderSubject, emailBody);
+                photoShoot.ReminderSent = true;
+                _imageContext.PhotoShoots.Update(photoShoot);
+                await _imageContext.SaveChangesAsync();
+            }
+        }
+
         private PhotoShootModel MapPhotoShoot(PhotoShoot photoShoot, IMapper mapper)
         {
             var ret = mapper.Map<PhotoShootModel>(photoShoot);
@@ -285,11 +316,16 @@ namespace Damselfly.Core.Services
             return ret;
         }
 
-        private string GetLocalTimeStringFromUtc(DateTime dateTime)
+        private DateTime GetLocalDateTimeFromUtc(DateTime dateTime)
         {
             var localTimeZoneName = _configuration["DamselflyConfiguration:Timezone"];
             var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById(localTimeZoneName);
-            return TimeZoneInfo.ConvertTimeFromUtc(dateTime, localTimeZone).ToString("MM/dd/yyyy hh:mm tt");
+            return TimeZoneInfo.ConvertTimeFromUtc(dateTime, localTimeZone);
+        }
+
+        private string GetLocalTimeStringFromUtc(DateTime dateTime)
+        {
+            return GetLocalDateTimeFromUtc(dateTime).ToString("MM/dd/yyyy hh:mm tt");
         }
     }
 }
