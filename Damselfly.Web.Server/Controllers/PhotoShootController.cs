@@ -81,6 +81,7 @@ namespace Damselfly.Web.Server.Controllers
         [ProducesResponseType(typeof(CreatePhotoShootPaymentResponse), 200)]
         public async Task<IActionResult> CreatePaymentForShoot(CreatePhotoShootPaymentRequest request)
         {
+            if( request.Amount < 1 ) return BadRequest("Cannot charge less than a dollar.");
             var result = await _photoShootService.MakePaymentForPhotoShoot(request);
             return Ok(result);
         }

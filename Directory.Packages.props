@@ -71,6 +71,7 @@
     <PackageVersion Include="MudBlazor" Version="6.19.1" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
+    <PackageVersion Include="NRedisStack" Version="0.13.1" />
     <PackageVersion Include="PayPal" Version="1.9.1" />
     <PackageVersion Include="Radzen.Blazor" Version="4.29.8" />
     <PackageVersion Include="RestSharp" Version="112.1.0" />

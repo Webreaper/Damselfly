@@ -9,4 +9,5 @@ public interface IAuthService
     Task<RegisterResult> Register(RegisterModel registerModel);
     Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles);
     Task<string> GetCurrentUserEmail();
+    Task<string> GetCurrentUserIp();
 }

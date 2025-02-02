@@ -35,6 +35,8 @@ public static class ServiceRegistrations
         services.AddScoped<ICachedDataService>(x => x.GetRequiredService<CachedDataService>());
         services.AddScoped<IWorkService>(x => x.GetRequiredService<WorkService>());
         services.AddScoped<IThemeService>(x => x.GetRequiredService<ThemeService>());
+        services.AddSingleton<ICacheService, RedisCacheService>();
+        services.AddSingleton<IIpOriginService, IpApiService>();
         // services.AddSingleton<ITaskService>(x => x.GetRequiredService<TaskService>());
 
         services.AddMLServices();

@@ -3,6 +3,8 @@ using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.Entities;
+using Damselfly.Core.Interfaces;
+using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Utils;
 using Damselfly.PaymentProcessing;
@@ -10,6 +12,7 @@ using Damselfly.PaymentProcessing.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
@@ -24,7 +27,9 @@ namespace Damselfly.Core.Services
         IAuthService authService,
         PaymentService paymentService,
         EmailMailGunService emailService,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ICacheService cacheService,
+        IIpOriginService ipOriginService)
     {
         private readonly ILogger<PhotoShootService> _logger = logger;
         private readonly ImageContext _imageContext = imageContext;
@@ -33,6 +38,8 @@ namespace Damselfly.Core.Services
         private readonly PaymentService _paymentService = paymentService;
         private readonly EmailMailGunService _emailService = emailService;
         private readonly IConfiguration _configuration = configuration;
+        private readonly ICacheService _cacheService = cacheService;
+        private readonly IIpOriginService _ipOriginService = ipOriginService;
 
         public async Task<PhotoShootModel> CreatePhotoShoot(PhotoShootModel photoShoot)
         {
@@ -53,7 +60,7 @@ namespace Damselfly.Core.Services
                 var emailBody = EmailContent.FormatEmail("Appointment Created",
                     ["Hello!", $"Your photo shoot appointment for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)} has been created. Your appointment will not be considered confirmed until your deposit is paid."],
                     "https://honeyandthymephotography.com", "Pay Deposit");
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photo shoot confirmed with Honey + Thyme", emailBody);
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photo shoot scheduled with Honey + Thyme", emailBody);
             }
 
             return _mapper.Map<PhotoShootModel>(dbPhotoShoot);
@@ -138,6 +145,15 @@ namespace Damselfly.Core.Services
 
         public async Task<CreatePhotoShootPaymentResponse> MakePaymentForPhotoShoot(CreatePhotoShootPaymentRequest photoShootPayment)
         {
+            if( !await ValidateNotFraud() )
+            {
+                return new CreatePhotoShootPaymentResponse
+                {
+                    IsSuccess = false,
+                    PhotoShootId = photoShootPayment.PhotoShootId,
+                    ProcessorEnum = photoShootPayment.PaymentProcessorEnum,
+                };
+            }
             var photoShoot = await _imageContext.PhotoShoots.FindAsync(photoShootPayment.PhotoShootId);
             if( photoShoot == null )
             {
@@ -171,6 +187,49 @@ namespace Damselfly.Core.Services
                 InvoiceId = invoiceId,
             };
             return result;
+        }
+
+        private async Task<bool> ValidateNotFraud()
+        {
+            var userIp = await _authService.GetCurrentUserIp();
+            if( userIp == null )
+            {
+                return false;
+            }
+
+            var cacheKey = $"FraudCheck-{userIp}";
+            var cacheValue = await _cacheService.GetAsync(cacheKey);
+            FraudCheckModel fraudCheckModel;
+            if (cacheValue != null)
+            {
+                var cachedResult = JsonConvert.DeserializeObject<FraudCheckModel>(cacheValue);
+                fraudCheckModel = cachedResult;
+            }
+            else
+            {
+                var countryOfOrigin = await _ipOriginService.GetIpOrigin(userIp);
+                fraudCheckModel = new FraudCheckModel
+                {
+                    Country = countryOfOrigin,
+                    IpAddress = userIp,
+                    AttemptCount = 0,
+                };
+            }
+
+            fraudCheckModel.AttemptCount++;
+            await _cacheService.SetAsync(cacheKey, JsonConvert.SerializeObject(fraudCheckModel), TimeSpan.FromMinutes(60));
+
+            if( fraudCheckModel.Country != "US" )
+            {
+                return false;
+            }
+
+            if( fraudCheckModel.AttemptCount > 5 )
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public async Task<PhotoShootPaymentCaptureResponse> CapturePaymentForPhotoShoot(PhotoShootPaymentCaptureRequest photoShootCaptureRequest)

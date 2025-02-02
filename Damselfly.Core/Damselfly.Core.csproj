@@ -27,6 +27,7 @@
         </PackageReference>
         <PackageReference Include="MetadataExtractor" />
         <PackageReference Include="CommandLineParser" />
+        <PackageReference Include="NRedisStack" />
         <PackageReference Include="RestSharp" />
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
         <PackageReference Include="WordPressPCL" />

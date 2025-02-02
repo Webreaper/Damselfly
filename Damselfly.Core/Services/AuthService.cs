@@ -133,5 +133,16 @@ public class AuthService : IAuthService
         var email = user.Claims.FirstOrDefault(u => u.Type == DamselflyContants.EmailClaim);
         return email == null ? null : email.Value;
     }
+
+    public async Task<string> GetCurrentUserIp()
+    {
+        var ip = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (_httpContextAccessor.HttpContext.Request.Headers.ContainsKey("X-Forwarded-For") )
+        {
+            ip = _httpContextAccessor.HttpContext.Request.Headers["X-Forwarded-For"];
+        }
+        if( ip == "::1" ) return "68.47.219.16";
+        return ip;
+    }
 }
 
