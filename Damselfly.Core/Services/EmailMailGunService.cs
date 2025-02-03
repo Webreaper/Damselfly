@@ -27,7 +27,7 @@ namespace Damselfly.Core.Services
             var request = new RestRequest($"/v3/{domain}/messages", Method.Post);
             request.AddHeader("Authorization", $"Basic {base64ApiKey}");
             request.AlwaysMultipartFormData = true;
-            request.AddParameter("from", $"Damselfly <{fromAddress}>");
+            request.AddParameter("from", $"Honey+Thyme <{fromAddress}>");
             request.AddParameter("to", email);
             request.AddParameter("subject", subject);
             request.AddParameter("html", htmlMessage);

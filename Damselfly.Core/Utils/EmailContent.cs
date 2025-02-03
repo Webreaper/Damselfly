@@ -117,6 +117,7 @@ namespace Damselfly.Core.Utils
                         <tr>
                             <td class=""wrapper"" style=""font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px;"" valign=""top"">
                                 {{body}}
+                            <p style=""font-size: small;"">Contact us at: <a href=""mailto:honeyandThymePhotography@gmail.com"">HoneyAndThymePhotography@gmail.com</a></p>
                             </td>
                         </tr>
 
