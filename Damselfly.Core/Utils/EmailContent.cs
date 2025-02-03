@@ -164,17 +164,45 @@ namespace Damselfly.Core.Utils
 </table>";
 
         private static string _paragraphTemplate = @"<p style=""font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;"">{{paragraph}}</p>";
+        private static string _tableTemplate = @"<table role=""presentation"" cellpadding=""5"" cellspacing=""0"" style=""border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; min-width: 100%;"" width=""100%"">
+    <tbody>
+        {{rows}}
+    </tbody>
+</table>
+";
+        private static string _rowTemplate = @"<tr>
+    {{cells}}
+</tr>";
+        private static string _cellTemplate = @"<td>{{data}}</td>";
         #endregion
 
 
 
-        public static string FormatEmail(string title, string[] paragraphs, string? callToActionUrl = null, string? callToActionTitle = null)
+        public static string FormatEmail(string title, string[] paragraphs, string? callToActionUrl = null, string? callToActionTitle = null, string[][]? tableElements = null)
         {
             var body = new StringBuilder();
             foreach(var paragraph in paragraphs)
             {
                 var line = _paragraphTemplate.Replace("{{paragraph}}", paragraph);
                 body.AppendLine(line);
+            }
+            if( tableElements != null )
+            {
+                var tableBuilder = new StringBuilder();
+
+                foreach( var row in tableElements )
+                {
+                    var rowBuilder = new StringBuilder();
+                    foreach( var cell in row )
+                    {
+                        var cellHtml = _cellTemplate.Replace("{{data}}", cell);
+                        rowBuilder.AppendLine(cellHtml);
+                    }
+                    var rowHtml = _rowTemplate.Replace("{{cells}}", rowBuilder.ToString());
+                    tableBuilder.AppendLine(rowHtml);
+                }
+                var tableHtml = _tableTemplate.Replace("{{rows}}", tableBuilder.ToString());
+                body.AppendLine(tableHtml);
             }
             if (callToActionTitle != null && callToActionUrl != null) 
             {

@@ -21,5 +21,6 @@ namespace Damselfly.Core.DbModels.Models.API_Models
         public bool IsConfirmed { get; set; }
         public decimal? PaymentRemaining { get; set; }
         public bool PicturesDelivered { get; set; }
+        public Guid? AlbumId { get; set; }
     }
 }

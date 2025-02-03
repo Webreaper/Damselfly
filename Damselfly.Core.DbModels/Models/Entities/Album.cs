@@ -24,8 +24,8 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public Guid FolderId { get; set; }
 
         public virtual List<AlbumImage> AlbumImages { get; set; } = [];
-     
-        public virtual PhotoShoot? PhotoShoot { get; set; }
+
+        public virtual List<PhotoShoot>? PhotoShoots { get; set; } = [];
         public virtual Image? CoverImage { get; set; }
         public virtual Folder Folder { get; set; }
 
