@@ -163,7 +163,7 @@ namespace Damselfly.Core.Services
                 stringBuilder.AppendLine($"<p>Success: {successCount}</p>");
                 stringBuilder.AppendLine($"<p>Existing: {existingCount}</p>");
 
-                await _emailService.SendEmailAsync(adminEmail, $"Results of {album.Name} scan", stringBuilder.ToString());
+                await _emailService.SendEmailAsync(adminEmail, $"Results of {album.Name} scan", stringBuilder.ToString(), albumId.ToString(), MessageObjectEnum.Album);
                 await _notificationService.SendNotification("Album scan complete", $"Check your email for full scan results of {album.Name}");
                 return true;
             }

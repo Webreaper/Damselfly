@@ -19,6 +19,8 @@ namespace Damselfly.Core.AutoMapper
                 .ForMember(am => am.IsLocked, c => c.MapFrom(a => a.InvalidPasswordAttempts > Album.MaxInvalidPasswordAttempts))
                 .ForMember(am => am.Images, c => c.MapFrom(a => a.AlbumImages.Select(ai => ai.Image)));
             CreateMap<AlbumModel, Album>();
+            CreateMap<EmailRecord, EmailRecordModel>();
+            CreateMap<EmailRecordModel, EmailRecord>();
             CreateMap<ImageModel, Image>();
             CreateMap<Image, ImageModel>();
             CreateMap<ImageMetaData, ImageMetaDataModel>();

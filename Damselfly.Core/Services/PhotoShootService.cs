@@ -3,6 +3,7 @@ using Damselfly.Core.Database;
 using Damselfly.Core.DbModels.Models;
 using Damselfly.Core.DbModels.Models.API_Models;
 using Damselfly.Core.DbModels.Models.Entities;
+using Damselfly.Core.DbModels.Models.Enums;
 using Damselfly.Core.Interfaces;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
@@ -61,7 +62,7 @@ namespace Damselfly.Core.Services
                 var emailBody = EmailContent.FormatEmail("Appointment Created",
                     ["Hello!", $"Your photoshoot for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)} has been scheduled but is not confirmed until deposit is paid. You can do this with the button below."],
                     $"{baseUrl}/#/invoice?id={photoShoot.PhotoShootId}", "Pay Deposit");
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photo shoot scheduled with Honey + Thyme", emailBody);
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photo shoot scheduled with Honey + Thyme", emailBody, photoShoot.PhotoShootId.ToString(), MessageObjectEnum.PhotoShoot);
             }
 
             return _mapper.Map<PhotoShootModel>(dbPhotoShoot);
@@ -95,7 +96,7 @@ namespace Damselfly.Core.Services
                     ],
                     $"{baseUrl}/#/albums/{album.UrlName}", "View Photos"
                 );
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photos Ready", emailBody);
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photos Ready", emailBody, photoShoot.PhotoShootId.ToString(), MessageObjectEnum.PhotoShoot);
             }
 
             dbPhotoShoot = _mapper.Map<PhotoShoot>(photoShoot);
@@ -124,7 +125,7 @@ namespace Damselfly.Core.Services
                 var questionsEmail = _configuration["ContactForm:ToAddress"];
                 var emailBody = EmailContent.FormatEmail("Appointment cancelation",
                     ["Hello!", $"Your photoshoot appointment for {GetLocalTimeStringFromUtc(photoShoot.DateTimeUtc)} has been cancelled. If you have any questions please feel to email me at {questionsEmail}"]);
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Cancelation Confirmed", emailBody);
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Cancelation Confirmed", emailBody, photoShoot.PhotoShootId.ToString(), MessageObjectEnum.PhotoShoot);
             }
 
             return true;
@@ -367,7 +368,7 @@ namespace Damselfly.Core.Services
                         emailBody = EmailContent.FormatEmail("Thank you for your payment",
                             [$"Thank you for your payment!"], tableElements: recieptInfo);
                     }
-                    await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Honey+Thyme Reciept", emailBody);
+                    await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Honey+Thyme Reciept", emailBody, photoShoot.PhotoShootId.ToString(), MessageObjectEnum.PhotoShoot);
                 }
 
                 var adminEmail = _configuration["ContactForm:ToAddress"];
@@ -376,7 +377,7 @@ namespace Damselfly.Core.Services
                 else primaryMessage = $"You got a booking a payment of ${capture.PaymentTotal} has been recieved for the photo shoot appointment for {photoShoot.ResponsiblePartyName} {photoShoot.NameOfShoot}";
                 var adminEmailBody = EmailContent.FormatEmail("Payment Recieved",
                     ["Hello!", primaryMessage]);
-                await _emailService.SendEmailAsync(adminEmail, $"Payment Recieved For {photoShoot.ResponsiblePartyName} {photoShoot.NameOfShoot}", adminEmailBody);
+                await _emailService.SendEmailAsync(adminEmail, $"Payment Recieved For {photoShoot.ResponsiblePartyName} {photoShoot.NameOfShoot}", adminEmailBody, photoShoot.PhotoShootId.ToString(), MessageObjectEnum.PhotoShoot);
 
                 return new PhotoShootPaymentCaptureResponse
                 {
@@ -404,7 +405,7 @@ namespace Damselfly.Core.Services
             var startOfDay = localTimeNow.Date;
             var endOfDay = startOfDay.AddDays(1);
             var photoShoots = await _imageContext.PhotoShoots
-                .Where(x => x.DateTimeUtc >= startOfDay.ToUniversalTime() && x.DateTimeUtc < endOfDay)
+                .Where(x => x.DateTimeUtc >= startOfDay.ToUniversalTime() && x.DateTimeUtc < endOfDay.ToUniversalTime())
                 .Where(x => !x.ReminderSent)
                 .Where(x => x.IsConfirmed)
                 .Where(x => x.PaymentTransactions.Sum(x => x.Amount) < x.Price)
@@ -425,9 +426,9 @@ namespace Damselfly.Core.Services
                 var totalPaid = photoShoot.PaymentTransactions.Sum(x => x.Amount);
                 var remainingBalance = photoShoot.Price - totalPaid;
                 var emailBody = EmailContent.FormatEmail("Payment Reminder",
-                    [$"Hey there! This is just a friendly reminder that your remaining balance of {remainingBalance} is due today after your shoot. Thanks again for your business!"],
+                    [$"Hey there! This is just a friendly reminder that your remaining balance of ${remainingBalance} is due today after your shoot. Thanks again for your business!"],
                     $"{baseUrl}/#/invoice?id={photoShoot.PhotoShootId}", "Pay Balance");
-                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photoshoot reminder", emailBody);
+                await _emailService.SendEmailAsync(photoShoot.ResponsiblePartyEmailAddress, "Photoshoot reminder", emailBody, photoShoot.PhotoShootId.ToString(), MessageObjectEnum.PhotoShoot);
                 photoShoot.ReminderSent = true;
                 _imageContext.PhotoShoots.Update(photoShoot);
                 await _imageContext.SaveChangesAsync();

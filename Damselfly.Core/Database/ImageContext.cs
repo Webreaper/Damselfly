@@ -52,6 +52,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ConfigSetting> ConfigSettings { get; set; }
     public DbSet<ExifOperation> KeywordOperations { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<EmailRecord> EmailRecords { get; set; }
 
     #region Invoicing Objects
     public DbSet<Product> Products { get; set; }
@@ -219,6 +220,9 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
         modelBuilder.Entity<AlbumImage>()
             .Property(AlbumImage => AlbumImage.AlbumImageId)
             .HasDefaultValueSql("gen_random_uuid()");
+
+        modelBuilder.Entity<EmailRecord>()
+            .HasIndex(x => x.MessageObjectId);
 
         RoleDefinitions.OnModelCreating(modelBuilder);
     }

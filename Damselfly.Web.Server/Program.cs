@@ -234,6 +234,11 @@ public class Program
         app.Environment.SetupServices(app.Services);
 
         app.UseHangfireServer();
+#if DEBUG
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+        });
+#endif
 
 
         RecurringJob.AddOrUpdate<DownloadService>("CleanupDownloads", d => d.CleanUpOldDownloads(TimeSpan.FromHours(6)), "0 */6 * * *");

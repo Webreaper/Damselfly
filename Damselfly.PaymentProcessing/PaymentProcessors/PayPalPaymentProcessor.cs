@@ -96,6 +96,7 @@ namespace Damselfly.PaymentProcessing.PaymentProcessors
                 request.AddStringBody(jsonRequest, DataFormat.Json);
                 var response = await _restClient.ExecuteAsync(request);
                 var orderResponse = JsonConvert.DeserializeObject<OrderResponse>(response.Content);
+                _logger.LogInformation("Paypal responded with {response}", response.Content);
                 _logger.LogInformation("Paypal order created with id {orderId} invoiceId {invoiceId}", orderResponse.Id, orderRequest.InvoiceId);
                 return new CreateOrderResponse { OrderId = orderResponse.Id, IsSuccess = true };
             }
