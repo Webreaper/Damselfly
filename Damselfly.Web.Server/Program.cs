@@ -228,10 +228,10 @@ public class Program
         app.MapRazorPages();
         app.MapControllers();
         app.MapHub<ImageDownloadHub>("/imageDownloadHub");
+        app.MapHub<BookingHub>("/bookingHub");
         app.MapFallbackToFile("index.html");
-        
-        // Start up all the Damselfly Services
-        app.Environment.SetupServices(app.Services);
+        TokenEncryption.Initialize(app.Configuration);
+
 
         app.UseHangfireServer();
 #if DEBUG
@@ -243,6 +243,7 @@ public class Program
 
         RecurringJob.AddOrUpdate<DownloadService>("CleanupDownloads", d => d.CleanUpOldDownloads(TimeSpan.FromHours(6)), "0 */6 * * *");
         RecurringJob.AddOrUpdate<PhotoShootService>("SendReminderEmails", d=> d.SendReminderEmails(), "0 9 * * *");
+        RecurringJob.AddOrUpdate<PhotoShootService>("ResetUnpaidShoots", d => d.ResetUnpaidShoots(), "0/5 * * * *");
         Logging.Log("Starting Damselfly webserver...");
 
         app.Run();

@@ -22,6 +22,7 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public string? Password { get; set; }
         public Guid? CoverImageId { get; set; }
         public Guid FolderId { get; set; }
+        public DateTime CreatedDateTime { get; set; } = new DateTime();
 
         public virtual List<AlbumImage> AlbumImages { get; set; } = [];
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,17 +74,17 @@ public static class RoleDefinitions
         modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
         {
             Name = s_UserRole, NormalizedName = s_UserRole.ToUpper(), Id = 1,
-            ConcurrencyStamp = Guid.NewGuid().ToString()
+            ConcurrencyStamp = "79f29160-cfbe-40f8-ada7-c7672a5cb8a3"
         });
         modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
         {
             Name = s_AdminRole, NormalizedName = s_AdminRole.ToUpper(), Id = 2,
-            ConcurrencyStamp = Guid.NewGuid().ToString()
+            ConcurrencyStamp = "3a63af71-3be5-4c31-b692-c8f4bf281e50"
         });
         modelBuilder.Entity<ApplicationRole>().HasData(new ApplicationRole
         {
             Name = s_ReadOnlyRole, NormalizedName = s_ReadOnlyRole.ToUpper(), Id = 3,
-            ConcurrencyStamp = Guid.NewGuid().ToString()
+            ConcurrencyStamp = "cc37f753-44de-4766-92d1-eca84cc8be8e"
         });
     }
 }

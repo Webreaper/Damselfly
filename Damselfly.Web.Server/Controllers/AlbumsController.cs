@@ -6,6 +6,7 @@ using Damselfly.Core.Services;
 using Damselfly.Web.Server.CustomAttributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Damselfly.Core.Models;
 
 namespace Damselfly.Web.Server.Controllers
 {
@@ -68,6 +69,25 @@ namespace Damselfly.Web.Server.Controllers
 
             var result = await _albumService.GetAlbums();
 
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get paginated albums
+        /// </summary>
+        /// <param name="request">Pagination request containing PageIndex and PageSize</param>
+        /// <returns>Paginated result containing albums and pagination metadata</returns>
+        [HttpGet]
+        [Route("paginated")]
+        [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
+        public async Task<ActionResult<PaginationResultModel<AlbumModel>>> GetPaginatedAlbums([FromQuery] AlbumsPaginationRequest request)
+        {
+            if (request.PageIndex < 0 || request.PageSize < 1 || request.PageSize > 100)
+            {
+                return BadRequest("PageIndex cannot be less than 0 and PageSize must be between 1 and 100");
+            }
+
+            var result = await _albumService.GetAlbumsPaginated(request);
             return Ok(result);
         }
 

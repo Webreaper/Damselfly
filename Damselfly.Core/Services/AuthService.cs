@@ -20,18 +20,10 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Damselfly.Core.Services;
 
-public class AuthService : IAuthService
+public class AuthService(IHttpContextAccessor httpContextAccessor, IServiceScopeFactory scopeFactory) : IAuthService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IServiceScopeFactory _scopeFactory;
-
-
-    public AuthService( IHttpContextAccessor httpContextAccessor, IServiceScopeFactory scopeFactory)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _scopeFactory = scopeFactory;
-    }
-
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     public async Task<LoginResult> Login(LoginModel login)
     {
@@ -96,16 +88,7 @@ public class AuthService : IAuthService
 
     public async Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles)
     {
-        var email = await GetCurrentUserEmail();
-        if (email == null)
-        {
-            return false;
-        }
-        using var scope = _scopeFactory.CreateScope();
-        using var db = scope.ServiceProvider.GetRequiredService<ImageContext>();
-        //var userManager = _userManager;
-        var applicationUser = await db.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.NormalizedEmail == email.ToUpper());
-        // var applicationUser = await userManager.FindByEmailAsync(email.Value);
+        var applicationUser = await GetCurrentUser();
         if( applicationUser == null )
         {
             return false;
@@ -114,7 +97,6 @@ public class AuthService : IAuthService
         {
             return true;
         }
-        //var userRoles = await userManager.GetRolesAsync(applicationUser);
         var hasRole = applicationUser.UserRoles.Any(userRole => roles.Any(role =>
         {
             var roleId = (int)RoleEnumExtensions.FromFriendlyString(role);
@@ -137,12 +119,25 @@ public class AuthService : IAuthService
     public async Task<string> GetCurrentUserIp()
     {
         var ip = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
-        if (_httpContextAccessor.HttpContext.Request.Headers.ContainsKey("X-Forwarded-For") )
+        if (_httpContextAccessor.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var value) )
         {
-            ip = _httpContextAccessor.HttpContext.Request.Headers["X-Forwarded-For"];
+            ip = value;
         }
         if( ip == "::1" ) return "68.47.219.16";
         return ip;
+    }
+
+    public async Task<AppIdentityUser?> GetCurrentUser()
+    {
+        var email = await GetCurrentUserEmail();
+        if( email == null )
+        {
+            return null;
+        }
+        using var scope = _scopeFactory.CreateScope();
+        using var db = scope.ServiceProvider.GetRequiredService<ImageContext>();
+        var applicationUser = await db.Users.Include(x => x.UserRoles).FirstOrDefaultAsync(x => x.NormalizedEmail == email.ToUpper());
+        return applicationUser;
     }
 }
 

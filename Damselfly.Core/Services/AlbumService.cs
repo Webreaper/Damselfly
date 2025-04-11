@@ -19,6 +19,7 @@ using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.DbModels.Models.Enums;
 using Microsoft.Extensions.Logging;
 using System.Security.AccessControl;
+using Damselfly.Core.Utils;
 
 namespace Damselfly.Core.Services
 {
@@ -124,6 +125,21 @@ namespace Damselfly.Core.Services
         {
             var albums = await _context.Albums.ToListAsync();
             return _mapper.Map<List<AlbumModel>>(albums);
+        }
+
+        /// <summary>
+        /// Get paginated albums using the existing pagination utility
+        /// </summary>
+        /// <param name="pageNumber">Zero-based page number</param>
+        /// <param name="pageSize">Number of albums per page</param>
+        /// <returns>Paginated result containing albums and pagination metadata</returns>
+        public async Task<PaginationResultModel<AlbumModel>> GetAlbumsPaginated(AlbumsPaginationRequest albumsPaginationRequest)
+        {
+            var query = _context.Albums.Where(a => 1 == 1);
+            if( !string.IsNullOrEmpty(albumsPaginationRequest.Search) )
+                query = query.Where(a => a.Name.ToLower().Contains(albumsPaginationRequest.Search.ToLower()));
+            var orderedQuery = query.OrderByDescending(a => a.CreatedDateTime);
+            return await Pagination.PaginateQuery(orderedQuery, albumsPaginationRequest.PageIndex, albumsPaginationRequest.PageSize, _mapper.Map<AlbumModel>);
         }
 
         public async Task<AlbumModel> UnlockAlbum(Guid id)

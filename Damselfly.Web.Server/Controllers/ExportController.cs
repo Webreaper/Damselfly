@@ -16,13 +16,11 @@ namespace Damselfly.Web.Server.Controllers;
 [Authorize(Policy = PolicyDefinitions.s_FireBaseAdmin)]
 public class ExportController : ControllerBase
 {
-    private readonly ImageRecognitionService _aiService;
 
     private readonly ILogger<ExportController> _logger;
 
-    public ExportController(ImageRecognitionService service, ILogger<ExportController> logger)
+    public ExportController(ILogger<ExportController> logger)
     {
-        _aiService = service;
         _logger = logger;
     }
 

@@ -10,6 +10,6 @@ namespace Damselfly.Core.DbModels.Models.API_Models
     {
         public bool IsSuccess { get; set; }
         public bool ShouldTryAgain { get; set; }
-        public Guid PhotoShootId { get; set; }
+        public string ReservationCode { get; set; }
     }
 }

@@ -10,17 +10,15 @@ namespace Damselfly.Core.Services;
 
 public class RescanService : IRescanService
 {
-    private readonly ImageRecognitionService _aiService;
     private readonly IndexingService _indexingService;
     private readonly MetaDataService _metaDataService;
     private readonly ThumbnailService _thumbService;
 
     public RescanService(ThumbnailService thumbService, IndexingService indexingService,
-        MetaDataService metaDataService, ImageRecognitionService aiService)
+        MetaDataService metaDataService)
     {
         _thumbService = thumbService;
         _indexingService = indexingService;
-        _aiService = aiService;
         _metaDataService = metaDataService;
     }
 
@@ -54,8 +52,6 @@ public class RescanService : IRescanService
     {
         var providers = new List<IRescanProvider>();
 
-        if ( type.HasFlag(RescanTypes.AI) )
-            providers.Add(_aiService);
         if ( type.HasFlag(RescanTypes.Thumbnails) )
             providers.Add(_thumbService);
         if ( type.HasFlag(RescanTypes.Metadata) )

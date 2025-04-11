@@ -16,19 +16,12 @@ namespace Damselfly.Core.Database;
 /// <summary>
 ///     Our actual EF Core model describing a collection of images, lenses,
 /// </summary>
-public class ImageContext : BaseDBModel, IDataProtectionKeyContext
+public class ImageContext(DbContextOptions options) : BaseDBModel(options), IDataProtectionKeyContext
 {
     public static ImageContext GetImageContext( IServiceScope scope )
     {
         var db = scope.ServiceProvider.GetService<ImageContext>();
-        if( db == null )
-            throw new Exception( "No DB found in scope factory" );
-
-        return db;
-    }
-
-    public ImageContext(DbContextOptions options) : base(options)
-    {
+        return db == null ? throw new Exception( "No DB found in scope factory" ) : db;
     }
 
     public DbSet<Album> Albums { get; set; }
@@ -53,6 +46,7 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<ExifOperation> KeywordOperations { get; set; }
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<EmailRecord> EmailRecords { get; set; }
+    public DbSet<GoogleCalendarToken> GoogleCalendarTokens { get; set; }
 
     #region Invoicing Objects
     public DbSet<Product> Products { get; set; }
@@ -223,6 +217,17 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
 
         modelBuilder.Entity<EmailRecord>()
             .HasIndex(x => x.MessageObjectId);
+
+        // Google Calendar Token relationship
+        modelBuilder.Entity<GoogleCalendarToken>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<GoogleCalendarToken>()
+            .HasIndex(x => x.UserId)
+            .IsUnique();
 
         RoleDefinitions.OnModelCreating(modelBuilder);
     }

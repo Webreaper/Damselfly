@@ -16,7 +16,8 @@ namespace Damselfly.Core.DbModels.Models.API_Models
         public string? Password { get; set; }
         public Guid? CoverImageId { get; set; }
         public bool? IsLocked { get; set; }
+        public DateTime CreatedDateTime { get; set; }
 
-        public List<ImageModel> Images { get; set; } = new List<ImageModel>();
+        public List<ImageModel> Images { get; set; } = [];
     }
 }

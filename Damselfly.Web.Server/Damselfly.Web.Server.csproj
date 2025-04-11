@@ -1,12 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>Damselfly.Web.Server-69D9E22D-6BA1-4548-A809-7CE1DD4B905B</UserSecretsId>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-        <DockerfileRunArguments>-v "Z:\honeyAndThyme:/app/config"</DockerfileRunArguments>
+        <DockerfileRunArguments>-v "Y:\honeyAndThyme:/app/config"</DockerfileRunArguments>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 

@@ -19,5 +19,6 @@ namespace Damselfly.Core.DbModels.Models.Entities
         public string Description { get; set; }
         public PaymentProcessorEnum PaymentProcessorType { get; set; }
         public string ExternalId { get; set; }
+        public bool IsCancelled { get; set; }
     }
 }

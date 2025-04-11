@@ -9,7 +9,7 @@ namespace Damselfly.Core.DbModels.Models.API_Models
 {
     public class PhotoShootPaymentCaptureRequest
     {
-        public Guid PhotoShootId { get; set; }
+        public string ReservationCode { get; set; }
         public string ExternalOrderId { get; set; }
         public decimal AmountToBeCharged { get; set; }
         public PaymentProcessorEnum PaymentProcessor { get; set; }

@@ -9,7 +9,6 @@ public class SystemConfigSettings
     public WordpressSettings wpSettings { get; init; } = new();
     public CPULevelSettings cpuSettings { get; init; } = new();
     public SmtpSettings smtpSettings { get; init; } = new();
-    public SendGridSettings sendGridSettings { get; init; } = new();
     public LoggingLevel serverLogLevel { get; set; }
     public bool importSidecarKeywords { get; set; }
     public bool useSmtp { get; set; } = true;
@@ -44,7 +43,6 @@ public class SystemConfigSettings
         configService.Set(ConfigSettings.LogLevel, serverLogLevel.ToString());
 
         smtpSettings.Save(configService);
-        sendGridSettings.Save(configService);
         cpuSettings.Save(configService);
 
         // If roles are disabled, disable forced Login
@@ -75,7 +73,6 @@ public class SystemConfigSettings
         similarityThreshold = configService.GetInt(ConfigSettings.SimilarityThreshold, 75);
 
         smtpSettings.Load(configService);
-        sendGridSettings.Load(configService);
         cpuSettings.Load(configService);
     }
 }

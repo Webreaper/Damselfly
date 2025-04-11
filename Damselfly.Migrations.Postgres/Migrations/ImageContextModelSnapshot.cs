@@ -17,7 +17,7 @@ namespace Damselfly.Migrations.Postgres.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -69,6 +69,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("PreferredCalendarId")
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -175,6 +178,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<Guid?>("CoverImageId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -266,6 +272,45 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.ToTable("EmailRecords");
                 });
 
+            modelBuilder.Entity("Damselfly.Core.DbModels.Models.Entities.GoogleCalendarToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EncryptedAccessToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EncryptedRefreshToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("TokenExpiryUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("GoogleCalendarTokens");
+                });
+
             modelBuilder.Entity("Damselfly.Core.DbModels.Models.Entities.PaymentTransaction", b =>
                 {
                     b.Property<Guid>("PaymentTransactionId")
@@ -285,6 +330,9 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<string>("ExternalId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsCancelled")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("PaymentProcessorType")
                         .HasColumnType("integer");
@@ -323,17 +371,20 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<string>("DiscountName")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsConfirmed")
-                        .HasColumnType("boolean");
+                    b.Property<DateTime?>("EndDateTimeUtc")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                    b.Property<string>("ExternalCalendarId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
 
                     b.Property<string>("NameOfShoot")
                         .HasColumnType("text");
 
-                    b.Property<bool>("PicturesDelivered")
-                        .HasColumnType("boolean");
+                    b.Property<int>("PhotoShootType")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
@@ -341,12 +392,20 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Property<bool>("ReminderSent")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime?>("RequestExpirationDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReservationCode")
+                        .HasColumnType("text");
+
                     b.Property<string>("ResponsiblePartyEmailAddress")
                         .HasColumnType("text");
 
                     b.Property<string>("ResponsiblePartyName")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("PhotoShootId");
 
@@ -1143,6 +1202,17 @@ namespace Damselfly.Migrations.Postgres.Migrations
                     b.Navigation("Album");
 
                     b.Navigation("Image");
+                });
+
+            modelBuilder.Entity("Damselfly.Core.DbModels.Models.Entities.GoogleCalendarToken", b =>
+                {
+                    b.HasOne("Damselfly.Core.DbModels.Authentication.AppIdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Damselfly.Core.DbModels.Models.Entities.PaymentTransaction", b =>

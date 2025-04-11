@@ -135,6 +135,20 @@ namespace Damselfly.Core.Utils
                                     </td>
                                 </tr>
                             </table>
+                        <table role=""presentation"" border=""0"" cellpadding=""0"" cellspacing=""0"" align=""center"" style=""margin-top: 16px;"">
+                        <tr>
+                          <td style=""padding-right: 8px;"">
+                            <a href=""https://www.facebook.com/share/1GMseZYBMV/?mibextid=qi2Omg"">
+                              <img src=""https://honeyandthymephotography.com/assets/assets/images/Facebook_Logo_Primary.png"" alt=""Facebook"" style=""width: 50px; height: 50px; border: 0; display: block;"">
+                            </a>
+                          </td>
+                          <td>
+                            <a href=""https://www.instagram.com/honeyandthymephotography?igsh=ZDd4cTk2M3cwYzU5"">
+                              <img src=""https://honeyandthymephotography.com/assets/assets/images/Instagram_Glyph_Gradient.png"" alt=""Instagram"" style=""width: 50px; height: 50px; border: 0; display: block;"">
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
                     </div>
 
                     <!-- END FOOTER -->

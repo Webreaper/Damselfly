@@ -1,3 +1,4 @@
+using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Models;
 
 namespace Damselfly.Core.ScopedServices.Interfaces;
@@ -10,4 +11,5 @@ public interface IAuthService
     Task<bool> CheckCurrentFirebaseUserIsInRole(string[] roles);
     Task<string> GetCurrentUserEmail();
     Task<string> GetCurrentUserIp();
+    Task<AppIdentityUser?> GetCurrentUser();
 }
