@@ -289,26 +289,22 @@
             NoResultsFound = false;
 
             // Be careful, as searchResults could change underneath us....
-            var chunks = searchService.SearchResults
-                                               .Chunk(25)
+            var results = searchService.SearchResults
                                                .ToList();
             
-            foreach( var set in chunks )
+            StateHasChanged();
+
+            var toAdd = results.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
+            var images = await imageCache.GetCachedImages(toAdd);
+
+            // Check if we had a cancellation request while we pulled back the images. If so, abort
+            if( token.IsCancellationRequested )
+                return;
+
+            if(images.Any())
             {
-                StateHasChanged();
-
-                var toAdd = set.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
-                var images = await imageCache.GetCachedImages(toAdd);
-
-                // Check if we had a cancellation request while we pulled back the images. If so, abort
-                if( token.IsCancellationRequested )
-                    return;
-
-                if(images.Any())
-                {
-                    gridImages.AddRange(images);
-                    await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
-                }
+                gridImages.AddRange(images);
+                await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
             }
         }
 
