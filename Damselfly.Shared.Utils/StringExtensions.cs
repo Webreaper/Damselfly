@@ -63,12 +63,26 @@ public static class StringExtensions
     /// <returns></returns>
     public static string ToHumanReadableString(this TimeSpan t)
     {
-        return t.Humanize();
+        try
+        {
+            return t.Humanize();
+        }
+        catch
+        {
+            return t.ToString("c");
+        }
     }
 
     public static string ToHumanReadableString(this int timeMilliSecs)
     {
-        return new TimeSpan(0, 0, 0, 0, timeMilliSecs).Humanize();
+        try
+        {
+            return new TimeSpan(0, 0, 0, 0, timeMilliSecs).Humanize();
+        }
+        catch
+        {
+            return timeMilliSecs.ToString();
+        }
     }
 
     public static string ToHumanReadableString(this DateTime start)

@@ -64,8 +64,7 @@ public static class AppInitialiser
             WorkMethod = () => thumbService.CleanUpThumbnails(thumbCleanupFreq),
             ImmediateStart = false
         });
-
-
+        
         // Clean up old download zips from the wwwroot folder
         var downloadCleanupFreq = new TimeSpan(6, 0, 0);
         tasks.Add(new ScheduledTask
@@ -116,7 +115,10 @@ public static class AppInitialiser
 #endif
 
         // Add the jobs
-        foreach ( var task in tasks ) taskScheduler.AddTaskDefinition(task);
+        foreach ( var task in tasks )
+        {
+            taskScheduler.AddTaskDefinition(task);
+        }
 
         // Start the scheduler
         taskScheduler.Start();
