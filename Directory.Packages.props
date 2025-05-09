@@ -54,7 +54,7 @@
     <PackageVersion Include="Microsoft.JSInterop" Version="9.0.4" />
     <PackageVersion Include="Microsoft.ML" Version="3.0.1" />
     <PackageVersion Include="Microsoft.ML.ImageAnalytics" Version="3.0.1" />
-    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.21.2" />
     <PackageVersion Include="Microsoft.ML.TensorFlow" Version="3.0.1" />
     <PackageVersion Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
