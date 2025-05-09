@@ -6,7 +6,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <RunAOTCompilation>false</RunAOTCompilation>
-        <CompressionEnabled>false</CompressionEnabled>
         <InvariantGlobalization>false</InvariantGlobalization>
         <CurrentDate>$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmmss`))</CurrentDate>
     </PropertyGroup>

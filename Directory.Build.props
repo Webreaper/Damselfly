@@ -5,6 +5,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <NoWarn>CS8603;CS8604;CS8618;IL2121</NoWarn>
         <LangVersion>latest</LangVersion>
+        <CompressionEnabled>false</CompressionEnabled>
         <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 </Project>
