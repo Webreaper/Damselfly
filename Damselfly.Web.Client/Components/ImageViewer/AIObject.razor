@@ -96,7 +96,7 @@
 
             var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, CloseButton = false, CloseOnEscapeKey = true };
             var parameters = new DialogParameters { { "theObject", theObject } };
-            var dialog = DialogService.Show<NameDialog>("Add Name", parameters);
+            var dialog = await DialogService.ShowAsync<NameDialog>("Add Name", parameters);
             var result = await dialog.Result;
 
             if ( !dialog.Result.IsCanceled )

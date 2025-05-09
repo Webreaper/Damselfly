@@ -55,7 +55,7 @@
     private async Task OpenEditBasketDialog()
     {
         var parameters = new DialogParameters { { "Config", CurrentConfig }, { "mode", "Edit" } };
-        var dialog = DialogService.Show<ExportConfigDialog>("Edit Config", parameters);
+        var dialog = await DialogService.ShowAsync<ExportConfigDialog>("Edit Config", parameters);
         var result = await dialog.Result;
 
         await LoadData();
