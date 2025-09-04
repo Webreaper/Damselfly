@@ -22,7 +22,7 @@
   "author": "Mark Otway",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "20.0.0",
+    "electron": "35.7.5",
     "electron-builder": "23.3.3"
   },
   "build": {
