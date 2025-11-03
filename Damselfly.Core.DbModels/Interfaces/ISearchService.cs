@@ -21,6 +21,7 @@ public interface ISearchService
     int? SimilarToId { get; set; }
     int? LensId { get; set; }
     IEnumerable<int>? Months { get; set; }
+    DateTime? OnThisDay { get; set; }
     int? MinRating { get; set; }
     int? MaxSizeKB { get; set; }
     int? MinSizeKB { get; set; }

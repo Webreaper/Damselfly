@@ -178,6 +178,10 @@ public class SearchQueryService
                 // Filter by month
                 images = images.Where(x => query.Months.Contains(x.SortDate.Month));
 
+            if ( query.OnThisDay != null )
+                // Filter by month and day
+                images = images.Where(x => query.OnThisDay.Value.Month == x.SortDate.Month && query.OnThisDay.Value.Day == x.SortDate.Day);
+
             if ( query.MinSizeKB.HasValue )
             {
                 var minSizeBytes = query.MinSizeKB.Value * 1024;

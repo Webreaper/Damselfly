@@ -151,6 +151,7 @@ else
                     }
                     <RadzenMenuItem Text="View Folder" Value="7"/>
                     <RadzenMenuItem Text="View Images From This Day" Value="8"/>
+                    <RadzenMenuItem Text="On This Day..." Value="10"/>
                     <hr class="separator">
                     @if ( InBasket )
                     {
@@ -224,6 +225,9 @@ else
             case 9:
                 await DeleteImages(ContextSelection.Select(x => x.ImageId).ToList());
                 break;
+            case 10:
+                FilterByImageDayAndMonth();
+                break;
         }
     }
 
@@ -249,6 +253,12 @@ else
     private void FilterByImageDate()
     {
         var url = $"/?date={CurrentImage.SortDate:dd-MMM-yyyy}";
+        NavigationManager.NavigateTo(url);
+    }
+
+    private void FilterByImageDayAndMonth()
+    {
+        var url = $"/?date={CurrentImage.SortDate:dd-MMM}";
         NavigationManager.NavigateTo(url);
     }
 

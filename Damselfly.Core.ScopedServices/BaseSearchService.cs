@@ -206,6 +206,21 @@ public abstract class BaseSearchService
         }
     }
 
+    public DateTime? OnThisDay
+    {
+        get => Query.OnThisDay;
+        set
+        {
+            if ( (value == null && Query.OnThisDay != null) ||
+                 (value != null && Query.OnThisDay == null) ||
+                 (value != null && Query.OnThisDay != null && Query.OnThisDay != value ) )
+            {
+                Query.OnThisDay = value;
+                QueryChanged();
+            }
+        }
+    }
+
     public int? MinRating
     {
         get => Query.MinRating;
@@ -405,6 +420,11 @@ public abstract class BaseSearchService
                 hints.Add( new SearchHint { Description = $"During: {monthText}", Clear = () => Months = null } );
             }
 
+            if( OnThisDay != null )
+            {
+                hints.Add( new SearchHint { Description = $"On This Day: {OnThisDay.Value:dd-MMM}", Clear = () => OnThisDay = null } );
+            }
+
             if ( CameraId > 0 )
             {
                 var cam = _service.Cameras.FirstOrDefault(x => x.CameraId == CameraId);
@@ -469,6 +489,12 @@ public abstract class BaseSearchService
 
     public virtual void Refresh()
     {
+        QueryChanged();
+    }
+
+    public void SetOnThisDay(DateTime? date)
+    {
+        Query.OnThisDay = date;
         QueryChanged();
     }
 

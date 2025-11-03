@@ -21,6 +21,7 @@ public class SearchQuery
     public int? CameraId { get; set; } = null;
     public int? LensId { get; set; } = null;
     public IEnumerable<int>? Months { get; set; } = null;
+    public DateTime? OnThisDay { get; set; } = null;
     public int? MinRating { get; set; } = null;
     public int? SimilarToId { get; set; } = null;
     public Folder? Folder { get; set; } = null;
@@ -85,6 +86,7 @@ public class SearchQueryDTO
     public int? CameraId { get; set; } = null;
     public int? LensId { get; set; } = null;
     public IEnumerable<int>? Months { get; set; } = null;
+    public DateTime? OnThisDay { get; set; } = null;
     public int? MinRating { get; set; } = null;
     public int? SimilarToId { get; set; }
     public int? FolderId { get; set; }
