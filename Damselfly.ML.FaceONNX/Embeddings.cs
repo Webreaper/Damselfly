@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UMapx.Distance;
+using UMapx.Core;
 
 namespace FaceEmbeddingsClassification;
 
@@ -89,14 +89,13 @@ public class Embeddings
     {
         var min = float.MaxValue;
         string? closest = null;
-        var euclidean = new Euclidean();
 
         // do job
         foreach( var face in VectorLookup )
             // There may be many sets of data for each unique person
         foreach( var faceData in face.Value )
         {
-            var d = euclidean.Compute(faceData,vector);
+            var d = faceData.Euclidean(vector);
 
             if ( d < min )
             {
@@ -118,14 +117,13 @@ public class Embeddings
     {
         var max = float.MinValue;
         string? closest = null;
-        var cosine = new Cosine(true);
 
         // do job
         foreach( var face in VectorLookup )
             // There may be many sets of data for each unique person
         foreach( var faceData in face.Value )
         {
-            var d = cosine.Compute(faceData, vector);
+            var d = faceData.Cosine(vector);
 
             if ( d > max )
             {
