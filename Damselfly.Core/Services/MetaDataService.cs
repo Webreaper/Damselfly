@@ -107,7 +107,7 @@ public class MetaDataService (
         await using var db = scope.ServiceProvider.GetService<ImageContext>();
 
         var updated =
-            await db.BatchUpdate(db.ImageMetaData, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
+            await db.BatchUpdate(db.ImageMetaData, i => i.LastUpdated, NoMetadataDate);
 
         statusService.UpdateStatus($"All {updated} images flagged for Metadata scanning.");
 
@@ -121,7 +121,7 @@ public class MetaDataService (
 
         var queryable = db.ImageMetaData.Where(i => images.Contains(i.ImageId));
 
-        var rows = await db.BatchUpdate(queryable, i => i.SetProperty(x => x.LastUpdated, x => NoMetadataDate));
+        var rows = await db.BatchUpdate(queryable, i => i.LastUpdated, NoMetadataDate);
 
         var msgText = rows == 1 ? "Image" : $"{rows} images";
         statusService.UpdateStatus($"{msgText} flagged for Metadata scanning.");
@@ -445,9 +445,7 @@ public class MetaDataService (
 
                 if ( gpsDirectory != null )
                 {
-                    var location = gpsDirectory.GetGeoLocation();
-
-                    if ( location != null )
+                    if(gpsDirectory.TryGetGeoLocation(out var location) )
                     {
                         imgMetaData.Longitude = location.Longitude;
                         imgMetaData.Latitude = location.Latitude;

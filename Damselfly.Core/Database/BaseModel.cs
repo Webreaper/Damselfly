@@ -4,17 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using EFCore.BulkExtensions;
-
+    
 namespace Damselfly.Core.DBAbstractions;
 
 /// <summary>
@@ -198,20 +196,22 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     }
 
     /// <summary>
-    ///     Wrapper to extract the underlying BatchDelete implementation depending on the
+    ///     Wrapper to extract the underlying BatchUpdate implementation depending on the
     ///     DB model being used.
     /// </summary>
     /// <param name="query"></param>
     /// <returns></returns>
-    public async Task<int> BatchUpdate<T>(IQueryable<T> query,
-        Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> updateExpression) where T : class
+    public async Task<int> BatchUpdate<T, V>(IQueryable<T> query, Expression<Func<T, V>> propertyExpression, V newValue) where T : class
     {
         if ( ReadOnly )
             return 1;
 
         try
         {
-            return await query.ExecuteUpdateAsync(updateExpression);
+            return await query.ExecuteUpdateAsync(s =>
+            {
+                s.SetProperty(propertyExpression, newValue);
+            });
         }
         catch ( Exception ex )
         {

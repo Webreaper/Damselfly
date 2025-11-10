@@ -26,6 +26,7 @@
         </PackageReference>
         <PackageReference Include="MetadataExtractor"/>
         <PackageReference Include="CommandLineParser"/>
+        <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
         <PackageReference Include="Octokit"/>
         <PackageReference Include="WordPressPCL"/>
         <PackageReference Include="SixLabors.ImageSharp"/>
