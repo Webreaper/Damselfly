@@ -7,5 +7,6 @@
         <LangVersion>latest</LangVersion>
         <CompressionEnabled>false</CompressionEnabled>
         <InvariantGlobalization>true</InvariantGlobalization>
+  	    <IsTrimmable>false</IsTrimmable>
     </PropertyGroup>
 </Project>
