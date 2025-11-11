@@ -44,31 +44,19 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Damselfly.Web.Client\Damselfly.Web.Client.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Core.Constants\Damselfly.Core.Constants.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Core.DbModels\Damselfly.Core.DbModels.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Core.Interfaces\Damselfly.Core.Interfaces.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Core\Damselfly.Core.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Core.ImageProcessing\Damselfly.Core.ImageProcessing.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
         <ProjectReference Include="..\Damselfly.Migrations.Sqlite\Damselfly.Migrations.Sqlite.csproj">
-            <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
         </ProjectReference>
-    </ItemGroup>
-    <ItemGroup>
-        <Content Remove="wwwroot\"/>
-        <Content Remove="wwwroot\themes\"/>
-        <Content Remove="wwwroot\fonts\"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="wwwroot\"/>
