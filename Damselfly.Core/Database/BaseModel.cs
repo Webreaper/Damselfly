@@ -199,7 +199,6 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     ///     Wrapper to extract the underlying BatchUpdate implementation depending on the
     ///     DB model being used.
     /// </summary>
-    /// <param name="query"></param>
     /// <returns></returns>
     public async Task<int> BatchUpdate<T, V>(IQueryable<T> query, Expression<Func<T, V>> propertyExpression, V newValue) where T : class
     {

@@ -34,7 +34,7 @@ echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
 # dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 #  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-dotnet publish $project -r $runtime -f net${dotnetversion} -c Release  --self-contained true /p:Version=$version 
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release  /p:Version=$version 
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."
