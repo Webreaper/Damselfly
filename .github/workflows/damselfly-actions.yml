@@ -17,9 +17,9 @@ jobs:
           - target: windows
             os: windows-latest
             upload: windows
-#          - target: linux
-#            os: ubuntu-latest
-#            upload: linux
+          - target: linux
+            os: ubuntu-latest
+            upload: linux
           - target: universal
             os: macos-latest
             upload: mac
@@ -58,8 +58,8 @@ jobs:
         include: 
           - target: windows
             os: ubuntu-latest
-          - target: linux
-            os: ubuntu-latest
+         # - target: linux
+         #   os: ubuntu-latest
           - target: mac
             os: macos-latest
 
