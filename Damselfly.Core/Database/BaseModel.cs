@@ -207,10 +207,11 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
 
         try
         {
-            return await query.ExecuteUpdateAsync(s =>
-            {
-                s.SetProperty(propertyExpression, newValue);
-            });
+            //return await query.ExecuteUpdateAsync(s =>
+           // {
+            //    s.SetProperty(propertyExpression, newValue);
+            //});
+            return 0;
         }
         catch ( Exception ex )
         {
