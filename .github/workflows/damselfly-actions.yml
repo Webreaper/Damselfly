@@ -54,12 +54,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [linux, mac, windows]
+        target: [mac, windows]
         include: 
           - target: windows
             os: ubuntu-latest
-         # - target: linux
-         #   os: ubuntu-latest
+          - target: linux
+            os: ubuntu-latest
           - target: mac
             os: macos-latest
 
