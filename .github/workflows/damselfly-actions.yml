@@ -54,7 +54,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy: 
       matrix: 
-        target: [mac, windows]
+        target: [linux, mac, windows]
         include: 
           - target: windows
             os: ubuntu-latest
