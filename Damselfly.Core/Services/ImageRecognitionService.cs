@@ -235,7 +235,7 @@ public class ImageRecognitionService(
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
 
-        var updated = await db.BatchUpdate(db.ImageMetaData, x => x.AILastUpdated, null);
+        var updated = await db.BatchUpdate(db.ImageMetaData, x => x.AILastUpdated,null);
 
         _statusService.UpdateStatus($"All {updated} images flagged for AI reprocessing.");
 
