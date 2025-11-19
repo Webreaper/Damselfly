@@ -1,5 +1,4 @@
 using Damselfly.Core.Database;
-using Damselfly.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
