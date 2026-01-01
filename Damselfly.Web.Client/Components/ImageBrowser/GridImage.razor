@@ -27,7 +27,7 @@ else
         {
             <img @key="CurrentImage.ImageId" style="@ImageStyle" class="@ImageClass @FadeClass"
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
-                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true" loading="lazy">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
         }
     </div>

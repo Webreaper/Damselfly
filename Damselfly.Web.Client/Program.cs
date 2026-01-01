@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using MudExtensions.Services;
 using Radzen;
 using Serilog;
 using Serilog.Core;
@@ -50,6 +51,7 @@ public class Program
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
+        builder.Services.AddMudExtensions();
         builder.Services.AddSyncfusionBlazor();
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddBlazorPanzoomServices();

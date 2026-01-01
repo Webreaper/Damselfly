@@ -14,6 +14,7 @@
         <ExternalConsole>true</ExternalConsole>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="CodeBeam.MudBlazor.Extensions" />
         <PackageReference Include="Microsoft.AspNetCore.Identity"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all"/>
