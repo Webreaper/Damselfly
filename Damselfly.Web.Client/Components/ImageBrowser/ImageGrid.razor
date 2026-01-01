@@ -268,7 +268,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        configService.SetForUser(ConfigSettings.LoadedImages, gridImages.Count.ToString());
+        _ = configService.SetForUser(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
     [JSInvokable]
