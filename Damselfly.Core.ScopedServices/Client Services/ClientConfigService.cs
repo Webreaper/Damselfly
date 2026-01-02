@@ -59,6 +59,10 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
             NewValue = setting.Value,
             UserId = setting.UserId
         };
+
+        // Ensure we update the client cache
+        await base.SetSetting(setting);
+        
         // Save remotely
         await httpClient.CustomPutAsJsonAsync("/api/config", req);
     }
