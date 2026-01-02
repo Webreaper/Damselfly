@@ -10,6 +10,7 @@
 
     private AsyncEventConflator conflator = new();
 
+    // TODO: Chance this from an action event to an async callback func
     public event Action<int> OnScrollPositionChanged;
 
     private async Task SaveScrollState(int scrollTop)

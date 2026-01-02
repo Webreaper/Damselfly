@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Damselfly.Core.Database;
@@ -75,6 +76,8 @@ public class ConfigService : BaseConfigService, IConfigService
 
     protected override async Task PersistSetting(ConfigSetRequest setRequest)
     {
+        var watch = new Damselfly.Shared.Utils.Stopwatch("PersistSetting");
+        
         using var scope = _scopeFactory.CreateScope();
         using var db = ImageContext.GetImageContext( scope );
 
@@ -106,6 +109,8 @@ public class ConfigService : BaseConfigService, IConfigService
             }
         }
 
-        db.SaveChanges("SaveConfig");
+        await db.SaveChangesAsync("SaveConfig");
+        
+        watch.Stop();
     }
 }

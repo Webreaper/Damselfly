@@ -86,7 +86,6 @@
 
 <ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop"/>
 
-
 @code {
     private LocalFileExporter FileExporter;
     const int imagesPerPage = DamselflyContants.PageSize;
@@ -95,19 +94,12 @@
     string toastClass = string.Empty;
     private ScrollMonitor ScrollMonitor;
     CancellationTokenSource cancelTokenSource = new();
-    CancellationToken? token = null;
+    private GridImageSize? oldGridSize;
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
     private bool NoResultsFound { get; set; } = false;
-
-    protected override void OnInitialized()
-    {
-        token = cancelTokenSource.Token;
-        
-        base.OnInitialized();
-    }
-
+    
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
         var imageIds = grouping.Images.Select(x => x.ImageId).ToList();
@@ -186,10 +178,14 @@
         // Logging.Log($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
-
+    
     private async Task ChangeGridImageSize(GridImageSize newSize)
     {
-        await configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
+        if( newSize != oldGridSize )
+        {
+            oldGridSize = newSize;
+            await configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
