@@ -53,8 +53,14 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
 
     public override async Task SetSetting(ConfigSetting setting)
     {
+        var req = new ConfigSetRequest
+        {
+            Name = setting.Name,
+            NewValue = setting.Value,
+            UserId = setting.UserId
+        };
         // Save remotely
-        await httpClient.CustomPutAsJsonAsync("/api/config", setting);
+        await httpClient.CustomPutAsJsonAsync("/api/config", req);
     }
     
     private async void AuthStateChanged(Task<AuthenticationState> authStateTask)

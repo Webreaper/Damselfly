@@ -29,7 +29,7 @@ public class ConfigService : BaseConfigService, IConfigService
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
+        await using var db = ImageContext.GetImageContext( scope );
 
         // Get all the settings that are either global, or match our user.
         var settings = await db.ConfigSettings
@@ -43,7 +43,7 @@ public class ConfigService : BaseConfigService, IConfigService
     public async Task<List<ConfigSetting>> GetAllSettingsForUser(int? userId)
     {
         using var scope = _scopeFactory.CreateScope();
-        using var db = ImageContext.GetImageContext( scope );
+        await using var db = ImageContext.GetImageContext( scope );
 
         if( userId != null && userId > 0 )
         {
