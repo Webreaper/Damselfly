@@ -69,8 +69,6 @@ public class ConfigService : BaseConfigService, IConfigService
     {
         var changes = false;
         
-        var watch = new Stopwatch("PersistSettings");
-        
         using var scope = _scopeFactory.CreateScope();
         await using var db = ImageContext.GetImageContext( scope );
 
@@ -110,9 +108,11 @@ public class ConfigService : BaseConfigService, IConfigService
 
         if( changes )
         {
-            watch.Stop();
-            _logger.LogInformation("Saving config settings took {T}", watch.ElapsedTime);
+            var watch = new Stopwatch("PersistSettings");
             await db.SaveChangesAsync("SaveConfig");
+            watch.Stop();
+
+            _logger.LogInformation("Saving config settings took {T}", watch.ElapsedTime);
         }
         else
             _logger.LogInformation("No config changes to save");
