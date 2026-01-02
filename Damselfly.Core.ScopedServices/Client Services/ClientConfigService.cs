@@ -94,15 +94,15 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         List<ConfigSetting>? allSettings;
         try
         {
+            var url = "/api/config";
             if ( _userId.HasValue )
-                allSettings =
-                    await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>($"/api/config/user/{_userId}");
-            else
-                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>("/api/config");
+                url = $"/api/config/user/{_userId}";
+            
+            allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>(url);
         }
         catch ( Exception ex )
         {
-            _logger.LogError($"Exception loading all settings: {ex.Message}");
+            _logger.LogError(ex, $"Exception loading all settings");
             allSettings = new List<ConfigSetting>();
         }
 

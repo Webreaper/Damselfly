@@ -39,6 +39,25 @@ public abstract class BaseConfigService
         OnSettingsLoaded?.Invoke(allSettings);
     }
 
+    // Used by the controller
+    public async Task<List<ConfigSetting>> GetAllSettingsForUser(int? userId)
+    {
+        // Get all the settings that are either global, or match our user.
+        var settings = _cache.Values
+                                                      .Where(x => x.UserId == userId)
+                                                      .ToDictionary(x => x.Name);
+        
+        var globalSettings = _cache.Values.Where(x => x.UserId == 0 || x.UserId == null).ToList();
+        
+        foreach( var setting in globalSettings)
+            settings.TryAdd(setting.Name, setting);
+
+        // Combine them together.
+        return settings.Values
+            .OrderBy(x => x.Name)
+            .ToList();
+    }
+
     private void ClearCache()
     {
         _cache.Clear();
