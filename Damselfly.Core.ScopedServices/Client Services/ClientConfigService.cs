@@ -82,12 +82,6 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         // Another user changed the system settings - so refresh
         _ = InitialiseCache();
     }
-
-    private void UserIdChanged(int? newUserId)
-    {
-        // User has changed. Clear the cache
-        _ = InitialiseCache();
-    }
     
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
