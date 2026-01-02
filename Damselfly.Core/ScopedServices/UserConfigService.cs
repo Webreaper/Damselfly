@@ -46,39 +46,4 @@ public class UserConfigService : BaseConfigService, IDisposable
 
         return settings;
     }
-
-    protected override async Task PersistSetting(ConfigSetRequest setRequest)
-    {
-        using var scope = _scopeFactory.CreateScope();
-        await using var db = ImageContext.GetImageContext( scope );
-
-        var existing = await db.ConfigSettings
-            .FirstOrDefaultAsync(x => x.Name == setRequest.Name && x.UserId == setRequest.UserId);
-
-        if ( string.IsNullOrEmpty(setRequest.NewValue) )
-        {
-            // Setting set to null - delete from the DB and cache
-            if ( existing != null )
-                db.ConfigSettings.Remove(existing);
-        }
-        else
-        {
-            // Set the value - either update the existing or create a new one
-            if ( existing != null )
-            {
-                // Setting set to non-null - save in the DB and cache
-                existing.Value = setRequest.NewValue;
-                db.ConfigSettings.Update(existing);
-            }
-            else
-            {
-                // Existing setting set to non-null - create in the DB and cache.
-                var newEntry = new ConfigSetting
-                    { Name = setRequest.Name, Value = setRequest.NewValue, UserId = setRequest.UserId };
-                db.ConfigSettings.Add(newEntry);
-            }
-        }
-
-        db.SaveChanges("SaveConfig");
-    }
 }

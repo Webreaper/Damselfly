@@ -15,5 +15,6 @@ public enum TaskType
     FlushDBWriteCache,
     DumpPerformance,
     CleanupThumbs,
-    FreeTextIndex
+    FreeTextIndex,
+    StoreSettings
 }

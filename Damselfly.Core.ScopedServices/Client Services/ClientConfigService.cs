@@ -51,6 +51,12 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         await SetSetting(newSetting);
     }
 
+    public override async Task SetSetting(ConfigSetting setting)
+    {
+        // Save remotely
+        await httpClient.CustomPutAsJsonAsync("/api/config", setting);
+    }
+    
     private async void AuthStateChanged(Task<AuthenticationState> authStateTask)
     {
         var authState = await authStateTask;
@@ -76,13 +82,7 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         // User has changed. Clear the cache
         _ = InitialiseCache();
     }
-
-    protected override async Task PersistSetting(ConfigSetRequest saveRequest)
-    {
-        // Save remotely
-        await httpClient.CustomPutAsJsonAsync("/api/config", saveRequest);
-    }
-
+    
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         List<ConfigSetting>? allSettings;

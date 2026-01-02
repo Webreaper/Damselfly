@@ -21,7 +21,6 @@ public abstract class BaseConfigService
     public event Action<ICollection<ConfigSetting>> OnSettingsLoaded;
 
     protected abstract Task<List<ConfigSetting>> LoadAllSettings();
-    protected abstract Task PersistSetting(ConfigSetRequest setRequest);
 
     public virtual async Task InitialiseCache()
     {
@@ -33,7 +32,7 @@ public abstract class BaseConfigService
 
         if ( allSettings.Any() )
         {
-            allSettings.ForEach(x => _cache[x.Name] = x);
+            allSettings.ForEach(x => _cache[x.CacheKey] = x);
             _logger.LogInformation("Loaded {C} settings into config cache", allSettings.Count);
         }
 
@@ -45,33 +44,29 @@ public abstract class BaseConfigService
         _cache.Clear();
     }
 
-    protected async Task<bool> SetSetting(ConfigSetting setting)
+    public virtual async Task SetSetting(ConfigSetting setting)
     {
         if( setting == null )
             throw new ArgumentException( $"Invalid setting passed to SetSetting" );
 
-        if ( _cache.TryGetValue(setting.Name, out var existingValue) )
+        if ( _cache.TryGetValue(setting.CacheKey, out var existingValue) )
         {
             // Existing cache value is the same, so do nothing
             if ( !string.IsNullOrEmpty(existingValue.Value) && existingValue.Value.Equals(setting.Value) )
-                return false;
+                return;
         }
 
         // Update the cache
         if ( setting.Value == null )
-            _cache.Remove(setting.Name);
+            _cache.Remove(setting.CacheKey);
         else
-            _cache[setting.Name] = setting;
-
-        var saveReq = new ConfigSetRequest { Name = setting.Name, NewValue = setting.Value, UserId = setting.UserId };
-        await PersistSetting(saveReq);
-
-        return true;
+            _cache[setting.CacheKey] = setting;
     }
 
     private ConfigSetting? GetSetting(string name)
     {
-        if ( _cache.TryGetValue(name, out var value) )
+        var setting = new ConfigSetting { Name = name };
+        if ( _cache.TryGetValue(setting.CacheKey, out var value) )
             return value;
 
         return null;
@@ -129,4 +124,15 @@ public abstract class BaseConfigService
 
         return result;
     }
+
+    protected virtual Task PersistSettings(IDictionary<string, ConfigSetting> allSettings)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task SaveSettingsToDb()
+    {
+        await PersistSettings(_cache);
+    }
+
 }

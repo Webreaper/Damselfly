@@ -1,5 +1,4 @@
 ﻿using Damselfly.Core.DbModels.Models;
-using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
 using Damselfly.Core.Services;
@@ -25,9 +24,9 @@ public class ConfigController : ControllerBase
     }
 
     [HttpPut("/api/config")]
-    public async Task Set(ConfigSetRequest req)
+    public async Task Set(ConfigSetting setting)
     {
-        await _configService.SetSetting(req);
+        await _configService.SetSetting(setting);
     }
 
     [HttpGet("/api/config/user/{userId}")]
