@@ -37,7 +37,7 @@ public class ClientImageCacheService : IImageCacheService
     public async Task<Image> GetCachedImage(int imgId)
     {
         var list = new[] { imgId };
-        var result = await GetCachedImages(list);
+        var result = await GetCachedImages(list, CancellationToken.None);
         return result.FirstOrDefault();
     }
 
@@ -60,7 +60,7 @@ public class ClientImageCacheService : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds)
+    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds, CancellationToken token)
     {
         var result = new List<Image>();
 
@@ -69,13 +69,16 @@ public class ClientImageCacheService : IImageCacheService
             var idsNotInCache = imgIds.Where(x => !_memoryCache.TryGetValue(x, out _)).ToList();
 
             // First pre-cache them in batch
-            var cachedImages = await PreCacheImageList(idsNotInCache);
+            var cachedImages = await PreCacheImageList(idsNotInCache, token);
 
             var lookup = cachedImages.ToDictionary(x => x.ImageId);
 
             // Keep the order
             foreach( var id in imgIds )
             {
+                if( token.IsCancellationRequested )
+                    break;
+                
                 if( !lookup.TryGetValue(id, out var cachedImage) )
                 {
                     _logger.LogWarning("Pre-caching failed for Image ID {ID}", id);
@@ -118,7 +121,7 @@ public class ClientImageCacheService : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    private async Task<IEnumerable<Image>> PreCacheImageList(ICollection<int> imgIds)
+    private async Task<IEnumerable<Image>> PreCacheImageList(ICollection<int> imgIds, CancellationToken token)
     {
         const int chunkSize = DamselflyContants.PageSize;
         List<Image>? images = new();
@@ -126,6 +129,9 @@ public class ClientImageCacheService : IImageCacheService
 
         foreach( var id in imgIds )
         {
+            if( token.IsCancellationRequested )
+                return [];
+            
             if( _memoryCache.TryGetValue<Image>(id, out var cachedImage) )
                 images.Add(cachedImage);
             else
@@ -137,7 +143,7 @@ public class ClientImageCacheService : IImageCacheService
             var watch = new Stopwatch("ClientGetImages");
             try
             {
-                images = await GetImages(uncachedIds);
+                images = await GetImages(uncachedIds, token);
                 foreach(var image in images)
                     CacheImage(image);
             }
@@ -153,7 +159,7 @@ public class ClientImageCacheService : IImageCacheService
         else
         {
             var tasks = uncachedIds.Chunk(chunkSize)
-                .Select(PreCacheImageList)
+                .Select(x => PreCacheImageList(x, token))
                 .ToList();
             var watch = new Stopwatch("ClientCacheImage");
             var lists = await Task.WhenAll(tasks);
@@ -173,13 +179,13 @@ public class ClientImageCacheService : IImageCacheService
         return await httpClient.CustomGetFromJsonAsync<Image>($"/api/image/{imgId}");
     }
 
-    private async Task<List<Image>> GetImages(ICollection<int> imgIds)
+    private async Task<List<Image>> GetImages(ICollection<int> imgIds, CancellationToken token)
     {
         if ( imgIds.Any() )
         {
             var req = new ImageRequest { ImageIds = imgIds.ToList() };
             var response =
-                await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req);
+                await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req, token);
 
             if( response != null )
                 return response.Images;

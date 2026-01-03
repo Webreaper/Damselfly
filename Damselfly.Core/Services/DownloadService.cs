@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -59,7 +60,7 @@ public class DownloadService : IDownloadService
     /// <returns></returns>
     public async Task<string> CreateDownloadZipAsync(ICollection<int> imagesIdsToZip, ExportConfig config)
     {
-        var images = await _cacheService.GetCachedImages(imagesIdsToZip);
+        var images = await _cacheService.GetCachedImages(imagesIdsToZip, CancellationToken.None);
 
         var imagePaths = images.Select(x => new FileInfo(x.FullPath)).ToArray();
 

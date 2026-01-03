@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -270,7 +271,7 @@ public class SearchQueryService
             response.MoreDataAvailable = false;
 
         // Now load the tags....
-        var enrichedImages = await _imageCache.GetCachedImages(results);
+        var enrichedImages = await _imageCache.GetCachedImages(results, CancellationToken.None);
 
         try
         {

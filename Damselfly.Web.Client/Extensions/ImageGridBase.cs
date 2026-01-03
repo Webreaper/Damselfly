@@ -45,7 +45,7 @@ public class ImageGridBase : ComponentBase
                 $"Selecting images {first} ({prevSelection.image.FileName}) to {last} ({selectionInfo.image.FileName})");
 
             var selectedImages = gridImages.Skip(first).Take(last - (first - 1)).Select(x => x.ImageId).ToList();
-            var images = await cacheService.GetCachedImages(selectedImages);
+            var images = await cacheService.GetCachedImages(selectedImages, CancellationToken.None);
             selectionService.SelectImages(images);
         }
         else

@@ -275,7 +275,7 @@
 
     private async Task SetCurrentImages(List<int> imageIds)
     {
-        var enriched = await imageCache.GetCachedImages(imageIds);
+        var enriched = await imageCache.GetCachedImages(imageIds, CancellationToken.None);
         CurrentImages = enriched.ToArray();
         await OnParametersSetAsync();
     }

@@ -36,7 +36,7 @@ public class ImageAPIController : ControllerBase
     }
 
     [HttpPost("/api/images/batch")]
-    public async Task<ImageResponse> GetImages(ImageRequest req)
+    public async Task<ImageResponse> GetImages(ImageRequest req, CancellationToken token)
     {
         try
         {
@@ -55,7 +55,7 @@ public class ImageAPIController : ControllerBase
             // because the client code in the ClientImageCache merely uses thes results to populate the
             // client-side cache. It then assembles the list in-order from the client-side cache so that the
             // UI has the images in the right order....
-            await imageCache.GetCachedImages(req.ImageIds);
+            await imageCache.GetCachedImages(req.ImageIds, token);
 
             var imageTasks = req.ImageIds.Select(async x => await imageCache.GetCachedImage(x));
 

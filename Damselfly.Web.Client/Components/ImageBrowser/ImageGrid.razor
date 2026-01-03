@@ -291,7 +291,7 @@
             StateHasChanged();
 
             var toAdd = results.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
-            var images = await imageCache.GetCachedImages(toAdd);
+            var images = await imageCache.GetCachedImages(toAdd, token);
 
             // Check if we had a cancellation request while we pulled back the images. If so, abort
             if( token.IsCancellationRequested )
@@ -300,7 +300,6 @@
             if(images.Any())
             {
                 gridImages.AddRange(images);
-                StateHasChanged();
                 await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
             }
         }

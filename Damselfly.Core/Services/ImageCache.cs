@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -62,7 +63,7 @@ public class ImageCache : IImageCacheService
         Image cachedImage;
 
         var ids = new List<int> { imgId };
-        var cachedImages = await EnrichAndCache(ids);
+        var cachedImages = await EnrichAndCache(ids, CancellationToken.None);
 
         cachedImage = cachedImages.FirstOrDefault();
 
@@ -78,7 +79,7 @@ public class ImageCache : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds)
+    public async Task<List<Image>> GetCachedImages(ICollection<int> imgIds, CancellationToken token)
     {
         var result = new List<Image>();
 
@@ -90,12 +91,15 @@ public class ImageCache : IImageCacheService
 
             // Now load and cache them
             if ( needLoad.Any() )
-                await EnrichAndCache(needLoad);
+                await EnrichAndCache(needLoad, token);
 
             // Now, re-enumerate the list, but in-order. Note that everything
             // should be in the cache this time
             foreach ( var imgId in imgIds )
             {
+                if( token.IsCancellationRequested )
+                    break;
+                
                 Image image;
                 if ( !_memoryCache.TryGetValue(imgId, out image) )
                 {
@@ -136,7 +140,7 @@ public class ImageCache : IImageCacheService
                 .Select(x => x.ImageId)
                 .ToListAsync();
 
-            await EnrichAndCache(warmupIds);
+            await EnrichAndCache(warmupIds, CancellationToken.None);
 
             Logging.Log($"Image Cache primed with {warmupIds.Count} images.");
         }
@@ -153,7 +157,7 @@ public class ImageCache : IImageCacheService
         if ( !_memoryCache.TryGetValue(img.ImageId, out cachedImage) )
         {
             Logging.LogVerbose($"Cache miss for image {img.ImageId}");
-            cachedImage = await EnrichAndCache(img);
+            cachedImage = await EnrichAndCache(img, CancellationToken.None);
         }
 
         return cachedImage;
@@ -180,7 +184,7 @@ public class ImageCache : IImageCacheService
     */
 
 
-    private async Task<List<Image>> EnrichAndCache(List<int> imageIds)
+    private async Task<List<Image>> EnrichAndCache(List<int> imageIds, CancellationToken token)
     {
         if ( !imageIds.Any() )
             return new List<Image>();
@@ -213,7 +217,7 @@ public class ImageCache : IImageCacheService
             .Include(x => x.ImageObjects.Where(y => imageIds.Contains(y.ImageId)))
             .ThenInclude(x => x.Person)
             .AsSplitQuery()
-            .ToListAsync();
+            .ToListAsync(token);
 
         foreach ( var enrichedImage in images ) _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
 
@@ -225,9 +229,9 @@ public class ImageCache : IImageCacheService
         return images;
     }
 
-    private async Task<Image> EnrichAndCache(Image image)
+    private async Task<Image> EnrichAndCache(Image image,  CancellationToken token)
     {
-        var enrichedImage = await GetImage(image);
+        var enrichedImage = await GetImage(image, token);
 
         if ( enrichedImage != null )
             _memoryCache.Set(enrichedImage.ImageId, enrichedImage, _cacheOptions);
@@ -240,7 +244,7 @@ public class ImageCache : IImageCacheService
     /// </summary>
     /// <param name="imageId"></param>
     /// <returns></returns>
-    private async Task<Image> GetImage(Image image)
+    private async Task<Image> GetImage(Image image, CancellationToken token)
     {
         using var scope = _scopeFactory.CreateScope();
         using var db = scope.ServiceProvider.GetService<ImageContext>();
@@ -260,26 +264,27 @@ public class ImageCache : IImageCacheService
 
                 if ( !entry.Reference(x => x.Folder).IsLoaded )
                     await entry.Reference(x => x.Folder)
-                        .LoadAsync();
+                        .LoadAsync(token);
 
                 if ( !entry.Reference(x => x.MetaData).IsLoaded )
                     await entry.Reference(x => x.MetaData)
                         .Query()
                         .Include(x => x.Camera)
                         .Include(x => x.Lens)
-                        .LoadAsync();
+                        .LoadAsync(token);
 
                 if( !entry.Reference( x => x.Transforms ).IsLoaded )
                     await entry.Reference( x => x.Transforms )
                         .Query()
-                        .LoadAsync();
+                        .LoadAsync(token);
 
                 if( !entry.Reference(x => x.Hash).IsLoaded )
                     await entry.Reference(x => x.Hash)
-                        .LoadAsync();
+                        .LoadAsync(token);
 
                 if ( !entry.Collection(x => x.BasketEntries).IsLoaded )
-                    await entry.Collection(x => x.BasketEntries).LoadAsync();
+                    await entry.Collection(x => x.BasketEntries)
+                                .LoadAsync(token);
             }
 
             if ( image != null )
@@ -292,14 +297,14 @@ public class ImageCache : IImageCacheService
                     await db.Entry(image).Collection(e => e.ImageTags)
                         .Query()
                         .Include(e => e.Tag)
-                        .LoadAsync();
+                        .LoadAsync(token);
 
                 if ( !db.Entry(image).Collection(e => e.ImageObjects).IsLoaded )
                     await db.Entry(image).Collection(e => e.ImageObjects)
                         .Query()
                         .Include(x => x.Tag)
                         .Include(x => x.Person)
-                        .LoadAsync();
+                        .LoadAsync(token);
             }
             else
             {

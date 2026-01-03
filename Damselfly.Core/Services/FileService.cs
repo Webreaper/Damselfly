@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Models.APIModels;
@@ -44,7 +45,7 @@ public class FileService : IFileService
         // TODO - allow users to configure the delete folder name
         var destfolder = Path.Combine( _cachedDataService.ImagesRootFolder, trashFolder );
         var success = true;
-        var images = await _imageCache.GetCachedImages( req.ImageIDs );
+        var images = await _imageCache.GetCachedImages( req.ImageIDs, CancellationToken.None );
 
         if( !Directory.Exists( destfolder ) )
             try
@@ -103,7 +104,7 @@ public class FileService : IFileService
     public async Task<bool> MoveImages(ImageMoveRequest req)
     {
         var success = true;
-        var images = await _imageCache.GetCachedImages( req.ImageIDs );
+        var images = await _imageCache.GetCachedImages( req.ImageIDs,  CancellationToken.None );
 
         foreach( var image in images )
         {

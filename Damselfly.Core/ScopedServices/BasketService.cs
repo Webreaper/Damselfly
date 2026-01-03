@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.Database;
@@ -386,7 +387,7 @@ public class BasketService : IBasketService
             .ToList();
 
         // Cache and enrich the entries
-        var enrichedImages = await _imageCache.GetCachedImages(imageIds);
+        var enrichedImages = await _imageCache.GetCachedImages(imageIds, CancellationToken.None);
 
         // Replace the images with the enriched ones
         foreach ( var be in basket.BasketEntries )
