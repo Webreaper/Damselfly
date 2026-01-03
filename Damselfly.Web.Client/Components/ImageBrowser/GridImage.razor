@@ -10,7 +10,6 @@
 @inject ClientUIStateService uiService
 @inject ILogger<GridImage> logger
 @inject IDialogService DialogService
-@inject IImageCacheService imageCache
 
 @inject IJSRuntime JsRuntime
 
@@ -99,7 +98,6 @@ else
         set => _ = SetImageBasketState(value);
     }
 
-    private string theClass => $"{ImageClass} {FadeClass}";
     private LocalFileExporter FileExporter;
     private string ImgToolTip => CurrentImage == null ? "No info" : $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}\n{ImageSize}";
     private string ImageUrl => CurrentImage.ThumbUrl(ThumbnailSize);

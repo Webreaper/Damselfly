@@ -69,15 +69,20 @@ public class ClientImageCacheService : IImageCacheService
             var idsNotInCache = imgIds.Where(x => !_memoryCache.TryGetValue(x, out _)).ToList();
 
             // First pre-cache them in batch
-            await PreCacheImageList(idsNotInCache);
+            var cachedImages = await PreCacheImageList(idsNotInCache);
 
-            // This must be done in-order, otherwise we'll end up with a mess
-            foreach ( var imgId in imgIds )
+            var lookup = cachedImages.ToDictionary(x => x.ImageId);
+
+            // Keep the order
+            foreach( var id in imgIds )
             {
-                var image = await LoadAndCacheImage(imgId);
+                if( !lookup.TryGetValue(id, out var cachedImage) )
+                {
+                    _logger.LogWarning("Pre-caching failed for Image ID {ID}", id);
+                    cachedImage = await GetImage(id);
+                }
 
-                if ( image != null )
-                    result.Add(image);
+                result.Add(cachedImage);
             }
         }
         catch ( Exception ex )
@@ -113,17 +118,28 @@ public class ClientImageCacheService : IImageCacheService
     /// </summary>
     /// <param name="imgIds"></param>
     /// <returns></returns>
-    private async Task PreCacheImageList(ICollection<int> imgIds)
+    private async Task<IEnumerable<Image>> PreCacheImageList(ICollection<int> imgIds)
     {
         const int chunkSize = DamselflyContants.PageSize;
+        List<Image>? images = new();
+        List<int> uncachedIds = new();
 
-        if ( imgIds.Count() <= chunkSize )
+        foreach( var id in imgIds )
+        {
+            if( _memoryCache.TryGetValue<Image>(id, out var cachedImage) )
+                images.Add(cachedImage);
+            else
+                uncachedIds.Add(id);
+        }
+
+        if ( uncachedIds.Count <= chunkSize )
         {
             var watch = new Stopwatch("ClientGetImages");
             try
             {
-                var images = await GetImages(imgIds);
-                images.ForEach(CacheImage);
+                images = await GetImages(uncachedIds);
+                foreach(var image in images)
+                    CacheImage(image);
             }
             catch ( Exception ex )
             {
@@ -136,16 +152,20 @@ public class ClientImageCacheService : IImageCacheService
         }
         else
         {
-            var tasks = imgIds.Chunk(chunkSize)
+            var tasks = uncachedIds.Chunk(chunkSize)
                 .Select(PreCacheImageList)
                 .ToList();
             var watch = new Stopwatch("ClientCacheImage");
-            await Task.WhenAll(tasks);
+            var lists = await Task.WhenAll(tasks);
             watch.Stop();
 
             _logger.LogInformation(
                 $"Cached {tasks.Count} batches of images (total {imgIds.Count}) in {watch.ElapsedTime}ms.");
+            
+            images = lists.SelectMany(x => x).ToList();
         }
+        
+        return images;
     }
 
     private async Task<Image> GetImage(int imgId)

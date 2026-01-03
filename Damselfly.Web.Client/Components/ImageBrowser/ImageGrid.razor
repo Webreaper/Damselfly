@@ -300,6 +300,7 @@
             if(images.Any())
             {
                 gridImages.AddRange(images);
+                StateHasChanged();
                 await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
             }
         }
