@@ -82,15 +82,20 @@ public abstract class BaseConfigService
             _cache[setting.CacheKey] = setting;
     }
 
-    private ConfigSetting? GetSetting(string name)
+    protected virtual ConfigSetting? GetSetting(string name)
     {
         var setting = new ConfigSetting { Name = name };
+        return GetSetting(setting);
+    }
+
+    protected ConfigSetting? GetSetting(ConfigSetting setting)
+    {
         if ( _cache.TryGetValue(setting.CacheKey, out var value) )
             return value;
 
         return null;
     }
-
+    
     public async Task Set(string name, string value)
     {
         await SetSetting(new ConfigSetting { Name = name, Value = value });

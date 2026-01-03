@@ -106,4 +106,17 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
 
         return allSettings;
     }
+    
+    protected override ConfigSetting? GetSetting(string name)
+    {
+        var setting = new ConfigSetting { Name = name, UserId = _userId };
+        var userValue = GetSetting(setting);
+
+        if( userValue != null )
+            return userValue;
+
+        // Get the global value
+        return base.GetSetting(name);
+    }
+
 }
