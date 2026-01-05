@@ -195,7 +195,10 @@
         var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
 
         if ( initialLoadCount > searchService.SearchResults.Count )
+        {
             await searchService.LoadMore(initialLoadCount);
+            shouldRender = true; // Belt and braces
+        }
         else
             await AddImagesToGrid(true, cancelTokenSource.Token);
 
