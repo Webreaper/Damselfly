@@ -66,10 +66,8 @@ public class ClientImageCacheService : IImageCacheService
 
         try
         {
-            var idsNotInCache = imgIds.Where(x => !_memoryCache.TryGetValue(x, out _)).ToList();
-
             // First pre-cache them in batch
-            var cachedImages = await PreCacheImageList(idsNotInCache, token);
+            var cachedImages = await PreCacheImageList(imgIds, token);
 
             var lookup = cachedImages.ToDictionary(x => x.ImageId);
 
@@ -143,9 +141,9 @@ public class ClientImageCacheService : IImageCacheService
             var watch = new Stopwatch("ClientGetImages");
             try
             {
-                images = await GetImages(uncachedIds, token);
-                foreach(var image in images)
-                    CacheImage(image);
+                var newImages = await GetImages(uncachedIds, token);
+                
+                images.AddRange(newImages);
             }
             catch ( Exception ex )
             {
@@ -188,7 +186,11 @@ public class ClientImageCacheService : IImageCacheService
                 await httpClient.CustomPostAsJsonAsync<ImageRequest, ImageResponse>("/api/images/batch", req, token);
 
             if( response != null )
+            {
+                foreach(var image in response.Images)
+                    CacheImage(image);
                 return response.Images;
+            }
         }
 
         return new List<Image>();

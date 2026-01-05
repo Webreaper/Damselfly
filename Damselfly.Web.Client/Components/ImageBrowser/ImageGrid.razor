@@ -188,6 +188,18 @@
         }
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
+
+        if ( initialLoadCount > searchService.SearchResults.Count )
+            await searchService.LoadMore(initialLoadCount);
+        else
+            await AddImagesToGrid(true, cancelTokenSource.Token);
+
+        await base.OnInitializedAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if ( firstRender )
@@ -198,14 +210,7 @@
             basketService.OnBasketChanged += BasketChanged;
             ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
             FileExporter.OnChange += StateHasChanged;
-
-            var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
-
-            if ( initialLoadCount > searchService.SearchResults.Count )
-                await searchService.LoadMore(initialLoadCount);
-            else
-                await AddImagesToGrid(true, cancelTokenSource.Token);
-
+            
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
         }
     }
@@ -298,15 +303,14 @@
                 return;
 
             if(images.Any())
-            {
                 gridImages.AddRange(images);
-                await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
-            }
         }
 
         // Flag the 'more' div if we loaded at least as many as we requested.
         endOfImages = !moreDataAvailable;
         StateHasChanged();
+
+        await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
 }

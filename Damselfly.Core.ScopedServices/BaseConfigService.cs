@@ -95,10 +95,17 @@ public abstract class BaseConfigService
 
         return null;
     }
-    
+
     public async Task Set(string name, string value)
     {
-        await SetSetting(new ConfigSetting { Name = name, Value = value });
+        try
+        {
+            await SetSetting(new ConfigSetting { Name = name, Value = value });
+        }
+        catch( Exception ex )
+        {
+            _logger.LogError( ex, "Error saving setting {Name} (Value = {V})", name, value);
+        }
     }
 
     public string Get(string name, string? defaultIfNotExists = null)
