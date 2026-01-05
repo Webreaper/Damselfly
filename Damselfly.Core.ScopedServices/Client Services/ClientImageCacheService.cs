@@ -93,12 +93,7 @@ public class ClientImageCacheService : IImageCacheService
 
         return result;
     }
-
-    private void CacheImage(Image image)
-    {
-        _memoryCache.Set(image.ImageId, image, _cacheOptions);
-    }
-
+    
     /// <summary>
     ///     When we received a notification from the server,
     ///     evict an image from the cache.
@@ -174,7 +169,12 @@ public class ClientImageCacheService : IImageCacheService
 
     private async Task<Image> GetImage(int imgId)
     {
-        return await httpClient.CustomGetFromJsonAsync<Image>($"/api/image/{imgId}");
+        var image = await httpClient.CustomGetFromJsonAsync<Image>($"/api/image/{imgId}");
+
+        if( image != null)
+            _memoryCache.Set(image.ImageId, image, _cacheOptions);
+        
+        return image;
     }
 
     private async Task<List<Image>> GetImages(ICollection<int> imgIds, CancellationToken token)
@@ -188,7 +188,8 @@ public class ClientImageCacheService : IImageCacheService
             if( response != null )
             {
                 foreach(var image in response.Images)
-                    CacheImage(image);
+                    _memoryCache.Set(image.ImageId, image, _cacheOptions);
+
                 return response.Images;
             }
         }
@@ -212,9 +213,7 @@ public class ClientImageCacheService : IImageCacheService
             _logger.LogWarning($"Exception loading image {imageId}: {ex}");
         }
 
-        if ( image != null )
-            CacheImage(image);
-        else
+        if ( image == null )
             _logger.LogWarning($"No image was pre-loaded for ID: {imageId}.");
 
         return image;
