@@ -135,8 +135,8 @@ public class SearchQueryService
                 var likeTerm = $"%{query.SearchText}%";
 
                 // Now, search folder/filenames
-                var fileImages = db.Images.Where(x => EF.Functions.Like(x.Folder.Path, likeTerm)
-                                                      || EF.Functions.Like(x.FileName, likeTerm));
+                var fileImages = db.Images.Where(x => x.Folder.Path!.ToLower().Contains(query.SearchText)
+                                                      || x.FileName!.ToLower().Contains(query.SearchText));
                 images = images.Union(fileImages);
             }
 
@@ -246,19 +246,18 @@ public class SearchQueryService
             }
 
             results = await images
-                .AsSplitQuery()
                 .Select(x => x.ImageId)
                 .Skip(first)
-                .Take(count)
+                .Take(count) 
                 .ToListAsync();
-
+            
             watch.Stop();
 
             Logging.Log($"Search: {results.Count()} images found in search query within {watch.ElapsedTime}ms");
         }
         catch ( Exception ex )
         {
-            Logging.LogError("Search query failed: {0}", ex.Message);
+            Logging.LogError("Search query failed: {0}\nSQL: {Sql}", ex.Message);
         }
         finally
         {

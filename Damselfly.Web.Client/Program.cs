@@ -15,6 +15,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Serilog.Filters;
 using Syncfusion.Blazor;
 
 namespace Damselfly.Web.Client;
@@ -30,6 +31,8 @@ public class Program
         var levelSwitch = new LoggingLevelSwitch();
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(levelSwitch)
+            .Filter.ByExcluding(Matching.FromSource("Microsoft"))
+            .Filter.ByExcluding(Matching.FromSource("System"))
             .Enrich.WithProperty("InstanceId", Guid.NewGuid().ToString("n"))
             .WriteTo.BrowserHttp(
                 $"{builder.HostEnvironment.BaseAddress}ingest",

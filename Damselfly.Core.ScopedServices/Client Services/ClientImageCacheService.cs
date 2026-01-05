@@ -161,7 +161,8 @@ public class ClientImageCacheService : IImageCacheService
             _logger.LogInformation(
                 $"Cached {tasks.Count} batches of images (total {imgIds.Count}) in {watch.ElapsedTime}ms.");
             
-            images = lists.SelectMany(x => x).ToList();
+            var newImages = lists.SelectMany(x => x).ToList();
+            images.AddRange(newImages);
         }
         
         return images;

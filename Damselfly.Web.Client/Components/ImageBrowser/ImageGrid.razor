@@ -194,8 +194,8 @@
 
         if ( initialLoadCount > searchService.SearchResults.Count )
             await searchService.LoadMore(initialLoadCount);
-        else
-            await AddImagesToGrid(true, cancelTokenSource.Token);
+//        else
+  //          await AddImagesToGrid(true, cancelTokenSource.Token);
 
         await base.OnInitializedAsync();
     }
