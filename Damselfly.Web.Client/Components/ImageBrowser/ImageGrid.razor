@@ -84,7 +84,7 @@
     }
 </div>
 
-<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop"/>
+<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" Disabled="!gridImages.Any()"/>
 
 @code {
     private LocalFileExporter FileExporter;
