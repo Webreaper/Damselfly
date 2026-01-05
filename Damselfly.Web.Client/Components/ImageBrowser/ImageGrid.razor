@@ -95,7 +95,7 @@
     private ScrollMonitor ScrollMonitor;
     CancellationTokenSource cancelTokenSource = new();
     private GridImageSize? oldGridSize;
-    private bool shouldRender = true;
+    private bool shouldRender = false;
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
