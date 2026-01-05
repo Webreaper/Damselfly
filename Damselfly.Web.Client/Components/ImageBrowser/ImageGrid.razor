@@ -95,11 +95,13 @@
     private ScrollMonitor ScrollMonitor;
     CancellationTokenSource cancelTokenSource = new();
     private GridImageSize? oldGridSize;
+    private bool shouldRender = true;
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
     private bool NoResultsFound { get; set; } = false;
-    
+    protected override bool ShouldRender() => shouldRender;
+
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
         var imageIds = grouping.Images.Select(x => x.ImageId).ToList();
@@ -283,33 +285,41 @@
 
     private async Task AddImagesToGrid(bool moreDataAvailable, CancellationToken token)
     {
-        NoResultsFound = true;
-        
-        if ( searchService.SearchResults.Any() )
+        try
         {
-            NoResultsFound = false;
+            shouldRender = false;
+            NoResultsFound = true;
 
-            // Be careful, as searchResults could change underneath us....
-            var results = searchService.SearchResults
-                                               .ToList();
-            
-            StateHasChanged();
+            if ( searchService.SearchResults.Any() )
+            {
+                NoResultsFound = false;
 
-            var toAdd = results.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
-            var images = await imageCache.GetCachedImages(toAdd, token);
+                // Be careful, as searchResults could change underneath us....
+                var results = searchService.SearchResults
+                    .ToList();
 
-            // Check if we had a cancellation request while we pulled back the images. If so, abort
-            if( token.IsCancellationRequested )
-                return;
+                StateHasChanged();
 
-            if(images.Any())
-                gridImages.AddRange(images);
+                var toAdd = results.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
+                var images = await imageCache.GetCachedImages(toAdd, token);
+
+                // Check if we had a cancellation request while we pulled back the images. If so, abort
+                if( token.IsCancellationRequested )
+                    return;
+
+                if( images.Any() )
+                    gridImages.AddRange(images);
+            }
+
+            // Flag the 'more' div if we loaded at least as many as we requested.
+            endOfImages = !moreDataAvailable;
+        }
+        finally
+        {
+            shouldRender = true;
         }
 
-        // Flag the 'more' div if we loaded at least as many as we requested.
-        endOfImages = !moreDataAvailable;
         StateHasChanged();
-
         await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
