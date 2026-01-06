@@ -13,8 +13,12 @@
 
 .date-wheels {
     flex: 1 1 auto;
-    min-width: 400px;
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
     column-gap: 10px;
+}
+
+::deep .date-wheel {
+    min-width: 150px;
 }
