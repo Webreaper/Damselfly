@@ -62,10 +62,16 @@
                 </div>
             }
 
+            var count = 0;
             foreach ( var image in grouping.Images )
             {
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
+                if( allImages == grouping.Images.Count - 15 )
+                {
+                    <div id="list-end"></div>                    
+                }
+                
                 <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search GridImageSize=@CurrentGridSize
                            OnClick="@(async e => { await ToggleSelected(e, info); })"/>
             }
@@ -73,7 +79,7 @@
 
         if ( !endOfImages )
         {
-            <div class="damselfly-moreimages" id="list-end">
+            <div class="damselfly-moreimages">
                 <ProgressSpinner ProgressText="Loading..."/>
             </div>
         }

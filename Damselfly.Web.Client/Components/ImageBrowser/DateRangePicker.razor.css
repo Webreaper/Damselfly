@@ -1,0 +1,20 @@
+.date-picker {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    column-gap: 10px;
+    align-items: baseline;
+}
+
+.filter-type {
+    display: flex;
+    min-width: 150px;
+}
+
+.date-wheels {
+    min-width: 400px;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    column-gap: 10px;
+}
