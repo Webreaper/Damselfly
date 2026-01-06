@@ -12,9 +12,9 @@
 }
 
 .date-wheels {
+    flex: 1 1 auto;
     min-width: 400px;
     display: flex;
-    flex-wrap: nowrap;
     flex-direction: row;
     column-gap: 10px;
 }
