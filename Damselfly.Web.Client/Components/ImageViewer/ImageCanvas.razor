@@ -521,6 +521,15 @@
         // Tempr
         return filters;
 
+        blackAndWhite =
+            SKColorFilter.CreateColorMatrix(new float[]
+            {
+                0.21f, 0.72f, 0.07f, 0, 0,
+                0.21f, 0.72f, 0.07f, 0, 0,
+                0.21f, 0.72f, 0.07f, 0, 0,
+                0,     0,     0,     1, 0
+            });
+
         if ( transformations.Any(x => x is MonoTransform) )
         {
             filters.ColorFilter = blackAndWhite;
@@ -596,14 +605,7 @@
     // https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/blend-modes/separable
     // From https://learn.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/graphics/skiasharp/effects/color-filters
 
-    private SKColorFilter blackAndWhite =
-        SKColorFilter.CreateColorMatrix(new float[]
-        {
-            0.21f, 0.72f, 0.07f, 0, 0,
-            0.21f, 0.72f, 0.07f, 0, 0,
-            0.21f, 0.72f, 0.07f, 0, 0,
-            0,     0,     0,     1, 0
-        });
+    private SKColorFilter? blackAndWhite = null; 
 
     public static SKBitmap Rotate(SKBitmap bitmap, double angle)
     {
