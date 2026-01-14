@@ -211,11 +211,25 @@ jobs:
           name: Desktop-Dist-windows
           path: Damselfly.Web.Client/wwwroot/desktop
 
-      - name: Download Server Artifacts
+      - name: Download Windows Server Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
         with:
-          name: Server-Dist
+          name: Server-Dist-windows.zip
+          path: server
+
+      - name: Download Mac Server Artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/download-artifact@v4
+        with:
+          name: Server-Dist-mac.zip
+          path: server
+
+      - name: Download Linux Server Artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/download-artifact@v4
+        with:
+          name: Server-Dist-linux.zip
           path: server
 
       - name: Create Release
