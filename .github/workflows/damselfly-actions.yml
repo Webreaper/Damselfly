@@ -215,21 +215,21 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
         with:
-          name: Server-Dist-windows.zip
+          name: Server-Dist-windows
           path: server
 
       - name: Download Mac Server Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
         with:
-          name: Server-Dist-mac.zip
+          name: Server-Dist-mac
           path: server
 
       - name: Download Linux Server Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
         with:
-          name: Server-Dist-linux.zip
+          name: Server-Dist-linux
           path: server
 
       - name: Create Release
