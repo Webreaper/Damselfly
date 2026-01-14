@@ -190,11 +190,25 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Download Desktop Artifacts
+      - name: Download Linux Desktop Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
         with:
-          name: Desktop-Dist
+          name: Desktop-Dist-linux
+          path: Damselfly.Web.Client/wwwroot/desktop
+
+      - name: Download Mac Desktop Artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/download-artifact@v4
+        with:
+          name: Desktop-Dist-mac
+          path: Damselfly.Web.Client/wwwroot/desktop
+          
+      - name: Download Windows Desktop Artifacts
+        if: github.ref == 'refs/heads/master'
+        uses: actions/download-artifact@v4
+        with:
+          name: Desktop-Dist-windows
           path: Damselfly.Web.Client/wwwroot/desktop
 
       - name: Download Server Artifacts
