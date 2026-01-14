@@ -3,13 +3,15 @@
 @inject ILogger<ScrollMonitor> logger
 
 @code{
-
+    [Parameter] public bool Disabled { get; set; } = false;
+    
     [Parameter] [EditorRequired] public required string ScrollElementId { get; set; }
 
     [Parameter] public required string ScrollConfigName { get; set; }
 
     private AsyncEventConflator conflator = new();
 
+    // TODO: Chance this from an action event to an async callback func
     public event Action<int> OnScrollPositionChanged;
 
     private async Task SaveScrollState(int scrollTop)
@@ -20,24 +22,45 @@
         OnScrollPositionChanged?.Invoke(scrollTop);
     }
 
+    private bool lastDisabledState = false;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if( lastDisabledState != Disabled )
+        {
+            lastDisabledState = Disabled;
+            await RestoreScrollPosition();
+        }
+        
+        await base.OnParametersSetAsync();
+    }
+
     protected override async void OnAfterRender(bool firstRender)
     {
         if( firstRender )
         {
-            var scrollPos = configService.GetInt(ScrollConfigName);
+            await RestoreScrollPosition();
+        }
+    }
 
-            try
-            {
-                logger.LogTrace($"Data loaded - initialising scroll position to {scrollPos}");
-                await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
-            }
-            catch( TaskCanceledException )
-            {
-            }
-            catch( Exception ex )
-            {
-                logger.LogError($"Exception restoring scroll position: {ex.Message}");
-            }
+    private async Task RestoreScrollPosition()
+    {
+        if( Disabled )
+            return;
+        
+        var scrollPos = configService.GetInt(ScrollConfigName);
+
+        try
+        {
+            logger.LogTrace($"Data loaded - initialising scroll position to {scrollPos}");
+            await JsRuntime.InvokeVoidAsync("ScrollMonitor.Init", ScrollElementId, DotNetObjectReference.Create(this), scrollPos);
+        }
+        catch( TaskCanceledException )
+        {
+        }
+        catch( Exception ex )
+        {
+            logger.LogError($"Exception restoring scroll position: {ex.Message}");
         }
     }
 

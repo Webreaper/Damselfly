@@ -1,6 +1,6 @@
 # Read the version from disk.
 version=`cat VERSION`
-dotnetversion='9.0'
+dotnetversion='10.0'
 
 if [ -n "$1" ]; then
     PLATFORM=$1
@@ -34,7 +34,7 @@ echo "*** Building Damselfly for ${PLATFORM} with runtime ${runtime}"
 
 # dotnet publish $project -r $runtime -f net${dotnetversion} -c Release --self-contained true /p:Version=$version 
 #  /p:PublishTrimmed=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile= /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
-dotnet publish $project -r $runtime -f net${dotnetversion} -c Release  --self-contained true /p:Version=$version 
+dotnet publish $project -r $runtime -f net${dotnetversion} -c Release  --self-contained true /p:Version=$version /p:PublishTrimmed=false
 
 if [ $? -ne 0 ]; then
   echo "*** ERROR: Dotnet Build failed. Exiting."

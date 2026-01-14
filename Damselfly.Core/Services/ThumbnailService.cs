@@ -168,9 +168,7 @@ public class ThumbnailService : IProcessJobFactory, IRescanProvider
         // controller.
         DateTime? lastUpdateDate = BackgroundThumbnailProcessingEnabled ? null : DateTime.UtcNow;
 
-        await db.BatchUpdate(db.ImageMetaData, i =>
-            i.SetProperty(x => x.ThumbLastUpdated,
-                x => lastUpdateDate));
+        await db.BatchUpdate(db.ImageMetaData, i => i.ThumbLastUpdated,lastUpdateDate);
 
         if( !BackgroundThumbnailProcessingEnabled )
         {

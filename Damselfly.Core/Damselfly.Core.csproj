@@ -16,16 +16,13 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="MetadataExtractor"/>
         <PackageReference Include="CommandLineParser"/>
+        <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
         <PackageReference Include="Octokit"/>
         <PackageReference Include="WordPressPCL"/>
         <PackageReference Include="SixLabors.ImageSharp"/>

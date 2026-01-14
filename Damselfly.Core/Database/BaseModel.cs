@@ -4,17 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels.Authentication;
 using Damselfly.Core.Utils;
 using Damselfly.Shared.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using EFCore.BulkExtensions;
-
+    
 namespace Damselfly.Core.DBAbstractions;
 
 /// <summary>
@@ -198,20 +196,21 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     }
 
     /// <summary>
-    ///     Wrapper to extract the underlying BatchDelete implementation depending on the
+    ///     Wrapper to extract the underlying BatchUpdate implementation depending on the
     ///     DB model being used.
     /// </summary>
-    /// <param name="query"></param>
     /// <returns></returns>
-    public async Task<int> BatchUpdate<T>(IQueryable<T> query,
-        Expression<Func<SetPropertyCalls<T>, SetPropertyCalls<T>>> updateExpression) where T : class
+    public async Task<int> BatchUpdate<T, V>(IQueryable<T> query, Expression<Func<T, V>> propertyExpression, V newValue) where T : class
     {
         if ( ReadOnly )
             return 1;
 
         try
         {
-            return await query.ExecuteUpdateAsync(updateExpression);
+            return await query.ExecuteUpdateAsync(s =>
+            {
+                s.SetProperty(propertyExpression, newValue);
+            });
         }
         catch ( Exception ex )
         {
@@ -454,51 +453,63 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     // Can this be made async?
     public Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
     {
-        // Convert the string from a set of terms to quote and add * so they're all exact partial matches
-        // TODO: How do we handle suffix matches - i.e., contains. SQLite FTS doesn't support that. :(
-        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        var sql = "SELECT i.* from Images i";
-        var i = 1;
-        var parms = new List<string>();
-
-        /// Some hoop-jumping to escape the text terms, and then put them into parameters so we can pass to ExecuteSqlRaw
-        /// without risk of SQL injection. Unfortunately, though, it appears that MATCH doesn't support @param type params
-        /// and gives a syntax error. So it doesn't seem there's any way around doing this right now. We'll mitigate by
-        /// stripping out semi-colons etc from the search term.
-        foreach ( var term in terms.Select(x => Sanitize(x)) )
+        IQueryable<T>? results = null;
+        
+        try
         {
-            parms.Add(term);
+            // Convert the string from a set of terms to quote and add * so they're all exact partial matches
+            // TODO: How do we handle suffix matches - i.e., contains. SQLite FTS doesn't support that. :(
+            var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            var ftsTerm = $"\"{term}\"*";
-            var termParam = $"{{{i - 1}}}"; // Param like {0}
-            var tagSubQuery =
-                $"select distinct it.ImageId from FTSKeywords ftsKw join ImageTags it on it.tagId = ftsKw.TagId where ftsKw.Keyword MATCH ('{ftsTerm}')";
-            var joinSubQuery = tagSubQuery;
+            var sql = "SELECT i.* from Images i";
+            var i = 1;
+            var parms = new List<string>();
 
-            if ( includeAITags )
+            /// Some hoop-jumping to escape the text terms, and then put them into parameters so we can pass to ExecuteSqlRaw
+            /// without risk of SQL injection. Unfortunately, though, it appears that MATCH doesn't support @param type params
+            /// and gives a syntax error. So it doesn't seem there's any way around doing this right now. We'll mitigate by
+            /// stripping out semi-colons etc from the search term.
+            foreach ( var term in terms.Select(x => Sanitize(x)) )
             {
-                var objectSubQuery =
-                    $"select distinct io.ImageId from FTSKeywords ftsObj join ImageObjects io on io.tagId = ftsObj.TagId where ftsObj.Keyword MATCH ('{ftsTerm}')";
-                var nameSubQuery =
-                    $"select distinct io.ImageId from FTSNames ftsName join ImageObjects io on io.PersonID = ftsName.PersonID where ftsName.Name MATCH ('{ftsTerm}')";
-                joinSubQuery = $"{tagSubQuery} union {objectSubQuery} union {nameSubQuery}";
+                parms.Add(term);
+
+                var ftsTerm = $"\"{term}\"*";
+                var termParam = $"{{{i - 1}}}"; // Param like {0}
+                var tagSubQuery =
+                    $"select distinct it.ImageId from FTSKeywords ftsKw join ImageTags it on it.tagId = ftsKw.TagId where ftsKw.Keyword MATCH ('{ftsTerm}')";
+                var joinSubQuery = tagSubQuery;
+
+                if ( includeAITags )
+                {
+                    var objectSubQuery =
+                        $"select distinct io.ImageId from FTSKeywords ftsObj join ImageObjects io on io.tagId = ftsObj.TagId where ftsObj.Keyword MATCH ('{ftsTerm}')";
+                    var nameSubQuery =
+                        $"select distinct io.ImageId from FTSNames ftsName join ImageObjects io on io.PersonID = ftsName.PersonID where ftsName.Name MATCH ('{ftsTerm}')";
+                    joinSubQuery = $"{tagSubQuery} union {objectSubQuery} union {nameSubQuery}";
+                }
+
+                var imageSubQuery = "select distinct fts.ImageId from FTSImages fts where ";
+                imageSubQuery += $"fts.Caption MATCH ('{ftsTerm}') OR ";
+                // imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR "; // Copyright search doesn't make that much sense
+                // imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}') OR ";
+                imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') ";
+                joinSubQuery = $"{joinSubQuery} union {imageSubQuery}";
+
+                // Subquery to produce the distinct set of images that match the term
+                var subQuery = $" join ({joinSubQuery}) term{i} on term{i}.ImageID = i.ImageId";
+                sql += subQuery;
+                i++;
             }
 
-            var imageSubQuery = "select distinct fts.ImageId from FTSImages fts where ";
-            imageSubQuery += $"fts.Caption MATCH ('{ftsTerm}') OR ";
-            // imageSubQuery += $"fts.Copyright MATCH ('{ftsTerm}') OR "; // Copyright search doesn't make that much sense
-            // imageSubQuery += $"fts.Credit MATCH ('{ftsTerm}') OR ";
-            imageSubQuery += $"fts.Description MATCH ('{ftsTerm}') ";
-            joinSubQuery = $"{joinSubQuery} union {imageSubQuery}";
-
-            // Subquery to produce the distinct set of images that match the term
-            var subQuery = $" join ({joinSubQuery}) term{i} on term{i}.ImageID = i.ImageId";
-            sql += subQuery;
-            i++;
+            results = resultSet.FromSqlRaw(sql, terms);
+        }
+        catch( Exception ex )
+        {
+            Logging.LogError($"Exception processing full-text search: {ex}");
+            throw;
         }
 
-        return Task.FromResult(resultSet.FromSqlRaw(sql, terms));
+        return Task.FromResult(results);
     }
 
     private async Task RebuildFreeText()

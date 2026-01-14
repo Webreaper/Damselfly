@@ -1,5 +1,6 @@
 ﻿@page "/"
 
+@using System.Globalization
 @implements IDisposable
 
 @inject NavigationManager navigationManager
@@ -47,7 +48,13 @@
 
         if( ! string.IsNullOrEmpty( Date ) )
         {
-            if( DateTime.TryParse( Date, out var parsedDate) )
+            if( DateTime.TryParseExact( Date, "dd-MMM", CultureInfo.InvariantCulture,
+                   DateTimeStyles.None, out var onThisDay))
+            {
+                statusService.UpdateStatus($"On This day: {onThisDay:dd-MMM}");
+                searchService.OnThisDay = onThisDay;
+            }
+            else if( DateTime.TryParse( Date, out var parsedDate) )
             {
                 var start = parsedDate;
                 var end = parsedDate.AddHours(24);

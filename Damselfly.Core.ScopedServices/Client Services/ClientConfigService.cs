@@ -51,6 +51,22 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         await SetSetting(newSetting);
     }
 
+    public override async Task SetSetting(ConfigSetting setting)
+    {
+        var req = new ConfigSetRequest
+        {
+            Name = setting.Name,
+            NewValue = setting.Value,
+            UserId = setting.UserId
+        };
+
+        // Ensure we update the client cache
+        await base.SetSetting(setting);
+        
+        // Save remotely
+        await httpClient.CustomPutAsJsonAsync("/api/config", req);
+    }
+    
     private async void AuthStateChanged(Task<AuthenticationState> authStateTask)
     {
         var authState = await authStateTask;
@@ -70,36 +86,37 @@ public class ClientConfigService : BaseConfigService, IUserConfigService, ISyste
         // Another user changed the system settings - so refresh
         _ = InitialiseCache();
     }
-
-    private void UserIdChanged(int? newUserId)
-    {
-        // User has changed. Clear the cache
-        _ = InitialiseCache();
-    }
-
-    protected override async Task PersistSetting(ConfigSetRequest saveRequest)
-    {
-        // Save remotely
-        await httpClient.CustomPutAsJsonAsync("/api/config", saveRequest);
-    }
-
+    
     protected override async Task<List<ConfigSetting>> LoadAllSettings()
     {
         List<ConfigSetting>? allSettings;
         try
         {
+            var url = "/api/config";
             if ( _userId.HasValue )
-                allSettings =
-                    await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>($"/api/config/user/{_userId}");
-            else
-                allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>("/api/config");
+                url = $"/api/config/user/{_userId}";
+            
+            allSettings = await httpClient.CustomGetFromJsonAsync<List<ConfigSetting>>(url);
         }
         catch ( Exception ex )
         {
-            _logger.LogError($"Exception loading all settings: {ex.Message}");
+            _logger.LogError(ex, $"Exception loading all settings");
             allSettings = new List<ConfigSetting>();
         }
 
         return allSettings;
     }
+    
+    protected override ConfigSetting? GetSetting(string name)
+    {
+        var setting = new ConfigSetting { Name = name, UserId = _userId };
+        var userValue = GetSetting(setting);
+
+        if( userValue != null )
+            return userValue;
+
+        // Get the global value
+        return base.GetSetting(name);
+    }
+
 }

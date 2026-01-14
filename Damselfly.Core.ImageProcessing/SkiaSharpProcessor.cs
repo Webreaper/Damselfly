@@ -91,7 +91,7 @@ public class SkiaSharpProcessor : IImageProcessor
                     Logging.Log(
                         $"{pair.Value.size} thumb created for {source.Name} [load: {load.ElapsedTime}ms, scale: {scale.ElapsedTime}ms, save: {save.ElapsedTime}ms]");
             }
-
+            
             thumbs.Stop();
         }
         catch ( Exception ex )

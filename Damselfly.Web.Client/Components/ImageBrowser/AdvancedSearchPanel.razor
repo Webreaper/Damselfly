@@ -5,22 +5,7 @@
 
 <div class="damselfly-dialogrow">
     <div class="damselfly-dialogctrl">
-        <MudDateRangePicker @ref="_picker" Label="Date range" DateFormat="dd-MMM-yy" TitleDateFormat="dd-MMM-yyyy"
-                            @bind-DateRange="DateRange" Variant="UIConstants.MudVariant"
-                            Color="Color.Tertiary">
-            <PickerActions>
-                <MudButton Class="mr-auto align-self-start" OnClick="@(() => _picker.ClearAsync())">Clear</MudButton>
-                <select class="mr-auto align-self-start" @onchange="ShortCutChanged">
-                    <option>Quick Dates</option>
-                    @foreach( var choice in DateRanges )
-                    {
-                        <option value="@choice.Key">@choice.Key</option>
-                    }
-                </select>
-                <MudButton OnClick="@(() => _picker.CloseAsync(false))">Cancel</MudButton>
-                <MudButton Color="Color.Primary" OnClick="@(() => _picker.CloseAsync())">Ok</MudButton>
-            </PickerActions>
-        </MudDateRangePicker>
+        <DateRangePicker @bind-DateRange="@DateRange"/>
     </div>
     <div class="damselfly-dialogctrl">
         <MultiSelectDropdown Label="Months" SourceData="monthChoices" @bind-SelectedItems="searchService.Months"
@@ -141,7 +126,7 @@
                 DateRange = range;
         }
     }
-
+    
     private void DateRangeChanged(DateRange value)
     {
         if( value != null )

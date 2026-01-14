@@ -14,10 +14,12 @@
         <ExternalConsole>true</ExternalConsole>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="CodeBeam.MudBlazor.Extensions" />
         <PackageReference Include="Microsoft.AspNetCore.Identity"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication"/>
+        <PackageReference Include="Microsoft.DotNet.HotReload.WebAssembly.Browser" />
         <PackageReference Include="Microsoft.Extensions.Http"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web"/>
         <PackageReference Include="MudBlazor"/>
@@ -89,6 +91,9 @@
         </Content>
         <Content Update="Components\People\PeopleManager.razor.css">
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </Content>
+        <Content Update="Components\ImageBrowser\DateRangePicker.razor.css">
+          <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </Content>
     </ItemGroup>
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

@@ -62,10 +62,16 @@
                 </div>
             }
 
+            var count = 0;
             foreach ( var image in grouping.Images )
             {
                 var info = new SelectionInfo { image = image, index = allImages++ };
 
+                if( allImages == grouping.Images.Count - 15 )
+                {
+                    <div id="list-end"></div>                    
+                }
+                
                 <GridImage CurrentImage=@info.image NavContext=@NavigationContexts.Search GridImageSize=@CurrentGridSize
                            OnClick="@(async e => { await ToggleSelected(e, info); })"/>
             }
@@ -73,7 +79,7 @@
 
         if ( !endOfImages )
         {
-            <div class="damselfly-moreimages" id="list-end">
+            <div class="damselfly-moreimages">
                 <ProgressSpinner ProgressText="Loading..."/>
             </div>
         }
@@ -84,8 +90,7 @@
     }
 </div>
 
-<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop"/>
-
+<ScrollMonitor @ref="ScrollMonitor" ScrollElementId="scroll-area" ScrollConfigName="ImageScrollTop" Disabled="!gridImages.Any()"/>
 
 @code {
     private LocalFileExporter FileExporter;
@@ -95,18 +100,13 @@
     string toastClass = string.Empty;
     private ScrollMonitor ScrollMonitor;
     CancellationTokenSource cancelTokenSource = new();
-    CancellationToken? token = null;
+    private GridImageSize? oldGridSize;
+    private bool shouldRender = false;
 
     [Parameter] public GridImageSize CurrentGridSize { get; set; }
 
     private bool NoResultsFound { get; set; } = false;
-
-    protected override void OnInitialized()
-    {
-        token = cancelTokenSource.Token;
-        
-        base.OnInitialized();
-    }
+    protected override bool ShouldRender() => shouldRender;
 
     async Task AddGroupToBasket(ImageGrouping grouping)
     {
@@ -186,10 +186,29 @@
         // Logging.Log($"Sort order changed to {searchService.SortOrder}");
         StateHasChanged();
     }
-
+    
     private async Task ChangeGridImageSize(GridImageSize newSize)
     {
-        await configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
+        if( newSize != oldGridSize )
+        {
+            oldGridSize = newSize;
+            await configService.Set(ConfigSettings.GridImageSize, newSize.ToString());
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
+
+        if ( initialLoadCount > searchService.SearchResults.Count )
+        {
+            await searchService.LoadMore(initialLoadCount);
+            shouldRender = true; // Belt and braces
+        }
+        else
+            await AddImagesToGrid(true, cancelTokenSource.Token);
+
+        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -202,14 +221,7 @@
             basketService.OnBasketChanged += BasketChanged;
             ScrollMonitor.OnScrollPositionChanged += SaveScrollState;
             FileExporter.OnChange += StateHasChanged;
-
-            var initialLoadCount = Math.Max(configService.GetInt(ConfigSettings.LoadedImages, imagesPerPage), imagesPerPage);
-
-            if ( initialLoadCount > searchService.SearchResults.Count )
-                await searchService.LoadMore(initialLoadCount);
-            else
-                await AddImagesToGrid(true, cancelTokenSource.Token);
-
+            
             await JsRuntime.InvokeVoidAsync("InfiniteScroll.Init", "scroll-area", "list-end", DotNetObjectReference.Create(this));
         }
     }
@@ -268,7 +280,7 @@
 
     private void SaveScrollState(int scrollTop)
     {
-        configService.SetForUser(ConfigSettings.LoadedImages, gridImages.Count.ToString());
+        _ = configService.SetForUser(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
     [JSInvokable]
@@ -282,39 +294,42 @@
 
     private async Task AddImagesToGrid(bool moreDataAvailable, CancellationToken token)
     {
-        NoResultsFound = true;
-        
-        if ( searchService.SearchResults.Any() )
+        try
         {
-            NoResultsFound = false;
+            shouldRender = false;
+            NoResultsFound = true;
 
-            // Be careful, as searchResults could change underneath us....
-            var chunks = searchService.SearchResults
-                                               .Chunk(25)
-                                               .ToList();
-            
-            foreach( var set in chunks )
+            if ( searchService.SearchResults.Any() )
             {
+                NoResultsFound = false;
+
+                // Be careful, as searchResults could change underneath us....
+                var results = searchService.SearchResults
+                    .ToList();
+
                 StateHasChanged();
 
-                var toAdd = set.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
-                var images = await imageCache.GetCachedImages(toAdd);
+                var toAdd = results.ExceptBy(gridImages.Select(x => x.ImageId), x => x).ToList();
+                var images = await imageCache.GetCachedImages(toAdd, token);
 
                 // Check if we had a cancellation request while we pulled back the images. If so, abort
                 if( token.IsCancellationRequested )
                     return;
 
-                if(images.Any())
-                {
+                if( images.Any() )
                     gridImages.AddRange(images);
-                    await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
-                }
             }
+
+            // Flag the 'more' div if we loaded at least as many as we requested.
+            endOfImages = !moreDataAvailable;
+        }
+        finally
+        {
+            shouldRender = true;
         }
 
-        // Flag the 'more' div if we loaded at least as many as we requested.
-        endOfImages = !moreDataAvailable;
         StateHasChanged();
+        await configService.Set(ConfigSettings.LoadedImages, gridImages.Count.ToString());
     }
 
 }

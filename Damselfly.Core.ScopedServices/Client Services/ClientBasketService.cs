@@ -205,7 +205,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
         if ( imagesToLoad.Any() )
         {
             // Load the basket images into the cache...
-            var images = _imageCache.GetCachedImages(imagesToLoad);
+            var images = _imageCache.GetCachedImages(imagesToLoad, CancellationToken.None);
 
             // ...and Attach them to the basket entries
             foreach ( var be in CurrentBasket.BasketEntries ) be.Image = await _imageCache.GetCachedImage(be.ImageId);

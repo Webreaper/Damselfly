@@ -69,7 +69,7 @@ public class CachedDataService(
                     newVersionState.ReleaseUrl = newRelease.HtmlUrl;
 
                     _logger.LogInformation(
-                        $"A new version of Damselfly is available: ({newRelease.Name})");
+                        $"A new version of Damselfly is ready to install now: ({newRelease.Name})");
                 }
             }
             catch( Exception ex )

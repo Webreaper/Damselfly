@@ -7,7 +7,7 @@ namespace Damselfly.Core.ImageProcessing;
 
 public class ImageMagickProcessor : IImageProcessor
 {
-    private const string imageMagickExe = "convert";
+    private const string imageMagickExe = "magick";
 
     private const string graphicsMagickExe = "gm";
 

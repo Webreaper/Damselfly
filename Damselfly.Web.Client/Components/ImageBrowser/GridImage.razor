@@ -10,7 +10,6 @@
 @inject ClientUIStateService uiService
 @inject ILogger<GridImage> logger
 @inject IDialogService DialogService
-@inject IImageCacheService imageCache
 
 @inject IJSRuntime JsRuntime
 
@@ -27,7 +26,7 @@ else
         {
             <img @key="CurrentImage.ImageId" style="@ImageStyle" class="@ImageClass @FadeClass"
                  @onload="PreloadCompleted" title="@ImgToolTip" src="@ImageUrl"
-                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true">
+                 @oncontextmenu=@(args => ShowContextMenu(args)) @oncontextmenu:preventDefault="true" loading="lazy">
             <input class=" grid-checkbox damselfly-checkbox" type="checkbox" @bind="@InBasket">
         }
     </div>
@@ -99,7 +98,6 @@ else
         set => _ = SetImageBasketState(value);
     }
 
-    private string theClass => $"{ImageClass} {FadeClass}";
     private LocalFileExporter FileExporter;
     private string ImgToolTip => CurrentImage == null ? "No info" : $"{CurrentImage.FileName}\nTaken: {CurrentImage.SortDate.Display()}\nFolder: {CurrentImage.Folder.Path}\n{ImageSize}";
     private string ImageUrl => CurrentImage.ThumbUrl(ThumbnailSize);
@@ -151,6 +149,7 @@ else
                     }
                     <RadzenMenuItem Text="View Folder" Value="7"/>
                     <RadzenMenuItem Text="View Images From This Day" Value="8"/>
+                    <RadzenMenuItem Text="On This Day..." Value="10"/>
                     <hr class="separator">
                     @if ( InBasket )
                     {
@@ -224,6 +223,9 @@ else
             case 9:
                 await DeleteImages(ContextSelection.Select(x => x.ImageId).ToList());
                 break;
+            case 10:
+                FilterByImageDayAndMonth();
+                break;
         }
     }
 
@@ -237,7 +239,7 @@ else
     {
         var parameters = new DialogParameters { { "images", ContextSelection } };
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, BackdropClick = false };
-        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var dialog = await DialogService.ShowAsync<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
 
@@ -249,6 +251,12 @@ else
     private void FilterByImageDate()
     {
         var url = $"/?date={CurrentImage.SortDate:dd-MMM-yyyy}";
+        NavigationManager.NavigateTo(url);
+    }
+
+    private void FilterByImageDayAndMonth()
+    {
+        var url = $"/?date={CurrentImage.SortDate:dd-MMM}";
         NavigationManager.NavigateTo(url);
     }
 

@@ -16,9 +16,9 @@
 <div class="folderlist">
     <div class="damselfly-browsetools">
         <div class="damselfly-browsetool">
-            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="() => ToggleFlatView()"/>
-            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="() => ToggleSortMode()"/>
-            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="() => ToggleSortAscendingView()"/>
+            <i title="Flat/List View" class="damselfly-sortcontrols fas @FlatTreeClass" @onclick="ToggleFlatView"/>
+            <i title="Sort by Date/Folder Name" class="damselfly-sortcontrols fas @SortModeClass" @onclick="ToggleSortMode"/>
+            <i title="Sort Ascending/Descending" class="damselfly-sortcontrols fas @SortClass" @onclick="ToggleSortAscendingView"/>
         </div>
         <div class="damselfly-browsetool">
             <ConflatedTextBox IconClass="fa-search" placeholder="Filter folders" @bind-TextValue="@FilterTerm" @bind-TextValue:after="ProcessUpdatedFilter"/>
@@ -216,6 +216,8 @@
     {
         var newState = !FlatView;
 
+        statusService.UpdateStatus($"Folder flat view {(newState ? "enabled" : "disabled")}");
+
         await configService.SetForUser(ConfigSettings.FlatView, newState.ToString());
 
         await ProcessUpdatedFilter();
@@ -227,6 +229,8 @@
 
         if ( SortMode == "Date" )
             newMode = "Name";
+
+        statusService.UpdateStatus($"Folder sort set to {newMode}");
 
         await configService.SetForUser(ConfigSettings.FolderSortMode, newMode);
 
@@ -247,6 +251,8 @@
     {
         var newState = !Ascending;
 
+        statusService.UpdateStatus($"Folder sort set to {(newState ? "ascending" : "descending")}");
+        
         await configService.SetForUser(ConfigSettings.FolderSortAscending, newState.ToString());
 
         await ProcessUpdatedFilter();

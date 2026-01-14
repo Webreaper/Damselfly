@@ -106,13 +106,13 @@ public class RestClient
         }
     }
 
-    public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj)
+    public async Task<RetObj?> CustomPostAsJsonAsync<PostObj, RetObj>(string? requestUri, PostObj obj, CancellationToken token = default)
     {
         try
         {
-            var response = await _restClient.PostAsJsonAsync(requestUri, obj, JsonOptions);
+            var response = await _restClient.PostAsJsonAsync(requestUri, obj, JsonOptions, token);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions);
+            return await response.Content.ReadFromJsonAsync<RetObj>(JsonOptions, token);
         }
         catch ( Exception ex )
         {

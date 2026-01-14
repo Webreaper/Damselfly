@@ -11,6 +11,7 @@ public class ConfigSetting
     public required string Name { get; set; }
     public string? Value { get; set; }
 
+    public string CacheKey => $"{Name.ToLower()}_{UserId?.ToString() ?? "Global"}";
     public int? UserId { get; set; }
     public virtual AppIdentityUser User { get; set; }
 

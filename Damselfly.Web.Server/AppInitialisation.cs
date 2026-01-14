@@ -22,7 +22,7 @@ public static class AppInitialiser
         var tasks = services.GetRequiredService<TaskService>();
         var thumbService = services.GetRequiredService<ThumbnailService>();
         var exifService = services.GetRequiredService<ExifService>();
-        var imageProcService = services.GetRequiredService<ImageProcessService>();
+        var configService = services.GetRequiredService<ConfigService>();
 
         // Prime the cache
         services.GetRequiredService<ImageCache>().WarmUp().Wait();
@@ -41,7 +41,7 @@ public static class AppInitialiser
         // WASM: How, when it's scoped?
         // services.GetRequiredService<UserManagementService>().CheckAdminUser().Wait();
 
-        StartTaskScheduler(tasks, download, thumbService, exifService);
+        StartTaskScheduler(tasks, download, thumbService, exifService, configService);
     }
 
 
@@ -51,9 +51,22 @@ public static class AppInitialiser
     ///     cleanup of temporary download files, etc., etc.
     /// </summary>
     private static void StartTaskScheduler(TaskService taskScheduler, DownloadService download,
-        ThumbnailService thumbService, ExifService exifService)
+        ThumbnailService thumbService, ExifService exifService, ConfigService configService)
     {
         var tasks = new List<ScheduledTask>();
+
+        // Persist the settings to the DB every 15 mins
+        var settingsSave = new TimeSpan(0, 0, 15, 0);
+        tasks.Add(new ScheduledTask
+        {
+            Type = TaskType.StoreSettings,
+            ExecutionFrequency = settingsSave,
+            WorkMethod = () =>
+            {
+                _ = configService.SaveSettingsToDb();
+            },
+            ImmediateStart = true
+        });
 
         // Clean up old/irrelevant thumbnails once a week
         var thumbCleanupFreq = new TimeSpan(7, 0, 0, 0);
@@ -64,8 +77,7 @@ public static class AppInitialiser
             WorkMethod = () => thumbService.CleanUpThumbnails(thumbCleanupFreq),
             ImmediateStart = false
         });
-
-
+        
         // Clean up old download zips from the wwwroot folder
         var downloadCleanupFreq = new TimeSpan(6, 0, 0);
         tasks.Add(new ScheduledTask
@@ -116,7 +128,10 @@ public static class AppInitialiser
 #endif
 
         // Add the jobs
-        foreach ( var task in tasks ) taskScheduler.AddTaskDefinition(task);
+        foreach ( var task in tasks )
+        {
+            taskScheduler.AddTaskDefinition(task);
+        }
 
         // Start the scheduler
         taskScheduler.Start();

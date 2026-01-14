@@ -9,11 +9,13 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using MudExtensions.Services;
 using Radzen;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Serilog.Filters;
 using Syncfusion.Blazor;
 
 namespace Damselfly.Web.Client;
@@ -29,6 +31,8 @@ public class Program
         var levelSwitch = new LoggingLevelSwitch();
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.ControlledBy(levelSwitch)
+            .Filter.ByExcluding(Matching.FromSource("Microsoft"))
+            .Filter.ByExcluding(Matching.FromSource("System"))
             .Enrich.WithProperty("InstanceId", Guid.NewGuid().ToString("n"))
             .WriteTo.BrowserHttp(
                 $"{builder.HostEnvironment.BaseAddress}ingest",
@@ -50,6 +54,7 @@ public class Program
         builder.Services.AddAuthorizationCore(config => config.SetupPolicies(builder.Services));
 
         builder.Services.AddMudServices();
+        builder.Services.AddMudExtensions();
         builder.Services.AddSyncfusionBlazor();
         builder.Services.AddBlazoredLocalStorage();
         builder.Services.AddBlazorPanzoomServices();
