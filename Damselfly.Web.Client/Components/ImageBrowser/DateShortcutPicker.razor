@@ -1,14 +1,11 @@
 @using System.ComponentModel.Design
-<div class="date-picker">
-    <div class="filter-type">
-        <MudSelect Label="Date Filter" T="DateShortcut?" @bind-Value="@SelectedShortCut" @bind-Value:after="ShortCutChanged"
-                   Clearable="true" Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant">
-            @foreach ( var choice in DateRanges )
-            {
-                <MudSelectItem Value="@choice">@choice.name</MudSelectItem>
-            }
-        </MudSelect>
-    </div>
+<div class="date-shortcuts">
+    <MudMenu Label="Dates" Dense="true" StartIcon="@Icons.Material.Filled.DateRange">
+        @foreach ( var choice in DateRanges )
+        {
+            <MudMenuItem Label="@choice.name" OnClick="() => ShortCutChanged(choice)"/>
+        }
+    </MudMenu>
 </div>
 
 @code {
@@ -29,15 +26,15 @@
         base.OnInitialized();
     }
     
-    private async Task ShortCutChanged()
+    private async Task ShortCutChanged(DateShortcut? selection)
     {
-        if( SelectedShortCut?.range != null )
+        if( selection?.range != null )
         {
-            if( Earliest != SelectedShortCut.range.Start )
-                await EarliestChanged.InvokeAsync(SelectedShortCut.range.Start);
+            if( Earliest != selection.range.Start )
+                await EarliestChanged.InvokeAsync(selection.range.Start);
             
-            if( Earliest != SelectedShortCut.range.End )
-                await LatestChanged.InvokeAsync(SelectedShortCut.range.End);
+            if( Earliest != selection.range.End )
+                await LatestChanged.InvokeAsync(selection.range.End);
         }
         else
         {   
@@ -67,5 +64,6 @@
         AddRangeShortcut($"{Jan1ThisYear.AddYears(-4).Year}", new DateRange(Jan1ThisYear.AddYears(-4), Jan1ThisYear.AddYears(-3).AddSeconds(-1)));
         AddRangeShortcut($"{Jan1ThisYear.AddYears(-5).Year}", new DateRange(Jan1ThisYear.AddYears(-5),  Jan1ThisYear.AddYears(-4).AddSeconds(-1)));
         AddRangeShortcut($"{Jan1ThisYear.AddYears(-10).Year}", new DateRange(Jan1ThisYear.AddYears(-10), Jan1ThisYear.AddYears(-9).AddSeconds(-1)));
+        AddRangeShortcut($"{Jan1ThisYear.AddYears(-15).Year}", new DateRange(Jan1ThisYear.AddYears(-15), Jan1ThisYear.AddYears(-9).AddSeconds(-1)));
     }
 }

@@ -93,7 +93,7 @@
         <Content Update="Components\People\PeopleManager.razor.css">
             <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </Content>
-        <Content Update="Components\ImageBrowser\DateRangePicker.razor.css">
+        <Content Update="Components\ImageBrowser\DateShortcutPicker.razor.css">
           <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
         </Content>
     </ItemGroup>
