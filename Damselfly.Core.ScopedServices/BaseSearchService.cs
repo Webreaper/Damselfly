@@ -40,11 +40,11 @@ public abstract class BaseSearchService
         get => Query.SearchText;
         set
         {
-            if ( Query.SearchText != value.Trim() )
-            {
-                Query.SearchText = value.Trim();
-                QueryChanged();
-            }
+            if ( Query.SearchText == value.Trim() ) 
+                return;
+            
+            Query.SearchText = value.Trim();
+            QueryChanged();
         }
     }
 
@@ -70,6 +70,16 @@ public abstract class BaseSearchService
                 return;
             
             Query.MinDate = value;
+            QueryChanged();
+        }
+    }
+
+    public void SetDateRange(DateTime? min, DateTime? max)
+    {
+        if ( Query.MinDate != min || Query.MaxDate != max )
+        {
+            Query.MinDate = min;
+            Query.MaxDate = max;
             QueryChanged();
         }
     }
@@ -449,17 +459,17 @@ public abstract class BaseSearchService
     }
 
 
-    protected void ClearSearchResults()
+    private void ClearSearchResults()
     {
         _searchResults.Clear();
     }
 
-    public void NotifyQueryChanged()
+    private void NotifyQueryChanged()
     {
         OnSearchQueryChanged?.Invoke();
     }
 
-    public void NotifySearchComplete(SearchResponse response)
+    protected void NotifySearchComplete(SearchResponse response)
     {
         OnSearchResultsChanged?.Invoke(response);
     }
@@ -476,22 +486,6 @@ public abstract class BaseSearchService
     public virtual void Refresh()
     {
         QueryChanged();
-    }
-
-    public void SetOnThisDay(DateTime? date)
-    {
-        Query.OnThisDay = date;
-        QueryChanged();
-    }
-
-    public void SetDateRange(DateTime? min, DateTime? max)
-    {
-        if ( Query.MinDate != min || Query.MaxDate != max )
-        {
-            Query.MinDate = min;
-            Query.MaxDate = max;
-            QueryChanged();
-        }
     }
 
     private void QueryChanged()

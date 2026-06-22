@@ -5,13 +5,13 @@
 
 <div class="damselfly-dialogrow">
     <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="searchService.MinDate" Label="Earliest" Clearable="true"/>
+        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Label="Earliest" Clearable="true"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="searchService.MaxDate" Label="Latest" Clearable="true"/>
+        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Label="Latest" Clearable="true"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <DateRangePicker @bind-Earliest="@searchService.MinDate" @bind-Latest="searchService.MaxDate"/>
+        <DateRangePicker @bind-Earliest="@minDate" @bind-Latest="maxDate"/>
     </div>
     <div class="damselfly-dialogctrl">
         <MultiSelectDropdown T="int" Label="Months" SourceData="monthChoices" @bind-SelectedItems="searchService.Months"
@@ -101,6 +101,8 @@
 
 @code {
     MudDateRangePicker _picker;
+    private DateTime? minDate = null;
+    private DateTime? maxDate = null;
     
     protected override void OnInitialized()
     {
@@ -110,6 +112,18 @@
         base.OnInitialized();
     }
 
+    private void DateChanged()
+    {
+        if( minDate != null && maxDate != null )
+            searchService.SetDateRange( minDate, maxDate );
+        
+        if( minDate != null && maxDate == null )
+            searchService.MinDate = minDate;
+        
+        if( minDate == null && maxDate != null )
+            searchService.MaxDate = maxDate;
+    }   
+    
     private List<FaceSearchType> faceTypes = EnumerableExtensions.GetEnumList<FaceSearchType>();
     private List<OrientationType> orientationTypes = EnumerableExtensions.GetEnumList<OrientationType>();
 
