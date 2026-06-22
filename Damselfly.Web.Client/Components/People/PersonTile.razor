@@ -105,7 +105,7 @@
             {
                 canRename = false;
 
-                var result = await dialogService.ShowMessageBox(
+                var result = await dialogService.ShowMessageBoxAsync(
                     $"Merge with existing {newName}?",
                     $"A person with the name '{newName}' exists already. Would you like to merge the two?",
                     "Merge", cancelText: "Cancel");

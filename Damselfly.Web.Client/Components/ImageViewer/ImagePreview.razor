@@ -188,7 +188,7 @@ of the visible image is updated which should update it instantly.
     {
         var parameters = new DialogParameters { { "images", new List<Image> { Image } } };
         var options = new DialogOptions { MaxWidth = MaxWidth.ExtraSmall, BackdropClick = false };
-        var dialog = DialogService.Show<RescanDialog>("Re-scan Images", parameters, options);
+        var dialog = await DialogService.ShowAsync<RescanDialog>("Re-scan Images", parameters, options);
         var result = await dialog.Result;
     }
 

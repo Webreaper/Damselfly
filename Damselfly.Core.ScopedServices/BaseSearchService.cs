@@ -53,11 +53,11 @@ public abstract class BaseSearchService
         get => Query.MaxDate;
         set
         {
-            if ( Query.MaxDate != value )
-            {
-                Query.MaxDate = value;
-                QueryChanged();
-            }
+            if ( Query.MaxDate == value ) 
+                return;
+            
+            Query.MaxDate = value;
+            QueryChanged();
         }
     }
 
@@ -66,11 +66,11 @@ public abstract class BaseSearchService
         get => Query.MinDate;
         set
         {
-            if ( Query.MinDate != value )
-            {
-                Query.MinDate = value;
-                QueryChanged();
-            }
+            if ( Query.MinDate == value ) 
+                return;
+            
+            Query.MinDate = value;
+            QueryChanged();
         }
     }
 
@@ -191,18 +191,20 @@ public abstract class BaseSearchService
         }
     }
 
-    public IEnumerable<int>? Months
+    public IReadOnlyCollection<int>? Months
     {
-        get => Query.Months;
+        get => Query.Months?.ToList() ?? null;
         set
         {
-            if ( (value == null && Query.Months != null) ||
-                 (value != null && Query.Months == null) ||
-                 (value != null && Query.Months != null && Query.Months.SequenceEqual( value ) ) )
-            {
-                Query.Months = value;
-                QueryChanged();
-            }
+            if( value == null && Query.Months == null )
+                return;
+
+            // Both set, and both equivalent;
+            if( value != null && Query.Months != null && Query.Months.SequenceEqual( value ) )
+                return;
+
+            Query.Months = value;
+            QueryChanged();
         }
     }
 
@@ -360,52 +362,36 @@ public abstract class BaseSearchService
                         { Description = $"Looks Like: {image.FileName}", Clear = () => SimilarToId = null } );
             }
 
-            var dateString = string.Empty;
+            var sizeString = string.Empty;
             if( MaxSizeKB.HasValue && MinSizeKB.HasValue )
             {
-                dateString = $"Between {MinSizeKB.Value}KB and {MaxSizeKB.Value}KB";
+                sizeString = $"Between {MinSizeKB.Value}KB and {MaxSizeKB.Value}KB";
             }
             else
             {
                 if( MaxSizeKB.HasValue )
-                    dateString = $"Less than: {MaxSizeKB.Value}KB";
+                    sizeString = $"Less than: {MaxSizeKB.Value}KB";
 
                 if( MinSizeKB.HasValue )
-                    dateString = $"At least: {MinSizeKB.Value}KB";
+                    sizeString = $"At least: {MinSizeKB.Value}KB";
             }
 
-            if( ! string.IsNullOrEmpty(dateString) )
+            if( ! string.IsNullOrEmpty(sizeString) )
                 hints.Add( new SearchHint
                 {
-                    Description = dateString, Clear = () =>
+                    Description = sizeString, Clear = () =>
                     {
                         MinSizeKB = null;
                         MaxSizeKB = null;
                     }
                 } );
 
-            var dateRange = string.Empty;
             if ( MinDate.HasValue )
-                dateRange = $"{MinDate:dd-MMM-yyyy}";
+                hints.Add(new SearchHint { Description = $"Earliest: {MinDate:dd-MMM-yyyy}", Clear = () => MinDate = null }); 
 
-            if ( MaxDate.HasValue &&
-                 (!MinDate.HasValue || MaxDate.Value.Date != MinDate.Value.Date) )
-            {
-                if ( !string.IsNullOrEmpty(dateRange) )
-                    dateRange += " - ";
-                dateRange += $"{MaxDate:dd-MMM-yyyy}";
-            }
-
-            if ( !string.IsNullOrEmpty(dateRange) )
-                hints.Add( new SearchHint
-                {
-                    Description = $"Date: {dateRange}", Clear = () =>
-                    {
-                        MinDate = null;
-                        MaxDate = null;
-                    }
-                });
-
+            if ( MaxDate.HasValue )
+                hints.Add(new SearchHint { Description = $"Latest: {MaxDate:dd-MMM-yyyy}", Clear = () => MaxDate = null }); 
+            
             if ( UntaggedImages )
                 hints.Add( new SearchHint { Description = "Untagged Images", Clear = () => UntaggedImages = false });
 
@@ -440,10 +426,10 @@ public abstract class BaseSearchService
             }
 
             if ( FaceSearch.HasValue )
-                hints.Add( new SearchHint { Description = FaceSearch.Humanize(), Clear = () => FaceSearch = null });
+                hints.Add( new SearchHint { Description = FaceSearch.Value.Humanize(), Clear = () => FaceSearch = null });
 
             if ( Orientation.HasValue )
-                hints.Add( new SearchHint { Description = Orientation.Humanize(), Clear = () => Orientation = null });
+                hints.Add( new SearchHint { Description = Orientation.Value.Humanize(), Clear = () => Orientation = null });
 
             return hints;
         }

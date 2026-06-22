@@ -89,7 +89,7 @@ public class BasketController : ControllerBase
     }
 
     [HttpGet("/api/basketdefault")]
-    public async Task<Basket> GetDefaultUserBasket()
+    public async Task<Basket?> GetDefaultUserBasket()
     {
         return await _service.GetDefaultBasket(null);
     }

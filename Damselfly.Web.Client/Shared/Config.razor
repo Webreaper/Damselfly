@@ -346,7 +346,7 @@
 
     private async Task ShowAddUserDialog()
     {
-        var dialog = DialogService.Show<UserDialog>("Create Admin User");
+        var dialog = await DialogService.ShowAsync<UserDialog>("Create Admin User");
         var result = await dialog.Result;
     }
 

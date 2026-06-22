@@ -1,43 +1,25 @@
 ﻿<div class="status">
-    <label>@StatusText</label>
+    <label>@statusText</label>
 </div>
 
 @code {
-
-    [Parameter] public int DisplayIntervalSecs { get; set; } = 5;
-
-    [Parameter] public string StatusText { get; set; }
-
-    private Timer? searchTimer;
-
-    protected override async Task OnParametersSetAsync()
+    public void UpdateStatus(string newText)
     {
-        SetStatusText(StatusText);
-
-        await base.OnParametersSetAsync();
+        if( newText == statusText )
+            return;
+        
+        statusText = newText;
+        
+        _ = conflator.ConflateAsync((x) => RefreshText(x));
     }
 
-    private void SetStatusText(string value)
+    private Task RefreshText(CancellationToken tok)
     {
-        KillTimer();
-
-        if( ! string.IsNullOrEmpty( value ) )
-            searchTimer = new Timer(TimerCallback, null, DisplayIntervalSecs * 1000, Timeout.Infinite);
-
-        StateHasChanged();
+        if( ! tok.IsCancellationRequested )
+            InvokeAsync(StateHasChanged);
+        return Task.CompletedTask;
     }
-
-    private void KillTimer()
-    {
-        var oldTimer = searchTimer;
-        searchTimer = null;
-        if( oldTimer != null )
-            oldTimer.Dispose();
-    }
-
-    private void TimerCallback(object? state)
-    {
-        SetStatusText(string.Empty);
-    }
-
+    
+    private readonly AsyncEventConflator conflator = new();
+    private string? statusText = null;
 }

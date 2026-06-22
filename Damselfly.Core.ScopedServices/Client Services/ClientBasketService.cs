@@ -215,7 +215,7 @@ public class ClientBasketService : IUserBasketService, IBasketService
         OnBasketChanged?.Invoke(change);
     }
 
-    public async Task<Basket> GetDefaultBasket()
+    public async Task<Basket?> GetDefaultBasket()
     {
         return await GetDefaultBasket(_userService.UserId);
     }

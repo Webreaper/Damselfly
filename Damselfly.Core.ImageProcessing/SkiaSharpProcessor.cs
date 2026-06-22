@@ -463,7 +463,7 @@ public class SkiaSharpProcessor : IImageProcessor
 
                 SKPoint skPoint = new SKPoint(targetWidth - rightOffSet, targetHeight - font.Size);
 
-                canvas.DrawText(config.WatermarkText, skPoint, font, brush);
+                canvas.DrawText(config.WatermarkText, skPoint.X, skPoint.Y, SKTextAlign.Center, font, brush);
             }
         }
 

@@ -83,7 +83,7 @@ public class SearchQueryService
             {
                 var searchText = EscapeChars(query.SearchText);
                 // If we have search text, then hit the fulltext Search.
-                images = await db.ImageSearch(searchText, query.IncludeAITags);
+                images = db.ImageSearch(searchText, query.IncludeAITags);
             }
 
             // TODO: UI should make these two mutually exclusive

@@ -18,7 +18,7 @@ public interface IBasketService
     Task<ICollection<Basket>> GetUserBaskets(int? userId);
 
     Task<Basket> GetBasketById(int basketId);
-    Task<Basket> GetDefaultBasket(int? userId);
+    Task<Basket?> GetDefaultBasket(int? userId);
 
     Task<int> CopyImages(int sourceBasketId, int destBasketId);
 }

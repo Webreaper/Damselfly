@@ -1,7 +1,6 @@
-@using System.Globalization
-@typeparam T
+@typeparam T 
 
-<MudSelect T="@T" SelectedValues="SelectedItems" SelectedValuesChanged="SelectedItemsChanged"
+<MudSelect T="@T" @bind-SelectedValues="SelectedItems" @bind-SelectedValues:after="SelectionChanged"
            Label="@Label" Clearable="true" Dense="true" Margin="Margin.Dense" Placeholder="@PlaceHolder"
            MultiSelection="@MultiSelection" Variant="UIConstants.MudVariant" ToStringFunc="c => GetNameFunc( c )"
            MultiSelectionTextFunc="SelectionTextFunc">
@@ -39,7 +38,12 @@
         await base.OnInitializedAsync();
     }
 
-    private string SelectionTextFunc(List<string> selectedValues)
+    private async Task SelectionChanged()
+    {
+        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+    }
+    
+    private string SelectionTextFunc(IReadOnlyList<string> selectedValues)
     {
         if( selectedValues.Count == 1 )
         {
@@ -69,9 +73,9 @@
 
     [Parameter] public bool MultiSelection { get; set; } = true;
 
-    [Parameter] public IEnumerable<T>? SelectedItems { get; set; }
+    [Parameter] public IReadOnlyCollection<T>? SelectedItems { get; set; }
+    [Parameter] public EventCallback<IReadOnlyCollection<T>?> SelectedItemsChanged { get; set; }
 
     [Parameter] public MultiSelectSortOptions ItemSort { get; set; } = MultiSelectSortOptions.None;
 
-    [Parameter] public EventCallback<IEnumerable<T>> SelectedItemsChanged { get; set; }
 }

@@ -73,7 +73,7 @@ else
 
     private async Task BasketCopy()
     {
-        var dialog = DialogService.Show<BasketMoveDialog>("Copy/Move to Basket");
+        var dialog = await DialogService.ShowAsync<BasketMoveDialog>("Copy/Move to Basket");
         var result = await dialog.Result;
     }
 
@@ -82,14 +82,14 @@ else
         var newBasket = new Basket { Name = "New Basket", UserId = userService.UserId };
 
         var parameters = new DialogParameters { { "basket", newBasket }, { "mode", "Add" } };
-        var dialog = DialogService.Show<BasketDialog>("Add New Basket", parameters);
+        var dialog = await DialogService.ShowAsync<BasketDialog>("Add New Basket", parameters);
         var result = await dialog.Result;
     }
 
     private async Task OpenEditBasketDialog()
     {
         var parameters = new DialogParameters { { "basket", basketService.CurrentBasket }, { "mode", "Edit" } };
-        var dialog = DialogService.Show<BasketDialog>("Edit Basket", parameters);
+        var dialog = await DialogService.ShowAsync<BasketDialog>("Edit Basket", parameters);
         var result = await dialog.Result;
     }
 

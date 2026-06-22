@@ -302,7 +302,7 @@ public class BasketService : IBasketService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<Basket> GetDefaultBasket(int? userId)
+    public async Task<Basket?> GetDefaultBasket(int? userId)
     {
         // TODO: WASM: - load basket entries here. Also, maybe make this more efficient, with a single query?
         // Maybe return ID here, and then caller can load?
@@ -345,10 +345,11 @@ public class BasketService : IBasketService
                 // Probably shouldn't ever happen, but just pick the first one
                 defaultBasket = await db.Baskets
                     .OrderBy( x => x.Name )
-                    .FirstAsync();
+                    .FirstOrDefaultAsync();
 
                 // TODO: If still null, should we create one?
-                throw new ArgumentException("No baskets - this is unexpected!");
+                if( defaultBasket == null )
+                    Logging.LogError($"No default basket - this is unexpected");
             }
         }
 

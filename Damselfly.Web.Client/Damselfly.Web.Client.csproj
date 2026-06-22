@@ -31,6 +31,7 @@
         <PackageReference Include="Serilog.Sinks.BrowserConsole"/>
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"/>
         <PackageReference Include="SkiaSharp.NativeAssets.macOS"/>
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
         <PackageReference Include="Syncfusion.Blazor.Maps"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client"/>
         <PackageReference Include="Serilog"/>

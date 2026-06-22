@@ -52,9 +52,9 @@ public class ImageContext : BaseDBModel, IDataProtectionKeyContext
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
     public DbSet<UserFolderState> UserFolderStates { get; set; }
 
-    public async Task<IQueryable<Image>> ImageSearch(string query, bool IncludeAITags)
+    public IQueryable<Image> ImageSearch(string query, bool IncludeAITags)
     {
-        return await base.ImageSearch(Images, query, IncludeAITags);
+        return base.ImageSearch(Images, query, IncludeAITags);
     }
 
     protected override bool DBNeedsCleaning()

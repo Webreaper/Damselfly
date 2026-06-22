@@ -451,9 +451,9 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
     }
 
     // Can this be made async?
-    public Task<IQueryable<T>> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
+    public IQueryable<T> ImageSearch<T>(DbSet<T> resultSet, string query, bool includeAITags) where T : class
     {
-        IQueryable<T>? results = null;
+        IQueryable<T>? resultQuery = null;
         
         try
         {
@@ -501,7 +501,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
                 i++;
             }
 
-            results = resultSet.FromSqlRaw(sql, terms);
+            resultQuery = resultSet.FromSqlRaw(sql, terms);
         }
         catch( Exception ex )
         {
@@ -509,7 +509,7 @@ public abstract class BaseDBModel : IdentityDbContext<AppIdentityUser, Applicati
             throw;
         }
 
-        return Task.FromResult(results);
+        return resultQuery;;
     }
 
     private async Task RebuildFreeText()

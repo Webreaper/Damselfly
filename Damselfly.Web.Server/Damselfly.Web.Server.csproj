@@ -59,6 +59,7 @@
         </ProjectReference>
     </ItemGroup>
     <ItemGroup>
+        <Folder Include="config\db\" />
         <Folder Include="wwwroot\"/>
         <Folder Include="wwwroot\themes\"/>
         <Folder Include="wwwroot\fonts\"/>

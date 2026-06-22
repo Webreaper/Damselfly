@@ -92,7 +92,7 @@
         {
             var parameters = new DialogParameters();
             var options = new MudBlazor.DialogOptions { MaxWidth = MaxWidth.Small, BackdropClick = false };
-            var dialog = dialogService.Show<AIMigrationDialog>("AI Migration", parameters, options);
+            var dialog = await dialogService.ShowAsync<AIMigrationDialog>("AI Migration", parameters, options);
             var result = await dialog.Result;
         }
     }

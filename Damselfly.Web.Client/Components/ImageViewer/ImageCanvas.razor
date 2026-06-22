@@ -270,15 +270,31 @@
     {
         Dispose();
         sourceBitmap = bitmap;
+        
+        StateHasChanged();
         Repaint();
     }
 
 
-    private SKBitmap? LoadImageFromStream( Stream stream)
+    private async Task<SKBitmap?> LoadImageFromStream( Stream stream)
     {
-        var codec = SKCodec.Create(stream);
-        return SKBitmap.Decode(codec);
+        SKBitmap? bitmap = null;
+        try
+        {
+            using var memoryStream = new MemoryStream();        
+            await stream.CopyToAsync(memoryStream);
+            var byteArray = memoryStream.ToArray();
+
+            bitmap = SKBitmap.Decode(byteArray);
+        }
+        catch( Exception ex )
+        {
+            logger.LogWarning(ex, "Unable to load image from stream");
+        }
+
+        return bitmap;
     }
+    
 
     private async Task LoadImage(CancellationToken token)
     {
@@ -288,9 +304,11 @@
 
             try
             {
+                Dispose();
+                StateHasChanged();
+                
                 await using var imageStream = await restClient.GetStreamAsync(url, token);
-
-                var bmp = LoadImageFromStream(imageStream);
+                var bmp = await LoadImageFromStream(imageStream);
 
                 if ( !token.IsCancellationRequested )
                 {
@@ -321,7 +339,7 @@
             {
                 await using var imageStream = await restClient.GetStreamAsync(url);
 
-                var bmp = LoadImageFromStream(imageStream);
+                var bmp = await LoadImageFromStream(imageStream);
 
                 if ( bmp != null )
                 {
@@ -469,21 +487,28 @@
             }
 
             using var textPaint = new SKPaint();
+            using var tf = SKTypeface.FromFamilyName("Arial");
+            SKFont font = new SKFont(tf, 24.0f);
 
             textPaint.IsAntialias = true;
             textPaint.StrokeWidth = 10f;
             textPaint.StrokeCap = SKStrokeCap.Round;
-            textPaint.TextAlign = SKTextAlign.Center;
-            textPaint.TextSize = 24;
             textPaint.Color = new SKColor(200, 200, 200);
 
             var dragRect = DrawDragRect(canvas);
+            if( dragRect.HasValue )
+            {
+                var text = $"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)";
 
-            if( isCropping && dragRect.HasValue )
-                canvas.DrawText($"Selecting Crop Area: {dragRect.Value.Width} x {dragRect.Value.Height} (click crop icon to apply)", canvasRect.Width / 2, canvasRect.Height / 2, textPaint);
+                if( isCropping)
+                    canvas.DrawText(text, canvasRect.Width / 2.0f, canvasRect.Height / 2.0f, SKTextAlign.Center, font, textPaint);
+            }
 
             if ( System.Diagnostics.Debugger.IsAttached )
-                canvas.DrawText($"{Image.FileName} - {canvasRect} R:{rotation} Z: {zoomAmount} Offset: {zoomOffset} H: {hue} S: {saturation} L: {luminosity}", canvasRect.Width / 2, canvasRect.Height - 10f, textPaint);
+            {
+                var debugText = $"{Image.FileName} - {canvasRect} R:{rotation} Z: {zoomAmount} Offset: {zoomOffset} H: {hue} S: {saturation} L: {luminosity}";
+                canvas.DrawText(debugText, canvasRect.Width / 2.0f, canvasRect.Height / - 10f, SKTextAlign.Center, font, textPaint);
+            }
 
             if ( croppedBmp != null )
                 croppedBmp.Dispose();

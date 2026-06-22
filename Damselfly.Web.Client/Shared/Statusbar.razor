@@ -5,7 +5,7 @@
 @inject ClientUIStateService uiState
 
 <div class="statusbar">
-    <TimedStatus DisplayIntervalSecs="30" StatusText="@StatusText"/>
+    <TimedStatus @ref="statusControl"/>
     <WorkStatus/>
 
     @if( ! uiState.IsSmallScreenDevice )
@@ -28,14 +28,14 @@
 @code
 {
     private string StatusText { get; set; }
-
+    private TimedStatus? statusControl = null;
+    
     private void UpdateStatus(string newText)
     {
-        if ( StatusText != newText )
-        {
-            StatusText = newText;
-            StateHasChanged();
-        }
+        if( statusControl == null )
+            return;
+
+        statusControl.UpdateStatus(newText);
     }
 
     protected override void OnAfterRender(bool firstRender)

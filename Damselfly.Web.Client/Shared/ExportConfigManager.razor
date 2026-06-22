@@ -46,7 +46,7 @@
         var newConfig = new ExportConfig { Name = "New Config" };
 
         var parameters = new DialogParameters { { "Config", newConfig }, { "mode", "Add" } };
-        var dialog = DialogService.Show<ExportConfigDialog>("Add New Config", parameters);
+        var dialog = await DialogService.ShowAsync<ExportConfigDialog>("Add New Config", parameters);
         var result = await dialog.Result;
 
         await LoadData();
