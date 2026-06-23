@@ -24,6 +24,10 @@
 }
 
 .loading-images {
+    margin-left: auto;
+    margin-right: auto;
+    height: 80px;
+    overflow-y: clip;
 }
 
 .damselfly-searchmsg {

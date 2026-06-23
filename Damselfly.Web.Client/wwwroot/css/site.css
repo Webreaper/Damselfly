@@ -498,20 +498,13 @@ f
     flex-wrap: wrap;
     margin-bottom: 7px;
     flex-direction: row;
+    column-gap: 10px;
     align-items: center;
     justify-content: flex-start;
 }
 
 .damselfly-dialogctrl {
-    flex: 1 1 200px;
-    margin-right: 6px;
-}
-
-.damselfly-dialogctrl-v {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 50%;
-    margin-right: 6px;
+    flex: 1 1 auto;
 }
 
 .damselfly-statusitem {

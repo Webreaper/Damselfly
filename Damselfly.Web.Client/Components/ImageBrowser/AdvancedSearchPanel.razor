@@ -5,13 +5,13 @@
 
 <div class="damselfly-dialogrow">
     <div class="damselfly-dialogctrl">
+        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Editable Label="Earliest" Clearable="true" Color="Color.Surface" DateFormat="d-MMM-yyyy"/>
+    </div>
+    <div class="damselfly-dialogctrl">
+        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Editable Label="Latest" Clearable="true" Color="Color.Surface"  DateFormat="d-MMM-yyyy"/>
+    </div>
+    <div class="damselfly-dialogctrl">
         <DateShortcutPicker @bind-Earliest="@minDate" @bind-Latest="maxDate"/>
-    </div>
-    <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Label="Earliest" Clearable="true"/>
-    </div>
-    <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Label="Latest" Clearable="true"/>
     </div>
     <div class="damselfly-dialogctrl">
         <MultiSelectDropdown T="int" Label="Months" SourceData="monthChoices" @bind-SelectedItems="searchService.Months"

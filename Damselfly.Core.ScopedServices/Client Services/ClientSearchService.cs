@@ -10,19 +10,14 @@ namespace Damselfly.Core.ScopedServices;
 ///     The client search service is used in WASM. It calls the server-side API to query
 ///     search service there.
 /// </summary>
-public class ClientSearchService : BaseSearchService, ISearchService
+public class ClientSearchService (
+    RestClient client,
+    IUserStatusService statusService,
+    ICachedDataService dataService,
+    IImageCacheService imageCache,
+    ILogger<BaseSearchService> logger)
+    : BaseSearchService(dataService, imageCache, logger), ISearchService
 {
-    private readonly RestClient httpClient;
-    private readonly IUserStatusService _statusService;
-
-    public ClientSearchService(RestClient client, IUserStatusService statusService,
-        ICachedDataService dataService, IImageCacheService imageCache, ILogger<BaseSearchService> logger) :
-        base(dataService, imageCache, logger)
-    {
-        httpClient = client;
-        _statusService = statusService;
-    }
-
     protected override async Task<SearchResponse> GetQueryImagesAsync( int count = DamselflyContants.PageSize)
     {
         var first = SearchResults.Count;
@@ -52,17 +47,16 @@ public class ClientSearchService : BaseSearchService, ISearchService
             _logger.LogInformation(
                 $"Executing search for {SearchBreadcrumbs} ({SearchResults.Count} results were already loaded.");
 
-            _statusService.UpdateStatus($"Searching for images: {SearchBreadcrumbs}...");
+            statusService.UpdateStatus($"Searching for images: {SearchBreadcrumbs}...");
 
-            response = await httpClient.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
+            response = await client.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
 
-            if ( response != null )
-                if ( response.SearchResults != null && response.SearchResults.Any() )
-                {
-                    _searchResults.AddRange(response.SearchResults);
+            if ( response != null && response.SearchResults.Any() )
+            {
+                _searchResults.AddRange(response.SearchResults);
 
-                    _statusService.UpdateStatus($"Loaded {response.SearchResults.Count()} search results.");
-                }
+                statusService.UpdateStatus($"Loaded {response.SearchResults.Count()} search results.");
+            }
         }
         catch ( Exception ex )
         {
@@ -74,9 +68,9 @@ public class ClientSearchService : BaseSearchService, ISearchService
         return response;
     }
     
-    public void Refresh()
+    public override void Refresh()
     {
         base.Refresh();
-        _statusService.UpdateStatus( "Search results refreshed.");
+        statusService.UpdateStatus( "Search results refreshed.");
     }
 }

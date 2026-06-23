@@ -472,7 +472,7 @@ public abstract class BaseSearchService
     protected void NotifySearchComplete(SearchResponse response)
     {
         OnSearchResultsChanged?.Invoke(response);
-}
+    }
 
     public event Action OnSearchQueryChanged;
     public event Action<SearchResponse> OnSearchResultsChanged;
@@ -497,7 +497,6 @@ public abstract class BaseSearchService
 
     public async Task LoadMore( int count = DamselflyContants.PageSize )
     {
-        _logger.LogInformation("Loading more images...");
         await GetQueryImagesAsync( count );
     }
 }
