@@ -4,6 +4,7 @@ using Damselfly.Core.DbModels;
 using Damselfly.Core.DbModels.Models.APIModels;
 using Damselfly.Core.Models;
 using Damselfly.Core.ScopedServices.Interfaces;
+using Damselfly.Core.Utils;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 
@@ -22,8 +23,9 @@ public abstract class BaseSearchService
     protected readonly List<int> _searchResults = new();
     private readonly ICachedDataService _service;
     private readonly IImageCacheService _imageCache;
+    private readonly AsyncEventConflator conflator = new();
 
-    protected abstract Task<SearchResponse> GetQueryImagesAsync(int count = DamselflyContants.PageSize);
+    protected abstract Task<SearchResponse> GetQueryImagesAsync(CancellationToken token, int count = DamselflyContants.PageSize);
 
     public BaseSearchService(ICachedDataService dataService, IImageCacheService imageCache,
         ILogger<BaseSearchService> logger)
@@ -492,11 +494,15 @@ public abstract class BaseSearchService
     {
         NotifyQueryChanged();
         ClearSearchResults();
-        _ = GetQueryImagesAsync();
+        _ = LoadMore();
     }
 
     public async Task LoadMore( int count = DamselflyContants.PageSize )
     {
-        await GetQueryImagesAsync( count );
+        await conflator.ConflateAsync(async (tok) =>
+        {
+            await GetQueryImagesAsync( tok, count );
+
+        });
     }
 }

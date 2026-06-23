@@ -21,11 +21,11 @@ public class ImageSearchController : ControllerBase
     }
 
     [HttpPost("/api/search")]
-    public async Task<SearchResponse> SubmitSearch(SearchRequest request)
+    public async Task<SearchResponse> SubmitSearch(SearchRequest request, CancellationToken token)
     {
         try
         {
-            return await _searchService.GetQueryImagesAsync(request);
+            return await _searchService.GetQueryImagesAsync(request, token);
         }
         catch ( Exception ex )
         {

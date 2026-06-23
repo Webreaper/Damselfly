@@ -18,7 +18,7 @@ public class ClientSearchService (
     ILogger<BaseSearchService> logger)
     : BaseSearchService(dataService, imageCache, logger), ISearchService
 {
-    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = DamselflyContants.PageSize)
+    protected override async Task<SearchResponse> GetQueryImagesAsync( CancellationToken token, int count = DamselflyContants.PageSize)
     {
         var first = SearchResults.Count;
         var response = new SearchResponse { MoreDataAvailable = false, SearchResults = new int[0] };
@@ -49,7 +49,7 @@ public class ClientSearchService (
 
             statusService.UpdateStatus($"Searching for images: {SearchBreadcrumbs}...");
 
-            response = await client.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request);
+            response = await client.CustomPostAsJsonAsync<SearchRequest, SearchResponse>("/api/search", request, token);
 
             if ( response != null && response.SearchResults.Any() )
             {

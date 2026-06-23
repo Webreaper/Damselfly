@@ -49,7 +49,7 @@ public class SearchQueryService
     /// <param name="first"></param>
     /// <param name="count"></param>
     /// <returns>True if there's more data available for the requested range</returns>
-    private async Task<SearchResponse> LoadMoreData(SearchQuery query, int first, int count)
+    private async Task<SearchResponse> LoadMoreData(SearchQuery query, int first, int count, CancellationToken token)
     {
         // Assume there is more data available - unless the search
         // returns less than we asked for (see below).
@@ -159,10 +159,12 @@ public class SearchQueryService
 
             if ( query.MinDate.HasValue || query.MaxDate.HasValue )
             {
-                var minDate = query.MinDate.HasValue ? query.MinDate.Value : DateTime.MinValue;
-                // Ensure the end date is always inclusive, so set the time to 23:59:59
+                var minDate = query.MinDate.HasValue
+                    ? query.MinDate.Value + new TimeSpan(0, 0, 0)
+                    : DateTime.MinValue;
+
                 var maxDate = query.MaxDate.HasValue
-                    ? query.MaxDate.Value.AddDays(1).AddSeconds(-1)
+                    ? query.MaxDate.Value + new TimeSpan(23, 59, 59)
                     : DateTime.MaxValue;
 
                 // Always filter by date - because if there's no filter
@@ -249,7 +251,7 @@ public class SearchQueryService
                 .Select(x => x.ImageId)
                 .Skip(first)
                 .Take(count) 
-                .ToListAsync();
+                .ToListAsync(token);
             
             watch.Stop();
 
@@ -302,7 +304,7 @@ public class SearchQueryService
         return response;
     }
 
-    public async Task<SearchResponse> GetQueryImagesAsync(SearchRequest request)
+    public async Task<SearchResponse> GetQueryImagesAsync(SearchRequest request, CancellationToken token)
     {
         var query = new SearchQuery();
         request.Query.CopyPropertiesTo(query);
@@ -319,6 +321,6 @@ public class SearchQueryService
             query.Person = await db.People.FirstOrDefaultAsync(x => x.PersonId == request.Query.PersonId.Value);
 
         // Load more data if we need it.
-        return await LoadMoreData(query, request.First, request.Count);
+        return await LoadMoreData(query, request.First, request.Count, token);
     }
 }

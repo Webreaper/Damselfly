@@ -5,13 +5,16 @@
 
 <div class="damselfly-dialogrow">
     <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Editable Label="Earliest" Clearable="true" Color="Color.Surface" DateFormat="d-MMM-yyyy"/>
+        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Editable Label="Earliest" 
+                       Clearable="true" Color="Color.Surface" MaxDate="maxDate" DateFormat="d-MMM-yyyy"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Editable Label="Latest" Clearable="true" Color="Color.Surface"  DateFormat="d-MMM-yyyy"/>
+        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Editable Label="Latest" 
+                       Clearable="true" Color="Color.Surface" MinDate="minDate" DateFormat="d-MMM-yyyy"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <DateShortcutPicker @bind-Earliest="@minDate" @bind-Latest="maxDate"/>
+        <DateShortcutPicker @bind-Earliest="@minDate" @bind-Latest="maxDate"  
+                            @bind-Earliest:after="DateChanged"  @bind-Latest:after="DateChanged"/>
     </div>
     <div class="damselfly-dialogctrl">
         <MultiSelectDropdown T="int" Label="Months" SourceData="monthChoices" @bind-SelectedItems="searchService.Months"
@@ -106,9 +109,8 @@
     
     protected override void OnInitialized()
     {
-        minDate = searchService.MinDate;
-        maxDate = searchService.MaxDate;
-
+        OnSearchChanged();
+        
         // TODO: Can we do better than do this every time the advanced Search panel opens?
         cachedData.InitialiseData();
 
@@ -117,8 +119,6 @@
 
     private void DateChanged()
     {
-        if(maxDate != null)
-            maxDate = new DateTime(maxDate.Value.Year, maxDate.Value.Month, maxDate.Value.Day, 23, 59, 59);
         searchService.SetDateRange( minDate, maxDate );
     }   
     

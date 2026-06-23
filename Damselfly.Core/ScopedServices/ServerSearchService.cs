@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Damselfly.Core.Constants;
 using Damselfly.Core.DbModels;
@@ -27,7 +28,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
         _queryService = queryService;
     }
 
-    protected override async Task<SearchResponse> GetQueryImagesAsync( int count = DamselflyContants.PageSize)
+    protected override async Task<SearchResponse> GetQueryImagesAsync( CancellationToken token, int count = DamselflyContants.PageSize)
     {
         var first = _searchResults.Count;
 
@@ -52,7 +53,7 @@ public class ServerSearchService : BaseSearchService, ISearchService
 
         Logging.Log($"Executing search query for {request}");
 
-        var response = await _queryService.GetQueryImagesAsync(request);
+        var response = await _queryService.GetQueryImagesAsync(request, token);
 
         _searchResults.AddRange(response.SearchResults);
 
