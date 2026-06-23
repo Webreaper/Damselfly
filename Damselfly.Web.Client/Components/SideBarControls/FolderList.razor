@@ -320,7 +320,7 @@
         StateHasChanged();
     }
 
-    protected async Task ToggleExpand(Folder item)
+    private async Task ToggleExpand(Folder item)
     {
         if ( item.HasSubFolders )
         {
@@ -366,7 +366,7 @@
 
     private void OnSearchChanged()
     {
-        StateHasChanged();
+        _ = InvokeAsync(StateHasChanged);
     }
 
 }

@@ -22,7 +22,9 @@
         }
         else
         {
-            <ProgressSpinner ProgressText="Loading images..."/>
+            <div class="loading-images">
+                <ProgressSpinner ProgressText="Loading images..."/>
+            </div>
         }
     }
     else
@@ -230,12 +232,7 @@
     {
         StateHasChanged();
     }
-
-    protected void ImagesChanged( int id )
-    {
-        StateHasChanged();
-    }
-
+    
     public void Dispose()
     {
         selectionService.OnSelectionChanged -= SelectedImagesChanged;

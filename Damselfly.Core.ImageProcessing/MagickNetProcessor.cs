@@ -51,8 +51,8 @@ public class MagickNetProcessor : IImageProcessor
             var widthIsLongest = currentRatio > targetRatio;
 
             var intermediateSize = widthIsLongest
-                ? new MagickGeometry { Width = (int)(config.height * currentRatio), Height = config.height }
-                : new MagickGeometry { Width = config.width, Height = (int)(config.width / currentRatio) };
+                ? new MagickGeometry { Width = (uint)(config.height * currentRatio), Height = (uint)config.height }
+                : new MagickGeometry { Width = (uint)config.width, Height = (uint)(config.width / currentRatio) };
 
             Logging.LogTrace("Generating thumbnail for {0}: {1}x{2}", source.Name, config.width, config.height);
 
@@ -61,7 +61,7 @@ public class MagickNetProcessor : IImageProcessor
 
             if( currentRatio != targetRatio && config.cropToRatio )
             {
-                var size = new MagickGeometry(config.width, config.height);
+                var size = new MagickGeometry((uint)config.width, (uint)config.height);
 
                 image.Crop(size, Gravity.Center);
             }

@@ -472,7 +472,7 @@ public abstract class BaseSearchService
     protected void NotifySearchComplete(SearchResponse response)
     {
         OnSearchResultsChanged?.Invoke(response);
-    }
+}
 
     public event Action OnSearchQueryChanged;
     public event Action<SearchResponse> OnSearchResultsChanged;
@@ -490,8 +490,8 @@ public abstract class BaseSearchService
 
     private void QueryChanged()
     {
-        ClearSearchResults();
         NotifyQueryChanged();
+        ClearSearchResults();
         _ = GetQueryImagesAsync();
     }
 
