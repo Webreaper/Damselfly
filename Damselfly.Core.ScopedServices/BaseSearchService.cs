@@ -227,7 +227,7 @@ public abstract class BaseSearchService
         {
             if ( (value == null && Query.OnThisDay != null) ||
                  (value != null && Query.OnThisDay == null) ||
-                 (value != null && Query.OnThisDay != null && Query.OnThisDay != value ) )
+                 Query.OnThisDay != value)
             {
                 Query.OnThisDay = value;
                 QueryChanged();
@@ -398,11 +398,19 @@ public abstract class BaseSearchService
                     }
                 } );
 
-            if ( MinDate.HasValue )
-                hints.Add(new SearchHint { Description = $"Earliest: {MinDate:dd-MMM-yyyy}", Clear = () => MinDate = null }); 
-
-            if ( MaxDate.HasValue )
-                hints.Add(new SearchHint { Description = $"Latest: {MaxDate:dd-MMM-yyyy}", Clear = () => MaxDate = null }); 
+            if ( MinDate.HasValue && MaxDate.HasValue )
+                hints.Add(new SearchHint
+                {
+                    Description = $"Between: {MinDate:dd-MMM-yyyy} and {MaxDate:dd-MMM-yyyy}", Clear = () =>
+                    {
+                        MinDate = null;
+                        MaxDate = null;
+                    }
+                });
+            else if ( MinDate.HasValue )
+                hints.Add(new SearchHint { Description = $"After: {MinDate:dd-MMM-yyyy}", Clear = () => MinDate = null });
+            else if ( MaxDate.HasValue )
+                hints.Add(new SearchHint { Description = $"Before: {MaxDate:dd-MMM-yyyy}", Clear = () => MaxDate = null }); 
             
             if ( UntaggedImages )
                 hints.Add( new SearchHint { Description = "Untagged Images", Clear = () => UntaggedImages = false });

@@ -5,11 +5,11 @@
 
 <div class="damselfly-dialogrow">
     <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Editable Label="Earliest" 
+        <MudDatePicker @bind-Date="minDate" @bind-Date:after="DateChanged" Editable Label="After"
                        Clearable="true" Color="Color.Surface" MaxDate="maxDate" DateFormat="d-MMM-yyyy"/>
     </div>
     <div class="damselfly-dialogctrl">
-        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Editable Label="Latest" 
+        <MudDatePicker @bind-Date="maxDate" @bind-Date:after="DateChanged" Editable Label="Before" 
                        Clearable="true" Color="Color.Surface" MinDate="minDate" DateFormat="d-MMM-yyyy"/>
     </div>
     <div class="damselfly-dialogctrl">
