@@ -70,6 +70,12 @@
                 @if( (theImageTags != null && theImageTags.Any()) ||
                      (theObjectTags != null && theObjectTags.Any()) )
                 {
+                    @if( ShowCopyTags && theImageTags.Any() )
+                    {
+                        <MudIconButton Size="Size.Small" OnClick="CopyTagsToClipboard" Icon="@CopyIcon" 
+                                       title="Copy the current image's tags to the clipboard"/>
+                    }
+
                     @foreach( var tag in theImageTags )
                     {
                         <div class="damselfly-keyword" @oncontextmenu=@(args => ShowContextMenu(args, tag, false)) @oncontextmenu:preventDefault="true">
@@ -102,11 +108,6 @@
                             </div>
                             <div class="damselfly-keywordtext">@obj.Name</div>
                         </div>
-                    }
-
-                    @if( ShowCopyTags )
-                    {
-                        <MudIconButton Size="Size.Small" OnClick="CopyTagsToClipboard" Icon="@CopyIcon" title="Copy the current image's tags to the clipboard"/>
                     }
                 }
                 else
@@ -162,18 +163,23 @@
     {
         try
         {
-            var tagList = string.Join(",", theImageTags.Select(x => $"{x.Keyword}").ToList());
+            var tags = theImageTags.Select(x => $"{x.Keyword}").ToList();
+            var tagList = string.Join(",", tags);
+            
             await JsRuntime.InvokeVoidAsync("copyToClipboard", tagList);
             copiedText = true;
-            statusService.UpdateStatus($"Copied tags to clipboard: {tagList}");
             StateHasChanged();
+
+            statusService.UpdateStatus($"Copied tags to clipboard: {tagList}");
             await Task.Delay(1000);
+            
             copiedText = false;
             StateHasChanged();
         }
         catch( Exception ex )
         {
-            
+            statusService.UpdateStatus($"Unable to copy tags to clipboard.");
+            Logging.Log($"Unable to copy tags to clipboard: {ex}");
         }
     }
     
