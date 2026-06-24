@@ -91,29 +91,7 @@ jobs:
         run: |
              echo "Server artifacts:"
              ls server
-
-      - name: Download Mac Desktop Builds into wwwroot folder
-        uses: actions/download-artifact@v4
-        with:
-          name: Desktop-Dist-mac
-          path: publish/wwwroot/desktop
-
-      - name: Download Windows Desktop Builds into wwwroot folder
-        uses: actions/download-artifact@v4
-        with:
-          name: Desktop-Dist-windows
-          path: publish/wwwroot/desktop
-      
-      - name: Download Linux Desktop Builds into wwwroot folder
-        uses: actions/download-artifact@v4
-        with:
-          name: Desktop-Dist-linux
-          path: publish/wwwroot/desktop
-
-      - name: Validate Desktop artifacts
-        run: |
-             echo "Desktop artifacts:"
-             ls publish/wwwroot/desktop
+             
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -147,27 +125,6 @@ jobs:
             Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
           draft: false
           prerelease: false
-
-      - name: Download Linux Desktop Artifacts
-        if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v4
-        with:
-          name: Desktop-Dist-linux
-          path: Damselfly.Web.Client/wwwroot/desktop
-
-      - name: Download Mac Desktop Artifacts
-        if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v4
-        with:
-          name: Desktop-Dist-mac
-          path: Damselfly.Web.Client/wwwroot/desktop
-          
-      - name: Download Windows Desktop Artifacts
-        if: github.ref == 'refs/heads/master'
-        uses: actions/download-artifact@v4
-        with:
-          name: Desktop-Dist-windows
-          path: Damselfly.Web.Client/wwwroot/desktop
 
       - name: Download Windows Server Artifacts
         if: github.ref == 'refs/heads/master'
