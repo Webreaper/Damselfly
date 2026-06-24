@@ -112,20 +112,17 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: sh scripts/makedocker.sh master
 
-      - name: Create Release (master only)
-        id: create_release
-        if: github.ref == 'refs/heads/master'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        with:
-          tag_name: ${{ steps.getversion.outputs.version }}
-          release_name: Release v${{ steps.getversion.outputs.version }}
-          body: |
-            Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
-          draft: false
-          prerelease: false
+  create-release:
+    needs: [build-server]
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      matrix: 
+        target: [linux]
+        include: 
+          - target: linux
+            os: ubuntu-latest
 
+    steps:        
       - name: Download Windows Server Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
@@ -147,7 +144,9 @@ jobs:
           name: Server-Dist-linux
           path: server
 
-      - name: Create Release
+      - name: Create Release (master only)
+        id: create_release
+        if: github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v2
         with:
           name: Release v${{ steps.getversion.outputs.version }}
