@@ -1,10 +1,9 @@
-ARG BASE_IMAGE=webreaper/damselfly-base:2.0.1
+ARG BASE_IMAGE=webreaper/damselfly-base:2.1.1
 
 FROM $BASE_IMAGE as final
 
 WORKDIR /app
 COPY /Models ./Models
-COPY /desktop ./wwwroot/desktop
 COPY /publish .
 RUN chmod +x Damselfly.Web.Server
 
