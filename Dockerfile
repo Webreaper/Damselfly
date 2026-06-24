@@ -6,7 +6,7 @@ WORKDIR /app
 COPY /Models ./Models
 COPY /publish/**/Microsoft.* .
 COPY /publish/**/System.* .
-COPY --exclude=Microsoft.* --exclude=System.* /publish .
+COPY /publish .
 RUN chmod +x Damselfly.Web.Server
 
 # optional if we want to strace the CLR startup
