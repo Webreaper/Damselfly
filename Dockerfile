@@ -1,6 +1,6 @@
 ARG BASE_IMAGE=webreaper/damselfly-base:2.1.2
 
-FROM $BASE_IMAGE as final
+FROM $BASE_IMAGE AS final
 
 WORKDIR /app
 COPY /Models ./Models
