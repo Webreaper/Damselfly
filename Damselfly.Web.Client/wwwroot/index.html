@@ -63,6 +63,8 @@
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent);
 }
 
+window.copyToClipboard = (text) => { navigator.clipboard.writeText(text).catch((err) => { alert(err.message); }) }
+
 window.UIStateMonitor = {
     Init: function (DotNetRef) {
         function onResize() {

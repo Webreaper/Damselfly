@@ -7,6 +7,7 @@
 @inject NavigationService navContext
 @inject NavigationManager NavigationManager
 @inject ContextMenuService contextMenuService
+@inject IUserStatusService statusService
 @implements IDisposable
 
 <div class="damselfly-taglist">
@@ -102,6 +103,11 @@
                             <div class="damselfly-keywordtext">@obj.Name</div>
                         </div>
                     }
+
+                    @if( ShowCopyTags )
+                    {
+                        <MudIconButton Size="Size.Small" OnClick="CopyTagsToClipboard" Icon="@CopyIcon" title="Copy the current image's tags to the clipboard"/>
+                    }
                 }
                 else
                 {
@@ -114,7 +120,7 @@
             }
         </div>
     }
-
+    
     @if( ShowAddKeywords )
     {
         <TagAutoComplete OnAddNewtag="@CreateNewTag" IsDisabled="@IsDisabled"/>
@@ -126,6 +132,8 @@
     [Parameter] public bool ShowFavourites { get; set; }
 
     [Parameter] public bool ShowAddKeywords { get; set; }
+    
+    [Parameter] public bool ShowCopyTags { get; set; }
 
     [Parameter] public bool ShowImageKeywords { get; set; }
 
@@ -146,8 +154,29 @@
     private readonly List<string> recentTags = new();
     private IList<Tag> theImageTags { get; set; }
     private IList<AITag> theObjectTags { get; set; }
+    private bool copiedText;
     public bool IsDisabled => CurrentImages == null || !CurrentImages.Any();
+    private string CopyIcon => copiedText ? Icons.Material.Filled.Check : Icons.Material.Filled.ContentCopy;
 
+    private async Task CopyTagsToClipboard()
+    {
+        try
+        {
+            var tagList = string.Join(",", theImageTags.Select(x => $"{x.Keyword}").ToList());
+            await JsRuntime.InvokeVoidAsync("copyToClipboard", tagList);
+            copiedText = true;
+            statusService.UpdateStatus($"Copied tags to clipboard: {tagList}");
+            StateHasChanged();
+            await Task.Delay(1000);
+            copiedText = false;
+            StateHasChanged();
+        }
+        catch( Exception ex )
+        {
+            
+        }
+    }
+    
     private void CreateNewTag(string tagToAdd)
     {
         Logging.Log($"Creating tag for {tagToAdd}...");
