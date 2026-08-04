@@ -158,7 +158,7 @@ jobs:
           files: |-
             server/Server-Dist-linux.zip
             Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-linux.zip
-            server/Server-Dist-max.zip
+            server/Server-Dist-mac.zip
             Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-mac.zip
             server/Server-Dist-windows.zip
             Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-windows.zip
