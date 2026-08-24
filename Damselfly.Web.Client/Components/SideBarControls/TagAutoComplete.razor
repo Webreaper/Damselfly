@@ -1,10 +1,7 @@
 ﻿@inject ITagSearchService tagSearchService
-@inject NavigationService navContext
-@inject NavigationManager NavigationManager
-@inject ContextMenuService contextMenuService
 
 <div>
-    <MudAutocomplete T="string" Placeholder="Add a Keyword" SearchFunc="SearchTags"
+    <MudAutocomplete T="string" @ref="autoComplete" Placeholder="Add a Keyword" SearchFunc="SearchTags"
                      @bind-Value="@TypeAheadTag" @bind-Value:after="CreateNewTags"
                      ShowProgressIndicator="true" MinCharacters="2"
                      CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
@@ -22,6 +19,8 @@
 
     [Parameter] public required Action<string> OnAddNewtag { private get; set; }
 
+    private MudAutocomplete<string>? autoComplete;
+
     protected override void OnParametersSet()
     {
         if ( OnAddNewtag == null )
@@ -30,7 +29,7 @@
         base.OnParametersSet();
     }
 
-    private void CreateNewTags()
+    private async Task CreateNewTags()
     {
         if ( !string.IsNullOrEmpty(TypeAheadTag) )
         {
@@ -39,6 +38,9 @@
 
             // Reset the tag
             TypeAheadTag = string.Empty;
+            if( autoComplete != null )
+                await autoComplete.ResetAsync();
+            
             StateHasChanged();
 
             // Call the callback
@@ -46,10 +48,15 @@
         }
     }
 
-    private async Task<IEnumerable<string>> SearchTags(string text, CancellationToken token)
+    private async Task<IEnumerable<string>> SearchTags(string? text, CancellationToken token)
     {
-        var results = await tagSearchService.SearchTags(text, token);
-        return results.Select(x => x.Keyword);
+        if( ! string.IsNullOrEmpty(text) )
+        {
+            var results = await tagSearchService.SearchTags(text, token);
+            return results.Select(x => x.Keyword);
+        }
+
+        return [];
     }
 
 }
