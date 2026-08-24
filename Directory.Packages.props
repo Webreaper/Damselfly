@@ -61,7 +61,7 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime.Managed" Version="1.20.1" />
     <PackageVersion Include="Microsoft.ML.TensorFlow" Version="3.0.1" />
     <PackageVersion Include="Microsoft.ML.TensorFlow.Redist" Version="0.14.0" />
-    <PackageVersion Include="MudBlazor" Version="9.5.0" />
+    <PackageVersion Include="MudBlazor" Version="9.9.0" />
     <PackageVersion Include="Radzen.Blazor" Version="8.2.2" />
     <PackageVersion Include="SendGrid" Version="9.29.3" />
     <PackageVersion Include="Serilog" Version="4.2.0" />
