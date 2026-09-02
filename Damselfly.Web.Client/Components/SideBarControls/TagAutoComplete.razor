@@ -4,7 +4,7 @@
     <MudAutocomplete T="string" @ref="autoComplete" Placeholder="Add a Keyword" SearchFunc="SearchTags"
                      @bind-Value="@TypeAheadTag" @bind-Value:after="CreateNewTags"
                      ShowProgressIndicator="true" MinCharacters="2"
-                     CoerceValue="true" DebounceInterval="250" Clearable="true" Immediate="false"
+                     CoerceValue="false" DebounceInterval="250" Clearable="true" Immediate="false"
                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Sell"
                      Dense="true" Margin="Margin.Dense" Variant="UIConstants.MudVariant"
                      Disabled="@IsDisabled"
