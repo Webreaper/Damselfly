@@ -1,19 +1,20 @@
+---
 name: DamselflyBuild
-on: 
+on:
   push:
   workflow_dispatch:
     inputs:
       git-ref:
-        description: Git Ref (Optional)    
+        description: Git Ref (Optional)
         required: false
 
 jobs:
   build-server:
     runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         target: [linux, mac, windows]
-        include: 
+        include:
           - target: windows
             os: ubuntu-latest
           - target: linux
@@ -36,30 +37,30 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.100
-      
+
       - name: Install WASM-Tools
         run: dotnet workload install wasm-tools
 
       - name: Run Dotnet Server Build
-        run: sh scripts/makeserver.sh ${{ matrix.target }} 
+        run: sh scripts/makeserver.sh ${{ matrix.target }}
 
       - name: Upload server builds to artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Server-Dist-${{ matrix.target }}
-          path: server/*.zip     
+          path: server/*.zip
           retention-days: 5
 
   build-docker:
     needs: [build-server]
     runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         target: [linux]
-        include: 
+        include:
           - target: linux
             os: ubuntu-latest
-    steps:        
+    steps:
       - name: Clone Repository (latest)
         uses: actions/checkout@v3
         if: github.event.inputs.git-ref == ''
@@ -82,28 +83,28 @@ jobs:
 
       - name: Unzip server into publish folder
         run: |
-             mkdir publish
-             cd publish
-             unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
-             cd ..
+          mkdir publish
+          cd publish
+          unzip $GITHUB_WORKSPACE/server/damselfly-server-${{ matrix.target }}-*.zip
+          cd ..
 
       - name: Validate Server artifacts
         run: |
-             echo "Server artifacts:"
-             ls server
-             
+          echo "Server artifacts:"
+          ls server
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      
+
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
+
       - name: Build Docker for Dev (develop only)
         if: github.ref == 'refs/heads/develop'
         run: sh scripts/makedocker.sh
@@ -115,14 +116,14 @@ jobs:
   create-release:
     needs: [build-server]
     runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix: 
+    strategy:
+      matrix:
         target: [linux]
-        include: 
+        include:
           - target: linux
             os: ubuntu-latest
 
-    steps:        
+    steps:
       - name: Download Windows Server Artifacts
         if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v4
@@ -154,11 +155,11 @@ jobs:
           make_latest: true
           body: |
             Docker: docker pull webreaper/damselfly:${{ steps.getversion.outputs.version }}
-          files: |
+          files: |-
             server/Server-Dist-linux.zip
             Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-linux.zip
-            server/Server-Dist-max.zip
+            server/Server-Dist-mac.zip
             Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-mac.zip
             server/Server-Dist-windows.zip
             Damselfly.Web.Client/wwwroot/desktop/Desktop-Dist-windows.zip
-    
+
