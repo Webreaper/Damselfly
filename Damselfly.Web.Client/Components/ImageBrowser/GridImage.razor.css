@@ -23,7 +23,7 @@
     border: 3px solid var(--grid-image-selected-bg);
     box-shadow: 1px 1px var(--grid-image-selected-box) inset;
     opacity: 0;
-    padding: 6px !important;
+    padding: 5px !important;
     transition: all 0.1s ease-in;
 }
 
