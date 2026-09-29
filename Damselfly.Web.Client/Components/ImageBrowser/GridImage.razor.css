@@ -15,14 +15,16 @@
 .grid-image-unselected {
     background-color: var(--grid-image-bg);
     opacity: 0;
-    transition: opacity 0.5s ease-in;
+    transition: all 0.1s ease-in;
 }
 
 .grid-image-selected {
     background-color: var(--grid-image-selected-bg);
-    box-shadow: 1px 1px 0 var(--grid-image-selected-box) inset;
+    border: 3px solid var(--grid-image-selected-bg);
+    box-shadow: 1px 1px var(--grid-image-selected-box) inset;
     opacity: 0;
-    transition: opacity 0.5s ease-in;
+    padding: 6px !important;
+    transition: all 0.1s ease-in;
 }
 
 .grid-image-fadein {
@@ -37,4 +39,13 @@
     font-size: 12px;
     color: #579757;
     text-overflow: ellipsis;
+}
+
+@keyframes border-dance {
+    0% {
+        background-position: 0px 0px, 300px 116px, 0px 150px, 216px 0px;
+    }
+    100% {
+        background-position: 300px 0px, 0px 116px, 0px 0px, 216px 150px;
+    }
 }
